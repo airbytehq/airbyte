@@ -256,9 +256,9 @@
         "title": "HTTP Proxy Configuration",
         "description": "Configuration for using a custom HTTP proxy to access remote files.",
         "properties": {
-           "proxy_url": {
-           "order": 1,
-           "type": "string",
+          "proxy_url": {
+            "order": 1,
+            "type": "string",
             "title": "HTTP Proxy URL",
             "description": "HTTP/HTTPS proxy URL for accessing remote files. Format: http://proxy-host:port or https://proxy-host:port",
             "examples": [
@@ -275,6 +275,7 @@
             "writeOnly": true,
             "multiline": true
           }
+        }
       }
     }
   }

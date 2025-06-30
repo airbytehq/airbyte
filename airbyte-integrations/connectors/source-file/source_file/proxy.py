@@ -10,7 +10,7 @@ from pathlib import Path
 # Constants for proxy configuration keys
 PROXY_PARENT_CONFIG_KEY = "http_proxy"
 PROXY_URL_CONFIG_KEY = "proxy_url"
-PROXY_CA_CERTIFICATE_CONFIG_KEY = "ca_certificate"
+PROXY_CA_CERTIFICATE_CONFIG_KEY = "proxy_ca_certificate"
 
 
 # Our hard-coded exclude list:
@@ -88,11 +88,11 @@ def _install_ca_certificate(ca_cert_file_text: str) -> Path:
 
 
 def configure_custom_http_proxy(
-    connector_config_dict: dict | None = None,
+    http_proxy_config: dict[str, str],
     *,
+    logger: Logger,
     proxy_url: str | None = None,
     ca_cert_file_text: str | None = None,
-    logger: Logger | None = None,
 ) -> None:
     """Initialize the proxy environment variables.
 
@@ -104,19 +104,16 @@ def configure_custom_http_proxy(
 
     The function will no-op if neither input option provides a proxy URL.
     """
-    if connector_config_dict and PROXY_PARENT_CONFIG_KEY in connector_config_dict:
-        proxy_url = proxy_url or connector_config_dict[PROXY_PARENT_CONFIG_KEY].get(PROXY_URL_CONFIG_KEY)
-        ca_cert_file_text = ca_cert_file_text or connector_config_dict[PROXY_PARENT_CONFIG_KEY].get(PROXY_CA_CERTIFICATE_CONFIG_KEY)
+    proxy_url = proxy_url or http_proxy_config.get(PROXY_URL_CONFIG_KEY)
+    ca_cert_file_text = ca_cert_file_text or http_proxy_config.get(PROXY_CA_CERTIFICATE_CONFIG_KEY)
 
     if proxy_url:
-        if logger:
-            logger.info(f"Using custom proxy URL: {proxy_url}")
+        logger.info(f"Using custom proxy URL: {proxy_url}")
 
         if ca_cert_file_text:
             # Install the CA certificate if provided, and set CA-related env vars:
             cert_file_path = _install_ca_certificate(ca_cert_file_text)
-            if logger:
-                logger.info(f"Using custom installed CA certificate: {cert_file_path!s}")
+            logger.info(f"Using custom installed CA certificate: {cert_file_path!s}")
 
         # Set the remaining proxy config env vars:
         os.environ["NO_PROXY"] = _get_no_proxy_string()

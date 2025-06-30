@@ -39,6 +39,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 
+from .proxy import configure_custom_http_proxy
 from .utils import LOCAL_STORAGE_NAME, backoff_handler
 
 
@@ -160,49 +161,8 @@ class URLFile:
                     }
                 }
 
-            # TODO: Delete after testing the new method
-            # session = requests.Session()
-            # if "proxy_url" in self._provider and self._provider["proxy_url"]:
-            #     proxy_url = self._provider["proxy_url"]
-            #     os.environ["HTTP_PROXY"] = proxy_url
-            #     os.environ["HTTPS_PROXY"] = proxy_url
-            #     # These approaches didn't work:
-            #     # session.proxies = {
-            #     #     "http": proxy_url,
-            #     #     "https": proxy_url,
-            #     # }
-            #     # session.verify = "/Users/ajsteers/.mitmproxy/mitmproxy-ca-cert.pem"
-            #     # transport_params["http"] = {"session": session}
-            #     # transport_params["https"] = {"session": session}
-            #     # transport_params["proxies"] = {"http": proxy_url, "https": proxy_url}
-            #
-            # cert_file_path = None
-            # if "ca_certificate" in self._provider and self._provider["ca_certificate"]:
-            #     cert_fd, cert_file_path = tempfile.mkstemp(suffix=".pem", text=True)
-            #     try:
-            #         with os.fdopen(cert_fd, "w") as cert_file:
-            #             cert_file.write(self._provider["ca_certificate"])
-            #
-            #         transport_params["verify"] = cert_file_path
-            #         os.environ["REQUESTS_CA_BUNDLE"] = cert_file_path
-            #         os.environ["SSL_CERT_FILE"] = cert_file_path
-            #
-            #     except Exception:
-            #         if cert_file_path and os.path.exists(cert_file_path):
-            #             os.unlink(cert_file_path)
-            #         raise
-
             logger.info(f"TransportParams: {transport_params}")
             return smart_open.open(self.full_url, transport_params=transport_params, **self.args)
-
-            # TODO: Delete after testing the new method
-            # try:
-            #     result = smart_open.open(self.full_url, transport_params=transport_params if transport_params else None, **self.args)
-            #     return result
-            # except Exception:
-            #     if cert_file_path and os.path.exists(cert_file_path):
-            #         os.unlink(cert_file_path)
-            #     raise
         return smart_open.open(self.full_url, **self.args)
 
     @property
@@ -315,9 +275,14 @@ class Client:
         reader_options: dict | None = None,
         http_proxy: dict | None = None,
     ):
+        if http_proxy:
+            configure_custom_http_proxy(
+                https_proxy_config=http_proxy,
+                logger=logger,
+            )
+
         self._dataset_name = dataset_name
         self._url = url
-        self._http_proxy = http_proxy
         self._provider = provider
         self._reader_format = format or "csv"
         self._reader_options = reader_options or {}
