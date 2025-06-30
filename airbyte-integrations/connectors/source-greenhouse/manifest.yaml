@@ -1,4 +1,4 @@
-version: 6.48.15
+version: 6.56.7
 
 type: DeclarativeSource
 
@@ -21,16 +21,12 @@ definitions:
           path: applications
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,16 +80,12 @@ definitions:
           path: applications/{{ stream_partition.application_id }}/demographics/answers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -156,16 +148,12 @@ definitions:
           path: applications/{{ stream_partition.application_id }}/scheduled_interviews
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -225,16 +213,12 @@ definitions:
           path: candidates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -285,16 +269,12 @@ definitions:
           path: close_reasons
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -331,16 +311,12 @@ definitions:
           path: custom_fields
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,16 +353,12 @@ definitions:
           path: degrees
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -423,16 +395,12 @@ definitions:
           path: demographics/answers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -483,16 +451,12 @@ definitions:
           path: demographics/answer_options
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -529,16 +493,12 @@ definitions:
           path: demographics/questions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -575,16 +535,12 @@ definitions:
           path: demographics/questions/{{ stream_partition.parent_id }}/answer_options
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -629,16 +585,12 @@ definitions:
           path: demographics/question_sets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -675,16 +627,12 @@ definitions:
           path: demographics/question_sets/{{ stream_partition.parent_id }}/questions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -729,16 +677,12 @@ definitions:
           path: departments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -775,16 +719,12 @@ definitions:
           path: jobs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -835,16 +775,12 @@ definitions:
           path: jobs/{{ stream_partition.parent_id }}/openings
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -889,16 +825,12 @@ definitions:
           path: scheduled_interviews
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -949,16 +881,12 @@ definitions:
           path: job_posts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1009,16 +937,12 @@ definitions:
           path: job_stages
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1072,16 +996,12 @@ definitions:
           path: jobs/{{ stream_partition.job_id }}/stages
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1141,16 +1061,12 @@ definitions:
           path: offers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1201,16 +1117,12 @@ definitions:
           path: rejection_reasons
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1247,16 +1159,12 @@ definitions:
           path: scorecards
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1307,16 +1215,12 @@ definitions:
           path: sources
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1353,16 +1257,12 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1412,16 +1312,12 @@ definitions:
           path: candidates/{{ stream_partition.parent_id }}/activity_feed
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1453,16 +1349,12 @@ definitions:
           path: jobs/{{ stream_partition.parent_id }}/approval_flows
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1496,16 +1388,12 @@ definitions:
           path: disciplines
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1531,16 +1419,12 @@ definitions:
           path: schools
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1567,16 +1451,12 @@ definitions:
           path: eeoc
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1627,16 +1507,12 @@ definitions:
           path: email_templates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1687,16 +1563,12 @@ definitions:
           path: offices
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1733,16 +1605,12 @@ definitions:
           path: prospect_pools
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1778,16 +1646,12 @@ definitions:
           path: tags/candidate
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1814,16 +1678,12 @@ definitions:
           path: user_roles
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -1859,16 +1719,12 @@ definitions:
           path: users/{{ stream_partition.parent_id }}/permissions/jobs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            # ignore 403 error but retry default retriable http errors (429, 500 - 600)
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
