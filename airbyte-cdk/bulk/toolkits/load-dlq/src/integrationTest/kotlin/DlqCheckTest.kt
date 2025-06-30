@@ -15,7 +15,7 @@ class DlqCheckTest :
                     configContents =
                         """
                 {
-                    "objectStorageConfig":{
+                    "object_storage_config":{
                         "storage_type":"None"
                     }
                 }
@@ -23,12 +23,11 @@ class DlqCheckTest :
                     name = "No Object Storage Config",
                 ),
                 // TODO, this should become an automated tests, however, the existing tooling is
-                // hardcoded
-                // to only pull credentials for a connector, not cdk/toolkits.
+                // hardcoded to only pull credentials for a connector, not cdk/toolkits.
                 //        CheckTestConfig(
                 //            configContents = """
                 //                {
-                //                    "objectStorageConfig":{
+                //                    "object_storage_config":{
                 //                        "storage_type":"S3",
                 //                        "format":{"format_type":"CSV","flattening":"Root level
                 // flattening"},
@@ -50,7 +49,7 @@ class DlqCheckTest :
                     configContents =
                         """
                 {
-                    "objectStorageConfig":{
+                    "object_storage_config":{
                         "storage_type":"S3",
                         "format":{"format_type":"CSV","flattening":"Root level flattening"},
                         "bucket_path":"destination-shelby",

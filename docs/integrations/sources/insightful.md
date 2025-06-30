@@ -28,6 +28,7 @@ API Reference: https://developers.insightful.io/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-06-28 | [62196](https://github.com/airbytehq/airbyte/pull/62196) | Update dependencies |
 | 0.0.9 | 2025-06-21 | [61869](https://github.com/airbytehq/airbyte/pull/61869) | Update dependencies |
 | 0.0.8 | 2025-06-14 | [61077](https://github.com/airbytehq/airbyte/pull/61077) | Update dependencies |
 | 0.0.7 | 2025-05-24 | [60595](https://github.com/airbytehq/airbyte/pull/60595) | Update dependencies |
