@@ -20,18 +20,18 @@ AIRBYTE_NO_PROXY_ENTRIES = [
     "127.0.0.1",
     "*.local",
     # Cloud metadata endpoints
-    "169.254.169.254",  # AWS, Azure, etc.
+    "169.254.169.254",  # Special link-local IP for metadata servers (AWS, Azure, etc.)
     "metadata.google.internal",  # GCP
     # Airbyte control/telemetry
     "*.airbyte.io",
     "*.airbyte.com",
     "connectors.airbyte.com",
     # Third-party telemetry
-    "api.segment.io",
     "sentry.io",
+    "api.segment.io",
     "*.sentry.io",
-    "app.datadoghq.com",
     "*.datadoghq.com",
+    "app.datadoghq.com",
 ]
 
 
