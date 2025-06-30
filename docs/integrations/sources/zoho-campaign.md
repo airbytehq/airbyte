@@ -32,6 +32,7 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-06-28 | [62214](https://github.com/airbytehq/airbyte/pull/62214) | Update dependencies |
 | 0.0.24 | 2025-06-21 | [61773](https://github.com/airbytehq/airbyte/pull/61773) | Update dependencies |
 | 0.0.23 | 2025-06-15 | [61189](https://github.com/airbytehq/airbyte/pull/61189) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60759](https://github.com/airbytehq/airbyte/pull/60759) | Update dependencies |
