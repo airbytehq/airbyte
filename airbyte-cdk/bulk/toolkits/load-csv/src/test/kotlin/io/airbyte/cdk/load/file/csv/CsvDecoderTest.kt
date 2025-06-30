@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.file.csv
 
-import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
