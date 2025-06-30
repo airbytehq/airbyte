@@ -15,6 +15,7 @@ data class ClickhouseConfiguration(
     val database: String,
     val username: String,
     val password: String,
+    val smallBatches: Boolean,
 ) : DestinationConfiguration() {
     val endpoint = "$protocol://$hostname:$port"
     val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
@@ -43,6 +44,7 @@ class ClickhouseConfigurationFactory :
             pojo.database,
             pojo.username,
             pojo.password,
+            pojo.smallBatches,
         )
     }
 
@@ -63,6 +65,7 @@ class ClickhouseConfigurationFactory :
             database = overrides.getOrDefault("database", spec.database),
             password = overrides.getOrDefault("password", spec.password),
             username = overrides.getOrDefault("username", spec.username),
+            smallBatches = overrides.getOrDefault("smallBatches", spec.smallBatches),
         )
     }
 }

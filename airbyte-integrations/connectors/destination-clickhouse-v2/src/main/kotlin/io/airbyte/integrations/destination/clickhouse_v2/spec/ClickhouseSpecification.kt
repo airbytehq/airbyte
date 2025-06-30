@@ -23,6 +23,7 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val database: String
     abstract val username: String
     abstract val password: String
+    abstract val smallBatches: Boolean
 }
 
 @Singleton
@@ -63,6 +64,12 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"order": 5, "airbyte_secret": true}""")
     override val password: String = ""
+
+    @get:JsonSchemaTitle("Small batches")
+    @get:JsonPropertyDescription("Push data to the clickhouse server in smaller batch.")
+    @get:JsonProperty("small_batches")
+    @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
+    override val smallBatches: Boolean = false
 }
 
 @Singleton
@@ -103,6 +110,12 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"order": 5, "airbyte_secret": true}""")
     override val password: String = ""
+
+    @get:JsonSchemaTitle("Small batches")
+    @get:JsonPropertyDescription("Push data to the clickhouse server in smaller batch.")
+    @get:JsonProperty("small_batches")
+    @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
+    override val smallBatches: Boolean = false
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {
