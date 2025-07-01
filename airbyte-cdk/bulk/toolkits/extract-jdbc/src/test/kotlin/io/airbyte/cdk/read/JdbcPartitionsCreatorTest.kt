@@ -5,7 +5,6 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.data.IntCodec
-import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
@@ -25,16 +24,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@Suppress(
-    "UNCHECKED_CAST",
-)
 class JdbcPartitionsCreatorTest {
 
     private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
         mutableMapOf(
-            "id" to FieldValueEncoder(id, IntCodec as JsonEncoder<Any>),
-            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec as JsonEncoder<Any>),
-            "msg" to FieldValueEncoder(string, TextCodec as JsonEncoder<Any>),
+            "id" to FieldValueEncoder(id, IntCodec),
+            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec),
+            "msg" to FieldValueEncoder(string, TextCodec),
         )
 
     @Test
@@ -63,7 +59,7 @@ class JdbcPartitionsCreatorTest {
                                 "max" to
                                     FieldValueEncoder(
                                         cursorUpperBound,
-                                        LocalDateCodec as JsonEncoder<Any>
+                                        LocalDateCodec
                                     )
                             )
                         ),
@@ -326,7 +322,7 @@ class JdbcPartitionsCreatorTest {
                                 "max" to
                                     FieldValueEncoder(
                                         cursorUpperBound,
-                                        LocalDateCodec as JsonEncoder<Any>
+                                        LocalDateCodec
                                     )
                             )
                         ),

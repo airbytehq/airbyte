@@ -33,16 +33,15 @@ enum class ResourceType {
  * or null if any resource acquisition fails.
  */
 @Singleton
-class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
-    @Suppress("UNCHECKED_CAST")
+class ResourceAcquirer(val acquierers: List<Resource<*>>) {
     @Inject
     constructor(
         cr: ConcurrencyResource,
         sr: SocketResource
     ) : this(
         listOf(
-            cr as Resource<Resource.Acquired>,
-            sr as Resource<Resource.Acquired>,
+            cr,
+            sr,
         )
     )
 
@@ -52,7 +51,7 @@ class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
         // fails.
         run {
             requested.forEach { resourceType ->
-                val res = acqs.first { acq -> acq.type == resourceType }.tryAcquire()
+                val res = acquierers.first { acq -> acq.type == resourceType }.tryAcquire()
                 res?.apply { acquired[resourceType] = this } ?: return@run
             }
         }
@@ -65,9 +64,9 @@ class ResourceAcquirer(val acqs: List<Resource<Resource.Acquired>>) {
     }
 
     // convenience method to acquire a single resource of a specific type
-    fun <T : Resource.Acquired> tryAcquireResource(requested: ResourceType): T? {
+    fun tryAcquireResource(requested: ResourceType): Resource.Acquired? {
         val acq: Map<ResourceType, Resource.Acquired>? = tryAcquire(listOf(requested))
-        @Suppress("UNCHECKED_CAST") return acq?.get(requested) as? T
+        return acq?.get(requested)
     }
 }
 

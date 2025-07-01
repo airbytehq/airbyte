@@ -2,13 +2,10 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-@file:Suppress("UNCHECKED_CAST")
-
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.data.IntCodec
-import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -23,6 +20,7 @@ import io.airbyte.cdk.read.TestFixtures.opaqueStateValue
 import io.airbyte.cdk.read.TestFixtures.sharedState
 import io.airbyte.cdk.read.TestFixtures.stream
 import io.airbyte.cdk.read.TestFixtures.ts
+import java.time.Duration
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
@@ -34,15 +32,15 @@ import org.junit.jupiter.api.Test
 
 class JdbcPartitionReaderTest {
 
-    val cursorLowerBound = LocalDate.parse("2024-08-01")
-    val cursorCheckpoint = LocalDate.parse("2024-08-02")
-    val cursorUpperBound = LocalDate.parse("2024-08-05")
+    val cursorLowerBound: LocalDate = LocalDate.parse("2024-08-01")
+    val cursorCheckpoint: LocalDate = LocalDate.parse("2024-08-02")
+    val cursorUpperBound: LocalDate = LocalDate.parse("2024-08-05")
 
     private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
         mutableMapOf(
-            "id" to FieldValueEncoder(id, IntCodec as JsonEncoder<Any>),
-            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec as JsonEncoder<Any>),
-            "msg" to FieldValueEncoder(string, TextCodec as JsonEncoder<Any>),
+            "id" to FieldValueEncoder(id, IntCodec),
+            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec),
+            "msg" to FieldValueEncoder(string, TextCodec),
         )
 
     @Test
@@ -72,7 +70,7 @@ class JdbcPartitionReaderTest {
                             idDateString(5, "2024-08-05", "today"),
                         )
                     ),
-                maxSnapshotReadTime = java.time.Duration.ofMinutes(1),
+                maxSnapshotReadTime = Duration.ofMinutes(1),
             )
         val factory = sharedState.factory()
         val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
@@ -150,7 +148,7 @@ class JdbcPartitionReaderTest {
                             idDateString(4, "2024-08-04", "you"),
                         )
                     ),
-                maxSnapshotReadTime = java.time.Duration.ofMinutes(1),
+                maxSnapshotReadTime = Duration.ofMinutes(1),
             )
         val factory = sharedState.factory()
         val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
@@ -238,7 +236,7 @@ class JdbcPartitionReaderTest {
                             idDateString(4, "2024-08-04", "you"),
                         )
                     ),
-                maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
+                maxSnapshotReadTime = Duration.ofSeconds(1),
             )
         val factory = sharedState.factory()
         val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
@@ -299,7 +297,7 @@ class JdbcPartitionReaderTest {
                             idDateString(5, "2024-08-05", "today"),
                         )
                     ),
-                maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
+                maxSnapshotReadTime = Duration.ofSeconds(1),
             )
         val factory2 = sharedState2.factory()
         val result2 =

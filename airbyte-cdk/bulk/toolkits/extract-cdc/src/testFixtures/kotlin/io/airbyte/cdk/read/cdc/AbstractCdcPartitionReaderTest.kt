@@ -13,7 +13,6 @@ import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.IntCodec
-import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
@@ -59,9 +58,6 @@ import org.junit.jupiter.api.extension.ExtendWith
  * integration test and this class is subclassed for multiple Debezium implementations which connect
  * to a corresponding testcontainer data source.
  */
-@Suppress(
-    "UNCHECKED_CAST",
-)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 @ExtendWith(MockKExtension::class)
 abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
@@ -292,7 +288,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     }
     data class Insert(override val id: Int, val v: Int) : Record
     data class Update(override val id: Int, val v: Int) : Record
-    data class Delete(override val id: Int) : Record
+    data class Delete(override val id: Int, val ignore: Boolean = false) : Record
 
     abstract inner class AbstractCdcPartitionsCreatorDbzOps<T : Comparable<T>> :
         CdcPartitionsCreatorDebeziumOperations<T> {
@@ -341,32 +337,25 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                     Update(id, after)
                 }
 
-            /*
-                               when (record) {
-                       is Insert -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
-                       is Update -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))
-                       is Delete -> mapOf("v" to FieldValueEncoder(record.v, IntCodec))},
-
-            */
             return DeserializedRecord(
                 data =
-                    mutableMapOf(
-                            "id" to FieldValueEncoder(record.id, IntCodec as JsonEncoder<Any>),
+                    mutableMapOf<String, FieldValueEncoder<*>>(
+                            "id" to FieldValueEncoder(record.id, IntCodec),
                             "@c" to
                                 FieldValueEncoder(
                                     record::class.java.name,
-                                    TextCodec as JsonEncoder<Any>
+                                    TextCodec
                                 )
                         )
                         .also {
                             when (record) {
                                 is Insert ->
                                     it["v"] =
-                                        FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
+                                        FieldValueEncoder(record.v, IntCodec)
                                 is Update ->
                                     it["v"] =
-                                        FieldValueEncoder(record.v, IntCodec as JsonEncoder<Any>)
-                                is Delete -> {}
+                                        FieldValueEncoder(record.v, IntCodec)
+                                is Delete -> { }
                             }
                         },
                 changes = emptyMap(),

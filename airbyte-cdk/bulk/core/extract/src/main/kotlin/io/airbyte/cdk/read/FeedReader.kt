@@ -345,7 +345,7 @@ class FeedReader(
     // Acquires resources for the OutputMessageRouter and executes the provided action with it
     private fun doWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
         val acquiredSocket: SocketResource.AcquiredSocket =
-            resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET)
+            resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET) as? SocketResource.AcquiredSocket
                 ?: throw IllegalStateException("No output socket available for checkpoint.")
         acquiredSocket.use {
             OutputMessageRouter(

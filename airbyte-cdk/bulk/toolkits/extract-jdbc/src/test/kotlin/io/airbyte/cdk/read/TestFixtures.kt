@@ -93,13 +93,12 @@ object TestFixtures {
             )
 
         val concurrencyResource = ConcurrencyResource(configuration)
-        @Suppress("UNCHECKED_CAST")
         return DefaultJdbcSharedState(
             configuration,
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
             concurrencyResource,
-            ResourceAcquirer(listOf(concurrencyResource as Resource<Resource.Acquired>))
+            ResourceAcquirer(listOf(concurrencyResource))
         )
     }
 

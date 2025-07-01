@@ -86,7 +86,6 @@ class MySqlSourceDebeziumOperations(
         configuration.incrementalConfiguration as CdcIncrementalConfiguration
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
@@ -124,7 +123,7 @@ class MySqlSourceDebeziumOperations(
             data[field.id] ?: continue
             when (data[field.id]) {
                 is NullNode -> {
-                    resultRow[field.id] = FieldValueEncoder(null, NullCodec as JsonEncoder<Any>)
+                    resultRow[field.id] = FieldValueEncoder(null, NullCodec)
                 }
                 else -> {
                     val codec: JsonCodec<*> =
@@ -136,6 +135,7 @@ class MySqlSourceDebeziumOperations(
                                 if (data[field.id].isBinary) BinaryCodec else TextCodec
                             else -> field.type.jsonEncoder as JsonCodec<*>
                         }
+                    @Suppress("UNCHECKED_CAST")
                     resultRow[field.id] =
                         FieldValueEncoder(
                             codec.decode(data[field.id]),
@@ -155,12 +155,13 @@ class MySqlSourceDebeziumOperations(
             transactionTimestampJsonNode,
         )
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec as JsonEncoder<Any>)
+            FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec)
 
         data.set<JsonNode>(
             CommonMetaField.CDC_DELETED_AT.id,
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
+        @Suppress("UNCHECKED_CAST")
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
@@ -174,14 +175,14 @@ class MySqlSourceDebeziumOperations(
             TextCodec.encode(position.fileName)
         )
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
-            FieldValueEncoder(position.fileName, TextCodec as JsonEncoder<Any>)
+            FieldValueEncoder(position.fileName, TextCodec)
 
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             LongCodec.encode(position.position)
         )
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
-            FieldValueEncoder(position.position, LongCodec as JsonEncoder<Any>)
+            FieldValueEncoder(position.position, LongCodec)
 
         // Set the _ab_cdc_cursor meta-field value.
         data.set<JsonNode>(
@@ -189,10 +190,9 @@ class MySqlSourceDebeziumOperations(
             LongCodec.encode(position.cursorValue)
         )
         resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
-            FieldValueEncoder(position.cursorValue, LongCodec as JsonEncoder<Any>)
+            FieldValueEncoder(position.cursorValue, LongCodec)
 
         // Return a DeserializedRecord instance.
-        //        return DeserializedRecord(data, changes = emptyMap())
         return DeserializedRecord(resultRow, emptyMap()) // TEMP
     }
 
@@ -341,7 +341,7 @@ class MySqlSourceDebeziumOperations(
                 try {
                     // Syntax for MySQL version < 8.4
                     return parseBinaryLogStatus(stmt, "SHOW MASTER STATUS")
-                } catch (e: SQLSyntaxErrorException) {
+                } catch (_: SQLSyntaxErrorException) {
                     // Syntax for MySQL version >= 8.4
                     return parseBinaryLogStatus(stmt, "SHOW BINARY LOG STATUS")
                 }
