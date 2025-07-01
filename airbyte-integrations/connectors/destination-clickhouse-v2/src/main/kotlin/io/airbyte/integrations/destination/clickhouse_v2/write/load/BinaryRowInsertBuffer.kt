@@ -112,9 +112,6 @@ class BinaryRowInsertBuffer(
         abValue: AirbyteValue,
         dataType: AirbyteType,
     ) {
-        println(
-            "In the column $columnName pushing value: $abValue with type: ${dataType.javaClass}"
-        )
         when (abValue) {
             // TODO: let's consider refactoring AirbyteValue so we don't have to do this
             is NullValue -> writer.setValue(columnName, null)
