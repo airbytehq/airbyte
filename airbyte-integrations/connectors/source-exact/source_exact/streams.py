@@ -337,6 +337,12 @@ class BudgetBudgets(ExactOtherStream):
     endpoint = "budget/Budgets"
 
 
+class FinancialGLAccountClassificationMapping(ExactOtherStream):
+    """Stream to sync to the endpoint `financial/GLAccountClassificationMappings`"""
+
+    endpoint = "financial/GLAccountClassificationMappings"
+
+
 class FinancialReceivablesList(ExactOtherStream):
     """Stream to sync the endpoint `read/financial/ReceivablesList`"""
 
