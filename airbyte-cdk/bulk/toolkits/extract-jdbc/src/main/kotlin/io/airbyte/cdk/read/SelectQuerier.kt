@@ -137,11 +137,11 @@ class JdbcSelectQuerier(
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-
+                    @Suppress("UNCHECKED_CAST")
                     resultRow.data[column.id] =
                         FieldValueEncoder(
                             jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
-                            jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>
+                            jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
                         )
                 } catch (e: Exception) {
                     resultRow.data[column.id] =
