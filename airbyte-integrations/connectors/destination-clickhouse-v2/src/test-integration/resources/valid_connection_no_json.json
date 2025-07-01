@@ -5,5 +5,5 @@
   "username": "replace_me_username",
   "password": "replace_me_password",
   "database": "default",
-  "enable_json": true
+  "enable_json": false
 }
