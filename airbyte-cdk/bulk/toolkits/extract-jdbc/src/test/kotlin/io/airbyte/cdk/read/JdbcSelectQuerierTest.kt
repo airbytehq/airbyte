@@ -102,7 +102,7 @@ class JdbcSelectQuerierTest {
                 if (i > 0) {
                     Assertions.assertTrue(previous === row.data)
                 }
-                Assertions.assertEquals(actual[i++], row.data)
+                Assertions.assertEquals(actual[i++].toJson(), row.data.toJson())
                 previous = row.data
             }
         }
