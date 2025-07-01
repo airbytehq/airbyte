@@ -380,6 +380,11 @@ class S3V2WriteTestCsvUncompressed :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
     ) {
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
@@ -25,9 +24,6 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
-private const val DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS = 0.4
-private const val FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS = 0.2
-
 data class S3V2Configuration<T : OutputStream>(
     // Client-facing configuration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
@@ -45,7 +41,7 @@ data class S3V2Configuration<T : OutputStream>(
     // ObjectLoader-specific configuration
     val numPartWorkers: Int = 2,
     val numUploadWorkers: Int = 5,
-    val maxMemoryRatioReservedForParts: Double = DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS,
+    val maxMemoryRatioReservedForParts: Double = 0.2,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 20L * 1024 * 1024,
 ) :
@@ -59,7 +55,7 @@ data class S3V2Configuration<T : OutputStream>(
     ObjectStorageCompressionConfigurationProvider<T>
 
 @Singleton
-class S3V2ConfigurationFactory(private val destinationCatalog: DestinationCatalog) :
+class S3V2ConfigurationFactory :
     DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
     override fun makeWithoutExceptionHandling(pojo: S3V2Specification): S3V2Configuration<*> {
         return S3V2Configuration(
@@ -69,12 +65,6 @@ class S3V2ConfigurationFactory(private val destinationCatalog: DestinationCatalo
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            maxMemoryRatioReservedForParts =
-                if (destinationCatalog.streams.any { it.isFileBased }) {
-                    FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
-                } else {
-                    DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
-                }
         )
     }
 }
