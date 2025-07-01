@@ -109,9 +109,75 @@ concurrent rate limit, making it easier to start many queries at once.
 The BigQuery destination connector supports the following
 [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh Sync
-- Incremental - Append Sync
-- Incremental - Append + Deduped
+- **Full Refresh Sync**: Replaces all data in the destination table with data from the source
+- **Incremental - Append Sync**: Appends new records to the destination table based on a cursor field
+- **Incremental - Append + Deduped**: Appends new records and removes duplicates based on primary key and cursor field
+
+### Incremental sync behavior
+
+Incremental sync modes use a **cursor field** (typically a timestamp or incrementing ID) to track which records have been synced. The connector maintains state between syncs to resume from where the last sync left off.
+
+#### Cursor field requirements
+
+- Must be a monotonically increasing field (timestamp, auto-incrementing ID, etc.)
+- Should be indexed in the source for optimal performance
+- Cannot be null for records you want to sync
+- Should not have duplicate values for different records (especially important for append + deduped mode)
+
+#### Incremental - Append Sync
+
+- Adds all new records where the cursor field value is greater than the last synced value
+- Does not remove duplicates - if the same record is updated multiple times, you'll see multiple versions
+- Best for append-only data or when you need to preserve all historical changes
+- Faster than append + deduped since no deduplication processing is required
+
+#### Incremental - Append + Deduped
+
+- Adds new records and removes duplicates based on the primary key
+- Keeps only the latest version of each record (determined by cursor field)
+- Requires a primary key to be defined in the source schema
+- Best for slowly changing dimension data where you want the current state
+- Uses BigQuery MERGE statements for efficient deduplication
+
+#### Relationship to BigQuery partitioning and clustering
+
+The BigQuery destination automatically optimizes tables for incremental sync performance:
+
+**Partitioning:** Tables are partitioned by `airbyte_extracted_at` (the time Airbyte extracted the record) at daily granularity. This enables efficient querying of recent data and cost optimization.
+
+**Clustering:** Tables are clustered by `airbyte_extracted_at` and the table's primary keys. This optimizes performance for:
+- Queries filtering on recent data
+- Deduplication operations in append + deduped mode
+- Joins on primary key fields
+
+**Performance implications:**
+- Incremental syncs benefit from partition pruning when querying recent data
+- Clustering on primary keys accelerates deduplication in append + deduped mode
+- Use partition filters (`WHERE airbyte_extracted_at >= '2023-01-01'`) to minimize query costs
+
+#### State management and resumability
+
+- **State persistence:** The connector tracks the maximum cursor field value from each sync
+- **Resume capability:** If a sync fails partway through, the next sync resumes from the last successfully processed cursor value
+- **Backfill support:** You can reset the sync state to re-sync historical data
+- **Multiple streams:** Each stream maintains independent cursor state
+
+#### Best practices for incremental sync
+
+1. **Choose the right cursor field:**
+   - Use `updated_at` timestamps for frequently changing data
+   - Use `created_at` for append-only data
+   - Ensure the field is indexed in your source database
+
+2. **Optimize for BigQuery:**
+   - Query recent data using partition filters on `airbyte_extracted_at`
+   - Use clustering keys in WHERE clauses for better performance
+   - Consider your query patterns when choosing primary keys
+
+3. **Monitor sync performance:**
+   - Large initial syncs may take time due to BigQuery's streaming buffer
+   - Monitor for cursor field gaps that could indicate data quality issues
+   - Use append + deduped for data that may have late-arriving updates
 
 ## Output schema
 
