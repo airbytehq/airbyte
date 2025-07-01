@@ -6,6 +6,8 @@ import tempfile
 from logging import Logger
 from pathlib import Path
 
+import certifi
+
 
 # Constants for proxy configuration keys
 PROXY_PARENT_CONFIG_KEY = "http_proxy"
@@ -62,7 +64,36 @@ def _get_no_proxy_string() -> str:
     )
 
 
-def _install_ca_certificate(ca_cert_file_text: str) -> Path:
+def _create_combined_ca_bundle(proxy_ca_cert_file_text: str) -> Path:
+    """Create a combined CA bundle including custom and built-in CA certificates.
+
+    Args:
+        proxy_ca_cert_file_text: The proxy CA certificate in PEM format
+
+    Returns:
+        Path to the combined CA certificate file
+    """
+    system_ca_bundle_path = certifi.where()
+    system_certs_text = Path(system_ca_bundle_path).read_text(encoding="utf-8")
+
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        delete=False,
+        prefix="airbyte-custom-ca-bundle-",
+        suffix=".pem",
+        encoding="utf-8",
+    ) as temp_file:
+        temp_file.write(system_certs_text)
+        temp_file.write("\n")
+
+        temp_file.write("# Custom Proxy CA Certificate:\n")
+        temp_file.write(proxy_ca_cert_file_text)
+        temp_file.flush()
+
+    return Path(temp_file.name).absolute()
+
+
+def _install_ca_certificate(proxy_ca_cert_file_text: str) -> Path:
     """Install the CA certificate for the proxy.
 
     This involves saving the text to a local file and then setting
@@ -70,21 +101,13 @@ def _install_ca_certificate(ca_cert_file_text: str) -> Path:
 
     Returns the path to the temporary CA certificate file.
     """
-    with tempfile.NamedTemporaryFile(
-        mode="w",
-        delete=False,
-        prefix="airbyte-custom-ca-cert-",
-        suffix=".pem",
-        encoding="utf-8",
-    ) as temp_file:
-        temp_file.write(ca_cert_file_text)
-        temp_file.flush()
+    new_ca_bundle_path = _create_combined_ca_bundle(proxy_ca_cert_file_text).absolute()
 
-    os.environ["REQUESTS_CA_BUNDLE"] = temp_file.name
-    os.environ["CURL_CA_BUNDLE"] = temp_file.name
-    os.environ["SSL_CERT_FILE"] = temp_file.name
+    os.environ["REQUESTS_CA_BUNDLE"] = str(new_ca_bundle_path)
+    os.environ["CURL_CA_BUNDLE"] = str(new_ca_bundle_path)
+    os.environ["SSL_CERT_FILE"] = str(new_ca_bundle_path)
 
-    return Path(temp_file.name).absolute()
+    return new_ca_bundle_path
 
 
 def configure_custom_http_proxy(
