@@ -80,7 +80,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------|
-| 0.1.8   | 2025-06-30 | [\#62100](https://github.com/airbytehq/airbyte/pull/62100) | Add support JSON.                                   |
+| 0.1.8   | 2025-06-30 | [\#62100](https://github.com/airbytehq/airbyte/pull/62100) | Add JSON support.                                       |
 | 0.1.7   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047) | Remove the use of the internal namespace.           |
 | 0.1.6   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047) | Hide protocol option when running on cloud.         |
 | 0.1.5   | 2025-06-24 | [\#62043](https://github.com/airbytehq/airbyte/pull/62043) | Expose database protocol config option.             |
