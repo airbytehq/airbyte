@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+from pathlib import Path
 from typing import Any, Dict
 
 import requests  # type: ignore
