@@ -23,20 +23,18 @@ All sync modes are supported.
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
-Airbyte types will be converted as follows:
+The type we are using have the following properties:
 
-    BooleanType -> Bool
-    DateType -> Date32
-    IntegerType -> Int64
-    NumberType (float) -> DECIMAL128(9)
-    StringType -> String
-    TimeTypeWithTimezone -> String
-    TimeTypeWithoutTimezone -> String
-    TimestampTypeWithTimezone -> DateTime64(3)
-    TimestampTypeWithoutTimezone -> DateTime64(3)
-    Other Misc. -> String
+- The decimal types have a precision of 9 digits, we are using the clickhouse type NUMBER128(9)
+- The Timestamp types have a millisecond precision, we are using the type DATETIME64(3)
+- The object type are converted to JSON **if the json option is selected**; otherwise it will be a string
+- The integers are Int64
+- The booleans are Bool
+- The Strings are String
+- The unions will be converted as a string
+- The times will be converted to a string
+- The arrays will be converted to a string
 
-If the Json mode is selected, the Object will be converted to a JSON object. The Union type remains a String
 
 ### Requirements
 
