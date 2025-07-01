@@ -282,8 +282,8 @@ object SnowflakeDatabaseUtils {
     fun toSqlTypeName(airbyteProtocolType: AirbyteProtocolType): String {
         return when (airbyteProtocolType) {
             AirbyteProtocolType.STRING -> "TEXT"
-            AirbyteProtocolType.NUMBER -> "FLOAT"
-            AirbyteProtocolType.INTEGER -> "NUMBER"
+            AirbyteProtocolType.NUMBER -> "NUMBER"
+            AirbyteProtocolType.INTEGER -> "INTEGER"
             AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
             AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ"
             AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
