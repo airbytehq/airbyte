@@ -1,22 +1,21 @@
-[project]
-name = "source-gitlab-tests"
-version = "0.1.0"
-description = ""
-authors = [
-    {name = "Airbyte",email = "contact@airbyte.io"}
-]
-readme = "README.md"
-requires-python = ">=3.10,<3.13"
-dependencies = [
-    "pytest (>=8.4.1,<9.0.0)",
-    "airbyte-cdk (>=6.56.8,<7.0.0)",
-    "requests-mock (>=1.12.1,<2.0.0)",
-    "pytest-mock (>=3.14.1,<4.0.0)",
-]
-
-[tool.poetry]
-package-mode = false
-
 [build-system]
 requires = ["poetry-core>=1.0.0,<2.0.0"]
 build-backend = "poetry.core.masonry.api"
+[tool.poetry]
+name = "source-gitlab-tests"
+version = "0.1.0"
+description = "Unit tests for source-gitlab"
+authors = [
+    "Airbyte <contact@airbyte.io>"
+]
+package-mode = false
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+pytest = "^8"
+airbyte-cdk = "^6"
+requests-mock = "^1.12"
+pytest-mock = "^3"
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]
