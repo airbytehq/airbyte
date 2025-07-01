@@ -27,7 +27,7 @@ The types we are using have the following properties:
 
 - The decimal types have a precision of 9 digits, we are using the ClickHouse type NUMBER128(9)
 - The Timestamp types have a millisecond precision, we are using the ClickHouse type DATETIME64(3)
-- The object type is converted to JSON **if the json option is selected**; otherwise it will be a String
+- The object type is converted to JSON **if the JSON option is selected**; otherwise it will be a String
 - The integers are Int64
 - The booleans are Bool
 - The strings are String
