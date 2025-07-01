@@ -614,7 +614,6 @@ abstract class AbstractJdbcSource<Datatype>(
         tableName: String,
         cursorInfo: CursorInfo,
         cursorFieldType: Datatype,
-        excludeTodaysData: Boolean,
     ): AutoCloseableIterator<AirbyteRecordData> {
         LOGGER.info { "Queueing query for table: $tableName" }
         val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
@@ -667,11 +666,11 @@ abstract class AbstractJdbcSource<Datatype>(
 
                                 val sql =
                                     StringBuilder(
-                                        when (excludeTodaysData && cursorInfo.cutoffTime != null) {
-                                            true ->
-                                                "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ? AND $quotedCursorField < ?"
-                                            false ->
+                                        when (cursorInfo.cutoffTime) {
+                                            null ->
                                                 "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ?"
+                                            else ->
+                                                "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ? AND $quotedCursorField < ?"
                                         }
                                     )
                                 // if the connector emits intermediate states, the incremental query
@@ -691,7 +690,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                     cursorInfo.cursor!!
                                 )
 
-                                if (excludeTodaysData && cursorInfo.cutoffTime != null) {
+                                if (cursorInfo.cutoffTime != null) {
                                     sourceOperations.setCursorField(
                                         preparedStatement,
                                         2,
@@ -888,7 +887,6 @@ abstract class AbstractJdbcSource<Datatype>(
         table: TableInfo<CommonField<Datatype>>,
         stateManager: StateManager?,
         emittedAt: Instant,
-        excludeTodaysData: Boolean,
     ): AutoCloseableIterator<AirbyteMessage> {
         val iterator =
             super.createReadIterator(
@@ -898,7 +896,6 @@ abstract class AbstractJdbcSource<Datatype>(
                 table,
                 stateManager,
                 emittedAt,
-                excludeTodaysData,
             )
         return when (airbyteStream.syncMode) {
             INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)
