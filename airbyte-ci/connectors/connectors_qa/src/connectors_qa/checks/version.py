@@ -38,7 +38,7 @@ class CheckVersionIncrement(Check):
     def _should_run(self) -> bool:
         # TODO: don't run if only files changed are in the bypass list or running in the context of the master branch
         # TODO: get this to work on the private airbyte-enterprise repo
-        if "airbyte-enterprise" in Path.cwd().absolute():
+        if "airbyte-enterprise" in Path.cwd().absolute().parts:
             return False
         return True
 
