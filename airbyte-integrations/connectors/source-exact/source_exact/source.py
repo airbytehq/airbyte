@@ -12,6 +12,7 @@ from source_exact.streams import (
     ExactStream,
     FinancialGLAccountClassificationMapping,
     FinancialReceivablesList,
+    FinancialReportingBalance,
     HRMDepartments,
     OpeningbalanceCurrentYearAfterEntry,
     PayrollActiveEmployments,
@@ -52,8 +53,8 @@ class SourceExact(AbstractSource):
     def check(self, logger: logging.Logger, config) -> AirbyteConnectionStatus:
         return super().check(logger=logger, config=config)
 
-    # def read(self, *args, **kwargs):
-    #     return super().read(*args, **kwargs)
+    def read(self, *args, **kwargs):
+        return super().read(*args, **kwargs)
 
     def streams(self, config) -> list[ExactStream]:  # type: ignore[override]
         return [
@@ -62,6 +63,7 @@ class SourceExact(AbstractSource):
             CRMAccountClassificationNames(config),
             FinancialGLAccountClassificationMapping(config),
             FinancialReceivablesList(config),
+            FinancialReportingBalance(config),
             HRMDepartments(config),
             OpeningbalanceCurrentYearAfterEntry(config),
             PayrollActiveEmployments(config),
