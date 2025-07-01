@@ -2,16 +2,13 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from copy import deepcopy
 from unittest.mock import ANY
 
 import pytest
-from requests.status_codes import codes as status_codes
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
-    AirbyteConnectionStatus,
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
@@ -19,10 +16,8 @@ from airbyte_cdk.models import (
     AirbyteStream,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
-    ConfiguredAirbyteCatalog,
     FailureType,
     Level,
-    Status,
     StreamDescriptor,
     SyncMode,
     TraceType,
@@ -30,7 +25,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from .conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_credentials

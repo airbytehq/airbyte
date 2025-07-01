@@ -333,7 +333,7 @@ def name_conversion(text: str) -> str:
     """
     convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
     """
-    text = unidecode.unidecode(text)
+    text = anyascii.anyascii(text)
 
     tokens = []
     for m in TOKEN_PATTERN.finditer(text):
@@ -394,7 +394,7 @@ def _sanitization(
     7. Optionally prepends an underscore if the result starts with a number and allow_leading_numbers is False.
     8. Returns the final string in lowercase.
     """
-    text = anyascii.transliterate(text)
+    text = anyascii.anyascii(text)
 
     if remove_special_characters:
         text = re.sub(r"[^\w\s]", "", text)
@@ -491,13 +491,13 @@ def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
     if code == requests.status_codes.codes.FORBIDDEN:
         return (
             f"The authenticated Google Sheets user does not have permissions to view the spreadsheet with id {spreadsheet_id}. "
-            "Please ensure the authenticated user has access to the Spreadsheet and reauthenticate."
-            "If the issue persists, contact support"
+            "Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. "
+            "If the issue persists, contact support."
         )
     if code == requests.status_codes.codes.NOT_FOUND:
         return (
             f"The requested Google Sheets spreadsheet with id {spreadsheet_id} does not exist. "
-            f"Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support"
+            f"Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support."
         )
 
     if code == requests.status_codes.codes.TOO_MANY_REQUESTS:
