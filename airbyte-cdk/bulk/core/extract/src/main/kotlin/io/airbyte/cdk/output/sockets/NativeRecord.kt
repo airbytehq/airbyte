@@ -45,7 +45,7 @@ import java.time.format.DateTimeFormatter
 // A value of a field along with its encoder
 data class FieldValueEncoder(val fieldValue: Any?, val jsonEncoder: JsonEncoder<Any>)
 
-// A natice jvm representation of a database row, which can be encoded to the desired output format
+// A native jvm encoding of a database row, which can then be encoded to the desired output format
 // (json or protobuf)
 typealias NativeRecordPayload = MutableMap<String, FieldValueEncoder>
 
