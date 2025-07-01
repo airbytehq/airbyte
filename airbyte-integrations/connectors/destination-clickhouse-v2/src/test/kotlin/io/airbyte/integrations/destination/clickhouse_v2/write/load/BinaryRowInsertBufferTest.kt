@@ -164,7 +164,7 @@ class BinaryRowInsertBufferTest {
 
     @ParameterizedTest
     @MethodSource("writeMatrix")
-    fun `test write`(value: Any, dataType: AirbyteType) {
+    fun `test write`(value: Any) {
         val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
         buffer.writer = writer
 
@@ -257,11 +257,11 @@ class BinaryRowInsertBufferTest {
         @JvmStatic
         fun writeMatrix() =
             listOf(
-                Arguments.of(true, BooleanType),
-                Arguments.of(42, IntegerType),
-                Arguments.of(123.3, NumberType),
-                Arguments.of("str", StringType),
-                Arguments.of(mockk<Date>(relaxed = true), DateType),
+                Arguments.of(true),
+                Arguments.of(42),
+                Arguments.of(123.3),
+                Arguments.of("str"),
+                Arguments.of(mockk<Date>(relaxed = true)),
             )
     }
 
