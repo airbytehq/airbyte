@@ -153,8 +153,9 @@ sealed class FeedBootstrap<T : Feed>(
         }
 
         private val precedingGlobalFeed: Global? =
-            stateManager.feeds
-                .filterIsInstance<Global>().firstOrNull { it.streams.contains(stream) }
+            stateManager.feeds.filterIsInstance<Global>().firstOrNull {
+                it.streams.contains(stream)
+            }
 
         // Ideally we should check if sync is trigger-based CDC by checking source connector
         // configuration. But we don't have that information here. So this is just a hacky solution
@@ -269,8 +270,9 @@ sealed class FeedBootstrap<T : Feed>(
         }
 
         private val precedingGlobalFeed: Global? =
-            stateManager.feeds
-                .filterIsInstance<Global>().firstOrNull { it.streams.contains(stream) }
+            stateManager.feeds.filterIsInstance<Global>().firstOrNull {
+                it.streams.contains(stream)
+            }
 
         // Ideally we should check if sync is trigger-based CDC by checking source connector
         // configuration. But we don't have that information here. So this is just a hacky solution
