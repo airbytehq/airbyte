@@ -145,7 +145,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 Airbyte supports three network connectivity options for connecting to Oracle:
 
-1. **Unencrypted**: The connection uses the TCP protocol without encryption. All data transmitted over the network will be in plain text. Only use this option in secure, trusted network environments.
+1. **Unencrypted** (Self-Managed only): The connection uses the TCP protocol without encryption. All data transmitted over the network will be in plain text. Only use this option in secure, trusted network environments. Note: This option is only available in Self-Managed Airbyte deployments, not in Airbyte Cloud.
 
 2. **Native Network Encryption (NNE)**: Provides database connection encryption without the configuration overhead of TLS and without requiring different ports. The connector sets `SQLNET.ENCRYPTION_CLIENT=REQUIRED`, meaning only encrypted traffic is accepted. Choose from these encryption algorithms:
    - **AES256**: Advanced Encryption Standard with 256-bit keys (recommended for highest security)
