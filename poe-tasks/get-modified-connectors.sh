@@ -11,7 +11,7 @@ JAVA=false
 NO_JAVA=false
 JSON=false
 PREV_COMMIT=false
-LOCAL_CDK=false  # New flag for local CDK
+LOCAL_CDK=false
 
 # parse flags
 while [[ $# -gt 0 ]]; do
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
     --prev-commit|--compare-prev)
       PREV_COMMIT=true
       ;;
-    --local-cdk|local-cdk)  # New flag for local CDK
+    --local-cdk|local-cdk)
       LOCAL_CDK=true
       ;;
     *)
@@ -129,37 +129,28 @@ print_list() {
 
 # Allow empty arrays without 'unbound variable' error from here on out.
 set +u
-
-# 10) Print all if no filters applied
-
-# If --local-cdk flag is set, find all Java connectors with useLocalCdk = true
+# 10) If --local-cdk flag is set, also add Java connectors with useLocalCdk = true regardless of changes.
 if $LOCAL_CDK; then
-  echo "Finding Java connectors with useLocalCdk = true..." >&2
+  echo "Finding Java Bulk CDK connectors with version = local..." >&2
 
-  # Find all Java connectors
-  all_java_connectors=()
   for connector_dir in airbyte-integrations/connectors/*; do
     if [[ -d "$connector_dir" ]]; then
-      connector=$(basename "$connector_dir")
-      metadata="$connector_dir/metadata.yaml"
-
       # Check if it's a Java connector
-      if [[ -f "$metadata" ]] && grep -qE 'language:java' "$metadata"; then
-        build_gradle="$connector_dir/build.gradle"
-
-        # Check if useLocalCdk = true in build.gradle
-        if [[ -f "$build_gradle" ]] && grep -qE 'useLocalCdk\s*=\s*true' "$build_gradle"; then
-          all_java_connectors+=("$connector")
-        fi
+      if [ -f "$connector_dir/build.gradle" ]; then
+        connector_name=$(basename "$connector_dir")
+         # Search for cdk = 'local' or cdk = "local" in airbyteBulkConnector block
+         if grep -q "airbyteBulkConnector" "$connector_dir/build.gradle" && grep -q "cdk *= *['\"]local['\"]" "$connector_dir/build.gradle"; then
+           connectors+=("$connector_name")
+         fi
       fi
     fi
   done
 
-  # Print the list of Java connectors with useLocalCdk = true
-  print_list "${all_java_connectors[@]}"
-  exit 0
+  # Remove any duplicates using sort, parse it using mapfile and assign to $connectors.
+  mapfile -t connectors < <(printf '%s\n' "${connectors[@]}" | sort -u)
 fi
 
+# 11) Print all if no filters applied
 if ! $JAVA && ! $NO_JAVA; then
   print_list "${connectors[@]}"
   exit 0
