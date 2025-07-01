@@ -76,3 +76,15 @@ Via airbyte-cdk
 ```shell
 airbyte-cdk image test
 ```
+
+## Exact Online API Comments
+For some endpoints Exact Online has three distinct versions which roughly yield the same information. These are 
+- Single
+- Bulk
+- Sync
+
+When Extracting with Airbyte the preference is from Sync, Bulk, Single. 
+
+As per Exact Online's documentation.
+> The sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.
+The single and bulk api’s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.

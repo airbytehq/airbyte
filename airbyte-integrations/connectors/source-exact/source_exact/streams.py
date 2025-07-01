@@ -351,6 +351,12 @@ class FinancialReceivablesList(ExactOtherStream):
     cursor_field = None
 
 
+class FinancialReportingBalance(ExactOtherStream):
+    """Stream to sync to the endpoint `financial/ReportingBalance`"""
+
+    endpoint = "financial/ReportingBalance"
+
+
 class HRMDepartments(ExactOtherStream):
     """Stream to sync the endpoint `hrm/departments`"""
 
