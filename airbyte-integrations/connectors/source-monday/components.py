@@ -21,7 +21,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.types import Record
@@ -126,6 +126,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
 
+    schema_loader: InlineSchemaLoader = None
     limit: Union[InterpolatedString, str, int] = None
     nested_limit: Union[InterpolatedString, str, int] = None
 
@@ -147,8 +148,7 @@ class MondayGraphqlRequester(HttpRequester):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
 
     def _get_schema_root_properties(self):
-        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
-        schema = schema_loader.get_json_schema()["properties"]
+        schema = self.schema_loader.get_json_schema()[self.name]["properties"]
 
         # delete fields that will be created by extractor
         delete_fields = ["updated_at_int", "created_at_int", "pulse_id"]
