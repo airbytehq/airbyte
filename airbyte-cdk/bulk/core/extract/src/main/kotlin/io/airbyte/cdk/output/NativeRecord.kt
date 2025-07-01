@@ -59,8 +59,7 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
     return parentNode
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <T> JsonEncoder<T>.toProtobuf(): ProtoEncoder<T> {
+fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
     return when (this) {
         is LongCodec, -> LongProtoEncoder
         is IntCodec, -> IntProtoEncoder
@@ -86,7 +85,6 @@ fun <T> JsonEncoder<T>.toProtobuf(): ProtoEncoder<T> {
         is ArrayEncoder<*>, -> AnyProtoEncoder
         else -> AnyProtoEncoder
     }
-        as ProtoEncoder<T>
 }
 
 fun interface ProtoEncoder<T> {
@@ -233,12 +231,16 @@ fun NativeRecordPayload.toProtobuf(
     valueVBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
+        // We use toSortedMap() to ensure that the order is consistent
+        // Since protobuf has no field name the contract with destination is that
+        // field are alphabetically ordered.
         this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
+            @Suppress("UNCHECKED_CAST")
             setData(
                 index,
                 entry.value.fieldValue?.let {
-                    entry.value.jsonEncoder
-                        .toProtobuf()
+                    (entry.value.jsonEncoder
+                        .toProtobufEncoder() as ProtoEncoder<Any>)
                         .encode(valueVBuilder.clear(), entry.value.fieldValue!!)
                 }
                     ?: NullProtoEncoder.encode(valueVBuilder.clear(), null)
