@@ -237,9 +237,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final AirbyteCatalog catalog = super.discover(config);
 
     if (MssqlCdcHelper.isCdc(config)) {
+
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(MssqlSource::overrideSyncModes)
-          .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
           .map(MssqlSource::setDefaultCursorFieldForCdc)
           .map(MssqlSource::addCdcMetadataColumns)
@@ -518,15 +518,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
     return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
-  }
-
-  // Note: in place mutation.
-  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
-    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
-      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
-    }
-
-    return stream;
   }
 
   // Note: in place mutation.
