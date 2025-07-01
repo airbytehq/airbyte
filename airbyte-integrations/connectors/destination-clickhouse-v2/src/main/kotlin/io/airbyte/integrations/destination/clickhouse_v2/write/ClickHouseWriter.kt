@@ -17,12 +17,10 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseAirbyteClient
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
 class ClickHouseWriter(
-    @Named("internalNamespace") private val internalNamespace: String,
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
@@ -35,7 +33,6 @@ class ClickHouseWriter(
         names.values
             .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
             .forEach { clickhouseClient.createNamespace(it) }
-        clickhouseClient.createNamespace(internalNamespace)
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
     }
