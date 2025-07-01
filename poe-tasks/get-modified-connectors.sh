@@ -157,7 +157,13 @@ fi
 non_java_connectors=()
 for c in "${connectors[@]}"; do
   if ! printf '%s\n' "${java_connectors[@]}" | grep -Fxq "$c"; then
-    non_java_connectors+=("$c")
+    connector_folder="airbyte-integrations/connectors/${c}"
+    if [[ -d "$connector_folder" ]]; then
+      non_java_connectors+=("$c")
+    else
+      echo "⚠️  the connector '$c' not found, skipping it" >&2
+      continue
+    fi
   fi
 done
 
