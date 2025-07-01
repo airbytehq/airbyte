@@ -94,7 +94,7 @@ if [ -n "$dirs" ]; then
     if [[ -d "$connector_folder" ]]; then
       connectors+=("$d")
     else
-      echo "⚠️  the connector '$c' was not found, skipping it" >&2
+      echo "⚠️  the connector '$d' was not found, skipping it" >&2
     fi
   done <<< "$(printf '%s\n' "$dirs" | sort -u)"
 fi
