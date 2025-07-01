@@ -67,7 +67,7 @@ The BigQuery source connector implements incremental sync by:
 
 - **Monotonically increasing**: Must be a timestamp, auto-incrementing ID, or other always-increasing field
 - **Non-null values**: Records with null cursor values will be skipped
-- **Indexed recommended**: For optimal query performance in BigQuery
+- **Clustering/partitioning recommended**: For optimal query performance, choose a cursor field that aligns with your table's clustering or partitioning strategy
 - **Any data type supported**: The connector accepts any BigQuery data type as a cursor field
 
 #### Recommended cursor field types
@@ -111,7 +111,7 @@ WHERE updated_at > @cursor_value AND _PARTITIONTIME >= '2023-01-01'
 1. **Choose the right cursor field**:
    - Use `updated_at` or `modified_time` for frequently changing data
    - Use `created_at` or `insert_time` for append-only data
-   - Ensure the field is indexed in BigQuery for performance
+   - Choose fields that align with your table's clustering or partitioning for optimal performance
 
 2. **Optimize for BigQuery performance**:
    - Align cursor fields with table partitioning when possible
