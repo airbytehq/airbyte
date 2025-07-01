@@ -239,9 +239,10 @@ fun NativeRecordPayload.toProtobuf(
             setData(
                 index,
                 entry.value.fieldValue?.let {
-                    (entry.value.jsonEncoder
-                        .toProtobufEncoder() as ProtoEncoder<Any>)
-                        .encode(valueVBuilder.clear(), entry.value.fieldValue!!)
+                    (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                        valueVBuilder.clear(),
+                        entry.value.fieldValue!!
+                    )
                 }
                     ?: NullProtoEncoder.encode(valueVBuilder.clear(), null)
             )
