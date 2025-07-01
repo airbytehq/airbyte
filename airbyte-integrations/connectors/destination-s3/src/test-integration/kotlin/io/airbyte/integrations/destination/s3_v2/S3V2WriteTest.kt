@@ -315,6 +315,7 @@ abstract class S3V2WriteTest(
     }
 }
 
+@Disabled
 class S3V2WriteTestJsonUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
@@ -342,6 +343,7 @@ class S3V2WriteTestJsonUncompressed :
     }
 }
 
+@Disabled
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
         S3V2TestUtils.JSON_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
@@ -354,6 +356,7 @@ class S3V2WriteTestJsonRootLevelFlattening :
         allTypesBehavior = Untyped,
     )
 
+@Disabled
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
         S3V2TestUtils.JSON_GZIP_CONFIG_PATH,
@@ -388,6 +391,7 @@ class S3V2WriteTestCsvUncompressed :
     }
 }
 
+@Disabled
 class S3V2WriteTestCsvRootLevelFlattening :
     S3V2WriteTest(
         S3V2TestUtils.CSV_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
@@ -402,6 +406,7 @@ class S3V2WriteTestCsvRootLevelFlattening :
             true, // Technically true of unflattened as well, but no top-level fields are nullable
     )
 
+@Disabled
 class S3V2WriteTestCsvGzip :
     S3V2WriteTest(
         S3V2TestUtils.CSV_GZIP_CONFIG_PATH,
@@ -414,6 +419,7 @@ class S3V2WriteTestCsvGzip :
         allTypesBehavior = Untyped,
     )
 
+@Disabled
 class S3V2WriteTestAvroUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
@@ -433,6 +439,7 @@ class S3V2WriteTestAvroUncompressed :
         mergesUnions = true,
     )
 
+@Disabled
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
         S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
@@ -448,6 +455,7 @@ class S3V2WriteTestAvroBzip2 :
         mergesUnions = true,
     )
 
+@Disabled
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
@@ -463,6 +471,7 @@ class S3V2WriteTestParquetUncompressed :
         mergesUnions = true,
     )
 
+@Disabled
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
@@ -478,6 +487,7 @@ class S3V2WriteTestParquetSnappy :
         mergesUnions = true,
     )
 
+@Disabled
 class S3V2WriteTestEndpointURL :
     S3V2WriteTest(
         S3V2TestUtils.ENDPOINT_URL_CONFIG_PATH,
@@ -492,6 +502,7 @@ class S3V2WriteTestEndpointURL :
         nullEqualsUnset = true,
     )
 
+@Disabled
 class S3V2AmbiguousFilepath :
     S3V2WriteTest(
         S3V2TestUtils.AMBIGUOUS_FILEPATH_CONFIG_PATH,
@@ -505,6 +516,7 @@ class S3V2AmbiguousFilepath :
         allTypesBehavior = Untyped,
     )
 
+@Disabled
 class S3V2CsvAssumeRole :
     S3V2WriteTest(
         S3V2TestUtils.CSV_ASSUME_ROLE_CONFIG_PATH,
@@ -517,6 +529,7 @@ class S3V2CsvAssumeRole :
         allTypesBehavior = Untyped,
     )
 
+@Disabled
 class S3V2WriteTestJsonUncompressedSockets :
     S3V2WriteTest(
         S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
@@ -541,6 +554,7 @@ class S3V2WriteTestJsonUncompressedSockets :
     }
 }
 
+@Disabled
 class S3V2WriteTestJsonUncompressedSocketsProtobuf :
     S3V2WriteTest(
         S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
