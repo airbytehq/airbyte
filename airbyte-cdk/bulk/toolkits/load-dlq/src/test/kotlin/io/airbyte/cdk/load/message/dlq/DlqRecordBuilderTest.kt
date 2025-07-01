@@ -33,12 +33,40 @@ class DlqRecordBuilderTest {
                 checkpointId = CheckpointId("myCheckPoint"),
                 airbyteRawId = UUID.randomUUID(),
             )
-        val record = initialRecord.toDlqRecord(mapOf("new" to "content"))
+        val record =
+            initialRecord.toDlqRecord(
+                mapOf("new" to "content"),
+                keepOriginalFields = false,
+            )
 
         val newFieldAccessor = AirbyteValueProxy.FieldAccessor(1, "new", StringType)
 
         assertEquals(
             """{"new":"content"}""",
+            record.rawData.asJsonRecord(arrayOf(newFieldAccessor)).toString(),
+        )
+    }
+
+    @Test
+    fun `toDlqRecord should merge the data`() {
+        val initialRecord =
+            DestinationRecordRaw(
+                stream = defaultStream,
+                rawData = DestinationRecordJsonSource(defaultRecordMessage),
+                serializedSizeBytes = 123L,
+                checkpointId = CheckpointId("myCheckPoint"),
+                airbyteRawId = UUID.randomUUID(),
+            )
+        val record =
+            initialRecord.toDlqRecord(
+                mapOf("new" to "content"),
+                keepOriginalFields = true,
+            )
+
+        val newFieldAccessor = AirbyteValueProxy.FieldAccessor(1, "new", StringType)
+
+        assertEquals(
+            """{"test":"data","new":"content"}""",
             record.rawData.asJsonRecord(arrayOf(newFieldAccessor)).toString(),
         )
     }

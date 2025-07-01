@@ -34,10 +34,13 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 
 @Singleton
-class ClickhouseSqlGenerator {
+class ClickhouseSqlGenerator(
+    val clickhouseConfiguration: ClickhouseConfiguration,
+) {
 
     fun createNamespace(namespace: String): String {
         return "CREATE DATABASE IF NOT EXISTS `$namespace`;"
@@ -318,7 +321,7 @@ class ClickhouseSqlGenerator {
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
-                val typeName = type.type.toDialectType()
+                val typeName = type.type.toDialectType(clickhouseConfiguration.enableJson)
                 "`$columnName` ${if (pks.contains(columnName))
                     "$typeName" 
                 else 
@@ -367,7 +370,7 @@ class ClickhouseSqlGenerator {
     }
 }
 
-fun AirbyteType.toDialectType(): String =
+fun AirbyteType.toDialectType(enableJson: Boolean): String =
     when (this) {
         BooleanType -> ClickHouseDataType.Bool.name
         DateType -> ClickHouseDataType.Date32.name
@@ -380,9 +383,15 @@ fun AirbyteType.toDialectType(): String =
         TimestampTypeWithoutTimezone -> DATETIME_WITH_PRECISION
         is ArrayType,
         ArrayTypeWithoutSchema,
-        is ObjectType,
-        ObjectTypeWithEmptySchema,
-        ObjectTypeWithoutSchema,
         is UnionType,
         is UnknownType -> ClickHouseDataType.String.name
+        ObjectTypeWithEmptySchema,
+        ObjectTypeWithoutSchema,
+        is ObjectType -> {
+            if (enableJson) {
+                ClickHouseDataType.JSON.name
+            } else {
+                ClickHouseDataType.String.name
+            }
+        }
     }

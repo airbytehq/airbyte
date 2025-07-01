@@ -9,6 +9,8 @@ import com.github.vertical_blank.sqlformatter.languages.Dialect
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
+import io.mockk.mockk
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -19,7 +21,9 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class ClickhouseSqlGeneratorTest {
-    val clickhouseSqlGenerator = ClickhouseSqlGenerator()
+    private val clickhouseConfiguration: ClickhouseConfiguration = mockk(relaxed = true)
+
+    private val clickhouseSqlGenerator = ClickhouseSqlGenerator(clickhouseConfiguration)
 
     @Test
     fun testCreateNamespace() {

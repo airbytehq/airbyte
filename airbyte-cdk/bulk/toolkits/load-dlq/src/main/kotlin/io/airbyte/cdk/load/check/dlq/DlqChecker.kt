@@ -55,7 +55,7 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
     T : ObjectStoragePathConfigurationProvider,
     T : ObjectStorageFormatConfigurationProvider,
     T : ObjectStorageCompressionConfigurationProvider<*> {
-        log.info { "Validating ${config.type} configuration for rejected records storage" }
+        log.info { "Validating ${config.type} configuration for object storage" }
 
         val path = ObjectStoragePathFactory.from(config).getFinalDirectory(mockStream)
         val key = Paths.get(path, "_check_test").toString()
@@ -89,7 +89,7 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
 
             val results = client.list(path).toList()
             if (results.isEmpty() || results.find { it.key == key } == null) {
-                throw IllegalStateException("Failed to write to the rejected record storage")
+                throw IllegalStateException("Failed to write to the object storage")
             }
             log.info { "Successfully wrote test file: $results" }
         } finally {

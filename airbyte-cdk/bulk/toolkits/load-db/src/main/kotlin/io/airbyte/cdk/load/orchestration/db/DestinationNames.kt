@@ -53,8 +53,8 @@ fun interface TempTableNameGenerator {
  * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
  * [TableName.asOldStyleTempTable] instead
  */
-class DefaultTempTableNameGenerator(
-    private val internalNamespace: String,
+open class DefaultTempTableNameGenerator(
+    private val internalNamespace: String? = null,
     private val affixLength: Int = 8,
     private val affixSeparator: String = "",
     private val hashLength: Int = 32,
@@ -74,7 +74,7 @@ class DefaultTempTableNameGenerator(
                 .take(hashLength)
         return TableName(
             name = "$shortNamespace$shortName$hash",
-            namespace = internalNamespace,
+            namespace = internalNamespace ?: originalName.namespace,
         )
     }
 
