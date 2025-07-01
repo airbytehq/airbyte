@@ -35,12 +35,14 @@ class CheckVersionIncrement(Check):
     #     "build_customization.py",
     # ]
 
-    def _should_run(self) -> bool:
+    def _reason_to_skip(self, connector: Connector) -> str | None:
         # TODO: don't run if only files changed are in the bypass list or running in the context of the master branch
         # TODO: get this to work on the private airbyte-enterprise repo
         if "airbyte-enterprise" in Path.cwd().absolute().parts:
-            return False
-        return True
+            return "Version bump not enforced for enterprise repo"
+        if connector.metadata and connector.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
+            return self.skip(connector, "Connector opts out of version increment checks.")
+        return None
 
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
@@ -88,8 +90,9 @@ class CheckVersionIncrement(Check):
 
     def _run(self, connector: Connector) -> CheckResult:
         """Run the version increment check."""
-        if connector.metadata and connector.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
-            return self.skip(connector, "Connector opts out of version increment checks.")
+        reason_to_skip = self._reason_to_skip(connector)
+        if reason_to_skip is not None:
+            return self.skip(reason_to_skip)
 
         try:
             master_version = self._get_master_connector_version(connector)
