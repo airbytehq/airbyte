@@ -4,35 +4,44 @@
 
 package io.airbyte.cdk.output.sockets
 
+import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.SOCKET_READY
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.PropertySource
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import java.io.OutputStream
+import junit.framework.TestCase.assertNull
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 @MicronautTest
 @PropertySource(
     value =
         [
-            Property(name = SPEED_MODE_PROPERTY, value = "boosted"),
+            Property(name = MEDIUM_PROPERTY, value = "SOCKET"),
         ]
 )
-class SocketManagerTest(
-    private val socketDataChannelResourceHolder: SocketDataChannelResourceHolder
-) {
-    //    @Inject lateinit var socketManager: SocketManager
-    /*    @Inject lateinit var socketFactory: SocketDataChannelFactory
-    class MockSocketWrapper() : SocketDataChannel {
-        override suspend fun initializeSocket() {}
+class SocketDataChannelResourceHolderTest() {
+    @Inject lateinit var socketFactory: SocketDataChannelFactory
 
-        override suspend fun shutdownSocket() {}
-
+    class MockSocketWrapper : SocketDataChannel {
         var innerStatus: SocketDataChannel.SocketStatus =
             SocketDataChannel.SocketStatus.SOCKET_INITIALIZED
+
         var innerBound: Boolean = false
+
+        override suspend fun initializeSocket() {}
+
+        override fun shutdownSocket() {}
+
         override val status: SocketDataChannel.SocketStatus
             get() = innerStatus
         override var bound: Boolean
             get() = innerBound
-            set(value: Boolean) {
+            set(value) {
                 innerBound = value
             }
 
@@ -43,6 +52,13 @@ class SocketManagerTest(
         override fun unbindSocket() {
             innerBound = false
         }
+
+        override var outputStream: OutputStream?
+            get() = null
+            set(_) {}
+
+        override val available: Boolean
+            get() = innerStatus == SOCKET_READY && !innerBound
     }
     @Primary
     @Singleton
@@ -52,16 +68,16 @@ class SocketManagerTest(
 
     @Test
     fun test() {
-        val socketDataChannelResourceHolder: SocketDataChannelResourceHolder =
+        val socketDataChannelResourceHolder =
             SocketDataChannelResourceHolder(List<String>(10) { "" }, socketFactory)
-        assertNull(socketDataChannelResourceHolder.bindFreeSocket())
+        Assertions.assertNull(socketDataChannelResourceHolder.bindFreeSocket())
         val m = socketDataChannelResourceHolder.sockets[0] as MockSocketWrapper
-        m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_READY
+        m.innerStatus = SOCKET_READY
         assertNotNull(socketDataChannelResourceHolder.bindFreeSocket())
         m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_INITIALIZED
-        assertNull(socketDataChannelResourceHolder.bindFreeSocket())
-        m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_READY
+        Assertions.assertNull(socketDataChannelResourceHolder.bindFreeSocket())
+        m.innerStatus = SOCKET_READY
         m.innerBound = true
-        assertNull(socketDataChannelResourceHolder.bindFreeSocket())
-    }*/
+        Assertions.assertNull(socketDataChannelResourceHolder.bindFreeSocket())
+    }
 }

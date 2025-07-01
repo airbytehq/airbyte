@@ -36,6 +36,3 @@ class SocketDataChannelResourceHolder(
     fun bindFreeSocket(): SocketDataChannel? =
         sockets.firstOrNull { it.available }?.also { it.bindSocket() }
 }
-
-const val EXTRACT_PROPERTY_PREFIX = "airbyte.connector.extract"
-const val SPEED_MODE_PROPERTY = "${EXTRACT_PROPERTY_PREFIX}.speed-mode"
