@@ -341,21 +341,13 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 data =
                     mutableMapOf<String, FieldValueEncoder<*>>(
                             "id" to FieldValueEncoder(record.id, IntCodec),
-                            "@c" to
-                                FieldValueEncoder(
-                                    record::class.java.name,
-                                    TextCodec
-                                )
+                            "@c" to FieldValueEncoder(record::class.java.name, TextCodec)
                         )
                         .also {
                             when (record) {
-                                is Insert ->
-                                    it["v"] =
-                                        FieldValueEncoder(record.v, IntCodec)
-                                is Update ->
-                                    it["v"] =
-                                        FieldValueEncoder(record.v, IntCodec)
-                                is Delete -> { }
+                                is Insert -> it["v"] = FieldValueEncoder(record.v, IntCodec)
+                                is Update -> it["v"] = FieldValueEncoder(record.v, IntCodec)
+                                is Delete -> {}
                             }
                         },
                 changes = emptyMap(),

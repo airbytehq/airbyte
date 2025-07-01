@@ -184,8 +184,7 @@ class FeedBootstrapTest {
                 k to FieldValueChange.RECORD_SIZE_LIMITATION_TRUNCATION,
                 v to FieldValueChange.RETRIEVAL_FAILURE_TOTAL,
             )
-        val msg: NativeRecordPayload =
-            mutableMapOf("k" to FieldValueEncoder(1, IntCodec))
+        val msg: NativeRecordPayload = mutableMapOf("k" to FieldValueEncoder(1, IntCodec))
         consumer.accept(msg, changes)
         Assertions.assertEquals(
             listOf(

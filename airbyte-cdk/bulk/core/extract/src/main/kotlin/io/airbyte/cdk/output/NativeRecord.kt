@@ -45,9 +45,7 @@ import java.time.format.DateTimeFormatter
 // A value of a field along with its encoder
 class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R>) {
     fun encode(): JsonNode {
-        return fieldValue?.let {
-            jsonEncoder.encode(it)
-        } ?: NullCodec.encode(null)
+        return fieldValue?.let { jsonEncoder.encode(it) } ?: NullCodec.encode(null)
     }
 }
 

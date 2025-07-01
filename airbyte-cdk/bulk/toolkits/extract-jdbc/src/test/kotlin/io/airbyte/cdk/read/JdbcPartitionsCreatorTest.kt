@@ -56,11 +56,7 @@ class JdbcPartitionsCreatorTest {
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             mutableMapOf(
-                                "max" to
-                                    FieldValueEncoder(
-                                        cursorUpperBound,
-                                        LocalDateCodec
-                                    )
+                                "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
                             )
                         ),
                         TestFixtures.MockedQuery(
@@ -319,11 +315,7 @@ class JdbcPartitionsCreatorTest {
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             mutableMapOf(
-                                "max" to
-                                    FieldValueEncoder(
-                                        cursorUpperBound,
-                                        LocalDateCodec
-                                    )
+                                "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
                             )
                         ),
                     )
