@@ -112,7 +112,11 @@ class TestSourceCheck(GoogleSheetsBaseTest):
         expected_catalog = AirbyteCatalog(
             streams=[
                 AirbyteStream(
-                    name="a_stream_name", json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                    name="a_stream_name",
+                    json_schema=expected_schema,
+                    supported_sync_modes=[SyncMode.full_refresh],
+                    is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )
@@ -144,7 +148,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
                 "type": "object",
             }
             expected_stream = AirbyteStream(
-                name=expected_stream_name, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                name=expected_stream_name,
+                json_schema=expected_schema,
+                supported_sync_modes=[SyncMode.full_refresh],
+                is_resumable=False,
+                is_file_based=False,
             )
             expected_streams.append(expected_stream)
         expected_catalog = AirbyteCatalog(streams=expected_streams)
@@ -174,7 +182,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
                 "type": "object",
             }
             expected_stream = AirbyteStream(
-                name=expected_stream_name, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                name=expected_stream_name,
+                json_schema=expected_schema,
+                supported_sync_modes=[SyncMode.full_refresh],
+                is_resumable=False,
+                is_file_based=False,
             )
             expected_streams.append(expected_stream)
         expected_catalog = AirbyteCatalog(streams=expected_streams)
@@ -205,7 +217,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
             "type": "object",
         }
         expected_stream = AirbyteStream(
-            name=_STREAM_NAME, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+            name=_STREAM_NAME,
+            json_schema=expected_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            is_resumable=False,
+            is_file_based=False,
         )
 
         expected_catalog = AirbyteCatalog(streams=[expected_stream])
@@ -234,7 +250,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_catalog = AirbyteCatalog(
             streams=[
                 AirbyteStream(
-                    name="a_stream_name", json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                    name="a_stream_name",
+                    json_schema=expected_schema,
+                    supported_sync_modes=[SyncMode.full_refresh],
+                    is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )
@@ -882,6 +902,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
                     default_cursor_field=None,
                     source_defined_primary_key=None,
                     is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )
@@ -919,6 +940,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
                     default_cursor_field=None,
                     source_defined_primary_key=None,
                     is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )
