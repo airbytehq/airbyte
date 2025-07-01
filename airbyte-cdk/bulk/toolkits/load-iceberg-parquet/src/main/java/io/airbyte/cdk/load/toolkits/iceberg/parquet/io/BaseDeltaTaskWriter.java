@@ -33,7 +33,7 @@ import org.apache.iceberg.types.Types;
  * this class is implemented in Java where that it is allowed. This class should not be converted to
  * Kotlin while the visibility is still lesser in the super class.
  *
- * Test changes.
+ * Test changes. Test changes 2.
  */
 public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
 
