@@ -36,6 +36,8 @@ Airbyte types will be converted as follows:
     TimestampTypeWithoutTimezone -> DateTime64(3)
     Other Misc. -> String
 
+If the Json mode is selected, the Object will be converted to a JSON object. The Union type remains a String
+
 ### Requirements
 
 To use the ClickHouse destination, you'll need:
