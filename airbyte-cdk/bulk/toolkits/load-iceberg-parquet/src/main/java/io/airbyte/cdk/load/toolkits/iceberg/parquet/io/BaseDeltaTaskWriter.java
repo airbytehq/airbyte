@@ -32,6 +32,8 @@ import org.apache.iceberg.types.Types;
  * than the {@link BaseTaskWriter} class or any other subclasses. This is not allowed in Kotlin, so
  * this class is implemented in Java where that it is allowed. This class should not be converted to
  * Kotlin while the visibility is still lesser in the super class.
+ *
+ * Test changes.
  */
 public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
 
