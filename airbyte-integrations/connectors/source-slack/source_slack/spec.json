@@ -108,9 +108,9 @@
       "num_workers": {
         "type": "integer",
         "title": "Number of concurrent workers",
-        "minimum": 2,
+        "minimum": 1,
         "maximum": 10,
-        "default": 4,
+        "default": 1,
         "examples": [2, 3],
         "description": "The number of worker threads to use for the sync.",
         "order": 7
@@ -118,7 +118,7 @@
       "channel_messages_time_step": {
         "type": "integer",
         "order": 8,
-        "default": 30,
+        "default": 100,
         "minimum": 1,
         "maximum": 100,
         "title": "Channel messages stream slice step size (in days)",
