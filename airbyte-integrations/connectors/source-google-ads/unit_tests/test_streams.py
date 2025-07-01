@@ -318,7 +318,7 @@ def test_read_records_unauthenticated(mocker, customers, config):
         list(stream.read_records(SyncMode.full_refresh, {"customer_id": "customer_id", "login_customer_id": "default"}))
 
     assert exc_info.value.message == (
-        "Authentication failed for the customer 'customer_id'. " "Please try to Re-authenticate your credentials on set up Google Ads page."
+        "Authentication failed for the customer 'customer_id'. Please try to Re-authenticate your credentials on set up Google Ads page."
     )
 
 

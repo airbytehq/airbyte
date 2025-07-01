@@ -28,6 +28,13 @@ on:
         type: string
         required: false
         description: "The pull request number, if applicable. Unused as of now."
+    outputs:
+      result:
+        description: "The result of the checks, e.g. 'success' if successful."
+        value: ${{ jobs.connector-ci-checks-summary.result }}
+      commit-sha:
+        description: "The commit SHA of the current branch, used to report test results."
+        value: ${{ jobs.generate-matrix.outputs.commit-sha }}
 
 permissions:
   # Allow the workflow to read contents
@@ -42,6 +49,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Current Branch
+        id: checkout
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
@@ -92,6 +100,8 @@ jobs:
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+      # The commit SHA of the current branch, used to report test results:
+      commit-sha: ${{ steps.checkout.outputs.commit }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -411,49 +421,54 @@ jobs:
           connectors-qa run --name ${connector_name%-strict-encrypt}
 
   connector-ci-checks-summary:
-    name: Connector CI Checks Summary
+    name: Aggregate Results
     if: always()
     needs:
+      - generate-matrix
       - jvm-connectors-test
       - non-jvm-connectors-test
       - pre-release-checks
       - connectors-lint
     runs-on: ubuntu-24.04
     steps:
+      - name: Evaluate Status
+        id: evaluate-status
+        run: |
+          if [[ "${{ needs.jvm-connectors-test.result }}" == "success" &&
+                "${{ needs.non-jvm-connectors-test.result }}" == "success" &&
+                "${{ needs.connectors-lint.result }}" == "success" ]]; then
+            echo "result=success" | tee -a $GITHUB_OUTPUT
+          else
+            echo "result=failed" | tee -a $GITHUB_OUTPUT
+          fi
+
+      # In slash commands and when not running within a fork, we want to upload
+      # a check status report to the PR.
+
+      # If we are not running from the airbytehq/airbyte repo, the secrets won't
+      # be available, so the following steps will be a no-op.
+
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v1
         id: get-app-token
-        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        if: always() && !cancelled()
+        continue-on-error: true
         with:
           owner: "airbytehq"
           repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Raise if Upstream Failure
-        if: >
-          needs.jvm-connectors-test.result != 'success' ||
-          needs.non-jvm-connectors-test.result != 'success' ||
-          needs.connectors-lint.result != 'success'
-        run: |
-          echo "❌ Some Checks failed. Marking summary as failed"
-          exit 1
-
-      - name: Report Success
-        run: |
-          # If we get here, all checks passed.
-          echo "✅ All checks passed successfully."
-
-      # Post completion status to the PR.
-      # This is required because otherwise slash commands won't automatically
-      # update the PR checks status.
       - name: Create Check Status
-        if: always() && github.event_name == 'workflow_call' && inputs.gitref != ''
+        if: >
+          always() && !cancelled() &&
+          steps.get-app-token.outcome == 'success'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          name: ${{ job.name }}
+          name: "Connector CI Checks Summary" # << Name of the 'Required' check
           repo: "airbytehq/airbyte" # Post to the main repo, not the fork
-          sha: ${{ inputs.gitref }}
+          sha: ${{ needs.generate-matrix.outputs.commit-sha }}
           status: completed
-          conclusion: ${{ job.status }}
+          conclusion: ${{ steps.evaluate-status.outputs.result }}
           token: ${{ steps.get-app-token.outputs.token }}
+          details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

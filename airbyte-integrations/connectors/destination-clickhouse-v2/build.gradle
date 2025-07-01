@@ -8,11 +8,10 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-gcs', 'load-db', 'load-s3']
-    cdk = 'local' // TODO: Remove
+    cdk = 'local'
 }
 
 java {
-    // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
         options.compilerArgs += "-Xlint:-this-escape"
     }
