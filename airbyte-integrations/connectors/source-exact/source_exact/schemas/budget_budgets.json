@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Budgets",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "description": "Primary key",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "AmountDC": {
+      "description": "Budget amount (always in the default currency of the company)",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "BudgetScenario": {
+      "description": "Budget scenario",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "BudgetScenarioCode": {
+      "description": "Code of BudgetScenario",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "BudgetScenarioDescription": {
+      "description": "Description of BudgetScenario",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Costcenter": {
+      "description": "Used for cost center-specific budgets - NULL otherwise",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "CostcenterDescription": {
+      "description": "Description of Costcenter",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Costunit": {
+      "description": "Used for cost unit-specific budgets - NULL otherwise",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "CostunitDescription": {
+      "description": "Description of Costunit",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "GLAccount": {
+      "description": "G/L account",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GLAccountCode": {
+      "description": "Code of GLAccount",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GLAccountDescription": {
+      "description": "Description of GLAccount",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "HiD": {
+      "description": "Numerical ID. Never displayed to the user, but it may have its use for performance reasons",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Item": {
+      "description": "Used for item-specific budgets - NULL otherwise",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ItemCode": {
+      "description": "Code of Item",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ItemDescription": {
+      "description": "Description of Item",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ReportingPeriod": {
+      "description": "Period (combined with financial year)",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "ReportingYear": {
+      "description": "Financial year",
+      "type": [
+        "null",
+        "integer"
+      ]
+    }
+  }
+}

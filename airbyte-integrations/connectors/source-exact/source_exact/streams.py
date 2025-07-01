@@ -331,6 +331,12 @@ class ExactOtherStream(ExactStream):
     cursor_field = "Modified"
 
 
+class BudgetBudgets(ExactOtherStream):
+    """Stream to sync to the endpoint `budget/Budgets`"""
+
+    endpoint = "budget/Budgets"
+
+
 class FinancialReceivablesList(ExactOtherStream):
     """Stream to sync the endpoint `read/financial/ReceivablesList`"""
 
