@@ -90,7 +90,12 @@ dirs=$(printf '%s\n' "$connectors_paths" \
 connectors=()
 if [ -n "$dirs" ]; then
   while IFS= read -r d; do
-    connectors+=("$d")
+    connector_folder="airbyte-integrations/connectors/${d}"
+    if [[ -d "$connector_folder" ]]; then
+      connectors+=("$d")
+    else
+      echo "⚠️  the connector '$c' was not found, skipping it" >&2
+    fi
   done <<< "$(printf '%s\n' "$dirs" | sort -u)"
 fi
 
@@ -157,13 +162,7 @@ fi
 non_java_connectors=()
 for c in "${connectors[@]}"; do
   if ! printf '%s\n' "${java_connectors[@]}" | grep -Fxq "$c"; then
-    connector_folder="airbyte-integrations/connectors/${c}"
-    if [[ -d "$connector_folder" ]]; then
-      non_java_connectors+=("$c")
-    else
-      echo "⚠️  the connector '$c' not found, skipping it" >&2
-      continue
-    fi
+    non_java_connectors+=("$c")
   fi
 done
 
