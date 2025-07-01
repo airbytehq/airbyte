@@ -141,7 +141,7 @@ class JdbcSelectQuerier(
                     resultRow.data[column.id] =
                         FieldValueEncoder(
                             jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
-                            jdbcFieldType.jsonEncoder as JsonEncoder<Any?>
+                            jdbcFieldType.jsonEncoder as JsonEncoder<in Any>
                         )
                 } catch (e: Exception) {
                     resultRow.data[column.id] =
