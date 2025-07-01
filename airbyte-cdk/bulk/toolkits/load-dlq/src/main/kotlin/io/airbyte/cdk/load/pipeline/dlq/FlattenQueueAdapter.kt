@@ -71,8 +71,17 @@ class FlattenQueueAdapter<K : WithStream>(
                         context = context,
                     )
                 } else {
+                    val updatedCounts =
+                        checkpointCounts
+                            .mapValues { (_, v) ->
+                                v.copy(
+                                    records = v.records - failedRecords.size,
+                                    rejectedRecords = v.rejectedRecords + failedRecords.size,
+                                )
+                            }
+
                     PipelineMessage(
-                        checkpointCounts = checkpointCounts,
+                        checkpointCounts = updatedCounts,
                         key = key,
                         value = destinationRecordRaw,
                         postProcessingCallback = postProcessingCallback,

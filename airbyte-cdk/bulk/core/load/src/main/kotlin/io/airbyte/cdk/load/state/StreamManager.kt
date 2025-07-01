@@ -29,14 +29,21 @@ data object StreamProcessingSucceeded : StreamResult
 data class CheckpointValue(
     val records: Long,
     val serializedBytes: Long,
+    val rejectedRecords: Long = 0, // TODO there should not be a default here
 ) {
     operator fun plus(other: CheckpointValue): CheckpointValue {
-        return CheckpointValue(records + other.records, serializedBytes + other.serializedBytes)
+        return CheckpointValue(
+            records = records + other.records,
+            serializedBytes = serializedBytes + other.serializedBytes,
+            rejectedRecords = rejectedRecords + other.rejectedRecords,
+        )
     }
 
     override fun equals(other: Any?): Boolean {
         if (other != null && other is CheckpointValue) {
-            return this.records == other.records && this.serializedBytes == other.serializedBytes
+            return this.records == other.records
+                && this.serializedBytes == other.serializedBytes
+                && this.rejectedRecords == other.rejectedRecords
         }
         return false
     }
