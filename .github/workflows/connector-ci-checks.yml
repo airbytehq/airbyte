@@ -28,6 +28,11 @@ on:
         type: string
         required: false
         description: "The pull request number, if applicable. Unused as of now."
+      use-local-cdk:
+        type: boolean
+        required: false
+        default: false
+        description: "Whether to use the local CDK version for Java connectors"
     outputs:
       result:
         description: "The result of the checks, e.g. 'success' if successful."
@@ -82,7 +87,15 @@ jobs:
         run: |
           # Get the list of modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
-          echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+
+          # If use-local-cdk is true, get Java connectors with useLocalCdk = true
+          # Otherwise, get modified Java connectors
+          if [[ "${{ inputs.use-local-cdk }}" == "true" ]]; then
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+          else
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+          fi
+
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
 
       - name: Set JVM Runner Type
