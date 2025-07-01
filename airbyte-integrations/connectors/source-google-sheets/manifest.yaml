@@ -80,10 +80,10 @@ dynamic_streams:
                 - rowData
                 - "*"
             type: RecordSelector
-            $parameters:
-              sheet_id: ""
           requester:
             $ref: "#/definitions/base_requester"
+            $parameters:
+              sheet_id: ""
             http_method: GET
             path: >-
               {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
