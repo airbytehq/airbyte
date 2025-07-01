@@ -77,4 +77,9 @@ jobs:
     name: Run Java Connector Tests with Local CDK
     uses: ./.github/workflows/connector-ci-checks.yml
     with:
-      use-local-cdk: true
+      local-cdk-changed: true
+    secrets:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      OCTAVIA_BOT_APP_ID: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+      OCTAVIA_BOT_PRIVATE_KEY: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}

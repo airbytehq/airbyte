@@ -28,11 +28,11 @@ on:
         type: string
         required: false
         description: "The pull request number, if applicable. Unused as of now."
-      use-local-cdk:
+      local-cdk-changed:
         type: boolean
         required: false
         default: false
-        description: "Whether to use the local CDK version for Java connectors"
+        description: "If the Java CDK has changed"
     outputs:
       result:
         description: "The result of the checks, e.g. 'success' if successful."
@@ -88,9 +88,9 @@ jobs:
           # Get the list of modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
-          # If use-local-cdk is true, get Java connectors with useLocalCdk = true
+          # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
           # Otherwise, get modified Java connectors
-          if [[ "${{ inputs.use-local-cdk }}" == "true" ]]; then
+          if [[ "${{ inputs.local-cdk-changed }}" == "true" ]]; then
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
           else
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
