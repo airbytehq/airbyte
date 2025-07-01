@@ -6,6 +6,7 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, Connecto
 from airbyte_cdk.sources import AbstractSource
 from source_exact.api import ExactAPI
 from source_exact.streams import (
+    BudgetBudgets,
     CRMAccountClassificationNames,
     CRMAccountClassifications,
     ExactStream,
@@ -55,6 +56,7 @@ class SourceExact(AbstractSource):
 
     def streams(self, config) -> list[ExactStream]:  # type: ignore[override]
         return [
+            BudgetBudgets(config),
             CRMAccountClassifications(config),
             CRMAccountClassificationNames(config),
             FinancialReceivablesList(config),
