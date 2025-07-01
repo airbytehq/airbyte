@@ -209,15 +209,25 @@ const deployAirbyte = {
     },
     {
       type: "doc",
-      id: "deploying-airbyte/troubleshoot-deploy",
-    },
-    {
-      type: "doc",
       id: "deploying-airbyte/migrating-from-docker-compose",
     },
     {
       type: "doc",
       id: "deploying-airbyte/abctl-ec2",
+    },
+    {
+      type: "category",
+      label: "abctl",
+      link: {
+        type: "doc",
+        id: "deploying-airbyte/abctl/index",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "deploying-airbyte/troubleshoot-deploy",
+        },
+      ],
     },
   ],
 };

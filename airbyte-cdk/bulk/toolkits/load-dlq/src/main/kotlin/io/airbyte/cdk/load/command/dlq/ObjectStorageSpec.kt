@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
@@ -20,6 +21,12 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.command.s3.S3BucketSpecification
+
+abstract class ConfigurationSpecificationWithDlq(
+    @get:JsonSchemaTitle("Object Storage Configuration")
+    @get:JsonProperty("object_storage_config")
+    val objectStorageConfig: ObjectStorageSpec? = DisabledObjectStorageSpec(),
+) : ConfigurationSpecification()
 
 enum class ObjectStorageType(@get:JsonValue val type: String) {
     None("None"),
