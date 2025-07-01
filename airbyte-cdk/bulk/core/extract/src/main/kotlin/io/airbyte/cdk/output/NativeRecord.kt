@@ -60,7 +60,7 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> JsonEncoder<T>.toProto(): ProtoEncoder<T> {
+fun <T> JsonEncoder<T>.toProtobuf(): ProtoEncoder<T> {
     return when (this) {
         is LongCodec, -> LongProtoEncoder
         is IntCodec, -> IntProtoEncoder
@@ -228,17 +228,17 @@ data object NullProtoEncoder : ProtoEncoder<Any?> {
 
 typealias AnyProtoEncoder = TextProtoEncoder
 
-fun NativeRecordPayload.toProto(
+fun NativeRecordPayload.toProtobuf(
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueVBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
-        this@toProto.toSortedMap().onEachIndexed { index, entry ->
+        this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
             setData(
                 index,
                 entry.value.fieldValue?.let {
                     entry.value.jsonEncoder
-                        .toProto()
+                        .toProtobuf()
                         .encode(valueVBuilder.clear(), entry.value.fieldValue!!)
                 }
                     ?: NullProtoEncoder.encode(valueVBuilder.clear(), null)

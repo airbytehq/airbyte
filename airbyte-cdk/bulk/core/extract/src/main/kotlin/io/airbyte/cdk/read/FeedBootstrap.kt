@@ -19,7 +19,7 @@ import io.airbyte.cdk.output.sockets.NullProtoEncoder
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.output.sockets.toJson
-import io.airbyte.cdk.output.sockets.toProto
+import io.airbyte.cdk.output.sockets.toProtobuf
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -231,7 +231,7 @@ sealed class FeedBootstrap<T : Feed>(
             changes: Map<Field, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData.toProto(defaultRecordData, valueVBuilder))
+                acceptWithoutChanges(recordData.toProtobuf(defaultRecordData, valueVBuilder))
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
                 val c =
@@ -243,7 +243,7 @@ sealed class FeedBootstrap<T : Feed>(
                         .setReason(fieldValueChange.protobufReason())
                     rm.addChanges(c)
                 }
-                acceptWithChanges(recordData.toProto(defaultRecordData, valueVBuilder), rm)
+                acceptWithChanges(recordData.toProtobuf(defaultRecordData, valueVBuilder), rm)
             }
         }
 
