@@ -157,7 +157,12 @@ fi
 non_java_connectors=()
 for c in "${connectors[@]}"; do
   if ! printf '%s\n' "${java_connectors[@]}" | grep -Fxq "$c"; then
-    non_java_connectors+=("$c")
+    if [[ ! -f "$metadata" ]]; then
+      echo "⚠️  metadata.yaml not found for '$c' skipping it" >&2
+      continue
+    elif
+      non_java_connectors+=("$c")
+    fi
   fi
 done
 
