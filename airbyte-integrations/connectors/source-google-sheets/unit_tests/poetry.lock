@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.56.7"
+version = "6.57.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.56.7-py3-none-any.whl", hash = "sha256:264382192411c45bd8f783a1bb529fef038f67edc96148df6d8dbcee8b36626c"},
-    {file = "airbyte_cdk-6.56.7.tar.gz", hash = "sha256:b464a171f312d7c3dd6094b9d46d39939ba109749e06948f32caafb34a722799"},
+    {file = "airbyte_cdk-6.57.0-py3-none-any.whl", hash = "sha256:d98860dc10323b0b47e01af94f9f18f7ba2b286bb4855cbcbf1b12b15167bcee"},
+    {file = "airbyte_cdk-6.57.0.tar.gz", hash = "sha256:9764c7ff26754112159c358deb3a4f19f8ad8cc3db8a80d30138ac1d6f5961cf"},
 ]
 
 [package.dependencies]
@@ -583,12 +583,12 @@ files = [
 google-auth = ">=2.14.1,<3.0.0"
 googleapis-common-protos = ">=1.56.2,<2.0.0"
 grpcio = [
-    {version = ">=1.33.2,<2.0.0", optional = true, markers = "extra == \"grpc\""},
     {version = ">=1.49.1,<2.0.0", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
+    {version = ">=1.33.2,<2.0.0", optional = true, markers = "python_version < \"3.11\" and extra == \"grpc\""},
 ]
 grpcio-status = [
-    {version = ">=1.33.2,<2.0.0", optional = true, markers = "extra == \"grpc\""},
     {version = ">=1.49.1,<2.0.0", optional = true, markers = "python_version >= \"3.11\" and extra == \"grpc\""},
+    {version = ">=1.33.2,<2.0.0", optional = true, markers = "extra == \"grpc\""},
 ]
 proto-plus = ">=1.22.3,<2.0.0"
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0"
@@ -1316,9 +1316,9 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -2587,4 +2587,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "7a3efb0da3d105e1d0f1f8c7a3a4d2e3c9ce02570c80248e3b4ab34b5028046e"
+content-hash = "e0b29acdfb2f8293a8bf6981368976380541f14d22986446291d74bc84923859"
