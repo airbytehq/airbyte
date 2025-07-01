@@ -25,15 +25,15 @@ Each stream will be output into its own table in ClickHouse in either the config
 
 The type we are using have the following properties:
 
-- The decimal types have a precision of 9 digits, we are using the clickhouse type NUMBER128(9)
-- The Timestamp types have a millisecond precision, we are using the type DATETIME64(3)
-- The object type are converted to JSON **if the json option is selected**; otherwise it will be a string
+- The decimal types have a precision of 9 digits, we are using the Clickhouse type NUMBER128(9)
+- The Timestamp types have a millisecond precision, we are using the Clickhouse type DATETIME64(3)
+- The object type is converted to JSON **if the json option is selected**; otherwise it will be a String
 - The integers are Int64
 - The booleans are Bool
 - The Strings are String
-- The unions will be converted as a string
-- The times will be converted to a string
-- The arrays will be converted to a string
+- The unions will be converted as a String
+- The times will be converted to a String
+- The arrays will be converted to a String
 
 
 ### Requirements
