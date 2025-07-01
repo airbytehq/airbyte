@@ -82,7 +82,9 @@ Based on BigQuery's query performance characteristics:
 
 #### BigQuery-specific performance considerations
 
-**Partitioned tables**: If your source table is partitioned by date/timestamp, choose a cursor field that aligns with the partition column for optimal performance:
+**Partitioned tables**: If your source table is partitioned by date/timestamp, choose a cursor field that aligns with the partition column for optimal performance.
+
+*Note: The SQL examples below illustrate the underlying query patterns that the connector generates. While you select cursor fields through Airbyte's UI, understanding these patterns helps you make informed choices that optimize BigQuery performance and reduce costs.*
 
 ```sql
 -- Good: cursor field matches partition column
