@@ -487,7 +487,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   static void setCursorCutoffInfoForValue(CursorInfo cursorInfo, @NotNull CommonField<JDBCType> f, Instant nowInstant) {
     switch (f.getType()) {
       case JDBCType.DATE -> {
-        final var instant = nowInstant.minus(1, ChronoUnit.DAYS).atOffset(ZoneOffset.UTC);
+        final var instant = nowInstant.atOffset(ZoneOffset.UTC);
         cursorInfo.setCutoffTime(ISO_LOCAL_DATE.format(instant));
       }
       case JDBCType.TIMESTAMP -> {
