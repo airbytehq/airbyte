@@ -40,9 +40,36 @@ import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 
-class ClickhouseDirectLoadWriter :
+class ClickhouseDirectLoadWriterWithJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection.json",
+        SchematizedNestedValueBehavior.PASS_THROUGH,
+        false,
+    ) {
+
+    /**
+     * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
+     * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
+     * row, will have the column A. This test includes test case for schemaless type which aren't
+     * behaving like the other warehouses
+     */
+    @Disabled("Unfit for clickhouse with Json") override fun testContainerTypes() {}
+}
+
+class ClickhouseDirectLoadWriterWithoutJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection_no_json.json",
+        SchematizedNestedValueBehavior.STRINGIFY,
+        true,
+    )
+
+abstract class ClickhouseDirectLoadWriter(
+    specFile: String,
+    schematizedObjectBehavior: SchematizedNestedValueBehavior,
+    stringifySchemalessObjects: Boolean
+) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
+        configContents = Files.readString(Utils.getConfigPath(specFile)),
         configSpecClass = ClickhouseSpecificationOss::class.java,
         dataDumper =
             ClickhouseDataDumper { spec ->
@@ -54,10 +81,11 @@ class ClickhouseDirectLoadWriter :
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
-        stringifySchemalessObjects = true,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        stringifySchemalessObjects = stringifySchemalessObjects,
+        schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        unionBehavior = UnionBehavior.STRICT_STRINGIFY,
+        unionBehavior = UnionBehavior.STRINGIFY,
+        stringifyUnionObjects = true,
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,

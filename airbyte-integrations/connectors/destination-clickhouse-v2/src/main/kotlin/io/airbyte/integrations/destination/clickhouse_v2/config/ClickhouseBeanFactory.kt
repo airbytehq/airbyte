@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.clickhouse_v2.config
 
 import com.clickhouse.client.api.Client
+import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -26,6 +27,12 @@ class ClickhouseBeanFactory {
                 .setPassword(config.password)
                 .setDefaultDatabase(config.resolvedDatabase)
                 .compressClientRequest(true)
+                // allow experimental JSON type
+                .serverSetting("allow_experimental_json_type", "1")
+                // allow JSON transcoding as a string. We need this to be able to provide a string
+                // as a JSON input.
+                .serverSetting(ServerSettings.INPUT_FORMAT_BINARY_READ_JSON_AS_STRING, "1")
+                .serverSetting(ServerSettings.OUTPUT_FORMAT_BINARY_WRITE_JSON_AS_STRING, "1")
                 .build()
 
         return if (clientWithDb.ping()) {
@@ -45,6 +52,11 @@ class ClickhouseBeanFactory {
                 .setUsername(config.username)
                 .setPassword(config.password)
                 .compressClientRequest(true)
+                // allow experimental JSON type
+                .serverSetting("allow_experimental_json_type", "1")
+                // allow JSON transcoding as a string
+                .serverSetting(ServerSettings.INPUT_FORMAT_BINARY_READ_JSON_AS_STRING, "1")
+                .serverSetting(ServerSettings.OUTPUT_FORMAT_BINARY_WRITE_JSON_AS_STRING, "1")
                 .build()
         }
     }

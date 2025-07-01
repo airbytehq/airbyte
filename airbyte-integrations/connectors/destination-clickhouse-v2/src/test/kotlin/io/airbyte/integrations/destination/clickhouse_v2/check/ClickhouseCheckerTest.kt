@@ -122,12 +122,13 @@ class ClickhouseCheckerTest {
 
         val config =
             ClickhouseConfiguration(
-                "hostname",
-                "port",
-                "protocol",
-                "database",
-                "username",
-                "password",
+                hostname = "hostname",
+                port = "port",
+                protocol = "protocol",
+                database = "database",
+                username = "username",
+                password = "password",
+                enableJson = false,
             )
     }
 }
