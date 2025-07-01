@@ -35,7 +35,7 @@ class OutputMessageRouter(
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
     private lateinit var socketJsonStreamRecordConsumers:
         Map<StreamIdentifier, StreamRecordConsumer>
-    private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
+    private lateinit var socketProtobufOutputConsumer: SocketProtobufOutputConsumer
     private lateinit var protoStreamRecordOutputConsumers:
         Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
@@ -71,18 +71,18 @@ class OutputMessageRouter(
                                 .toMap()
                     }
                     DataChannelFormat.PROTOBUF -> {
-                        protoOutputConsumer =
+                        socketProtobufOutputConsumer =
                             SocketProtobufOutputConsumer(
                                 (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET]
                                         as SocketResource.AcquiredSocket)
                                     .socketWrapper,
                                 feedBootstrap.clock,
                                 feedBootstrap.bufferByteSizeThresholdForFlush,
+                                additionalProperties
                             )
                         protoStreamRecordOutputConsumers =
                             feedBootstrap.streamProtoRecordConsumers(
-                                protoOutputConsumer,
-                                additionalProperties["partition_id"]
+                                socketProtobufOutputConsumer,
                             )
                         recordAcceptors =
                             protoStreamRecordOutputConsumers
@@ -120,7 +120,8 @@ class OutputMessageRouter(
             DataChannelMedium.SOCKET -> {
                 when (recordsDataChannelFormat) {
                     DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
-                    DataChannelFormat.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
+                    DataChannelFormat.PROTOBUF ->
+                        socketProtobufOutputConsumer.accept(airbyteMessage)
                 }
             }
             DataChannelMedium.STDIO -> {
@@ -134,7 +135,8 @@ class OutputMessageRouter(
             DataChannelMedium.SOCKET -> {
                 when (recordsDataChannelFormat) {
                     DataChannelFormat.JSONL -> socketJsonOutputConsumer.accept(airbyteMessage)
-                    DataChannelFormat.PROTOBUF -> protoOutputConsumer.accept(airbyteMessage)
+                    DataChannelFormat.PROTOBUF ->
+                        socketProtobufOutputConsumer.accept(airbyteMessage)
                 }
             }
             DataChannelMedium.STDIO -> {

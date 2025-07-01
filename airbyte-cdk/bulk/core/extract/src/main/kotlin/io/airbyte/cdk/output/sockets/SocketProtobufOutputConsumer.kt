@@ -19,6 +19,7 @@ class SocketProtobufOutputConsumer(
     private val dataChannel: SocketDataChannel,
     clock: Clock,
     val bufferByteSizeThresholdForFlush: Int,
+    val additionalProperties: Map<String, String>,
 ) : OutputConsumer(clock) {
     private val log = KotlinLogging.logger {}
     private val buffer = ByteArrayOutputStream()

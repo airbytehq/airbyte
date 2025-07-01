@@ -91,11 +91,9 @@ sealed class FeedBootstrap<T : Feed>(
 
     fun streamProtoRecordConsumers(
         socketProtoOutputConsumer: SocketProtobufOutputConsumer,
-        partitionId: String?
     ): Map<StreamIdentifier, ProtoEfficientStreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
-            stream.id to
-                ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer, partitionId)
+            stream.id to ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer)
         }
 
     /**
@@ -222,12 +220,10 @@ sealed class FeedBootstrap<T : Feed>(
     // messages to the underlying output consumer
     inner class ProtoEfficientStreamRecordConsumer(
         override val stream: Stream,
-        boostedOutputConsumer: SocketProtobufOutputConsumer,
-        val partitionId: String?
+        private val socketProtobufOutputConsumer: SocketProtobufOutputConsumer,
     ) : StreamRecordConsumer {
-        val outputer: SocketProtobufOutputConsumer = boostedOutputConsumer
         override fun close() {
-            outputer.close()
+            socketProtobufOutputConsumer.close()
         }
 
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
@@ -256,7 +252,9 @@ sealed class FeedBootstrap<T : Feed>(
             recordData: AirbyteRecordMessageProtobuf.Builder,
         ) {
             synchronized(this) {
-                outputer.accept(reusedMessageWithoutChanges.setRecord(recordData).build())
+                socketProtobufOutputConsumer.accept(
+                    reusedMessageWithoutChanges.setRecord(recordData).build()
+                )
             }
         }
 
@@ -266,7 +264,9 @@ sealed class FeedBootstrap<T : Feed>(
         ) {
             synchronized(this) {
                 recordData.setMeta(changes)
-                outputer.accept(reusedMessageWithoutChanges.setRecord(recordData).build())
+                socketProtobufOutputConsumer.accept(
+                    reusedMessageWithoutChanges.setRecord(recordData).build()
+                )
             }
         }
 
@@ -289,8 +289,12 @@ sealed class FeedBootstrap<T : Feed>(
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.name)
                 .setStreamNamespace(stream.namespace)
-                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
-                .also { builder -> partitionId?.let { builder.setPartitionId(it) } }
+                .setEmittedAtMs(socketProtobufOutputConsumer.recordEmittedAt.toEpochMilli())
+                .also { builder ->
+                    socketProtobufOutputConsumer.additionalProperties["partition_id"]?.let {
+                        builder.setPartitionId(it)
+                    }
+                }
                 .also { builder ->
                     stream.schema
                         .sortedBy { it.id }
@@ -301,7 +305,7 @@ sealed class FeedBootstrap<T : Feed>(
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.name)
                 .setStreamNamespace(stream.namespace)
-                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+                .setEmittedAtMs(socketProtobufOutputConsumer.recordEmittedAt.toEpochMilli())
 
         private val reusedRecordMeta = AirbyteRecordMessageMeta()
 
@@ -312,7 +316,7 @@ sealed class FeedBootstrap<T : Feed>(
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.name)
                 .setStreamNamespace(stream.namespace)
-                .setEmittedAtMs(outputer.recordEmittedAt.toEpochMilli())
+                .setEmittedAtMs(socketProtobufOutputConsumer.recordEmittedAt.toEpochMilli())
     }
 
     companion object {
@@ -542,6 +546,5 @@ class StreamFeedBootstrap(
         ProtoEfficientStreamRecordConsumer(
             feed.streams.first { feed.id == it.id },
             protoOutputConsumer,
-            partitionId
         )
 }
