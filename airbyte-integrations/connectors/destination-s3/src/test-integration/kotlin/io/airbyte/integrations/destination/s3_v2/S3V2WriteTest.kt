@@ -366,7 +366,6 @@ class S3V2WriteTestJsonGzip :
         allTypesBehavior = Untyped,
     )
 
-// force run
 class S3V2WriteTestCsvUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
