@@ -166,7 +166,6 @@ class BinaryRowInsertBuffer(
         if (matchType) {
             writer.setValue(columnName, value)
         } else {
-            println("Type not matching: $value, ${value.serializeToString()}")
             writer.setValue(columnName, value.serializeToString())
         }
     }
