@@ -43,18 +43,21 @@ import java.time.OffsetTime
 import java.time.format.DateTimeFormatter
 
 // A value of a field along with its encoder
-data class FieldValueEncoder(val fieldValue: Any?, val jsonEncoder: JsonEncoder<Any>)
+class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R>) {
+    fun encode(): JsonNode {
+        return fieldValue?.let {
+            jsonEncoder.encode(it)
+        } ?: NullCodec.encode(null)
+    }
+}
 
 // A native jvm encoding of a database row, which can then be encoded to the desired output format
 // (json or protobuf)
-typealias NativeRecordPayload = MutableMap<String, FieldValueEncoder>
+typealias NativeRecordPayload = MutableMap<String, FieldValueEncoder<*>>
 
 fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
     for ((columnId, value) in this) {
-        val encodedValue =
-            value.fieldValue?.let { value.jsonEncoder.encode(value.fieldValue) }
-                ?: NullCodec.encode(null)
-        parentNode.set<JsonNode>(columnId, encodedValue)
+        parentNode.set<JsonNode>(columnId, value.encode())
     }
     return parentNode
 }

@@ -2,15 +2,12 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-@file:Suppress("UNCHECKED_CAST")
-
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.IntCodec
-import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
@@ -188,7 +185,7 @@ class FeedBootstrapTest {
                 v to FieldValueChange.RETRIEVAL_FAILURE_TOTAL,
             )
         val msg: NativeRecordPayload =
-            mutableMapOf("k" to FieldValueEncoder(1, IntCodec as JsonEncoder<Any>))
+            mutableMapOf("k" to FieldValueEncoder(1, IntCodec))
         consumer.accept(msg, changes)
         Assertions.assertEquals(
             listOf(
@@ -237,10 +234,10 @@ class FeedBootstrapTest {
         val consumer = bootstrap.streamRecordConsumers().toList().first().second
 
         // Test that a record gets CDC metadata decoration even without a global feed
-        val msg =
+        val msg: NativeRecordPayload =
             mutableMapOf(
-                "k" to FieldValueEncoder(3, IntCodec as JsonEncoder<Any>),
-                "v" to FieldValueEncoder("trigger", TextCodec as JsonEncoder<Any>)
+                "k" to FieldValueEncoder(3, IntCodec),
+                "v" to FieldValueEncoder("trigger", TextCodec)
             )
         consumer.accept(msg, changes = null)
 
@@ -268,20 +265,20 @@ class FeedBootstrapTest {
             """{"k":1,"v":"foo","_ab_cdc_lsn":123,"_ab_cdc_updated_at":"2024-03-01T01:02:03.456789","_ab_cdc_deleted_at":null}"""
         val GLOBAL_RECORD_DATA: NativeRecordPayload =
             mutableMapOf(
-                "k" to FieldValueEncoder(1, IntCodec as JsonEncoder<Any>),
-                "v" to FieldValueEncoder("foo", TextCodec as JsonEncoder<Any>),
-                "_ab_cdc_lsn" to FieldValueEncoder(123, IntCodec as JsonEncoder<Any>),
+                "k" to FieldValueEncoder(1, IntCodec),
+                "v" to FieldValueEncoder("foo", TextCodec),
+                "_ab_cdc_lsn" to FieldValueEncoder(123, IntCodec),
                 "_ab_cdc_updated_at" to
                     FieldValueEncoder(
                         LocalDateTime.parse("2024-03-01T01:02:03.456789"),
-                        LocalDateTimeCodec as JsonEncoder<Any>
+                        LocalDateTimeCodec
                     ),
-                "_ab_cdc_deleted_at" to FieldValueEncoder(null, NullCodec as JsonEncoder<Any>)
+                "_ab_cdc_deleted_at" to FieldValueEncoder(null, NullCodec)
             )
         val STREAM_RECORD_INPUT_DATA: NativeRecordPayload =
             mutableMapOf(
-                "k" to FieldValueEncoder(2, IntCodec as JsonEncoder<Any>),
-                "v" to FieldValueEncoder("bar", TextCodec as JsonEncoder<Any>)
+                "k" to FieldValueEncoder(2, IntCodec),
+                "v" to FieldValueEncoder("bar", TextCodec)
             )
         const val STREAM_RECORD_OUTPUT_DATA =
             """{"k":2,"v":"bar","_ab_cdc_lsn":{},"_ab_cdc_updated_at":"2069-04-20T00:00:00.000000Z","_ab_cdc_deleted_at":null}"""
