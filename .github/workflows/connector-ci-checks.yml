@@ -33,6 +33,16 @@ on:
         required: false
         default: false
         description: "If the Java CDK has changed"
+    # These secrets are required for Airbyte workflows to reuse this workflow and all its features.
+    secrets:
+      GCP_GSM_CREDENTIALS:
+        required: false
+      GCP_PROJECT_ID:
+        required: false
+      OCTAVIA_BOT_APP_ID:
+        required: false
+      OCTAVIA_BOT_PRIVATE_KEY:
+        required: false
     outputs:
       result:
         description: "The result of the checks, e.g. 'success' if successful."
