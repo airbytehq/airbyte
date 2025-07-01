@@ -1872,15 +1872,19 @@ schemas:
           - "null"
       customer_id:
         type:
+          - string
           - "null"
       address_id:
         type:
+          - string
           - "null"
       business_id:
         type:
+          - string
           - "null"
       custom_data:
         type:
+          - object
           - "null"
       origin:
         type:
@@ -1892,18 +1896,23 @@ schemas:
           - "null"
       subscription_id:
         type:
+          - string
           - "null"
       invoice_id:
         type:
+          - string
           - "null"
       invoice_number:
         type:
+          - string
           - "null"
       billing_details:
         type:
+          - object
           - "null"
       billing_period:
         type:
+          - object
           - "null"
       currency_code:
         type:
@@ -1911,6 +1920,7 @@ schemas:
           - "null"
       discount_id:
         type:
+          - string
           - "null"
       created_at:
         type:
@@ -1922,9 +1932,11 @@ schemas:
           - "null"
       billed_at:
         type:
+          - string
           - "null"
       revised_at:
         type:
+          - string
           - "null"
       items:
         type:
