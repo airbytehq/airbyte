@@ -20,8 +20,8 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailure
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -211,8 +211,8 @@ object TestFixtures {
             metaFieldDecorator = MockMetaFieldDecorator,
             stateManager = StateManager(initialStreamStates = mapOf(this to opaqueStateValue)),
             stream = this,
-            JSONL,
-            STDIO,
+            DataChannelFormat.JSONL,
+            DataChannelMedium.STDIO,
             8192,
             ClockFactory().fixed()
         )

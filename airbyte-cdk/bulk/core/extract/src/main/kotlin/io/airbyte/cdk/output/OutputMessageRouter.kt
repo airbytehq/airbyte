@@ -33,7 +33,8 @@ class OutputMessageRouter(
     acquiredResources: Map<ResourceType, Resource.Acquired>,
 ) : AutoCloseable {
     private lateinit var socketJsonOutputConsumer: SocketJsonOutputConsumer
-    private lateinit var socketJsonStreamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>
+    private lateinit var socketJsonStreamRecordConsumers:
+        Map<StreamIdentifier, StreamRecordConsumer>
     private lateinit var protoOutputConsumer: SocketProtobufOutputConsumer
     private lateinit var protoStreamRecordOutputConsumers:
         Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
