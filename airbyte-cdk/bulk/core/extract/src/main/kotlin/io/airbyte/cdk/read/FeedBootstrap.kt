@@ -154,9 +154,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         private val precedingGlobalFeed: Global? =
             stateManager.feeds
-                .filterIsInstance<Global>()
-                .filter { it.streams.contains(stream) }
-                .firstOrNull()
+                .filterIsInstance<Global>().firstOrNull { it.streams.contains(stream) }
 
         // Ideally we should check if sync is trigger-based CDC by checking source connector
         // configuration. But we don't have that information here. So this is just a hacky solution
@@ -272,9 +270,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         private val precedingGlobalFeed: Global? =
             stateManager.feeds
-                .filterIsInstance<Global>()
-                .filter { it.streams.contains(stream) }
-                .firstOrNull()
+                .filterIsInstance<Global>().firstOrNull { it.streams.contains(stream) }
 
         // Ideally we should check if sync is trigger-based CDC by checking source connector
         // configuration. But we don't have that information here. So this is just a hacky solution
@@ -301,22 +297,8 @@ sealed class FeedBootstrap<T : Feed>(
                         .forEach { builder.addData(NullProtoEncoder.encode(valueVBuilder, true)) }
                 }
 
-        private val reusedRecordMessageWithoutChanges: AirbyteRecordMessageProtobuf.Builder =
-            AirbyteRecordMessageProtobuf.newBuilder()
-                .setStreamName(stream.name)
-                .setStreamNamespace(stream.namespace)
-                .setEmittedAtMs(socketProtobufOutputConsumer.recordEmittedAt.toEpochMilli())
-
-        private val reusedRecordMeta = AirbyteRecordMessageMeta()
-
         val reusedMessageWithoutChanges: AirbyteMessageProtobuf.Builder =
             AirbyteMessageProtobuf.newBuilder()
-
-        private val reusedRecordMessageWithChanges: AirbyteRecordMessageProtobuf.Builder =
-            AirbyteRecordMessageProtobuf.newBuilder()
-                .setStreamName(stream.name)
-                .setStreamNamespace(stream.namespace)
-                .setEmittedAtMs(socketProtobufOutputConsumer.recordEmittedAt.toEpochMilli())
     }
 
     companion object {
@@ -529,22 +511,4 @@ class StreamFeedBootstrap(
         dataChannelMedium,
         bufferByteSizeThresholdForFlush,
         clock
-    ) {
-
-    /** A [StreamRecordConsumer] instance for this [Stream]. */
-    fun jsonSocketStreamRecordConsumer(
-        socketJsonOutputConsumer: SocketJsonOutputConsumer
-    ): StreamRecordConsumer =
-        JsonSocketEfficientStreamRecordConsumer(
-            feed.streams.first { feed.id == it.id },
-            socketJsonOutputConsumer
-        )
-    fun protoStreamRecordConsumer(
-        protoOutputConsumer: SocketProtobufOutputConsumer,
-        partitionId: String?
-    ): ProtoEfficientStreamRecordConsumer =
-        ProtoEfficientStreamRecordConsumer(
-            feed.streams.first { feed.id == it.id },
-            protoOutputConsumer,
-        )
-}
+    )
