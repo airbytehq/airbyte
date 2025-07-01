@@ -28,7 +28,7 @@ data:
     breakingChanges:
       3.0.0:
         message: "The `products` stream has been removed. The `products` stream was deprecated and migrated using new `plans` stream in version 3.0.0."
-        upgradeDeadline: "2025-07-01"
+        upgradeDeadline: "2025-07-02"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["products"]
