@@ -251,7 +251,6 @@ Create a separate connection for streams which usually fail with error above "Fa
 | 4.7.0-rc.1 | 2025-06-30 | [62119](https://github.com/airbytehq/airbyte/pull/62119) | Migrate to manifest-only |
 | 4.6.4 | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
 | 4.6.3 | 2025-06-03 | [61351](https://github.com/airbytehq/airbyte/pull/61351) | Update dependencies |
-
 | 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537)     |Fix Extend Minimum Date Range|
 | 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
 | 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
