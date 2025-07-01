@@ -11,8 +11,8 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Timeout
 
 const val TEST_TIMEOUT_SECONDS = 10L
 
-val dcm = STDIO
-val dcf = JSONL
+val dcm = DataChannelMedium.STDIO
+val dcf = DataChannelFormat.JSONL
 val bufferSize = 8192
 val clock = ClockFactory().fixed()
 

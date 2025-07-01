@@ -21,8 +21,8 @@ import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.discover.TestMetaFieldDecorator.GlobalCursor
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelFormat.JSONL
-import io.airbyte.cdk.output.OutputMessageRouter.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.util.Jsons
@@ -65,8 +65,8 @@ class FeedBootstrapTest {
         streamStateValue: OpaqueStateValue? = null
     ): StateManager = StateManager(global, globalStateValue, mapOf(stream to streamStateValue))
 
-    val dcm = STDIO
-    val dcf = JSONL
+    val dcm = DataChannelMedium.STDIO
+    val dcf = DataChannelFormat.JSONL
     val bufferSize = 8192
     val clock = ClockFactory().fixed()
     fun Feed.bootstrap(stateManager: StateManager): FeedBootstrap<*> =
@@ -77,7 +77,7 @@ class FeedBootstrapTest {
             this,
             dcf,
             dcm,
-            8192,
+            bufferSize,
             clock
         )
 
