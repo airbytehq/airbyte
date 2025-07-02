@@ -201,6 +201,7 @@ class MySqlSourceJdbcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val isLowerBoundIncluded: Boolean = lowerBound != null
 
     // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
     // in RFR case.
