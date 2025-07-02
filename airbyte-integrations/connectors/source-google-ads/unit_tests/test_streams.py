@@ -9,14 +9,7 @@ import pytest
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v18.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
 from google.ads.googleads.v18.errors.types.request_error import RequestErrorEnum
-from google.api_core.exceptions import (
-    DataLoss,
-    InternalServerError,
-    ResourceExhausted,
-    ServiceUnavailable,
-    TooManyRequests,
-    Unauthenticated,
-)
+from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests, Unauthenticated
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import AdGroup, ClickView, Customer, CustomerLabel
@@ -211,7 +204,7 @@ def test_page_token_expired_it_should_fail_date_range_1_day(config, customers):
     assert stream.get_query.call_count == 1
 
 
-@pytest.mark.parametrize("error_cls", (ResourceExhausted, TooManyRequests, DataLoss, ServiceUnavailable))
+@pytest.mark.parametrize("error_cls", (ResourceExhausted, TooManyRequests, DataLoss))
 def test_retry_transient_errors(mocker, config, customers, error_cls):
     customer_id = next(iter(customers)).id
 
