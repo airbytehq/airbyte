@@ -210,6 +210,7 @@ abstract class FieldTypeMapperTest {
 
     data class TestCase(
         val namespace: String,
+        val tableName: String,
         val sqlType: String,
         val values: Map<String, String>,
         val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
@@ -221,9 +222,6 @@ abstract class FieldTypeMapperTest {
                     .trim()
                     .replace(" +".toRegex(), "_")
                     .lowercase()
-
-        val tableName: String
-            get() = "tbl_$id"
 
         val columnName: String
             get() = "col_$id"
