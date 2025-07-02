@@ -5237,51 +5237,51 @@ dynamic_streams:
       components_mapping:
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "name" ]
+          field_path: ["name"]
           value: "{{ camel_case_to_snake_case(components_values['name']) }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "$parameters", "report_aggregation" ]
+          field_path: ["$parameters", "report_aggregation"]
           value: "{{ components_values['report_aggregation'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "$parameters", "report_type" ]
+          field_path: ["$parameters", "report_type"]
           value: "{{ components_values['reporting_object'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "$parameters", "report_name" ]
+          field_path: ["$parameters", "report_name"]
           value: "{{ components_values['reporting_object'].replace('Request', '') }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "$parameters", "report_columns" ]
+          field_path: ["$parameters", "report_columns"]
           value: "{{ components_values['report_columns'] if 'TimePeriod' in components_values['report_columns'] else components_values['report_columns'] if components_values['report_aggregation'] == 'Summary' else components_values['report_columns'] + ['TimePeriod'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "$parameters", "end_date_time_format" ]
+          field_path: ["$parameters", "end_date_time_format"]
           value: "{{ '%Y-%m-%dT%H:%M:%S+00:00' if components_values['report_aggregation'] == 'Hourly' else '%Y-%m-%dT%H:%M:%S%z' }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "incremental_sync", "cursor_datetime_formats" ]
+          field_path: ["incremental_sync", "cursor_datetime_formats"]
           value: "{{ ['%Y-%m-%dT%H:%M:%S+00:00'] if components_values['report_aggregation'] == 'Hourly' else ['%Y-%m-%d'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "incremental_sync", "datetime_format" ]
+          field_path: ["incremental_sync", "datetime_format"]
           value: "{{ '%Y-%m-%dT%H:%M:%S+00:00' if components_values['report_aggregation'] == 'Hourly' else '%Y-%m-%d' }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "incremental_sync", "end_datetime", "datetime_format" ]
+          field_path: ["incremental_sync", "end_datetime", "datetime_format"]
           value: "{{ '%Y-%m-%dT%H:%M:%S+00:00' if components_values['report_aggregation'] == 'Hourly' else '%Y-%m-%dT%H:%M:%S%z' }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "incremental_sync", "cursor_field", ]
+          field_path: ["incremental_sync", "cursor_field"]
           value: "TimePeriod"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "schema_loader", "reporting_columns" ]
+          field_path: ["schema_loader", "reporting_columns"]
           value: "{{ components_values['report_columns'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
-          field_path: [ "transformations", "0", "report_aggregation" ]
+          field_path: ["transformations", "0", "report_aggregation"]
           value: "{{ components_values['report_aggregation'] }}"
 
 streams:

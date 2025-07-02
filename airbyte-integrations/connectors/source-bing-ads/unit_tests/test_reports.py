@@ -154,7 +154,6 @@ def test_report_parse_response_csv_error(caplog):
     )
 
 
-
 @patch.object(source_bing_ads.source, "Client")
 def test_account_performance_report_monthly_stream_slices(mocked_client, config_without_start_date):
     mocked_client.reports_start_date = None

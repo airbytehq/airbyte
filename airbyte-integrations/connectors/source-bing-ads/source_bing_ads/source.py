@@ -46,5 +46,3 @@ class SourceBingAds(YamlDeclarativeSource):
         if report_object.endswith("Request"):
             return report_object.replace("Request", "")
         return report_object
-
-

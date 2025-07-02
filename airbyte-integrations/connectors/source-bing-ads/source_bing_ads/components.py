@@ -8,9 +8,9 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.schema import SchemaLoader
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
@@ -357,7 +357,7 @@ class CustomReportSchemaLoader(SchemaLoader):
         if self.report_aggregation == "HourOfDay":
             self.reporting_columns = self.reporting_columns + ["HourOfDay", "StartOfTimePeriod", "EndOfTimePeriod"]
 
-        self.reporting_columns =  list(frozenset(self.reporting_columns))
+        self.reporting_columns = list(frozenset(self.reporting_columns))
 
         columns_schema = {col: {"type": ["null", "string"]} for col in self.reporting_columns}
         schema: Mapping[str, Any] = {
@@ -389,9 +389,7 @@ class CustomReportTransformation(RecordTransformation):
     ) -> None:
         if self.report_aggregation == "Hourly":
             if record.get("TimePeriod"):
-                record.update(
-                    {"TimePeriod": self.transform_report_hourly_datetime_format_to_rfc_3339(record["TimePeriod"])}
-                )
+                record.update({"TimePeriod": self.transform_report_hourly_datetime_format_to_rfc_3339(record["TimePeriod"])})
 
         if self.report_aggregation == "DayOfWeek":
             cursor_field = record["TimePeriod"]
@@ -400,7 +398,7 @@ class CustomReportTransformation(RecordTransformation):
                     "StartOfTimePeriod": stream_slice["start_time"],
                     "EndOfTimePeriod": stream_slice["end_time"],
                     "DayOfWeek": cursor_field,
-                    "TimePeriod":  stream_slice["end_time"]
+                    "TimePeriod": stream_slice["end_time"],
                 }
             )
             record["TimePeriod"] = record["EndOfTimePeriod"]
@@ -412,7 +410,6 @@ class CustomReportTransformation(RecordTransformation):
                     "StartOfTimePeriod": stream_slice["start_time"],
                     "EndOfTimePeriod": stream_slice["end_time"],
                     "HourOfDay": cursor_field,
-                    "TimePeriod": stream_slice["end_time"]
+                    "TimePeriod": stream_slice["end_time"],
                 }
             )
-

@@ -1,13 +1,15 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 from typing import Any
 
-from test_report_stream import TestSuiteReportStream, SOURCE_BING_ADS
-from config_builder import ConfigBuilder
-from test_hourly_reports import get_state_after_migration, HourlyReportsTestWithStateChangesAfterMigration
 from base_test import BaseTest
-
-from freezegun import freeze_time
-from airbyte_cdk.models import SyncMode
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
+from config_builder import ConfigBuilder
+from freezegun import freeze_time
+from test_hourly_reports import HourlyReportsTestWithStateChangesAfterMigration, get_state_after_migration
+from test_report_stream import SOURCE_BING_ADS, TestSuiteReportStream
+
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -23,51 +25,56 @@ class TestBaseCustomReport(TestSuiteReportStream):
 
     @property
     def _config(self) -> dict[str, Any]:
-        return ConfigBuilder().with_reports_start_date(self.start_date).with_custom_reports(
-            [
-                {
-                    "name": self.stream_name,
-                    "reporting_object": "AgeGenderAudienceReportRequest",
-                    "report_columns": [
-                        "AccountName",
-                        "AccountNumber",
-                        "AccountId",
-                        "TimePeriod",
-                        "CampaignName",
-                        "CampaignId",
-                        "AdGroupName",
-                        "AdGroupId",
-                        "AdDistribution",
-                        "AgeGroup",
-                        "Gender",
-                        "Impressions",
-                        "Clicks",
-                        "Conversions",
-                        "Spend",
-                        "Revenue",
-                        "ExtendedCost",
-                        "Assists",
-                        "Language",
-                        "AccountStatus",
-                        "CampaignStatus",
-                        "AdGroupStatus",
-                        "BaseCampaignId",
-                        "AllConversions",
-                        "AllRevenue",
-                        "ViewThroughConversions",
-                        "Goal",
-                        "GoalType",
-                        "AbsoluteTopImpressionRatePercent",
-                        "TopImpressionRatePercent",
-                        "ConversionsQualified",
-                        "AllConversionsQualified",
-                        "ViewThroughConversionsQualified",
-                        "ViewThroughRevenue"
-                    ],
-                    "report_aggregation": self.custom_report_aggregation,
-                }
-            ]
-        ).build()
+        return (
+            ConfigBuilder()
+            .with_reports_start_date(self.start_date)
+            .with_custom_reports(
+                [
+                    {
+                        "name": self.stream_name,
+                        "reporting_object": "AgeGenderAudienceReportRequest",
+                        "report_columns": [
+                            "AccountName",
+                            "AccountNumber",
+                            "AccountId",
+                            "TimePeriod",
+                            "CampaignName",
+                            "CampaignId",
+                            "AdGroupName",
+                            "AdGroupId",
+                            "AdDistribution",
+                            "AgeGroup",
+                            "Gender",
+                            "Impressions",
+                            "Clicks",
+                            "Conversions",
+                            "Spend",
+                            "Revenue",
+                            "ExtendedCost",
+                            "Assists",
+                            "Language",
+                            "AccountStatus",
+                            "CampaignStatus",
+                            "AdGroupStatus",
+                            "BaseCampaignId",
+                            "AllConversions",
+                            "AllRevenue",
+                            "ViewThroughConversions",
+                            "Goal",
+                            "GoalType",
+                            "AbsoluteTopImpressionRatePercent",
+                            "TopImpressionRatePercent",
+                            "ConversionsQualified",
+                            "AllConversionsQualified",
+                            "ViewThroughConversionsQualified",
+                            "ViewThroughRevenue",
+                        ],
+                        "report_aggregation": self.custom_report_aggregation,
+                    }
+                ]
+            )
+            .build()
+        )
 
     def _mock_report_apis(self):
         pass
@@ -153,59 +160,62 @@ class TestCustomReportHourly(HourlyReportsTestWithStateChangesAfterMigration):
     state_file_after_migration_with_cursor_further_config_start_date = (
         "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
     )
-    incremental_report_file_with_records_further_cursor = (
-        "custom_report_hourly_incremental_with_records_further_cursor"
-    )
+    incremental_report_file_with_records_further_cursor = "custom_report_hourly_incremental_with_records_further_cursor"
 
     custom_report_aggregation = "Hourly"
 
     @property
     def _config(self) -> dict[str, Any]:
-        return ConfigBuilder().with_reports_start_date(self.start_date).with_custom_reports(
-            [
-                {
-                    "name": self.stream_name,
-                    "reporting_object": "AgeGenderAudienceReportRequest",
-                    "report_columns": [
-                        "AccountName",
-                        "AccountNumber",
-                        "AccountId",
-                        "TimePeriod",
-                        "CampaignName",
-                        "CampaignId",
-                        "AdGroupName",
-                        "AdGroupId",
-                        "AdDistribution",
-                        "AgeGroup",
-                        "Gender",
-                        "Impressions",
-                        "Clicks",
-                        "Conversions",
-                        "Spend",
-                        "Revenue",
-                        "ExtendedCost",
-                        "Assists",
-                        "Language",
-                        "AccountStatus",
-                        "CampaignStatus",
-                        "AdGroupStatus",
-                        "BaseCampaignId",
-                        "AllConversions",
-                        "AllRevenue",
-                        "ViewThroughConversions",
-                        "Goal",
-                        "GoalType",
-                        "AbsoluteTopImpressionRatePercent",
-                        "TopImpressionRatePercent",
-                        "ConversionsQualified",
-                        "AllConversionsQualified",
-                        "ViewThroughConversionsQualified",
-                        "ViewThroughRevenue"
-                    ],
-                    "report_aggregation": self.custom_report_aggregation,
-                }
-            ]
-        ).build()
+        return (
+            ConfigBuilder()
+            .with_reports_start_date(self.start_date)
+            .with_custom_reports(
+                [
+                    {
+                        "name": self.stream_name,
+                        "reporting_object": "AgeGenderAudienceReportRequest",
+                        "report_columns": [
+                            "AccountName",
+                            "AccountNumber",
+                            "AccountId",
+                            "TimePeriod",
+                            "CampaignName",
+                            "CampaignId",
+                            "AdGroupName",
+                            "AdGroupId",
+                            "AdDistribution",
+                            "AgeGroup",
+                            "Gender",
+                            "Impressions",
+                            "Clicks",
+                            "Conversions",
+                            "Spend",
+                            "Revenue",
+                            "ExtendedCost",
+                            "Assists",
+                            "Language",
+                            "AccountStatus",
+                            "CampaignStatus",
+                            "AdGroupStatus",
+                            "BaseCampaignId",
+                            "AllConversions",
+                            "AllRevenue",
+                            "ViewThroughConversions",
+                            "Goal",
+                            "GoalType",
+                            "AbsoluteTopImpressionRatePercent",
+                            "TopImpressionRatePercent",
+                            "ConversionsQualified",
+                            "AllConversionsQualified",
+                            "ViewThroughConversionsQualified",
+                            "ViewThroughRevenue",
+                        ],
+                        "report_aggregation": self.custom_report_aggregation,
+                    }
+                ]
+            )
+            .build()
+        )
 
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
@@ -243,53 +253,57 @@ class CustomReportSummary(BaseTest):
     report_file = "custom_report_summary"
     custom_report_aggregation = "Summary"
 
-
     @property
     def _config(self) -> dict[str, Any]:
-        return ConfigBuilder().with_reports_start_date(self.start_date).with_custom_reports(
-            [
-                {
-                    "name": self.stream_name,
-                    "reporting_object": "AgeGenderAudienceReportRequest",
-                    "report_columns": [
-                        "AccountName",
-                        "AccountNumber",
-                        "AccountId",
-                        "CampaignName",
-                        "CampaignId",
-                        "AdGroupName",
-                        "AdGroupId",
-                        "AdDistribution",
-                        "AgeGroup",
-                        "Gender",
-                        "Impressions",
-                        "Clicks",
-                        "Conversions",
-                        "Spend",
-                        "Revenue",
-                        "ExtendedCost",
-                        "Assists",
-                        "Language",
-                        "AccountStatus",
-                        "CampaignStatus",
-                        "AdGroupStatus",
-                        "BaseCampaignId",
-                        "AllConversions",
-                        "AllRevenue",
-                        "ViewThroughConversions",
-                        "Goal",
-                        "GoalType",
-                        "AbsoluteTopImpressionRatePercent",
-                        "TopImpressionRatePercent",
-                        "ConversionsQualified",
-                        "AllConversionsQualified",
-                        "ViewThroughConversionsQualified",
-                        "ViewThroughRevenue"
-                    ],
-                    "report_aggregation": self.custom_report_aggregation,
-                }
-            ]
-        ).build()
+        return (
+            ConfigBuilder()
+            .with_reports_start_date(self.start_date)
+            .with_custom_reports(
+                [
+                    {
+                        "name": self.stream_name,
+                        "reporting_object": "AgeGenderAudienceReportRequest",
+                        "report_columns": [
+                            "AccountName",
+                            "AccountNumber",
+                            "AccountId",
+                            "CampaignName",
+                            "CampaignId",
+                            "AdGroupName",
+                            "AdGroupId",
+                            "AdDistribution",
+                            "AgeGroup",
+                            "Gender",
+                            "Impressions",
+                            "Clicks",
+                            "Conversions",
+                            "Spend",
+                            "Revenue",
+                            "ExtendedCost",
+                            "Assists",
+                            "Language",
+                            "AccountStatus",
+                            "CampaignStatus",
+                            "AdGroupStatus",
+                            "BaseCampaignId",
+                            "AllConversions",
+                            "AllRevenue",
+                            "ViewThroughConversions",
+                            "Goal",
+                            "GoalType",
+                            "AbsoluteTopImpressionRatePercent",
+                            "TopImpressionRatePercent",
+                            "ConversionsQualified",
+                            "AllConversionsQualified",
+                            "ViewThroughConversionsQualified",
+                            "ViewThroughRevenue",
+                        ],
+                        "report_aggregation": self.custom_report_aggregation,
+                    }
+                ]
+            )
+            .build()
+        )
 
     @property
     def service_manager(self) -> ReportingServiceManager:
@@ -331,13 +345,7 @@ class CustomReportSummary(BaseTest):
         assert SOURCE_BING_ADS
         self.mock_report_apis()
         state = StateBuilder().with_stream_state(self.stream_name, {"TimePeriod": self.start_date}).build()
-        output, _ = self.read_stream(
-            self.stream_name,
-            SyncMode.incremental,
-            self._config,
-            self.report_file,
-            state
-        )
+        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == self.start_date
@@ -351,53 +359,57 @@ class CustomReportDayOfWeek(BaseTest):
     report_file = "custom_report_day_of_week"
     custom_report_aggregation = "DayOfWeek"
 
-
     @property
     def _config(self) -> dict[str, Any]:
-        return ConfigBuilder().with_reports_start_date(self.start_date).with_custom_reports(
-            [
-                {
-                    "name": self.stream_name,
-                    "reporting_object": "AgeGenderAudienceReportRequest",
-                    "report_columns": [
-                        "AccountName",
-                        "AccountNumber",
-                        "AccountId",
-                        "CampaignName",
-                        "CampaignId",
-                        "AdGroupName",
-                        "AdGroupId",
-                        "AdDistribution",
-                        "AgeGroup",
-                        "Gender",
-                        "Impressions",
-                        "Clicks",
-                        "Conversions",
-                        "Spend",
-                        "Revenue",
-                        "ExtendedCost",
-                        "Assists",
-                        "Language",
-                        "AccountStatus",
-                        "CampaignStatus",
-                        "AdGroupStatus",
-                        "BaseCampaignId",
-                        "AllConversions",
-                        "AllRevenue",
-                        "ViewThroughConversions",
-                        "Goal",
-                        "GoalType",
-                        "AbsoluteTopImpressionRatePercent",
-                        "TopImpressionRatePercent",
-                        "ConversionsQualified",
-                        "AllConversionsQualified",
-                        "ViewThroughConversionsQualified",
-                        "ViewThroughRevenue"
-                    ],
-                    "report_aggregation": self.custom_report_aggregation,
-                }
-            ]
-        ).build()
+        return (
+            ConfigBuilder()
+            .with_reports_start_date(self.start_date)
+            .with_custom_reports(
+                [
+                    {
+                        "name": self.stream_name,
+                        "reporting_object": "AgeGenderAudienceReportRequest",
+                        "report_columns": [
+                            "AccountName",
+                            "AccountNumber",
+                            "AccountId",
+                            "CampaignName",
+                            "CampaignId",
+                            "AdGroupName",
+                            "AdGroupId",
+                            "AdDistribution",
+                            "AgeGroup",
+                            "Gender",
+                            "Impressions",
+                            "Clicks",
+                            "Conversions",
+                            "Spend",
+                            "Revenue",
+                            "ExtendedCost",
+                            "Assists",
+                            "Language",
+                            "AccountStatus",
+                            "CampaignStatus",
+                            "AdGroupStatus",
+                            "BaseCampaignId",
+                            "AllConversions",
+                            "AllRevenue",
+                            "ViewThroughConversions",
+                            "Goal",
+                            "GoalType",
+                            "AbsoluteTopImpressionRatePercent",
+                            "TopImpressionRatePercent",
+                            "ConversionsQualified",
+                            "AllConversionsQualified",
+                            "ViewThroughConversionsQualified",
+                            "ViewThroughRevenue",
+                        ],
+                        "report_aggregation": self.custom_report_aggregation,
+                    }
+                ]
+            )
+            .build()
+        )
 
     @property
     def service_manager(self) -> ReportingServiceManager:
@@ -438,7 +450,6 @@ class CustomReportDayOfWeek(BaseTest):
             assert record["StartOfTimePeriod"] == self.start_date
             assert record["EndOfTimePeriod"] == "2024-05-06"
 
-
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_from_given_csv_file(self):
         assert SOURCE_BING_ADS
@@ -453,13 +464,7 @@ class CustomReportDayOfWeek(BaseTest):
         assert SOURCE_BING_ADS
         self.mock_report_apis()
         state = StateBuilder().with_stream_state(self.stream_name, {"TimePeriod": self.start_date}).build()
-        output, _ = self.read_stream(
-            self.stream_name,
-            SyncMode.incremental,
-            self._config,
-            self.report_file,
-            state
-        )
+        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
@@ -473,53 +478,57 @@ class CustomReportHourOfDay(BaseTest):
     report_file = "custom_report_hour_of_day"
     custom_report_aggregation = "HourOfDay"
 
-
     @property
     def _config(self) -> dict[str, Any]:
-        return ConfigBuilder().with_reports_start_date(self.start_date).with_custom_reports(
-            [
-                {
-                    "name": self.stream_name,
-                    "reporting_object": "AgeGenderAudienceReportRequest",
-                    "report_columns": [
-                        "AccountName",
-                        "AccountNumber",
-                        "AccountId",
-                        "CampaignName",
-                        "CampaignId",
-                        "AdGroupName",
-                        "AdGroupId",
-                        "AdDistribution",
-                        "AgeGroup",
-                        "Gender",
-                        "Impressions",
-                        "Clicks",
-                        "Conversions",
-                        "Spend",
-                        "Revenue",
-                        "ExtendedCost",
-                        "Assists",
-                        "Language",
-                        "AccountStatus",
-                        "CampaignStatus",
-                        "AdGroupStatus",
-                        "BaseCampaignId",
-                        "AllConversions",
-                        "AllRevenue",
-                        "ViewThroughConversions",
-                        "Goal",
-                        "GoalType",
-                        "AbsoluteTopImpressionRatePercent",
-                        "TopImpressionRatePercent",
-                        "ConversionsQualified",
-                        "AllConversionsQualified",
-                        "ViewThroughConversionsQualified",
-                        "ViewThroughRevenue"
-                    ],
-                    "report_aggregation": self.custom_report_aggregation,
-                }
-            ]
-        ).build()
+        return (
+            ConfigBuilder()
+            .with_reports_start_date(self.start_date)
+            .with_custom_reports(
+                [
+                    {
+                        "name": self.stream_name,
+                        "reporting_object": "AgeGenderAudienceReportRequest",
+                        "report_columns": [
+                            "AccountName",
+                            "AccountNumber",
+                            "AccountId",
+                            "CampaignName",
+                            "CampaignId",
+                            "AdGroupName",
+                            "AdGroupId",
+                            "AdDistribution",
+                            "AgeGroup",
+                            "Gender",
+                            "Impressions",
+                            "Clicks",
+                            "Conversions",
+                            "Spend",
+                            "Revenue",
+                            "ExtendedCost",
+                            "Assists",
+                            "Language",
+                            "AccountStatus",
+                            "CampaignStatus",
+                            "AdGroupStatus",
+                            "BaseCampaignId",
+                            "AllConversions",
+                            "AllRevenue",
+                            "ViewThroughConversions",
+                            "Goal",
+                            "GoalType",
+                            "AbsoluteTopImpressionRatePercent",
+                            "TopImpressionRatePercent",
+                            "ConversionsQualified",
+                            "AllConversionsQualified",
+                            "ViewThroughConversionsQualified",
+                            "ViewThroughRevenue",
+                        ],
+                        "report_aggregation": self.custom_report_aggregation,
+                    }
+                ]
+            )
+            .build()
+        )
 
     @property
     def service_manager(self) -> ReportingServiceManager:
@@ -560,7 +569,6 @@ class CustomReportHourOfDay(BaseTest):
             assert record["StartOfTimePeriod"] == self.start_date
             assert record["EndOfTimePeriod"] == "2024-05-06"
 
-
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_from_given_csv_file(self):
         assert SOURCE_BING_ADS
@@ -575,13 +583,7 @@ class CustomReportHourOfDay(BaseTest):
         assert SOURCE_BING_ADS
         self.mock_report_apis()
         state = StateBuilder().with_stream_state(self.stream_name, {"TimePeriod": self.start_date}).build()
-        output, _ = self.read_stream(
-            self.stream_name,
-            SyncMode.incremental,
-            self._config,
-            self.report_file,
-            state
-        )
+        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
