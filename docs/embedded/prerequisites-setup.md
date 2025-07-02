@@ -2,7 +2,7 @@
 products: embedded
 ---
 
-# Prerequisites & Setup
+# Get Started with Widget
 
 ## Airbyte Credentials
 
