@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.mockk.Ordering
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
@@ -117,16 +118,18 @@ class CheckpointManagerUTest {
     @Test
     fun `checkpoint N will be emitted after N-1`() = runTest {
         val checkpointManager = makeCheckpointManager()
+        val message1 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
+        val message2 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
 
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(1, "one"),
-            mockk(relaxed = true)
+            message1,
         )
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(2, "two"),
-            mockk(relaxed = true)
+            message2,
         )
 
         coEvery { streamManager1.areRecordsPersistedForCheckpoint(CheckpointId("one")) } returns
@@ -136,22 +139,27 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 2) { outputConsumer.invoke(any(), any(), any()) }
+        coVerify(ordering = Ordering.ORDERED) {
+            outputConsumer.invoke(message1, any(), any())
+            outputConsumer.invoke(message2, any(), any())
+        }
     }
 
     @Test
     fun `checkpoints will be emitted in order even if received out of order`() = runTest {
         val checkpointManager = makeCheckpointManager()
+        val message1 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
+        val message2 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
 
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(2, "two"),
-            mockk(relaxed = true)
+            message2,
         )
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(1, "one"),
-            mockk(relaxed = true)
+            message1,
         )
 
         coEvery { streamManager1.areRecordsPersistedForCheckpoint(CheckpointId("one")) } returns
@@ -161,6 +169,6 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 1) { outputConsumer.invoke(any(), any(), any()) }
+        coVerify(exactly = 1) { outputConsumer.invoke(message1, any(), any()) }
     }
 }
