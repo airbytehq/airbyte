@@ -93,7 +93,7 @@ class DlqLoaderAccumulator<S>(
         if (deadLetterQueueEnabled) {
             when (rejectedRecords) {
                 null -> DlqStepOutput(BatchState.COMPLETE, null)
-                else -> DlqStepOutput(BatchState.PERSISTED, rejectedRecords)
+                else -> DlqStepOutput(BatchState.STAGED, rejectedRecords)
             }
         } else {
             // Because Dead Letter Queue is disable, we never return rejected records.

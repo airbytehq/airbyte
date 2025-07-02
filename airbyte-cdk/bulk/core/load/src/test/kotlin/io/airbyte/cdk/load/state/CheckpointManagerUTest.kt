@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test
 class CheckpointManagerUTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
     @MockK(relaxed = true) lateinit var syncManager: SyncManager
-    private val outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit =
-        mockk<suspend (Reserved<CheckpointMessage>, Long, Long) -> Unit>(relaxed = true)
+    private val outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit =
+        mockk<suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit>(relaxed = true)
     @MockK(relaxed = true) lateinit var timeProvider: TimeProvider
     @MockK(relaxed = true) lateinit var streamManager1: StreamManager
     @MockK(relaxed = true) lateinit var streamManager2: StreamManager
@@ -56,12 +56,12 @@ class CheckpointManagerUTest {
     @BeforeEach
     fun setup() {
         coEvery { catalog.streams } returns listOf(stream1, stream2)
-        coEvery { outputConsumer.invoke(any(), any(), any()) } returns Unit
+        coEvery { outputConsumer.invoke(any(), any(), any(), any()) } returns Unit
         coEvery { syncManager.getStreamManager(stream1.mappedDescriptor) } returns streamManager1
         coEvery { syncManager.getStreamManager(stream2.mappedDescriptor) } returns streamManager2
     }
 
-    private fun makeCheckpointManager(): CheckpointManager<Reserved<CheckpointMessage>> {
+    private fun makeCheckpointManager(): CheckpointManager {
         return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider)
     }
 
@@ -75,8 +75,8 @@ class CheckpointManagerUTest {
     fun `test checkpoint-by-id`() = runTest {
         val checkpointManager = makeCheckpointManager()
 
-        val message1 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
-        val message2 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
+        val message1 = mockMessage()
+        val message2 = mockMessage()
 
         checkpointManager.addStreamCheckpoint(stream1.mappedDescriptor, makeKey(1), message1)
         checkpointManager.addStreamCheckpoint(stream2.mappedDescriptor, makeKey(1), message2)
@@ -86,8 +86,8 @@ class CheckpointManagerUTest {
 
         // Only stream2 should be flushed.
         checkpointManager.flushReadyCheckpointMessages()
-        coVerify(exactly = 0) { outputConsumer.invoke(message1, any(), any()) }
-        coVerify(exactly = 1) { outputConsumer.invoke(message2, any(), any()) }
+        coVerify(exactly = 0) { outputConsumer.invoke(message1, any(), any(), any()) }
+        coVerify(exactly = 1) { outputConsumer.invoke(message2, any(), any(), any()) }
     }
 
     @Test
@@ -112,14 +112,14 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 0) { outputConsumer.invoke(any(), any(), any()) }
+        coVerify(exactly = 0) { outputConsumer.invoke(any(), any(), any(), any()) }
     }
 
     @Test
     fun `checkpoint N will be emitted after N-1`() = runTest {
         val checkpointManager = makeCheckpointManager()
-        val message1 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
-        val message2 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
+        val message1 = mockMessage()
+        val message2 = mockMessage()
 
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
@@ -140,16 +140,16 @@ class CheckpointManagerUTest {
         checkpointManager.flushReadyCheckpointMessages()
 
         coVerify(ordering = Ordering.ORDERED) {
-            outputConsumer.invoke(message1, any(), any())
-            outputConsumer.invoke(message2, any(), any())
+            outputConsumer.invoke(message1, any(), any(), any())
+            outputConsumer.invoke(message2, any(), any(), any())
         }
     }
 
     @Test
     fun `checkpoints will be emitted in order even if received out of order`() = runTest {
         val checkpointManager = makeCheckpointManager()
-        val message1 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
-        val message2 = mockk<Reserved<CheckpointMessage>>(relaxed = true)
+        val message1 = mockMessage()
+        val message2 = mockMessage()
 
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
@@ -169,6 +169,8 @@ class CheckpointManagerUTest {
 
         checkpointManager.flushReadyCheckpointMessages()
 
-        coVerify(exactly = 1) { outputConsumer.invoke(message1, any(), any()) }
+        coVerify(exactly = 1) { outputConsumer.invoke(message1, any(), any(), any()) }
     }
+
+    private fun mockMessage(): Reserved<CheckpointMessage> = Reserved(value = mockk(relaxed = true))
 }

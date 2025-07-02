@@ -23,7 +23,7 @@ import jakarta.inject.Singleton
 @Secondary
 class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
+    private val checkpointManager: CheckpointManager,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
 ) : Task {
     val log = KotlinLogging.logger {}
