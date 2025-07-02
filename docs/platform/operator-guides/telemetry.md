@@ -13,9 +13,6 @@ Also check our [privacy policy](https://airbyte.com/privacy-policy) for more det
 
 <Tabs groupId="cloud-hosted">
   <TabItem value="self-managed" label="Self Managed">
-
-<Tabs groupId="helm-version">
-  <TabItem value="helm-v1" label="Helm Chart V1">
       To disable telemetry for your instance, modify the `values.yaml` file and override the hardcoded telemetry setting using component-specific `env_vars` sections:
 
       ```yaml
@@ -31,19 +28,6 @@ Also check our [privacy policy](https://airbyte.com/privacy-policy) for more det
       ```
 
       Note: In Helm Chart V1, `TRACKING_STRATEGY` is hardcoded to `segment` (telemetry enabled) in the chart templates. You must use the `env_vars` configuration to override this default behavior.
-
-  </TabItem>
-  <TabItem value="helm-v2" label="Helm Chart V2">
-      To disable telemetry for your instance, modify the `values.yaml` file and set the tracking strategy:
-
-      ```yaml
-      global:
-        tracking:
-          strategy: logging
-      ```
-
-  </TabItem>
-</Tabs>
 
   </TabItem>
   <TabItem value="cloud" label="Cloud">
