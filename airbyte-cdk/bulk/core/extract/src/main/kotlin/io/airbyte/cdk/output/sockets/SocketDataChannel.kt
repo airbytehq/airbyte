@@ -48,11 +48,12 @@ interface SocketDataChannel {
     val isAvailable: Boolean
 }
 
-/** A Unix Domain Socket implementation of [SocketDataChannel].
+/**
+ * A Unix Domain Socket implementation of [SocketDataChannel].
  *
- *  @param socketFilePath The path to the Unix domain socket file.
- *  @param probePacket A packet used to probe the socket state.
- *  The type of the packet is determined by the configured format (JSONL or Protobuf).
+ * @param socketFilePath The path to the Unix domain socket file.
+ * @param probePacket A packet used to probe the socket state. The type of the packet is determined
+ * by the configured format (JSONL or Protobuf).
  */
 class UnixDomainSocketDataChannel(
     private val socketFilePath: String,
