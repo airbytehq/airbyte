@@ -5225,6 +5225,9 @@ dynamic_streams:
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(now_utc(), parameters['end_date_time_format']) }}"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_bing_ads.components.CustomReportTransformation
     components_resolver:
       type: ConfigComponentsResolver
       stream_config:
@@ -5251,7 +5254,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "$parameters", "report_columns" ]
-          value: "{{ components_values['report_columns'] if 'TimePeriod' in components_values['report_columns'] else components_values['report_columns'] if components_values['report_aggregation'] in ['Summary', 'DayOfWeek', 'HourOfDay'] else components_values['report_columns'] + ['TimePeriod'] }}"
+          value: "{{ components_values['report_columns'] if 'TimePeriod' in components_values['report_columns'] else components_values['report_columns'] if components_values['report_aggregation'] == 'Summary' else components_values['report_columns'] + ['TimePeriod'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "$parameters", "end_date_time_format" ]
@@ -5276,6 +5279,10 @@ dynamic_streams:
           create_or_update: true
           field_path: [ "schema_loader", "reporting_columns" ]
           value: "{{ components_values['report_columns'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "transformations", "0", "report_aggregation" ]
+          value: "{{ components_values['report_aggregation'] }}"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
