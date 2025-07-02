@@ -223,7 +223,7 @@ class MockBasicFunctionalityIntegrationTest :
                 .withSourceStats(AirbyteStateStats().withRecordCount(42.0))
                 // Attach our new destination record count
                 .withDestinationStats(AirbyteStateStats().withRecordCount(1.0))
-                // idk
+                // attach stats for speed mode
                 .withAdditionalProperty("committedBytesCount", 139)
                 .withAdditionalProperty("committedRecordsCount", 1)
                 .withGlobal(
