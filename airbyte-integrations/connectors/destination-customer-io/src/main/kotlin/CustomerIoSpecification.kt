@@ -29,14 +29,10 @@ class CustomerIoSpecification : ConfigurationSpecification() {
 }
 
 class CustomerIoCredentialsSpecification {
-    @get:JsonSchemaInject(
-        json = """{"airbyte_secret": true,"always_show": true,"order":1}"""
-    )
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true,"always_show": true,"order":1}""")
     val siteId: String = ""
 
-    @get:JsonSchemaInject(
-        json = """{"airbyte_secret": true,"always_show": true,"order":2}"""
-    )
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true,"always_show": true,"order":2}""")
     val apiKey: String = ""
 }
 

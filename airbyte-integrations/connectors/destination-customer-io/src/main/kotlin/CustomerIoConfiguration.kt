@@ -8,9 +8,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
 
-
 data class CustomerIoCredentialsConfig(val siteId: String, val apiKey: String)
-
 
 data class CustomerIoConfiguration(
     val credentials: CustomerIoCredentialsConfig,

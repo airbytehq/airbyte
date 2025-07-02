@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Response
@@ -47,11 +51,14 @@ class CustomerIoStateTest {
 
     @Test
     internal fun `test given errors when flush then return rejected records`() {
-        val rejectedRecord = aRecord(
-            Jsons.objectNode().put("person_email", "rejected_person_email")
-                .put("event_name", "rejected_event_name")
-        )
-        every { httpClient.send(any()) } returns aResponse(207, """{"errors": [{"batch_index": 1}]}""".toByteArray().inputStream())
+        val rejectedRecord =
+            aRecord(
+                Jsons.objectNode()
+                    .put("person_email", "rejected_person_email")
+                    .put("event_name", "rejected_event_name")
+            )
+        every { httpClient.send(any()) } returns
+            aResponse(207, """{"errors": [{"batch_index": 1}]}""".toByteArray().inputStream())
         state.accumulate(aRecord())
         state.accumulate(rejectedRecord)
 
@@ -76,7 +83,7 @@ class CustomerIoStateTest {
         return response
     }
 
-    fun aRecord(data: JsonNode = Jsons.objectNode()) : DestinationRecordRaw {
+    fun aRecord(data: JsonNode = Jsons.objectNode()): DestinationRecordRaw {
         val rawData = mockk<DestinationRecordSource>(relaxed = true)
         every { rawData.asJsonRecord(any()) } returns data
         return DestinationRecordRaw(
@@ -86,5 +93,4 @@ class CustomerIoStateTest {
             airbyteRawId = UUID.randomUUID()
         )
     }
-
 }

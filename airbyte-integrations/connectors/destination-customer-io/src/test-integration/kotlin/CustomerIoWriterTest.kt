@@ -81,7 +81,7 @@ class CustomerIoWriterTest() :
                     "an_attribute" to FieldType(StringType, nullable = false)
                 ),
                 true,
-                required=listOf("person_email", "event_name")
+                required = listOf("person_email", "event_name")
             ),
             generationId = 0,
             minimumGenerationId = 0,
@@ -101,7 +101,7 @@ class CustomerIoWriterTest() :
                     "an_attribute" to FieldType(StringType, nullable = false)
                 ),
                 true,
-                required=listOf("person_email")
+                required = listOf("person_email")
             ),
             generationId = 0,
             minimumGenerationId = 0,
@@ -121,8 +121,7 @@ class CustomerIoWriterTest() :
     fun personIdentifyRecord(email: String) =
         InputRecord(
             stream = personIdentifyStream,
-            data =
-                """{"person_email": "$email", "an_attribute": "any attribute"}""",
+            data = """{"person_email": "$email", "an_attribute": "any attribute"}""",
             emittedAtMs = 1234,
         )
 

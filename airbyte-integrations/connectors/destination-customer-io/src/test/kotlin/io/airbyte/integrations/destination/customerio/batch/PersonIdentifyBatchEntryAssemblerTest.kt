@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.customerio.batch
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -23,16 +27,18 @@ class PersonIdentifyBatchEntryAssemblerTest {
 
     @Test
     internal fun `test given valid record with attributes when assemble then create entry properly`() {
-        val entry = assembler.assemble(
-            aRecord(
-                Jsons.objectNode()
-                    .put("person_email", "person@email.com")
-                    .put("an_attribute", 123)
+        val entry =
+            assembler.assemble(
+                aRecord(
+                    Jsons.objectNode()
+                        .put("person_email", "person@email.com")
+                        .put("an_attribute", 123)
+                )
             )
-        )
 
-        assertEquals(Jsons.readTree(
-            """
+        assertEquals(
+            Jsons.readTree(
+                """
                 {
                   "type": "person",
                   "identifiers": {
@@ -43,7 +49,9 @@ class PersonIdentifyBatchEntryAssemblerTest {
                     "an_attribute": 123
                   }
                 }
-            """.trimIndent()), entry
+            """.trimIndent()
+            ),
+            entry
         )
     }
 
@@ -54,7 +62,7 @@ class PersonIdentifyBatchEntryAssemblerTest {
         }
     }
 
-    fun aRecord(data: JsonNode = Jsons.objectNode()) : DestinationRecordRaw {
+    fun aRecord(data: JsonNode = Jsons.objectNode()): DestinationRecordRaw {
         val rawData = mockk<DestinationRecordSource>(relaxed = true)
         every { rawData.asJsonRecord(any()) } returns data
         return DestinationRecordRaw(

@@ -22,15 +22,16 @@ import okhttp3.OkHttpClient
 @MicronautFactory
 class CustomerIoBeanFactory {
     @Singleton
-    fun check(factory: Factory<CustomerIoConfiguration>): DestinationChecker<CustomerIoConfiguration> = factory.createDestinationChecker()
+    fun check(
+        factory: Factory<CustomerIoConfiguration>
+    ): DestinationChecker<CustomerIoConfiguration> = factory.createDestinationChecker()
 
     @Singleton
     fun factory(config: CustomerIoConfiguration): Factory<CustomerIoConfiguration> = Factory(config)
 
     @Singleton fun getConfig(config: DestinationConfiguration) = config as CustomerIoConfiguration
 
-    @Singleton
-    fun discover() = CustomerIoDiscoverer()
+    @Singleton fun discover() = CustomerIoDiscoverer()
 
     @Singleton
     fun objectLoader(): ObjectLoader =
@@ -41,8 +42,10 @@ class CustomerIoBeanFactory {
 
     @Singleton
     fun httpClient(config: CustomerIoConfiguration): HttpClient {
-        val authenticator = BasicAccessAuthenticator(config.credentials.siteId,  config.credentials.apiKey)
-        val okhttpClient: OkHttpClient = OkHttpClient.Builder().addInterceptor(authenticator).build()
+        val authenticator =
+            BasicAccessAuthenticator(config.credentials.siteId, config.credentials.apiKey)
+        val okhttpClient: OkHttpClient =
+            OkHttpClient.Builder().addInterceptor(authenticator).build()
         return AirbyteOkHttpClient(okhttpClient, RetryPolicy.ofDefaults())
     }
 

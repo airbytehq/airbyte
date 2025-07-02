@@ -28,12 +28,16 @@ import java.lang.IllegalArgumentException
 
 private val logger = KotlinLogging.logger {}
 
-class CustomerIoState(private val httpClient: HttpClient, private val entryAssembler: BatchEntryAssembler) : AutoCloseable {
+class CustomerIoState(
+    private val httpClient: HttpClient,
+    private val entryAssembler: BatchEntryAssembler
+) : AutoCloseable {
 
     val decoder: JsonDecoder = JsonDecoder()
     val requestBody: ObjectNode = Jsons.objectNode()
     val batch: ArrayNode = requestBody.putArray("batch")
-    // In order to populate the rejected records list, we need to have the list of records in order of which they are sent to Customer IO as Customer IO flags the errors by index
+    // In order to populate the rejected records list, we need to have the list of records in order
+    // of which they are sent to Customer IO as Customer IO flags the errors by index
     val orderedRecords: MutableList<DestinationRecordRaw> = mutableListOf()
 
     fun accumulate(record: DestinationRecordRaw) {
@@ -41,7 +45,8 @@ class CustomerIoState(private val httpClient: HttpClient, private val entryAssem
         batch.add(entryAssembler.assemble(record))
     }
 
-    fun isFull(): Boolean = requestBody.serializeToString().toByteArray(Charsets.UTF_8).size > 500_000
+    fun isFull(): Boolean =
+        requestBody.serializeToString().toByteArray(Charsets.UTF_8).size > 500_000
 
     fun flush(): List<DestinationRecordRaw>? {
         if (batch.isEmpty) {
@@ -62,10 +67,14 @@ class CustomerIoState(private val httpClient: HttpClient, private val entryAssem
         response.use {
             return when (response.statusCode) {
                 200 -> emptyList()
-                207 -> decoder.decode(response.getBodyOrEmpty()).get("errors").asIterable().map { orderedRecords[it.get("batch_index").asInt()] }  // FIXME also add reason, field and message as part of meta
-                else -> throw IllegalStateException(
-                    "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
-                )
+                207 ->
+                    decoder.decode(response.getBodyOrEmpty()).get("errors").asIterable().map {
+                        orderedRecords[it.get("batch_index").asInt()]
+                    } // FIXME also add reason, field and message as part of meta
+                else ->
+                    throw IllegalStateException(
+                        "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
+                    )
             }
         }
     }
@@ -73,19 +82,22 @@ class CustomerIoState(private val httpClient: HttpClient, private val entryAssem
     override fun close() {}
 
     /**
-     * In theory, there is a limit of 32 kb per batch entry but it is not yet validated here and we will wait for this to affect customers to take action.
+     * In theory, there is a limit of 32 kb per batch entry but it is not yet validated here and we
+     * will wait for this to affect customers to take action.
      */
-
-
 }
 
-class CustomerIoLoader(private val httpClient: HttpClient, private val catalog: DestinationCatalog) : DlqLoader<CustomerIoState> {
+class CustomerIoLoader(
+    private val httpClient: HttpClient,
+    private val catalog: DestinationCatalog
+) : DlqLoader<CustomerIoState> {
     override fun start(key: StreamKey, part: Int): CustomerIoState {
         logger.info { "CustomerIoLoader.start for ${key.serializeToString()} with part $part" }
-        val stream = (catalog.streams.find { it.mappedDescriptor == key.stream }
-            ?: throw IllegalStateException(
-                "Could not find stream ${key.stream} as part of the catalog."
-            ))
+        val stream =
+            (catalog.streams.find { it.mappedDescriptor == key.stream }
+                ?: throw IllegalStateException(
+                    "Could not find stream ${key.stream} as part of the catalog."
+                ))
         return CustomerIoState(httpClient, selectBatchEntryAssembler(stream))
     }
 
@@ -107,11 +119,14 @@ class CustomerIoLoader(private val httpClient: HttpClient, private val catalog: 
 
     override fun close() {}
 
-    private fun selectBatchEntryAssembler(stream: DestinationStream) : BatchEntryAssembler {
+    private fun selectBatchEntryAssembler(stream: DestinationStream): BatchEntryAssembler {
         return when (stream.destinationObjectName) {
             "person_event" -> PersonEventBatchEntryAssembler()
             "person_identify" -> PersonIdentifyBatchEntryAssembler()
-            else -> throw IllegalArgumentException("Unknown destination object name ${stream.destinationObjectName}")
+            else ->
+                throw IllegalArgumentException(
+                    "Unknown destination object name ${stream.destinationObjectName}"
+                )
         }
     }
 }
