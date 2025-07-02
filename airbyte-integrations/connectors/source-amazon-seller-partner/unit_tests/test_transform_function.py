@@ -55,8 +55,8 @@ def test_transform_seller_feedback(marketplace_id, input_data, expected_data):
     ("input_data", "expected_data"),
     (
         (
-            {"item-name": "GiftBox", "open-date": "2022-07-11 01:34:18 PDT", "dataEndTime": "2022-07-31"},
-            {"item-name": "GiftBox", "open-date": "2022-07-11T01:34:18-07:00", "dataEndTime": "2022-07-31"},
+            {"item-name": "GiftBox", "open-date": "2022-07-11 01:34:18 EDT", "dataEndTime": "2022-07-31"},
+            {"item-name": "GiftBox", "open-date": "2022-07-11T01:34:18-04:00", "dataEndTime": "2022-07-31"},
         ),
         (
             {"item-name": "GiftBox", "open-date": "", "dataEndTime": "2022-07-31"},

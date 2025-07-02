@@ -6,27 +6,23 @@ import csv
 import gzip
 import json
 import logging
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
 from io import StringIO
-from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Union
 
-import backoff
+import dateparser
 import requests
 import xmltodict
 
 from airbyte_cdk import InterpolatedString
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
 
@@ -273,8 +269,9 @@ class MerchantReportsTypeTransformer(TypeTransformer):
     def get_transform_function():
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and field_schema.get("format") == "date-time":
-                # open-date field is returned in format "2022-07-11 01:34:18 PDT"
-                transformed_value = str(ab_datetime_parse(original_value))
+                # `dateparser` is used here because AirbyteDatetime/
+                # Datetime cannot easily parse timezone abbrvs
+                transformed_value = dateparser.parse(original_value).isoformat()
                 return transformed_value
             return original_value
 
