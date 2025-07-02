@@ -2,8 +2,8 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import ANY, patch
 import json
+from unittest.mock import ANY, patch
 
 from requests.status_codes import codes as status_codes
 
@@ -192,11 +192,12 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         expected_message = (
             f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
         )
-        assert output.errors[0].trace.error.message == expected_message, f"Expected message: {expected_message}, Actual message: {output.errors[0].trace.error.message}"
+        assert (
+            output.errors[0].trace.error.message == expected_message
+        ), f"Expected message: {expected_message}, Actual message: {output.errors[0].trace.error.message}"
 
     @HttpMocker()
     def test_read_500_error(self, http_mocker: HttpMocker) -> None:
-
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "internal_server_error", status_codes.INTERNAL_SERVER_ERROR)
 
         configured_catalog = (

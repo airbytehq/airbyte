@@ -4,6 +4,7 @@
 
 from pathlib import Path
 
+
 # Override the manifest path for integration tests
 # Since integration tests are run from unit_tests/integration/,
 # we need to go up one more level to reach the connector root

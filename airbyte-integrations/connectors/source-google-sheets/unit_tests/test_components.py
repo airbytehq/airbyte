@@ -9,7 +9,6 @@ from typing import Dict, List, Union
 import dpath
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from components import (
     DpathSchemaExtractor,
     DpathSchemaMatchingExtractor,
@@ -22,8 +21,9 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import (
     IterableDecoder,
     JsonDecoder,
 )
-from unit_tests.integration.conftest import oauth_credentials
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from unit_tests.conftest import _YAML_FILE_PATH
+from unit_tests.integration.conftest import oauth_credentials
 
 
 config = {"field": "record_array"}
@@ -40,27 +40,17 @@ def create_response(body: Union[Dict, bytes]):
 
 
 _CONFIG = {"spreadsheet_id": "_spread_sheet_id", "credentials": oauth_credentials, "batch_size": 200}
-_MANIFEST = resolve_manifest(
-    source=YamlDeclarativeSource(
-        path_to_yaml=str(_YAML_FILE_PATH),
-        config=_CONFIG,
-        state=[]
-    )
-).record.data["manifest"]
+_MANIFEST = resolve_manifest(source=YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config=_CONFIG, state=[])).record.data[
+    "manifest"
+]
 _FIELD_PATH = list(
     dpath.get(
         obj=_MANIFEST,
-        glob=[
-            "dynamic_streams", 0, "stream_template", "schema_loader",
-            "retriever", "record_selector", "extractor", "field_path"
-        ],
+        glob=["dynamic_streams", 0, "stream_template", "schema_loader", "retriever", "record_selector", "extractor", "field_path"],
         default=[],
     )
 )
-_SCHEMA_TYPE_IDENTIFIERS = dpath.get(
-    obj=_MANIFEST,
-    glob=["definitions", "schema_type_identifier"]
-)
+_SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema_type_identifier"])
 
 
 @pytest.mark.parametrize(
