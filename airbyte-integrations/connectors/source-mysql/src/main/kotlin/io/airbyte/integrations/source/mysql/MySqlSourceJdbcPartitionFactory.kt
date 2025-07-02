@@ -440,7 +440,7 @@ class MySqlSourceJdbcPartitionFactory(
 
         val lowerBound = findPkLowerBound(stream, pkChosenFromCatalog)
         val lowerType = pkChosenFromCatalog[0].type as LosslessJdbcFieldType<*, *>
-        val lowerBoundVal = upperType.jsonDecoder.decode(lowerBound)
+        val lowerBoundVal = lowerType.jsonDecoder.decode(lowerBound)
         log.info { "Found primary key lower bound: $lowerBoundVal" }
 
         return when (unsplitPartition) {
