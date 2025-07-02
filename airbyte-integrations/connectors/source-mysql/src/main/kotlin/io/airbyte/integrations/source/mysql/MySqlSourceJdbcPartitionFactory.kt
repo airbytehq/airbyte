@@ -32,7 +32,6 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.math.BigInteger
 import java.time.Duration
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset.UTC
@@ -444,8 +443,6 @@ class MySqlSourceJdbcPartitionFactory(
         val lowerBoundVal = upperType.jsonDecoder.decode(lowerBound)
         log.info { "Found primary key lower bound: $lowerBoundVal" }
 
-
-
         return when (unsplitPartition) {
             is MySqlSourceJdbcSnapshotWithCursorPartition ->
                 unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
@@ -547,7 +544,8 @@ class MySqlSourceJdbcPartitionFactory(
     ): Map<OffsetDateTime, OffsetDateTime?> {
         var queryPlan: MutableList<OffsetDateTime> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: OffsetDateTime.MIN
-        val eachStep: Duration = Duration.between(effectiveLowerBound, upperBound).dividedBy(num.toLong())
+        val eachStep: Duration =
+            Duration.between(effectiveLowerBound, upperBound).dividedBy(num.toLong())
         for (i in 1..(num - 1)) {
             queryPlan.add(effectiveLowerBound.plus(eachStep.multipliedBy(i.toLong())))
         }
@@ -555,7 +553,6 @@ class MySqlSourceJdbcPartitionFactory(
         val ubs: List<OffsetDateTime?> = queryPlan + null
         log.info { "partitions: ${lbs.zip(ubs)}" }
         return lbs.zip(ubs).toMap()
-
     }
 
     private fun calculateBoundaries(

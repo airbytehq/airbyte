@@ -43,6 +43,7 @@ data class SelectColumnMinValue(
     override val columns: List<Field>
         get() = listOf(column)
 }
+
 sealed interface FromNode
 
 data object NoFrom : FromNode

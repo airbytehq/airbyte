@@ -229,7 +229,7 @@ typealias AnyProtoEncoder = TextProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
-    valueVBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
+    valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
         // We use toSortedMap() to ensure that the order is consistent
@@ -241,11 +241,11 @@ fun NativeRecordPayload.toProtobuf(
                 index,
                 entry.value.fieldValue?.let {
                     (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
-                        valueVBuilder.clear(),
+                        valueBuilder.clear(),
                         entry.value.fieldValue!!
                     )
                 }
-                    ?: NullProtoEncoder.encode(valueVBuilder.clear(), null)
+                    ?: NullProtoEncoder.encode(valueBuilder.clear(), null)
             )
         }
     }
