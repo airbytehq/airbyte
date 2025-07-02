@@ -11,6 +11,7 @@ import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.sourceTesting.IntegrationTestOperations
+import io.airbyte.integrations.sourceTesting.TestAssetResourceNamer
 import io.airbyte.integrations.sourceTesting.TestDbExecutor
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -31,13 +32,14 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.function.Executable
 
-abstract class FieldTypeMapperTest {
-    private val log = KotlinLogging.logger {}
+abstract class FieldTypeMapperTest(
+    private val configSpec: ConfigurationSpecification,
+    private val executor: TestDbExecutor,
+    private val setupDdl: List<String>,
+    private val testCases: List<TestCase>,
+) {
 
-    abstract val configSpec: ConfigurationSpecification
-    abstract val executor: TestDbExecutor
-    abstract val setupDdl: List<String>
-    abstract val testCases: List<TestCase>
+    private val log = KotlinLogging.logger {}
 
     private val allStreamNamesAndRecordData: Map<String, List<JsonNode>> by lazy {
         testCases.flatMap { it.streamNamesToRecordData.toList() }.toMap()
@@ -48,7 +50,7 @@ abstract class FieldTypeMapperTest {
     }
 
     companion object {
-        lateinit var ops: IntegrationTestOperations
+        val testAssetResourceNamer = TestAssetResourceNamer()
     }
 
     @TestFactory
@@ -210,7 +212,6 @@ abstract class FieldTypeMapperTest {
 
     data class TestCase(
         val namespace: String,
-        val tableName: String,
         val sqlType: String,
         val values: Map<String, String>,
         val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
@@ -222,6 +223,8 @@ abstract class FieldTypeMapperTest {
                     .trim()
                     .replace(" +".toRegex(), "_")
                     .lowercase()
+
+        val tableName = testAssetResourceNamer.getName()
 
         val columnName: String
             get() = "col_$id"
