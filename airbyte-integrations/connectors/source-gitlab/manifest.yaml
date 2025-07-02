@@ -181,8 +181,8 @@ spec:
             fields:
               - type: AddedFieldDefinition
                 path: ["groups_list"]
-                value: "{{ config.get('groups', '').split(' ') }}"
-            condition: "{{ config.get('groups', False) and not config.get('groups_list', False) }}"
+                value: "{{ config.get('groups').split(' ') if config.get('groups') else [] }}"
+            condition: "{{ not config.get('groups_list', False) }}"
       - type: ConfigMigration
         descriptions: Migrates `projects` key to `projects_list` key.
         transformations:
@@ -190,8 +190,8 @@ spec:
             fields:
               - type: AddedFieldDefinition
                 path: ["projects_list"]
-                value: "{{ config.get('projects', '').split(' ') }}"
-            condition: "{{ config.get('projects', False) and not config.get('projects_list', False) }}"
+                value: "{{ config.get('projects').split(' ') if config.get('projects') else [] }}"
+            condition: "{{ not config.get('projects_list', False) }}"
     validations:
       - type: DpathValidator
         field_path: ["api_url"]
