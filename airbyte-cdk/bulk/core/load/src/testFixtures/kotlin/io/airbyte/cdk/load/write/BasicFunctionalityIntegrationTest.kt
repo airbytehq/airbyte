@@ -203,9 +203,6 @@ enum class UnionBehavior {
      * option, no validation is performed.
      */
     STRINGIFY,
-
-    /** Union fields are written as strings, no validation is performed */
-    STRICT_STRINGIFY,
 }
 
 enum class UnknownTypesBehavior {
@@ -293,6 +290,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     val dedupBehavior: DedupBehavior?,
     val stringifySchemalessObjects: Boolean,
+    val stringifyUnionObjects: Boolean = false,
     val schematizedObjectBehavior: SchematizedNestedValueBehavior,
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
@@ -3421,7 +3419,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         StringValue(value.serializeToString())
                     }
-                UnionBehavior.STRICT_STRINGIFY -> StringValue(value.toString())
             }
         val expectedRecords: List<OutputRecord> =
             listOf(
@@ -3446,35 +3443,48 @@ abstract class BasicFunctionalityIntegrationTest(
                             "union_of_objects_with_properties_identical" to
                                 schematizedObject(linkedMapOf("id" to 10, "name" to "Joe")),
                             "union_of_objects_with_properties_overlapping" to
-                                schematizedObject(
-                                    linkedMapOf("id" to 20, "name" to "Jane", "flagged" to true)
-                                ),
+                                if (stringifyUnionObjects) {
+                                    """{"id":20,"name":"Jane","flagged":true}"""
+                                } else {
+                                    schematizedObject(
+                                        linkedMapOf("id" to 20, "name" to "Jane", "flagged" to true)
+                                    )
+                                },
                             "union_of_objects_with_properties_contradicting" to
-                                // can't just call schematizedObject(... unionValue) - there's some
-                                // nontrivial interactions here
-                                when (schematizedObjectBehavior) {
-                                    // these two cases are simple
-                                    SchematizedNestedValueBehavior.PASS_THROUGH,
-                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
-                                        linkedMapOf(
-                                            "id" to unionValue("integer", 1),
-                                            "name" to "Jenny"
-                                        )
-                                    // If we stringify, then the nested union value is _not_
-                                    // processed
-                                    // (note that `id` is mapped to 1 and not "1")
-                                    SchematizedNestedValueBehavior.STRINGIFY ->
-                                        """{"id":1,"name":"Jenny"}"""
+                                if (stringifyUnionObjects) {
+                                    """{"id":1,"name":"Jenny"}"""
+                                } else {
+                                    // can't just call schematizedObject(... unionValue) - there's
+                                    // some
+                                    // nontrivial interactions here
+                                    when (schematizedObjectBehavior) {
+                                        // these two cases are simple
+                                        SchematizedNestedValueBehavior.PASS_THROUGH,
+                                        SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                            linkedMapOf(
+                                                "id" to unionValue("integer", 1),
+                                                "name" to "Jenny"
+                                            )
+                                        // If we stringify, then the nested union value is _not_
+                                        // processed
+                                        // (note that `id` is mapped to 1 and not "1")
+                                        SchematizedNestedValueBehavior.STRINGIFY ->
+                                            """{"id":1,"name":"Jenny"}"""
+                                    }
                                 },
                             "union_of_objects_with_properties_nonoverlapping" to
-                                schematizedObject(
-                                    linkedMapOf(
-                                        "id" to 30,
-                                        "name" to "Phil",
-                                        "flagged" to false,
-                                        "description" to "Very Phil",
+                                if (stringifyUnionObjects) {
+                                    """{"id":30,"name":"Phil","flagged":false,"description":"Very Phil"}"""
+                                } else {
+                                    schematizedObject(
+                                        linkedMapOf(
+                                            "id" to 30,
+                                            "name" to "Phil",
+                                            "flagged" to false,
+                                            "description" to "Very Phil",
+                                        )
                                     )
-                                )
+                                }
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -3488,25 +3498,37 @@ abstract class BasicFunctionalityIntegrationTest(
                             "union_of_objects_with_properties_identical" to
                                 schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_nonoverlapping" to
-                                schematizedObject(linkedMapOf()),
+                                if (stringifyUnionObjects) {
+                                    """{}"""
+                                } else {
+                                    schematizedObject(linkedMapOf())
+                                },
                             "union_of_objects_with_properties_overlapping" to
-                                schematizedObject(linkedMapOf()),
+                                if (stringifyUnionObjects) {
+                                    """{}"""
+                                } else {
+                                    schematizedObject(linkedMapOf())
+                                },
                             "union_of_objects_with_properties_contradicting" to
-                                // similar to the previous record - need to handle this branch
-                                // manually
-                                when (schematizedObjectBehavior) {
-                                    // these two cases are simple
-                                    SchematizedNestedValueBehavior.PASS_THROUGH,
-                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
-                                        linkedMapOf(
-                                            "id" to unionValue("string", "seal-one-hippity"),
-                                            "name" to "James"
-                                        )
-                                    // If we stringify, then the nested union value is _not_
-                                    // processed
-                                    // (note that `id` is mapped to 1 and not "1")
-                                    SchematizedNestedValueBehavior.STRINGIFY ->
-                                        """{"id":"seal-one-hippity","name":"James"}"""
+                                if (stringifyUnionObjects) {
+                                    """{"id":"seal-one-hippity","name":"James"}"""
+                                } else {
+                                    // similar to the previous record - need to handle this branch
+                                    // manually
+                                    when (schematizedObjectBehavior) {
+                                        // these two cases are simple
+                                        SchematizedNestedValueBehavior.PASS_THROUGH,
+                                        SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                            linkedMapOf(
+                                                "id" to unionValue("string", "seal-one-hippity"),
+                                                "name" to "James"
+                                            )
+                                        // If we stringify, then the nested union value is _not_
+                                        // processed
+                                        // (note that `id` is mapped to 1 and not "1")
+                                        SchematizedNestedValueBehavior.STRINGIFY ->
+                                            """{"id":"seal-one-hippity","name":"James"}"""
+                                    }
                                 }
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),

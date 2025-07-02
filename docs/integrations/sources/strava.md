@@ -127,6 +127,7 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.23 | 2025-06-28 | [62278](https://github.com/airbytehq/airbyte/pull/62278) | Update dependencies |
 | 0.3.22 | 2025-06-14 | [61608](https://github.com/airbytehq/airbyte/pull/61608) | Update dependencies |
 | 0.3.21 | 2025-05-25 | [60208](https://github.com/airbytehq/airbyte/pull/60208) | Update dependencies |
 | 0.3.20 | 2025-05-04 | [59581](https://github.com/airbytehq/airbyte/pull/59581) | Update dependencies |
