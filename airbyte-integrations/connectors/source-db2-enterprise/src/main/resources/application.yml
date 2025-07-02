@@ -6,7 +6,7 @@ airbyte:
 
     extract:
       jdbc:
-        mode: concurrent
+        mode: concurrent_with_cdc
         with-sampling: true
         table-sample-size: 1024
         throughput-bytes-per-second: 10000000

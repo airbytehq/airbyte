@@ -2,7 +2,6 @@
 package io.airbyte.integrations.source.db2.config
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -10,7 +9,6 @@ import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.File
 import java.net.URI
@@ -37,26 +35,22 @@ data class Db2SourceConfiguration(
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
 ) : JdbcSourceConfiguration {
-
+    val cdc: CdcIncrementalConfiguration? = incremental as? CdcIncrementalConfiguration
     override val global: Boolean = false
-    override val maxSnapshotReadDuration = null
+    override val maxSnapshotReadDuration: Duration? = cdc?.initialLoadTimeout
 
-    /** Required to inject [Db2SourceConfiguration] directly. */
-    @Factory
-    private class MicronautFactory {
-        @Singleton
-        fun db2SourceConfig(
-            factory:
-                SourceConfigurationFactory<
-                    Db2SourceConfigurationSpecification, Db2SourceConfiguration>,
-            supplier: ConfigurationSpecificationSupplier<Db2SourceConfigurationSpecification>,
-        ): Db2SourceConfiguration = factory.make(supplier.get())
+    override fun isCdc(): Boolean {
+        return cdc != null
     }
 }
 
 sealed interface IncrementalConfiguration
 
 data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+
+data class CdcIncrementalConfiguration(
+    val initialLoadTimeout: Duration,
+) : IncrementalConfiguration
 
 @Singleton
 class Db2SourceConfigurationFactory :
@@ -105,6 +99,11 @@ class Db2SourceConfigurationFactory :
             when (val inc = pojo.getIncrementalConfigurationSpecificationValue()) {
                 UserDefinedCursorConfigurationSpecification ->
                     UserDefinedCursorIncrementalConfiguration
+                is CdcCursorConfigurationSpecification ->
+                    CdcIncrementalConfiguration(
+                        initialLoadTimeout =
+                            Duration.ofHours(inc.initialLoadTimeoutHours!!.toLong()),
+                    )
             }
         return Db2SourceConfiguration(
             realHost = realHost,

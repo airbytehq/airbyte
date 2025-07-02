@@ -162,8 +162,7 @@ class Db2SourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription("Configures how data is extracted from the database.")
     @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification =
-        // TODO: add CDC
-        UserDefinedCursorConfigurationSpecification
+        cursorJson ?: cursor.asIncrementalConfigurationSpecification()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
@@ -253,6 +252,7 @@ class MicronautPropertiesFriendlyEncryption {
         value = UserDefinedCursorConfigurationSpecification::class,
         name = "user_defined"
     ),
+    JsonSubTypes.Type(value = CdcCursorConfigurationSpecification::class, name = "cdc"),
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -267,5 +267,36 @@ sealed interface IncrementalConfigurationSpecification
 )
 data object UserDefinedCursorConfigurationSpecification : IncrementalConfigurationSpecification
 
+@JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
+@JsonSchemaDescription(
+    "<i>Recommended</i> - " +
+        "Incrementally reads new inserts, updates, and deletes using change data capture feature." +
+        " This must be enabled on your database.",
+)
+class CdcCursorConfigurationSpecification : IncrementalConfigurationSpecification {
+
+    @JsonProperty("initial_load_timeout_hours")
+    @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
+    @JsonPropertyDescription(
+        "The amount of time an initial load is allowed to continue for before catching up on CDC events.",
+    )
+    @JsonSchemaDefault("8")
+    @JsonSchemaInject(json = """{"order":2,"min":4,"max":24,"always_show":true}""")
+    var initialLoadTimeoutHours: Int? = 8
+}
+
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")
-class MicronautPropertiesFriendlyCursorConfigurationSpecification {}
+class MicronautPropertiesFriendlyCursorConfigurationSpecification {
+    var cursorMethod: String = "user_defined"
+    var initialLoadTimeoutHours: Int? = null
+
+    fun asIncrementalConfigurationSpecification(): IncrementalConfigurationSpecification =
+        when (cursorMethod) {
+            "user_defined" -> UserDefinedCursorConfigurationSpecification
+            "cdc" ->
+                CdcCursorConfigurationSpecification().also {
+                    it.initialLoadTimeoutHours = initialLoadTimeoutHours
+                }
+            else -> throw ConfigErrorException("invalid value $cursorMethod")
+        }
+}
