@@ -38,6 +38,7 @@ class CheckVersionIncrement(Check):
     def _reason_to_skip(self, connector: Connector) -> str | None:
         # TODO: don't run if only files changed are in the bypass list or running in the context of the master branch
         # TODO: get this to work on the private airbyte-enterprise repo
+        print(Path.cwd().absolute().parts)
         if "airbyte-enterprise" in Path.cwd().absolute().parts:
             return "Version bump not enforced for enterprise repo"
         if connector.metadata and connector.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
