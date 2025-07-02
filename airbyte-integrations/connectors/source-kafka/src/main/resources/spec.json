@@ -52,6 +52,36 @@
                 "airbyte_secret": true
               }
             }
+          },
+          {
+            "title": "PROTOBUF",
+            "properties": {
+              "deserialization_type": {
+                "const": "PROTOBUF"
+              },
+              "deserialization_strategy": {
+                "type": "string",
+                "enum": [
+                  "TopicNameStrategy",
+                  "RecordNameStrategy",
+                  "TopicRecordNameStrategy"
+                ],
+                "default": "TopicNameStrategy"
+              },
+              "schema_registry_url": {
+                "type": "string",
+                "examples": ["http://localhost:8081"]
+              },
+              "schema_registry_username": {
+                "type": "string",
+                "default": ""
+              },
+              "schema_registry_password": {
+                "type": "string",
+                "default": "",
+                "airbyte_secret": true
+              }
+            }
           }
         ]
       },
