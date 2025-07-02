@@ -25,7 +25,7 @@ class StringInterpolationTest {
         val interpolatedValue =
             StringInterpolator()
                 .interpolate(
-                    "{{ first == second ? 'true' : 'false' }}",
+                    "{{ 'true' if first == second else 'false' }}",
                     mapOf("first" to 1, "second" to 2)
                 )
         assertEquals("false", interpolatedValue)
@@ -36,7 +36,7 @@ class StringInterpolationTest {
         val interpolatedValue =
             StringInterpolator()
                 .interpolate(
-                    "{{ \"#{protocol}://login.salesforce.com/auth\" }}",
+                    "{{protocol}}://login.salesforce.com/auth",
                     mapOf("protocol" to "https")
                 )
         assertEquals("https://login.salesforce.com/auth", interpolatedValue)
@@ -47,7 +47,7 @@ class StringInterpolationTest {
         val interpolatedValue =
             StringInterpolator()
                 .interpolate(
-                    "{{ \"https://#{isSandbox ? 'sandbox' : 'login'}.salesforce.com/auth\" }}",
+                    "https://{{ 'sandbox' if isSandbox else 'login'}}.salesforce.com/auth",
                     mapOf("isSandbox" to true)
                 )
         assertEquals("https://sandbox.salesforce.com/auth", interpolatedValue)
@@ -58,7 +58,7 @@ class StringInterpolationTest {
         val interpolatedValue =
             StringInterpolator()
                 .interpolate(
-                    "{{ \"https://#{isSandbox ? 'sandbox' : 'login'}.salesforce.com/auth\" }}",
+                    "https://{{ 'sandbox' if isSandbox else 'login'}}.salesforce.com/auth",
                     mapOf("isSandbox" to false)
                 )
         assertEquals("https://login.salesforce.com/auth", interpolatedValue)

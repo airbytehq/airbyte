@@ -28,7 +28,7 @@ dependencies {
 
     implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-http')
     api 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
-    api 'io.pebbletemplates:pebble:3.2.4'
+    api 'com.hubspot.jinjava:jinjava:2.7.4'
 
     testFixturesApi 'org.jetbrains.kotlin:kotlin-test'
 }
