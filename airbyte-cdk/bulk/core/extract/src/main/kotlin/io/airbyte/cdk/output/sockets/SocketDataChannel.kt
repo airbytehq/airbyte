@@ -5,6 +5,7 @@
 package io.airbyte.cdk.output.sockets
 
 import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.*
+import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -99,14 +100,18 @@ class UnixDomainSocketDataChannel(
         // Socket is initialized and waiting for a listener to connect.
         // In order to let the outer RunBlocking {} to exit immediately,
         // we launch a coroutine as an independent Job() on the IO dispatcher.
-        launch(Dispatchers.IO + Job()) {
+        launch(
+            ThreadRenamingCoroutineName("socket-data-channel-$socketFilePath--") +
+                Dispatchers.IO +
+                Job()
+        ) {
             socketStatus.set(SOCKET_WAITING_LISTENER)
-            logger.info { "Waiting for $socketFilePath to connect..." }
+            logger.info { "Waiting to connect..." }
             // accept blocks until a listener connects
             val socketChannel: SocketChannel = serverSocketChannel.accept()
             socketStatus.set(SOCKET_READY)
             outputStream = Channels.newOutputStream(socketChannel)
-            logger.info { "connected to server socket at $socketFilePath" }
+            logger.info { "connected to server socket" }
         }
         Unit
     }
