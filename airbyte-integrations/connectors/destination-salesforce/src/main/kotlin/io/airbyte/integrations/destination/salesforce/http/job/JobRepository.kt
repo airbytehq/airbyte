@@ -91,7 +91,7 @@ class JobRepository(private val httpClient: HttpClient, private val baseUrl: Sup
         }
     }
 
-    fun fetchFailedRecords(job: Job): List<JsonNode> {
+    fun fetchFailedRecords(job: Job): List<Map<String, String>> {
         val response: Response =
             httpClient.send(
                 Request(

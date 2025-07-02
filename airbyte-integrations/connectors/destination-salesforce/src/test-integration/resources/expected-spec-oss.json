@@ -6,7 +6,7 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
-      "objectStorageConfig" : {
+      "object_storage_config" : {
         "oneOf" : [ {
           "type" : "object",
           "additionalProperties" : true,
@@ -178,6 +178,7 @@
           "title" : "S3",
           "required" : [ "storage_type", "s3_bucket_name", "s3_bucket_region", "bucket_path", "format" ]
         } ],
+        "title" : "Object Storage Configuration",
         "type" : "object"
       },
       "client_id" : {
@@ -212,7 +213,7 @@
         "const" : "Client"
       }
     },
-    "required" : [ "objectStorageConfig", "client_id", "client_secret", "refresh_token", "is_sandbox", "auth_type" ]
+    "required" : [ "client_id", "client_secret", "refresh_token", "is_sandbox", "auth_type" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

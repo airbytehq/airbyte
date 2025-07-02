@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.salesforce
 
 import com.google.common.base.Suppliers
 import dev.failsafe.RetryPolicy
+import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.http.HttpClient
@@ -25,8 +26,8 @@ import okhttp3.OkHttpClient
 @Factory
 class SalesforceBeanFactory {
     @Singleton
-    fun check(httpClient: HttpClient, baseUrl: Supplier<String>) =
-        SalesforceChecker(httpClient, baseUrl)
+    fun check(httpClient: HttpClient, baseUrl: Supplier<String>, dlqChecker: DlqChecker) =
+        SalesforceChecker(httpClient, baseUrl, dlqChecker)
 
     @Singleton
     fun discover(operationRepository: SalesforceOperationRepository) =

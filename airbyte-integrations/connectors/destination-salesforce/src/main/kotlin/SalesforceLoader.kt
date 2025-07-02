@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.salesforce
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
@@ -12,6 +13,7 @@ import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.dlq.newDlqRecord
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.dlq.DlqLoader
 import io.airbyte.integrations.destination.salesforce.io.airbyte.integrations.destination.salesforce.http.job.JobRepository
@@ -36,14 +38,13 @@ class SalesforceState(
             outputStream,
             CSVFormat.Builder.create().setRecordSeparator("\n").build()
         )
-    private val records: MutableList<DestinationRecordRaw> = mutableListOf()
+    private val mapper: ObjectMapper = ObjectMapper()
 
     fun accumulate(record: DestinationRecordRaw) {
         if (isFull()) {
             throw IllegalStateException("Can't add records as the batch is already full")
         }
 
-        records.add(record)
         printer.printRecord(
             (record.asDestinationRecordAirbyteValue().data as ObjectValue).toCsvRecord(schema)
         )
@@ -70,12 +71,8 @@ class SalesforceState(
             }
             Thread.sleep(5000)
         }
-        if (!jobRepository.fetchFailedRecords(job).isEmpty()) {
-            logger.error {
-                "Sync is partial success since there are failed records in job ${job.id}"
-            }
-        }
-        return null
+
+        return jobRepository.fetchFailedRecords(job).map { stream.newDlqRecord(it) }
     }
 
     override fun close() {}

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.salesforce
 
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Request
 import io.airbyte.cdk.load.http.RequestMethod
@@ -12,8 +13,11 @@ import io.airbyte.cdk.load.http.Response
 import java.io.InputStreamReader
 import java.util.function.Supplier
 
-class SalesforceChecker(private val httpClient: HttpClient, private val baseUrl: Supplier<String>) :
-    DestinationChecker<SalesforceConfiguration> {
+class SalesforceChecker(
+    private val httpClient: HttpClient,
+    private val baseUrl: Supplier<String>,
+    private val dlqChecker: DlqChecker
+) : DestinationChecker<SalesforceConfiguration> {
     override fun check(config: SalesforceConfiguration) {
         val response: Response =
             httpClient.send(
@@ -34,5 +38,7 @@ class SalesforceChecker(private val httpClient: HttpClient, private val baseUrl:
                 )
             }
         }
+
+        dlqChecker.check(config.objectStorageConfig)
     }
 }

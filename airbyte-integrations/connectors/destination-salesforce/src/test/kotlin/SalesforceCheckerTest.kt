@@ -2,6 +2,8 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
+import io.airbyte.cdk.load.check.dlq.DlqChecker
+import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Request
 import io.airbyte.cdk.load.http.RequestMethod
@@ -10,6 +12,7 @@ import io.airbyte.integrations.destination.salesforce.SalesforceChecker
 import io.airbyte.integrations.destination.salesforce.SalesforceConfiguration
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.lang.IllegalStateException
 import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.BeforeEach
@@ -23,14 +26,28 @@ class SalesforceCheckerTest {
     private lateinit var config: SalesforceConfiguration
     private lateinit var httpClient: HttpClient
     private lateinit var checker: SalesforceChecker
+    private lateinit var dlqChecker: DlqChecker
 
     @BeforeEach
     fun setUp() {
         response = mockk()
         every { response.close() } returns Unit
-        config = mockk()
+        config =
+            SalesforceConfiguration(
+                clientId = "client-id",
+                clientSecret = "client-secret",
+                refreshToken = "refresh-token",
+                isSandbox = true,
+                objectStorageConfig = DisabledObjectStorageConfig()
+            )
         httpClient = mockk()
-        checker = SalesforceChecker(httpClient) { BASE_URL }
+        dlqChecker = mockk(relaxed = true)
+        checker =
+            SalesforceChecker(
+                httpClient = httpClient,
+                baseUrl = { BASE_URL },
+                dlqChecker = dlqChecker,
+            )
     }
 
     @Test
@@ -46,6 +63,8 @@ class SalesforceCheckerTest {
         } returns response
 
         checker.check(config)
+
+        verify { dlqChecker.check(config.objectStorageConfig) }
     }
 
     @Test

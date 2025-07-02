@@ -8,15 +8,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageSpec
-import io.airbyte.cdk.load.command.dlq.ObjectStorageSpec
+import io.airbyte.cdk.load.command.dlq.ConfigurationSpecificationWithDlq
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
 @Singleton
-class SalesforceSpecification : ConfigurationSpecification() {
+class SalesforceSpecification : ConfigurationSpecificationWithDlq() {
     @get:JsonSchemaTitle("Client ID")
     @get:JsonPropertyDescription(
         """Enter your Salesforce developer application's <a href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>.""",
@@ -52,8 +50,6 @@ class SalesforceSpecification : ConfigurationSpecification() {
     @get:JsonProperty("auth_type")
     @get:JsonSchemaInject(json = """{"const": "Client"}""")
     val authType: String = "Client"
-
-    val objectStorageConfig: ObjectStorageSpec = DisabledObjectStorageSpec()
 }
 
 @Singleton
