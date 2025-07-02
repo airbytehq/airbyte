@@ -69,8 +69,9 @@ class UnixDomainSocketDataChannel(
             return socketStatus.get() == SOCKET_READY && socketBound.get().not()
         }
 
-    /** Ensure the socket is still open and writable.
-     *  We send a probe packet to check the state of the socket.
+    /**
+     * Ensure the socket is still open and writable. We send a probe packet to check the state of
+     * the socket.
      */
     private fun ensureSocketState() {
         try {
