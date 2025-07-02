@@ -33,9 +33,9 @@ class SocketDataChannelResourceHolderTest() {
 
         var innerBound: Boolean = false
 
-        override suspend fun initializeSocket() {}
+        override suspend fun initialize() {}
 
-        override fun shutdownSocket() {}
+        override fun shutdown() {}
 
         override val status: SocketDataChannel.SocketStatus
             get() = innerStatus
@@ -45,11 +45,11 @@ class SocketDataChannelResourceHolderTest() {
                 innerBound = value
             }
 
-        override fun bindSocket() {
+        override fun bind() {
             innerBound = true
         }
 
-        override fun unbindSocket() {
+        override fun unbind() {
             innerBound = false
         }
 
@@ -57,7 +57,7 @@ class SocketDataChannelResourceHolderTest() {
             get() = null
             set(_) {}
 
-        override val available: Boolean
+        override val isAvailable: Boolean
             get() = innerStatus == SOCKET_READY && !innerBound
     }
     @Primary

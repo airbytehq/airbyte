@@ -29,10 +29,10 @@ class SocketDataChannelResourceHolder(
     val sockets: List<SocketDataChannel>
     init {
         sockets = List(socketPaths.size) { socketFactory.makeSocket(socketPaths[it]) }
-        runBlocking { sockets.forEach { socket -> socket.initializeSocket() } }
+        runBlocking { sockets.forEach { socket -> socket.initialize() } }
     }
 
     @Synchronized
     fun bindFreeSocket(): SocketDataChannel? =
-        sockets.firstOrNull { it.available }?.also { it.bindSocket() }
+        sockets.firstOrNull { it.isAvailable }?.also { it.bind() }
 }

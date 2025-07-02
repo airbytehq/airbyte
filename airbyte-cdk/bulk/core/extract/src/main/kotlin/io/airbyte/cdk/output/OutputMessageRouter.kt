@@ -51,7 +51,7 @@ class OutputMessageRouter(
                             SocketJsonOutputConsumer(
                                 (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET]
                                         as SocketResource.AcquiredSocket)
-                                    .socketWrapper,
+                                    .socketDatachannel,
                                 feedBootstrap.clock,
                                 feedBootstrap.bufferByteSizeThresholdForFlush,
                                 additionalProperties
@@ -75,7 +75,7 @@ class OutputMessageRouter(
                             SocketProtobufOutputConsumer(
                                 (acquiredResources[ResourceType.RESOURCE_OUTPUT_SOCKET]
                                         as SocketResource.AcquiredSocket)
-                                    .socketWrapper,
+                                    .socketDatachannel,
                                 feedBootstrap.clock,
                                 feedBootstrap.bufferByteSizeThresholdForFlush,
                                 additionalProperties

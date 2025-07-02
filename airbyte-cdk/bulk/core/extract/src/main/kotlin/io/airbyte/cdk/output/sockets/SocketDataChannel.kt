@@ -38,14 +38,14 @@ interface SocketDataChannel {
         SOCKET_ERROR,
     }
 
-    suspend fun initializeSocket()
-    fun shutdownSocket()
+    suspend fun initialize()
+    fun shutdown()
     val status: SocketStatus
     var bound: Boolean
-    fun bindSocket()
-    fun unbindSocket()
+    fun bind()
+    fun unbind()
     var outputStream: OutputStream?
-    val available: Boolean
+    val isAvailable: Boolean
 }
 
 class UnixDomainSocketDataChannel(
@@ -63,18 +63,21 @@ class UnixDomainSocketDataChannel(
             if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
             return socketStatus.get()
         }
-    override val available: Boolean
+    override val isAvailable: Boolean
         @Synchronized
         get() {
             return socketStatus.get() == SOCKET_READY && socketBound.get().not()
         }
-    /** Ensure the socket is still open and writable. */
+
+    /** Ensure the socket is still open and writable.
+     *  We send a probe packet to check the state of the socket.
+     */
     private fun ensureSocketState() {
         try {
             outputStream?.write(probePacket)
         } catch (e: Exception) {
             logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
-            shutdownSocket()
+            shutdown()
             socketStatus.set(SOCKET_ERROR)
         }
     }
@@ -84,7 +87,7 @@ class UnixDomainSocketDataChannel(
         get() = socketBound.get()
         set(value) = socketBound.set(value)
 
-    override suspend fun initializeSocket() = coroutineScope {
+    override suspend fun initialize() = coroutineScope {
         logger.info { "Initializing socket at $socketFilePath" }
         val socketFile = File(socketFilePath)
         if (socketFile.exists()) {
@@ -116,21 +119,21 @@ class UnixDomainSocketDataChannel(
         Unit
     }
 
-    override fun shutdownSocket() {
+    override fun shutdown() {
         socketStatus.set(SOCKET_CLOSING)
         outputStream?.close()
         outputStream = null
-        unbindSocket()
+        unbind()
         socketStatus.set(SOCKET_CLOSED)
     }
 
     @Synchronized
-    override fun bindSocket() {
+    override fun bind() {
         socketBound.set(true)
     }
 
     @Synchronized
-    override fun unbindSocket() {
+    override fun unbind() {
         socketBound.set(false)
     }
 }

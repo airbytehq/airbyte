@@ -97,10 +97,10 @@ class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.Ac
 class SocketResource(val socketDataChannelResourceHolder: SocketDataChannelResourceHolder?) :
     Resource<SocketResource.AcquiredSocket> {
 
-    class AcquiredSocket(val socketWrapper: SocketDataChannel) : Resource.Acquired {
+    class AcquiredSocket(val socketDatachannel: SocketDataChannel) : Resource.Acquired {
         // Release a socket resource unbinds it but does not close it.
         override fun close() {
-            socketWrapper.unbindSocket()
+            socketDatachannel.unbind()
         }
     }
 
