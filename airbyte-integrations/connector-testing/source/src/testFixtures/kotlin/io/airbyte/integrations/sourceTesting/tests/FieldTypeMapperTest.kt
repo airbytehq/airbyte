@@ -11,8 +11,8 @@ import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.sourceTesting.IntegrationTestOperations
-import io.airbyte.integrations.sourceTesting.TestAssetResourceNamer
 import io.airbyte.integrations.sourceTesting.TestDbExecutor
+import io.airbyte.integrations.sourceTesting.utcNamer
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -32,14 +32,14 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.function.Executable
 
-abstract class FieldTypeMapperTest(
-    private val configSpec: ConfigurationSpecification,
-    private val executor: TestDbExecutor,
-    private val setupDdl: List<String>,
-    private val testCases: List<TestCase>,
-) {
+abstract class FieldTypeMapperTest() {
 
     private val log = KotlinLogging.logger {}
+
+    abstract val configSpec: ConfigurationSpecification
+    abstract val executor: TestDbExecutor
+    abstract val setupDdl: List<String>
+    abstract val testCases: List<TestCase>
 
     private val allStreamNamesAndRecordData: Map<String, List<JsonNode>> by lazy {
         testCases.flatMap { it.streamNamesToRecordData.toList() }.toMap()
@@ -47,10 +47,6 @@ abstract class FieldTypeMapperTest(
 
     private fun findTestCase(streamName: String): TestCase? {
         return testCases.find { streamName.uppercase() in it.streamNamesToRecordData.keys }
-    }
-
-    companion object {
-        val testAssetResourceNamer = TestAssetResourceNamer()
     }
 
     @TestFactory
@@ -224,7 +220,7 @@ abstract class FieldTypeMapperTest(
                     .replace(" +".toRegex(), "_")
                     .lowercase()
 
-        val tableName = testAssetResourceNamer.getName()
+        val tableName = utcNamer.getName()
 
         val columnName: String
             get() = "col_$id"

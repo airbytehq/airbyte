@@ -54,6 +54,8 @@ class TestAssetResourceNamer(
     }
 }
 
+val utcNamer = TestAssetResourceNamer(Clock.systemUTC(), RandomNameSegmentGenerator())
+
 class RandomNameSegmentGenerator(private val random: Random = Random.Default) {
     fun generate(randomLength: Int): String {
         val chars = ('A'..'Z') + ('0'..'9')
