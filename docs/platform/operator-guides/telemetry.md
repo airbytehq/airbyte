@@ -27,8 +27,6 @@ Also check our [privacy policy](https://airbyte.com/privacy-policy) for more det
           TRACKING_STRATEGY: logging
       ```
 
-      Note: In Helm Chart V1, `TRACKING_STRATEGY` is hardcoded to `segment` (telemetry enabled) in the chart templates. You must use the `env_vars` configuration to override this default behavior.
-
   </TabItem>
   <TabItem value="cloud" label="Cloud">
     When visiting the webapp or our homepage the first time, you'll be asked for your consent to
