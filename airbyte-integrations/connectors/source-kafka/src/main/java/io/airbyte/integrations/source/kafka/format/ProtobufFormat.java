@@ -68,7 +68,8 @@ public class ProtobufFormat extends AbstractFormat {
     } else {
       // If the registry username is missing; and the sasl_mechanism == OAUTHBEARER
       final JsonNode protocolConfig = config.get("protocol");
-      if (protocolConfig.get("sasl_mechanism").asText().equals(OAuthBearerLoginModule.OAUTHBEARER_MECHANISM)) {
+      if (protocolConfig.has("sasl_mechanism") &&
+              protocolConfig.get("sasl_mechanism").asText().equals(OAuthBearerLoginModule.OAUTHBEARER_MECHANISM)) {
         props.put(SchemaRegistryClientConfig.BEARER_AUTH_CREDENTIALS_SOURCE, "SASL_OAUTHBEARER_INHERIT");
       }
     }
