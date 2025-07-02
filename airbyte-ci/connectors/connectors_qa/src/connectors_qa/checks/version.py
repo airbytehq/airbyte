@@ -18,6 +18,7 @@ class CheckVersionIncrement(Check):
     name = "Connector Version Increment Check"
     description = "Validates that the connector version was incremented if files were modified."
 
+    # TODO: don't run this check if only the following files were modified:
     # _BYPASS_CHECK_FOR = [
     #     consts.METADATA_FILE_NAME,
     #     "acceptance-test-config.yml",
@@ -34,10 +35,19 @@ class CheckVersionIncrement(Check):
     #     "build_customization.py",
     # ]
 
-    def _should_run(self) -> bool:
-        # Always run
-        # TODO: don't run if only files changed are in the bypass list or running in the context of the master branch
-        return True
+    @staticmethod
+    def _should_run(connector) -> tuple[bool, str | None]:
+        if connector.metadata:
+            if connector.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
+                return False, "Connector opts out of version increment checks via its metadata"
+
+            if connector.metadata.get("license") == "Airbyte Enterprise":
+                # Don't run this check on Airbyte Enterprise connectors
+                # TODO: this is a workaround until we have a better way to determine
+                # the version of published Airbyte Enterprise connectors to compare against.
+                return False, "This check is not applicable to enterprise connectors"
+
+        return True, None
 
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
@@ -85,8 +95,9 @@ class CheckVersionIncrement(Check):
 
     def _run(self, connector: Connector) -> CheckResult:
         """Run the version increment check."""
-        if connector.metadata and connector.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
-            return self.skip(connector, "Connector opts out of version increment checks.")
+        should_run, msg = self._should_run(connector)
+        if not should_run:
+            return self.skip(connector, msg)
 
         try:
             master_version = self._get_master_connector_version(connector)
