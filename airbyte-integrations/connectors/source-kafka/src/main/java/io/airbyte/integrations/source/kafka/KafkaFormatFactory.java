@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.source.kafka.format.AvroFormat;
+import io.airbyte.integrations.source.kafka.format.ProtobufFormat;
 import io.airbyte.integrations.source.kafka.format.JsonFormat;
 import io.airbyte.integrations.source.kafka.format.KafkaFormat;
 
@@ -23,6 +24,9 @@ public class KafkaFormatFactory {
       }
       case AVRO -> {
         return new AvroFormat(config);
+      }
+      case PROTOBUF -> {
+        return new ProtobufFormat(config);
       }
     }
     return new JsonFormat(config);

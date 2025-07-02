@@ -10,5 +10,6 @@ package io.airbyte.integrations.source.kafka;
  */
 public enum MessageFormat {
   JSON,
-  AVRO
+  AVRO,
+  PROTOBUF
 }
