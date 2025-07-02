@@ -553,6 +553,7 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
         allTypesBehavior = Untyped,
         // Because proto uses a fixed-sized array of typed unions, nulls are always present
         nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
         mismatchedTypesUnrepresentable = true,
         dataChannelMedium = DataChannelMedium.SOCKET,
         dataChannelFormat = DataChannelFormat.PROTOBUF,

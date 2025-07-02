@@ -159,10 +159,13 @@ class ProtoToJsonFormattingTest {
 
         protoSource = DestinationRecordProtobufSource(airbyteMessageProto)
 
+        val dummyType = StringType
+
         stream = mockk {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
             every { this@mockk.syncId } returns this@ProtoToJsonFormattingTest.syncId
             every { this@mockk.generationId } returns this@ProtoToJsonFormattingTest.generationId
+            every { this@mockk.schema } returns dummyType
         }
 
         record =
