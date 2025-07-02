@@ -1,14 +1,42 @@
 #
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
-
-
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Any, Iterable, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.validators import ValidationStrategy
+from airbyte_cdk.utils import is_cloud_environment
+
+
+@dataclass
+class ValidateApiUrl(ValidationStrategy):
+    def validate(self, value: Any) -> None:
+        url: str = value
+        is_valid, scheme, _ = self._parse_url(url=url)
+        if not is_valid:
+            raise ValueError("Invalid API resource locator.")
+        if scheme == "http" and is_cloud_environment():
+            raise ValueError("Http scheme is not allowed in this environment. Please use `https` instead.")
+
+    @staticmethod
+    def _parse_url(url: str) -> Tuple[bool, str, str]:
+        if not "." in url:
+            return False, "", ""
+        parts = url.split("://")
+        if len(parts) > 1:
+            scheme, url = parts
+        else:
+            scheme = "https"
+        if scheme not in ("http", "https"):
+            return False, "", ""
+        parts = url.split("/", 1)
+        if len(parts) > 1:
+            return False, "", ""
+        host, *_ = parts
+        return True, scheme, host
 
 
 @dataclass
