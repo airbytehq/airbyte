@@ -23,7 +23,7 @@ class MockConfig(
 val VALID_API_ID: String = "api_id"
 val VALID_API_TOKEN: String = "api_token"
 
-class FactoryTest {
+class DeclarativeDestinationFactoryTest {
 
     @Test
     internal fun `test when check then ensure check gets interpolated credentials`() {
@@ -45,7 +45,7 @@ class FactoryTest {
         val config = MockConfig(VALID_API_ID, VALID_API_TOKEN)
 
         try {
-            Factory(config).createDestinationChecker().check(config)
+            DeclarativeDestinationFactory(config).createDestinationChecker().check(config)
 
             verify {
                 constructedWith<BasicAccessAuthenticator>(
