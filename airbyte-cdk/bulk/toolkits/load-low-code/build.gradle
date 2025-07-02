@@ -1,34 +1,11 @@
-import org.jsonschema2pojo.SourceType
-
-plugins {
-    id 'com.github.eirnym.js2p' version "1.0"
-}
-
-jsonSchema2Pojo {
-    sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/declarative_components_schema.yaml")
-    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
-    removeOldOutput = true
-
-    targetPackage = 'io.airbyte.integrations.source.postgres.internal.models'
-
-    useLongIntegers = true
-    generateBuilders = true
-    includeConstructors = false
-    includeSetters = true
-}
-
-tasks.register('generate').configure {
-    dependsOn generateJsonSchema2Pojo
-}
-
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
 
     implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-http')
     api 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
-    api 'io.pebbletemplates:pebble:3.2.4'
+    api 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    api 'com.hubspot.jinjava:jinjava:2.7.4'
 
     testFixturesApi 'org.jetbrains.kotlin:kotlin-test'
 }
