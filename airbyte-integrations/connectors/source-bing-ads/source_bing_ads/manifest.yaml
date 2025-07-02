@@ -4901,7 +4901,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "name" ]
-          value: "{{ components_values['name'] }}"
+          value: "{{ camel_case_to_snake_case(components_values['name']) }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "$parameters", "report_aggregation" ]
