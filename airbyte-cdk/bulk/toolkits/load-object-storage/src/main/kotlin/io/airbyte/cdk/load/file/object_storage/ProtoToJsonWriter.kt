@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
@@ -20,7 +21,7 @@ class ProtoToJsonWriter(
     private val flatten: Boolean
 ) {
 
-    fun writeMeta(gen: JsonGenerator, record: DestinationRecordRaw) =
+    fun writeMeta(gen: JsonGenerator, record: DestinationRecordRaw, changes: List<Meta.Change>) =
         with(gen) {
             writeStringField(COLUMN_NAME_AB_RAW_ID, record.airbyteRawId.toString())
             writeNumberField(COLUMN_NAME_AB_EXTRACTED_AT, record.rawData.emittedAtMs)
@@ -32,7 +33,7 @@ class ProtoToJsonWriter(
 
             writeFieldName("changes")
             writeStartArray()
-            for (c in record.rawData.sourceMeta.changes) {
+            for (c in changes) {
                 writeStartObject()
                 writeStringField("field", c.field)
                 writeStringField("change", c.change.name)

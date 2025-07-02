@@ -237,9 +237,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final AirbyteCatalog catalog = super.discover(config);
 
     if (MssqlCdcHelper.isCdc(config)) {
+
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(MssqlSource::overrideSyncModes)
-          .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
           .map(MssqlSource::setDefaultCursorFieldForCdc)
           .map(MssqlSource::addCdcMetadataColumns)
@@ -415,8 +415,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                                       final @NotNull ConfiguredAirbyteCatalog catalog,
                                                                                       final @NotNull Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                                       final StateManager stateManager,
-                                                                                      final @NotNull Instant emittedAt,
-                                                                                      final @NotNull boolean excludeTodaysData) {
+                                                                                      final @NotNull Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
@@ -427,7 +426,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         LOGGER.info("Syncing via Primary Key");
         final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
 
-        if (excludeTodaysData) {
+        if (isExcludeTodayDateForCursorIncremental(sourceConfig)) {
           setCutoffCursorTime(tableNameToTable, cursorBasedStateManager.getPairToCursorInfoMap());
         }
 
@@ -457,7 +456,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                 new ConfiguredAirbyteCatalog().withStreams(
                     cursorBasedStreams.streamsForCursorBased()),
                 tableNameToTable,
-                cursorBasedStateManager, emittedAt, excludeTodaysData));
+                cursorBasedStateManager, emittedAt));
 
         return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
 
@@ -465,7 +464,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     LOGGER.info("using CDC: {}", false);
-    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt, excludeTodaysData);
+    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
   }
 
   private static void setCutoffCursorTime(@NotNull Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
@@ -488,7 +487,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   static void setCursorCutoffInfoForValue(CursorInfo cursorInfo, @NotNull CommonField<JDBCType> f, Instant nowInstant) {
     switch (f.getType()) {
       case JDBCType.DATE -> {
-        final var instant = nowInstant.minus(1, ChronoUnit.DAYS).atOffset(ZoneOffset.UTC);
+        final var instant = nowInstant.atOffset(ZoneOffset.UTC);
         cursorInfo.setCutoffTime(ISO_LOCAL_DATE.format(instant));
       }
       case JDBCType.TIMESTAMP -> {
@@ -519,15 +518,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
     return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
-  }
-
-  // Note: in place mutation.
-  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
-    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
-      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
-    }
-
-    return stream;
   }
 
   // Note: in place mutation.
@@ -714,8 +704,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
   }
 
-  @Override
-  protected boolean isExcludeTodayDateForCursorIncremental(@NotNull JsonNode config) {
+  private boolean isExcludeTodayDateForCursorIncremental(@NotNull JsonNode config) {
     if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       if (MssqlCdcHelper.ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.STANDARD) {

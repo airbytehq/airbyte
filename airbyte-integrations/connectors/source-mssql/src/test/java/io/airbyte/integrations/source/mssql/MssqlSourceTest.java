@@ -281,7 +281,7 @@ class MssqlSourceTest {
     // DATE
     CommonField<JDBCType> dateField = new CommonField<>("date_col", JDBCType.DATE);
     MssqlSource.setCursorCutoffInfoForValue(cursorInfo, dateField, now);
-    assertEquals("2024-05-31", cursorInfo.getCutoffTime());
+    assertEquals("2024-06-01", cursorInfo.getCutoffTime());
 
     // TIMESTAMP
     cursorInfo = new CursorInfo(null, null, null, null);
