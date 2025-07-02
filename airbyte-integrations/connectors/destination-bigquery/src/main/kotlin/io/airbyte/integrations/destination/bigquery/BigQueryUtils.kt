@@ -9,6 +9,7 @@ import com.google.cloud.RetryOption
 import com.google.cloud.bigquery.*
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
 import java.util.*
@@ -69,6 +70,11 @@ object BigQueryUtils {
         if (dataset == null || !dataset.exists()) {
             val datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build()
             dataset = bigquery.create(datasetInfo)
+        }
+        if (dataset.location != datasetLocation) {
+            throw ConfigErrorException(
+                "Expected dataset $datasetId to be in location $datasetLocation, but it was in ${dataset.location}. You should either recreate the dataset manually in $datasetLocation, update your destination settings to use location ${dataset.location}, or configure this connection to use a different dataset."
+            )
         }
         return dataset
     }
