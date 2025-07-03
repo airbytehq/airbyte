@@ -32,7 +32,6 @@ class CustomerIoState(
     private val httpClient: HttpClient,
     private val entryAssembler: BatchEntryAssembler
 ) : AutoCloseable {
-
     val decoder: JsonDecoder = JsonDecoder()
     val requestBody: ObjectNode = Jsons.objectNode()
     val batch: ArrayNode = requestBody.putArray("batch")
@@ -81,10 +80,6 @@ class CustomerIoState(
 
     override fun close() {}
 
-    /**
-     * In theory, there is a limit of 32 kb per batch entry but it is not yet validated here and we
-     * will wait for this to affect customers to take action.
-     */
 }
 
 class CustomerIoLoader(
