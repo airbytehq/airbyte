@@ -117,7 +117,7 @@ definitions:
         type: RecordSelector
         record_filter:
           type: CustomRecordFilter
-          class_name: source_bing_ads.components.DuplicatedRecordsFilter
+          class_name: source_declarative_manifest.components.DuplicatedRecordsFilter
         extractor:
           type: DpathExtractor
           field_path: ["Accounts"]
@@ -233,7 +233,7 @@ definitions:
               - UrlCustomParameters
             value: "{{ {'Parameters': {'CustomParameter': record.UrlCustomParameters.Parameters}} if record.get('UrlCustomParameters') and record.get('UrlCustomParameters').get('Parameters') else record.get('UrlCustomParameters') }}"
       - type: CustomTransformation
-        class_name: source_bing_ads.components.BingAdsCampaignsRecordTransformer
+        class_name: source_declarative_manifest.components.BingAdsCampaignsRecordTransformer
       - type: RemoveFields
         field_pointers: []
   ad_groups_stream:
@@ -2474,11 +2474,11 @@ definitions:
               - "Account Id"
             value: "{{ stream_partition['account_id'] }}"
       - type: CustomTransformation
-        class_name: source_bing_ads.components.BulkDatetimeToRFC3339
+        class_name: source_declarative_manifest.components.BulkDatetimeToRFC3339
     incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_bing_ads.components.BulkStreamsStateMigration
+        class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
@@ -2616,7 +2616,7 @@ definitions:
   # substream partition routers
   account_substream_partition_router:
     type: CustomPartitionRouter
-    class_name: source_bing_ads.components.LightSubstreamPartitionRouter
+    class_name: source_declarative_manifest.components.LightSubstreamPartitionRouter
     parent_stream_configs:
       - type: ParentStreamConfig
         # Id is the primary key of the accounts stream but an integer
@@ -5219,7 +5219,7 @@ dynamic_streams:
                 error_message_contains: Please check your request parameters.
       schema_loader:
         type: CustomSchemaLoader
-        class_name: source_bing_ads.components.CustomReportSchemaLoader
+        class_name: source_declarative_manifest.components.CustomReportSchemaLoader
       incremental_sync:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
         end_datetime:
@@ -5227,7 +5227,7 @@ dynamic_streams:
           datetime: "{{ format_datetime(now_utc(), parameters['end_date_time_format']) }}"
       transformations:
         - type: CustomTransformation
-          class_name: source_bing_ads.components.CustomReportTransformation
+          class_name: source_declarative_manifest.components.CustomReportTransformation
     components_resolver:
       type: ConfigComponentsResolver
       stream_config:
