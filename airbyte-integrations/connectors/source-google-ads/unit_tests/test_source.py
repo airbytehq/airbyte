@@ -11,8 +11,8 @@ from unittest.mock import Mock, call
 import pendulum
 import pytest
 from pendulum import duration, today
-from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.components import GoogleAdsPerPartitionStateMigration
+from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
@@ -543,13 +543,11 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
     [
         # no partitions ⇒ empty
         ({}, {}),
-
         # single partition ⇒ that date
         (
             {"123": {"segments.date": "2120-10-10"}},
             {"use_global_cursor": True, "state": {"segments.date": "2120-10-10"}},
         ),
-
         # multiple partitions ⇒ pick the earliest date
         (
             {
@@ -558,7 +556,6 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
             },
             {"use_global_cursor": True, "state": {"segments.date": "2020-01-01"}},
         ),
-
         # mixed: only one has the cursor field
         (
             {
@@ -567,7 +564,6 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
             },
             {"use_global_cursor": True, "state": {"segments.date": "2020-01-02"}},
         ),
-
         # none have the cursor field ⇒ empty
         (
             {
