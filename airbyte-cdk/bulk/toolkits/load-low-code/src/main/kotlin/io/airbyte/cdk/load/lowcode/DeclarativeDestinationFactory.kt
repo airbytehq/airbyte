@@ -13,19 +13,17 @@ import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.RequestMethod
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
 import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
+import io.airbyte.cdk.load.interpolation.StringInterpolator
 import io.airbyte.cdk.load.model.DeclarativeDestination as DeclarativeDestinationModel
 import io.airbyte.cdk.load.model.checker.Checker as CheckerModel
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker as HttpRequestCheckerModel
-import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
-import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
-import io.airbyte.cdk.load.interpolation.StringInterpolator
 import io.airbyte.cdk.load.model.http.HttpMethod
+import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel
+import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
 import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-
-
 
 class DeclarativeDestinationFactory<T : DestinationConfiguration>(private val config: T) {
     private val stringInterpolator: StringInterpolator = StringInterpolator()
@@ -52,13 +50,13 @@ class DeclarativeDestinationFactory<T : DestinationConfiguration>(private val co
             is HttpRequestCheckerModel -> HttpRequestChecker(model.requester.toRequester())
         }
 
-
-    fun BasicAccessAuthenticatorModel.toInterceptor(interpolationContext: Map<String, Any>): BasicAccessAuthenticator =
+    fun BasicAccessAuthenticatorModel.toInterceptor(
+        interpolationContext: Map<String, Any>
+    ): BasicAccessAuthenticator =
         BasicAccessAuthenticator(
             stringInterpolator.interpolate(this.username, interpolationContext),
             stringInterpolator.interpolate(this.password, interpolationContext),
         )
-
 
     fun HttpRequesterModel.toRequester(): HttpRequester {
         val requester = this
