@@ -294,7 +294,11 @@ class ClickhouseCoercerTest {
                 Arguments.of(NumberValue(BigDecimal("89214.7834"))),
                 Arguments.of(IntegerValue(BigInteger("72317631278"))),
                 Arguments.of(StringValue("this should just stay the same")),
-                Arguments.of(ObjectValue(linkedMapOf("cat" to StringValue("dog"), "bird" to StringValue("dog")))),
+                Arguments.of(
+                    ObjectValue(
+                        linkedMapOf("cat" to StringValue("dog"), "bird" to StringValue("dog"))
+                    )
+                ),
                 Arguments.of(ArrayValue(listOf(StringValue("cat"), StringValue("dog")))),
                 Arguments.of(BooleanValue(true)),
                 Arguments.of(BooleanValue(false)),
@@ -313,9 +317,15 @@ class ClickhouseCoercerTest {
 
         fun Long.toAirbyteDateValue() = DateValue(LocalDate.ofEpochDay(this))
 
-        fun Long.toAirbyteTimestampWithTimezoneValue() = TimestampWithTimezoneValue(LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX).atOffset(ZoneOffset.UTC))
+        fun Long.toAirbyteTimestampWithTimezoneValue() =
+            TimestampWithTimezoneValue(
+                LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX).atOffset(ZoneOffset.UTC)
+            )
 
-        fun Long.toAirbyteTimestampWithoutTimezoneValue() = TimestampWithoutTimezoneValue(LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX))
+        fun Long.toAirbyteTimestampWithoutTimezoneValue() =
+            TimestampWithoutTimezoneValue(
+                LocalDateTime.of(LocalDate.ofEpochDay(this), LocalTime.MAX)
+            )
 
         fun mockCoercedValue(value: AirbyteValue) =
             EnrichedAirbyteValue(

@@ -63,7 +63,8 @@ class RecordMungerTest {
                 "user_field_4" to Fixtures.mockCoercedValue(BooleanValue(false)),
             )
         val unionUserField = "user_field_5" to Fixtures.mockCoercedValue(ObjectValue(linkedMapOf()))
-        val userFields = (nonUnionUserFields + unionUserField) as LinkedHashMap<String, EnrichedAirbyteValue>
+        val userFields =
+            (nonUnionUserFields + unionUserField) as LinkedHashMap<String, EnrichedAirbyteValue>
         val internalFields =
             mapOf(
                 "internal_field_1" to Fixtures.mockCoercedValue(StringValue("internal1")),
