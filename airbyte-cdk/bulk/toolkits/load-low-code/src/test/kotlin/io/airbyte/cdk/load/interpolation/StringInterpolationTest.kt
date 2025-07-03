@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.interpolation
 
+import io.airbyte.cdk.util.Jsons
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -62,5 +63,18 @@ class StringInterpolationTest {
                     mapOf("isSandbox" to false)
                 )
         assertEquals("https://login.salesforce.com/auth", interpolatedValue)
+    }
+
+    @Test
+    internal fun `test given ObjectNode when eval then extract values from ObjectNode`() {
+        val objectNode = Jsons.objectNode().apply { this.putObject("modificationMetadata").put("readOnlyValue", false) }
+
+        val interpolatedValue =
+            StringInterpolator()
+                .interpolate(
+                    """{{ response.get("modificationMetadata").get("readOnlyValue") }}""",
+                    mapOf("response" to objectNode)
+                )
+        assertEquals("false", interpolatedValue)
     }
 }
