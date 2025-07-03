@@ -47,12 +47,12 @@ class ClickhouseCoercer {
             is BooleanValue -> StringValue(abValue.value.serializeToString())
             is IntegerValue -> StringValue(abValue.value.serializeToString())
             is NumberValue -> StringValue(abValue.value.serializeToString())
-            is StringValue -> StringValue(abValue.value.serializeToString())
             is DateValue -> StringValue(abValue.value.serializeToString())
             is TimeWithTimezoneValue -> StringValue(abValue.value.serializeToString())
             is TimeWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
             is TimestampWithTimezoneValue -> StringValue(abValue.value.serializeToString())
             is TimestampWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
+            is StringValue -> abValue // Already a string
             is NullValue -> abValue // Consider null a valid string
         }
 
