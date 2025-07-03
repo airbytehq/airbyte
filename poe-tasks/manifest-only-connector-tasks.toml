@@ -10,7 +10,7 @@
 
 [tasks]
 
-get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
+get-connector-name = "basename ${POE_PWD}" # Use with -qq to get just the connector name
 fetch-secrets = "airbyte-cdk secrets fetch ${POE_PWD}"
 
 install = [
