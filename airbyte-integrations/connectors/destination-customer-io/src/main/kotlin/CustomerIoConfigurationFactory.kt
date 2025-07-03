@@ -15,7 +15,8 @@ class CustomerIoConfigurationFactory :
         pojo: CustomerIoSpecification
     ): CustomerIoConfiguration {
         return CustomerIoConfiguration(
-            credentials = CustomerIoCredentialsConfig(pojo.credentials.siteId, pojo.credentials.apiKey),
+            credentials =
+                CustomerIoCredentialsConfig(pojo.credentials.siteId, pojo.credentials.apiKey),
             objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig(),
         )
     }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Response
@@ -37,7 +41,7 @@ class CustomerIoStateTest {
         assertFailsWith<IllegalArgumentException> {
             state.accumulate(
                 aRecord(
-                    Jsons.objectNode().put("event_name", "an_event_name")  // missing person_email
+                    Jsons.objectNode().put("event_name", "an_event_name") // missing person_email
                 )
             )
         }
@@ -55,11 +59,14 @@ class CustomerIoStateTest {
 
     @Test
     internal fun `test given errors when flush then return rejected records`() {
-        val rejectedRecord = aRecord(
-            Jsons.objectNode().put("person_email", "rejected_person_email")
-                .put("event_name", "rejected_event_name")
-        )
-        every { httpClient.send(any()) } returns aResponse(207, """{"errors": [{"batch_index": 1}]}""".toByteArray().inputStream())
+        val rejectedRecord =
+            aRecord(
+                Jsons.objectNode()
+                    .put("person_email", "rejected_person_email")
+                    .put("event_name", "rejected_event_name")
+            )
+        every { httpClient.send(any()) } returns
+            aResponse(207, """{"errors": [{"batch_index": 1}]}""".toByteArray().inputStream())
         state.accumulate(anyValidRecord())
         state.accumulate(rejectedRecord)
 
@@ -84,7 +91,7 @@ class CustomerIoStateTest {
         return response
     }
 
-    fun aRecord(data: JsonNode) : DestinationRecordRaw {
+    fun aRecord(data: JsonNode): DestinationRecordRaw {
         val rawData = mockk<DestinationRecordSource>(relaxed = true)
         every { rawData.asJsonRecord(any()) } returns data
         return DestinationRecordRaw(
@@ -95,7 +102,10 @@ class CustomerIoStateTest {
         )
     }
 
-    private fun anyValidRecord(): DestinationRecordRaw = aRecord(
-        Jsons.objectNode().put("person_email", "a_person_email").put("event_name", "an_event_name"),
-    )
+    private fun anyValidRecord(): DestinationRecordRaw =
+        aRecord(
+            Jsons.objectNode()
+                .put("person_email", "a_person_email")
+                .put("event_name", "an_event_name"),
+        )
 }

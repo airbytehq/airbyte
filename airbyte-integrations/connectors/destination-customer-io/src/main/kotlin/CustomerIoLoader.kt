@@ -24,19 +24,21 @@ private val logger = KotlinLogging.logger {}
 
 class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
 
-    companion object{
-        val EXPECTED_PROPERTIES: Set<String> = setOf<String>(
-            "person_email",
-            "event_name",
-            "event_id",
-            "timestamp",
-        )
+    companion object {
+        val EXPECTED_PROPERTIES: Set<String> =
+            setOf<String>(
+                "person_email",
+                "event_name",
+                "event_id",
+                "timestamp",
+            )
     }
 
     val decoder: JsonDecoder = JsonDecoder()
     val requestBody: ObjectNode = Jsons.objectNode()
     val batch: ArrayNode = requestBody.putArray("batch")
-    // In order to populate the rejected records list, we need to have the list of records in order of which they are sent to Customer IO as Customer IO flags the errors by index
+    // In order to populate the rejected records list, we need to have the list of records in order
+    // of which they are sent to Customer IO as Customer IO flags the errors by index
     val orderedRecords: MutableList<DestinationRecordRaw> = mutableListOf()
 
     fun accumulate(record: DestinationRecordRaw) {
@@ -44,7 +46,8 @@ class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
         batch.add(createBatchEntry(record))
     }
 
-    fun isFull(): Boolean = requestBody.serializeToString().toByteArray(Charsets.UTF_8).size > 500_000
+    fun isFull(): Boolean =
+        requestBody.serializeToString().toByteArray(Charsets.UTF_8).size > 500_000
 
     fun flush(): List<DestinationRecordRaw>? {
         if (batch.isEmpty) {
@@ -65,10 +68,14 @@ class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
         response.use {
             return when (response.statusCode) {
                 200 -> emptyList()
-                207 -> decoder.decode(response.getBodyOrEmpty()).get("errors").asIterable().map { orderedRecords[it.get("batch_index").asInt()] }  // FIXME also add reason, field and message as part of meta
-                else -> throw IllegalStateException(
-                    "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
-                )
+                207 ->
+                    decoder.decode(response.getBodyOrEmpty()).get("errors").asIterable().map {
+                        orderedRecords[it.get("batch_index").asInt()]
+                    } // FIXME also add reason, field and message as part of meta
+                else ->
+                    throw IllegalStateException(
+                        "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
+                    )
             }
         }
     }
@@ -76,16 +83,19 @@ class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
     override fun close() {}
 
     /**
-     * In theory, there is a limit of 32 kb per batch entry but it is not yet validated here and we will wait for this to affect customers to take action.
+     * In theory, there is a limit of 32 kb per batch entry but it is not yet validated here and we
+     * will wait for this to affect customers to take action.
      */
     private fun createBatchEntry(record: DestinationRecordRaw): ObjectNode {
         val recordAsJson = record.asJsonRecord()
-        val personEmail = recordAsJson.get("person_email")?.asText() ?: throw IllegalArgumentException("person_email field cannot be empty")
-        val eventName = recordAsJson.get("event_name")?.asText() ?: throw IllegalArgumentException("event_name field cannot be empty")
-        val batchEntry = Jsons.objectNode()
-            .put("type", "person" )
-            .put("action", "event" )
-            .put("name", eventName)
+        val personEmail =
+            recordAsJson.get("person_email")?.asText()
+                ?: throw IllegalArgumentException("person_email field cannot be empty")
+        val eventName =
+            recordAsJson.get("event_name")?.asText()
+                ?: throw IllegalArgumentException("event_name field cannot be empty")
+        val batchEntry =
+            Jsons.objectNode().put("type", "person").put("action", "event").put("name", eventName)
 
         batchEntry.putObject("identifiers").put("email", personEmail)
 
@@ -93,7 +103,7 @@ class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
         recordAsJson.get("timestamp")?.let { batchEntry.put("timestamp", it.asText()) }
 
         val attributes = batchEntry.putObject("attributes")
-        (recordAsJson as ObjectNode).fields().forEach { (key, value) -> 
+        (recordAsJson as ObjectNode).fields().forEach { (key, value) ->
             if (key !in EXPECTED_PROPERTIES) {
                 attributes.put(key, value.asText())
             }
@@ -101,7 +111,6 @@ class CustomerIoState(private val httpClient: HttpClient) : AutoCloseable {
 
         return batchEntry
     }
-
 }
 
 class CustomerIoLoader(private val httpClient: HttpClient) : DlqLoader<CustomerIoState> {

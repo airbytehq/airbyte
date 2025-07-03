@@ -16,21 +16,23 @@ import kotlin.String
 
 class CustomerIoDiscoverer() : DestinationDiscoverer<CustomerIoConfiguration> {
     override fun discover(config: CustomerIoConfiguration): DestinationDiscoverCatalog {
-        return DestinationDiscoverCatalog(listOf(
-            DestinationOperation(
-                "person_event",
-                Append,
-                ObjectType(
-                    properties = linkedMapOf(
-                        "person_email" to FieldType(StringType, false),
-                        "event_name" to FieldType(StringType, false),
-                        "event_id" to FieldType(StringType, false),
-                        "timestamp" to FieldType(IntegerType, false),
+        return DestinationDiscoverCatalog(
+            listOf(
+                DestinationOperation(
+                    "person_event",
+                    Append,
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "person_email" to FieldType(StringType, false),
+                                "event_name" to FieldType(StringType, false),
+                                "event_id" to FieldType(StringType, false),
+                                "timestamp" to FieldType(IntegerType, false),
+                            ),
+                        additionalProperties = true,
+                        required = listOf("person_email", "event_name"),
                     ),
-                    additionalProperties = true,
-                    required = listOf("person_email", "event_name"),
-                ),
-                matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList<List<String>>()
                 )
             )
         )

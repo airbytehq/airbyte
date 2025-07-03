@@ -80,7 +80,7 @@ class CustomerIoWriterTest() :
                     "an_attribute" to FieldType(StringType, nullable = false)
                 ),
                 true,
-                required=listOf("person_email", "event_name")
+                required = listOf("person_email", "event_name")
             ),
             generationId = 0,
             minimumGenerationId = 0,
