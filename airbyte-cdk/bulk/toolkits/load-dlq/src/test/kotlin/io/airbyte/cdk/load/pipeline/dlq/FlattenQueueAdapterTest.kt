@@ -67,7 +67,7 @@ class FlattenQueueAdapterTest {
     }
 
     @Test
-    fun `flattening lists preserve the total count`() {
+    fun `flattening lists preserve the total count while counting rejected records`() {
         val state = BatchState.COMPLETE
         val records =
             listOf(
@@ -109,8 +109,16 @@ class FlattenQueueAdapterTest {
                 .flatMap { it.checkpointCounts.entries }
                 .groupBy({ it.key }, { it.value })
                 .mapValues { it.value.reduce { acc, value -> acc.plus(value) } }
+
         // Verifying the aggregate counts remain the same
-        assertEquals(mapOf(checkpointId to checkpointValue), actualCounts)
+        // However, we're substracting the rejected records from the total records count
+        val expectedCheckpointValue =
+            CheckpointValue(
+                records = 9,
+                serializedBytes = 123,
+                rejectedRecords = 3,
+            )
+        assertEquals(mapOf(checkpointId to expectedCheckpointValue), actualCounts)
 
         // All keys and context should be equal
         messages.forEach {

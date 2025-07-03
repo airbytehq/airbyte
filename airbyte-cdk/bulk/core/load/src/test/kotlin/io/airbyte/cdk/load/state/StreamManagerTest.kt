@@ -140,6 +140,41 @@ class StreamManagerTest {
     }
 
     @Test
+    fun `test persisted counts with rejected records`() {
+        val manager = StreamManager(stream1)
+        val checkpointId = manager.inferNextCheckpointKey().checkpointId
+
+        repeat(10) { manager.incrementReadCount() }
+        manager.markCheckpoint()
+
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(
+                checkpointId to
+                    CheckpointValue(
+                        records = 3,
+                        serializedBytes = 5,
+                        rejectedRecords = 2,
+                    )
+            ),
+        )
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(
+                checkpointId to
+                    CheckpointValue(
+                        records = 4,
+                        serializedBytes = 5,
+                        rejectedRecords = 1,
+                    )
+            ),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId))
+    }
+
+    @Test
     fun `test persisted count for multiple checkpoints`() {
         val manager = StreamManager(stream1)
 
@@ -259,7 +294,14 @@ class StreamManagerTest {
                     "1" ->
                         manager.incrementCheckpointCounts(
                             BatchState.COMPLETE,
-                            mapOf(checkpointId1 to CheckpointValue(10, 10)),
+                            mapOf(
+                                checkpointId1 to
+                                    CheckpointValue(
+                                        records = 9,
+                                        serializedBytes = 10,
+                                        rejectedRecords = 1,
+                                    )
+                            ),
                         )
                     "2" ->
                         manager.incrementCheckpointCounts(
