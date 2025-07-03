@@ -9,9 +9,9 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import anyascii
 import dpath
 import requests
+import unidecode
 from pydantic.v1 import BaseModel, Extra
 
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -333,7 +333,7 @@ def name_conversion(text: str) -> str:
     """
     convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
     """
-    text = anyascii.anyascii(text)
+    text = unidecode.unidecode(text)
 
     tokens = []
     for m in TOKEN_PATTERN.finditer(text):
@@ -394,7 +394,7 @@ def _sanitization(
     7. Optionally prepends an underscore if the result starts with a number and allow_leading_numbers is False.
     8. Returns the final string in lowercase.
     """
-    text = anyascii.anyascii(text)
+    text = unidecode.unidecode(text)
 
     if remove_special_characters:
         text = re.sub(r"[^\w\s]", "", text)
