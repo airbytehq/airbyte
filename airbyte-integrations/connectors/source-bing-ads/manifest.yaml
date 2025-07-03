@@ -148,6 +148,14 @@ definitions:
               - parsed_account_id
             value: "{{ record.Id | string }}"
             value_type: string
+      - type: AddFields
+        condition: "{{ record.get('TaxCertificate') is not none and record.get('TaxCertificate').get('TaxCertificates') is not none and 'KeyValuePairOfstringbase64Binary' in record.get('TaxCertificate').get('TaxCertificates') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - TaxCertificate
+              - TaxCertificates
+            value: "{{ record.get('TaxCertificate').get('TaxCertificates').get('KeyValuePairOfstringbase64Binary') if record.get('TaxCertificate') is not none and record.get('TaxCertificate').get('TaxCertificates') is not none and 'KeyValuePairOfstringbase64Binary' in record.get('TaxCertificate').get('TaxCertificates') else none }}"
   campaigns_stream:
     type: DeclarativeStream
     name: campaigns
