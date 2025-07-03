@@ -39,7 +39,7 @@ class SocketDataChannelResourceHolderTest() {
 
         override val status: SocketDataChannel.SocketStatus
             get() = innerStatus
-        override var bound: Boolean
+        override var isBound: Boolean
             get() = innerBound
             set(value) {
                 innerBound = value

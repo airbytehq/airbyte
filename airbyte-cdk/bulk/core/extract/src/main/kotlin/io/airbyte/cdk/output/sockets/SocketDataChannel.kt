@@ -33,7 +33,6 @@ interface SocketDataChannel {
         SOCKET_INITIALIZED,
         SOCKET_WAITING_LISTENER,
         SOCKET_READY,
-        SOCKET_CLOSING,
         SOCKET_CLOSED,
         SOCKET_ERROR,
     }
@@ -41,7 +40,7 @@ interface SocketDataChannel {
     suspend fun initialize()
     fun shutdown()
     val status: SocketStatus
-    var bound: Boolean
+    var isBound: Boolean
     fun bind()
     fun unbind()
     var outputStream: OutputStream?
@@ -91,7 +90,7 @@ class UnixDomainSocketDataChannel(
     }
 
     @set:Synchronized
-    override var bound: Boolean
+    override var isBound: Boolean
         get() = socketBound.get()
         set(value) = socketBound.set(value)
 
@@ -122,25 +121,22 @@ class UnixDomainSocketDataChannel(
             val socketChannel: SocketChannel = serverSocketChannel.accept()
             socketStatus.set(SOCKET_READY)
             outputStream = Channels.newOutputStream(socketChannel)
-            logger.info { "connected to server socket" }
+            logger.info { "Connected to server socket" }
         }
         Unit
     }
 
     override fun shutdown() {
-        socketStatus.set(SOCKET_CLOSING)
+        socketStatus.set(SOCKET_CLOSED)
         outputStream?.close()
         outputStream = null
         unbind()
-        socketStatus.set(SOCKET_CLOSED)
     }
 
-    @Synchronized
     override fun bind() {
         socketBound.set(true)
     }
 
-    @Synchronized
     override fun unbind() {
         socketBound.set(false)
     }
@@ -162,6 +158,7 @@ private typealias ProbePacket = ByteArray
 /**
  * Factory to create a probe packet based on the configured format. JSON format is a single newline
  * character, while Protobuf format is a serialized AirbyteProbeMessageProtobuf.
+ * Sending an unexpected packet type will result in an error on the receiving end.
  */
 @Factory
 private class ProbePacketFactory() {
