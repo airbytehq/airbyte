@@ -100,14 +100,14 @@ definitions:
           type: RequestBodyJsonObject
           value:
             query: >
-              SELECT 
+              SELECT
                 customer_client.client_customer,
                 customer_client.level,
                 customer_client.id,
                 customer_client.manager,
                 customer_client.time_zone,
                 customer_client.status
-              FROM 
+              FROM
                 customer_client
       record_selector:
         extractor:
@@ -134,16 +134,16 @@ definitions:
           type: RequestBodyJsonObject
           value:
             query: >
-              SELECT 
+              SELECT
                 customer_client.client_customer,
                 customer_client.level,
                 customer_client.id,
                 customer_client.manager,
                 customer_client.time_zone,
                 customer_client.status
-              FROM 
+              FROM
                 customer_client
-              WHERE 
+              WHERE
                 customer_client.manager = FALSE
       record_selector:
         extractor:
@@ -177,7 +177,7 @@ definitions:
         http_method: POST
         request_headers:
           Content-Type: application/json
-          developer-token: '{{ config["credentials"]["developer_token"] }}'
+          developer-token: "{{ config['credentials']['developer_token'] }}"
           login-customer-id: "{{ stream_partition['parent_slice'][0]['customer_id'] }}"
         request_body:
           type: RequestBodyJsonObject
@@ -352,8 +352,127 @@ definitions:
       schema:
         $ref: "#/schemas/campaign"
 
+  customer_stream:
+    $ref: "#/definitions/stream_base"
+    name: customer
+    primary_key:
+      - customer.id
+      - segments.date
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'][0] }}/googleAds:searchStream"
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+          developer-token: "{{ config['credentials']['developer_token'] }}"
+          login-customer-id: "{{ stream_partition['parent_slice'][0]['customer_id'] }}"
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            query: >
+              SELECT
+                customer.auto_tagging_enabled,
+                customer.call_reporting_setting.call_conversion_action,
+                customer.call_reporting_setting.call_conversion_reporting_enabled,
+                customer.call_reporting_setting.call_reporting_enabled,
+                customer.conversion_tracking_setting.conversion_tracking_id,
+                customer.conversion_tracking_setting.cross_account_conversion_tracking_id,
+                customer.currency_code,
+                customer.descriptive_name,
+                customer.final_url_suffix,
+                customer.has_partners_badge,
+                customer.id,
+                customer.manager,
+                customer.optimization_score,
+                customer.optimization_score_weight,
+                customer.pay_per_conversion_eligibility_failure_reasons,
+                customer.remarketing_setting.google_global_site_tag,
+                customer.resource_name,
+                customer.test_account,
+                customer.time_zone,
+                customer.tracking_url_template,
+                segments.date
+              FROM
+                customer
+              WHERE
+                segments.date >= '{{ stream_interval['start_time'] }}'
+                AND segments.date <= '{{ stream_interval['end_time'] }}'
+              ORDER BY
+                segments.date ASC
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: false
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/customer_client"
+              parent_key: "clientCustomer"
+              partition_field: "customer_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["customer.optimization_score_weight"]
+            value: "{{ record['customer.optimization_score'] }}"
+            value_type: number
+        condition: "{{ record.get('customer.optimization_score'), False and record['customer.optimization_score'] is integer }}"
+      - type: KeysToSnakeCase
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          # Renames video_quartile_p_100_rate to video_quartile_p100_rate
+          - path: ["metrics.video_quartile_p100_rate"]
+            value: "{{ record['metrics.video_quartile_p_100_rate'] or 0.0 }}"
+            value_type: number
+          - path: ["metrics.interaction_event_types"]
+            value: >-
+              {{ record['metrics.interaction_event_types']
+                 | map('replace','UNSPECIFIED','0')
+                 | map('replace','UNKNOWN','1')
+                 | map('replace','CLICK','2')
+                 | map('replace','ENGAGEMENT','3')
+                 | map('replace','VIDEO_VIEW','4')
+                 | map('replace','NONE','5')
+                 | list }}
+      - type: RemoveFields
+        field_pointers: [["metrics.video_quartile_p_100_rate"]]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: segments.date
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P{{ config.get('conversion_window_days', 14) }}D
+      cursor_granularity: P1D
+      step: P14D
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/customer"
+
+
 streams:
   - "#/definitions/campaign_stream"
+  - "#/definitions/customer_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -884,3 +1003,117 @@ schemas:
           - "null"
           - string
     additionalProperties: true
+  customer:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      customer.auto_tagging_enabled:
+        description: Indicates whether auto-tagging is enabled for the customer
+        type:
+        - 'null'
+        - boolean
+      customer.call_reporting_setting.call_conversion_action:
+        description: The call conversion action associated with the customer's call reporting
+          setting
+        type:
+        - 'null'
+        - string
+      customer.call_reporting_setting.call_conversion_reporting_enabled:
+        description: Indicates whether call conversion reporting is enabled
+        type:
+        - 'null'
+        - boolean
+      customer.call_reporting_setting.call_reporting_enabled:
+        description: Indicates whether call reporting is enabled for the customer
+        type:
+        - 'null'
+        - boolean
+      customer.conversion_tracking_setting.conversion_tracking_id:
+        description: The conversion tracking ID set for the customer
+        type:
+        - 'null'
+        - integer
+      customer.conversion_tracking_setting.cross_account_conversion_tracking_id:
+        description: The cross-account conversion tracking ID set for the customer
+        type:
+        - 'null'
+        - integer
+      customer.currency_code:
+        description: The currency code used for the customer
+        type:
+        - 'null'
+        - string
+      customer.descriptive_name:
+        description: The descriptive name of the customer account
+        type:
+        - 'null'
+        - string
+      customer.final_url_suffix:
+        description: The final URL suffix for the customer
+        type:
+        - 'null'
+        - string
+      customer.has_partners_badge:
+        description: Indicates whether the customer has a partners badge
+        type:
+        - 'null'
+        - boolean
+      customer.id:
+        description: The unique identifier of the customer
+        type:
+        - 'null'
+        - integer
+      customer.manager:
+        description: The manager associated with the customer
+        type:
+        - 'null'
+        - boolean
+      customer.optimization_score:
+        description: The optimization score of the customer
+        type:
+        - 'null'
+        - number
+      customer.optimization_score_weight:
+        description: The weight of the optimization score for the customer
+        type:
+        - 'null'
+        - number
+      customer.pay_per_conversion_eligibility_failure_reasons:
+        description: The reasons for pay per conversion eligibility failure
+        type:
+        - 'null'
+        - array
+        items:
+          description: Reason for pay per conversion eligibility failure
+          type: string
+      customer.remarketing_setting.google_global_site_tag:
+        description: The Google global site tag set for customer's remarketing
+        type:
+        - 'null'
+        - string
+      customer.resource_name:
+        description: The resource name of the customer
+        type:
+        - 'null'
+        - string
+      customer.test_account:
+        description: Indicates whether the customer account is a test account
+        type:
+        - 'null'
+        - boolean
+      customer.time_zone:
+        description: The time zone set for the customer account
+        type:
+        - 'null'
+        - string
+      customer.tracking_url_template:
+        description: The tracking URL template for the customer
+        type:
+        - 'null'
+        - string
+      segments.date:
+        description: The date segment format
+        type:
+        - 'null'
+        - string
+        format: date
