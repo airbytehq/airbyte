@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class RecordMungerTest {
     @MockK lateinit var catalogInfo: TableCatalog
 
-    @MockK lateinit var validator: ClickhouseCoercingValidator
+    @MockK lateinit var validator: ClickhouseCoercer
 
     private lateinit var munger: RecordMunger
 
@@ -44,7 +44,7 @@ class RecordMungerTest {
                 secondArg<String>() + "_munged"
             }
 
-        every { validator.validateAndCoerce(any()) } answers { firstArg() }
+        every { validator.validate(any()) } answers { firstArg() }
 
         // mock coercion output
         val userFields =
@@ -78,7 +78,7 @@ class RecordMungerTest {
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
         }
-        coerced.declaredFields.forEach { verify { validator.validateAndCoerce(it.value) } }
+        coerced.declaredFields.forEach { verify { validator.validate(it.value) } }
 
         // munged keys map to unwrapped / coerced values
         val expected =

@@ -13,14 +13,14 @@ import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MIN
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MIN
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MIN
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidatorTest.Fixtures.toAirbyteIntegerValue
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidatorTest.Fixtures.toAirbyteNumberValue
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.INT64_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.INT64_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercerTest.Fixtures.toAirbyteIntegerValue
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercerTest.Fixtures.toAirbyteNumberValue
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.junit5.MockKExtension
@@ -37,16 +37,16 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 @ExtendWith(MockKExtension::class)
-class ClickhouseCoercingValidatorTest {
+class ClickhouseCoercerTest {
 
-    @InjectMockKs private lateinit var validator: ClickhouseCoercingValidator
+    @InjectMockKs private lateinit var coercer: ClickhouseCoercer
 
     @ParameterizedTest
     @MethodSource("validFloats")
     fun `validate and coerces big decimals - valid values are left unchanged`(value: String) {
         val input = Fixtures.mockCoercedValue(value.toAirbyteNumberValue())
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(input, result)
         assertEquals(input.abValue, result.abValue)
@@ -58,7 +58,7 @@ class ClickhouseCoercingValidatorTest {
     fun `validate and coerces big decimals - invalid values are nulled`(value: String) {
         val input = Fixtures.mockCoercedValue(value.toAirbyteNumberValue())
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(NullValue, result.abValue)
         assertEquals(
@@ -72,7 +72,7 @@ class ClickhouseCoercingValidatorTest {
     fun `validate and coerces big integers - valid values are left unchanged`(value: String) {
         val input = Fixtures.mockCoercedValue(value.toAirbyteIntegerValue())
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(input, result)
         assertEquals(input.abValue, result.abValue)
@@ -84,7 +84,7 @@ class ClickhouseCoercingValidatorTest {
     fun `validate and coerces big integers - invalid values are nulled`(value: String) {
         val input = Fixtures.mockCoercedValue(value.toAirbyteIntegerValue())
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(NullValue, result.abValue)
         assertEquals(
@@ -99,7 +99,7 @@ class ClickhouseCoercingValidatorTest {
         val date = LocalDate.ofEpochDay(value)
         val input = Fixtures.mockCoercedValue(DateValue(date))
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(input, result)
         assertEquals(input.abValue, result.abValue)
@@ -112,7 +112,7 @@ class ClickhouseCoercingValidatorTest {
         val date = LocalDate.ofEpochDay(value)
         val input = Fixtures.mockCoercedValue(DateValue(date))
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(NullValue, result.abValue)
         assertEquals(
@@ -130,7 +130,7 @@ class ClickhouseCoercingValidatorTest {
             LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX).atOffset(ZoneOffset.UTC)
         val input = Fixtures.mockCoercedValue(TimestampWithTimezoneValue(timestamp))
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(input, result)
         assertEquals(input.abValue, result.abValue)
@@ -144,7 +144,7 @@ class ClickhouseCoercingValidatorTest {
             LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX).atOffset(ZoneOffset.UTC)
         val input = Fixtures.mockCoercedValue(TimestampWithTimezoneValue(timestamp))
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(NullValue, result.abValue)
         assertEquals(
@@ -161,7 +161,7 @@ class ClickhouseCoercingValidatorTest {
         val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
         val input = Fixtures.mockCoercedValue(TimestampWithoutTimezoneValue(timestamp))
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(input, result)
         assertEquals(input.abValue, result.abValue)
@@ -176,7 +176,7 @@ class ClickhouseCoercingValidatorTest {
         val timestamp = LocalDateTime.of(LocalDate.ofEpochDay(value), LocalTime.MAX)
         val input = Fixtures.mockCoercedValue(TimestampWithoutTimezoneValue(timestamp))
 
-        val result = validator.validateAndCoerce(input)
+        val result = coercer.validate(input)
 
         assertEquals(NullValue, result.abValue)
         assertEquals(
