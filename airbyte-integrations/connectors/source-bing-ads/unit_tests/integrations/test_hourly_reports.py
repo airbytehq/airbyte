@@ -104,12 +104,48 @@ class TestAgeGenderAudienceReportHourlyStream(HourlyReportsTestWithStateChangesA
         )
 
 
-class TestAccountImpressionPerformanceReportHourlyStream(HourlyReportsTest):
+class TestAccountImpressionPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
     stream_name = "account_impression_performance_report_hourly"
     report_file = "account_impression_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "account_impression_performance_report_hourly_incremental"
+    report_file_with_records_further_start_date = "account_impression_performance_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = (
+        "account_impression_performance_report_hourly_incremental_with_records_further_cursor"
+    )
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AccountPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AccountPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualityImpressionsPercent", "LowQualityConversions", "LowQualityConversionRate", "DeviceType", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "AccountStatus", "LowQualityGeneralClicks", "LowQualitySophisticatedClicks", "TopImpressionRatePercent", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AverageCpm", "ConversionsQualified", "LowQualityConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AccountPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AccountPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualityImpressionsPercent", "LowQualityConversions", "LowQualityConversionRate", "DeviceType", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "AccountStatus", "LowQualityGeneralClicks", "LowQualitySophisticatedClicks", "TopImpressionRatePercent", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AverageCpm", "ConversionsQualified", "LowQualityConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for no config start date test
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AccountPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AccountPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualityImpressionsPercent", "LowQualityConversions", "LowQualityConversionRate", "DeviceType", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "AccountStatus", "LowQualityGeneralClicks", "LowQualitySophisticatedClicks", "TopImpressionRatePercent", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AverageCpm", "ConversionsQualified", "LowQualityConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
 
 
 class TestKeywordPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
@@ -183,12 +219,49 @@ class TestAdPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfter
         )
 
 
-class TestAdGroupImpressionPerformanceReportHourlyStream(HourlyReportsTest):
+class TestAdGroupImpressionPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
     stream_name = "ad_group_impression_performance_report_hourly"
     report_file = "ad_group_impression_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "ad_group_impression_performance_report_hourly_incremental"
+    report_file_with_records_further_start_date = "ad_group_impression_performance_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = (
+        "ad_group_impression_performance_report_hourly_incremental_with_records_further_cursor"
+    )
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AdGroupPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AdGroupPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "Status", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "DeviceType", "Language", "QualityScore", "ExpectedCtr", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "TrackingTemplate", "CustomParameters", "AccountStatus", "CampaignStatus", "AdGroupLabels", "FinalUrlSuffix", "CampaignType", "TopImpressionSharePercent", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AdGroupType", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AdGroupPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AdGroupPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "Status", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "DeviceType", "Language", "QualityScore", "ExpectedCtr", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "TrackingTemplate", "CustomParameters", "AccountStatus", "CampaignStatus", "AdGroupLabels", "FinalUrlSuffix", "CampaignType", "TopImpressionSharePercent", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AdGroupType", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
+        # for no config start date test
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AdGroupPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AdGroupPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "Status", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "DeviceType", "Language", "QualityScore", "ExpectedCtr", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "TrackingTemplate", "CustomParameters", "AccountStatus", "CampaignStatus", "AdGroupLabels", "FinalUrlSuffix", "CampaignType", "TopImpressionSharePercent", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AdGroupType", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
 
 
 class TestCampaignPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
@@ -233,12 +306,49 @@ class TestCampaignPerformanceReportHourlyStream(HourlyReportsTestWithStateChange
         )
 
 
-class TestCampaignImpressionPerformanceReportHourlyStream(HourlyReportsTest):
+class TestCampaignImpressionPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
     stream_name = "campaign_impression_performance_report_hourly"
     report_file = "campaign_impression_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "campaign_impression_performance_report_hourly_incremental"
+    report_file_with_records_further_start_date = "campaign_impression_performance_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = (
+        "campaign_impression_performance_report_hourly_incremental_with_records_further_cursor"
+    )
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "CampaignPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "CampaignPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignStatus", "CampaignName", "CampaignId", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualityImpressionsPercent", "LowQualityConversions", "LowQualityConversionRate", "DeviceType", "QualityScore", "ExpectedCtr", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "TrackingTemplate", "CustomParameters", "AccountStatus", "LowQualityGeneralClicks", "LowQualitySophisticatedClicks", "CampaignLabels", "FinalUrlSuffix", "CampaignType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AverageCpm", "ConversionsQualified", "LowQualityConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "CampaignPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "CampaignPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignStatus", "CampaignName", "CampaignId", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualityImpressionsPercent", "LowQualityConversions", "LowQualityConversionRate", "DeviceType", "QualityScore", "ExpectedCtr", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "TrackingTemplate", "CustomParameters", "AccountStatus", "LowQualityGeneralClicks", "LowQualitySophisticatedClicks", "CampaignLabels", "FinalUrlSuffix", "CampaignType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AverageCpm", "ConversionsQualified", "LowQualityConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
+        # for no config start date test
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "CampaignPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "CampaignPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignStatus", "CampaignName", "CampaignId", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualityImpressionsPercent", "LowQualityConversions", "LowQualityConversionRate", "DeviceType", "QualityScore", "ExpectedCtr", "AdRelevance", "LandingPageExperience", "PhoneImpressions", "PhoneCalls", "Ptr", "Network", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "TrackingTemplate", "CustomParameters", "AccountStatus", "LowQualityGeneralClicks", "LowQualitySophisticatedClicks", "CampaignLabels", "FinalUrlSuffix", "CampaignType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "AverageCpm", "ConversionsQualified", "LowQualityConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue", "VideoViews", "ViewThroughRate", "AverageCPV", "VideoViewsAt25Percent", "VideoViewsAt50Percent", "VideoViewsAt75Percent", "CompletedVideoViews", "VideoCompletionRate", "TotalWatchTimeInMS", "AverageWatchTimePerVideoView", "AverageWatchTimePerImpression", "Sales", "CostPerSale", "RevenuePerSale", "Installs", "CostPerInstall", "RevenuePerInstall"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
 
 
 class TestGeographicPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
@@ -284,20 +394,88 @@ class TestGeographicPerformanceReportHourlyStream(HourlyReportsTestWithStateChan
         )
 
 
-class TestSearchQueryPerformanceReportHourlyStream(HourlyReportsTest):
+class TestSearchQueryPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
     stream_name = "search_query_performance_report_hourly"
     report_file = "search_query_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "search_query_performance_report_hourly_incremental"
+    report_file_with_records_further_start_date = "search_query_performance_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = "search_query_performance_report_hourly_incremental_with_records_further_cursor"
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "SearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "SearchQueryPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "AdId", "AdType", "DestinationUrl", "BidMatchType", "DeliveredMatchType", "CampaignStatus", "AdStatus", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "SearchQuery", "Keyword", "AdGroupCriterionId", "Conversions", "ConversionRate", "CostPerConversion", "Language", "KeywordId", "Network", "TopVsOther", "DeviceType", "DeviceOS", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "AccountStatus", "AdGroupStatus", "KeywordStatus", "CampaignType", "CustomerId", "CustomerName", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "SearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "SearchQueryPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "AdId", "AdType", "DestinationUrl", "BidMatchType", "DeliveredMatchType", "CampaignStatus", "AdStatus", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "SearchQuery", "Keyword", "AdGroupCriterionId", "Conversions", "ConversionRate", "CostPerConversion", "Language", "KeywordId", "Network", "TopVsOther", "DeviceType", "DeviceOS", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "AccountStatus", "AdGroupStatus", "KeywordStatus", "CampaignType", "CustomerId", "CustomerName", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for no config start date test
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "SearchQueryPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "SearchQueryPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "AdId", "AdType", "DestinationUrl", "BidMatchType", "DeliveredMatchType", "CampaignStatus", "AdStatus", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "SearchQuery", "Keyword", "AdGroupCriterionId", "Conversions", "ConversionRate", "CostPerConversion", "Language", "KeywordId", "Network", "TopVsOther", "DeviceType", "DeviceOS", "Assists", "Revenue", "ReturnOnAdSpend", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "AccountStatus", "AdGroupStatus", "KeywordStatus", "CampaignType", "CustomerId", "CustomerName", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
 
 
-class TestUserLocationPerformanceReportHourlyStream(HourlyReportsTest):
+class TestUserLocationPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
     stream_name = "user_location_performance_report_hourly"
     report_file = "user_location_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "user_location_performance_report_hourly_incremental"
+    report_file_with_records_further_start_date = "user_location_performance_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = "user_location_performance_report_hourly_incremental_with_records_further_cursor"
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "UserLocationPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "UserLocationPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "Country", "State", "MetroArea", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "ProximityTargetLocation", "Radius", "Language", "City", "QueryIntentCountry", "QueryIntentState", "QueryIntentCity", "QueryIntentDMA", "BidMatchType", "DeliveredMatchType", "Network", "TopVsOther", "DeviceType", "DeviceOS", "Assists", "Conversions", "ConversionRate", "Revenue", "ReturnOnAdSpend", "CostPerConversion", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "County", "PostalCode", "QueryIntentCounty", "QueryIntentPostalCode", "LocationId", "QueryIntentLocationId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "Neighborhood", "QueryIntentNeighborhood", "ViewThroughRevenue", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "UserLocationPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "UserLocationPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "Country", "State", "MetroArea", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "ProximityTargetLocation", "Radius", "Language", "City", "QueryIntentCountry", "QueryIntentState", "QueryIntentCity", "QueryIntentDMA", "BidMatchType", "DeliveredMatchType", "Network", "TopVsOther", "DeviceType", "DeviceOS", "Assists", "Conversions", "ConversionRate", "Revenue", "ReturnOnAdSpend", "CostPerConversion", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "County", "PostalCode", "QueryIntentCounty", "QueryIntentPostalCode", "LocationId", "QueryIntentLocationId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "Neighborhood", "QueryIntentNeighborhood", "ViewThroughRevenue", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        # for no config start date test
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "UserLocationPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "UserLocationPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "Country", "State", "MetroArea", "CurrencyCode", "AdDistribution", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "ProximityTargetLocation", "Radius", "Language", "City", "QueryIntentCountry", "QueryIntentState", "QueryIntentCity", "QueryIntentDMA", "BidMatchType", "DeliveredMatchType", "Network", "TopVsOther", "DeviceType", "DeviceOS", "Assists", "Conversions", "ConversionRate", "Revenue", "ReturnOnAdSpend", "CostPerConversion", "CostPerAssist", "RevenuePerConversion", "RevenuePerAssist", "County", "PostalCode", "QueryIntentCounty", "QueryIntentPostalCode", "LocationId", "QueryIntentLocationId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "ViewThroughConversions", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "Neighborhood", "QueryIntentNeighborhood", "ViewThroughRevenue", "CampaignType", "AssetGroupId", "AssetGroupName"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
 
 
 class TestAdGroupPerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
@@ -381,6 +559,98 @@ class TestAccountPerformanceReportHourlyStream(HourlyReportsTestWithStateChanges
             response_template="generate_report",
             body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AccountPerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AccountPerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountId", "TimePeriod", "CurrencyCode", "AdDistribution", "DeviceType", "Network", "DeliveredMatchType", "DeviceOS", "TopVsOther", "BidMatchType", "AccountName", "AccountNumber", "PhoneImpressions", "PhoneCalls", "Clicks", "Ctr", "Spend", "Impressions", "Assists", "ReturnOnAdSpend", "AverageCpc", "AveragePosition", "AverageCpm", "Conversions", "ConversionsQualified", "ConversionRate", "CostPerAssist", "CostPerConversion", "LowQualityClicks", "LowQualityClicksPercent", "LowQualityImpressions", "LowQualitySophisticatedClicks", "LowQualityConversions", "LowQualityConversionRate", "Revenue", "RevenuePerAssist", "RevenuePerConversion", "Ptr"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
         )
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
+
+
+class TestAudiencePerformanceReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
+    stream_name = "audience_performance_report_hourly"
+    report_file = "audience_performance_report_hourly"
+    records_number = 24
+    state_file = "hourly_reports_state"
+    incremental_report_file = "audience_performance_report_hourly_incremental"
+    report_file_with_records_further_start_date = "audience_performance_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = "audience_performance_report_hourly_incremental_with_records_further_cursor"
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AudiencePerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AudiencePerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "AudienceId", "AudienceName", "AssociationStatus", "BidAdjustment", "TargetingSetting", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "Revenue", "ReturnOnAdSpend", "RevenuePerConversion", "AccountStatus", "CampaignStatus", "AdGroupStatus", "AudienceType", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "AssociationId", "AssociationLevel", "ViewThroughConversions", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AudiencePerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AudiencePerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "AudienceId", "AudienceName", "AssociationStatus", "BidAdjustment", "TargetingSetting", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "Revenue", "ReturnOnAdSpend", "RevenuePerConversion", "AccountStatus", "CampaignStatus", "AdGroupStatus", "AudienceType", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "AssociationId", "AssociationLevel", "ViewThroughConversions", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
+        # for no config start date
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "AudiencePerformanceReport", "ReturnOnlyCompleteData": false, "Type": "AudiencePerformanceReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "AudienceId", "AudienceName", "AssociationStatus", "BidAdjustment", "TargetingSetting", "Impressions", "Clicks", "Ctr", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate", "CostPerConversion", "Revenue", "ReturnOnAdSpend", "RevenuePerConversion", "AccountStatus", "CampaignStatus", "AdGroupStatus", "AudienceType", "BaseCampaignId", "AllConversions", "AllRevenue", "AllConversionRate", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenuePerConversion", "AssociationId", "AssociationLevel", "ViewThroughConversions", "Goal", "GoalType", "AbsoluteTopImpressionRatePercent", "TopImpressionRatePercent", "AverageCpm", "ConversionsQualified", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
+        self.mock_generate_report_api(
+            endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
+        )
+
+
+class TestGoalsAndFunnelsReportHourlyStream(HourlyReportsTestWithStateChangesAfterMigration):
+    stream_name = "goals_and_funnels_report_hourly"
+    report_file = "goals_and_funnels_report_hourly"
+    records_number = 24
+    state_file = "hourly_reports_state"
+    incremental_report_file = "goals_and_funnels_report_hourly_incremental"
+    report_file_with_records_further_start_date = "goals_and_funnels_report_hourly_with_records_further_config_start_date"
+    state_file_legacy = "hourly_reports_state_legacy"
+    state_file_after_migration = "hourly_reports_state_after_migration"
+    state_file_after_migration_with_cursor_further_config_start_date = (
+        "hourly_reports_state_after_migration_with_cursor_further_config_start_date"
+    )
+    incremental_report_file_with_records_further_cursor = "goals_and_funnels_report_hourly_incremental_with_records_further_cursor"
+
+    def mock_report_apis(self):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "GoalsAndFunnelsReport", "ReturnOnlyCompleteData": false, "Type": "GoalsAndFunnelsReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "Keyword", "KeywordId", "Goal", "AllConversions", "Assists", "AllRevenue", "GoalId", "DeviceType", "DeviceOS", "AccountStatus", "CampaignStatus", "AdGroupStatus", "KeywordStatus", "GoalType", "ViewThroughConversions", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
+        # for second read
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "GoalsAndFunnelsReport", "ReturnOnlyCompleteData": false, "Type": "GoalsAndFunnelsReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "Keyword", "KeywordId", "Goal", "AllConversions", "Assists", "AllRevenue", "GoalId", "DeviceType", "DeviceOS", "AccountStatus", "CampaignStatus", "AdGroupStatus", "KeywordStatus", "GoalType", "ViewThroughConversions", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 6, "Month": 5, "Year": 2024}, "CustomDateRangeEnd": {"Day": 8, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
+        # for no config start date test
+        self.mock_generate_report_api(
+            endpoint="Submit",
+            response_template="generate_report",
+            body=b'{"ReportRequest": {"ExcludeColumnHeaders": false, "ExcludeReportFooter": true, "ExcludeReportHeader": true, "Format": "Csv", "FormatVersion": "2.0", "ReportName": "GoalsAndFunnelsReport", "ReturnOnlyCompleteData": false, "Type": "GoalsAndFunnelsReportRequest", "Aggregation": "Hourly", "Columns": ["AccountName", "AccountNumber", "AccountId", "TimePeriod", "CampaignName", "CampaignId", "AdGroupName", "AdGroupId", "Keyword", "KeywordId", "Goal", "AllConversions", "Assists", "AllRevenue", "GoalId", "DeviceType", "DeviceOS", "AccountStatus", "CampaignStatus", "AdGroupStatus", "KeywordStatus", "GoalType", "ViewThroughConversions", "AllConversionsQualified", "ViewThroughConversionsQualified", "ViewThroughRevenue"], "Scope": {"AccountIds": [180535609]}, "Time": {"CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2023}, "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024}, "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon"}}}',
+        )
+
         self.mock_generate_report_api(
             endpoint="Poll", response_template="generate_report_poll", body=b'{"ReportRequestId": "thisisthereport_requestid"}'
         )

@@ -25,11 +25,12 @@ RUN if [ -n "${EXTRA_PREREQS_SCRIPT}" ]; then \
         ./extra_prereqs_script; \
     fi
 
-# TODO: Pre-install uv on the base image to speed up the build.
-#       (uv is still faster even with the extra step.)
-RUN pip install --no-cache-dir uv
-RUN python -m uv pip install --no-cache-dir .
+# Until PEP 751 is adopted, we have to install with Poetry in order
+# to respect the `poetry.lock` file.
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi --without=dev
 
+# Now build the final stage
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_NAME
 ARG BASE_IMAGE
@@ -37,6 +38,7 @@ ARG BASE_IMAGE
 WORKDIR /airbyte/integration_code
 
 COPY --from=builder /usr/local /usr/local
+COPY --from=builder /airbyte/integration_code /airbyte/integration_code
 COPY --chmod=755 <<EOT /entrypoint.sh
 #!/usr/bin/env bash
 set -e
