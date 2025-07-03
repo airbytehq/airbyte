@@ -126,7 +126,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
 
-    schema_loader: InlineSchemaLoader = None
+    schema_loader: InlineSchemaLoader
     limit: Union[InterpolatedString, str, int] = None
     nested_limit: Union[InterpolatedString, str, int] = None
 
