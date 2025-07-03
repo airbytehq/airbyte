@@ -51,8 +51,8 @@ class RecordMungerTest {
 
         every { validator.validate(any()) } answers { firstArg() }
 
-        val stringfiedValue = Fixtures.mockCoercedValue(StringValue("stringified"))
-        every { validator.stringify(any()) } answers { stringfiedValue }
+        val stringfiedValue = Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))
+        every { validator.toJsonStringValue(any()) } answers { stringfiedValue }
 
         // mock coercion output
         val nonUnionUserFields =
@@ -84,7 +84,7 @@ class RecordMungerTest {
                     "user_field_2" to FieldType(StringType, false),
                     "user_field_3" to FieldType(IntegerType, false),
                     "user_field_4" to FieldType(BooleanType, false),
-                    // this field is a union type so it should be stringified
+                    // this field is a union type so it should be turned into a json string
                     "user_field_5" to FieldType(UnionType(setOf(), false), false),
                 )
             }
