@@ -85,7 +85,7 @@ class MySqlSourceJdbcPartitionFactory(
     }
 
     private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
-        // find upper bound using maxPk query
+        // find upper bound using minPk query
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
         val minPkQuery = SelectQuerySpec(SelectColumnMinValue(pkChosenFromCatalog[0]), from)
