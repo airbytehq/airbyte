@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.1.0"
-name = "airbyte-destination-surrealdb"
+name = "destination-surrealdb"
 description = "Destination implementation for SurrealDB."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
@@ -17,7 +17,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_surrealdb"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.13"
+python = "^3.10,<3.12"
 airbyte-cdk = {version = "^6.45.10", extras = []}
 # surrealdb.py 1.0.3 depends on packaging 24.2, where airbite-cdk depends on langchain which depends on packaging 23.x,
 # which results in poetry dependency resolution failure.

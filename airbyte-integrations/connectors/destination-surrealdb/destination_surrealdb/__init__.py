@@ -3,6 +3,6 @@
 #
 
 
-from .destination import DestinationSurrealDB, normalize_url, surrealdb_connect
+from .destination import DestinationSurrealDB
 
-__all__ = ["DestinationSurrealDB", "normalize_url", "surrealdb_connect"]
+__all__ = ["DestinationSurrealDB"]
