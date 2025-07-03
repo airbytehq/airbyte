@@ -30,13 +30,14 @@ class RecordMunger(
             )
 
         val munged = HashMap<String, AirbyteValue>()
-        enriched.declaredFields.forEach {
-            val mappedKey = catalogInfo.getMappedColumnName(record.stream, it.key)!!
-            val fieldType = record.schemaFields[it.key]!!
+        enriched.declaredFields.forEach { field ->
+            val mappedKey = catalogInfo.getMappedColumnName(record.stream, field.key)!!
+            val fieldType = record.schemaFields[field.key]!!
 
-            var mappedValue = it.value
-                .let { v -> if (fieldType.type is UnionType) coercer.toJsonStringValue(v) else v }
-                .let { v -> coercer.validate(v) }
+            var mappedValue =
+                field.value
+                    .let { if (fieldType.type is UnionType) coercer.toJsonStringValue(it) else it }
+                    .let { coercer.validate(it) }
 
             mappedValue = coercer.validate(mappedValue)
 
