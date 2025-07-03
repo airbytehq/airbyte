@@ -4,20 +4,28 @@
 
 package io.airbyte.integrations.destination.clickhouse_v2.write.transform
 
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATE32_MIN
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATETIME64_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DATETIME64_MIN
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.DECIMAL128_MIN
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MAX
-import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercingValidator.Constants.INT64_MIN
+import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DATETIME64_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DATETIME64_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MIN
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.INT64_MAX
+import io.airbyte.integrations.destination.clickhouse_v2.write.transform.ClickhouseCoercer.Constants.INT64_MIN
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -27,12 +35,31 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 
+/*
+ * Mutative for performance reasons.
+ */
 @Singleton
-class ClickhouseCoercingValidator {
-    /*
-     * Mutative for performance reasons.
-     */
-    fun validateAndCoerce(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+class ClickhouseCoercer {
+    fun stringify(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        value.abValue = when (val abValue = value.abValue) {
+            is ObjectValue -> StringValue(abValue.values.serializeToString())
+            is ArrayValue -> StringValue(abValue.values.serializeToString())
+            is BooleanValue -> StringValue(abValue.value.serializeToString())
+            is IntegerValue -> StringValue(abValue.value.serializeToString())
+            is NumberValue -> StringValue(abValue.value.serializeToString())
+            is StringValue -> StringValue(abValue.value.serializeToString())
+            is DateValue -> StringValue(abValue.value.serializeToString())
+            is TimeWithTimezoneValue -> StringValue(abValue.value.serializeToString())
+            is TimeWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
+            is TimestampWithTimezoneValue -> StringValue(abValue.value.serializeToString())
+            is TimestampWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
+            is NullValue -> abValue // Consider null a valid string
+        }
+
+        return value
+    }
+
+    fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         when (val abValue = value.abValue) {
             is NumberValue ->
                 if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
