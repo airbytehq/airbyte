@@ -140,13 +140,20 @@ if $LOCAL_CDK; then
 
   for connector_dir in airbyte-integrations/connectors/*; do
     if [[ -d "$connector_dir" ]]; then
-      # Check if it's a Java connector
-      if [ -f "$connector_dir/build.gradle" ]; then
+      # Check if it's a Java connector (either with build.gradle or build.gradle.kts)
+      if [ -f "$connector_dir/build.gradle" ] || [ -f "$connector_dir/build.gradle.kts" ]; then
         connector_name=$(basename "$connector_dir")
-         # Search for cdk = 'local' or cdk = "local" in airbyteBulkConnector block
-         if grep -q "airbyteBulkConnector" "$connector_dir/build.gradle" && grep -q "cdk *= *['\"]local['\"]" "$connector_dir/build.gradle"; then
-           connectors+=("$connector_name")
-         fi
+
+        # Determine which build file exists
+        build_file="build.gradle"
+        if [ -f "$connector_dir/build.gradle.kts" ]; then
+          build_file="build.gradle.kts"
+        fi
+
+        # Search for cdk = 'local' or cdk = "local" in airbyteBulkConnector block
+        if grep -q "airbyteBulkConnector" "$connector_dir/$build_file" && grep -q "cdk *= *['\"]local['\"]" "$connector_dir/$build_file"; then
+          connectors+=("$connector_name")
+        fi
       fi
     fi
   done
