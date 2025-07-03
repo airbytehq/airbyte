@@ -456,7 +456,20 @@ module.exports = {
           type: "category",
           label: "Airbyte at Scale",
           items: [
-            "operator-guides/collecting-metrics",
+            {
+              type: "category",
+              label: "Collecting Metrics",
+              link: {
+                type: "doc",
+                id: "operator-guides/collecting-metrics",
+              },
+              items: [
+                {
+                  type: "doc",
+                  id: "operator-guides/open-telemetry",
+                },
+              ],
+            },
             "operator-guides/scaling-airbyte",
             "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
           ],
