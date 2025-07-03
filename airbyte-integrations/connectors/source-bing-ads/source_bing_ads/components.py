@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
@@ -339,3 +340,76 @@ class BulkStreamsStateMigration(StateMigration):
                     del stream_state[key]
 
         return stream_state
+
+
+@dataclass
+class CustomReportSchemaLoader(SchemaLoader):
+    """
+    Creates custom report schema based on provided reporting columns.
+    """
+
+    reporting_columns: List[str]
+    report_aggregation: str
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if self.report_aggregation == "DayOfWeek":
+            self.reporting_columns = self.reporting_columns + ["DayOfWeek", "StartOfTimePeriod", "EndOfTimePeriod"]
+        if self.report_aggregation == "HourOfDay":
+            self.reporting_columns = self.reporting_columns + ["HourOfDay", "StartOfTimePeriod", "EndOfTimePeriod"]
+
+        self.reporting_columns = list(frozenset(self.reporting_columns))
+
+        columns_schema = {col: {"type": ["null", "string"]} for col in self.reporting_columns}
+        schema: Mapping[str, Any] = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": columns_schema,
+        }
+        return schema
+
+
+@dataclass
+class CustomReportTransformation(RecordTransformation):
+    report_aggregation: str
+
+    def transform_report_hourly_datetime_format_to_rfc_3339(self, original_value: str) -> str:
+        """
+        Bing Ads API reports with hourly aggregation provides date fields in custom format: "2023-11-04|11"
+        Return date in RFC3339 format: "2023-11-04T11:00:00+00:00"
+        """
+        return datetime.strptime(original_value, "%Y-%m-%d|%H").replace(tzinfo=timezone.utc).isoformat(timespec="seconds")
+
+    def transform(
+        self,
+        record: MutableMapping[str, Any],
+        config: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        if self.report_aggregation == "Hourly":
+            if record.get("TimePeriod"):
+                record.update({"TimePeriod": self.transform_report_hourly_datetime_format_to_rfc_3339(record["TimePeriod"])})
+
+        if self.report_aggregation == "DayOfWeek":
+            cursor_field = record["TimePeriod"]
+            record.update(
+                {
+                    "StartOfTimePeriod": stream_slice["start_time"],
+                    "EndOfTimePeriod": stream_slice["end_time"],
+                    "DayOfWeek": cursor_field,
+                    "TimePeriod": stream_slice["end_time"],
+                }
+            )
+            record["TimePeriod"] = record["EndOfTimePeriod"]
+
+        if self.report_aggregation == "HourOfDay":
+            cursor_field = record["TimePeriod"]
+            record.update(
+                {
+                    "StartOfTimePeriod": stream_slice["start_time"],
+                    "EndOfTimePeriod": stream_slice["end_time"],
+                    "HourOfDay": cursor_field,
+                    "TimePeriod": stream_slice["end_time"],
+                }
+            )

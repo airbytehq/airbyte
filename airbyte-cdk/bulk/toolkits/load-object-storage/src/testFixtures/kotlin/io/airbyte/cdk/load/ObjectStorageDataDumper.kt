@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
-import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
 import io.airbyte.cdk.load.data.csv.toAirbyteValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
@@ -93,7 +92,11 @@ class ObjectStorageDataDumper(
                                     else -> error("Unsupported compressor")
                                 }
                             // Remove the "namespace/name/" prefix from the object key
-                            val truncatedKey = listedObject.key.replace(prefix, "")
+                            val truncatedKey =
+                                listedObject.key
+                                    .replace(prefix, "")
+                                    // Remove the dynamic date bit on the file path, if present
+                                    .replace("\\d{4}_\\d{2}_\\d{2}_\\d+_/".toRegex(), "")
                             truncatedKey to BufferedReader(decompressed.reader()).readText()
                         }
                     }
@@ -105,12 +108,6 @@ class ObjectStorageDataDumper(
 
     @Suppress("DEPRECATION")
     private fun readLines(inputStream: InputStream): List<OutputRecord> {
-        // Clean up the stream name to avoid invalid characters that may impact temp file creation
-        val modifiedDescriptor =
-            DestinationStream.Descriptor(
-                namespace = stream.mappedDescriptor.namespace,
-                name = Transformations.toAlphanumericAndUnderscore(stream.mappedDescriptor.name)
-            )
         val wasFlattened = formatConfig.rootLevelFlattening
         return when (formatConfig) {
             is JsonFormatConfiguration -> {
@@ -137,7 +134,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                inputStream.toAvroReader(modifiedDescriptor).use { reader ->
+                inputStream.toAvroReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
@@ -145,7 +142,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
-                inputStream.toParquetReader(modifiedDescriptor).use { reader ->
+                inputStream.toParquetReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
