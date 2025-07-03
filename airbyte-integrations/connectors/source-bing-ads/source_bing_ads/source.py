@@ -12,7 +12,6 @@ from source_bing_ads.base_streams import Accounts
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
     BingAdsReportingServiceStream,
-    CustomReport,
 )
 
 
@@ -31,7 +30,6 @@ class SourceBingAds(YamlDeclarativeSource):
             account_ids = set()
             for _slice in accounts.stream_slices():
                 account_ids.update({str(account["Id"]) for account in accounts.read_records(SyncMode.full_refresh, _slice)})
-            self.validate_custom_reposts(config, client)
             if account_ids:
                 return True, None
             else:
@@ -43,44 +41,8 @@ class SourceBingAds(YamlDeclarativeSource):
         except Exception as error:
             return False, error
 
-    def validate_custom_reposts(self, config: Mapping[str, Any], client: Client):
-        custom_reports = self.get_custom_reports(config, client)
-        for custom_report in custom_reports:
-            is_valid, reason = custom_report.validate_report_configuration()
-            if not is_valid:
-                raise AirbyteTracedException(
-                    message=f"Config validation error: {custom_report.name}: {reason}",
-                    internal_message=f"{custom_report.name}: {reason}",
-                    failure_type=FailureType.config_error,
-                )
-
     def _clear_reporting_object_name(self, report_object: str) -> str:
         # reporting mixin adds it
         if report_object.endswith("Request"):
             return report_object.replace("Request", "")
         return report_object
-
-    def get_custom_reports(self, config: Mapping[str, Any], client: Client) -> List[Optional[Stream]]:
-        return [
-            type(
-                report["name"],
-                (CustomReport,),
-                {
-                    "report_name": self._clear_reporting_object_name(report["reporting_object"]),
-                    "custom_report_columns": report["report_columns"],
-                    "report_aggregation": report["report_aggregation"],
-                },
-            )(client, config)
-            for report in config.get("custom_reports", [])
-        ]
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        declarative_streams = super().streams(config)
-
-        client = Client(**config)
-        streams = []
-
-        custom_reports = self.get_custom_reports(config, client)
-        streams.extend(custom_reports)
-        streams.extend(declarative_streams)
-        return streams

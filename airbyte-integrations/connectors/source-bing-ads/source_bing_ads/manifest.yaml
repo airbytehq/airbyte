@@ -503,7 +503,6 @@ definitions:
   ## - incremental_sync
   ## Then components resolving login in dynamic streams will set provided in list_of_parameters_for_stream object parameters
   ## to base report stream template and add this stream to a catalog.
-
   report_base_stream:
     type: DeclarativeStream
     #    set report_aggregation in parameters, for example,
@@ -5200,6 +5199,90 @@ dynamic_streams:
           create_or_update: true
           field_path: ["schema_loader"]
           value: "{{components_values['schema_loader']}}"
+  # Custom reports
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/report_base_stream"
+      retriever:
+        $ref: "#/definitions/report_base_stream/retriever"
+        creation_requester:
+          $ref: "#/definitions/report_base_stream/retriever/creation_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 400
+                error_message: "Reporting Columns are invalid. Columns that you provided don't belong to Reporting Data Object Columns: {{ parameters['report_columns'] }}. Please ensure it is correct in Bing Ads Docs"
+                error_message_contains: Please check your request parameters.
+      schema_loader:
+        type: CustomSchemaLoader
+        class_name: source_bing_ads.components.CustomReportSchemaLoader
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(now_utc(), parameters['end_date_time_format']) }}"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_bing_ads.components.CustomReportTransformation
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - custom_reports
+      components_mapping:
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["name"]
+          value: "{{ camel_case_to_snake_case(components_values['name']) }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "report_aggregation"]
+          value: "{{ components_values['report_aggregation'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "report_type"]
+          value: "{{ components_values['reporting_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "report_name"]
+          value: "{{ components_values['reporting_object'].replace('Request', '') }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "report_columns"]
+          value: "{{ components_values['report_columns'] if 'TimePeriod' in components_values['report_columns'] else components_values['report_columns'] if components_values['report_aggregation'] == 'Summary' else components_values['report_columns'] + ['TimePeriod'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "end_date_time_format"]
+          value: "{{ '%Y-%m-%dT%H:%M:%S+00:00' if components_values['report_aggregation'] == 'Hourly' else '%Y-%m-%dT%H:%M:%S%z' }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["incremental_sync", "cursor_datetime_formats"]
+          value: "{{ ['%Y-%m-%dT%H:%M:%S+00:00'] if components_values['report_aggregation'] == 'Hourly' else ['%Y-%m-%d'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["incremental_sync", "datetime_format"]
+          value: "{{ '%Y-%m-%dT%H:%M:%S+00:00' if components_values['report_aggregation'] == 'Hourly' else '%Y-%m-%d' }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["incremental_sync", "end_datetime", "datetime_format"]
+          value: "{{ '%Y-%m-%dT%H:%M:%S+00:00' if components_values['report_aggregation'] == 'Hourly' else '%Y-%m-%dT%H:%M:%S%z' }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["incremental_sync", "cursor_field"]
+          value: "TimePeriod"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["schema_loader", "reporting_columns"]
+          value: "{{ components_values['report_columns'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["transformations", "0", "report_aggregation"]
+          value: "{{ components_values['report_aggregation'] }}"
 
 streams:
   - $ref: "#/definitions/accounts_stream"
