@@ -5,7 +5,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from components import MondayGraphqlRequester
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
@@ -77,13 +76,19 @@ nested_array_schema = {
         ),
     ],
 )
-def test_get_request_params(components_module, mocker, input_schema, graphql_query, stream_name, config, next_page_token):
-    mocker.patch.object(components_module.MondayGraphqlRequester, "_get_schema_root_properties", return_value=input_schema)
+def test_get_request_params(components_module, input_schema, graphql_query, stream_name, config, next_page_token):
+    mock_schema = {
+        stream_name: {
+            "properties": input_schema,
+        }
+    }
+
     requester = components_module.MondayGraphqlRequester(
         name="a name",
         url_base="https://api.monday.com/v2",
         path="a-path",
         http_method=HttpMethod.GET,
+        schema_loader=InlineSchemaLoader(schema=mock_schema, parameters={}),
         request_options_provider=MagicMock(),
         authenticator=MagicMock(),
         error_handler=MagicMock(),
