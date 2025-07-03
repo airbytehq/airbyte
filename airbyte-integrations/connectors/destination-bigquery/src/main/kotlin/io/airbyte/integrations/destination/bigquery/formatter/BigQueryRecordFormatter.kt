@@ -9,6 +9,9 @@ import com.google.cloud.bigquery.QueryParameterValue
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
@@ -27,6 +30,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
@@ -34,6 +38,7 @@ import io.airbyte.cdk.load.util.BigDecimalUtil
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -245,19 +250,37 @@ class BigQueryRecordFormatter(
         }
 
         fun validateAirbyteValue(value: EnrichedAirbyteValue) {
-            when (value.type) {
+            val (validatedValue, maybeFailure) = validateAirbyteValue(value.abValue, value.type)
+            value.abValue = validatedValue
+            maybeFailure?.let { value.changes += it.asChange(value.name) }
+        }
+
+        private fun validateAirbyteValue(value: AirbyteValue, type: AirbyteType): ValidatedValue {
+            when (type) {
                 is IntegerType -> {
-                    (value.abValue as IntegerValue).value.let {
+                    (value as IntegerValue).value.let {
                         if (it < INT64_MIN_VALUE || INT64_MAX_VALUE < it) {
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                            return ValidatedValue(
+                                NullValue,
+                                ValidationFailure(
+                                    Change.NULLED,
+                                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                                )
+                            )
                         }
                     }
                 }
                 is NumberType -> {
-                    (value.abValue as NumberValue).value.let {
+                    (value as NumberValue).value.let {
                         if (it < NUMERIC_MIN_VALUE || NUMERIC_MAX_VALUE < it) {
                             // If we're too large/small, then we have to null out.
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                            return ValidatedValue(
+                                NullValue,
+                                ValidationFailure(
+                                    Change.NULLED,
+                                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                                )
+                            )
                         } else if (it.scale() > NUMERIC_MAX_SCALE) {
                             // But if we're within the min/max range, but have too many decimal
                             // points, then we can round off the number.
@@ -266,9 +289,12 @@ class BigQueryRecordFormatter(
                             // -> -0.000000001
                             // select cast(json_query('{"foo":  0.0000000005}', "$.foo") as numeric)
                             // ->  0.000000001
-                            value.truncate(
+                            return ValidatedValue(
                                 NumberValue(it.setScale(NUMERIC_MAX_SCALE, RoundingMode.HALF_UP)),
-                                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                                ValidationFailure(
+                                    Change.TRUNCATED,
+                                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                                )
                             )
                         }
                     }
@@ -283,28 +309,71 @@ class BigQueryRecordFormatter(
                 // layer, which will make this validation relevant again. Keeping this code for
                 // that future change.
                 is DateType -> {
-                    (value.abValue as DateValue).value.let {
+                    (value as DateValue).value.let {
                         if (it < DATE_MIN_VALUE || DATE_MAX_VALUE < it) {
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                            return ValidatedValue(
+                                NullValue,
+                                ValidationFailure(
+                                    Change.NULLED,
+                                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                )
+                            )
                         }
                     }
                 }
                 is TimestampTypeWithTimezone -> {
-                    (value.abValue as TimestampWithTimezoneValue).value.let {
+                    (value as TimestampWithTimezoneValue).value.let {
                         if (it < TIMESTAMP_MIN_VALUE || TIMESTAMP_MAX_VALUE < it) {
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                            return ValidatedValue(
+                                NullValue,
+                                ValidationFailure(
+                                    Change.NULLED,
+                                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                )
+                            )
                         }
                     }
                 }
                 is TimestampTypeWithoutTimezone -> {
-                    (value.abValue as TimestampWithoutTimezoneValue).value.let {
+                    (value as TimestampWithoutTimezoneValue).value.let {
                         if (it < DATETIME_MIN_VALUE || DATETIME_MAX_VALUE < it) {
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                            return ValidatedValue(
+                                NullValue,
+                                ValidationFailure(
+                                    Change.NULLED,
+                                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                )
+                            )
                         }
                     }
                 }
+                is UnionType -> {
+                    val chosenType = type.chooseType()
+                    val coerced = AirbyteValueCoercer.coerce(value, chosenType)
+                    return coerced?.let { validateAirbyteValue(coerced, chosenType) }
+                        ?: ValidatedValue(
+                            NullValue,
+                            ValidationFailure(
+                                Change.NULLED,
+                                Reason.DESTINATION_SERIALIZATION_ERROR
+                            ),
+                        )
+                }
                 else -> {}
             }
+
+            return ValidatedValue(value, failure = null)
+        }
+
+        private data class ValidatedValue(
+            val value: AirbyteValue,
+            val failure: ValidationFailure?,
+        )
+        private data class ValidationFailure(
+            val change: Change,
+            val reason: Reason,
+        ) {
+            fun asChange(fieldName: String) = Meta.Change(fieldName, change, reason)
         }
     }
 }
