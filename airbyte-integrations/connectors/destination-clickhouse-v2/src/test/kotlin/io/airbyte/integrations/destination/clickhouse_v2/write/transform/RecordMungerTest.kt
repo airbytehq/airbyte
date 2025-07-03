@@ -63,7 +63,8 @@ class RecordMungerTest {
                 "user_field_4" to Fixtures.mockCoercedValue(BooleanValue(false)),
             )
         val unionUserField = "user_field_5" to Fixtures.mockCoercedValue(ObjectValue(linkedMapOf()))
-        val userFields = (nonUnionUserFields + unionUserField) as LinkedHashMap<String, EnrichedAirbyteValue>
+        val userFields =
+            (nonUnionUserFields + unionUserField) as LinkedHashMap<String, EnrichedAirbyteValue>
         val internalFields =
             mapOf(
                 "internal_field_1" to Fixtures.mockCoercedValue(StringValue("internal1")),
@@ -79,14 +80,15 @@ class RecordMungerTest {
         val input =
             mockk<DestinationRecordRaw>(relaxed = true) {
                 every { asEnrichedDestinationRecordAirbyteValue(any()) } answers { coerced }
-                every { schemaFields } returns linkedMapOf(
-                    "user_field_1" to FieldType(StringType, false),
-                    "user_field_2" to FieldType(StringType, false),
-                    "user_field_3" to FieldType(IntegerType, false),
-                    "user_field_4" to FieldType(BooleanType, false),
-                    // this field is a union type so it should be stringified
-                    "user_field_5" to FieldType(UnionType(setOf(), false), false),
-                )
+                every { schemaFields } returns
+                    linkedMapOf(
+                        "user_field_1" to FieldType(StringType, false),
+                        "user_field_2" to FieldType(StringType, false),
+                        "user_field_3" to FieldType(IntegerType, false),
+                        "user_field_4" to FieldType(BooleanType, false),
+                        // this field is a union type so it should be stringified
+                        "user_field_5" to FieldType(UnionType(setOf(), false), false),
+                    )
             }
 
         val output = munger.transformForDest(input)
