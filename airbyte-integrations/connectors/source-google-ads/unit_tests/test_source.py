@@ -11,6 +11,7 @@ from unittest.mock import Mock, call
 import pendulum
 import pytest
 from pendulum import duration, today
+from source_google_ads.components import GoogleAdsPerPartitionStateMigration
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
@@ -117,7 +118,7 @@ def test_chunk_date_range():
 
 
 def test_streams_count(config, mock_get_customers):
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     streams = source.streams(config)
     expected_streams_number = 30
     print(f"{config=} \n{streams=}")
@@ -125,7 +126,7 @@ def test_streams_count(config, mock_get_customers):
 
 
 def test_read_missing_stream(config, mock_get_customers):
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
 
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -156,8 +157,8 @@ def test_read_missing_stream(config, mock_get_customers):
         ("SELECT segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign", False),
     ),
 )
-def test_metrics_in_custom_query(query, is_metrics_in_query):
-    source = SourceGoogleAds()
+def test_metrics_in_custom_query(config, query, is_metrics_in_query):
+    source = SourceGoogleAds(config, None, None)
     assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
 
 
@@ -379,9 +380,9 @@ def test_google_type_conversion(mock_fields_meta_data, customers):
         assert desired_mapping[prop] == value.get("type"), f"{prop} should be {value}"
 
 
-def test_check_connection_should_pass_when_config_valid(mocker):
+def test_check_connection_should_pass_when_config_valid(config, mocker):
     mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     check_successful, message = source.check_connection(
         logging.getLogger("airbyte"),
         {
@@ -420,8 +421,8 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     assert message is None
 
 
-def test_end_date_is_not_in_the_future(customers):
-    source = SourceGoogleAds()
+def test_end_date_is_not_in_the_future(config, customers):
+    source = SourceGoogleAds(config, None, None)
     config = source.get_incremental_stream_config(
         None, {"end_date": today().add(days=1).to_date_string(), "conversion_window_days": 14, "start_date": "2020-01-23"}, customers
     )
@@ -503,7 +504,7 @@ def mock_send_request(query: str, customer_id: str, login_customer_id: str = "de
         ),  # Non-empty filter, expect filtered customers
     ],
 )
-def test_get_customers(mocker, customer_status_filter, expected_ids, send_request_calls):
+def test_get_customers(config, mocker, customer_status_filter, expected_ids, send_request_calls):
     mock_google_api = Mock()
 
     mock_google_api.get_accessible_accounts.return_value = ["123", "789"]
@@ -512,7 +513,7 @@ def test_get_customers(mocker, customer_status_filter, expected_ids, send_reques
 
     mock_config = {"customer_status_filter": customer_status_filter, "customer_ids": ["123", "456", "789"]}
 
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
 
     customers = source.get_customers(mock_google_api, mock_config)
 
@@ -535,3 +536,44 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
 
     assert updated_stream.days_of_data_storage == 90
     assert updated_stream.slice_duration == duration(days=0)
+
+
+@pytest.mark.parametrize(
+    "input_state, expected",
+    [
+        # no partitions ⇒ empty
+        ({}, {}),
+        # single partition ⇒ that date
+        (
+            {"123": {"segments.date": "2120-10-10"}},
+            {"use_global_cursor": True, "state": {"segments.date": "2120-10-10"}},
+        ),
+        # multiple partitions ⇒ pick the earliest date
+        (
+            {
+                "a": {"segments.date": "2020-01-02"},
+                "b": {"segments.date": "2020-01-01"},
+            },
+            {"use_global_cursor": True, "state": {"segments.date": "2020-01-01"}},
+        ),
+        # mixed: only one has the cursor field
+        (
+            {
+                "a": {"segments.date": "2020-01-02"},
+                "b": {"other": "x"},
+            },
+            {"use_global_cursor": True, "state": {"segments.date": "2020-01-02"}},
+        ),
+        # none have the cursor field ⇒ empty
+        (
+            {
+                "a": {"foo": "bar"},
+                "b": {"baz": 42},
+            },
+            {},
+        ),
+    ],
+)
+def test_migrate_various_partitions(input_state, expected):
+    migrator = GoogleAdsPerPartitionStateMigration(config=None)
+    assert migrator.migrate(input_state) == expected

@@ -134,7 +134,18 @@ open class AbstractDlqWriteTest(
 
 class NoBucketDlqWriteTest :
     AbstractDlqWriteTest(
-        configContent = """{"objectStorageConfig":{"storage_type":"None"}}""",
+        configContent = """{"object_storage_config":{"storage_type":"None"}}""",
+        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV)
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+class NoBucketConfigDlqWriteTest :
+    AbstractDlqWriteTest(
+        configContent = """{}""",
         additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV)
     ) {
     @Test
@@ -145,7 +156,7 @@ class NoBucketDlqWriteTest :
 
 class MockBucketDlqFromRecordSampleTest :
     AbstractDlqWriteTest(
-        configContent = """{"objectStorageConfig":{"storage_type":"S3"}}""",
+        configContent = """{"object_storage_config":{"storage_type":"S3"}}""",
         additionalMicronautEnvs = listOf("MockObjectStorage", DLQ_INTEGRATION_TEST_ENV),
     ) {
     @Test
@@ -156,7 +167,7 @@ class MockBucketDlqFromRecordSampleTest :
 
 class MockBucketDlqFromNewRecordsTest :
     AbstractDlqWriteTest(
-        configContent = """{"objectStorageConfig":{"storage_type":"S3"}}""",
+        configContent = """{"object_storage_config":{"storage_type":"S3"}}""",
         additionalMicronautEnvs =
             listOf("MockObjectStorage", DLQ_INTEGRATION_TEST_ENV, DLQ_SAMPLE_TEST),
     ) {

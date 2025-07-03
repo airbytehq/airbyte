@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -35,6 +36,7 @@ class ClickhouseAirbyteClientTest {
     private val clickhouseFinalTableNameGenerator: ClickhouseFinalTableNameGenerator =
         mockk(relaxed = true)
     private val tempTableNameGenerator: TempTableNameGenerator = mockk(relaxed = true)
+    private val clickhouseConfiguration: ClickhouseConfiguration = mockk(relaxed = true)
 
     // Client
     private val clickhouseAirbyteClient =
@@ -43,7 +45,8 @@ class ClickhouseAirbyteClientTest {
                 client,
                 clickhouseSqlGenerator,
                 clickhouseFinalTableNameGenerator,
-                tempTableNameGenerator
+                tempTableNameGenerator,
+                clickhouseConfiguration
             )
         )
 
