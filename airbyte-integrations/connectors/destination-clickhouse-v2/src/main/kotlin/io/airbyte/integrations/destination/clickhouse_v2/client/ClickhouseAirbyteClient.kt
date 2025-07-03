@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.clickhouse_v2.client.ClickhouseSqlGen
 import io.airbyte.integrations.destination.clickhouse_v2.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse_v2.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse_v2.model.hasApplicableAlterations
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.future.await
@@ -40,6 +41,7 @@ class ClickhouseAirbyteClient(
     private val sqlGenerator: ClickhouseSqlGenerator,
     private val nameGenerator: ClickhouseFinalTableNameGenerator,
     private val tempTableNameGenerator: TempTableNameGenerator,
+    private val clickhouseConfiguration: ClickhouseConfiguration,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun createNamespace(namespace: String) {
@@ -129,7 +131,7 @@ class ClickhouseAirbyteClient(
                     // as
                     // nullable in the destination
                     // Add map key
-                    fieldName to fieldType.type.toDialectType()
+                    fieldName to fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
                 }
                 .toMap()
 

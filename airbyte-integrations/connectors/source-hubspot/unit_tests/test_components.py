@@ -6,8 +6,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
+import requests_mock
 from requests import Response
 
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
 
@@ -454,6 +456,59 @@ def test_associations_extractor(config, components_module):
         assert records[1]["id"] == expected_records[1]["id"]
         assert records[1]["companies"] == expected_records[1]["companies"]
         assert records[1]["contacts"] == expected_records[1]["contacts"]
+
+
+def test_associations_extractor_with_permissions_error(requests_mock, config, components_module):
+    response = requests.Response()
+    response._content = (
+        b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
+    )
+    response.status_code = 200
+
+    companies_associations_responses = [
+        {"json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."}, "status_code": 401},
+        {
+            "json": {
+                "results": [
+                    {
+                        "from": {"id": "123"},
+                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "408"}],
+                    },
+                    {
+                        "from": {"id": "456"},
+                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "888"}],
+                    },
+                ]
+            },
+            "status_code": 200,
+        },
+    ]
+
+    contacts_associations_responses = [{"json": {"results": []}, "status_code": 200}]
+
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
+    )
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", contacts_associations_responses
+    )
+
+    extractor = components_module.HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="deals",
+        associations_list=["companies", "contacts"],
+        decoder=JsonDecoder(parameters={}),
+        config=config,
+        parameters={},
+    )
+
+    records = list(extractor.extract_records(response=response))
+
+    assert len(records) == 2
+    assert records[0]["id"] == "123"
+    assert records[0]["companies"] == ["408"]
+    assert records[1]["id"] == "456"
+    assert records[1]["companies"] == ["888"]
 
 
 def test_extractor_supports_entity_interpolation(config, components_module):
