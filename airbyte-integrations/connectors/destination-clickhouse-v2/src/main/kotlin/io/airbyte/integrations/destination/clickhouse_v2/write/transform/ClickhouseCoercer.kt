@@ -41,20 +41,21 @@ import java.time.ZoneOffset
 @Singleton
 class ClickhouseCoercer {
     fun toJsonStringValue(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        value.abValue = when (val abValue = value.abValue) {
-            is ObjectValue -> StringValue(abValue.values.serializeToString())
-            is ArrayValue -> StringValue(abValue.values.serializeToString())
-            is BooleanValue -> StringValue(abValue.value.serializeToString())
-            is IntegerValue -> StringValue(abValue.value.serializeToString())
-            is NumberValue -> StringValue(abValue.value.serializeToString())
-            is DateValue -> StringValue(abValue.value.serializeToString())
-            is TimeWithTimezoneValue -> StringValue(abValue.value.serializeToString())
-            is TimeWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
-            is TimestampWithTimezoneValue -> StringValue(abValue.value.serializeToString())
-            is TimestampWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
-            is StringValue -> StringValue(abValue.value.serializeToString())
-            is NullValue -> abValue // Consider null a valid string
-        }
+        value.abValue =
+            when (val abValue = value.abValue) {
+                is ObjectValue -> StringValue(abValue.values.serializeToString())
+                is ArrayValue -> StringValue(abValue.values.serializeToString())
+                is BooleanValue -> StringValue(abValue.value.serializeToString())
+                is IntegerValue -> StringValue(abValue.value.serializeToString())
+                is NumberValue -> StringValue(abValue.value.serializeToString())
+                is DateValue -> StringValue(abValue.value.serializeToString())
+                is TimeWithTimezoneValue -> StringValue(abValue.value.serializeToString())
+                is TimeWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
+                is TimestampWithTimezoneValue -> StringValue(abValue.value.serializeToString())
+                is TimestampWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
+                is StringValue -> StringValue(abValue.value.serializeToString())
+                is NullValue -> abValue // Consider null a valid string
+            }
 
         return value
     }
