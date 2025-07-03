@@ -196,19 +196,19 @@ class ClickhouseCoercerTest {
 
     @ParameterizedTest
     @MethodSource("nonNullValues")
-    fun `stringify turns non-null values into a string`(value: AirbyteValue) {
+    fun `toJsonString turns non-null values into a string`(value: AirbyteValue) {
         val input = Fixtures.mockCoercedValue(value)
 
-        val result = coercer.stringify(input)
+        val result = coercer.toJsonStringValue(input)
 
         assert(result.abValue is StringValue)
     }
 
     @Test
-    fun `stringify passes through null values`() {
+    fun `toJsonString passes through null values`() {
         val input = Fixtures.mockCoercedValue(NullValue)
 
-        val result = coercer.stringify(input)
+        val result = coercer.toJsonStringValue(input)
 
         assertEquals(NullValue, result.abValue)
     }

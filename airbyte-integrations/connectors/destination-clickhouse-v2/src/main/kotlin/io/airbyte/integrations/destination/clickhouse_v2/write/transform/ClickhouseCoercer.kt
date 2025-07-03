@@ -40,7 +40,7 @@ import java.time.ZoneOffset
  */
 @Singleton
 class ClickhouseCoercer {
-    fun stringify(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+    fun toJsonStringValue(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue = when (val abValue = value.abValue) {
             is ObjectValue -> StringValue(abValue.values.serializeToString())
             is ArrayValue -> StringValue(abValue.values.serializeToString())
@@ -52,7 +52,7 @@ class ClickhouseCoercer {
             is TimeWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
             is TimestampWithTimezoneValue -> StringValue(abValue.value.serializeToString())
             is TimestampWithoutTimezoneValue -> StringValue(abValue.value.serializeToString())
-            is StringValue -> abValue // Already a string
+            is StringValue -> StringValue(abValue.value.serializeToString())
             is NullValue -> abValue // Consider null a valid string
         }
 

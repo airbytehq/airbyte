@@ -35,7 +35,7 @@ class RecordMunger(
             val fieldType = record.schemaFields[it.key]!!
 
             var mappedValue = it.value
-                .let { v -> if (fieldType.type is UnionType) coercer.stringify(v) else v }
+                .let { v -> if (fieldType.type is UnionType) coercer.toJsonStringValue(v) else v }
                 .let { v -> coercer.validate(v) }
 
             mappedValue = coercer.validate(mappedValue)
