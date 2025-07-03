@@ -13,6 +13,9 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from pathlib import Path
 
 
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
+
 def _get_manifest_path() -> Path:
     source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
     if source_declarative_manifest_path.exists():
