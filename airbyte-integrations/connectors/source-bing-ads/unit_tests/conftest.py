@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import sys
+import zipfile
+from io import BytesIO
 from unittest.mock import patch
 
 import pytest
@@ -160,3 +162,29 @@ def find_stream(stream_name, config, state=None):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+def create_zip_from_csv(filename: str) -> bytes:
+    """
+    Creates a zip file containing a CSV file from the resource/response folder.
+    The CSV is stored directly in the zip without additional gzip compression.
+
+    Args:
+        filename: The name of the CSV file without extension
+
+    Returns:
+        The zip file content as bytes
+    """
+    # Build path to the CSV file in resource/response folder
+    csv_path = Path(__file__).parent / f"resource/response/{filename}.csv"
+
+    # Read the CSV content
+    with open(csv_path, "r") as csv_file:
+        csv_content = csv_file.read()
+
+    # Create a zip file containing the CSV file directly (without gzip compression)
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, mode="w") as zip_file:
+        zip_file.writestr(f"{filename}.csv", csv_content)
+
+    return zip_buffer.getvalue()
