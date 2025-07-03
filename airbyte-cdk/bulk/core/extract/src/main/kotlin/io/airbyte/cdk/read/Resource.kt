@@ -105,7 +105,7 @@ class SocketResource(val socketDataChannelResourceHolder: SocketDataChannelResou
     }
 
     override fun tryAcquire(): AcquiredSocket? {
-        val maybeSocket = socketDataChannelResourceHolder?.bindFreeSocket()
+        val maybeSocket = socketDataChannelResourceHolder?.acquireSocketDataChannel()
         return maybeSocket?.let { AcquiredSocket(it) }
     }
 

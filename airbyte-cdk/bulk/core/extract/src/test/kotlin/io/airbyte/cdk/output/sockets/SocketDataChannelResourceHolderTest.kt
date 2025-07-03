@@ -69,14 +69,14 @@ class SocketDataChannelResourceHolderTest() {
     fun test() {
         val socketDataChannelResourceHolder =
             SocketDataChannelResourceHolder(List<String>(10) { "" }, socketFactory)
-        Assertions.assertNull(socketDataChannelResourceHolder.bindFreeSocket())
+        Assertions.assertNull(socketDataChannelResourceHolder.acquireSocketDataChannel())
         val m = socketDataChannelResourceHolder.sockets[0] as MockSocketWrapper
         m.innerStatus = SOCKET_READY
-        assertNotNull(socketDataChannelResourceHolder.bindFreeSocket())
+        assertNotNull(socketDataChannelResourceHolder.acquireSocketDataChannel())
         m.innerStatus = SocketDataChannel.SocketStatus.SOCKET_INITIALIZED
-        Assertions.assertNull(socketDataChannelResourceHolder.bindFreeSocket())
+        Assertions.assertNull(socketDataChannelResourceHolder.acquireSocketDataChannel())
         m.innerStatus = SOCKET_READY
         m.innerBound = true
-        Assertions.assertNull(socketDataChannelResourceHolder.bindFreeSocket())
+        Assertions.assertNull(socketDataChannelResourceHolder.acquireSocketDataChannel())
     }
 }

@@ -33,6 +33,6 @@ class SocketDataChannelResourceHolder(
     }
 
     @Synchronized
-    fun bindFreeSocket(): SocketDataChannel? =
+    fun acquireSocketDataChannel(): SocketDataChannel? =
         sockets.firstOrNull { it.isAvailable }?.also { it.bind() }
 }
