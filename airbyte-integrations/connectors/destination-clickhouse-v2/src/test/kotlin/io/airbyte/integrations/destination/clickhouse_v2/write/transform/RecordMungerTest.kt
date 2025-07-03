@@ -51,7 +51,8 @@ class RecordMungerTest {
 
         every { validator.validate(any()) } answers { firstArg() }
 
-        val stringfiedValue = Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))
+        val stringfiedValue =
+            Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))
         every { validator.toJsonStringValue(any()) } answers { stringfiedValue }
 
         // mock coercion output
