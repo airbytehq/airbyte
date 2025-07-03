@@ -23,18 +23,16 @@ All sync modes are supported.
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
-The types we are using have the following properties:
+Airbyte types will be converted to ClickHouse types as follows:
 
-- The decimal types have a precision of 9 digits, we are using the ClickHouse type NUMBER128(9)
-- The Timestamp types have a millisecond precision, we are using the ClickHouse type DATETIME64(3)
-- The object type is converted to JSON **if the JSON option is selected**; otherwise it will be a String
-- The integers are Int64
-- The booleans are Bool
-- The strings are String
-- The unions will be converted as a String
-- The times will be converted to a String
-- The arrays will be converted to a String
-
+- Decimal types are NUMBER128(9) — 9 digit precision
+- Timestamp are DateTime64(3) — millisecond precision
+- Object types are JSON **if JSON is enabled in the actor config**; otherwise they are converted to String
+- Integers are Int64
+- Booleans are Bool
+- Strings are String
+- Unions will be converted to String
+- Arrays will be converted to String
 
 ### Requirements
 
