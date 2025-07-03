@@ -54,7 +54,6 @@ import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
 import io.airbyte.cdk.read.OrderByNode
 import io.airbyte.cdk.read.SelectColumnMaxValue
-import io.airbyte.cdk.read.SelectColumnMinValue
 import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectNode
 import io.airbyte.cdk.read.SelectQuery
@@ -160,7 +159,6 @@ class H2SourceOperations :
         when (this) {
             is SelectColumns -> "SELECT " + columns.map { it.id }.joinToString(", ")
             is SelectColumnMaxValue -> "SELECT MAX(${column.id})"
-            is SelectColumnMinValue -> "SELECT MIN(${column.id})"
         }
 
     fun FromNode.sql(): String =

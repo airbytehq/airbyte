@@ -37,13 +37,6 @@ data class SelectColumnMaxValue(
         get() = listOf(column)
 }
 
-data class SelectColumnMinValue(
-    val column: Field,
-) : SelectNode {
-    override val columns: List<Field>
-        get() = listOf(column)
-}
-
 sealed interface FromNode
 
 data object NoFrom : FromNode
@@ -146,7 +139,6 @@ fun SelectNode.optimize(): SelectNode =
     when (this) {
         is SelectColumns -> SelectColumns(this.columns.distinct())
         is SelectColumnMaxValue -> this
-        is SelectColumnMinValue -> this
     }
 
 fun WhereNode.optimize(): WhereNode =

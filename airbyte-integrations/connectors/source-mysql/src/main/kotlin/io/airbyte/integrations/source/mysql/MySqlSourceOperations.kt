@@ -53,7 +53,6 @@ import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
 import io.airbyte.cdk.read.OrderByNode
 import io.airbyte.cdk.read.SelectColumnMaxValue
-import io.airbyte.cdk.read.SelectColumnMinValue
 import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectNode
 import io.airbyte.cdk.read.SelectQuery
@@ -193,7 +192,6 @@ class MySqlSourceOperations :
             when (this) {
                 is SelectColumns -> columns.joinToString(", ") { it.sql() }
                 is SelectColumnMaxValue -> "MAX(${column.sql()})"
-                is SelectColumnMinValue -> "MIN(${column.sql()})"
             }
 
     fun Field.sql(): String = "`$id`"

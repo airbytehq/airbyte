@@ -20,9 +20,9 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.From
+import io.airbyte.cdk.read.FromNode
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.SelectColumnMaxValue
-import io.airbyte.cdk.read.SelectColumnMinValue
 import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
@@ -84,22 +84,25 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
+    val pkLowerBoundQuery =
+        "SELECT MIN(`%s`) FROM `%s`.`%s`"
+
     private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
-        // find upper bound using minPk query
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
-        val minPkQuery = SelectQuerySpec(SelectColumnMinValue(pkChosenFromCatalog[0]), from)
-
         jdbcConnectionFactory.get().use { connection ->
-            val stmt = connection.prepareStatement(selectQueryGenerator.generate(minPkQuery).sql)
+            val sql = "SELECT MIN(`${pkChosenFromCatalog.first().id}`) ${
+                if (from.namespace == null) "FROM `${from.name}`" else "FROM `${from.namespace}`.`${from.name}`"
+            }"
+            val stmt = connection.prepareStatement(sql)
             val rs = stmt.executeQuery()
 
             if (rs.next()) {
                 val jdbcFieldType = pkChosenFromCatalog[0].type as JdbcFieldType<*>
-                val pkUpperBound: JsonNode = jdbcFieldType.get(rs, 1)
-                return pkUpperBound
+                val pkLowerBound: JsonNode = jdbcFieldType.get(rs, 1)
+                return pkLowerBound
             } else {
-                // Table might be empty thus there is no max PK value.
+                // Table might be empty thus there is no min PK value.
                 return Jsons.nullNode()
             }
         }
