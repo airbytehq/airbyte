@@ -63,7 +63,7 @@ jobs:
     name: Detect CDK Changes
     runs-on: ubuntu-24.04
     outputs:
-      java-cdk: ${{ steps.changes.outputs.java }}
+      java-cdk: ${{ steps.changes.outputs.java-cdk }}
 
     steps:
       - name: Checkout Airbyte
