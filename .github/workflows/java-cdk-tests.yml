@@ -69,17 +69,3 @@ jobs:
           concurrent: true
           # TODO: be able to remove the skipSlowTests property
           arguments: --scan :airbyte-cdk:check -DskipSlowTests=true
-
-  run-connector-tests:
-    needs:
-      - changes
-    if: needs.changes.outputs.java == 'true'
-    name: Run Java Connector Tests with Local CDK
-    uses: ./.github/workflows/connector-ci-checks.yml
-    with:
-      local-cdk-changed: true
-    secrets:
-      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      OCTAVIA_BOT_APP_ID: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-      OCTAVIA_BOT_PRIVATE_KEY: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}

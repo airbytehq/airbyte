@@ -59,8 +59,28 @@ permissions:
   pull-requests: write
 
 jobs:
+  cdk-changes:
+    name: Detect CDK Changes
+    runs-on: ubuntu-24.04
+    outputs:
+      java-cdk: ${{ steps.changes.outputs.java }}
+
+    steps:
+      - name: Checkout Airbyte
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            java-cdk:
+              - 'airbyte-cdk/java/**/*'
+              - 'airbyte-cdk/bulk/**/*'
+
   generate-matrix:
     name: Generate Connector Matrix
+    needs: cdk-changes
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Current Branch
@@ -100,7 +120,7 @@ jobs:
 
           # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
           # Otherwise, get modified Java connectors
-          if [[ "${{ inputs.local-cdk-changed }}" == "true" ]]; then
+          if [[ "${{ needs.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
           else
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
