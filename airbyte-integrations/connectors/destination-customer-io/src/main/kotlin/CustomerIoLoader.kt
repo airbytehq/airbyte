@@ -79,7 +79,6 @@ class CustomerIoState(
     }
 
     override fun close() {}
-
 }
 
 class CustomerIoLoader(

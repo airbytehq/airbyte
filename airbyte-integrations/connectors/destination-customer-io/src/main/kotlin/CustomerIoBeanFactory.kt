@@ -27,7 +27,10 @@ class CustomerIoBeanFactory {
     ): DestinationChecker<CustomerIoConfiguration> = factory.createDestinationChecker()
 
     @Singleton
-    fun factory(config: CustomerIoConfiguration): DeclarativeDestinationFactory<CustomerIoConfiguration> = DeclarativeDestinationFactory(config)
+    fun factory(
+        config: CustomerIoConfiguration
+    ): DeclarativeDestinationFactory<CustomerIoConfiguration> =
+        DeclarativeDestinationFactory(config)
 
     @Singleton fun getConfig(config: DestinationConfiguration) = config as CustomerIoConfiguration
 
