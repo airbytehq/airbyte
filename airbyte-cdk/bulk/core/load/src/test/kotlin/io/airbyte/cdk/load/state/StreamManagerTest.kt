@@ -150,20 +150,26 @@ class StreamManagerTest {
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId to CheckpointValue(
-                records = 3,
-                serializedBytes = 5,
-                rejectedRecords = 2,
-            )),
+            mapOf(
+                checkpointId to
+                    CheckpointValue(
+                        records = 3,
+                        serializedBytes = 5,
+                        rejectedRecords = 2,
+                    )
+            ),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId to CheckpointValue(
-                records = 4,
-                serializedBytes = 5,
-                rejectedRecords = 1,
-            )),
+            mapOf(
+                checkpointId to
+                    CheckpointValue(
+                        records = 4,
+                        serializedBytes = 5,
+                        rejectedRecords = 1,
+                    )
+            ),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId))
     }
@@ -288,11 +294,14 @@ class StreamManagerTest {
                     "1" ->
                         manager.incrementCheckpointCounts(
                             BatchState.COMPLETE,
-                            mapOf(checkpointId1 to CheckpointValue(
-                                records = 9,
-                                serializedBytes = 10,
-                                rejectedRecords = 1,
-                            )),
+                            mapOf(
+                                checkpointId1 to
+                                    CheckpointValue(
+                                        records = 9,
+                                        serializedBytes = 10,
+                                        rejectedRecords = 1,
+                                    )
+                            ),
                         )
                     "2" ->
                         manager.incrementCheckpointCounts(

@@ -81,7 +81,8 @@ class CheckpointManager(
 
     private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
-        ConcurrentHashMap<DestinationStream.Descriptor, TreeMap<CheckpointKey, Reserved<CheckpointMessage>>> =
+        ConcurrentHashMap<
+            DestinationStream.Descriptor, TreeMap<CheckpointKey, Reserved<CheckpointMessage>>> =
         ConcurrentHashMap()
     private val globalCheckpoints: TreeMap<CheckpointKey, GlobalCheckpoint> = TreeMap()
     private val lastCheckpointKeyEmitted =
@@ -112,7 +113,10 @@ class CheckpointManager(
     }
 
     // TODO: Is it an error if we don't get all the streams every time?
-    suspend fun addGlobalCheckpoint(checkpointKey: CheckpointKey, checkpointMessage: Reserved<CheckpointMessage>) {
+    suspend fun addGlobalCheckpoint(
+        checkpointKey: CheckpointKey,
+        checkpointMessage: Reserved<CheckpointMessage>
+    ) {
         storedCheckpointsLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
                 throw IllegalStateException(
@@ -205,8 +209,7 @@ class CheckpointManager(
     private fun ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue>.increment(
         descriptor: DestinationStream.Descriptor,
         delta: CheckpointValue,
-    ): CheckpointValue =
-        merge(descriptor, delta) { acc, inc -> acc.plus(inc) }!!
+    ): CheckpointValue = merge(descriptor, delta) { acc, inc -> acc.plus(inc) }!!
 
     private suspend fun flushStreamCheckpoints() {
         val noCheckpointStreams = mutableSetOf<DestinationStream.Descriptor>()
@@ -239,10 +242,11 @@ class CheckpointManager(
                     val aggregate = committedCount.increment(stream.mappedDescriptor, delta)
 
                     nextMessage.value.updateStats(
-                        destinationStats = CheckpointMessage.Stats(
-                            recordCount = delta.records,
-                            rejectedRecordCount = delta.rejectedRecords,
-                        )
+                        destinationStats =
+                            CheckpointMessage.Stats(
+                                recordCount = delta.records,
+                                rejectedRecordCount = delta.rejectedRecords,
+                            )
                     )
                     sendStateMessage(
                         nextMessage,

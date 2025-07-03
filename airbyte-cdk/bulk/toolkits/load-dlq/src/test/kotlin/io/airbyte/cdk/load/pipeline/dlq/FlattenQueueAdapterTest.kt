@@ -112,11 +112,12 @@ class FlattenQueueAdapterTest {
 
         // Verifying the aggregate counts remain the same
         // However, we're substracting the rejected records from the total records count
-        val expectedCheckpointValue = CheckpointValue(
-            records = 9,
-            serializedBytes = 123,
-            rejectedRecords = 3,
-        )
+        val expectedCheckpointValue =
+            CheckpointValue(
+                records = 9,
+                serializedBytes = 123,
+                rejectedRecords = 3,
+            )
         assertEquals(mapOf(checkpointId to expectedCheckpointValue), actualCounts)
 
         // All keys and context should be equal

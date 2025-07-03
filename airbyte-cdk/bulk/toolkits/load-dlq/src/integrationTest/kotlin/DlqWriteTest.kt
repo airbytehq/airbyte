@@ -82,18 +82,21 @@ open class AbstractDlqWriteTest(
             val checkpoints =
                 listOf(
                     StreamCheckpoint(
-                            checkpoint = CheckpointMessage.Checkpoint(
-                                unmappedName = stream.unmappedName,
-                                unmappedNamespace = stream.unmappedNamespace,
-                                state = """{"foo": "bar"}""".deserializeToNode(),
-                            ),
-                            sourceStats = CheckpointMessage.Stats(
-                                recordCount = 9,
-                            ),
-                            destinationStats = CheckpointMessage.Stats(
-                                recordCount = 5,
-                                rejectedRecordCount = 4,
-                            ),
+                            checkpoint =
+                                CheckpointMessage.Checkpoint(
+                                    unmappedName = stream.unmappedName,
+                                    unmappedNamespace = stream.unmappedNamespace,
+                                    state = """{"foo": "bar"}""".deserializeToNode(),
+                                ),
+                            sourceStats =
+                                CheckpointMessage.Stats(
+                                    recordCount = 9,
+                                ),
+                            destinationStats =
+                                CheckpointMessage.Stats(
+                                    recordCount = 5,
+                                    rejectedRecordCount = 4,
+                                ),
                             serializedSizeBytes = 0L,
                             checkpointKey = null,
                             totalRecords = 5L,
@@ -102,17 +105,20 @@ open class AbstractDlqWriteTest(
                         )
                         .asProtocolMessage(),
                     StreamCheckpoint(
-                            checkpoint = CheckpointMessage.Checkpoint(
-                                unmappedName = stream.unmappedName,
-                                unmappedNamespace = stream.unmappedNamespace,
-                                state = """{"foo": "bar"}""".deserializeToNode(),
-                            ),
-                            sourceStats = CheckpointMessage.Stats(
-                                recordCount = 2,
-                            ),
-                            destinationStats = CheckpointMessage.Stats(
-                                recordCount = 2,
-                            ),
+                            checkpoint =
+                                CheckpointMessage.Checkpoint(
+                                    unmappedName = stream.unmappedName,
+                                    unmappedNamespace = stream.unmappedNamespace,
+                                    state = """{"foo": "bar"}""".deserializeToNode(),
+                                ),
+                            sourceStats =
+                                CheckpointMessage.Stats(
+                                    recordCount = 2,
+                                ),
+                            destinationStats =
+                                CheckpointMessage.Stats(
+                                    recordCount = 2,
+                                ),
                             serializedSizeBytes = 0L,
                             checkpointKey = null,
                             totalRecords = 7L,

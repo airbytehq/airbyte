@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.pipeline.dlq
 
 import io.airbyte.cdk.load.message.BatchState
@@ -17,9 +21,8 @@ import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
  * Define a NoopStep for the Dead Letter Queue.
  *
  * This step skips through all records without doing anything. This is to make sure we update the
- * counts of rejected records properly by leveraging the [FlattenQueueAdapter] and the fact that
- * the LoadPipelineStepTask will update the rejected records count correctly on
- * [BatchState.COMPLETE].
+ * counts of rejected records properly by leveraging the [FlattenQueueAdapter] and the fact that the
+ * LoadPipelineStepTask will update the rejected records count correctly on [BatchState.COMPLETE].
  */
 class DlqNoopPipelineStep(
     override val numWorkers: Int,
@@ -36,11 +39,9 @@ class DlqNoopPipelineStep(
     }
 }
 
-/**
- * See documentation of [DlqNoopPipelineStep].
- */
-class DlqNoopAccumulator
-    : BatchAccumulator<DlqNoopState, StreamKey, DestinationRecordRaw, WithBatchState> {
+/** See documentation of [DlqNoopPipelineStep]. */
+class DlqNoopAccumulator :
+    BatchAccumulator<DlqNoopState, StreamKey, DestinationRecordRaw, WithBatchState> {
     override suspend fun start(key: StreamKey, part: Int): DlqNoopState = DlqNoopState()
 
     override suspend fun accept(
@@ -52,9 +53,7 @@ class DlqNoopAccumulator
         FinalOutput(DlqNoopState())
 }
 
-/**
- * See documentation of [DlqNoopPipelineStep].
- */
+/** See documentation of [DlqNoopPipelineStep]. */
 class DlqNoopState : WithBatchState, AutoCloseable {
     override val state: BatchState = BatchState.COMPLETE
     override fun close() {}

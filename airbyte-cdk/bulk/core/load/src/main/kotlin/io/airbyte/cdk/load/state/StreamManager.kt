@@ -41,9 +41,9 @@ data class CheckpointValue(
 
     override fun equals(other: Any?): Boolean {
         if (other != null && other is CheckpointValue) {
-            return this.records == other.records
-                && this.serializedBytes == other.serializedBytes
-                && this.rejectedRecords == other.rejectedRecords
+            return this.records == other.records &&
+                this.serializedBytes == other.serializedBytes &&
+                this.rejectedRecords == other.rejectedRecords
         }
         return false
     }
@@ -313,11 +313,13 @@ class StreamManager(
         val persistedCount =
             checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
-            } ?: 0L
+            }
+                ?: 0L
         val completeCount =
             checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
-            } ?: 0L
+            }
+                ?: 0L
         return max(persistedCount, completeCount)
     }
 
