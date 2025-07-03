@@ -618,6 +618,55 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/transactions"
+    adjustments:
+      type: DeclarativeStream
+      name: adjustments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: adjustments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('meta', {}).get('pagination', {}).get('next', '')
+              }}
+            stop_condition: >-
+              {{ not response.get('meta', {}).get('pagination',
+              {}).get('has_more', False) }}
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/adjustments"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['environment'] }}.paddle.com/
@@ -633,6 +682,7 @@ definitions:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 62
 streams:
+  - $ref: "#/definitions/streams/adjustments"
   - $ref: "#/definitions/streams/customers"
   - $ref: "#/definitions/streams/customer_addresses"
   - $ref: "#/definitions/streams/discounts"
@@ -686,6 +736,7 @@ spec:
 
 metadata:
   autoImportSchema:
+    adjustments: true
     customers: true
     customer_addresses: true
     discounts: true
@@ -699,6 +750,13 @@ metadata:
     subscriptions: false
     transactions: false
   testedStreams:
+    adjustments:
+      streamHash: 37a2befe72d75d885887bf6194e6e76ed89c4538
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     customers:
       hasRecords: true
       streamHash: a2c94ea2c6e50f5545f75cdcc8e5691b18b3d8f2
@@ -1974,3 +2032,203 @@ schemas:
               - string
               - "null"
     additionalProperties: true
+  adjustments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            item_id:
+              type:
+                - string
+                - "null"
+            totals:
+              type:
+                - object
+                - "null"
+              properties:
+                subtotal:
+                  type:
+                    - string
+                    - "null"
+                tax:
+                  type:
+                    - string
+                    - "null"
+                total:
+                  type:
+                    - string
+                    - "null"
+      payout_totals:
+        type:
+          - object
+          - "null"
+        properties:
+          chargeback_fee:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              original:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - string
+                      - "null"
+                  currency_code:
+                    type:
+                      - string
+                      - "null"
+          currency_code:
+            type:
+              - string
+              - "null"
+          earnings:
+            type:
+              - string
+              - "null"
+          fee:
+            type:
+              - string
+              - "null"
+          subtotal:
+            type:
+              - string
+              - "null"
+          tax:
+            type:
+              - string
+              - "null"
+          total:
+            type:
+              - string
+              - "null"
+      reason:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subscription_id:
+        type:
+          - string
+          - "null"
+      tax_rates_used:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            tax_rate:
+              type:
+                - string
+                - "null"
+            totals:
+              type:
+                - object
+                - "null"
+              properties:
+                subtotal:
+                  type:
+                    - string
+                    - "null"
+                tax:
+                  type:
+                    - string
+                    - "null"
+                total:
+                  type:
+                    - string
+                    - "null"
+      totals:
+        type:
+          - object
+          - "null"
+        properties:
+          currency_code:
+            type:
+              - string
+              - "null"
+          earnings:
+            type:
+              - string
+              - "null"
+          fee:
+            type:
+              - string
+              - "null"
+          subtotal:
+            type:
+              - string
+              - "null"
+          tax:
+            type:
+              - string
+              - "null"
+          total:
+            type:
+              - string
+              - "null"
+      transaction_id:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
