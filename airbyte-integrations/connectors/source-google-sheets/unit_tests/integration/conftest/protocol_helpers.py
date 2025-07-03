@@ -3,12 +3,10 @@
 #
 
 import os
-
 from typing import Any, Dict, Optional
 
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 

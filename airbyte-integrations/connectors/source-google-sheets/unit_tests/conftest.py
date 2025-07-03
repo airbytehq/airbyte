@@ -2,12 +2,14 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 import sys
 from pathlib import Path
 
+import pytest
 from components import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet, SpreadsheetValues, ValueRange
+
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
