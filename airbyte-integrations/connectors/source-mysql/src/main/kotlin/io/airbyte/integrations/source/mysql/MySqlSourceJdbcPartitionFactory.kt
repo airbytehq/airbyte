@@ -20,7 +20,6 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.From
-import io.airbyte.cdk.read.FromNode
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.SelectColumnMaxValue
 import io.airbyte.cdk.read.SelectQuerySpec
@@ -84,14 +83,14 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    val pkLowerBoundQuery =
-        "SELECT MIN(`%s`) FROM `%s`.`%s`"
+    val pkLowerBoundQuery = "SELECT MIN(`%s`) FROM `%s`.`%s`"
 
     private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
         jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT MIN(`${pkChosenFromCatalog.first().id}`) ${
+            val sql =
+                "SELECT MIN(`${pkChosenFromCatalog.first().id}`) ${
                 if (from.namespace == null) "FROM `${from.name}`" else "FROM `${from.namespace}`.`${from.name}`"
             }"
             val stmt = connection.prepareStatement(sql)
@@ -545,7 +544,7 @@ class MySqlSourceJdbcPartitionFactory(
         lowerBound: OffsetDateTime?,
         upperBound: OffsetDateTime
     ): Map<OffsetDateTime, OffsetDateTime?> {
-        var queryPlan: MutableList<OffsetDateTime> = mutableListOf()
+        val queryPlan: MutableList<OffsetDateTime> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: OffsetDateTime.MIN
         val eachStep: Duration =
             Duration.between(effectiveLowerBound, upperBound).dividedBy(num.toLong())
@@ -563,7 +562,7 @@ class MySqlSourceJdbcPartitionFactory(
         lowerBound: Long?,
         upperBound: Long
     ): Map<Long, Long?> {
-        var queryPlan: MutableList<Long> = mutableListOf()
+        val queryPlan: MutableList<Long> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: Long.MIN_VALUE
         val eachStep: Long = (upperBound - effectiveLowerBound) / num
         for (i in 1..(num - 1)) {
@@ -581,7 +580,7 @@ class MySqlSourceJdbcPartitionFactory(
         lowerBound: Double?,
         upperBound: Double
     ): Map<Double, Double?> {
-        var queryPlan: MutableList<Double> = mutableListOf()
+        val queryPlan: MutableList<Double> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: Double.MIN_VALUE
         val eachStep: Double = (upperBound - effectiveLowerBound) / num
         for (i in 1..(num - 1)) {
@@ -598,7 +597,7 @@ class MySqlSourceJdbcPartitionFactory(
         upperBound: String
     ): Map<String, String?> {
         val effectiveLowerBound = lowerBound ?: String()
-        var queryPlan: List<String> =
+        val queryPlan: List<String> =
             unicodeInterpolatedStrings(effectiveLowerBound, upperBound, num)
         val lbs: List<String> = listOf(effectiveLowerBound) + queryPlan
         val ubs: List<String?> = queryPlan + null
