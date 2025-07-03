@@ -333,13 +333,15 @@ class BigqueryDirectLoadSqlGenerator(
                 // columns, and we're always clustering on _airbyte_extracted_at
                 (stream.importType as Dedupe).primaryKey.stream().limit(3).forEach {
                     pk: List<String> ->
-                    val bigqueryType = toDialectType(stream.schema.asColumns()[pk.first()]!!.type)
+                    val pkName = pk.first()
+                    val pkFieldType = stream.schema.asColumns()[pkName]!!
+                    val bigqueryType = toDialectType(pkFieldType.type)
                     if (bigqueryType == StandardSQLTypeName.JSON) {
                         throw ConfigErrorException(
                             "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains non-clusterable JSON-typed column $pk"
                         )
                     }
-                    clusterColumns.add(columnNameMapping[pk.first()]!!)
+                    clusterColumns.add(columnNameMapping[pkName]!!)
                 }
             }
             clusterColumns.add("_airbyte_extracted_at")
