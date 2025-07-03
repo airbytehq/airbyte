@@ -122,7 +122,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
             yield from self._try_extract_records(response, self._field_path_pagination)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
 
@@ -132,7 +132,6 @@ class MondayGraphqlRequester(HttpRequester):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         super(MondayGraphqlRequester, self).__post_init__(parameters)
-
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
