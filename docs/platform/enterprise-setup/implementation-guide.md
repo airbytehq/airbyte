@@ -482,7 +482,6 @@ kind: Ingress
 metadata:
   name: # ingress name, example: enterprise-demo
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
