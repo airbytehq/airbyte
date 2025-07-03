@@ -335,6 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.9.0-rc.4 | 2025-07-03 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate `Customer` stream to low-code |
 | 3.9.0-rc.3 | 2025-07-03 | [62494](https://github.com/airbytehq/airbyte/pull/62494) | Handle ServiceUnavailableErrors and retry on account check |
 | 3.9.0-rc.2 | 2025-07-03 | [62505](https://github.com/airbytehq/airbyte/pull/62505) | Fix state migration for empty states                                                                                                                                   |
 | 3.9.0-rc.1 | 2025-06-18 | [61674](https://github.com/airbytehq/airbyte/pull/61674) | Migrate Campaign stream to Low Code                                                                                                                                    |

@@ -222,20 +222,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
         return query
 
 
-class Customer(IncrementalGoogleAdsStream):
-    """
-    Customer stream: https://developers.google.com/google-ads/api/fields/v18/customer
-    """
-
-    primary_key = ["customer.id", "segments.date"]
-
-    def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
-        for record in super().parse_response(response):
-            if isinstance(record.get("customer.optimization_score_weight"), int):
-                record["customer.optimization_score_weight"] = float(record["customer.optimization_score_weight"])
-            yield record
-
-
 class CustomerClient(GoogleAdsStream):
     """
     Customer Client stream: https://developers.google.com/google-ads/api/fields/v18/customer_client
