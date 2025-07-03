@@ -67,7 +67,10 @@ class StringInterpolationTest {
 
     @Test
     internal fun `test given ObjectNode when eval then extract values from ObjectNode`() {
-        val objectNode = Jsons.objectNode().apply { this.putObject("modificationMetadata").put("readOnlyValue", false) }
+        val objectNode =
+            Jsons.objectNode().apply {
+                this.putObject("modificationMetadata").put("readOnlyValue", false)
+            }
 
         val interpolatedValue =
             StringInterpolator()
