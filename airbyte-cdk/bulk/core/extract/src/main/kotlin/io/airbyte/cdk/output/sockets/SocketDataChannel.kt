@@ -157,8 +157,8 @@ private typealias ProbePacket = ByteArray
 
 /**
  * Factory to create a probe packet based on the configured format. JSON format is a single newline
- * character, while Protobuf format is a serialized AirbyteProbeMessageProtobuf.
- * Sending an unexpected packet type will result in an error on the receiving end.
+ * character, while Protobuf format is a serialized AirbyteProbeMessageProtobuf. Sending an
+ * unexpected packet type will result in an error on the receiving end.
  */
 @Factory
 private class ProbePacketFactory() {
