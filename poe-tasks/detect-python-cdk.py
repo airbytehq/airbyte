@@ -29,7 +29,7 @@ Usage:
         Return string for use in: poetry add "airbyte-cdk$OUTPUT@version"
         Output examples: "" (no extras), "[sql]", "[sql,vector-db-based]"
 
-    ./detect-python-cdk.py --verify-version-pin [directory]
+    ./detect-python-cdk.py --detect-prerelease [directory]
         Exit 0 if CDK pinned to standard version, exit 1 if git/local/non-standard ref
         Provides guidance for resolving non-production references
 
@@ -40,7 +40,7 @@ Examples:
     ./detect-python-cdk.py --extras-only /path/to/destination-motherduck
     [sql]
 
-    ./detect-python-cdk.py --verify-version-pin /path/to/destination-motherduck
+    ./detect-python-cdk.py --detect-prerelease /path/to/destination-motherduck
     ✅ Production ready: Standard version: ^6.0.0 with extras ['sql']
 """
 
@@ -49,6 +49,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import cast
 
 
 try:
@@ -58,8 +59,9 @@ except ImportError:
 
 
 def parse_cdk_dependency(pyproject_path) -> dict:
-    """
-    Parse CDK dependency from pyproject.toml and return structured information.
+    """Parse CDK dependency from pyproject.toml and return structured information.
+
+    Base version strings will be normalized to {"version": "x.y.z"} format.
 
     Returns:
         dict: Complete dependency information including version, extras, type, etc.
@@ -68,107 +70,61 @@ def parse_cdk_dependency(pyproject_path) -> dict:
         with open(pyproject_path, "rb") as f:
             data = tomli.load(f)
     except Exception as e:
-        return {"error": f"Error reading pyproject.toml: {e}", "_is_production_ready": False}
+        return {"error": f"Error reading pyproject.toml: {e}"}
 
     dependencies = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
     cdk_dep = dependencies.get("airbyte-cdk")
 
     if not cdk_dep:
-        return {"error": "No airbyte-cdk dependency found", "_is_production_ready": False}
-
-    result = {
-        "_raw_dependency": cdk_dep,
-        "_is_production_ready": False,
-        "_raw_type": "unknown",
-    }
+        return {"error": "No airbyte-cdk dependency found"}
 
     if isinstance(cdk_dep, str):
-        result["version"] = cdk_dep
-        result["_is_production_ready"] = is_standard_version(cdk_dep)
+        # Normalize concise version syntax like `airbyte-cdk = "^6.0.0"`
+        cdk_dep = {"version": cdk_dep}
 
-    elif isinstance(cdk_dep, dict):
-        result.update(cdk_dep)
+    result = cast(dict[str, str | bool], cdk_dep.copy())
+    result["dependency_type"] = "unknown"
+    for dependency_type in ["version", "git", "path", "url"]:
+        if dependency_type in result:
+            result["dependency_type"] = dependency_type
+            if dependency_type == "version":
+                result["is_prerelease"] = is_prerelease_version(cdk_dep["version"])
 
-        if "version" in cdk_dep:
-            result["_raw_type"] = "version"
-            result["_is_production_ready"] = is_standard_version(cdk_dep["version"])
-        if "git" in cdk_dep:
-            result["_raw_type"] = "git"
-        elif "path" in cdk_dep:
-            result["_raw_type"] = "path"
-        elif "url" in cdk_dep:
-            result["_raw_type"] = "url"
+            break
 
     return result
 
 
-def is_standard_version(version_str):
+def is_prerelease_version(version_str) -> bool:
     """Check if version string represents a standard published version."""
     if not version_str:
-        return False
+        return True
 
     version_pattern = r"^[~^>=<]*\d+\.\d+\.\d+([a-zA-Z0-9\-\.]*)?$"
-    return bool(re.match(version_pattern, version_str.strip()))
+    is_prod_version = bool(re.match(version_pattern, version_str.strip()))
+    return not is_prod_version
 
 
-def format_extras_for_poetry(extras):
-    """Format extras list for use in poetry add command."""
+def format_extras_for_poetry(extras) -> str:
+    """Format extras list for use in poetry add command.
+
+    E.g. if extras is ['sql', 'vector-db-based'], return "[sql,vector-db-based]".
+    """
     if not extras:
         return ""
+
     return f"[{','.join(extras)}]"
 
 
-def verify_version_pin(cdk_info, connector_name):
-    """Verify CDK version pin and provide guidance if not production ready."""
-    if cdk_info.get("error"):
-        print(f"❌ Error: {cdk_info['error']}", flush=True)
-        return False
-
-    if cdk_info["_is_production_ready"]:
-        version = cdk_info.get("version", "unknown")
-        extras = cdk_info.get("extras", [])
-        extras_str = f" with extras {extras}" if extras else ""
-        print(f"✅ Production ready: Standard version: {version}{extras_str}", flush=True)
-        return True
-    else:
-        print("❌ This connector is not ready for production release.", flush=True)
-
-        if cdk_info["_raw_type"] == "git":
-            git_url = cdk_info.get("git", "unknown")
-            git_ref = cdk_info.get("rev", cdk_info.get("branch", "unknown"))
-            print(f"   Issue: Git reference: {git_url}#{git_ref}", flush=True)
-        elif cdk_info["_raw_type"] == "path":
-            local_path = cdk_info.get("path", "unknown")
-            print(f"   Issue: Local path reference: {local_path}", flush=True)
-        elif cdk_info["_raw_type"] == "url":
-            url = cdk_info.get("url", "unknown")
-            print(f"   Issue: URL reference: {url}", flush=True)
-        elif cdk_info["_raw_type"] == "version":
-            version = cdk_info.get("version", "unknown")
-            print(f"   Issue: Non-standard version string: {version}", flush=True)
-        else:
-            print(f"   Issue: Unexpected dependency format: {cdk_info.get('_raw_dependency', 'unknown')}", flush=True)
-
-        print("", flush=True)
-        print("   It is currently pinning its CDK version to a local or git-based ref.", flush=True)
-        print("   To resolve, use `poe use-cdk-latest` after your working dev version", flush=True)
-        print("   of the CDK has been published.", flush=True)
-        if connector_name:
-            print(f"   You can also use the slash command in your PR: `/poe connector {connector_name} use-cdk-latest`", flush=True)
-
-        return False
-
-
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Detect and analyze airbyte-cdk dependency information", formatter_class=argparse.RawDescriptionHelpFormatter
     )
-
     parser.add_argument("directory", nargs="?", default=".", help="Directory containing pyproject.toml (default: current directory)")
 
     mode_group = parser.add_mutually_exclusive_group()
     mode_group.add_argument("--extras-only", action="store_true", help="Return extras string for poetry add command")
-    mode_group.add_argument("--verify-version-pin", action="store_true", help="Verify CDK is pinned to standard version (exit 1 if not)")
+    mode_group.add_argument("--detect-prerelease", action="store_true", help="Verify CDK is pinned to standard version (exit 1 if not)")
 
     args = parser.parse_args()
 
@@ -178,7 +134,7 @@ def main():
     if not pyproject_path.exists():
         if args.extras_only:
             return
-        elif args.verify_version_pin:
+        elif args.detect_prerelease:
             print(f"Error: pyproject.toml not found in {connector_dir}")
             sys.exit(1)
         else:
@@ -189,15 +145,16 @@ def main():
 
     if args.extras_only:
         extras = cdk_info.get("extras", [])
-        print(format_extras_for_poetry(extras))
-
-    elif args.verify_version_pin:
-        success = cdk_info["_is_production_ready"]
-
-        sys.exit(0 if success else 1)
-
+        print(format_extras_for_poetry(extras), flush=True)
     else:
-        print(json.dumps(cdk_info))
+        print(json.dumps(cdk_info), flush=True)
+
+    if args.detect_prerelease:
+        if cdk_info.get("is_prerelease") is not False:
+            print("❌ Pre-release CDK version detected.", flush=True, file=sys.stderr)
+            sys.exit(1)
+
+        print(f"✅ Production ready CDK version: {cdk_info.get('version')}", flush=True, file=sys.stderr)
 
 
 if __name__ == "__main__":
