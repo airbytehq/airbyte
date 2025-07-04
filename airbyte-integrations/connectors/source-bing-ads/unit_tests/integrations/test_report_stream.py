@@ -2,13 +2,14 @@
 import re
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
 from base_test import BaseTest
 from config_builder import ConfigBuilder
 from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
+
 
 SECOND_READ_FREEZE_TIME = "2024-05-08"
 
@@ -122,9 +123,7 @@ class TestSuiteReportStream(TestReportStream):
         """
         self.mock_report_apis()
         state = self._state(self.state_file_after_migration, self.stream_name)
-        output = self.read_stream(
-            self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state
-        )
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state)
         if not self.second_read_records_number:
             assert len(output.records) == self.records_number
         else:

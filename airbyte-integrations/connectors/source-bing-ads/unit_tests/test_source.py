@@ -19,9 +19,7 @@ def test_source_check_connection_ok_but_user_do_not_have_accounts(config, logger
     requests_mock.post(
         "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
         status_code=200,
-        json={
-            "Accounts": []
-        },
+        json={"Accounts": []},
     )
     source = get_source(config)
     connected, reason = source.check_connection(logger_mock, config=config)
@@ -39,6 +37,8 @@ def test_source_check_connection_failed_invalid_creds(config, logger_mock, mock_
     assert connected is False
 
 
-def test_check_connection_with_accounts_names_config(config_with_account_names, logger_mock, mock_auth_token, mock_user_query, mock_account_query):
+def test_check_connection_with_accounts_names_config(
+    config_with_account_names, logger_mock, mock_auth_token, mock_user_query, mock_account_query
+):
     source = get_source(config_with_account_names)
     assert source.check_connection(logger_mock, config=config_with_account_names) == (True, None)

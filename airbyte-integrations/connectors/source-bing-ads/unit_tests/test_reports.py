@@ -3,15 +3,13 @@
 #
 
 import pytest
+from conftest import create_zip_from_csv, find_stream, get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
-
 from airbyte_cdk.models import SyncMode
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from conftest import create_zip_from_csv, get_source, find_stream
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 TEST_CONFIG = {
@@ -19,7 +17,7 @@ TEST_CONFIG = {
     "client_id": "client_id",
     "refresh_token": "refresh_token",
     "reports_start_date": "2020-01-01",
-    "tenant_id":"common"
+    "tenant_id": "common",
 }
 
 
@@ -81,7 +79,7 @@ def test_get_updated_state_new_state_daily_weekly_monthly(stream_name, mock_auth
     requests_mock.post(
         "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Submit",
         status_code=200,
-        json={"ReportRequestId": "thisisthereport_requestid"}
+        json={"ReportRequestId": "thisisthereport_requestid"},
     )
     requests_mock.post(
         "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll",
@@ -89,14 +87,14 @@ def test_get_updated_state_new_state_daily_weekly_monthly(stream_name, mock_auth
         json={
             "ReportRequestStatus": {
                 "Status": "Success",
-                "ReportDownloadUrl": "https://bingadsappsstorageprod.blob.core.windows.net:443/download-url"
+                "ReportDownloadUrl": "https://bingadsappsstorageprod.blob.core.windows.net:443/download-url",
             }
-        }
+        },
     )
     requests_mock.get(
         "https://bingadsappsstorageprod.blob.core.windows.net:443/download-url",
         status_code=200,
-        content=create_zip_from_csv("report_base_data")
+        content=create_zip_from_csv("report_base_data"),
     )
 
     stream_state = {"1": {"TimePeriod": "2020-01-01"}}
@@ -106,7 +104,7 @@ def test_get_updated_state_new_state_daily_weekly_monthly(stream_name, mock_auth
     output = read(source, TEST_CONFIG, catalog, state)
 
     updated_state = output.most_recent_state.stream_state.state["TimePeriod"]
-    assert  updated_state == "2023-01-01"
+    assert updated_state == "2023-01-01"
 
 
 def test_get_report_record_timestamp_without_aggregation(config, mock_user_query, mock_auth_token):
@@ -123,29 +121,29 @@ def test_get_report_record_timestamp_without_aggregation(config, mock_user_query
 @pytest.mark.parametrize(
     "stream_name",
     (
-            "ad_performance_report_hourly",
-            "age_gender_audience_report_hourly",
-            "account_impression_performance_report_hourly",
-            "account_performance_report_hourly",
-            "audience_performance_report_hourly",
-            "keyword_performance_report_hourly",
-            "ad_group_performance_report_hourly",
-            "ad_group_impression_performance_report_hourly",
-            "campaign_performance_report_hourly",
-            "campaign_impression_performance_report_hourly",
-            "geographic_performance_report_hourly",
-            "goals_and_funnels_report_hourly",
-            "product_dimension_performance_report_hourly",
-            "product_search_query_performance_report_hourly",
-            "search_query_performance_report_hourly",
-            "user_location_performance_report_hourly",
+        "ad_performance_report_hourly",
+        "age_gender_audience_report_hourly",
+        "account_impression_performance_report_hourly",
+        "account_performance_report_hourly",
+        "audience_performance_report_hourly",
+        "keyword_performance_report_hourly",
+        "ad_group_performance_report_hourly",
+        "ad_group_impression_performance_report_hourly",
+        "campaign_performance_report_hourly",
+        "campaign_impression_performance_report_hourly",
+        "geographic_performance_report_hourly",
+        "goals_and_funnels_report_hourly",
+        "product_dimension_performance_report_hourly",
+        "product_search_query_performance_report_hourly",
+        "search_query_performance_report_hourly",
+        "user_location_performance_report_hourly",
     ),
 )
 def test_get_report_record_timestamp_hourly(stream_name, mock_auth_token, mock_user_query, mock_account_query, requests_mock):
     requests_mock.post(
         "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Submit",
         status_code=200,
-        json={"ReportRequestId": "thisisthereport_requestid"}
+        json={"ReportRequestId": "thisisthereport_requestid"},
     )
     requests_mock.post(
         "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll",
@@ -153,14 +151,14 @@ def test_get_report_record_timestamp_hourly(stream_name, mock_auth_token, mock_u
         json={
             "ReportRequestStatus": {
                 "Status": "Success",
-                "ReportDownloadUrl": "https://bingadsappsstorageprod.blob.core.windows.net:443/download-url"
+                "ReportDownloadUrl": "https://bingadsappsstorageprod.blob.core.windows.net:443/download-url",
             }
-        }
+        },
     )
     requests_mock.get(
         "https://bingadsappsstorageprod.blob.core.windows.net:443/download-url",
         status_code=200,
-        content=create_zip_from_csv("report_base_data_hourly")
+        content=create_zip_from_csv("report_base_data_hourly"),
     )
     stream_state = {"1": {"TimePeriod": "2020-01-01T10:00:00+00:00"}}
     state = StateBuilder().with_stream_state(stream_name, stream_state).build()

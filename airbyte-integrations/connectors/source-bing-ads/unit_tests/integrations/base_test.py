@@ -55,7 +55,6 @@ class BaseTest(TestCase):
     def tearDown(self) -> None:
         self._http_mocker.__exit__(None, None, None)
 
-
     @property
     def _config(self) -> dict[str, Any]:
         return ConfigBuilder().build()

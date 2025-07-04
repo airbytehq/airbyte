@@ -3,16 +3,13 @@
 #
 
 import pytest
-
 from conftest import find_stream, get_source
 
 from airbyte_cdk.models import SyncMode
-
 from airbyte_cdk.sources.declarative.types import StreamSlice
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 @pytest.mark.parametrize(
@@ -26,7 +23,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
                     "Status": "Active",
                     "TaxCertificateBlobContainerName": "Test Container Name",
                 },
-                "LastModifiedTime": "2025-01-01"
+                "LastModifiedTime": "2025-01-01",
             },
             {
                 "AccountId": 16253412,
@@ -35,7 +32,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
                     "Status": "Active",
                     "TaxCertificateBlobContainerName": "Test Container Name",
                 },
-                "LastModifiedTime": "2025-01-01"
+                "LastModifiedTime": "2025-01-01",
             },
         ),
         (
@@ -46,7 +43,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
                     "Status": "Active",
                     "TaxCertificateBlobContainerName": "Test Container Name",
                 },
-                "LastModifiedTime": "2025-01-01"
+                "LastModifiedTime": "2025-01-01",
             },
             {
                 "AccountId": 16253412,
@@ -55,18 +52,12 @@ from airbyte_cdk.test.entrypoint_wrapper import read
                     "Status": "Active",
                     "TaxCertificateBlobContainerName": "Test Container Name",
                 },
-                "LastModifiedTime": "2025-01-01"
+                "LastModifiedTime": "2025-01-01",
             },
         ),
         (
-            {
-                "AccountId": 16253412,
-                "LastModifiedTime": "2025-01-01"
-            },
-            {
-                "AccountId": 16253412,
-                "LastModifiedTime": "2025-01-01"
-            },
+            {"AccountId": 16253412, "LastModifiedTime": "2025-01-01"},
+            {"AccountId": 16253412, "LastModifiedTime": "2025-01-01"},
         ),
         (
             {
@@ -74,11 +65,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
                 "TaxCertificate": None,
                 "LastModifiedTime": "2025-01-01",
             },
-            {
-                "AccountId": 16253412,
-                "TaxCertificate": None,
-                "LastModifiedTime": "2025-01-01"
-            },
+            {"AccountId": 16253412, "TaxCertificate": None, "LastModifiedTime": "2025-01-01"},
         ),
     ],
     ids=[
@@ -91,9 +78,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 def test_accounts_transform_tax_fields(config, record, expected):
     stream = find_stream("accounts", config)
     transformed_record = list(
-        stream.retriever.record_selector.filter_and_transform(
-            all_data=[record], stream_state={}, stream_slice={}, records_schema={}
-        )
+        stream.retriever.record_selector.filter_and_transform(all_data=[record], stream_state={}, stream_slice={}, records_schema={})
     )[0]
     if expected.get("TaxCertificate"):
         assert transformed_record["TaxCertificate"] == expected["TaxCertificate"]
@@ -104,25 +89,24 @@ def test_accounts_transform_tax_fields(config, record, expected):
 
 def test_campaigns_request_params(config):
     campaigns = find_stream("campaigns", config)
-    stream_slice = StreamSlice(
-        partition={"account_id": "account_id"},
-        cursor_slice={}
-    )
+    stream_slice = StreamSlice(partition={"account_id": "account_id"}, cursor_slice={})
     request_params = campaigns.retriever.requester.get_request_body_json(stream_slice=stream_slice)
     assert request_params
     assert request_params["AccountId"] == "account_id"
     assert request_params["CampaignType"] == "Audience,DynamicSearchAds,Search,Shopping,PerformanceMax"
-    assert request_params["ReturnAdditionalFields"] == "AdScheduleUseSearcherTimeZone,BidStrategyId,CpvCpmBiddingScheme,DynamicDescriptionSetting,DynamicFeedSetting,MaxConversionValueBiddingScheme,MultimediaAdsBidAdjustment,TargetImpressionShareBiddingScheme,TargetSetting,VerifiedTrackingSetting"
-
+    assert (
+        request_params["ReturnAdditionalFields"]
+        == "AdScheduleUseSearcherTimeZone,BidStrategyId,CpvCpmBiddingScheme,DynamicDescriptionSetting,DynamicFeedSetting,MaxConversionValueBiddingScheme,MultimediaAdsBidAdjustment,TargetImpressionShareBiddingScheme,TargetSetting,VerifiedTrackingSetting"
+    )
 
 
 def test_campaigns_stream_slices(config, logger_mock, mock_auth_token, mock_user_query, mock_account_query):
     campaigns = find_stream("campaigns", config)
     slices = campaigns.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={})
     assert list(slices) == [
-        {'account_id': 1, 'parent_slice': {'account_name': '', 'user_id': 1, 'parent_slice': {}}},
-        {'account_id': 2, 'parent_slice': {'account_name': '', 'user_id': 1, 'parent_slice': {}}},
-        {'account_id': 3, 'parent_slice': {'account_name': '', 'user_id': 1, 'parent_slice': {}}},
+        {"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}},
+        {"account_id": 2, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}},
+        {"account_id": 3, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}},
     ]
 
 
@@ -230,7 +214,11 @@ def test_streams_full_refresh(config, stream, mock_auth_token, mock_user_query, 
     requests_mock.post(
         "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Campaigns/QueryByAccountId",
         status_code=200,
-        json={"Campaigns": [{"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},]}
+        json={
+            "Campaigns": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+            ]
+        },
     )
     requests_mock.post(
         "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/AdGroups/QueryByCampaignId",
@@ -246,7 +234,11 @@ def test_streams_full_refresh(config, stream, mock_auth_token, mock_user_query, 
     requests_mock.post(
         "https://campaign.api.bingads.microsoft.com/CampaignManagement/v13/Ads/QueryByAdGroupId",
         status_code=200,
-        json={"Ads": [{"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},]}
+        json={
+            "Ads": [
+                {"Id": 1, "LastModifiedTime": "2022-02-02T22:22:22"},
+            ]
+        },
     )
 
     state = StateBuilder().with_stream_state(stream, {}).build()

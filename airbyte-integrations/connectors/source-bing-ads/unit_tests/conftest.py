@@ -4,15 +4,15 @@
 import sys
 import zipfile
 from io import BytesIO
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
-from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from pathlib import Path
+from airbyte_cdk.test.state_builder import StateBuilder
+
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
@@ -153,6 +153,7 @@ def get_source(config, state=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
 
 def find_stream(stream_name, config, state=None):
     state = StateBuilder().build() if not state else state

@@ -42,4 +42,6 @@ class RequestBuilder:
         )
 
     def build_report_url(self) -> HttpRequest:
-        return HttpRequest(url=REPORT_URL,)
+        return HttpRequest(
+            url=REPORT_URL,
+        )

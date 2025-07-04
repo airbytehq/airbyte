@@ -403,7 +403,6 @@ class CustomReportDayOfWeek(BaseTest):
             .build()
         )
 
-
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
         self.mock_accounts_search_api(

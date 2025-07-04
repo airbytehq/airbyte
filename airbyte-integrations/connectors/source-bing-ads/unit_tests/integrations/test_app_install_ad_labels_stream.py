@@ -5,6 +5,7 @@ from test_bulk_stream import TestBulkStream
 
 from airbyte_cdk.models import SyncMode
 
+
 class TestAppInstallAdLabelsStream(TestBulkStream):
     stream_name = "app_install_ad_labels"
     account_id = "180535609"
@@ -13,7 +14,7 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
 
     def test_return_records_from_given_csv_file(self):
         self.mock_apis(file=self.stream_name)
-        output  = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "app_install_ad_labels")
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "app_install_ad_labels")
         assert len(output.records) == 1
 
     def test_return_zero_record_from_empty_csv(self):
@@ -42,7 +43,5 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
     def test_incremental_read_with_state(self):
         self.mock_apis(file="app_install_ad_labels_with_state", read_with_state=True)
         state = self._state("app_install_ad_labels_state", self.stream_name)
-        output = self.read_stream(
-            self.stream_name, SyncMode.incremental, self._config, "app_install_ad_labels_with_state", state
-        )
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "app_install_ad_labels_with_state", state)
         assert output.most_recent_state.stream_state.states[0]["cursor"] == {self.cursor_field: "2024-01-29T12:55:12.028+0000"}

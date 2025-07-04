@@ -43,7 +43,5 @@ class TestAppInstallAdsStream(TestBulkStream):
     def test_incremental_read_with_state(self):
         self.mock_apis(file="app_install_ads_with_state", read_with_state=True)
         state = self._state("app_install_ads_state", self.stream_name)
-        output = self.read_stream(
-            self.stream_name, SyncMode.incremental, self._config, "app_install_ads_with_state", state
-        )
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "app_install_ads_with_state", state)
         assert output.most_recent_state.stream_state.states[0]["cursor"] == {self.cursor_field: "2024-01-29T12:55:12.028+0000"}
