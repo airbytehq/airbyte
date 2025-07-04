@@ -57,7 +57,7 @@ except ImportError:
     import tomllib as tomli
 
 
-def parse_cdk_dependency(pyproject_path):
+def parse_cdk_dependency(pyproject_path) -> dict:
     """
     Parse CDK dependency from pyproject.toml and return structured information.
 
