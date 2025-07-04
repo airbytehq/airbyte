@@ -79,7 +79,7 @@ def parse_cdk_dependency(pyproject_path):
     result = {
         "_raw_dependency": cdk_dep,
         "_is_production_ready": False,
-        "_raw_type" = "unknown",
+        "_raw_type": "unknown",
     }
 
     if isinstance(cdk_dep, str):
@@ -88,7 +88,7 @@ def parse_cdk_dependency(pyproject_path):
 
     elif isinstance(cdk_dep, dict):
         result.update(cdk_dep)
-        
+
         if "version" in cdk_dep:
             result["_raw_type"] = "version"
             result["_is_production_ready"] = is_standard_version(cdk_dep["version"])
@@ -133,20 +133,20 @@ def verify_version_pin(cdk_info, connector_name):
     else:
         print("❌ This connector is not ready for production release.")
 
-        if cdk_info["type"] == "git":
-            git_url = cdk_info.get("git_url", "unknown")
-            git_ref = cdk_info.get("git_ref", "unknown")
+        if cdk_info["_raw_type"] == "git":
+            git_url = cdk_info.get("git", "unknown")
+            git_ref = cdk_info.get("branch", cdk_info.get("rev", "unknown"))
             print(f"   Issue: Git reference: {git_url}#{git_ref}")
-        elif cdk_info["type"] == "local_path":
-            local_path = cdk_info.get("local_path", "unknown")
+        elif cdk_info["_raw_type"] == "path":
+            local_path = cdk_info.get("path", "unknown")
             print(f"   Issue: Local path reference: {local_path}")
-        elif cdk_info["type"] == "url":
+        elif cdk_info["_raw_type"] == "url":
             url = cdk_info.get("url", "unknown")
             print(f"   Issue: URL reference: {url}")
-        elif cdk_info["type"] == "string":
+        elif cdk_info["_raw_type"] == "unknown":
             print(f"   Issue: Non-standard version string: {cdk_info.get('version', 'unknown')}")
         else:
-            print(f"   Issue: Unexpected dependency format: {cdk_info.get('raw_dependency', 'unknown')}")
+            print(f"   Issue: Unexpected dependency format: {cdk_info.get('_raw_dependency', 'unknown')}")
 
         print()
         print("   It is currently pinning its CDK version to a local or git-based ref.")
