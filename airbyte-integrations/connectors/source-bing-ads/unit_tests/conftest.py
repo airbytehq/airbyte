@@ -14,12 +14,6 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from pathlib import Path
 
-import logging
-
-# Removes noisy warnings from cdk
-logging.disable(logging.WARNING)
-
-
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 
