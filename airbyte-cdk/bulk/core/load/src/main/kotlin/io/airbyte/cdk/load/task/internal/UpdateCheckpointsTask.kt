@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
@@ -23,7 +22,7 @@ import jakarta.inject.Singleton
 @Secondary
 class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
+    private val checkpointManager: CheckpointManager,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
 ) : Task {
     val log = KotlinLogging.logger {}
