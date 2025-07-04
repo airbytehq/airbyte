@@ -9,7 +9,7 @@
 """
 Detect and analyze airbyte-cdk dependency information from pyproject.toml files.
 
-This consolidated script provides multiple modes for analyzing CDK dependencies:
+This script provides multiple modes for analyzing CDK dependencies:
 - JSON output with complete dependency information
 - Extras-only output for poetry add commands
 - Version pin verification for production readiness
