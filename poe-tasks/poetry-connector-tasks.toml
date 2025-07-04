@@ -136,7 +136,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
 echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
 EXTRAS=$(poe -qq get-cdk-extras)
-poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git@${ACTIVE_CDK_BRANCH}$EXTRAS"
+poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git@${ACTIVE_CDK_BRANCH}${EXTRAS}"
 '''
 help = "Pin to the branch of the CDK that is currently checked out locally, preserving any existing extras."
 
