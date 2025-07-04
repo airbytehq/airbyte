@@ -99,12 +99,16 @@ fix-and-check = [ # Fix everything fixable, then see if checks pass
 #  poe use-cdk-branch-active                # Pin to the branch of the local CDK repo
 
 [tool.poe.tasks.get-cdk-extras]
-cmd = "${POE_GIT_DIR}/poe-tasks/poetry-detect-cdk-extras.py"
+cmd = "${POE_GIT_DIR}/poe-tasks/detect-python-cdk.py --extras-only"
 help = "Detect currently installed CDK extras from pyproject.toml file. Use with -qq to quiet unrelated outputs."
 
 [tool.poe.tasks.check-non-prod-cdk]
-cmd = "${POE_GIT_DIR}/poe-tasks/poetry-check-non-prod-cdk.py"
+cmd = "${POE_GIT_DIR}/poe-tasks/detect-python-cdk.py --verify-version-pin"
 help = "Check if connector is using non-production CDK references (git/local refs). Returns 0 for production-ready, 1 for non-production."
+
+[tool.poe.tasks.detect-cdk-info]
+cmd = "${POE_GIT_DIR}/poe-tasks/detect-python-cdk.py"
+help = "Get complete CDK dependency information as JSON from pyproject.toml file."
 
 [tool.poe.tasks.use-cdk-latest]
 shell = '''
