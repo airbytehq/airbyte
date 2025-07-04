@@ -191,13 +191,7 @@ def main():
         print(format_extras_for_poetry(extras))
 
     elif args.verify_version_pin:
-        resolved_dir = connector_dir.resolve()
-        connector_name = None
-
-        if resolved_dir.name.startswith(("source-", "destination-")):
-            connector_name = resolved_dir.name
-        elif not resolved_dir.name.startswith(("source-", "destination-")):
-            print(f"Warning: Directory '{resolved_dir.name}' doesn't start with 'source-' or 'destination-'")
+        success = cdk_info["_is_production_ready"]
 
         success = verify_version_pin(cdk_info, connector_name)
         sys.exit(0 if success else 1)
