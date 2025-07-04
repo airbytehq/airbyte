@@ -4,7 +4,7 @@
 import sys
 import zipfile
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -13,6 +13,11 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from pathlib import Path
+
+import logging
+
+# Removes noisy warnings from cdk
+logging.disable(logging.WARNING)
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
@@ -114,7 +119,7 @@ def config_with_custom_reports_fixture():
 
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
-    return patch("source_bing_ads.source.logging.Logger")
+    return MagicMock()
 
 
 @pytest.fixture(name="mock_auth_token")
