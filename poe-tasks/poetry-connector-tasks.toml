@@ -144,7 +144,7 @@ help = "Pin to the branch of the CDK that is currently checked out locally, pres
 shell = '''
 set -eu
 EXTRAS=$(poe -qq get-cdk-extras)
-poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git@${BRANCH}$EXTRAS"
+poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git@${BRANCH}${EXTRAS}"
 '''
 args = [
   { name = "BRANCH", positional = true, default = "main" },
