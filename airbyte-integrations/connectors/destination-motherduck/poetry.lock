@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.57.2"
+version = "6.57.3"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.57.2-py3-none-any.whl", hash = "sha256:d9192b8b97f4bca5522335e2ac0981eda0733d160b8bb2db8602c7f75299d019"},
-    {file = "airbyte_cdk-6.57.2.tar.gz", hash = "sha256:de79b0264c3392b24e53041bb550f5ee7ee4ccb4b34821c8daca7d26cd176c08"},
+    {file = "airbyte_cdk-6.57.3-py3-none-any.whl", hash = "sha256:1d1b68e1a1ec8996e545d6191de1400cedb004c448b280f434e9b0111a9d0892"},
+    {file = "airbyte_cdk-6.57.3.tar.gz", hash = "sha256:f59af3860a25e8f6d3b55ae698ea25b72decdd527add68fe794a082070914575"},
 ]
 
 [package.dependencies]
@@ -50,6 +50,7 @@ rich = "*"
 rich-click = ">=1.8.8,<2.0.0"
 serpyco-rs = ">=1.10.2,<2.0.0"
 setuptools = ">=80.9.0,<81.0.0"
+sqlalchemy = {version = ">=2.0,<2.0.36 || >2.0.36,<3.0", optional = true, markers = "extra == \"sql\""}
 typing-extensions = "*"
 unidecode = ">=1.3.8,<2.0.0"
 wcmatch = "10.0"
@@ -3200,4 +3201,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "596711992cdfec46c588a98bdd6264bb9b4874fb4d9a2b330481906631bbb721"
+content-hash = "76e629b1762066010cb8520a440e2b2972f94e035c24ba318ce42c04dfca3e08"
