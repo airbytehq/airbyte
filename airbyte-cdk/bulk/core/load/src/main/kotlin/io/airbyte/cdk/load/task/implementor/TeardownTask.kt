@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
  * TODO: Report teardown-complete and let the task launcher decide what to do next.
  */
 class TeardownTask(
-    private val checkpointManager: CheckpointManager<*>,
+    private val checkpointManager: CheckpointManager,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
     private val taskLauncher: DestinationTaskLauncher,
@@ -50,7 +50,7 @@ class TeardownTask(
 
 @Singleton
 class TeardownTaskFactory(
-    private val checkpointManager: CheckpointManager<*>,
+    private val checkpointManager: CheckpointManager,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
 ) {
