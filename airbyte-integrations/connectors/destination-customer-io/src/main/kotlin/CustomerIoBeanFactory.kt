@@ -6,11 +6,12 @@ package io.airbyte.integrations.destination.customerio
 
 import dev.failsafe.RetryPolicy
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
 import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
-import io.airbyte.cdk.load.lowcode.Factory
+import io.airbyte.cdk.load.lowcode.DeclarativeDestinationFactory
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.write.dlq.DlqPipelineFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
@@ -22,11 +23,14 @@ import okhttp3.OkHttpClient
 class CustomerIoBeanFactory {
     @Singleton
     fun check(
-        factory: Factory<CustomerIoConfiguration>
+        factory: DeclarativeDestinationFactory<CustomerIoConfiguration>
     ): DestinationChecker<CustomerIoConfiguration> = factory.createDestinationChecker()
 
     @Singleton
-    fun factory(config: CustomerIoConfiguration): Factory<CustomerIoConfiguration> = Factory(config)
+    fun factory(
+        config: CustomerIoConfiguration
+    ): DeclarativeDestinationFactory<CustomerIoConfiguration> =
+        DeclarativeDestinationFactory(config)
 
     @Singleton fun getConfig(config: DestinationConfiguration) = config as CustomerIoConfiguration
 
@@ -50,7 +54,8 @@ class CustomerIoBeanFactory {
 
     @Singleton
     fun loadPipeline(
+        catalog: DestinationCatalog,
         dlqPipelineFactory: DlqPipelineFactory,
         httpClient: HttpClient,
-    ): LoadPipeline = dlqPipelineFactory.createPipeline(CustomerIoLoader(httpClient))
+    ): LoadPipeline = dlqPipelineFactory.createPipeline(CustomerIoLoader(httpClient, catalog))
 }
