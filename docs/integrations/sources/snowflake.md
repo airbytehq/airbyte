@@ -82,25 +82,17 @@ For effective incremental sync, choose cursor fields that:
 
 **Data Type Precision**: Snowflake's numeric types maintain their precision during sync. Ensure your destination can handle the precision of your cursor fields.
 
-### Configuration Example
+### Configuring Incremental Sync
 
-Here's an example of configuring incremental sync for a table with an auto-incrementing ID:
+To set up incremental sync in Airbyte:
 
-```json
-{
-  "streams": [
-    {
-      "stream": {
-        "name": "users",
-        "namespace": "public"
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["id"],
-      "destination_sync_mode": "append"
-    }
-  ]
-}
-```
+1. **Create or edit your connection** in the Airbyte UI
+2. **Select your source tables** that you want to sync incrementally
+3. **Choose "Incremental | Append" sync mode** for each table
+4. **Select a cursor field** from the dropdown list of available fields
+5. **Verify the cursor field** meets the criteria listed above (monotonically increasing, never updated, etc.)
+
+The Airbyte UI will automatically validate that your chosen cursor field is compatible with incremental sync and will show you the supported data types for your specific table schema.
 
 ### Troubleshooting Incremental Sync
 
