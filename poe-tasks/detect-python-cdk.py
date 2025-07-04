@@ -193,7 +193,6 @@ def main():
     elif args.verify_version_pin:
         success = cdk_info["_is_production_ready"]
 
-        success = verify_version_pin(cdk_info, connector_name)
         sys.exit(0 if success else 1)
 
     else:
