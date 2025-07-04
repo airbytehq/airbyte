@@ -13,7 +13,7 @@ include = "destination_motherduck"
 python = ">=3.10,<3.13"
 
 # NOTE: You can toggle between pinned and local CDK version for testing:
-airbyte-cdk = {git = "https://github.com/airbytehq/airbyte-python-cdk.git", rev = "devin/1751064114-fix-primary-key-fallback", extras = ["sql"]}
+airbyte-cdk = {git = "https://github.com/airbytehq/airbyte-python-cdk.git", rev = "main", extras = ["sql"]}
 # airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = ["sql"] }
 duckdb = "1.1.2"
 duckdb-engine = "^0.13.4"
