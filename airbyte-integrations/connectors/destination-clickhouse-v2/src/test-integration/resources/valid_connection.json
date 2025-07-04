@@ -4,5 +4,6 @@
   "protocol": "http",
   "username": "replace_me_username",
   "password": "replace_me_password",
-  "database": "default"
+  "database": "default",
+  "enable_json": true
 }
