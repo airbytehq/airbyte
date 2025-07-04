@@ -114,7 +114,7 @@ help = "Get complete CDK dependency information as JSON from pyproject.toml file
 shell = '''
 set -eu
 EXTRAS=$(poe -qq get-cdk-extras)
-poetry add "airbyte-cdk$EXTRAS@latest"
+poetry add "airbyte-cdk${EXTRAS}@latest"
 '''
 help = "Pin to the latest version of the CDK, preserving any existing extras."
 
