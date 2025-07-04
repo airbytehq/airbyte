@@ -151,7 +151,13 @@ def main() -> None:
 
     if args.detect_prerelease:
         if cdk_info.get("is_prerelease") is not False:
-            print("❌ Pre-release CDK version detected.", flush=True, file=sys.stderr)
+            print(
+                "❌ Pre-release CDK version detected. "
+                "Before merging your PR, remember to run `poe use-cdk-latest` to re-pin to the "
+                "latest production CDK version.",
+                flush=True,
+                file=sys.stderr,
+            )
             sys.exit(1)
 
         print(f"✅ Production ready CDK version: {cdk_info.get('version')}", flush=True, file=sys.stderr)
