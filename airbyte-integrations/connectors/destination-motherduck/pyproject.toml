@@ -13,7 +13,7 @@ include = "destination_motherduck"
 python = ">=3.10,<3.13"
 
 # NOTE: You can toggle between pinned and local CDK version for testing:
-airbyte-cdk = "^6.57.2"
+airbyte-cdk = {version = "^6.57.3", extras = ["sql"]}
 # airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = ["sql"] }
 duckdb = "1.1.2"
 duckdb-engine = "^0.13.4"
