@@ -122,7 +122,7 @@ help = "Pin to the latest version of the CDK, preserving any existing extras."
 shell = '''
 set -eu
 EXTRAS=$(poe -qq get-cdk-extras)
-poetry add "airbyte-cdk$EXTRAS@${VERSION}"
+poetry add "airbyte-cdk${EXTRAS}@${VERSION}"
 '''
 args = [
   { name = "VERSION", positional = true, default = "latest" },
