@@ -121,39 +121,40 @@ def format_extras_for_poetry(extras):
 def verify_version_pin(cdk_info, connector_name):
     """Verify CDK version pin and provide guidance if not production ready."""
     if cdk_info.get("error"):
-        print(f"❌ Error: {cdk_info['error']}")
+        print(f"❌ Error: {cdk_info['error']}", flush=True)
         return False
 
     if cdk_info["_is_production_ready"]:
         version = cdk_info.get("version", "unknown")
         extras = cdk_info.get("extras", [])
         extras_str = f" with extras {extras}" if extras else ""
-        print(f"✅ Production ready: Standard version: {version}{extras_str}")
+        print(f"✅ Production ready: Standard version: {version}{extras_str}", flush=True)
         return True
     else:
-        print("❌ This connector is not ready for production release.")
+        print("❌ This connector is not ready for production release.", flush=True)
 
         if cdk_info["_raw_type"] == "git":
             git_url = cdk_info.get("git", "unknown")
-            git_ref = cdk_info.get("branch", cdk_info.get("rev", "unknown"))
-            print(f"   Issue: Git reference: {git_url}#{git_ref}")
+            git_ref = cdk_info.get("rev", cdk_info.get("branch", "unknown"))
+            print(f"   Issue: Git reference: {git_url}#{git_ref}", flush=True)
         elif cdk_info["_raw_type"] == "path":
             local_path = cdk_info.get("path", "unknown")
-            print(f"   Issue: Local path reference: {local_path}")
+            print(f"   Issue: Local path reference: {local_path}", flush=True)
         elif cdk_info["_raw_type"] == "url":
             url = cdk_info.get("url", "unknown")
-            print(f"   Issue: URL reference: {url}")
-        elif cdk_info["_raw_type"] == "unknown":
-            print(f"   Issue: Non-standard version string: {cdk_info.get('version', 'unknown')}")
+            print(f"   Issue: URL reference: {url}", flush=True)
+        elif cdk_info["_raw_type"] == "version":
+            version = cdk_info.get("version", "unknown")
+            print(f"   Issue: Non-standard version string: {version}", flush=True)
         else:
-            print(f"   Issue: Unexpected dependency format: {cdk_info.get('_raw_dependency', 'unknown')}")
+            print(f"   Issue: Unexpected dependency format: {cdk_info.get('_raw_dependency', 'unknown')}", flush=True)
 
-        print()
-        print("   It is currently pinning its CDK version to a local or git-based ref.")
-        print("   To resolve, use `poe use-cdk-latest` after your working dev version")
-        print("   of the CDK has been published.")
+        print("", flush=True)
+        print("   It is currently pinning its CDK version to a local or git-based ref.", flush=True)
+        print("   To resolve, use `poe use-cdk-latest` after your working dev version", flush=True)
+        print("   of the CDK has been published.", flush=True)
         if connector_name:
-            print(f"   You can also use the slash command in your PR: `/poe connector {connector_name} use-cdk-latest`")
+            print(f"   You can also use the slash command in your PR: `/poe connector {connector_name} use-cdk-latest`", flush=True)
 
         return False
 
