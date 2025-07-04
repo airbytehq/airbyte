@@ -118,7 +118,7 @@ DEP_STR="airbyte-cdk${EXTRAS}@latest"
 echo Running: poetry add \"${DEP_STR}\"
 poetry add "${DEP_STR}"
 '''
-help = "Pin to the latest version of the CDK, preserving any existing extras."
+help = "Pin to the latest version of the CDK."
 
 [tool.poe.tasks.use-cdk-version]
 shell = '''
@@ -131,7 +131,7 @@ poetry add "${DEP_STR}"
 args = [
   { name = "VERSION", positional = true, default = "latest" },
 ]
-help = "Pin to a specific version of the CDK, preserving any existing extras."
+help = "Pin to a specific version of the CDK."
 
 [tool.poe.tasks.use-cdk-branch-active]
 shell = '''
@@ -144,7 +144,7 @@ DEP_STR="git+https://github.com/airbytehq/airbyte-python-cdk.git@${ACTIVE_CDK_BR
 echo Running: poetry add \"${DEP_STR}\"
 poetry add "${DEP_STR}"
 '''
-help = "Pin to the branch of the CDK that is currently checked out locally, preserving any existing extras."
+help = "Pin to the branch of the CDK that is currently checked out locally."
 
 [tool.poe.tasks.use-cdk-branch]
 shell = '''
@@ -157,7 +157,7 @@ poetry add "${DEP_STR}"
 args = [
   { name = "BRANCH", positional = true, default = "main" },
 ]
-help = "Pin to a specific branch of the CDK, preserving any existing extras."
+help = "Pin to a specific branch of the CDK."
 
 [tool.poe.tasks.use-cdk-local]
 shell = '''
