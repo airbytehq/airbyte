@@ -28,10 +28,11 @@ import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseConfigUpdater
 import io.airbyte.integrations.destination.clickhouse_v2.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse_v2.Utils
+import io.airbyte.integrations.destination.clickhouse_v2.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse_v2.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseConfigurationFactory
-import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecification
+import io.airbyte.integrations.destination.clickhouse_v2.spec.ClickhouseSpecificationOss
 import io.airbyte.integrations.destination.clickhouse_v2.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
@@ -39,24 +40,52 @@ import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 
-class ClickhouseDirectLoadWriter :
+class ClickhouseDirectLoadWriterWithJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection.json",
+        SchematizedNestedValueBehavior.PASS_THROUGH,
+        false,
+    ) {
+
+    /**
+     * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
+     * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
+     * row, will have the column A. This test includes test case for schemaless type which aren't
+     * behaving like the other warehouses
+     */
+    @Disabled("Unfit for clickhouse with Json") override fun testContainerTypes() {}
+}
+
+class ClickhouseDirectLoadWriterWithoutJson :
+    ClickhouseDirectLoadWriter(
+        "valid_connection_no_json.json",
+        SchematizedNestedValueBehavior.STRINGIFY,
+        true,
+    )
+
+abstract class ClickhouseDirectLoadWriter(
+    specFile: String,
+    schematizedObjectBehavior: SchematizedNestedValueBehavior,
+    stringifySchemalessObjects: Boolean
+) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(Utils.getConfigPath("valid_connection.json")),
-        configSpecClass = ClickhouseSpecification::class.java,
+        configContents = Files.readString(Utils.getConfigPath(specFile)),
+        configSpecClass = ClickhouseSpecificationOss::class.java,
         dataDumper =
             ClickhouseDataDumper { spec ->
                 val configOverrides = mutableMapOf<String, String>()
                 ClickhouseConfigurationFactory()
-                    .makeWithOverrides(spec as ClickhouseSpecification, configOverrides)
+                    .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
             },
         destinationCleaner = ClickhouseDataCleaner,
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
-        stringifySchemalessObjects = true,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        stringifySchemalessObjects = stringifySchemalessObjects,
+        schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        unionBehavior = UnionBehavior.STRICT_STRINGIFY,
+        unionBehavior = UnionBehavior.STRINGIFY,
+        stringifyUnionObjects = true,
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,
@@ -90,51 +119,6 @@ class ClickhouseDirectLoadWriter :
     override fun testBasicWriteFile() {
         // Clickhouse does not support file transfer, so this test is skipped.
     }
-
-    /**
-     * failing because of
-     *
-     * java.lang.ClassCastException: class com.fasterxml.jackson.databind.node.NullNode cannot be
-     * cast to class com.fasterxml.jackson.databind.node.ObjectNode
-     * (com.fasterxml.jackson.databind.node.NullNode and
-     * com.fasterxml.jackson.databind.node.ObjectNode are in unnamed module of loader 'app') at
-     * io.airbyte.integrations.destination.clickhouse_v2.write.direct.ClickhouseDirectLoader.accept(ClickhouseDirectLoader.kt:51)
-     * ~[io.airbyte.airbyte-integrations.connectors-destination-clickhouse-v2.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.accept(DirectLoadRecordAccumulator.kt:37)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.pipeline.DirectLoadRecordAccumulator.accept(DirectLoadRecordAccumulator.kt:24)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * io.airbyte.cdk.load.task.internal.LoadPipelineStepTask$execute$$inlined$fold$1.emit(Reduce.kt:225)
-     * ~[io.airbyte.airbyte-cdk.bulk.core-bulk-cdk-core-load.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.emitAllImpl$FlowKt__ChannelsKt(Channels.kt:33)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt.access$emitAllImpl$FlowKt__ChannelsKt(Channels.kt:1)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.flow.FlowKt__ChannelsKt$emitAllImpl$1.invokeSuspend(Channels.kt)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
-     * ~[kotlin-stdlib-2.1.10.jar:2.1.10-release-473] at
-     * kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?] at
-     * kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
-     * ~[kotlinx-coroutines-core-jvm-1.9.0.jar:?]
-     */
-    @Disabled override fun testFunkyCharacters() {}
-
-    @Disabled override fun testNoColumns() {}
-
-    /** Dedup is handle by the Clickhouse server, so this test is not applicable. */
-    @Disabled override fun testFunkyCharactersDedup() {}
 }
 
 class ClickhouseDataDumper(
@@ -151,8 +135,11 @@ class ClickhouseDataDumper(
 
         val output = mutableListOf<OutputRecord>()
 
-        val namespacedTableName =
-            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}.${stream.mappedDescriptor.name}"
+        val cleanedNamespace =
+            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}".toClickHouseCompatibleName()
+        val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
+
+        val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
 
         val response =
             client.query("SELECT * FROM $namespacedTableName ${if (isDedup) "FINAL" else ""}").get()
@@ -195,7 +182,7 @@ class ClickhouseDataDumper(
 object ClickhouseDataCleaner : DestinationCleaner {
     private val clickhouseSpecification =
         ValidatedJsonUtils.parseOne(
-            ClickhouseSpecification::class.java,
+            ClickhouseSpecificationOss::class.java,
             Files.readString(Utils.getConfigPath("valid_connection.json"))
         )
 

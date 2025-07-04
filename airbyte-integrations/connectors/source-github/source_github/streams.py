@@ -1633,7 +1633,10 @@ class ContributorActivity(GithubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
-        record.update(record.pop("author"))
+        author = record.pop("author", None)
+        # It's been found that the author field can be None, so we check for it
+        if author:
+            record.update(author)
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
