@@ -90,7 +90,12 @@ dirs=$(printf '%s\n' "$connectors_paths" \
 connectors=()
 if [ -n "$dirs" ]; then
   while IFS= read -r d; do
-    connectors+=("$d")
+    connector_folder="airbyte-integrations/connectors/${d}"
+    if [[ -d "$connector_folder" ]]; then
+      connectors+=("$d")
+    else
+      echo "⚠️ '$d' directory was not found. This can happen if a connector is removed. Skipping." >&2
+    fi
   done <<< "$(printf '%s\n' "$dirs" | sort -u)"
 fi
 
