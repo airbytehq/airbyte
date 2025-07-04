@@ -24,6 +24,6 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - `/poe source example lock` - Run the Poe `lock` task on the `source-example` connector, committing the results back to the branch.
 - `/poe source example use-cdk-branch my/branch` - Pin the `source-example` CDK reference to the branch name specified.
-- `/poe source example use-cdk-latest` - Update the `source-example` CDK depdendency to the latest available version.
+- `/poe source example use-cdk-latest` - Update the `source-example` CDK dependency to the latest available version.
 
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-internal.md)
