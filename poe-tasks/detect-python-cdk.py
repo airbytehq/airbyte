@@ -35,7 +35,7 @@ Usage:
 
 Examples:
     ./detect-python-cdk.py /path/to/destination-motherduck
-    {"version": "^6.0.0", "extras": ["sql"], "type": "standard", "production_ready": true}
+    {"version": "^6.0.0", "extras": ["sql"], "type": "standard", "is_production_ready": true}
 
     ./detect-python-cdk.py --extras-only /path/to/destination-motherduck
     [sql]
@@ -68,47 +68,36 @@ def parse_cdk_dependency(pyproject_path):
         with open(pyproject_path, "rb") as f:
             data = tomli.load(f)
     except Exception as e:
-        return {"error": f"Error reading pyproject.toml: {e}", "production_ready": False}
+        return {"error": f"Error reading pyproject.toml: {e}", "_is_production_ready": False}
 
     dependencies = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
     cdk_dep = dependencies.get("airbyte-cdk")
 
     if not cdk_dep:
-        return {"error": "No airbyte-cdk dependency found", "production_ready": False}
+        return {"error": "No airbyte-cdk dependency found", "_is_production_ready": False}
 
-    result = {"raw_dependency": cdk_dep, "extras": [], "version": None, "type": "unknown", "production_ready": False}
+    result = {
+        "_raw_dependency": cdk_dep,
+        "_is_production_ready": False,
+        "_raw_type" = "unknown",
+    }
 
     if isinstance(cdk_dep, str):
         result["version"] = cdk_dep
-        result["type"] = "string"
-        result["production_ready"] = is_standard_version(cdk_dep)
-        result["raw_dependency"] = {"version": cdk_dep}
+        result["_is_production_ready"] = is_standard_version(cdk_dep)
 
     elif isinstance(cdk_dep, dict):
+        result.update(cdk_dep)
+        
+        if "version" in cdk_dep:
+            result["_raw_type"] = "version"
+            result["_is_production_ready"] = is_standard_version(cdk_dep["version"])
         if "git" in cdk_dep:
-            result["type"] = "git"
-            result["git_url"] = cdk_dep["git"]
-            result["git_ref"] = cdk_dep.get("branch", cdk_dep.get("rev", "unknown"))
-            result["production_ready"] = False
-
+            result["_raw_type"] = "git"
         elif "path" in cdk_dep:
-            result["type"] = "local_path"
-            result["local_path"] = cdk_dep["path"]
-            result["production_ready"] = False
-
+            result["_raw_type"] = "path"
         elif "url" in cdk_dep:
-            result["type"] = "url"
-            result["url"] = cdk_dep["url"]
-            result["production_ready"] = False
-
-        else:
-            result["type"] = "dict"
-            version = cdk_dep.get("version")
-            if version:
-                result["version"] = version
-                result["production_ready"] = is_standard_version(version)
-
-        result["extras"] = cdk_dep.get("extras", [])
+            result["_raw_type"] = "url"
 
     return result
 
@@ -135,7 +124,7 @@ def verify_version_pin(cdk_info, connector_name):
         print(f"❌ Error: {cdk_info['error']}")
         return False
 
-    if cdk_info["production_ready"]:
+    if cdk_info["_is_production_ready"]:
         version = cdk_info.get("version", "unknown")
         extras = cdk_info.get("extras", [])
         extras_str = f" with extras {extras}" if extras else ""
