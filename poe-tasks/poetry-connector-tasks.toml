@@ -159,6 +159,18 @@ args = [
 ]
 help = "Pin to a specific branch of the CDK, preserving any existing extras."
 
+[tool.poe.tasks.use-cdk-local]
+shell = '''
+set -eu
+REPO_ROOT=$(git rev-parse --show-toplevel)
+CDK_ROOT=${REPO_ROOT}/../airbyte-python-cdk
+EXTRAS=$(poe -qq detect-cdk-extras)
+DEP_STR="${CDK_ROOT}${EXTRAS}"
+echo Running: poetry add \"${DEP_STR}\"
+poetry add "${DEP_STR}"
+'''
+help = "Pin to your local working copy of the CDK, in editable mode."
+
 # Generic tasks (same across all connector types)
 
 [tool.poe.tasks.get-language]
