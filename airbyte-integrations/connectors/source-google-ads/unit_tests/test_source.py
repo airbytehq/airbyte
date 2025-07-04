@@ -572,6 +572,13 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
             },
             {},
         ),
+        # no state in the input ⇒ empty
+        ({"parent_state": {}, "lookback_window": 13, "use_global_cursor": True}, {}),
+        # already migrated state ⇒ no change
+        (
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+        ),
     ],
 )
 def test_migrate_various_partitions(input_state, expected):
