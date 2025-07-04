@@ -136,32 +136,20 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
 echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
 EXTRAS=$(poe -qq get-cdk-extras)
-echo "Note: Poetry has limitations with git dependencies and extras. This task will switch to git dependency but may lose extras."
-echo "Current extras detected: '$EXTRAS'"
-poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${ACTIVE_CDK_BRANCH}"
-if [ -n "$EXTRAS" ]; then
-    echo "WARNING: Extras '$EXTRAS' were detected but cannot be preserved with git dependencies in Poetry."
-    echo "You may need to manually add extras to pyproject.toml if required."
-fi
+poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git@${ACTIVE_CDK_BRANCH}$EXTRAS"
 '''
-help = "Pin to the branch of the CDK that is currently checked out locally. Note: Poetry limitations prevent preserving extras with git dependencies."
+help = "Pin to the branch of the CDK that is currently checked out locally, preserving any existing extras."
 
 [tool.poe.tasks.use-cdk-branch]
 shell = '''
 set -eu
 EXTRAS=$(poe -qq get-cdk-extras)
-echo "Note: Poetry has limitations with git dependencies and extras. This task will switch to git dependency but may lose extras."
-echo "Current extras detected: '$EXTRAS'"
-poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"
-if [ -n "$EXTRAS" ]; then
-    echo "WARNING: Extras '$EXTRAS' were detected but cannot be preserved with git dependencies in Poetry."
-    echo "You may need to manually add extras to pyproject.toml if required."
-fi
+poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git@${BRANCH}$EXTRAS"
 '''
 args = [
   { name = "BRANCH", positional = true, default = "main" },
 ]
-help = "Pin to a specific branch of the CDK. Note: Poetry limitations prevent preserving extras with git dependencies."
+help = "Pin to a specific branch of the CDK, preserving any existing extras."
 
 # Generic tasks (same across all connector types)
 
