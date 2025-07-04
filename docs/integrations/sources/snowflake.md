@@ -18,6 +18,100 @@ The Snowflake source does not alter the schema present in your warehouse. Depend
 | Incremental - Append Sync | Yes                  |       |
 | Namespaces                | Yes                  |       |
 
+## Incremental Sync
+
+The Snowflake source connector supports incremental sync, which allows you to replicate only new or updated data since the last sync. This is accomplished using a cursor field that tracks the state of the sync.
+
+### How Incremental Sync Works
+
+During incremental sync, the connector:
+
+1. **Identifies new records**: Uses a `WHERE cursor_field > last_cursor_value` clause to fetch only records newer than the last synced value
+2. **Maintains order**: Applies `ORDER BY cursor_field ASC` to ensure records are processed in the correct sequence
+3. **Tracks state**: Stores the maximum cursor value from each sync to use as the starting point for the next sync
+
+### Supported Cursor Field Data Types
+
+The connector supports the following JDBC data types as cursor fields:
+
+**Date and Time Types:**
+- `TIMESTAMP_WITH_TIMEZONE`
+- `TIMESTAMP` 
+- `TIME_WITH_TIMEZONE`
+- `TIME`
+- `DATE`
+
+**Numeric Types:**
+- `TINYINT`
+- `SMALLINT` 
+- `INTEGER`
+- `BIGINT`
+- `FLOAT`
+- `DOUBLE`
+- `REAL`
+- `NUMERIC`
+- `DECIMAL`
+
+**String Types:**
+- `NVARCHAR`
+- `VARCHAR`
+- `LONGVARCHAR`
+
+### Choosing a Cursor Field
+
+For effective incremental sync, choose cursor fields that:
+
+- **Are monotonically increasing**: Values should always increase over time (e.g., auto-incrementing IDs, creation timestamps)
+- **Are never updated**: Avoid fields that might be modified after record creation
+- **Have unique values**: While duplicate values are handled, they can cause records to be skipped or re-synced
+- **Are indexed**: For better query performance on large tables
+
+**Good cursor field examples:**
+- `CREATED_AT` or `UPDATED_AT` timestamp columns
+- Auto-incrementing `ID` columns
+- Sequence-generated numeric fields
+
+**Avoid using:**
+- Fields that can be updated after creation
+- Fields with many duplicate values
+- Fields that can contain NULL values
+
+### Snowflake-Specific Considerations
+
+**Timezone Handling**: The connector provides special handling for Snowflake's `TIMESTAMPLTZ` (timestamp with local timezone) data type, automatically converting it to `TIMESTAMP_WITH_TIMEZONE` for consistent processing.
+
+**Data Type Precision**: Snowflake's numeric types maintain their precision during sync. Ensure your destination can handle the precision of your cursor fields.
+
+### Configuration Example
+
+Here's an example of configuring incremental sync for a table with an auto-incrementing ID:
+
+```json
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "namespace": "public"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}
+```
+
+### Troubleshooting Incremental Sync
+
+**Cursor field validation errors**: If you receive an error about an invalid cursor field, ensure the field exists in your table and is one of the supported data types listed above.
+
+**Duplicate cursor values**: When multiple records have the same cursor value, the connector processes all records with that value. This may result in some records being synced multiple times across different sync runs.
+
+**NULL cursor values**: Records with NULL cursor field values are excluded from incremental sync. Ensure your cursor field has a NOT NULL constraint or default value.
+
+**State reset**: If you need to re-sync all data, you can reset the connection's state in the Airbyte UI, which will cause the next sync to behave like a full refresh.
+
 ## Getting started
 
 ### Requirements
