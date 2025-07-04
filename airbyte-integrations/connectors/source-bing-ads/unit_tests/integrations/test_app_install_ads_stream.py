@@ -21,6 +21,8 @@ class TestAppInstallAdsStream(TestBulkStream):
         self.mock_apis(file="app_install_ads_empty")
         output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "app_install_ads_empty")
         assert len(output.records) == 0
+        no_records_message = self.create_log_message(f"Read 0 records from {self.stream_name} stream")
+        assert no_records_message in output.logs
 
     def test_transform_records(self):
         self.mock_apis(file=self.stream_name)
