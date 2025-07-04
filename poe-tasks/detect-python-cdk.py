@@ -50,6 +50,7 @@ import re
 import sys
 from pathlib import Path
 
+
 try:
     import tomli
 except ImportError:
@@ -59,7 +60,7 @@ except ImportError:
 def parse_cdk_dependency(pyproject_path):
     """
     Parse CDK dependency from pyproject.toml and return structured information.
-    
+
     Returns:
         dict: Complete dependency information including version, extras, type, etc.
     """
@@ -67,60 +68,48 @@ def parse_cdk_dependency(pyproject_path):
         with open(pyproject_path, "rb") as f:
             data = tomli.load(f)
     except Exception as e:
-        return {
-            "error": f"Error reading pyproject.toml: {e}",
-            "production_ready": False
-        }
+        return {"error": f"Error reading pyproject.toml: {e}", "production_ready": False}
 
     dependencies = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
     cdk_dep = dependencies.get("airbyte-cdk")
 
     if not cdk_dep:
-        return {
-            "error": "No airbyte-cdk dependency found",
-            "production_ready": False
-        }
+        return {"error": "No airbyte-cdk dependency found", "production_ready": False}
 
-    result = {
-        "raw_dependency": cdk_dep,
-        "extras": [],
-        "version": None,
-        "type": "unknown",
-        "production_ready": False
-    }
+    result = {"raw_dependency": cdk_dep, "extras": [], "version": None, "type": "unknown", "production_ready": False}
 
     if isinstance(cdk_dep, str):
         result["version"] = cdk_dep
         result["type"] = "string"
         result["production_ready"] = is_standard_version(cdk_dep)
         result["raw_dependency"] = {"version": cdk_dep}
-        
+
     elif isinstance(cdk_dep, dict):
         if "git" in cdk_dep:
             result["type"] = "git"
             result["git_url"] = cdk_dep["git"]
             result["git_ref"] = cdk_dep.get("branch", cdk_dep.get("rev", "unknown"))
             result["production_ready"] = False
-            
+
         elif "path" in cdk_dep:
             result["type"] = "local_path"
             result["local_path"] = cdk_dep["path"]
             result["production_ready"] = False
-            
+
         elif "url" in cdk_dep:
             result["type"] = "url"
             result["url"] = cdk_dep["url"]
             result["production_ready"] = False
-            
+
         else:
             result["type"] = "dict"
             version = cdk_dep.get("version")
             if version:
                 result["version"] = version
                 result["production_ready"] = is_standard_version(version)
-        
+
         result["extras"] = cdk_dep.get("extras", [])
-    
+
     return result
 
 
@@ -154,7 +143,7 @@ def verify_version_pin(cdk_info, connector_name):
         return True
     else:
         print("❌ This connector is not ready for production release.")
-        
+
         if cdk_info["type"] == "git":
             git_url = cdk_info.get("git_url", "unknown")
             git_ref = cdk_info.get("git_ref", "unknown")
@@ -169,44 +158,30 @@ def verify_version_pin(cdk_info, connector_name):
             print(f"   Issue: Non-standard version string: {cdk_info.get('version', 'unknown')}")
         else:
             print(f"   Issue: Unexpected dependency format: {cdk_info.get('raw_dependency', 'unknown')}")
-        
+
         print()
         print("   It is currently pinning its CDK version to a local or git-based ref.")
         print("   To resolve, use `poe use-cdk-latest` after your working dev version")
         print("   of the CDK has been published.")
         if connector_name:
             print(f"   You can also use the slash command in your PR: `/poe connector {connector_name} use-cdk-latest`")
-        
+
         return False
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Detect and analyze airbyte-cdk dependency information",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        description="Detect and analyze airbyte-cdk dependency information", formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    
-    parser.add_argument(
-        "directory",
-        nargs="?",
-        default=".",
-        help="Directory containing pyproject.toml (default: current directory)"
-    )
-    
+
+    parser.add_argument("directory", nargs="?", default=".", help="Directory containing pyproject.toml (default: current directory)")
+
     mode_group = parser.add_mutually_exclusive_group()
-    mode_group.add_argument(
-        "--extras-only",
-        action="store_true",
-        help="Return extras string for poetry add command"
-    )
-    mode_group.add_argument(
-        "--verify-version-pin",
-        action="store_true",
-        help="Verify CDK is pinned to standard version (exit 1 if not)"
-    )
-    
+    mode_group.add_argument("--extras-only", action="store_true", help="Return extras string for poetry add command")
+    mode_group.add_argument("--verify-version-pin", action="store_true", help="Verify CDK is pinned to standard version (exit 1 if not)")
+
     args = parser.parse_args()
-    
+
     connector_dir = Path(args.directory)
     pyproject_path = connector_dir / "pyproject.toml"
 
@@ -221,23 +196,23 @@ def main():
             return
 
     cdk_info = parse_cdk_dependency(pyproject_path)
-    
+
     if args.extras_only:
         extras = cdk_info.get("extras", [])
         print(format_extras_for_poetry(extras))
-        
+
     elif args.verify_version_pin:
         resolved_dir = connector_dir.resolve()
         connector_name = None
-        
+
         if resolved_dir.name.startswith(("source-", "destination-")):
             connector_name = resolved_dir.name
         elif not resolved_dir.name.startswith(("source-", "destination-")):
             print(f"Warning: Directory '{resolved_dir.name}' doesn't start with 'source-' or 'destination-'")
-        
+
         success = verify_version_pin(cdk_info, connector_name)
         sys.exit(0 if success else 1)
-        
+
     else:
         print(json.dumps(cdk_info, indent=2))
 
