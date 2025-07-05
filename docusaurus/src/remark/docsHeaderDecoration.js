@@ -19,6 +19,7 @@ const plugin = () => {
     if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
+
     const latestPythonCdkVersion = await getLatestPythonCDKVersion();
 
     if (!registryEntry) return;
@@ -68,6 +69,7 @@ const plugin = () => {
           syncSuccessRate,
           usageRate,
           lastUpdated,
+          definitionId: registryEntry.definitionId,
         };
 
         firstHeading = false;

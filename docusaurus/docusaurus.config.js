@@ -1,9 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 import "dotenv/config.js";
-const yaml = require("js-yaml");
-const fs = require("node:fs");
-const path = require("node:path");
 
 const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
@@ -15,9 +12,13 @@ const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
+const addButtonToTitle = require("./src/remark/addButtonToTitle");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
+  future: {
+    experimental_faster: true,
+  },
   markdown: {
     mermaid: true,
   },
@@ -29,8 +30,8 @@ const config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
-  onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "throw",
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
@@ -68,6 +69,21 @@ const config = {
         content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
       },
     },
+    ...(process.env.NODE_ENV === "production" && process.env.SEGMENT_WRITE_KEY
+      ? [
+          {
+            tagName: "script",
+            attributes: {
+              name: "segment-script",
+            },
+            innerHTML: `  
+        !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="${process.env.SEGMENT_WRITE_KEY}";;analytics.SNIPPET_VERSION="5.2.0";
+        analytics.load("${process.env.SEGMENT_WRITE_KEY}");
+        analytics.page();
+      }}();`,
+          },
+        ]
+      : []),
   ],
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
@@ -87,6 +103,7 @@ const config = {
             enterpriseDocsHeaderInformation,
             productInformation,
             docMetaTags,
+            addButtonToTitle,
           ],
         },
         blog: false,
@@ -97,7 +114,7 @@ const config = {
     ],
   ],
   plugins: [
-    // This plugin controls "platform" docs, which are to be versioned
+    // This plugin controls "platform" docs, which are versioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -105,16 +122,43 @@ const config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
+        editUrl: ({ version, docPath }) => {
+          if (version === "current") {
+            // For the "next" (unreleased) version
+            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
+          } else {
+            // For released versions
+            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
+          }
+        },
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+          addButtonToTitle,
+        ],
+      },
+    ],
+    // This plugin controls Airbyte Embedded docs, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded",
+        path: "../docs/embedded",
+        routeBasePath: "/embedded",
+        sidebarPath: "./sidebar-embedded.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
-    // This plugin controls release notes, which are unversioned
+    // This plugin controls release notes, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -128,10 +172,11 @@ const config = {
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
-    // This plugin controls "connector/source/destination" docs, which are unversioned by Docusaurus and use their own versioning
+    // This plugin controls Connector docs, which are unversioned
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -147,6 +192,19 @@ const config = {
           productInformation,
           docMetaTags,
         ],
+      },
+    ],
+    require.resolve("./src/plugins/enterpriseConnectors"),
+    [
+      "@signalwire/docusaurus-plugin-llms-txt",
+      {
+        siteTitle: "docs.airbyte.com llms.txt",
+        siteDescription:
+          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
+        depth: 4,
+        content: {
+          includePages: true,
+        },
       },
     ],
     () => ({
@@ -171,6 +229,9 @@ const config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+    markpromptProjectKey:
+      process.env.MARKPROMPT_PROJECT_KEY ||
+      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
@@ -231,6 +292,13 @@ const config = {
             docsPluginId: "release_notes",
             sidebarId: "releaseNotes",
             label: "Release notes",
+          },
+          {
+            type: "docSidebar",
+            position: "left",
+            docsPluginId: "embedded",
+            sidebarId: "embedded",
+            label: "Airbyte Embedded",
           },
           {
             href: "https://support.airbyte.com/",

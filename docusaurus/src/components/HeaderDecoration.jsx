@@ -1,10 +1,11 @@
-import React from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import styles from "./HeaderDecoration.module.css";
-import { Chip } from "./Chip";
-import { Callout } from "./Callout";
+import React from "react";
 import { getSupportLevelDisplay } from "../connector_registry";
+import { Callout } from "./Callout";
+import { Chip } from "./Chip";
+import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
+import styles from "./HeaderDecoration.module.css";
 
 // Extend Day.js with the relativeTime plugin
 dayjs.extend(relativeTime);
@@ -235,6 +236,7 @@ const ConnectorMetadataCallout = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
+  definitionId,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
@@ -280,9 +282,13 @@ const ConnectorMetadataCallout = ({
       </MetadataStat>
       {supportLevel !== "archived" && (
         <MetadataStat label="Connector Version">
-          <a href={github_url} target="_blank">
-            {dockerImageTag}&nbsp;
-          </a>
+          {!isEnterprise && github_url ? (
+            <a href={github_url} target="_blank">
+              {dockerImageTag}&nbsp;
+            </a>
+          ) : (
+            <span>{dockerImageTag}</span>
+          )}
           {lastUpdated && (
             <span>{`(last updated ${dayjs(lastUpdated).fromNow()})`}</span>
           )}
@@ -308,11 +314,20 @@ const ConnectorMetadataCallout = ({
       )}
       {isEnterprise && (
         <MetadataStat label="Enterprise Connector">
-          This premium connector is only available with a license.{" "}
+          <strong>
+            This premium connector is available to Enterprise customers at an
+            additional cost
+          </strong>
+          .{" "}
           <a href="https://airbyte.com/company/talk-to-sales" target="_blank">
             Talk to Sales{" "}
           </a>
           .
+        </MetadataStat>
+      )}
+      {definitionId && (
+        <MetadataStat label="Definition ID">
+          <code>{definitionId}</code>
         </MetadataStat>
       )}
     </dl>
@@ -350,6 +365,7 @@ export const HeaderDecoration = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
+  definitionId,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -359,12 +375,18 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <ConnectorTitle
-        iconUrl={iconUrl}
-        originalTitle={originalTitle}
-        originalId={originalId}
-        isArchived={isArchived}
-      />
+      <div
+        className={styles.connectorHeader}
+   
+      >
+        <ConnectorTitle
+          iconUrl={iconUrl}
+          originalTitle={originalTitle}
+          originalId={originalId}
+          isArchived={isArchived}
+        />
+        <CopyPageButton />
+      </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
         isOss={isOss}
@@ -378,6 +400,7 @@ export const HeaderDecoration = ({
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
         lastUpdated={lastUpdated}
+        definitionId={definitionId}
       />
     </>
   );

@@ -119,16 +119,16 @@ definitions:
             metric: >-
               {% if stream_partition.media_insights_info.media_product_type ==
               "REELS" %}{{
-              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares'
+              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares,views'
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'reach,saved'}}{% elif
+              %}{{  'reach,saved,views'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
-              'reach,saved,likes,comments,shares,follows,profile_visits'
+              'reach,saved,likes,comments,shares,follows,profile_visits,views'
               }}{%elif stream_partition.media_insights_info.media_type ==
-              "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits' }}{% else %}{{
-              'reach,saved,likes,comments,shares,follows,profile_visits' }}{%
+              "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits,views' }}{% else %}{{
+              'reach,saved,likes,comments,shares,follows,profile_visits,views' }}{%
               endif %}
           error_handler:
             type: CompositeErrorHandler
@@ -448,7 +448,7 @@ definitions:
           path: "{{ stream_partition.story_insights_info.story_id }}/insights"
           http_method: GET
           request_parameters:
-            metric: reach,replies,follows,profile_visits,shares,total_interactions
+            metric: reach,replies,follows,profile_visits,shares,total_interactions,views
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -855,6 +855,11 @@ schemas:
         type:
           - "null"
           - integer
+      views:
+        description: The number of views on the media.
+        type:
+          - "null"
+          - integer
     required:
       - id
   Users:
@@ -1089,6 +1094,11 @@ schemas:
           - integer
       total_interactions:
         description¨: The number of replies and shares of the story.
+        type:
+          - "null"
+          - integer
+      views:
+        description: The number of views on the story.
         type:
           - "null"
           - integer

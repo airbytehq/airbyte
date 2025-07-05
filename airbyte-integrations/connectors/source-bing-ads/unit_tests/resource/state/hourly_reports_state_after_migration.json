@@ -1,0 +1,15 @@
+{
+  "lookback_window": 0,
+  "parent_state": {},
+  "state": { "TimePeriod": "2024-01-01T00:00:00+00:00" },
+  "states": [
+    {
+      "cursor": { "TimePeriod": "2024-01-01T00:00:00+00:00" },
+      "partition": {
+        "account_id": "180535609",
+        "parent_slice": { "parent_slice": {}, "user_id": "123456789" }
+      }
+    }
+  ],
+  "use_global_cursor": false
+}

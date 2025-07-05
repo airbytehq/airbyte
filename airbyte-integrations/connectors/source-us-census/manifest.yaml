@@ -101,7 +101,7 @@ spec:
         description: The query parameters portion of the GET request, without the
           api key
         order: 0
-        pattern: ^\w+=[\w,:*]+(&(?!key)\w+=[\w,:*]+)*$
+        pattern: ^\w+=(?:[\w,:*]|%20)+(&(?!key)\w+=(?:[\w,:*]|%20)+)*$
         examples:
         - >-
           get=NAME,NAICS2017_LABEL,LFO_LABEL,EMPSZES_LABEL,ESTAB,PAYANN,PAYQTR1,EMP&for=us:*&NAICS2017=72&LFO=001&EMPSZES=001

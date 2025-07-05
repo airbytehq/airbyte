@@ -15,8 +15,11 @@ const buildAConnector = {
     {
       type: "category",
       label: "Connector Builder",
+      link: {
+        type: "doc",
+        id: "connector-development/connector-builder-ui/overview",
+      },
       items: [
-        "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
         "connector-development/connector-builder-ui/custom-components",
@@ -63,8 +66,10 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/incremental-syncs",
             "connector-development/config-based/understanding-the-yaml-file/pagination",
             "connector-development/config-based/understanding-the-yaml-file/partition-router",
+            "connector-development/config-based/understanding-the-yaml-file/property-chunking",
             "connector-development/config-based/understanding-the-yaml-file/rate-limit-api-budget",
             "connector-development/config-based/understanding-the-yaml-file/record-selector",
+            "connector-development/config-based/understanding-the-yaml-file/file-syncing",
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
         },
@@ -204,15 +209,25 @@ const deployAirbyte = {
     },
     {
       type: "doc",
-      id: "deploying-airbyte/troubleshoot-deploy",
-    },
-    {
-      type: "doc",
       id: "deploying-airbyte/migrating-from-docker-compose",
     },
     {
       type: "doc",
       id: "deploying-airbyte/abctl-ec2",
+    },
+    {
+      type: "category",
+      label: "abctl",
+      link: {
+        type: "doc",
+        id: "deploying-airbyte/abctl/index",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "deploying-airbyte/troubleshoot-deploy",
+        },
+      ],
     },
   ],
 };
@@ -269,12 +284,6 @@ const understandingAirbyte = {
   ],
 };
 
-const airbyteEmbedded = {
-  type: "doc",
-  label: "Getting Started",
-  id: "embedded-setup/README"
-}
-
 module.exports = {
   platform: [
     {
@@ -325,7 +334,15 @@ module.exports = {
         connectionConfigurations,
         {
           type: "doc",
+          id: "using-airbyte/core-concepts/direct-load-tables",
+        },
+        {
+          type: "doc",
           id: "using-airbyte/core-concepts/typing-deduping",
+        },
+        {
+          type: "doc",
+          id: "using-airbyte/sync-files-and-records",
         },
         {
           type: "doc",
@@ -373,6 +390,7 @@ module.exports = {
             "enterprise-setup/implementation-guide",
             "enterprise-setup/api-access-config",
             "enterprise-setup/multi-region",
+            "enterprise-setup/audit-logging",
             "enterprise-setup/scaling-airbyte",
             "enterprise-setup/upgrade-service-account",
             "enterprise-setup/upgrading-from-community",
@@ -438,7 +456,20 @@ module.exports = {
           type: "category",
           label: "Airbyte at Scale",
           items: [
-            "operator-guides/collecting-metrics",
+            {
+              type: "category",
+              label: "Collecting Metrics",
+              link: {
+                type: "doc",
+                id: "operator-guides/collecting-metrics",
+              },
+              items: [
+                {
+                  type: "doc",
+                  id: "operator-guides/open-telemetry",
+                },
+              ],
+            },
             "operator-guides/scaling-airbyte",
             "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
           ],
@@ -509,8 +540,6 @@ module.exports = {
             "developer-guides/licenses/examples",
           ],
         },
-        sectionHeader("Airbyte Embedded"),
-        airbyteEmbedded,
         sectionHeader("Community"),
         contributeToAirbyte,
         "community/getting-support",
