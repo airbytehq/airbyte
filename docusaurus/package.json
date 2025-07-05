@@ -139,7 +139,7 @@
     "unist-builder": "^4.0.0",
     "unist-util-select": "^5.1.0",
     "unist-util-visit": "^5.0.0",
-    "webpack-dev-server": "4.9.2",
+    "webpack-dev-server": "5.2.1",
     "yaml-loader": "^0.8.0"
   },
   "resolutions": {
