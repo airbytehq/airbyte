@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.56.6"
+version = "6.57.3.post1.dev16088268564"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-6.56.6-py3-none-any.whl", hash = "sha256:707b38f63fa093cebc7dcecace959bd47eed9d76ec31b5ee46eb8e8cbcd0d077"},
-    {file = "airbyte_cdk-6.56.6.tar.gz", hash = "sha256:c131bc377bb17866b3e185c4161e324099342616ad8c40176b8fa14f6eb46114"},
+    {file = "airbyte_cdk-6.57.3.post1.dev16088268564-py3-none-any.whl", hash = "sha256:5b8e5ab6b7d904b9fae0bfa793cf071712eb31ed52e9dc2a2e3bacc93f29a576"},
+    {file = "airbyte_cdk-6.57.3.post1.dev16088268564.tar.gz", hash = "sha256:3619a1c9c4de4a7befa9fea16d1c55d22fc8905619ca83aec8926b5c44b24484"},
 ]
 
 [package.dependencies]
@@ -20,6 +20,7 @@ boltons = ">=25.0.0,<26.0.0"
 cachetools = "*"
 click = ">=8.1.8,<9.0.0"
 cryptography = ">=44.0.0,<45.0.0"
+dateparser = ">=1.2.2,<2.0.0"
 dpath = ">=2.1.6,<3.0.0"
 dunamai = ">=1.22.0,<2.0.0"
 genson = "1.3.0"
@@ -50,6 +51,7 @@ rich-click = ">=1.8.8,<2.0.0"
 serpyco-rs = ">=1.10.2,<2.0.0"
 setuptools = ">=80.9.0,<81.0.0"
 typing-extensions = "*"
+unidecode = ">=1.3.8,<2.0.0"
 wcmatch = "10.0"
 whenever = ">=0.6.16,<0.7.0"
 xmltodict = ">=0.13,<0.15"
@@ -467,6 +469,29 @@ sdist = ["build (>=1.0.0)"]
 ssh = ["bcrypt (>=3.1.5)"]
 test = ["certifi (>=2024)", "cryptography-vectors (==44.0.3)", "pretend (>=0.7)", "pytest (>=7.4.0)", "pytest-benchmark (>=4.0)", "pytest-cov (>=2.10.1)", "pytest-xdist (>=3.5.0)"]
 test-randomorder = ["pytest-randomly"]
+
+[[package]]
+name = "dateparser"
+version = "1.2.2"
+description = "Date parsing library designed to parse dates from HTML pages"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "dateparser-1.2.2-py3-none-any.whl", hash = "sha256:5a5d7211a09013499867547023a2a0c91d5a27d15dd4dbcea676ea9fe66f2482"},
+    {file = "dateparser-1.2.2.tar.gz", hash = "sha256:986316f17cb8cdc23ea8ce563027c5ef12fc725b6fb1d137c14ca08777c5ecf7"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7.0"
+pytz = ">=2024.2"
+regex = ">=2024.9.11"
+tzlocal = ">=0.2"
+
+[package.extras]
+calendars = ["convertdate (>=2.2.1)", "hijridate"]
+fasttext = ["fasttext (>=0.9.1)", "numpy (>=1.19.3,<2)"]
+langdetect = ["langdetect (>=1.0.0)"]
 
 [[package]]
 name = "dpath"
@@ -2325,6 +2350,36 @@ files = [
 ]
 
 [[package]]
+name = "tzlocal"
+version = "5.3.1"
+description = "tzinfo object for the local timezone"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d"},
+    {file = "tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd"},
+]
+
+[package.dependencies]
+tzdata = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "zest.releaser"]
+
+[[package]]
+name = "unidecode"
+version = "1.4.0"
+description = "ASCII transliterations of Unicode text"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "Unidecode-1.4.0-py3-none-any.whl", hash = "sha256:c3c7606c27503ad8d501270406e345ddb480a7b5f38827eafe4fa82a137f0021"},
+    {file = "Unidecode-1.4.0.tar.gz", hash = "sha256:ce35985008338b676573023acc382d62c264f307c8f7963733405add37ea2b23"},
+]
+
+[[package]]
 name = "url-normalize"
 version = "1.4.3"
 description = "URL normalization for Python"
@@ -2471,4 +2526,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "2b89cc9f68c0bccec6acfc04997404e182f1d2bc02c38005a07e17afc05ff64b"
+content-hash = "efba4cfbf46804d23f216b14acc797639d0a2fd881e14554383d6c2d7b37443a"
