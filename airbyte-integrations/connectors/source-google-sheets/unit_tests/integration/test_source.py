@@ -2,16 +2,13 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from copy import deepcopy
 from unittest.mock import ANY
 
 import pytest
-from requests.status_codes import codes as status_codes
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
-    AirbyteConnectionStatus,
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
@@ -19,10 +16,8 @@ from airbyte_cdk.models import (
     AirbyteStream,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
-    ConfiguredAirbyteCatalog,
     FailureType,
     Level,
-    Status,
     StreamDescriptor,
     SyncMode,
     TraceType,
@@ -30,7 +25,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from .conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_credentials
@@ -117,7 +112,11 @@ class TestSourceCheck(GoogleSheetsBaseTest):
         expected_catalog = AirbyteCatalog(
             streams=[
                 AirbyteStream(
-                    name="a_stream_name", json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                    name="a_stream_name",
+                    json_schema=expected_schema,
+                    supported_sync_modes=[SyncMode.full_refresh],
+                    is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )
@@ -149,7 +148,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
                 "type": "object",
             }
             expected_stream = AirbyteStream(
-                name=expected_stream_name, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                name=expected_stream_name,
+                json_schema=expected_schema,
+                supported_sync_modes=[SyncMode.full_refresh],
+                is_resumable=False,
+                is_file_based=False,
             )
             expected_streams.append(expected_stream)
         expected_catalog = AirbyteCatalog(streams=expected_streams)
@@ -179,7 +182,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
                 "type": "object",
             }
             expected_stream = AirbyteStream(
-                name=expected_stream_name, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                name=expected_stream_name,
+                json_schema=expected_schema,
+                supported_sync_modes=[SyncMode.full_refresh],
+                is_resumable=False,
+                is_file_based=False,
             )
             expected_streams.append(expected_stream)
         expected_catalog = AirbyteCatalog(streams=expected_streams)
@@ -210,7 +217,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
             "type": "object",
         }
         expected_stream = AirbyteStream(
-            name=_STREAM_NAME, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+            name=_STREAM_NAME,
+            json_schema=expected_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            is_resumable=False,
+            is_file_based=False,
         )
 
         expected_catalog = AirbyteCatalog(streams=[expected_stream])
@@ -239,7 +250,11 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_catalog = AirbyteCatalog(
             streams=[
                 AirbyteStream(
-                    name="a_stream_name", json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
+                    name="a_stream_name",
+                    json_schema=expected_schema,
+                    supported_sync_modes=[SyncMode.full_refresh],
+                    is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )
@@ -887,6 +902,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
                     default_cursor_field=None,
                     source_defined_primary_key=None,
                     is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )
@@ -924,6 +940,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
                     default_cursor_field=None,
                     source_defined_primary_key=None,
                     is_resumable=False,
+                    is_file_based=False,
                 )
             ]
         )

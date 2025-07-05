@@ -2,12 +2,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-
+import os
 from typing import Any, Dict, Optional
 
-from source_google_sheets import SourceGoogleSheets
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 
@@ -18,8 +17,11 @@ def catalog_helper(sync_mode: SyncMode, stream_name: str) -> ConfiguredAirbyteCa
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
 
-def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[Dict[str, Any]]) -> SourceGoogleSheets:
-    return SourceGoogleSheets(catalog=catalog, config=config, state=state)
+def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[Dict[str, Any]]) -> YamlDeclarativeSource:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Navigate up to the connector root directory where manifest.yaml is located
+    connector_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    return YamlDeclarativeSource(path_to_yaml=os.path.join(connector_root, "manifest.yaml"), catalog=catalog, config=config, state=state)
 
 
 def check_helper(config: Dict[str, Any], stream_name: str, expecting_exception: bool = False) -> EntrypointOutput:
