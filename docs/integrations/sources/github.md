@@ -225,6 +225,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.33 | 2025-07-05 | [62666](https://github.com/airbytehq/airbyte/pull/62666) | Update dependencies |
 | 1.8.32 | 2025-06-28 | [62166](https://github.com/airbytehq/airbyte/pull/62166) | Update dependencies |
 | 1.8.31 | 2025-06-25 | [62054](https://github.com/airbytehq/airbyte/pull/62054) | Fix problem with `contributor_activity` stream when author is not present/none |
 | 1.8.30 | 2025-06-23 | [61742](https://github.com/airbytehq/airbyte/pull/61742) | Handle conflict when empty repositories, we will ignore |
