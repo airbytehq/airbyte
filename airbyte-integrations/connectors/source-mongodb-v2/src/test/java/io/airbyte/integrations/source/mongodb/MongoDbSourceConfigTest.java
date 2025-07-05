@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ class MongoDbSourceConfigTest {
             DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(
                 AUTH_SOURCE_CONFIGURATION_KEY, authSource,
                 CHECKPOINT_INTERVAL_CONFIGURATION_KEY, checkpointInterval,
-                DATABASE_CONFIGURATION_KEY, database,
+                DATABASE_CONFIGURATION_KEY, List.of(database),
                 PASSWORD_CONFIGURATION_KEY, password,
                 USERNAME_CONFIGURATION_KEY, username,
                 SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced)));
@@ -53,7 +54,7 @@ class MongoDbSourceConfigTest {
     assertNotNull(sourceConfig);
     assertEquals(authSource, sourceConfig.getAuthSource());
     assertEquals(checkpointInterval, sourceConfig.getCheckpointInterval());
-    assertEquals(database, sourceConfig.getDatabaseName());
+    assertEquals(database, sourceConfig.getDatabaseNames().get(0));
     assertEquals(password, sourceConfig.getPassword());
     assertEquals(OptionalInt.of(queueSize), sourceConfig.getQueueSize());
     assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());
@@ -74,7 +75,6 @@ class MongoDbSourceConfigTest {
     assertNotNull(sourceConfig);
     assertEquals(DEFAULT_AUTH_SOURCE, sourceConfig.getAuthSource());
     assertEquals(CHECKPOINT_INTERVAL, sourceConfig.getCheckpointInterval());
-    assertEquals(null, sourceConfig.getDatabaseName());
     assertEquals(null, sourceConfig.getPassword());
     assertEquals(OptionalInt.empty(), sourceConfig.getQueueSize());
     assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());

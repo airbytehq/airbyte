@@ -86,19 +86,12 @@ jobs:
           git_revision: ${{ steps.job-vars.outputs.commit_id }}
           subcommand: "connectors --modified test --only-step=acceptance"
 
-      - name: Append success comment
+      - name: Append completion comment
         uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
-          reactions: hooray
-          body: |
-            > ✅ CAT Tests ran successfully.
-
-      - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@v4
-        if: failure()
+        if: always()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: confused
           body: |
-            > 🔴 CAT Tests failed.
+            > CAT Tests completed.
+            > _**Important: Please check the job output to verify the results.**_
