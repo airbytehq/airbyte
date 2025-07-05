@@ -117,7 +117,7 @@ definitions:
         type: RecordSelector
         record_filter:
           type: CustomRecordFilter
-          class_name: source_bing_ads.components.DuplicatedRecordsFilter
+          class_name: source_declarative_manifest.components.DuplicatedRecordsFilter
         extractor:
           type: DpathExtractor
           field_path: ["Accounts"]
@@ -148,6 +148,14 @@ definitions:
               - parsed_account_id
             value: "{{ record.Id | string }}"
             value_type: string
+      - type: AddFields
+        condition: "{{ record.get('TaxCertificate') is not none and record.get('TaxCertificate').get('TaxCertificates') is not none and 'KeyValuePairOfstringbase64Binary' in record.get('TaxCertificate').get('TaxCertificates') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - TaxCertificate
+              - TaxCertificates
+            value: "{{ record.get('TaxCertificate').get('TaxCertificates').get('KeyValuePairOfstringbase64Binary') if record.get('TaxCertificate') is not none and record.get('TaxCertificate').get('TaxCertificates') is not none and 'KeyValuePairOfstringbase64Binary' in record.get('TaxCertificate').get('TaxCertificates') else none }}"
   campaigns_stream:
     type: DeclarativeStream
     name: campaigns
@@ -233,7 +241,7 @@ definitions:
               - UrlCustomParameters
             value: "{{ {'Parameters': {'CustomParameter': record.UrlCustomParameters.Parameters}} if record.get('UrlCustomParameters') and record.get('UrlCustomParameters').get('Parameters') else record.get('UrlCustomParameters') }}"
       - type: CustomTransformation
-        class_name: source_bing_ads.components.BingAdsCampaignsRecordTransformer
+        class_name: source_declarative_manifest.components.BingAdsCampaignsRecordTransformer
       - type: RemoveFields
         field_pointers: []
   ad_groups_stream:
@@ -2474,11 +2482,11 @@ definitions:
               - "Account Id"
             value: "{{ stream_partition['account_id'] }}"
       - type: CustomTransformation
-        class_name: source_bing_ads.components.BulkDatetimeToRFC3339
+        class_name: source_declarative_manifest.components.BulkDatetimeToRFC3339
     incremental_sync: "#/definitions/incremental_bulk_datetime_cursor"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_bing_ads.components.BulkStreamsStateMigration
+        class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
@@ -2616,7 +2624,7 @@ definitions:
   # substream partition routers
   account_substream_partition_router:
     type: CustomPartitionRouter
-    class_name: source_bing_ads.components.LightSubstreamPartitionRouter
+    class_name: source_declarative_manifest.components.LightSubstreamPartitionRouter
     parent_stream_configs:
       - type: ParentStreamConfig
         # Id is the primary key of the accounts stream but an integer
@@ -5219,7 +5227,7 @@ dynamic_streams:
                 error_message_contains: Please check your request parameters.
       schema_loader:
         type: CustomSchemaLoader
-        class_name: source_bing_ads.components.CustomReportSchemaLoader
+        class_name: source_declarative_manifest.components.CustomReportSchemaLoader
       incremental_sync:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
         end_datetime:
@@ -5227,7 +5235,7 @@ dynamic_streams:
           datetime: "{{ format_datetime(now_utc(), parameters['end_date_time_format']) }}"
       transformations:
         - type: CustomTransformation
-          class_name: source_bing_ads.components.CustomReportTransformation
+          class_name: source_declarative_manifest.components.CustomReportTransformation
     components_resolver:
       type: ConfigComponentsResolver
       stream_config:
@@ -17471,3 +17479,235 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 2
   max_concurrency: 10
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Bing Ads Spec
+    type: object
+    required:
+      - developer_token
+      - client_id
+      - refresh_token
+    additionalProperties: true
+    properties:
+      auth_method:
+        type: string
+        const: oauth2.0
+      tenant_id:
+        type: string
+        title: Tenant ID
+        description: The Tenant ID of your Microsoft Advertising developer application.
+          Set this to "common" unless you know you need a different value.
+        airbyte_secret: true
+        default: common
+        order: 0
+      client_id:
+        type: string
+        title: Client ID
+        description: The Client ID of your Microsoft Advertising developer application.
+        airbyte_secret: true
+        order: 1
+      client_secret:
+        type: string
+        title: Client Secret
+        description: The Client Secret of your Microsoft Advertising developer application.
+        default: ''
+        airbyte_secret: true
+        order: 2
+      refresh_token:
+        type: string
+        title: Refresh Token
+        description: Refresh Token to renew the expired Access Token.
+        airbyte_secret: true
+        order: 3
+      developer_token:
+        type: string
+        title: Developer Token
+        description: Developer token associated with user. See more info <a href="https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token">
+          in the docs</a>.
+        airbyte_secret: true
+        order: 4
+      account_names:
+        title: Account Names Predicates
+        description: Predicates that will be used to sync data by specific accounts.
+        type: array
+        order: 5
+        items:
+          description: Account Names Predicates Config.
+          type: object
+          properties:
+            operator:
+              title: Operator
+              description: An Operator that will be used to filter accounts. The Contains
+                predicate has features for matching words, matching inflectional forms
+                of words, searching using wildcard characters, and searching using proximity.
+                The Equals is used to return all rows where account name is equal(=)
+                to the string that you provided
+              type: string
+              enum:
+                - Contains
+                - Equals
+            name:
+              title: Account Name
+              description: Account Name is a string value for comparing with the specified
+                predicate.
+              type: string
+          required:
+            - operator
+            - name
+      reports_start_date:
+        type: string
+        title: Reports replication start date
+        format: date
+        description: The start date from which to begin replicating report data. Any
+          data generated before this date will not be replicated in reports. This is
+          a UTC date in YYYY-MM-DD format. If not set, data from previous and current
+          calendar year will be replicated.
+        order: 6
+      lookback_window:
+        title: Lookback window
+        description: Also known as attribution or conversion window. How far into the
+          past to look for records (in days). If your conversion window has an hours/minutes
+          granularity, round it up to the number of days exceeding. Used only for performance
+          report streams in incremental mode without specified Reports Start Date.
+        type: integer
+        default: 0
+        minimum: 0
+        maximum: 90
+        order: 7
+      custom_reports:
+        title: Custom Reports
+        description: You can add your Custom Bing Ads report by creating one.
+        order: 8
+        type: array
+        items:
+          title: Custom Report Config
+          type: object
+          properties:
+            name:
+              title: Report Name
+              description: The name of the custom report, this name would be used as
+                stream name
+              type: string
+              examples:
+                - Account Performance
+                - AdDynamicTextPerformanceReport
+                - custom report
+            reporting_object:
+              title: Reporting Data Object
+              description: The name of the the object derives from the ReportRequest
+                object. You can find it in Bing Ads Api docs - Reporting API - Reporting
+                Data Objects.
+              type: string
+              enum:
+                - AccountPerformanceReportRequest
+                - AdDynamicTextPerformanceReportRequest
+                - AdExtensionByAdReportRequest
+                - AdExtensionByKeywordReportRequest
+                - AdExtensionDetailReportRequest
+                - AdGroupPerformanceReportRequest
+                - AdPerformanceReportRequest
+                - AgeGenderAudienceReportRequest
+                - AudiencePerformanceReportRequest
+                - CallDetailReportRequest
+                - CampaignPerformanceReportRequest
+                - ConversionPerformanceReportRequest
+                - DestinationUrlPerformanceReportRequest
+                - DSAAutoTargetPerformanceReportRequest
+                - DSACategoryPerformanceReportRequest
+                - DSASearchQueryPerformanceReportRequest
+                - GeographicPerformanceReportRequest
+                - GoalsAndFunnelsReportRequest
+                - HotelDimensionPerformanceReportRequest
+                - HotelGroupPerformanceReportRequest
+                - KeywordPerformanceReportRequest
+                - NegativeKeywordConflictReportRequest
+                - ProductDimensionPerformanceReportRequest
+                - ProductMatchCountReportRequest
+                - ProductNegativeKeywordConflictReportRequest
+                - ProductPartitionPerformanceReportRequest
+                - ProductPartitionUnitPerformanceReportRequest
+                - ProductSearchQueryPerformanceReportRequest
+                - ProfessionalDemographicsAudienceReportRequest
+                - PublisherUsagePerformanceReportRequest
+                - SearchCampaignChangeHistoryReportRequest
+                - SearchQueryPerformanceReportRequest
+                - ShareOfVoiceReportRequest
+                - UserLocationPerformanceReportRequest
+            report_columns:
+              title: Columns
+              description: A list of available report object columns. You can find it
+                in description of reporting object that you want to add to custom report.
+              type: array
+              items:
+                description: Name of report column.
+                type: string
+              minItems: 1
+            report_aggregation:
+              title: Aggregation
+              description: A list of available aggregations.
+              type: string
+              items:
+                title: ValidEnums
+                description: An enumeration of aggregations.
+                enum:
+                  - Hourly
+                  - Daily
+                  - Weekly
+                  - Monthly
+                  - DayOfWeek
+                  - HourOfDay
+                  - WeeklyStartingMonday
+                  - Summary
+              default:
+                - Hourly
+          required:
+            - name
+            - reporting_object
+            - report_columns
+            - report_aggregation
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - auth_method
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - client_secret
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          tenant_id:
+            type: string
+            path_in_connector_config:
+              - tenant_id

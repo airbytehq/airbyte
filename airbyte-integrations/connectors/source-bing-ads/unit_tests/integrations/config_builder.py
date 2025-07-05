@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 
-TENNANT_ID = "common"
+TENANT_ID = "common"
 DEVELOPER_TOKEN = "test-token"
 REFRESH_TOKEN = "test-refresh-token"
 CLIENT_ID = "test-client-id"
@@ -22,7 +22,7 @@ class ConfigBuilder:
         self._client_secret: str = CLIENT_SECRET
         self._refresh_token: str = REFRESH_TOKEN
         self._developer_token: str = DEVELOPER_TOKEN
-        self._tenant_id: str = TENNANT_ID
+        self._tenant_id: str = TENANT_ID
         self._report_start_date: str = None
         self._custom_reports: List[str] = None
         self._lookback_window: int = LOOKBACK_WINDOW
