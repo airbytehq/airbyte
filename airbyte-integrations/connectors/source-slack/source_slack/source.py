@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 import pendulum
 
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk import TState, YamlDeclarativeSource
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -14,8 +15,8 @@ from source_slack.streams import Threads
 
 
 class SourceSlack(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     def _threads_authenticator(self, config: Mapping[str, Any]):
         # Added to maintain backward compatibility with previous versions

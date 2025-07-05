@@ -1,17 +1,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 from unittest.mock import MagicMock
 
-import pendulum
 import pytest
 from source_slack import SourceSlack
 from source_slack.components.channel_members_extractor import ChannelMembersExtractor
 from source_slack.components.join_channels import ChannelsRetriever, JoinChannelsStream
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_protocol.models import SyncMode
 
 
 def get_stream_by_name(stream_name, config):
@@ -24,7 +24,8 @@ def get_stream_by_name(stream_name, config):
 
 def test_channel_members_extractor(token_config):
     response_mock = MagicMock()
-    response_mock.json.return_value = {"members": ["U023BECGF", "U061F7AUR", "W012A3CDE"]}
+    members_data = {"members": ["U023BECGF", "U061F7AUR", "W012A3CDE"]}
+    response_mock.content = json.dumps(members_data).encode("utf-8")
     records = ChannelMembersExtractor(config=token_config, parameters={}, field_path=["members"]).extract_records(response=response_mock)
     assert records == [{"member_id": "U023BECGF"}, {"member_id": "U061F7AUR"}, {"member_id": "W012A3CDE"}]
 
