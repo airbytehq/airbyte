@@ -9,7 +9,7 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.12@sha256:6947070c0d1f8bb025d48ca952421b7c83795ca98f0395fe08ad29b7f3df8a33
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.45.10@sha256:6947070c0d1f8bb025d48ca952421b7c83795ca98f0395fe08ad29b7f3df8a33
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
