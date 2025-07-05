@@ -10,7 +10,7 @@ For information about how to use this connector within Airbyte, see [the User Do
 From the Airbyte repository root, run:
 
 ```
-./gradlew :airbyte-integrations:connectors:destination-clickhouse:build
+./gradlew :airbyte-integrations:connectors:destination-clickhouse-v2:build
 ```
 
 #### Create credentials
@@ -27,7 +27,7 @@ Note that the `secrets` directory is git-ignored by default, so there is no dang
 Build the connector image via Gradle:
 
 ```
-./gradlew :airbyte-integrations:connectors:destination-clickhouse:buildConnectorImage
+./gradlew :airbyte-integrations:connectors:destination-clickhouse-v2:buildConnectorImage
 ```
 
 Once built, the docker image name and tag on your host will be `airbyte/destination-clickhouse:dev`.
@@ -39,9 +39,9 @@ Then run any of the connector commands as follows:
 
 ```
 docker run --rm airbyte/destination-clickhouse:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-clickhouse:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-clickhouse:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-clickhouse:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-clickhouse-v2:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-clickhouse-v2:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-clickhouse-v2:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing
@@ -63,13 +63,13 @@ All commands should be run from airbyte project root.
 To run unit tests:
 
 ```
-./gradlew :airbyte-integrations:connectors:destination-clickhouse:unitTest
+./gradlew :airbyte-integrations:connectors:destination-clickhouse-v2:unitTest
 ```
 
 To run acceptance and custom integration tests:
 
 ```
-./gradlew :airbyte-integrations:connectors:destination-clickhouse:integrationTest
+./gradlew :airbyte-integrations:connectors:destination-clickhouse-v2:integrationTest
 ```
 
 ## Dependency Management
