@@ -25,10 +25,16 @@ data class DestinationRecordRaw(
     val checkpointId: CheckpointId? = null,
     val airbyteRawId: UUID,
 ) {
-    val schema = stream.schema
-
     // Currently file transfer is only supported for non-socket implementations
     val fileReference: FileReference? = rawData.fileReference
+
+    val schema = stream.schema
+
+    val schemaFields: SequencedMap<String, FieldType> =
+        when (schema) {
+            is ObjectType -> schema.properties
+            else -> linkedMapOf()
+        }
 
     /**
      * DEPRECATED: Now that we support multiple formats for speed, this is no longer an
@@ -59,13 +65,6 @@ data class DestinationRecordRaw(
         extractedAtAsTimestampWithTimezone: Boolean = false
     ): EnrichedDestinationRecordAirbyteValue {
         val rawJson = asJsonRecord()
-
-        // Get the fields from the schema
-        val schemaFields: SequencedMap<String, FieldType> =
-            when (schema) {
-                is ObjectType -> schema.properties
-                else -> linkedMapOf()
-            }
 
         val declaredFields = LinkedHashMap<String, EnrichedAirbyteValue>()
         val undeclaredFields = LinkedHashMap<String, JsonNode>()
