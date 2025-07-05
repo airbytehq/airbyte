@@ -63,21 +63,33 @@ class BigqueryDirectLoadSqlGenerator(
                 .stream()
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
-        val forceCreateTable = if (replace) "OR REPLACE" else ""
         val finalTableId = tableName.toPrettyString(QUOTE)
-        return Sql.of(
-            """
-            CREATE $forceCreateTable TABLE `$projectId`.$finalTableId (
-              _airbyte_raw_id STRING NOT NULL,
-              _airbyte_extracted_at TIMESTAMP NOT NULL,
-              _airbyte_meta JSON NOT NULL,
-              _airbyte_generation_id INTEGER,
-              $columnDeclarations
+        // bigquery has a CREATE OR REPLACE TABLE statement, but we can't use it
+        // because you can't change a partitioning/clustering scheme in-place.
+        // Bigquery requires you to drop+recreate the table in this case.
+        // For simplicity, we just always do a drop+recreate, rather than trying
+        // to detect when we can do a `create or replace` vs drop+create.
+        val dropTableStatement =
+            if (replace) {
+                listOf("""DROP TABLE IF EXISTS `$projectId`.$finalTableId""")
+            } else {
+                emptyList()
+            }
+        val createTableStatement =
+            listOf(
+                """
+                CREATE TABLE `$projectId`.$finalTableId (
+                  _airbyte_raw_id STRING NOT NULL,
+                  _airbyte_extracted_at TIMESTAMP NOT NULL,
+                  _airbyte_meta JSON NOT NULL,
+                  _airbyte_generation_id INTEGER,
+                  $columnDeclarations
+                )
+                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+                CLUSTER BY $clusterConfig;
+                """.trimIndent()
             )
-            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY $clusterConfig;
-            """.trimIndent()
-        )
+        return Sql.separately(dropTableStatement + createTableStatement)
     }
 
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {

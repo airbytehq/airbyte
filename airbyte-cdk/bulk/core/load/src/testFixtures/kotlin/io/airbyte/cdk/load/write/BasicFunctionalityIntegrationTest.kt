@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -1044,6 +1045,114 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     /**
+     * Some destinations make complicated changes based on the sync mode, e.g. Bigquery changing the
+     * table's clustering config. Verify that we can do those changes across truncates.
+     */
+    @Test
+    open fun testTruncateRefreshChangeSyncMode() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
+        fun makeStream(
+            generationId: Long,
+            minimumGenerationId: Long,
+            syncId: Long,
+            importType: ImportType
+        ) =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                importType,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId,
+                minimumGenerationId,
+                syncId,
+                namespaceMapper = namespaceMapperForMedium()
+            )
+        val stream =
+            makeStream(
+                generationId = 12,
+                minimumGenerationId = 12,
+                syncId = 42,
+                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+            )
+        // start a truncate refresh in DEDUPE mode, but emit INCOMPLETE.
+        runSyncUntilStateAckAndExpectFailure(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    stream = stream,
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            ),
+            StreamCheckpoint(
+                unmappedName = stream.unmappedName,
+                unmappedNamespace = stream.unmappedNamespace,
+                blob = """{}""",
+                sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
+            ),
+            syncEndBehavior = UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS,
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOfNotNull(
+                if (commitDataIncrementally) {
+                    OutputRecord(
+                        extractedAt = 1234,
+                        generationId = 12,
+                        data = mapOf("id" to 42, "name" to "first_value"),
+                        airbyteMeta = OutputRecord.Meta(syncId = 42),
+                    )
+                } else {
+                    null
+                }
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+
+        // start (and complete) a new truncate in APPEND mode.
+        // This should now delete the first sync's data, and insert the new record.
+        val finalStream =
+            makeStream(
+                generationId = 13,
+                minimumGenerationId = 13,
+                syncId = 43,
+                Append,
+            )
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    stream = stream,
+                    """{"id": 43, "name": "second_value"}""",
+                    emittedAtMs = 2345,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 2345,
+                    generationId = 13,
+                    data = mapOf("id" to 43, "name" to "second_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
      * Test behavior in a failed truncate refresh. Sync 1 just populates two records with ID 1 and
      * 2. The test then runs two more syncs:
      * 1. Sync 2 emits ID 1, and then fails the sync (i.e. no COMPLETE stream status). We expect the
@@ -1673,6 +1782,79 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 2345,
                     generationId = 0,
                     data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /** Run a sync in dedup mode with composite PK, then drop one of the PKs entirely. */
+    @Test
+    open fun testBizarrePkSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(isStreamSchemaRetroactive)
+        val stream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                Dedupe(primaryKey = listOf(listOf("id1"), listOf("id2")), cursor = emptyList()),
+                ObjectType(linkedMapOf("id1" to intType, "id2" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    stream,
+                    """{"id1": 42, "id2": 420}""",
+                    emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            )
+        )
+        val finalStream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                Dedupe(primaryKey = listOf(listOf("id1")), cursor = emptyList()),
+                ObjectType(linkedMapOf("id1" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 43,
+                namespaceMapper = namespaceMapperForMedium()
+            )
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    finalStream,
+                    """{"id1": 43}""",
+                    emittedAtMs = 2345,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = mapOf("id1" to 42),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 2345,
+                    generationId = 0,
+                    data = mapOf("id1" to 43),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 )
             ),
