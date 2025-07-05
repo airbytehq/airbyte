@@ -39,6 +39,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 
+from .proxy import configure_custom_http_proxy
 from .utils import LOCAL_STORAGE_NAME, backoff_handler
 
 
@@ -259,7 +260,21 @@ class Client:
     CSV_CHUNK_SIZE = 10_000
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
-    def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
+    def __init__(
+        self,
+        dataset_name: str,
+        url: str,
+        provider: dict,
+        format: str | None = None,
+        reader_options: dict | None = None,
+        http_proxy: dict | None = None,
+    ):
+        if http_proxy:
+            configure_custom_http_proxy(
+                http_proxy_config=http_proxy,
+                logger=logger,
+            )
+
         self._dataset_name = dataset_name
         self._url = url
         self._provider = provider

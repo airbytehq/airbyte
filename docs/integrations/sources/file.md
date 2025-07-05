@@ -298,6 +298,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.6.0 | 2025-07-02 | [61521](https://github.com/airbytehq/airbyte/pull/61521) | Add support for custom Https proxy URL and custom Proxy CA certificate |
 | 0.5.35 | 2025-06-28 | [62343](https://github.com/airbytehq/airbyte/pull/62343) | Update dependencies |
 | 0.5.34 | 2025-06-22 | [61283](https://github.com/airbytehq/airbyte/pull/61283) | Update dependencies |
 | 0.5.33 | 2025-05-27 | [60869](https://github.com/airbytehq/airbyte/pull/60869) | Update dependencies |

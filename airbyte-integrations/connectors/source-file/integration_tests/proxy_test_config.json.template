@@ -1,0 +1,12 @@
+{
+  "dataset_name": "proxy_investigation_test",
+  "format": "csv",
+  "url": "https://httpbin.org/base64/a2V5LHZhbHVlCmZvbyxiYXIKYW5zd2VyLDQyCnF1ZXN0aW9uLHdobyBrbm93cw==",
+  "provider": {
+    "storage": "HTTPS"
+  },
+  "http_proxy": {
+    "proxy_url": "http://localhost:8080",
+    "proxy_ca_certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"
+  }
+}
