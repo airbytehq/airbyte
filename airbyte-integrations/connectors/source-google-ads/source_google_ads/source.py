@@ -19,7 +19,6 @@ from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
     AccountPerformanceReport,
-    AdGroup,
     AdGroupAd,
     AdGroupAdLabel,
     AdGroupAdLegacy,
@@ -241,7 +240,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            AdGroup(**incremental_config),
             AdGroupAd(**incremental_config),
             AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),

@@ -5,12 +5,14 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -155,3 +157,44 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
             return {}
         min_state = min(stream_state_values, key=lambda state: state[self._cursor_field])
         return {"use_global_cursor": True, "state": min_state}
+
+
+@dataclass
+class GoogleAdsHttpRequester(HttpRequester):
+    """
+    Custom HTTP requester for Google Ads API that uses the accessible accounts endpoint
+    to retrieve the list of accessible customer IDs.
+    """
+
+    schema_loader: InlineSchemaLoader = None
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        schema = self.schema_loader.get_json_schema()[self.name]["properties"]
+        manager = stream_slice.extra_fields.get("manager", [False])[0]
+        fields = [
+            field
+            for field in schema.keys()
+            # exclude metrics.* if this is a manager account
+            if not (manager and field.startswith("metrics."))
+        ]
+        return {
+            "query": f"SELECT {', '.join(fields)} FROM {self.name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
+        }
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {
+            "developer-token": self.config["credentials"]["developer_token"],
+            "login-customer-id": stream_slice["parent_slice"][0]["customer_id"],
+        }
