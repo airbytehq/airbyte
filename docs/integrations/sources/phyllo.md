@@ -28,6 +28,7 @@ API Reference: https://docs.getphyllo.com/docs/api-reference/introduction/introd
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2025-07-05 | [62582](https://github.com/airbytehq/airbyte/pull/62582) | Update dependencies |
 | 0.0.10 | 2025-06-28 | [62296](https://github.com/airbytehq/airbyte/pull/62296) | Update dependencies |
 | 0.0.9 | 2025-06-21 | [61906](https://github.com/airbytehq/airbyte/pull/61906) | Update dependencies |
 | 0.0.8 | 2025-06-14 | [61054](https://github.com/airbytehq/airbyte/pull/61054) | Update dependencies |
