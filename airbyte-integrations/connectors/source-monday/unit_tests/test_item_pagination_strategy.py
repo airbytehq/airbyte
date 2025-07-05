@@ -5,7 +5,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_monday.item_pagination_strategy import ItemCursorPaginationStrategy, ItemPaginationStrategy
 
 
 @pytest.mark.parametrize(
@@ -31,8 +30,8 @@ from source_monday.item_pagination_strategy import ItemCursorPaginationStrategy,
         ),
     ],
 )
-def test_item_pagination_strategy(response_json, last_records, expected):
-    strategy = ItemPaginationStrategy(
+def test_item_pagination_strategy(components_module, response_json, last_records, expected):
+    strategy = components_module.ItemPaginationStrategy(
         config={},
         page_size=1,
         parameters={"items_per_page": 1},
@@ -83,8 +82,8 @@ def test_item_pagination_strategy(response_json, last_records, expected):
         ),
     ],
 )
-def test_item_cursor_pagination_strategy(response_json, last_records, expected):
-    strategy = ItemCursorPaginationStrategy(
+def test_item_cursor_pagination_strategy(components_module, response_json, last_records, expected):
+    strategy = components_module.ItemCursorPaginationStrategy(
         config={},
         page_size=1,
         parameters={"items_per_page": 1},
