@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.util.JsonFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -196,15 +197,16 @@ public class ProtobufFormat extends AbstractFormat {
           String name = protobuf_data.getDescriptorForType().getName();
           JsonNode output;
           try {
+            // Convert protobuf to JSON using JsonFormat
+            String jsonString = JsonFormat.printer().print(protobuf_data);
+            output = mapper.readTree(jsonString);
+
             if (StringUtils.isNoneEmpty(namespace) && StringUtils.isNoneEmpty(name)) {
-              String newString = String.format("{\"protobuf_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
-              JsonNode newNode = mapper.readTree(newString);
-              output = mapper.readTree(protobuf_data.toString());
-              ((ObjectNode) output).set("_namespace_", newNode);
-            } else {
-              output = mapper.readTree(protobuf_data.toString());
+              String namespaceString = String.format("{\"protobuf_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
+              JsonNode namespaceNode = mapper.readTree(namespaceString);
+              ((ObjectNode) output).set("_namespace_", namespaceNode);
             }
-          } catch (JsonProcessingException e) {
+          } catch (Exception e) {
             LOGGER.error("Exception whilst reading protobuf data from stream", e);
             throw new RuntimeException(e);
           }

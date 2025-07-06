@@ -29,6 +29,8 @@ dependencies {
     implementation 'org.apache.kafka:connect-json:3.2.1'
     implementation 'io.confluent:kafka-avro-serializer:7.2.1'
     implementation 'io.confluent:kafka-protobuf-serializer:7.5.1'
+    implementation 'com.google.protobuf:protobuf-java:3.25.1'
+    implementation 'com.google.protobuf:protobuf-java-util:3.25.1'
 
     testImplementation 'org.testcontainers:kafka:1.19.4'
 }
