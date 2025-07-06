@@ -126,6 +126,8 @@ The connector is restricted by Slack [rate limits](https://api.slack.com/docs/ra
 
 We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration setings.
 
+If you expect to sync a large amount of data (like historical data) you can try to increase the number of workers, default is 1. This could cause to being rate limited by Slack, so you should monitor the logs for rate limit errors.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
