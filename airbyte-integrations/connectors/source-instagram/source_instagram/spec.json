@@ -30,6 +30,15 @@
         "description": "The Client Secret for your Oauth application",
         "airbyte_secret": true,
         "type": "string"
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 2,
+        "maximum": 40,
+        "default": 15,
+        "examples": [1, 2, 3],
+        "description": "The number of worker threads to use for the sync."
       }
     },
     "required": ["access_token"]

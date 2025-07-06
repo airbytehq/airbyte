@@ -83,12 +83,12 @@ def api_fixture(some_config, requests_mock, fb_account_response):
 @fixture(name="user_insight_data")
 def user_insight_data_fixture():
     return {
-        "name": "impressions",
+        "name": "reach",
         "period": "day",
         "values": [{"value": 4, "end_time": "2020-05-04T07:00:00+0000"}, {"value": 66, "end_time": "2020-05-05T07:00:00+0000"}],
-        "title": "Impressions",
-        "description": "Total number of times this profile has been seen",
-        "id": "17841400008460056/insights/impressions/day",
+        "title": "Reach",
+        "description": "Total number of times this profile has been uniquely viewed",
+        "id": "17841400008460056/insights/reach/day",
     }
 
 
@@ -131,15 +131,3 @@ def user_insights():
 @fixture(name="user_stories_data")
 def user_stories_data_fixture():
     return {"id": "test_id"}
-
-
-@fixture(name="user_media_insights_data")
-def user_media_insights_data_fixture():
-    return {
-        "name": "impressions",
-        "period": "lifetime",
-        "values": [{"value": 264}],
-        "title": "Impressions",
-        "description": "Total number of times the media object has been seen",
-        "id": "17855590849148465/insights/impressions/lifetime",
-    }

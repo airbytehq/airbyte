@@ -5,22 +5,22 @@
 package io.airbyte.integrations.destination.dev_null
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.random.Random
 
-/** Wraps the configured operation in logic that acks all state so far every N records. */
+/** Wraps the configured operation in logic that acks all state so far every N records */
 abstract class DevNullDirectLoader(
     private val config: DevNullConfiguration,
 ) : DirectLoader {
     private var recordCount: Long = 0L
 
-    abstract fun acceptInner(record: DestinationRecordAirbyteValue)
+    abstract fun acceptInner(record: DestinationRecordRaw)
 
-    override fun accept(record: DestinationRecordAirbyteValue): DirectLoader.DirectLoadResult {
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         acceptInner(record)
         return if (++recordCount % config.ackRatePerRecord == 0L) {
             DirectLoader.Complete
@@ -29,12 +29,12 @@ abstract class DevNullDirectLoader(
         }
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         /* do nothing */
     }
 
     override fun close() {
-        /* do nothing */
+        /* do even more nothing */
     }
 }
 
@@ -87,7 +87,7 @@ class LoggingDirectLoader(
     private var logCount: Long = 0L
     private val prng: Random = loggingConfig.seed?.let { Random(it) } ?: Random.Default
 
-    override fun acceptInner(record: DestinationRecordAirbyteValue) {
+    override fun acceptInner(record: DestinationRecordRaw) {
         if (recordCount++ % loggingConfig.logEvery == 0L) {
             if (loggingConfig.sampleRate == 1.0 || prng.nextDouble() < loggingConfig.sampleRate) {
                 if (++logCount < loggingConfig.maxEntryCount) {
@@ -101,7 +101,7 @@ class LoggingDirectLoader(
 }
 
 class SilentDirectLoader(config: DevNullConfiguration) : DevNullDirectLoader(config) {
-    override fun acceptInner(record: DestinationRecordAirbyteValue) {
+    override fun acceptInner(record: DestinationRecordRaw) {
         /* Do nothing */
     }
 }
@@ -109,7 +109,7 @@ class SilentDirectLoader(config: DevNullConfiguration) : DevNullDirectLoader(con
 class ThrottledDirectLoader(config: DevNullConfiguration, private val millisPerRecord: Long) :
     DevNullDirectLoader(config) {
 
-    override fun acceptInner(record: DestinationRecordAirbyteValue) {
+    override fun acceptInner(record: DestinationRecordRaw) {
         Thread.sleep(millisPerRecord)
     }
 }
@@ -123,7 +123,7 @@ class FailingDirectLoader(
 
     private var messageCount: Long = 0L
 
-    override fun acceptInner(record: DestinationRecordAirbyteValue) {
+    override fun acceptInner(record: DestinationRecordRaw) {
         if (messageCount++ > numMessages) {
             val message =
                 "Failing Destination(stream=$stream, numMessages=$numMessages: failing at $record)"

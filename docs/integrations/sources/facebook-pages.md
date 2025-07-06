@@ -1,9 +1,5 @@
 # Facebook Pages
 
-:::danger
-The Facebook Pages API utilized by this connector has been deprecated. You will not be able to make a successful connection. If you would like to make a community contribution or track API upgrade status, visit: https://github.com/airbytehq/airbyte/issues/25515.
-:::
-
 This page contains the setup guide and reference information for the Facebook Pages source connector.
 
 ## Prerequisites
@@ -29,7 +25,7 @@ The Facebook Pages souce connector is currently only compatible with v15 of the 
 
 After all the steps, it should look something like this
 
-![](../../.gitbook/assets/facebook-pages-1.png)
+![](/.gitbook/assets/facebook-pages-1.png)
 
 5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
 6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.
@@ -88,9 +84,12 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.2 | 2025-05-10 | [60043](https://github.com/airbytehq/airbyte/pull/60043) | Update dependencies |
+| 1.1.1 | 2025-05-03 | [53787](https://github.com/airbytehq/airbyte/pull/53787) | Update dependencies |
+| 1.1.0 | 2025-04-30 | [59126](https://github.com/airbytehq/airbyte/pull/59126) | Re-enable in cloud and update versions |
 | 1.0.32 | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793) | Update dependencies |
 | 1.0.31  | 2025-01-27 | [52122](https://github.com/airbytehq/airbyte/pull/52122/files) | Upgrade Facebook API to v21.0                                                                                                                                          |
-| 1.0.30  | 2025-01-25 | [52373](https://github.com/airbytehq/airbyte/pull/52373) | Update dependencies |
+| 1.0.30  | 2025-01-25 | [52373](https://github.com/airbytehq/airbyte/pull/52373) | Update dependencies                                                                                                                                                    |
 | 1.0.29  | 2025-01-18 | [51637](https://github.com/airbytehq/airbyte/pull/51637) | Update dependencies                                                                                                                                                    |
 | 1.0.28  | 2025-01-11 | [51056](https://github.com/airbytehq/airbyte/pull/51056) | Update dependencies                                                                                                                                                    |
 | 1.0.27  | 2025-01-04 | [50923](https://github.com/airbytehq/airbyte/pull/50923) | Update dependencies                                                                                                                                                    |

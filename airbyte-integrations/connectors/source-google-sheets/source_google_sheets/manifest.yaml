@@ -105,9 +105,16 @@ dynamic_streams:
         - field_path:
             - name
           type: ComponentMappingDefinition
-          value: "{{components_values['properties']['title']}}"
+          # Expression is structured as: <value_if_true> if <condition> else <value_if_false>
+          # This sets the stream name to the custom name from stream_name_overrides if a match is found,
+          # otherwise uses the original sheet/tab name.
+          value: >-
+            {%- set overrides = config.get('stream_name_overrides', [])
+                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
+                | list -%}
+            {{ overrides[0]['custom_stream_name'] if overrides else components_values['properties']['title'] }}
           value_type: string
-          description: name for dynamic stream.
+          description: name for dynamic stream (with optional override).
         - field_path:
             - schema_loader
             - retriever
@@ -224,11 +231,11 @@ definitions:
         path: >-
           {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id | urlencode}}!1:1&alt=json
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+          response_filters:
+            $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
   response_filters:
     expected_one_sheet:
       type: HttpResponseFilter
@@ -320,9 +327,11 @@ definitions:
     single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+      - $ref: "#/definitions/response_filters/rate_limit"
     check_operation_single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/fail_duplicate_headers"
+      - $ref: "#/definitions/response_filters/rate_limit"
     response_error_filters:
       - $ref: "#/definitions/response_filters/server_error"
       - $ref: "#/definitions/response_filters/forbidden"

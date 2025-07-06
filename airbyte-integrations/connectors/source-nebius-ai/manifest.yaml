@@ -1,0 +1,525 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://studio.nebius.com/
+  API Reference: https://studio.nebius.com/docs/api-reference
+
+check:
+  type: CheckStream
+  stream_names:
+    - models
+
+definitions:
+  streams:
+    models:
+      type: DeclarativeStream
+      name: models
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/models
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/models"
+    files:
+      type: DeclarativeStream
+      name: files
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+    file_contents:
+      type: DeclarativeStream
+      name: file_contents
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/files/{{ stream_partition['file_id'] }}/content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: file_id
+              stream:
+                $ref: "#/definitions/streams/files"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/file_contents"
+    batches:
+      type: DeclarativeStream
+      name: batches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/batches
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/batches"
+    batch_results:
+      type: DeclarativeStream
+      name: batch_results
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/batches
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/batch_results"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.studio.nebius.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/models"
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/file_contents"
+  - $ref: "#/definitions/streams/batches"
+  - $ref: "#/definitions/streams/batch_results"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: API key or access token
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      limit:
+        type: string
+        description: Limit for each response objects
+        title: Limit
+        default: "20"
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    models: true
+    files: true
+    file_contents: true
+    batches: true
+    batch_results: true
+  testedStreams:
+    models:
+      streamHash: 4e9d463dc3e5e5afa27eccd490c5e9a9e930d933
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    files:
+      streamHash: a383441c0e527258c8385f955b5c4d3d9ed36216
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    file_contents:
+      streamHash: 0052f3a81ceca6765232c1a0251d7817cf144c15
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    batches:
+      streamHash: dc76957ab20fafa7d95bdbf08ae046311bc8f3a4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    batch_results:
+      streamHash: 6dc7142b510aba29260d1ed416ceec253c4d169c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://studio.nebius.com/docs/api-reference
+
+schemas:
+  models:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type: number
+      id:
+        type: string
+      object:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bytes:
+        type:
+          - number
+          - "null"
+      created_at:
+        type: number
+      filename:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      object:
+        type:
+          - string
+          - "null"
+      purpose:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  file_contents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      glossary:
+        type:
+          - object
+          - "null"
+        properties:
+          GlossDiv:
+            type:
+              - object
+              - "null"
+            properties:
+              GlossList:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  GlossEntry:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      Abbrev:
+                        type:
+                          - string
+                          - "null"
+                      Acronym:
+                        type:
+                          - string
+                          - "null"
+                      GlossDef:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          GlossSeeAlso:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - string
+                                - "null"
+                          para:
+                            type:
+                              - string
+                              - "null"
+                      GlossSee:
+                        type:
+                          - string
+                          - "null"
+                      GlossTerm:
+                        type:
+                          - string
+                          - "null"
+                      ID:
+                        type:
+                          - string
+                          - "null"
+                      SortAs:
+                        type:
+                          - string
+                          - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+          title:
+            type:
+              - string
+              - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  batches:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      completion_window:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      endpoint:
+        type:
+          - string
+          - "null"
+      error_file_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      input_file_id:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      request_counts:
+        type:
+          - object
+          - "null"
+        properties:
+          completed:
+            type:
+              - number
+              - "null"
+          failed:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  batch_results:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      completion_window:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      endpoint:
+        type:
+          - string
+          - "null"
+      error_file_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      input_file_id:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      request_counts:
+        type:
+          - object
+          - "null"
+        properties:
+          completed:
+            type:
+              - number
+              - "null"
+          failed:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at

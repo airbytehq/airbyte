@@ -162,7 +162,7 @@ class AirbyteTypeToIcebergSchemaTest {
 
     @Test
     fun `convert handles UnionType with single option`() {
-        val unionType = UnionType(setOf(IntegerType))
+        val unionType = UnionType(setOf(IntegerType), isLegacyUnion = false)
         val result = converter.convert(unionType, stringifyObjects = false) as Types.ListType
 
         assertEquals(Types.LongType.get(), result.elementType())
@@ -171,7 +171,7 @@ class AirbyteTypeToIcebergSchemaTest {
 
     @Test
     fun `convert handles UnionType with multiple options`() {
-        val unionType = UnionType(setOf(StringType, IntegerType))
+        val unionType = UnionType(setOf(StringType, IntegerType), isLegacyUnion = false)
         val result = converter.convert(unionType, stringifyObjects = false) as Types.ListType
 
         assertEquals(Types.StringType.get(), result.elementType())

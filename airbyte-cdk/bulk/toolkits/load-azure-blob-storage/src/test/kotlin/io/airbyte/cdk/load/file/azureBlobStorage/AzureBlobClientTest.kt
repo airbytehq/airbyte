@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.azureBlobStorage
 
+import com.azure.core.http.HttpPipeline
 import com.azure.core.http.HttpResponse
 import com.azure.core.http.rest.PagedIterable
 import com.azure.core.util.BinaryData
@@ -12,13 +13,14 @@ import com.azure.core.util.polling.SyncPoller
 import com.azure.storage.blob.BlobClient
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
+import com.azure.storage.blob.BlobServiceVersion
 import com.azure.storage.blob.models.BlobCopyInfo
 import com.azure.storage.blob.models.BlobItem
 import com.azure.storage.blob.models.BlobProperties
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.specialized.BlobInputStream
 import com.azure.storage.blob.specialized.BlockBlobClient
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -40,7 +42,7 @@ class AzureBlobClientTest {
 
     private lateinit var serviceClient: BlobServiceClient
     private lateinit var containerClient: BlobContainerClient
-    private lateinit var blobConfig: AzureBlobStorageConfiguration
+    private lateinit var blobConfig: AzureBlobStorageClientConfiguration
     private lateinit var azureBlobClient: AzureBlobClient
 
     @BeforeEach
@@ -48,10 +50,11 @@ class AzureBlobClientTest {
         serviceClient = mockk()
         containerClient = mockk()
         blobConfig =
-            AzureBlobStorageConfiguration(
+            AzureBlobStorageClientConfiguration(
                 accountName = "testAccount",
                 containerName = "testContainer",
-                sharedAccessSignature = "null",
+                sharedAccessSignature = "",
+                accountKey = "test",
             )
         every { serviceClient.getBlobContainerClient(blobConfig.containerName) } returns
             containerClient
@@ -298,6 +301,21 @@ class AzureBlobClientTest {
 
         azureBlobClient.delete(blob)
         verify(exactly = 1) { blobClient.delete() }
+    }
+
+    @Test
+    fun `delete by keys - deletes blobs successfully`() = runBlocking {
+        val keys = setOf("deleteBlob1", "deleteBlob2")
+        val blobClient = mockk<BlobClient>(relaxed = true)
+
+        every { serviceClient.accountUrl } returns "https://account.blob"
+        every { serviceClient.httpPipeline } returns mockk<HttpPipeline>(relaxed = true)
+        every { serviceClient.serviceVersion } returns mockk<BlobServiceVersion>(relaxed = true)
+        every { containerClient.getBlobClient(any()) } returns blobClient
+        every { blobClient.delete() } just runs
+
+        azureBlobClient.delete(keys)
+        verify(exactly = 2) { blobClient.blobUrl }
     }
 
     @Test

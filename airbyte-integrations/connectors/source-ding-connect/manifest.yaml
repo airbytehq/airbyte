@@ -1,0 +1,883 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.dingconnect.com/
+  API Reference: https://www.dingconnect.com/Api/Description
+
+check:
+  type: CheckStream
+  stream_names:
+    - countries
+
+definitions:
+  streams:
+    countries:
+      type: DeclarativeStream
+      name: countries
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetCountries
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/countries"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetCurrencies
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    regions:
+      type: DeclarativeStream
+      name: regions
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetRegions
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/regions"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetProducts
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    providers:
+      type: DeclarativeStream
+      name: providers
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetProviders
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/providers"
+    error_code_descriptions:
+      type: DeclarativeStream
+      name: error_code_descriptions
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetErrorCodeDescriptions
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/error_code_descriptions"
+    promotions:
+      type: DeclarativeStream
+      name: promotions
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetPromotions
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: EndUtc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/promotions"
+    product_descriptions:
+      type: DeclarativeStream
+      name: product_descriptions
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/V1/GetProductDescriptions
+          http_method: GET
+          request_headers:
+            X-Correlation-Id: "{{ config['x-correlation-id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: Skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_descriptions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.dingconnect.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/regions"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/providers"
+  - $ref: "#/definitions/streams/error_code_descriptions"
+  - $ref: "#/definitions/streams/promotions"
+  - $ref: "#/definitions/streams/product_descriptions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API key for authenticating with the DingConnect API. You can
+          generate this key by navigating to the Developer tab in the Account
+          Settings section of your DingConnect account.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      X-Correlation-Id:
+        type: string
+        description: >-
+          Optional header to correlate HTTP requests between a client and
+          server.
+        name: X-Correlation-Id
+        order: 1
+        title: X-Correlation-Id
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    countries: true
+    currencies: true
+    regions: true
+    products: true
+    providers: true
+    error_code_descriptions: true
+    promotions: true
+    product_descriptions: true
+  testedStreams:
+    countries:
+      streamHash: 5cd4df69646d23f0534087c1d8401fff63113b86
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      streamHash: 89fc6ee713ff8f09aa5bc6ca81b2311235b30da0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    regions:
+      streamHash: cc3d80470d6c1e88b4bf0db586af8ce7198a720c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      streamHash: 323308e987d12cef65c6ebbff8d426d3c5aeb5c3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    providers:
+      streamHash: e59c352de1c2278ab9962e357b79f81fdce3e2ae
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    error_code_descriptions:
+      streamHash: 67aad5444d4dd35f85f4ec91d937c38a02e1c85a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    promotions:
+      streamHash: e2f1dc833f635cd348431149c0035bba2b701f92
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_descriptions:
+      hasRecords: true
+      streamHash: 75df8a7d40c08a9699446bf3acb76fd2485e725d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://www.dingconnect.com/Api#operation/GetAccountLookup
+
+schemas:
+  countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CountryIso:
+        type:
+          - string
+          - "null"
+      CountryName:
+        type:
+          - string
+          - "null"
+      InternationalDialingInformation:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            MaximumLength:
+              type:
+                - number
+                - "null"
+            MinimumLength:
+              type:
+                - number
+                - "null"
+            Prefix:
+              type:
+                - string
+                - "null"
+      RegionCodes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CurrencyIso:
+        type:
+          - string
+          - "null"
+      CurrencyName:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  regions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CountryIso:
+        type:
+          - string
+          - "null"
+      RegionCode:
+        type:
+          - string
+          - "null"
+      RegionName:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Benefits:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      CommissionRate:
+        type:
+          - number
+          - "null"
+      DefaultDisplayText:
+        type:
+          - string
+          - "null"
+      LocalizationKey:
+        type:
+          - string
+          - "null"
+      LookupBillsRequired:
+        type:
+          - boolean
+          - "null"
+      Maximum:
+        type:
+          - object
+          - "null"
+        properties:
+          CustomerFee:
+            type:
+              - number
+              - "null"
+          DistributorFee:
+            type:
+              - number
+              - "null"
+          ReceiveCurrencyIso:
+            type:
+              - string
+              - "null"
+          ReceiveValue:
+            type:
+              - number
+              - "null"
+          ReceiveValueExcludingTax:
+            type:
+              - number
+              - "null"
+          SendCurrencyIso:
+            type:
+              - string
+              - "null"
+          SendValue:
+            type:
+              - number
+              - "null"
+          TaxCalculation:
+            type:
+              - string
+              - "null"
+          TaxName:
+            type:
+              - string
+              - "null"
+          TaxRate:
+            type:
+              - number
+              - "null"
+      Minimum:
+        type:
+          - object
+          - "null"
+        properties:
+          CustomerFee:
+            type:
+              - number
+              - "null"
+          DistributorFee:
+            type:
+              - number
+              - "null"
+          ReceiveCurrencyIso:
+            type:
+              - string
+              - "null"
+          ReceiveValue:
+            type:
+              - number
+              - "null"
+          ReceiveValueExcludingTax:
+            type:
+              - number
+              - "null"
+          SendCurrencyIso:
+            type:
+              - string
+              - "null"
+          SendValue:
+            type:
+              - number
+              - "null"
+          TaxCalculation:
+            type:
+              - string
+              - "null"
+          TaxName:
+            type:
+              - string
+              - "null"
+          TaxRate:
+            type:
+              - number
+              - "null"
+      PaymentTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ProcessingMode:
+        type:
+          - string
+          - "null"
+      ProviderCode:
+        type:
+          - string
+          - "null"
+      RedemptionMechanism:
+        type:
+          - string
+          - "null"
+      RegionCode:
+        type:
+          - string
+          - "null"
+      SettingDefinitions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Description:
+              type:
+                - string
+                - "null"
+            IsMandatory:
+              type:
+                - boolean
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+      SkuCode:
+        type:
+          - string
+          - "null"
+      UatNumber:
+        type:
+          - string
+          - "null"
+      ValidityPeriodIso:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  providers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CountryIso:
+        type:
+          - string
+          - "null"
+      CustomerCareNumber:
+        type:
+          - string
+          - "null"
+      LogoUrl:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PaymentTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ProviderCode:
+        type:
+          - string
+          - "null"
+      RegionCodes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ValidationRegex:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  error_code_descriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Code:
+        type:
+          - string
+          - "null"
+      Message:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  promotions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CurrencyIso:
+        type:
+          - string
+          - "null"
+      EndUtc:
+        type: string
+      LocalizationKey:
+        type:
+          - string
+          - "null"
+      MinimumSendAmount:
+        type:
+          - number
+          - "null"
+      ProviderCode:
+        type:
+          - string
+          - "null"
+      StartUtc:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - EndUtc
+  product_descriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      DescriptionMarkdown:
+        type:
+          - string
+          - "null"
+      DisplayText:
+        type:
+          - string
+          - "null"
+      LanguageCode:
+        type:
+          - string
+          - "null"
+      LocalizationKey:
+        type:
+          - string
+          - "null"
+      ReadMoreMarkdown:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid

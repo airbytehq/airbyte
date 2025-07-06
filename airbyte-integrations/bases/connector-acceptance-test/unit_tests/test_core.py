@@ -286,13 +286,32 @@ def test_supported_sync_modes_in_stream(mocker, discovered_catalog, expectation)
             },
             pytest.raises(AssertionError),
         ),
+        # This is a special test case where in the shape of the response emitted by the API contains a field inconveniently
+        # named `additionalProperties`. In this case we should not throw an error because this will actually contain a value
+        # and not just True/False. An example of this is the contact_lists stream in source-hubspot.
         (
             {
                 "test_stream_4": AirbyteStream.parse_obj(
-                    {"name": "test_stream_4", "json_schema": {"additionalProperties": "foo"}, "supported_sync_modes": ["full_refresh"]}
+                    {
+                        "name": "test_stream_4",
+                        "json_schema": {
+                            "additionalProperties": True,
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                },
+                                "additionalProperties": {
+                                    "type": ["null", "object"],
+                                    "additionalProperties": True,
+                                    "properties": {"additionalPropertyOne": {"type": ["null", "string"]}},
+                                },
+                            },
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                    }
                 )
             },
-            pytest.raises(AssertionError),
+            does_not_raise(),
         ),
         (
             {

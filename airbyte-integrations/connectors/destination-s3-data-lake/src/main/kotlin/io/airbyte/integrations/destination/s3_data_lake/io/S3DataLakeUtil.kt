@@ -50,6 +50,10 @@ class S3DataLakeUtil(
     private val icebergUtil: IcebergUtil,
     private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
 ) {
+    /** Filters out any entry from the map that has a null value */
+    fun <K, V : Any> mapOfNotNull(vararg pairs: Pair<K, V?>): Map<K, V> =
+        pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
+
     fun createNamespaceWithGlueHandling(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog
@@ -73,7 +77,7 @@ class S3DataLakeUtil(
     fun toCatalogProperties(config: S3DataLakeConfiguration): Map<String, String> {
         val icebergCatalogConfig = config.icebergCatalogConfiguration
         val catalogConfig = icebergCatalogConfig.catalogConfiguration
-        val region = config.s3BucketConfiguration.s3BucketRegion.region
+        val region = config.s3BucketConfiguration.s3BucketRegion
 
         // Build base S3 properties
         val s3Properties = buildS3Properties(config, icebergCatalogConfig)
@@ -81,7 +85,9 @@ class S3DataLakeUtil(
         return when (catalogConfig) {
             is NessieCatalogConfiguration -> {
                 // Set AWS region as system property
-                System.setProperty(AWS_REGION, region)
+                if (region != null) {
+                    System.setProperty(AWS_REGION, region)
+                }
                 buildNessieProperties(config, catalogConfig, s3Properties)
             }
             is GlueCatalogConfiguration ->
@@ -102,7 +108,7 @@ class S3DataLakeUtil(
         config: S3DataLakeConfiguration,
         catalogConfig: RestCatalogConfiguration,
         s3Properties: Map<String, String>,
-        region: String
+        region: String?
     ): Map<String, String> {
         val awsAccessKeyId =
             requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
@@ -113,13 +119,14 @@ class S3DataLakeUtil(
                 "AWS Secret Access Key is required for Rest configuration"
             }
 
-        val restProperties = buildMap {
-            put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_REST)
-            put(AwsClientProperties.CLIENT_REGION, region)
-            put(URI, catalogConfig.serverUri)
-            put(S3FileIOProperties.ACCESS_KEY_ID, awsAccessKeyId)
-            put(S3FileIOProperties.SECRET_ACCESS_KEY, awsSecretAccessKey)
-        }
+        val restProperties =
+            mapOfNotNull(
+                CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_REST,
+                AwsClientProperties.CLIENT_REGION to region,
+                URI to catalogConfig.serverUri,
+                S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
+                S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+            )
 
         return restProperties + s3Properties
     }
@@ -154,16 +161,17 @@ class S3DataLakeUtil(
                 "AWS Secret Access Key is required for Nessie configuration"
             }
 
-        val nessieProperties = buildMap {
-            put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_NESSIE)
-            put(URI, catalogConfig.serverUri)
-            put(
-                NessieConfigConstants.CONF_NESSIE_REF,
-                config.icebergCatalogConfiguration.mainBranchName
+        val nessieProperties =
+            mapOfNotNull(
+                CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
+                URI to catalogConfig.serverUri,
+                NessieConfigConstants.CONF_NESSIE_REF to
+                    config.icebergCatalogConfiguration.mainBranchName,
+                S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
+                S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
             )
-            put(S3FileIOProperties.ACCESS_KEY_ID, awsAccessKeyId)
-            put(S3FileIOProperties.SECRET_ACCESS_KEY, awsSecretAccessKey)
 
+        val authTokenProperties = buildMap {
             // Add optional Nessie authentication if provided
             catalogConfig.accessToken?.let { token ->
                 put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "BEARER")
@@ -171,17 +179,17 @@ class S3DataLakeUtil(
             }
         }
 
-        return nessieProperties + s3Properties
+        return nessieProperties + s3Properties + authTokenProperties
     }
 
     private fun buildGlueProperties(
         config: S3DataLakeConfiguration,
         catalogConfig: GlueCatalogConfiguration,
         icebergCatalogConfig: IcebergCatalogConfiguration,
-        region: String,
+        region: String?,
     ): Map<String, String> {
         val baseGlueProperties =
-            mapOf(
+            mapOfNotNull(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
                 CatalogProperties.WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
                 AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId,
@@ -205,7 +213,7 @@ class S3DataLakeUtil(
         roleArn: String,
         config: S3DataLakeConfiguration
     ): Map<String, String> {
-        val region = config.s3BucketConfiguration.s3BucketRegion.region
+        val region = config.s3BucketConfiguration.s3BucketRegion
         val (accessKeyId, secretAccessKey, externalId) =
             if (assumeRoleCredentials != null) {
                 Triple(
@@ -219,7 +227,7 @@ class S3DataLakeUtil(
                 )
             }
 
-        return mapOf(
+        return mapOfNotNull(
             // Note: no explicit credentials, whether on AwsProperties.REST_ACCESS_KEY_ID, or on
             // S3FileIOProperties.ACCESS_KEY_ID.
             // If you set S3FileIOProperties.ACCESS_KEY_ID, it causes the iceberg SDK to use those
@@ -253,9 +261,8 @@ class S3DataLakeUtil(
         val clientCredentialsProviderPrefix = "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}."
 
         val properties =
-            mutableMapOf(
-                AwsClientProperties.CLIENT_REGION to
-                    config.s3BucketConfiguration.s3BucketRegion.region,
+            mapOfNotNull(
+                AwsClientProperties.CLIENT_REGION to config.s3BucketConfiguration.s3BucketRegion,
                 AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                     GlueCredentialsProvider::class.java.name,
                 "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
@@ -266,14 +273,18 @@ class S3DataLakeUtil(
         // For example, this should allow us to use AWS instance profiles.
         val awsAccessKeyId = config.awsAccessKeyConfiguration.accessKeyId
         val awsSecretAccessKey = config.awsAccessKeyConfiguration.secretAccessKey
-        if (awsAccessKeyId != null && awsSecretAccessKey != null) {
-            properties[S3FileIOProperties.ACCESS_KEY_ID] = awsAccessKeyId
-            properties[S3FileIOProperties.SECRET_ACCESS_KEY] = awsSecretAccessKey
-            properties["${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}"] = awsAccessKeyId
-            properties["${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}"] =
-                awsSecretAccessKey
-        }
+        val credentialProperties =
+            if (awsAccessKeyId != null && awsSecretAccessKey != null) {
+                mapOf(
+                    S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
+                    S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+                    "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
+                    "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey,
+                )
+            } else {
+                emptyMap()
+            }
 
-        return properties
+        return properties + credentialProperties
     }
 }

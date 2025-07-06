@@ -390,6 +390,86 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [["ad_id"], ["stat_time_day"], ["platform"]]
+    },
+    {
+      "stream": {
+        "name": "spark_ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["spark_ads_post_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["spark_ads_post_id"]]
+    },
+    {
+      "stream": {
+        "name": "pixels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["pixel_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["pixel_id"]]
+    },
+    {
+      "stream": {
+        "name": "pixel_instant_page_events",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "pixel_events_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "ads_reports_by_country_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["stat_time_day"],
+        "source_defined_primary_key": [
+          ["ad_id"],
+          ["stat_time_day"],
+          ["country_code"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["stat_time_day"],
+      "primary_key": [["ad_id"], ["stat_time_day"], ["country_code"]]
+    },
+    {
+      "stream": {
+        "name": "ad_groups_reports_by_country_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["stat_time_day"],
+        "source_defined_primary_key": [
+          ["adgroup_id"],
+          ["stat_time_day"],
+          ["country_code"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["stat_time_day"],
+      "primary_key": [["adgroup_id"], ["stat_time_day"], ["country_code"]]
     }
   ]
 }

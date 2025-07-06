@@ -1,0 +1,31 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
+# Manifest-Only connector Dockerfile for Airbyte
+# Updated to include manifest-only testing in CI workflow
+
+# Manifest-Only connector images are built on top of source-declarative-manifest image
+ARG BASE_IMAGE=docker.io/airbyte/source-declarative-manifest:latest
+
+FROM ${BASE_IMAGE}
+ARG CONNECTOR_SNAKE_NAME
+ARG CONNECTOR_NAME
+ARG CONNECTOR_VERSION
+
+WORKDIR /airbyte/integration_code
+
+# Create source_declarative_manifest directory first
+RUN mkdir -p ./source_declarative_manifest
+
+# Copy all files to integration_code
+COPY . ./
+
+# Copy manifest.yaml to expected location (required for manifest-only connectors)
+RUN cp manifest.yaml ./source_declarative_manifest/manifest.yaml
+
+# Copy components.py if it exists (optional)
+RUN if [ -f components.py ]; then cp components.py ./source_declarative_manifest/components.py; fi
+
+# Set entrypoint explicitly as required for manifest-only connectors
+ENV AIRBYTE_ENTRYPOINT="python ./main.py"
+ENTRYPOINT ["python", "./main.py"]

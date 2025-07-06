@@ -1,0 +1,437 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.zapsign.co/
+  API Reference: https://docs.zapsign.com.br/
+
+check:
+  type: CheckStream
+  stream_names:
+    - templates
+
+definitions:
+  streams:
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/templates/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_update_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    documents:
+      type: DeclarativeStream
+      name: documents
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/docs/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_update_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/documents"
+    signer:
+      type: DeclarativeStream
+      name: signer
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/signers/{{ stream_partition['sign'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['signer_ids'] }}"
+          cursor_field: sign
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signer"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.zapsign.com.br
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/documents"
+  - $ref: "#/definitions/streams/signer"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_date
+    properties:
+      api_token:
+        type: string
+        description: >-
+          Your static API token for authentication. You can find it in your
+          ZapSign account under the 'Settings' or 'API' section. For more
+          details, refer to the [Getting
+          Started](https://docs.zapsign.com.br/english/getting-started#how-do-i-get-my-api-token)
+          guide.
+        name: api_token
+        title: API Token
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      signer_ids:
+        type: array
+        description: The signer ids for signer stream
+        title: Signer IDs
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    templates: true
+    documents: true
+    signer: true
+  testedStreams:
+    templates:
+      streamHash: 593cf0f567a8bc2c67cc012ae8e2e5ebcdb7e270
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    documents:
+      streamHash: 9c2c1d3c775a3a2f7b8c2e6c6b5f9d235124268f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signer:
+      streamHash: b3736e3aa00b1d484983ffab847fc88744c08c39
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.zapsign.com.br/english/templates/list-templates
+
+schemas:
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      extra_templates:
+        type:
+          - array
+          - "null"
+      folder_path:
+        type:
+          - string
+          - "null"
+      lang:
+        type:
+          - string
+          - "null"
+      last_update_at:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      redirect_link:
+        type:
+          - string
+          - "null"
+      template_file:
+        type:
+          - string
+          - "null"
+      template_type:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+    required:
+      - token
+      - last_update_at
+  documents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      created_through:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      folder_path:
+        type:
+          - string
+          - "null"
+      last_update_at:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      open_id:
+        type:
+          - number
+          - "null"
+      original_file:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+    required:
+      - token
+      - last_update_at
+  signer:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      auth_mode:
+        type:
+          - string
+          - "null"
+      blank_email:
+        type:
+          - boolean
+          - "null"
+      blank_phone:
+        type:
+          - boolean
+          - "null"
+      cnpj:
+        type:
+          - string
+          - "null"
+      cpf:
+        type:
+          - string
+          - "null"
+      document_photo_url:
+        type:
+          - string
+          - "null"
+      document_verse_photo_url:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      hide_email:
+        type:
+          - boolean
+          - "null"
+      hide_phone:
+        type:
+          - boolean
+          - "null"
+      liveness_photo_url:
+        type:
+          - string
+          - "null"
+      lock_email:
+        type:
+          - boolean
+          - "null"
+      lock_name:
+        type:
+          - boolean
+          - "null"
+      lock_phone:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone_country:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      qualification:
+        type:
+          - string
+          - "null"
+      redirect_link:
+        type:
+          - string
+          - "null"
+      require_document_photo:
+        type:
+          - boolean
+          - "null"
+      require_selfie_photo:
+        type:
+          - boolean
+          - "null"
+      selfie_photo_url:
+        type:
+          - string
+          - "null"
+      selfie_photo_url2:
+        type:
+          - string
+          - "null"
+      selfie_validation_type:
+        type:
+          - string
+          - "null"
+      send_via:
+        type:
+          - string
+          - "null"
+      sign_url:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      times_viewed:
+        type:
+          - number
+          - "null"
+      token:
+        type: string
+    required:
+      - token

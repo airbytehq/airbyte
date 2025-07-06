@@ -25,6 +25,39 @@ import java.time.format.DateTimeFormatter
  * common-sense conversions among numeric types, as well as upcasting any value to StringValue.
  */
 object AirbyteValueCoercer {
+    fun coerce(value: AirbyteValue, type: AirbyteType): AirbyteValue? {
+        // Don't modify nulls.
+        if (value == NullValue) {
+            return NullValue
+        }
+        return try {
+            when (type) {
+                BooleanType -> coerceBoolean(value)
+                DateType -> coerceDate(value)
+                IntegerType -> coerceInt(value)
+                NumberType -> coerceNumber(value)
+                StringType -> coerceString(value)
+                TimeTypeWithTimezone -> coerceTimeTz(value)
+                TimeTypeWithoutTimezone -> coerceTimeNtz(value)
+                TimestampTypeWithTimezone -> coerceTimestampTz(value)
+                TimestampTypeWithoutTimezone -> coerceTimestampNtz(value)
+                is ArrayType,
+                ArrayTypeWithoutSchema -> coerceArray(value)
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema -> coerceObject(value)
+
+                // Don't touch unions, just pass it through
+                is UnionType -> value
+                // Similarly, if we don't know what type it's supposed to be,
+                // leave it unchanged.
+                is UnknownType -> value
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun coerceBoolean(value: AirbyteValue): BooleanValue? = requireType<BooleanValue>(value)
 
     fun coerceInt(value: AirbyteValue): IntegerValue? =
@@ -62,8 +95,7 @@ object AirbyteValueCoercer {
                 is TimeWithTimezoneValue,
                 is TimeWithoutTimezoneValue,
                 is TimestampWithTimezoneValue,
-                is TimestampWithoutTimezoneValue,
-                is UnknownValue ->
+                is TimestampWithoutTimezoneValue ->
                     throw IllegalArgumentException(
                         "Invalid value type ${value.javaClass.canonicalName}"
                     )
@@ -72,44 +104,62 @@ object AirbyteValueCoercer {
     }
 
     fun coerceDate(value: AirbyteValue): DateValue? =
-        requireType<StringValue, DateValue>(value) {
-            DateValue(LocalDate.parse(it.value, DATE_TIME_FORMATTER))
+        when (value) {
+            is DateValue -> value
+            else ->
+                requireType<StringValue, DateValue>(value) {
+                    DateValue(LocalDate.parse(it.value, DATE_TIME_FORMATTER))
+                }
         }
 
     fun coerceTimeTz(value: AirbyteValue): TimeWithTimezoneValue? =
-        requireType<StringValue, TimeWithTimezoneValue>(value) {
-            val ot =
-                try {
-                    OffsetTime.parse(it.value, TIME_FORMATTER)
-                } catch (e: Exception) {
-                    LocalTime.parse(it.value, TIME_FORMATTER).atOffset(ZoneOffset.UTC)
+        when (value) {
+            is TimeWithTimezoneValue -> value
+            else ->
+                requireType<StringValue, TimeWithTimezoneValue>(value) {
+                    val ot =
+                        try {
+                            OffsetTime.parse(it.value, TIME_FORMATTER)
+                        } catch (e: Exception) {
+                            LocalTime.parse(it.value, TIME_FORMATTER).atOffset(ZoneOffset.UTC)
+                        }
+                    TimeWithTimezoneValue(ot)
                 }
-            TimeWithTimezoneValue(ot)
         }
 
     fun coerceTimeNtz(value: AirbyteValue): TimeWithoutTimezoneValue? =
-        requireType<StringValue, TimeWithoutTimezoneValue>(value) {
-            TimeWithoutTimezoneValue(LocalTime.parse(it.value, TIME_FORMATTER))
+        when (value) {
+            is TimeWithoutTimezoneValue -> value
+            else ->
+                requireType<StringValue, TimeWithoutTimezoneValue>(value) {
+                    TimeWithoutTimezoneValue(LocalTime.parse(it.value, TIME_FORMATTER))
+                }
         }
 
     fun coerceTimestampTz(value: AirbyteValue): TimestampWithTimezoneValue? =
-        requireType<StringValue, TimestampWithTimezoneValue>(value) {
-            TimestampWithTimezoneValue(offsetDateTime(it))
+        when (value) {
+            is TimestampWithTimezoneValue -> value
+            else ->
+                requireType<StringValue, TimestampWithTimezoneValue>(value) {
+                    TimestampWithTimezoneValue(offsetDateTime(it))
+                }
         }
 
     fun coerceTimestampNtz(value: AirbyteValue): TimestampWithoutTimezoneValue? =
-        requireType<StringValue, TimestampWithoutTimezoneValue>(value) {
-            TimestampWithoutTimezoneValue(offsetDateTime(it).toLocalDateTime())
+        when (value) {
+            is TimestampWithoutTimezoneValue -> value
+            else ->
+                requireType<StringValue, TimestampWithoutTimezoneValue>(value) {
+                    TimestampWithoutTimezoneValue(offsetDateTime(it).toLocalDateTime())
+                }
         }
 
     private fun offsetDateTime(it: StringValue): OffsetDateTime {
         val odt =
             try {
-                ZonedDateTime.parse(it.value, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
-                    .toOffsetDateTime()
+                ZonedDateTime.parse(it.value, DATE_TIME_FORMATTER).toOffsetDateTime()
             } catch (e: Exception) {
-                LocalDateTime.parse(it.value, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
-                    .atOffset(ZoneOffset.UTC)
+                LocalDateTime.parse(it.value, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
             }
         return odt
     }

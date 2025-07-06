@@ -80,26 +80,17 @@ class CdcPartitionReaderMongoTest :
             fn(it.getCollection(stream.name))
         }
 
-    override fun createDebeziumOperations(): DebeziumOperations<BsonTimestamp> =
-        MongoTestDebeziumOperations()
+    override fun createCdcPartitionsCreatorDbzOps():
+        CdcPartitionsCreatorDebeziumOperations<BsonTimestamp> = TestCdcPartitionsCreatorDbzOps()
 
-    inner class MongoTestDebeziumOperations : AbstractDebeziumOperationsForTest<BsonTimestamp>() {
+    override fun createCdcPartitionReaderDbzOps():
+        CdcPartitionReaderDebeziumOperations<BsonTimestamp> = TestCdcPartitionReaderDbzOps()
 
+    inner class TestCdcPartitionsCreatorDbzOps :
+        AbstractCdcPartitionsCreatorDbzOps<BsonTimestamp>() {
         override fun position(offset: DebeziumOffset): BsonTimestamp {
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
             return BsonTimestamp(offsetValue["sec"].asInt(), offsetValue["ord"].asInt())
-        }
-
-        override fun position(recordValue: DebeziumRecordValue): BsonTimestamp? {
-            val resumeToken: String =
-                recordValue.source["resume_token"]?.takeIf { it.isTextual }?.asText() ?: return null
-            return ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeToken))
-        }
-
-        override fun position(sourceRecord: SourceRecord): BsonTimestamp? {
-            val offset: Map<String, *> = sourceRecord.sourceOffset()
-            val resumeTokenBase64: String = offset["resume_token"] as? String ?: return null
-            return ResumeTokens.getTimestamp(ResumeTokens.fromBase64(resumeTokenBase64))
         }
 
         override fun generateColdStartOffset(): DebeziumOffset {
@@ -120,7 +111,7 @@ class CdcPartitionReaderMongoTest :
             return DebeziumOffset(mapOf(key to value))
         }
 
-        override fun generateColdStartProperties(): Map<String, String> =
+        override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
             DebeziumPropertiesBuilder()
                 .withDefault()
                 .withConnector(MongoDbConnector::class.java)
@@ -141,9 +132,9 @@ class CdcPartitionReaderMongoTest :
                 .buildMap()
 
         override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
-            generateColdStartProperties()
+            generateColdStartProperties(streams)
 
-        fun currentResumeToken(): BsonDocument =
+        private fun currentResumeToken(): BsonDocument =
             container.withMongoDatabase { mongoDatabase: MongoDatabase ->
                 val pipeline = listOf<Bson>(Aggregates.match(Filters.`in`("ns.coll", stream.name)))
                 mongoDatabase.watch(pipeline, BsonDocument::class.java).cursor().use {
@@ -151,6 +142,20 @@ class CdcPartitionReaderMongoTest :
                     it.resumeToken!!
                 }
             }
+    }
+
+    inner class TestCdcPartitionReaderDbzOps : AbstractCdcPartitionReaderDbzOps<BsonTimestamp>() {
+        override fun position(recordValue: DebeziumRecordValue): BsonTimestamp? {
+            val resumeToken: String =
+                recordValue.source["resume_token"]?.takeIf { it.isTextual }?.asText() ?: return null
+            return ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeToken))
+        }
+
+        override fun position(sourceRecord: SourceRecord): BsonTimestamp? {
+            val offset: Map<String, *> = sourceRecord.sourceOffset()
+            val resumeTokenBase64: String = offset["resume_token"] as? String ?: return null
+            return ResumeTokens.getTimestamp(ResumeTokens.fromBase64(resumeTokenBase64))
+        }
 
         override fun deserializeRecord(
             key: DebeziumRecordKey,

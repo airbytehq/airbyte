@@ -13,7 +13,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /** Releasable reservation of memory. */
-class Reserved<T>(
+data class Reserved<T>(
     private val parentManager: ReservationManager? = null,
     val bytesReserved: Long = 0,
     val value: T,
@@ -73,6 +73,17 @@ class ReservationManager(val totalCapacityBytes: Long) {
             }
             usedBytes.addAndGet(bytes)
         }
+    }
+
+    suspend fun <T> reserveOrThrow(bytes: Long, reservedFor: T): Reserved<T> {
+        reserveLock.withLock {
+            check(usedBytes.get() + bytes <= totalCapacityBytes) {
+                "Not enough memory to reserve $bytes bytes"
+            }
+            usedBytes.addAndGet(bytes)
+        }
+
+        return Reserved(this, bytes, reservedFor)
     }
 
     suspend fun release(bytes: Long) {

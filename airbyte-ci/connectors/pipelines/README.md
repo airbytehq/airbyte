@@ -85,7 +85,7 @@ If you are developing on pipelines, we recommend installing airbyte-ci with poet
 ```bash
 cd airbyte-ci/connectors/pipelines/
 poetry install
-poetry shell
+poetry env activate
 cd ../../
 ```
 
@@ -821,9 +821,12 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                          | Description                                                                                                                  |
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 5.3.0   | [#61598](https://github.com/airbytehq/airbyte/pull/61598)  | Add trackable commit text and github-native auto-merge in up-to-date, auto-merge, rc-promote, and rc-rollback |
+| 5.2.5   | [#60325](https://github.com/airbytehq/airbyte/pull/60325)  | Update slack team to oc-extensibility-critical-systems |
+| 5.2.4   | [#59724](https://github.com/airbytehq/airbyte/pull/59724)  | Fix components mounting and test dependencies for manifest-only unit tests |
 | 5.1.0   | [#53238](https://github.com/airbytehq/airbyte/pull/53238)  | Add ability to opt out of version increment checks via metadata flag                                                         |
 | 5.0.1   | [#52664](https://github.com/airbytehq/airbyte/pull/52664)  | Update Python version requirement from 3.10 to 3.11.                                                                         |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | 4.49.4  | [#52104](https://github.com/airbytehq/airbyte/pull/52104)  | Stream Gradle task output to the step logger                                                                 |
 | 5.0.0  | [#52647](https://github.com/airbytehq/airbyte/pull/52647)  | Removed migration and formatting commands.                                                                 |
 | 4.49.3  | [#52102](https://github.com/airbytehq/airbyte/pull/52102)  | Load docker image to local docker host for java connectors                                                                 |

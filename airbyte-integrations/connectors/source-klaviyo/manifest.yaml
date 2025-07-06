@@ -259,6 +259,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P7D
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -509,6 +511,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P60D
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -697,6 +701,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P30D
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -2100,6 +2106,147 @@ schemas:
                     type: string
                   id:
                     type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          attributions:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+                    timestamp:
+                      type: integer
+                    relationships:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        event:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        attributed-event:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        campaign:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        campaign-message:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        flow:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        flow-message:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                        flow-message-variation:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            data:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                type:
+                                  type: string
+                                id:
+                                  type: string
+                    links:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        self:
+                          type:
+                            - "null"
+                            - string
+                  additionalProperties: true
               links:
                 type:
                   - "null"

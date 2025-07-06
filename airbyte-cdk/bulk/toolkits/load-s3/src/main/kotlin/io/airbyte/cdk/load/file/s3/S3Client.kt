@@ -10,10 +10,13 @@ import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.runtime.auth.credentials.StsAssumeRoleCredentialsProvider
 import aws.sdk.kotlin.services.s3.model.CopyObjectRequest
 import aws.sdk.kotlin.services.s3.model.CreateMultipartUploadRequest
+import aws.sdk.kotlin.services.s3.model.Delete
 import aws.sdk.kotlin.services.s3.model.DeleteObjectRequest
+import aws.sdk.kotlin.services.s3.model.DeleteObjectsRequest
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.sdk.kotlin.services.s3.model.HeadObjectRequest
-import aws.sdk.kotlin.services.s3.model.ListObjectsRequest
+import aws.sdk.kotlin.services.s3.model.ListObjectsV2Request
+import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
@@ -24,10 +27,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.airbyte.cdk.load.command.s3.S3ClientConfigurationProvider
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -38,37 +41,42 @@ import jakarta.inject.Singleton
 import java.io.InputStream
 import kotlinx.coroutines.flow.flow
 
+private const val DELETE_BATCH_SIZE = 1000
+
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
     val keyWithBucketName
         get() = "${storageConfig.s3BucketName}/$key"
 }
 
+interface S3Client : ObjectStorageClient<S3Object>
+
+/**
+ * The primary and recommended S3 client implementation -- kotlin-friendly with suspend functions.
+ * However, there's a bug that can cause hard failures under high-concurrency. (Partial workaround
+ * in place https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817).
+ */
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
-class S3Client(
+class S3KotlinClient(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
     val bucketConfig: S3BucketConfiguration,
-    private val uploadConfig: ObjectStorageUploadConfiguration?,
-) : ObjectStorageClient<S3Object> {
+) : S3Client {
     private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String) = flow {
-        var request = ListObjectsRequest {
-            bucket = bucketConfig.s3BucketName
-            this.prefix = prefix
-        }
-        var lastKey: String? = null
-        while (true) {
-            val response = client.listObjects(request)
-            response.contents?.forEach { obj ->
-                lastKey = obj.key
-                emit(S3Object(obj.key!!, bucketConfig))
-            } // null contents => empty list, not error
-            if (response.isTruncated == false) {
-                break
-            }
-            request = request.copy { marker = lastKey }
-        }
+        var token: String? = null
+        do {
+            val resp =
+                client.listObjectsV2(
+                    ListObjectsV2Request {
+                        bucket = bucketConfig.s3BucketName
+                        this.prefix = prefix
+                        continuationToken = token
+                    }
+                )
+            resp.contents?.forEach { emit(S3Object(it.key!!, bucketConfig)) }
+            token = resp.nextContinuationToken
+        } while (token != null)
     }
 
     override suspend fun move(remoteObject: S3Object, toKey: String): S3Object {
@@ -131,6 +139,17 @@ class S3Client(
         delete(S3Object(key, bucketConfig))
     }
 
+    override suspend fun delete(keys: Set<String>) {
+        keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
+            val deleteObjects = Delete { objects = chunk.map { ObjectIdentifier { key = it } } }
+            val request = DeleteObjectsRequest {
+                bucket = bucketConfig.s3BucketName
+                delete = deleteObjects
+            }
+            client.deleteObjects(request)
+        }
+    }
+
     override suspend fun startStreamingUpload(
         key: String,
         metadata: Map<String, String>
@@ -142,7 +161,7 @@ class S3Client(
         }
         val response = client.createMultipartUpload(request)
 
-        log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
+        log.debug { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
 
         return S3StreamingUpload(client, bucketConfig, response)
     }
@@ -150,16 +169,18 @@ class S3Client(
 
 /**
  * [assumeRoleCredentials] is required if [keyConfig] does not have an access key, _and_ [arnRole]
- * includes a nonnull role ARN. Otherwise it is ignored.
+ * includes a nonnull role ARN. Otherwise, it is ignored.
  */
 @Factory
 class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
-    private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
     private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
+    private val s3ClientConfig: S3ClientConfigurationProvider? = null,
 ) {
+    private val log = KotlinLogging.logger {}
+
     companion object {
         const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
 
@@ -168,12 +189,34 @@ class S3ClientFactory(
         T : AWSAccessKeyConfigurationProvider,
         T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config, config, assumeRoleCredentials).make()
+            S3ClientFactory(config, config, config, assumeRoleCredentials).make()
     }
 
     @Singleton
     @Secondary
     fun make(): S3Client {
+        if (s3ClientConfig?.s3ClientConfiguration?.useLegacyJavaClient == true) {
+            log.info { "Creating S3 client using legacy Java SDK" }
+            return if (
+                arnRole.awsArnRoleConfiguration.roleArn != null && assumeRoleCredentials != null
+            ) {
+                S3LegacyJavaClientFactory()
+                    .createFromAssumeRole(
+                        arnRole.awsArnRoleConfiguration,
+                        assumeRoleCredentials,
+                        bucketConfig.s3BucketConfiguration
+                    )
+            } else {
+                S3LegacyJavaClientFactory()
+                    .createFromAccessKey(
+                        keyConfig.awsAccessKeyConfiguration,
+                        bucketConfig.s3BucketConfiguration
+                    )
+            }
+        }
+
+        log.info { "Creating S3 client using Kotlin SDK" }
+
         val credsProvider: CredentialsProvider =
             if (keyConfig.awsAccessKeyConfiguration.accessKeyId != null) {
                 StaticCredentialsProvider {
@@ -202,7 +245,7 @@ class S3ClientFactory(
 
         val s3SdkClient =
             aws.sdk.kotlin.services.s3.S3Client {
-                region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+                region = bucketConfig.s3BucketConfiguration.s3BucketRegion
                 credentialsProvider = credsProvider
                 endpointUrl =
                     bucketConfig.s3BucketConfiguration.s3Endpoint?.let {
@@ -216,10 +259,9 @@ class S3ClientFactory(
                 httpClient(CrtHttpEngine)
             }
 
-        return S3Client(
+        return S3KotlinClient(
             s3SdkClient,
             bucketConfig.s3BucketConfiguration,
-            uploadConfig?.objectStorageUploadConfiguration
         )
     }
 }

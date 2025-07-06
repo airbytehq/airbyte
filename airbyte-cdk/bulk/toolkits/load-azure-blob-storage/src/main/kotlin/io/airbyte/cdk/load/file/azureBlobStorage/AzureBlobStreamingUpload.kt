@@ -5,11 +5,10 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.storage.blob.specialized.BlockBlobClient
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedInputStream
 import java.nio.ByteBuffer
 import java.util.Base64
 import java.util.concurrent.ConcurrentSkipListMap
@@ -19,7 +18,7 @@ private const val BLOB_ID_PREFIX = "block"
 
 class AzureBlobStreamingUpload(
     private val blockBlobClient: BlockBlobClient,
-    private val config: AzureBlobStorageConfiguration,
+    private val config: AzureBlobStorageClientConfiguration,
     private val metadata: Map<String, String>
 ) : StreamingUpload<AzureBlob> {
 
@@ -40,13 +39,15 @@ class AzureBlobStreamingUpload(
 
         // The stageBlock call can be done asynchronously or blocking.
         // Here we use the blocking call in a coroutine context.
-        BufferedInputStream(part.inputStream()).use {
+        part.inputStream().use {
             blockBlobClient.stageBlock(
                 blockId,
                 it,
                 part.size.toLong(),
             )
         }
+
+        log.info { "Staged block #$index => $rawBlockId (encoded = $blockId)" }
 
         // Keep track of the blocks in the order they arrived (or the index).
         blockIds[index] = blockId
@@ -65,13 +66,16 @@ class AzureBlobStreamingUpload(
             } else {
                 val blockList = blockIds.values.toList()
                 log.info { "Committing block list for ${blockBlobClient.blobName}: $blockList" }
-                blockBlobClient.commitBlockList(blockIds.values.toList(), true) // Overwrite = true
             }
+
+            blockBlobClient.commitBlockList(blockIds.values.toList(), true) // Overwrite = true
 
             // Set any metadata
             if (metadata.isNotEmpty()) {
                 blockBlobClient.setMetadata(metadata)
             }
+        } else {
+            log.warn { "Complete called multiple times for ${blockBlobClient.blobName}" }
         }
 
         return AzureBlob(blockBlobClient.blobName, config)

@@ -28,6 +28,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Record
 
 
 RequestInput = Union[str, Mapping[str, str]]
@@ -67,7 +68,9 @@ class ItemPaginationStrategy(PageIncrement):
         self._page: Optional[int] = self.start_from_page
         self._sub_page: Optional[int] = self.start_from_page
 
-    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Tuple[Optional[int], Optional[int]]]:
+    def next_page_token(
+        self, response: requests.Response, last_page_size: int, last_record: Optional[Record], last_page_token_value: Optional[Any]
+    ) -> Optional[Tuple[Optional[int], Optional[int]]]:
         """
         Determines page and subpage numbers for the `items` stream
 
@@ -75,7 +78,7 @@ class ItemPaginationStrategy(PageIncrement):
             response: Contains `boards` and corresponding lists of `items` for each `board`
             last_records: Parsed `items` from the response
         """
-        if len(last_records) >= self.page_size:
+        if last_page_size >= self.page_size:
             self._sub_page += 1
         else:
             self._sub_page = self.start_from_page
@@ -107,7 +110,9 @@ class ItemCursorPaginationStrategy(PageIncrement):
         self._page: Optional[int] = self.start_from_page
         self._sub_page: Optional[int] = self.start_from_page
 
-    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Tuple[Optional[int], Optional[int]]]:
+    def next_page_token(
+        self, response: requests.Response, last_page_size: int, last_record: Optional[Record], last_page_token_value: Optional[Any]
+    ) -> Optional[Tuple[Optional[int], Optional[int]]]:
         """
         `items` stream use a separate 2 level pagination strategy where:
         1st level `boards` - incremental pagination
@@ -164,6 +169,9 @@ class MondayGraphqlRequester(HttpRequester):
 
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
+        self.stream_sync_mode = (
+            SyncMode.full_refresh if parameters.get("stream_sync_mode", "full_refresh") == "full_refresh" else SyncMode.incremental
+        )
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -213,6 +221,13 @@ class MondayGraphqlRequester(HttpRequester):
             else:
                 fields.append(field)
 
+        # when querying the boards stream (object_name == "boards"), filter by board_ids if they provided in the config
+        if object_name == "boards" and "board_ids" in self.config:
+            # if we are building a query for incremental syncs, board ids are already present under 'ids' key in object_arguments (as a result of fetching the activity_logs stream first)
+            # These ids are already an intersection of the board_ids provided in the config and the ones that must be fetched for the incremental sync and need not be overridden
+            if "ids" not in object_arguments:
+                object_arguments["ids"] = self.config.get("board_ids")
+
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
 
@@ -251,6 +266,9 @@ class MondayGraphqlRequester(HttpRequester):
             query = self._build_query("next_items_page", field_schema, limit=nested_limit, cursor=f'"{sub_page}"')
         else:
             query = self._build_query("items_page", field_schema, limit=nested_limit)
+            # since items are a subresource of boards, when querying items, filter by board_ids if provided in the config
+            if "board_ids" in self.config and "ids" not in object_arguments:
+                object_arguments["ids"] = self.config.get("board_ids")
             arguments = self._get_object_arguments(**object_arguments)
             query = f"boards({arguments}){{{query}}}"
 
@@ -287,14 +305,21 @@ class MondayGraphqlRequester(HttpRequester):
         """
         nested_limit = self.nested_limit.eval(self.config)
 
-        created_at = (object_arguments.get("stream_state", dict()) or dict()).get("created_at_int")
-        object_arguments.pop("stream_state")
+        created_at = (object_arguments.get("stream_slice", dict()) or dict()).get("start_time")
+        if "stream_slice" in object_arguments:
+            object_arguments.pop("stream_slice")
 
-        if created_at:
-            created_at = datetime.fromtimestamp(created_at).strftime("%Y-%m-%dT%H:%M:%SZ")
+        # 1 is default start time, so we can skip it to get all the data
+        if created_at == "1":
+            created_at = None
+        else:
+            created_at = datetime.fromtimestamp(int(created_at)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
+        if "board_ids" in self.config and "ids" not in object_arguments:
+            object_arguments["ids"] = self.config.get("board_ids")
         arguments = self._get_object_arguments(**object_arguments)
+
         return f"boards({arguments}){{{query}}}"
 
     def get_request_headers(
@@ -322,11 +347,16 @@ class MondayGraphqlRequester(HttpRequester):
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
         if self.name == "boards" and stream_slice:
+            if self.stream_sync_mode == SyncMode.full_refresh:
+                # incremental sync parameters are not needed for full refresh
+                stream_slice = {}
+            else:
+                stream_slice = {"ids": stream_slice.get("ids")}
             query_builder = partial(self._build_query, **stream_slice)
         elif self.name == "items":
             # `items` stream use a separate pagination strategy where first level pages are across `boards` and sub-pages are across `items`
             page, sub_page = page if page else (None, None)
-            if not stream_slice:
+            if self.stream_sync_mode == SyncMode.full_refresh:
                 query_builder = partial(self._build_items_query, sub_page=sub_page)
             else:
                 query_builder = partial(self._build_items_incremental_query, stream_slice=stream_slice)
@@ -334,7 +364,7 @@ class MondayGraphqlRequester(HttpRequester):
             query_builder = self._build_teams_query
         elif self.name == "activity_logs":
             page, sub_page = page if page else (None, None)
-            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_state=stream_state)
+            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_slice=stream_slice)
         else:
             query_builder = self._build_query
         query = query_builder(
@@ -365,35 +395,32 @@ class MondayActivityExtractor(RecordExtractor):
     """
 
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self.decoder.decode(response)
-        response_body = next(response_body)
-        result = []
-        if not response_body["data"]["boards"]:
-            return result
-
-        for board_data in response_body["data"]["boards"]:
-            if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        response_body_generator = self.decoder.decode(response)
+        for response_body in response_body_generator:
+            if not response_body["data"]["boards"]:
                 continue
-            for record in board_data.get("activity_logs", []):
-                json_data = json.loads(record["data"])
-                new_record = record
-                if record.get("created_at"):
-                    new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
-                else:
+
+            for board_data in response_body["data"]["boards"]:
+                if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
                     continue
+                for record in board_data.get("activity_logs", []):
+                    json_data = json.loads(record["data"])
+                    new_record = record
+                    if record.get("created_at"):
+                        new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
+                    else:
+                        continue
 
-                if record.get("entity") == "pulse" and json_data.get("pulse_id"):
-                    new_record.update({"pulse_id": json_data.get("pulse_id")})
+                    if record.get("entity") == "pulse" and json_data.get("pulse_id"):
+                        new_record.update({"pulse_id": json_data.get("pulse_id")})
 
-                if record.get("entity") == "board" and json_data.get("board_id"):
-                    new_record.update({"board_id": json_data.get("board_id")})
+                    if record.get("entity") == "board" and json_data.get("board_id"):
+                        new_record.update({"board_id": json_data.get("board_id")})
 
-                result.append(new_record)
-
-        return result
+                    yield new_record
 
 
 @dataclass
@@ -406,51 +433,45 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     field_path_pagination: List[Union[InterpolatedString, str]] = field(default_factory=list)
-    field_path_incremental: List[Union[InterpolatedString, str]] = field(default_factory=list)
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        for field_list in (self.field_path, self.field_path_pagination, self.field_path_incremental):
-            for path_index in range(len(field_list)):
-                if isinstance(field_list[path_index], str):
-                    field_list[path_index] = InterpolatedString.create(field_list[path_index], parameters=parameters)
+        # Convert string paths to InterpolatedString for both field_path and field_path_pagination
+        self._field_path = [InterpolatedString.create(p, parameters=parameters) if isinstance(p, str) else p for p in self.field_path]
+        self._field_path_pagination = [
+            InterpolatedString.create(p, parameters=parameters) if isinstance(p, str) else p for p in self.field_path_pagination
+        ]
 
-    def try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> List[Record]:
-        response_body = self.decoder.decode(response)
-        response_body = next(response_body)
+    def _try_extract_records(
+        self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]
+    ) -> Iterable[Mapping[str, Any]]:
+        for body in self.decoder.decode(response):
+            if len(field_path) == 0:
+                extracted = body
+            else:
+                path = [p.eval(self.config) for p in field_path]
+                if "*" in path:
+                    extracted = dpath.values(body, path)
+                else:
+                    extracted = dpath.get(body, path, default=[])
 
-        path = [path.eval(self.config) for path in field_path]
-        extracted = dpath.values(response_body, path) if path else response_body
+            if extracted:
+                if isinstance(extracted, list) and None in extracted:
+                    logger.warning(f"Record with null value received; errors: {body.get('errors')}")
+                    yield from (x for x in extracted if x)
+                else:
+                    yield from extracted if isinstance(extracted, list) else [extracted]
 
-        pattern_path = "*" in path
-        if not pattern_path:
-            extracted = dpath.get(response_body, path, default=[])
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        # Try primary field path
+        has_records = False
+        for record in self._try_extract_records(response, self._field_path):
+            has_records = True
+            yield record
 
-        if extracted:
-            if isinstance(extracted, list) and None in extracted:
-                logger.warning(f"Record with null value received; errors: {response_body.get('errors')}")
-                return [x for x in extracted if x]
-            return extracted if isinstance(extracted, list) else [extracted]
-        return []
-
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        result = self.try_extract_records(response, field_path=self.field_path)
-        if not result and self.field_path_pagination:
-            result = self.try_extract_records(response, self.field_path_pagination)
-        if not result and self.field_path_incremental:
-            result = self.try_extract_records(response, self.field_path_incremental)
-
-        for record in result:
-            if "updated_at" in record:
-                record["updated_at_int"] = int(datetime.strptime(record["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp())
-
-            column_values = record.get("column_values", [])
-            for values in column_values:
-                display_value, text = values.get("display_value"), values.get("text")
-                if display_value and not text:
-                    values["text"] = display_value
-
-        return result
+        # Fallback to pagination path if no records and path exists
+        if not has_records and self._field_path_pagination:
+            yield from self._try_extract_records(response, self._field_path_pagination)
 
 
 @dataclass

@@ -16,6 +16,35 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.streams import Stream
 
 
+@pytest.mark.parametrize(
+    "input_state, expected_state, expected_should_migrate",
+    [
+        # Test case 1: State with activity_logs key
+        ({"activity_logs": {"some": "data"}, "other_key": "value"}, {"other_key": "value"}, True),
+        # Test case 2: Empty state
+        ({}, {}, False),
+        # Test case 3: State without activity_logs
+        ({"key1": "value1", "key2": "value2"}, {"key1": "value1", "key2": "value2"}, False),
+        # Test case 4: State with activity_logs as None
+        ({"activity_logs": None, "other_key": "value"}, {"other_key": "value"}, True),
+    ],
+)
+def test_monday_state_migration(components_module, input_state, expected_state, expected_should_migrate):
+    """Test both migrate and should_migrate methods of MondayStateMigration."""
+    migration = components_module.MondayStateMigration()
+
+    # Test should_migrate
+    should_migrate_result = migration.should_migrate(input_state)
+    assert (
+        should_migrate_result == expected_should_migrate
+    ), f"should_migrate failed: expected {expected_should_migrate}, got {should_migrate_result}"
+
+    if should_migrate_result:
+        # Test migrate
+        result = migration.migrate(input_state)
+        assert result == expected_state, f"migrate failed: expected {expected_state}, got {result}"
+
+
 def _create_response(content: Any) -> Response:
     response = Response()
     response._content = json.dumps(content).encode("utf-8")
@@ -92,16 +121,16 @@ def test_null_records(components_module, caplog):
         "account_id": 123456,
     }
     response = _create_response(content)
-    records = extractor.extract_records(response)
+    records = list(extractor.extract_records(response))
     warning_message = "Record with null value received; errors: [{'message': 'Cannot return null for non-nullable field Board.creator'}]"
     assert warning_message in caplog.messages
     expected_records = [
-        {"board_kind": "private", "id": "1234561", "updated_at": "2023-08-15T10:30:49Z", "updated_at_int": 1692095449},
-        {"board_kind": "private", "id": "1234562", "updated_at": "2023-08-15T10:30:50Z", "updated_at_int": 1692095450},
-        {"board_kind": "private", "id": "1234563", "updated_at": "2023-08-15T10:30:51Z", "updated_at_int": 1692095451},
-        {"board_kind": "private", "id": "1234564", "updated_at": "2023-08-15T10:30:52Z", "updated_at_int": 1692095452},
-        {"board_kind": "private", "id": "1234565", "updated_at": "2023-08-15T10:30:43Z", "updated_at_int": 1692095443},
-        {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z", "updated_at_int": 1692095454},
+        {"board_kind": "private", "id": "1234561", "updated_at": "2023-08-15T10:30:49Z"},
+        {"board_kind": "private", "id": "1234562", "updated_at": "2023-08-15T10:30:50Z"},
+        {"board_kind": "private", "id": "1234563", "updated_at": "2023-08-15T10:30:51Z"},
+        {"board_kind": "private", "id": "1234564", "updated_at": "2023-08-15T10:30:52Z"},
+        {"board_kind": "private", "id": "1234565", "updated_at": "2023-08-15T10:30:43Z"},
+        {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z"},
     ]
     assert records == expected_records
 
@@ -301,8 +330,7 @@ def test_get_schema_root_properties(components_module, monday_requester):
 
 def test_build_activity_query(components_module, monday_requester):
     MondayGraphqlRequester = components_module.MondayGraphqlRequester
-    mock_stream_state = {"updated_at_int": 1636738688}
-    object_arguments = {"stream_state": mock_stream_state}
+    object_arguments = {"stream_slice": {"start_time": 1636738688}}
     with patch.object(MondayGraphqlRequester, "_get_object_arguments", return_value="stream_state:{{ stream_state['updated_at_int'] }}"):
         requester = monday_requester
 
@@ -377,7 +405,18 @@ def test_item_pagination_strategy(components_module, response_json, last_records
     response = MagicMock()
     response.json.return_value = response_json
 
-    assert strategy.next_page_token(response, last_records) == expected
+    # Calculate last_page_size based on last_records
+    last_page_size = len(last_records)
+
+    assert (
+        strategy.next_page_token(
+            response=response,
+            last_page_size=last_page_size,
+            last_record=None if not last_records else last_records[-1],
+            last_page_token_value=None,
+        )
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
@@ -419,7 +458,18 @@ def test_item_cursor_pagination_strategy(components_module, response_json, last_
     response = MagicMock()
     response.json.return_value = response_json
 
-    assert strategy.next_page_token(response, last_records) == expected
+    # Calculate last_page_size based on last_records
+    last_page_size = len(last_records)
+
+    assert (
+        strategy.next_page_token(
+            response=response,
+            last_page_size=last_page_size,
+            last_record=None if not last_records else last_records[-1],
+            last_page_token_value=None,
+        )
+        == expected
+    )
 
 
 def test_extract_records(components_module):
@@ -430,9 +480,9 @@ def test_extract_records(components_module):
         "data": {"boards": [{"activity_logs": [{"data": '{"pulse_id": 123}', "entity": "pulse", "created_at": "16367386880000000"}]}]}
     }
 
-    response.json.return_value = response_body
+    response.content = json.dumps(response_body).encode("utf-8")
     extractor = MondayActivityExtractor(parameters={})
-    records = extractor.extract_records(response)
+    records = list(extractor.extract_records(response))
 
     # Assertions
     assert len(records) == 1
@@ -445,9 +495,9 @@ def test_empty_activity_logs_extract_records(components_module):
     response = MagicMock()
     response_body = {"data": {"boards": [{"activity_logs": None}]}}
 
-    response.json.return_value = response_body
+    response.content = json.dumps(response_body).encode("utf-8")
     extractor = MondayActivityExtractor(parameters={})
-    records = extractor.extract_records(response)
+    records = list(extractor.extract_records(response))
 
     assert len(records) == 0
 
@@ -458,15 +508,14 @@ def test_extract_records_incremental(components_module):
     response = MagicMock()
     response_body = {"data": {"boards": [{"id": 1, "column_values": [{"id": 11, "text": None, "display_value": "Hola amigo!"}]}]}}
 
-    response.json.return_value = response_body
+    response.content = json.dumps(response_body).encode("utf-8")
     extractor = MondayIncrementalItemsExtractor(
         parameters={},
         field_path=["data", "ccccc"],
         config=MagicMock(),
-        field_path_pagination=["data", "bbbb"],
-        field_path_incremental=["data", "boards", "*"],
+        field_path_pagination=["data", "boards", "*"],
     )
-    records = extractor.extract_records(response)
+    records = list(extractor.extract_records(response))
 
     # Assertions
-    assert records == [{"id": 1, "column_values": [{"id": 11, "text": "Hola amigo!", "display_value": "Hola amigo!"}]}]
+    assert records == [{"id": 1, "column_values": [{"id": 11, "text": None, "display_value": "Hola amigo!"}]}]

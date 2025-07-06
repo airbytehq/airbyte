@@ -1,0 +1,409 @@
+# Whenever a change is made to the connector base image Dockerfiles, this workflow will be
+# triggered.
+
+# NOTE: This workflow does not publish the images to Docker Hub. It only builds them and tests them.
+
+name: Dockerfile Tests
+on:
+  pull_request:
+    paths:
+      - "docker-images/Dockerfile.java-connector"
+      - "docker-images/Dockerfile.java-connector-base"
+      - "docker-images/Dockerfile.python-connector"
+      - "docker-images/Dockerfile.python-connector-base"
+      - "docker-images/Dockerfile.manifest-only-connector"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write # allow pushing to GHCR
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - id: changes
+        uses: dorny/paths-filter@v3.0.2
+        with:
+          filters: |
+            java-images:
+              - 'docker-images/Dockerfile.java-connector'
+              - 'docker-images/Dockerfile.java-connector-base'
+            python-images:
+              - 'docker-images/Dockerfile.python-connector'
+              - 'docker-images/Dockerfile.python-connector-base'
+            manifest-only:
+              - 'docker-images/Dockerfile.manifest-only-connector'
+
+    outputs:
+      java-images: ${{ steps.changes.outputs.java-images }}
+      python-images: ${{ steps.changes.outputs.python-images }}
+      manifest-only: ${{ steps.changes.outputs.manifest-only }}
+
+  build-java-base-image:
+    name: Build Java Base Image
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    environment:
+      name: ghcr.io/airbytehq/java-connector-base
+      url: https://ghcr.io/airbytehq/java-connector-base
+    if: needs.detect-changes.outputs.java-images == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Java Base Image
+        id: docker-build-java-base
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker-images/Dockerfile.java-connector-base
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run Java Base Image Vulnerability Scan
+        uses: anchore/scan-action@v6
+        with:
+          image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
+          output-format: "table"
+          severity-cutoff: high
+          fail-build: false
+
+    outputs:
+      java-base-image: ${{ steps.docker-build-java-base.outputs.imageid }}
+
+  build-python-base-image:
+    name: Build Python Base Image
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    environment:
+      name: ghcr.io/airbytehq/python-connector-base
+      url: https://ghcr.io/airbytehq/python-connector-base
+    if: needs.detect-changes.outputs.python-images == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Python Base Image
+        id: docker-build-python-base
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker-images/Dockerfile.python-connector-base
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run Python Base Image Vulnerability Scan
+        uses: anchore/scan-action@v6
+        with:
+          image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
+          output-format: "table"
+          severity-cutoff: high
+          fail-build: false
+
+    outputs:
+      python-base-image: ${{ steps.docker-build-python-base.outputs.imageid }}
+
+  test-java-connector-image-matrix:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-java-base-image]
+    if: needs.detect-changes.outputs.java-images == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        connector:
+          - source-postgres
+          - destination-postgres
+          - destination-snowflake
+    name: Build ${{ matrix.connector }} Java Test Image
+    environment:
+      name: ghcr.io/airbytehq
+      url: https://ghcr.io/airbytehq/${{ matrix.connector }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Java deps
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+          cache-write-only: false
+          add-job-summary: "on-failure"
+
+      - name: Build Connector Tarball
+        run: |
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:distTar
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Debug BUILD_ARGS
+        run: |
+          echo "BASE_IMAGE=${{ needs.build-java-base-image.outputs.java-base-image }}"
+          echo "CONNECTOR_NAME=${{ matrix.connector }}"
+
+      - name: Build ${{ matrix.connector }} Image
+        id: docker-build-java-connector
+        uses: docker/build-push-action@v5
+        with:
+          context: airbyte-integrations/connectors/${{ matrix.connector }}
+          file: docker-images/Dockerfile.java-connector
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+            CONNECTOR_NAME=${{ matrix.connector }}
+          tags: |
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run `spec` Image Test
+        run: |
+          docker run \
+            --rm \
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }} \
+            spec
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CDK CLI
+        run: |
+          uv tool install 'airbyte-cdk[dev]'
+
+      - name: Fetch connector secrets
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run container tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run ${{ matrix.connector }} Image Vulnerability Scan
+        uses: anchore/scan-action@v6
+        with:
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
+          output-format: "table"
+          severity-cutoff: high
+          fail-build: false
+
+  test-python-connector-image-matrix:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-python-base-image]
+    if: needs.detect-changes.outputs.python-images == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        connector:
+          - source-google-drive
+          - source-s3
+          - source-salesforce
+          - source-shopify
+          - destination-motherduck
+    name: Build ${{ matrix.connector }} Python Test Image
+    environment:
+      name: ghcr.io/airbytehq
+      url: https://ghcr.io/airbytehq/${{ matrix.connector }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Debug BUILD_ARGS
+        run: |
+          echo "BASE_IMAGE=${{ needs.build-python-base-image.outputs.python-base-image }}"
+          echo "CONNECTOR_NAME=${{ matrix.connector }}"
+
+      - name: Build ${{ matrix.connector }} Image
+        id: docker-build-python-connector
+        uses: docker/build-push-action@v5
+        with:
+          context: airbyte-integrations/connectors/${{ matrix.connector }}
+          file: docker-images/Dockerfile.python-connector
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            BASE_IMAGE=ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+            CONNECTOR_NAME=${{ matrix.connector }}
+          tags: |
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run `spec` Image Test
+        run: |
+          docker run \
+            --rm \
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }} \
+            spec
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CDK CLI
+        run: |
+          uv tool install 'airbyte-cdk[dev]'
+
+      - name: Fetch connector secrets
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run container tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run ${{ matrix.connector }} Image Vulnerability Scan
+        uses: anchore/scan-action@v6
+        with:
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
+          output-format: "table"
+          severity-cutoff: high
+          fail-build: false
+
+  test-manifest-only-connector-image-matrix:
+    runs-on: ubuntu-latest
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.manifest-only == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        connector:
+          - source-pokeapi
+    name: Build ${{ matrix.connector }} Manifest-Only Test Image
+    environment:
+      name: ghcr.io/airbytehq
+      url: https://ghcr.io/airbytehq/${{ matrix.connector }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Debug BUILD_ARGS
+        run: |
+          echo "BASE_IMAGE=docker.io/airbyte/source-declarative-manifest:latest"
+          echo "CONNECTOR_NAME=${{ matrix.connector }}"
+
+      - name: Build ${{ matrix.connector }} Image
+        uses: docker/build-push-action@v5
+        with:
+          context: airbyte-integrations/connectors/${{ matrix.connector }}
+          file: docker-images/Dockerfile.manifest-only-connector
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            BASE_IMAGE=docker.io/airbyte/source-declarative-manifest:latest
+            CONNECTOR_NAME=${{ matrix.connector }}
+          tags: |
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run `spec` Image Test
+        run: |
+          docker run \
+            --rm \
+            ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }} \
+            spec
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CDK CLI
+        run: |
+          uv tool install 'airbyte-cdk[dev]'
+
+      - name: Fetch connector secrets
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run container tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
+
+      - name: Run ${{ matrix.connector }} Image Vulnerability Scan
+        uses: anchore/scan-action@v6
+        with:
+          image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
+          output-format: "table"
+          severity-cutoff: high
+          fail-build: false

@@ -23,7 +23,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
-      # test 403 exception is not breaking the sync
+        # test 403 exception is not breaking the sync
       - config_path: secrets/config_limited_scopes.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
   incremental:
@@ -40,6 +40,6 @@ acceptance_tests:
               bypass_reason: "No event records exist for the test project."
   spec:
     tests:
-      - spec_path: source_sentry/spec.json
+      - spec_path: manifest.yaml
 connector_image: airbyte/source-sentry:dev
 test_strictness_level: high
