@@ -52,6 +52,7 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
+| 0.3.12 | 2025-05-17 | [60363](https://github.com/airbytehq/airbyte/pull/60363) | Update dependencies |
 | 0.3.11 | 2025-05-10 | [60035](https://github.com/airbytehq/airbyte/pull/60035) | Update dependencies |
 | 0.3.10 | 2025-05-03 | [59424](https://github.com/airbytehq/airbyte/pull/59424) | Update dependencies |
 | 0.3.9 | 2025-04-26 | [58914](https://github.com/airbytehq/airbyte/pull/58914) | Update dependencies |
