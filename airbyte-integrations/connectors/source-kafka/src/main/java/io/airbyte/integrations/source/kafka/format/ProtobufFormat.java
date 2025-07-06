@@ -154,15 +154,14 @@ public class ProtobufFormat extends AbstractFormat {
     final Set<String> topicsToSubscribe = getTopicsToSubscribe();
     return topicsToSubscribe.stream().map(topic -> {
                 try {
-                    return buildDescriptorFromSchemaRegistry(topic + "-value");
+                    Descriptors.Descriptor descriptor = buildDescriptorFromSchemaRegistry(topic + "-value");
+                    return CatalogHelpers
+                        .createAirbyteStream(topic, buildFieldsFromDescriptor(descriptor).toArray(Field[]::new))
+                        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
                 } catch (IOException | RestClientException e) {
                     throw new RuntimeException(e);
                 }
-            })
-            .map(descriptor -> CatalogHelpers
-                      .createAirbyteStream(descriptor.getName(), buildFieldsFromDescriptor(descriptor).toArray(Field[]::new))
-                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            ).toList();
+            }).toList();
 //      return topicsToSubscribe.stream().map(topic -> CatalogHelpers
 //          .createAirbyteStream(topic, Field.of("value", JsonSchemaType.STRING))
 //          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
