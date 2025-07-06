@@ -1,0 +1,1444 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    items:
+      type: StateDelegatingStream
+      full_refresh_stream:
+        $ref: "#/definitions/streams/state_delegating_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/items"
+        $parameters:
+          path: ""
+          stream_sync_mode: "full_refresh"
+          items_per_page: 1
+          page_size: 20
+          nested_items_per_page: 20
+          field_path: ["data", "boards", "*", "items_page", "items", "*"]
+          field_path_pagination: ["data", "next_items_page", "items", "*"]
+        retriever:
+          requester:
+            $ref: "#/definitions/base_requester"
+          paginator:
+            type: "DefaultPaginator"
+            pagination_strategy:
+              class_name: "source_declarative_manifest.components.ItemCursorPaginationStrategy"
+              type: "CustomPaginationStrategy"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              class_name: "source_declarative_manifest.components.MondayIncrementalItemsExtractor"
+      incremental_stream:
+        $ref: "#/definitions/streams/state_delegating_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/items"
+        $parameters:
+          path: ""
+          stream_sync_mode: "incremental"
+          page_size: 20
+          nested_items_per_page: 20
+          field_path: ["data", "items", "*"]
+        retriever:
+          requester:
+            $ref: "#/definitions/base_requester"
+          paginator:
+            type: "DefaultPaginator"
+            pagination_strategy:
+              class_name: "source_declarative_manifest.components.ItemCursorPaginationStrategy"
+              type: "CustomPaginationStrategy"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              class_name: "source_declarative_manifest.components.MondayIncrementalItemsExtractor"
+          partition_router:
+            type: GroupingPartitionRouter
+            underlying_partition_router:
+              type: SubstreamPartitionRouter
+              parent_stream_configs:
+                - type: ParentStreamConfig
+                  stream: "#/definitions/activity_logs_stream"
+                  parent_key: "pulse_id"
+                  partition_field: "ids"
+                  incremental_dependency: true
+            group_size: 20
+            deduplicate: true
+        state_migrations:
+          - type: CustomStateMigration
+            class_name: source_declarative_manifest.components.MondayStateMigration
+    # Boards Stream: Split into full refresh and incremental, then combine with StateDelegatingStream
+    boards:
+      type: StateDelegatingStream
+      full_refresh_stream:
+        $ref: "#/definitions/streams/state_delegating_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/boards"
+        $parameters:
+          path: ""
+          stream_sync_mode: "full_refresh"
+          items_per_page: 10
+          nested_items_per_page: 10
+          field_path: ["data", "boards", "*"]
+        retriever:
+          requester:
+            $ref: "#/definitions/base_requester"
+          paginator:
+            type: "DefaultPaginator"
+            pagination_strategy:
+              type: "PageIncrement"
+              start_from_page: 1
+              page_size: 10
+          record_selector:
+            type: RecordSelector
+            extractor:
+              class_name: "source_declarative_manifest.components.MondayIncrementalItemsExtractor"
+      incremental_stream:
+        $ref: "#/definitions/streams/state_delegating_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/boards"
+        $parameters:
+          path: ""
+          stream_sync_mode: "incremental"
+          items_per_page: 10
+          nested_items_per_page: 10
+          field_path: ["data", "boards", "*"]
+        retriever:
+          requester:
+            $ref: "#/definitions/base_requester"
+          paginator:
+            type: "DefaultPaginator"
+            pagination_strategy:
+              type: "PageIncrement"
+              start_from_page: 1
+              page_size: 10
+          record_selector:
+            type: RecordSelector
+            extractor:
+              class_name: "source_declarative_manifest.components.MondayIncrementalItemsExtractor"
+          partition_router:
+            type: GroupingPartitionRouter
+            underlying_partition_router:
+              type: SubstreamPartitionRouter
+              parent_stream_configs:
+                - type: ParentStreamConfig
+                  stream: "#/definitions/activity_logs_stream"
+                  parent_key: "board_id"
+                  partition_field: "ids"
+                  incremental_dependency: true
+            group_size: 10
+            deduplicate: true
+        state_migrations:
+          - type: CustomStateMigration
+            class_name: source_declarative_manifest.components.MondayStateMigration
+    state_delegating_stream:
+      type: DeclarativeStream
+      primary_key: "id"
+      retriever:
+        $ref: "#/definitions/retriever"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at_int
+              value: "{{ timestamp(record.get('updated_at')) | int if record.get('updated_at') else 1 }}" # updated_at_int is cursor field so in cannot be None
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.MondayTransformation
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "updated_at_int"
+        start_datetime: "1" # default start time will be skipped to read in full refresh without cursor value
+        datetime_format: "%s"
+    tags:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          nested_limit: 1
+          $ref: "#/definitions/base_requester"
+          path: ""
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - tags
+        decoder:
+          type: JsonDecoder
+      name: tags
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    teams:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          nested_limit: 1
+          $ref: "#/definitions/base_requester"
+          path: ""
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - teams
+        decoder:
+          type: JsonDecoder
+      name: teams
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    updates:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          nested_limit: 1
+          $ref: "#/definitions/base_requester"
+          path: ""
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - updates
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        decoder:
+          type: JsonDecoder
+      name: updates
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/updates"
+    users:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          nested_limit: 1
+          $ref: "#/definitions/base_requester"
+          path: ""
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - users
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        decoder:
+          type: JsonDecoder
+      name: users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    workspaces:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          nested_limit: 1
+          $ref: "#/definitions/base_requester"
+          path: ""
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - workspaces
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        decoder:
+          type: JsonDecoder
+      name: workspaces
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+    activity_logs:
+      type: DeclarativeStream
+      description: >-
+        https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          limit: 1
+          nested_limit: 50
+          $ref: "#/definitions/base_requester"
+          path: ""
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.MondayActivityExtractor
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CustomPaginationStrategy
+            class_name: source_declarative_manifest.components.ItemPaginationStrategy
+        decoder:
+          type: JsonDecoder
+      name: activity_logs
+      primary_key:
+        - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_int
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1"
+          datetime_format: "%s"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activity_logs"
+  base_requester:
+    type: CustomRequester
+    class_name: "source_declarative_manifest.components.MondayGraphqlRequester"
+    url_base: "https://api.monday.com/v2"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config.get('credentials', {}).get('api_token') if config.get('credentials', {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token', '') }}"
+    limit: "{{ parameters['items_per_page'] }}"
+    nested_limit: "{{ parameters.get('nested_items_per_page', 1) }}"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: "DefaultErrorHandler"
+          response_filters:
+            - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
+              action: RETRY
+            - predicate: "{{ 'error_code' in response and response['error_code'] == 'complexityBudgetExhausted' }}"
+              action: RETRY
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: retry-after
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 60
+        - type: "DefaultErrorHandler"
+          description: "
+            Ignore the slice when there is no access to the requested entity - 'code: 403, message: None'.
+            https://github.com/airbytehq/alpha-beta-issues/issues/846
+            "
+          response_filters:
+            - http_codes: [403]
+              action: IGNORE
+        - type: "DefaultErrorHandler"
+          description: "
+            Retry when `Internal Server Error occures - `code: 500, message: Internal server error`.
+            https://github.com/airbytehq/alpha-beta-issues/issues/245
+            "
+          response_filters:
+            - http_codes: [500, 502]
+              action: RETRY
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+
+streams:
+  - $ref: "#/definitions/streams/items"
+  - $ref: "#/definitions/streams/boards"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/updates"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/activity_logs"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required: []
+    additionalProperties: true
+    properties:
+      credentials:
+        title: Authorization Method
+        type: object
+        oneOf:
+        - type: object
+          title: OAuth2.0
+          required:
+          - auth_type
+          - client_id
+          - client_secret
+          - access_token
+          properties:
+            subdomain:
+              type: string
+              title: Subdomain/Slug
+              description: Slug/subdomain of the account, or the first part of the URL
+                that comes before .monday.com
+              default: ''
+              order: 0
+            auth_type:
+              type: string
+              const: oauth2.0
+              order: 1
+            client_id:
+              type: string
+              title: Client ID
+              description: The Client ID of your OAuth application.
+              airbyte_secret: true
+            client_secret:
+              type: string
+              title: Client Secret
+              description: The Client Secret of your OAuth application.
+              airbyte_secret: true
+            access_token:
+              type: string
+              title: Access Token
+              description: Access Token for making authenticated requests.
+              airbyte_secret: true
+        - type: object
+          title: API Token
+          required:
+          - auth_type
+          - api_token
+          properties:
+            auth_type:
+              type: string
+              const: api_token
+              order: 0
+            api_token:
+              type: string
+              title: Personal API Token
+              description: API Token for making authenticated requests.
+              airbyte_secret: true
+      board_ids:
+        type: array
+        title: Boards to sync
+        description: The IDs of the boards that the Items and Boards streams will extract records from. When left empty, streams will extract records from all boards that exist within the account.
+        items:
+          type: integer
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 2
+        maximum: 50
+        default: 4
+        examples: [1, 2, 3]
+        description: The number of worker threads to use for the sync.
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - credentials
+    - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_secret
+      oauth_connector_input_specification:
+        scope: me:read boards:read workspaces:read users:read account:read updates:read assets:read tags:read teams:read
+        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}&subdomain={{subdomain}}
+        access_token_url: https://auth.monday.com/oauth2/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
+        extract_output:
+          - access_token
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          subdomain:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - subdomain
+
+metadata:
+  autoImportSchema:
+    items: false
+    boards: false
+    tags: false
+    teams: false
+    updates: false
+    users: false
+    workspaces: false
+    activity_logs: false
+  yamlComponents:
+    streams:
+      items:
+        - paginator
+        - incrementalSync
+        - recordSelector
+      boards:
+        - incrementalSync
+        - recordSelector
+      activity_logs:
+        - paginator
+        - incrementalSync
+        - recordSelector
+    global:
+      - authenticator
+  testedStreams:
+    items:
+      streamHash: bc3966cf4eb72cfb22e9dd510f6055fb7b27da5c
+    boards:
+      streamHash: 6e2944337b8b113e928b0d958d61cc1e14dfc1d0
+    tags:
+      streamHash: 5f5a0961543782904af0a992c48cd276b437cf5e
+    teams:
+      streamHash: 36213107a405acbe0bd53d467aeb7338b1b41845
+    updates:
+      streamHash: 912722fb5ce9224e22c70e86d4bd48203bb4c475
+    users:
+      streamHash: 4094194b6b6dbd1767ca5ac5b86f262b2a90fe2e
+    workspaces:
+      streamHash: 2d265e84f82ee5cd16172ab0f526f499a267ea4b
+    activity_logs:
+      streamHash: e4bcc10f8963b2202b5ce5328c8a9510f15daed3
+  assist: {}
+
+schemas:
+  items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      assets:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            file_extension:
+              type:
+                - "null"
+                - string
+            file_size:
+              type:
+                - "null"
+                - integer
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            original_geometry:
+              type:
+                - "null"
+                - string
+            public_url:
+              type:
+                - "null"
+                - string
+            uploaded_by:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+            url:
+              type:
+                - "null"
+                - string
+            url_thumbnail:
+              type:
+                - "null"
+                - string
+      board:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+      column_values:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            display_value:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            text:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator_id:
+        type:
+          - "null"
+          - string
+      group:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      parent_item:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+      state:
+        type:
+          - "null"
+          - string
+      subscribers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at_int:
+        type:
+          - "null"
+          - integer
+      updates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+  boards:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      board_kind:
+        type:
+          - "null"
+          - string
+      columns:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            archived:
+              type:
+                - "null"
+                - boolean
+            id:
+              type:
+                - "null"
+                - string
+            settings_str:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+            width:
+              type:
+                - "null"
+                - integer
+      communication:
+        type:
+          - "null"
+          - string
+      creator:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+      groups:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            archived:
+              type:
+                - "null"
+                - boolean
+            color:
+              type:
+                - "null"
+                - string
+            deleted:
+              type:
+                - "null"
+                - boolean
+            id:
+              type:
+                - "null"
+                - string
+            position:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      owners:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+      permissions:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      subscribers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+      top_group:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at_int:
+        type:
+          - "null"
+          - integer
+      updates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+      views:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            settings_str:
+              type:
+                - "null"
+                - string
+            view_specific_data_str:
+              type:
+                - "null"
+                - string
+      workspace:
+        type:
+          - "null"
+          - object
+        properties:
+          description:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+  tags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      picture_url:
+        type:
+          - "null"
+          - string
+      users:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+  updates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      assets:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            file_extension:
+              type:
+                - "null"
+                - string
+            file_size:
+              type:
+                - "null"
+                - integer
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            original_geometry:
+              type:
+                - "null"
+                - string
+            public_url:
+              type:
+                - "null"
+                - string
+            uploaded_by:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+            url:
+              type:
+                - "null"
+                - string
+            url_thumbnail:
+              type:
+                - "null"
+                - string
+      body:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator_id:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      item_id:
+        type:
+          - "null"
+          - string
+      replies:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            body:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            creator_id:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            text_body:
+              type:
+                - "null"
+                - string
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+      text_body:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      birthday:
+        type:
+          - "null"
+          - string
+        format: date-time
+      country_code:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      email:
+        type:
+          - "null"
+          - string
+      enabled:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - string
+      is_admin:
+        type:
+          - "null"
+          - boolean
+      is_guest:
+        type:
+          - "null"
+          - boolean
+      is_pending:
+        type:
+          - "null"
+          - boolean
+      is_verified:
+        type:
+          - "null"
+          - boolean
+      is_view_only:
+        type:
+          - "null"
+          - boolean
+      join_date:
+        type:
+          - "null"
+          - string
+        format: date
+      location:
+        type:
+          - "null"
+          - string
+      mobile_phone:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      photo_original:
+        type:
+          - "null"
+          - string
+      photo_small:
+        type:
+          - "null"
+          - string
+      photo_thumb:
+        type:
+          - "null"
+          - string
+      photo_thumb_small:
+        type:
+          - "null"
+          - string
+      photo_tiny:
+        type:
+          - "null"
+          - string
+      time_zone_identifier:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      utc_hours_diff:
+        type:
+          - "null"
+          - integer
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      account_product:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - string
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      owners_subscribers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+      settings:
+        type:
+          - "null"
+          - object
+        properties:
+          icon:
+            type:
+              - "null"
+              - object
+            properties:
+              color:
+                type:
+                  - "null"
+                  - string
+              image:
+                type:
+                  - "null"
+                  - string
+      state:
+        type:
+          - "null"
+          - string
+      team_owners_subscribers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+      teams_subscribers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+      users_subscribers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+  activity_logs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      board_id:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      created_at_int:
+        type:
+          - "null"
+          - integer
+      data:
+        type:
+          - "null"
+          - string
+      entity:
+        type:
+          - "null"
+          - string
+      event:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      pulse_id:
+        type:
+          - "null"
+          - integer
+
+# The smallest limit for 1 minute is 250 queries, so set the default number of workers to 4. https://developer.monday.com/api-reference/docs/rate-limits#minute-limit
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 40 # Monday concurrency limit for lowest tier is 40. https://developer.monday.com/api-reference/docs/rate-limits#concurrency-limit

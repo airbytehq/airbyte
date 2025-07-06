@@ -5,7 +5,7 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_monday/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config_api_token.json"
@@ -18,9 +18,10 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config.json"
-        # `boards`, `items`, `updates` streams schemas were modified. PR: https://github.com/airbytehq/airbyte/pull/27410
-        # Changes applies to all configs
+      - config_path:
+          "secrets/config.json"
+          # `boards`, `items`, `updates` streams schemas were modified. PR: https://github.com/airbytehq/airbyte/pull/27410
+          # Changes applies to all configs
         backward_compatibility_tests_config:
           disable_for_version: "2.0.0"
       - config_path: "secrets/config_api_token.json"
@@ -35,7 +36,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
-        validate_state_messages: False
+        validate_state_messages: false
         empty_streams:
           - name: teams
             bypass_reason: "The stream has no test data and tested with integration tests"
@@ -43,7 +44,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
-        validate_state_messages: False
+        validate_state_messages: false
         empty_streams:
           - name: teams
             bypass_reason: "The stream has no test data and tested with integration tests"
