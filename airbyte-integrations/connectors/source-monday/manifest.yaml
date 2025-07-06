@@ -31,12 +31,12 @@ definitions:
           paginator:
             type: "DefaultPaginator"
             pagination_strategy:
-              class_name: "source_monday.item_pagination_strategy.ItemCursorPaginationStrategy"
+              class_name: "ource_declarative_manifest.components.ItemCursorPaginationStrategy"
               type: "CustomPaginationStrategy"
           record_selector:
             type: RecordSelector
             extractor:
-              class_name: "source_monday.extractor.MondayIncrementalItemsExtractor"
+              class_name: "ource_declarative_manifest.components.MondayIncrementalItemsExtractor"
       incremental_stream:
         $ref: "#/definitions/streams/state_delegating_stream"
         schema_loader:
@@ -55,12 +55,12 @@ definitions:
           paginator:
             type: "DefaultPaginator"
             pagination_strategy:
-              class_name: "source_monday.item_pagination_strategy.ItemCursorPaginationStrategy"
+              class_name: "ource_declarative_manifest.components.ItemCursorPaginationStrategy"
               type: "CustomPaginationStrategy"
           record_selector:
             type: RecordSelector
             extractor:
-              class_name: "source_monday.extractor.MondayIncrementalItemsExtractor"
+              class_name: "ource_declarative_manifest.components.MondayIncrementalItemsExtractor"
           partition_router:
             type: GroupingPartitionRouter
             underlying_partition_router:
@@ -75,7 +75,7 @@ definitions:
             deduplicate: true
         state_migrations:
           - type: CustomStateMigration
-            class_name: source_monday.state_migration.MondayStateMigration
+            class_name: ource_declarative_manifest.components.MondayStateMigration
     # Boards Stream: Split into full refresh and incremental, then combine with StateDelegatingStream
     boards:
       type: StateDelegatingStream
@@ -103,7 +103,7 @@ definitions:
           record_selector:
             type: RecordSelector
             extractor:
-              class_name: "source_monday.extractor.MondayIncrementalItemsExtractor"
+              class_name: "ource_declarative_manifest.components.MondayIncrementalItemsExtractor"
       incremental_stream:
         $ref: "#/definitions/streams/state_delegating_stream"
         schema_loader:
@@ -128,7 +128,7 @@ definitions:
           record_selector:
             type: RecordSelector
             extractor:
-              class_name: "source_monday.extractor.MondayIncrementalItemsExtractor"
+              class_name: "ource_declarative_manifest.components.MondayIncrementalItemsExtractor"
           partition_router:
             type: GroupingPartitionRouter
             underlying_partition_router:
@@ -143,7 +143,7 @@ definitions:
             deduplicate: true
         state_migrations:
           - type: CustomStateMigration
-            class_name: source_monday.state_migration.MondayStateMigration
+            class_name: ource_declarative_manifest.components.MondayStateMigration
     state_delegating_stream:
       type: DeclarativeStream
       primary_key: "id"
@@ -156,7 +156,7 @@ definitions:
                 - updated_at_int
               value: "{{ timestamp(record.get('updated_at')) | int if record.get('updated_at') else 1 }}" # updated_at_int is cursor field so in cannot be None
         - type: CustomTransformation
-          class_name: source_monday.transformation.MondayTransformation
+          class_name: ource_declarative_manifest.components.MondayTransformation
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: "updated_at_int"
