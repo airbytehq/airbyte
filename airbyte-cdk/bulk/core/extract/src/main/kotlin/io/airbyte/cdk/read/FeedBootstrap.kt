@@ -15,7 +15,7 @@ import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.output.sockets.NullProtoEncoder
+import io.airbyte.cdk.output.sockets.nullProtoEncoder
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.output.sockets.toJson
@@ -296,7 +296,7 @@ sealed class FeedBootstrap<T : Feed>(
                 .also { builder ->
                     stream.schema
                         .sortedBy { it.id }
-                        .forEach { builder.addData(NullProtoEncoder.encode(valueVBuilder, true)) }
+                        .forEach { _ -> builder.addData(nullProtoEncoder.encode(valueVBuilder, true)) }
                 }
 
         val reusedMessageWithoutChanges: AirbyteMessageProtobuf.Builder =

@@ -62,29 +62,29 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
 
 fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
     return when (this) {
-        is LongCodec, -> LongProtoEncoder
-        is IntCodec, -> IntProtoEncoder
-        is TextCodec, -> TextProtoEncoder
-        is BooleanCodec, -> BooleanProtoEncoder
-        is OffsetDateTimeCodec, -> OffsetDateTimeProtoEncoder
-        is FloatCodec, -> FloatProtoEncoder
-        is NullCodec, -> NullProtoEncoder
-        is BinaryCodec, -> BinaryProtoEncoder
-        is BigDecimalCodec, -> BigDecimalProtoEncoder
+        is LongCodec, -> longProtoEncoder
+        is IntCodec, -> intProtoEncoder
+        is TextCodec, -> textProtoEncoder
+        is BooleanCodec, -> booleanProtoEncoder
+        is OffsetDateTimeCodec, -> offsetDateTimeProtoEncoder
+        is FloatCodec, -> floatProtoEncoder
+        is NullCodec, -> nullProtoEncoder
+        is BinaryCodec, -> binaryProtoEncoder
+        is BigDecimalCodec, -> bigDecimalProtoEncoder
         is BigDecimalIntegerCodec, ->
-            BigDecimalProtoEncoder // TODO: check can convert to exact integer
-        is ShortCodec, -> ShortProtoEncoder
-        is ByteCodec, -> ByteProtoEncoder
-        is DoubleCodec, -> DoubleProtoEncoder
-        is JsonBytesCodec, -> BinaryProtoEncoder
-        is JsonStringCodec, -> TextProtoEncoder
-        is UrlCodec, -> UrlProtoEncoder
-        is LocalDateCodec, -> LocalDateProtoEncoder
-        is LocalTimeCodec, -> LocalTimeProtoEncoder
-        is LocalDateTimeCodec, -> LocalDateTimeProtoEncoder
-        is OffsetTimeCodec, -> OffsetTimeProtoEncoder
-        is ArrayEncoder<*>, -> AnyProtoEncoder
-        else -> AnyProtoEncoder
+            bigDecimalProtoEncoder // TODO: check can convert to exact integer
+        is ShortCodec, -> shortProtoEncoder
+        is ByteCodec, -> byteProtoEncoder
+        is DoubleCodec, -> doubleProtoEncoder
+        is JsonBytesCodec, -> binaryProtoEncoder
+        is JsonStringCodec, -> textProtoEncoder
+        is UrlCodec, -> urlProtoEncoder
+        is LocalDateCodec, -> localDateProtoEncoder
+        is LocalTimeCodec, -> localTimeProtoEncoder
+        is LocalDateTimeCodec, -> localDateTimeProtoEncoder
+        is OffsetTimeCodec, -> offsetTimeProtoEncoder
+        is ArrayEncoder<*>, -> anyProtoEncoder
+        else -> anyProtoEncoder
     }
 }
 
@@ -95,137 +95,71 @@ fun interface ProtoEncoder<T> {
     ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 }
 
-data object OffsetTimeProtoEncoder : ProtoEncoder<OffsetTime> {
+inline fun <T> protoEncoderGenerator(
+    crossinline setValue: (AirbyteRecordMessage.AirbyteValueProtobuf.Builder, T) -> AirbyteRecordMessage.AirbyteValueProtobuf.Builder
+): ProtoEncoder<T> = object : ProtoEncoder<T> {
     override fun encode(
         builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: OffsetTime
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setString(decoded.format(OffsetTimeCodec.formatter))
+        decoded: T
+    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = setValue(builder, decoded)
 }
 
-data object LocalDateTimeProtoEncoder : ProtoEncoder<LocalDateTime> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: LocalDateTime
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setString(decoded.format(LocalDateTimeCodec.formatter))
+val offsetTimeProtoEncoder = protoEncoderGenerator<OffsetTime> { builder, value ->
+    builder.setString(value.format(OffsetTimeCodec.formatter))
+}
+val localDateTimeProtoEncoder = protoEncoderGenerator<LocalDateTime> { builder, value ->
+    builder.setString(value.format(OffsetTimeCodec.formatter))
+}
+val localTimeProtoEncoder = protoEncoderGenerator<LocalTime> { builder, time ->
+    builder.setString(time.format(LocalTimeCodec.formatter))
+}
+val localDateProtoEncoder = protoEncoderGenerator<LocalDate> { builder, date ->
+    builder.setString(date.format(LocalDateCodec.formatter))
+}
+val urlProtoEncoder = protoEncoderGenerator<URL> { builder, url ->
+    builder.setString(url.toExternalForm())
+}
+val doubleProtoEncoder = protoEncoderGenerator<Double> { builder, value ->
+    builder.setNumber(value)
+}
+val byteProtoEncoder = protoEncoderGenerator<Byte> { builder, value ->
+    builder.setInteger(value.toLong())
+}
+val binaryProtoEncoder = protoEncoderGenerator<ByteBuffer> { builder, decoded ->
+    builder.setStringBytes(decoded.toByteString()) // TODO: check here. Need base64 encoded?
+}
+val shortProtoEncoder = protoEncoderGenerator<Short> { builder, value ->
+    builder.setInteger(value.toLong())
+}
+val bigDecimalProtoEncoder = protoEncoderGenerator<BigDecimal> { builder, decoded ->
+    builder.setBigDecimal(decoded.toPlainString()) // TODO: check here. why string?
+}
+val longProtoEncoder = protoEncoderGenerator<Long> { builder, value ->
+    builder.setInteger(value)
+}
+val textProtoEncoder = protoEncoderGenerator<String> { builder, value ->
+    builder.setString(value)
+}
+val intProtoEncoder = protoEncoderGenerator<Int> { builder, value ->
+    builder.setInteger(value.toLong())
+}
+val booleanProtoEncoder = protoEncoderGenerator<Boolean> { builder, value ->
+    builder.setBoolean(value)
+}
+val offsetDateTimeProtoEncoder = protoEncoderGenerator<OffsetDateTime> { builder, decoded ->
+    builder.setTimestampWithTimezone(decoded.format(offsetDateTimeFormatter))
+}
+const val offsetDateTimePattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
+val offsetDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(offsetDateTimePattern)
+val floatProtoEncoder = protoEncoderGenerator<Float> { builder, decoded ->
+    builder.setNumber(decoded.toDouble())
 }
 
-data object LocalTimeProtoEncoder : ProtoEncoder<LocalTime> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: LocalTime
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setString(decoded.format(LocalTimeCodec.formatter))
+val nullProtoEncoder = protoEncoderGenerator<Any?> { builder, _ ->
+    builder.setIsNull(true)
 }
-
-data object LocalDateProtoEncoder : ProtoEncoder<LocalDate> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: LocalDate
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setString(decoded.format(LocalDateCodec.formatter))
-}
-
-data object UrlProtoEncoder : ProtoEncoder<URL> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: URL
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setString(decoded.toExternalForm())
-}
-
-data object DoubleProtoEncoder : ProtoEncoder<Double> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Double
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setNumber(decoded)
-}
-
-data object ByteProtoEncoder : ProtoEncoder<Byte> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Byte
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setInteger(decoded.toLong())
-}
-
-data object BinaryProtoEncoder : ProtoEncoder<ByteBuffer> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: ByteBuffer
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setStringBytes(decoded.toByteString()) // TODO: check here. Need base64 encoded?
-}
-
-data object ShortProtoEncoder : ProtoEncoder<Short> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Short
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setInteger(decoded.toLong())
-}
-
-data object BigDecimalProtoEncoder : ProtoEncoder<BigDecimal> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: BigDecimal
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setBigDecimal(decoded.toPlainString()) // TODO: check here. why string?
-}
-
-data object LongProtoEncoder : ProtoEncoder<Long> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Long
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setInteger(decoded)
-}
-
-data object TextProtoEncoder : ProtoEncoder<String> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: String
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setString(decoded)
-}
-
-data object IntProtoEncoder : ProtoEncoder<Int> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Int
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setInteger(decoded.toLong())
-}
-
-data object BooleanProtoEncoder : ProtoEncoder<Boolean> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Boolean
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setBoolean(decoded)
-}
-
-data object OffsetDateTimeProtoEncoder : ProtoEncoder<OffsetDateTime> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: OffsetDateTime
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder =
-        builder.setTimestampWithTimezone(decoded.format(formatter))
-
-    const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
-    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
-}
-
-data object FloatProtoEncoder : ProtoEncoder<Float> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Float
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setNumber(decoded.toDouble())
-}
-
-data object NullProtoEncoder : ProtoEncoder<Any?> {
-    override fun encode(
-        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Any?
-    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = builder.setIsNull(true)
-}
-
-typealias AnyProtoEncoder = TextProtoEncoder
+val anyProtoEncoder = textProtoEncoder
+//typealias AnyProtoEncoder = TextProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
@@ -245,7 +179,7 @@ fun NativeRecordPayload.toProtobuf(
                         entry.value.fieldValue!!
                     )
                 }
-                    ?: NullProtoEncoder.encode(valueBuilder.clear(), null)
+                    ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
             )
         }
     }
