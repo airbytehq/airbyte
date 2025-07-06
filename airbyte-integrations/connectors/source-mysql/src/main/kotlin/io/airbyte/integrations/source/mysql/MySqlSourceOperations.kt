@@ -137,11 +137,10 @@ class MySqlSourceOperations :
             MysqlType.BIGINT -> LongFieldType
             MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
             MysqlType.FLOAT,
-            MysqlType.FLOAT_UNSIGNED,
-            MysqlType.DOUBLE,
-            MysqlType.DOUBLE_UNSIGNED -> {
+            MysqlType.FLOAT_UNSIGNED, ->
                 if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
-            }
+            MysqlType.DOUBLE,
+            MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType
             MysqlType.DECIMAL,
             MysqlType.DECIMAL_UNSIGNED -> {
                 if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
