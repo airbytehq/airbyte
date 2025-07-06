@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3db8a652-88f7-41ee-91a3-2f745322d9ae
-  dockerImageTag: 0.0.24
+  dockerImageTag: 0.0.25
   dockerRepository: airbyte/source-cal-com
   githubIssueLabel: source-cal-com
   icon: icon.svg
