@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.kafka.format;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+// import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
@@ -32,6 +32,8 @@ import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerConfig;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializerConfig;
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
+
 
 import java.io.IOException;
 import java.time.Duration;
@@ -162,10 +164,6 @@ public class ProtobufFormat extends AbstractFormat {
                     throw new RuntimeException(e);
                 }
             }).toList();
-//      return topicsToSubscribe.stream().map(topic -> CatalogHelpers
-//          .createAirbyteStream(topic, Field.of("value", JsonSchemaType.STRING))
-//          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
-//          .collect(Collectors.toList());
   }
 
   private List<Field> buildFieldsFromDescriptor(Descriptors.Descriptor descriptor) {
@@ -269,24 +267,19 @@ public class ProtobufFormat extends AbstractFormat {
         if (iterator.hasNext()) {
           final ConsumerRecord<String, DynamicMessage> record = iterator.next();
           DynamicMessage protobuf_data = record.value();
-          ObjectMapper mapper = new ObjectMapper();
-//          String namespace = protobuf_data.getDescriptorForType().getFile().getPackage();
-//          String name = protobuf_data.getDescriptorForType().getName();
+//          ObjectMapper mapper = new ObjectMapper();
+          ProtobufMapper protobufMapper = new ProtobufMapper();
           JsonNode output;
           try {
             // Convert protobuf to JSON using JsonFormat
-            String jsonString = JsonFormat.printer().print(protobuf_data);
-            output = mapper.readTree(jsonString);
-
-//            if (StringUtils.isNoneEmpty(namespace) && StringUtils.isNoneEmpty(name)) {
-//              String namespaceString = String.format("{\"protobuf_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
-//              JsonNode namespaceNode = mapper.readTree(namespaceString);
-//              ((ObjectNode) output).set("_namespace_", namespaceNode);
-//            }
+            // String jsonString = JsonFormat.printer().print(protobuf_data);
+            // output = mapper.readTree(jsonString);
+            output = protobufMapper.valueToTree(protobuf_data);
           } catch (Exception e) {
             LOGGER.error("Exception whilst reading protobuf data from stream", e);
             throw new RuntimeException(e);
           }
+          LOGGER.error("Output: {}", output);
           return new AirbyteMessage()
               .withType(AirbyteMessage.Type.RECORD)
               .withRecord(new AirbyteRecordMessage()

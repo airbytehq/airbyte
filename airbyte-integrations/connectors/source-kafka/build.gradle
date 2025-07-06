@@ -31,6 +31,7 @@ dependencies {
     implementation 'io.confluent:kafka-protobuf-serializer:7.5.1'
     implementation 'com.google.protobuf:protobuf-java:3.25.1'
     implementation 'com.google.protobuf:protobuf-java-util:3.25.1'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-protobuf:2.15.2'
 
     testImplementation 'org.testcontainers:kafka:1.19.4'
 }
