@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.protobuf.Descriptors;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -22,10 +23,17 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.SchemaMetadata;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerConfig;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializerConfig;
+
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -144,10 +152,80 @@ public class ProtobufFormat extends AbstractFormat {
   @Override
   public List<AirbyteStream> getStreams() {
     final Set<String> topicsToSubscribe = getTopicsToSubscribe();
-      return topicsToSubscribe.stream().map(topic -> CatalogHelpers
-          .createAirbyteStream(topic, Field.of("value", JsonSchemaType.STRING))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
-          .collect(Collectors.toList());
+    return topicsToSubscribe.stream().map(topic -> {
+                try {
+                    return buildDescriptorFromSchemaRegistry(topic + "-value");
+                } catch (IOException | RestClientException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .map(descriptor -> CatalogHelpers
+                      .createAirbyteStream(descriptor.getName(), buildFieldsFromDescriptor(descriptor).toArray(Field[]::new))
+                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            ).toList();
+//      return topicsToSubscribe.stream().map(topic -> CatalogHelpers
+//          .createAirbyteStream(topic, Field.of("value", JsonSchemaType.STRING))
+//          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
+//          .collect(Collectors.toList());
+  }
+
+  private List<Field> buildFieldsFromDescriptor(Descriptors.Descriptor descriptor) {
+    List<Field> fields = new ArrayList<>();
+    
+    for (Descriptors.FieldDescriptor fieldDescriptor : descriptor.getFields()) {
+      String fieldName = fieldDescriptor.getName();
+      JsonSchemaType fieldType = getJsonSchemaTypeFromProtobufField(fieldDescriptor);
+      fields.add(Field.of(fieldName, fieldType));
+    }
+    
+    return fields;
+  }
+  
+  private JsonSchemaType getJsonSchemaTypeFromProtobufField(Descriptors.FieldDescriptor fieldDescriptor) {
+      return switch (fieldDescriptor.getType()) {
+          case DOUBLE, FLOAT -> JsonSchemaType.NUMBER;
+          case INT64, UINT64, INT32, FIXED64, FIXED32, UINT32, SFIXED32, SFIXED64, SINT32, SINT64 ->
+                  JsonSchemaType.INTEGER;
+          case BOOL -> JsonSchemaType.BOOLEAN;
+          case MESSAGE -> JsonSchemaType.OBJECT;
+          case STRING, BYTES, ENUM -> JsonSchemaType.STRING;
+          default -> JsonSchemaType.STRING;
+      };
+  }
+
+
+
+  private Descriptors.Descriptor buildDescriptorFromSchemaRegistry(String subject)
+          throws IOException, RestClientException {
+
+    try (SchemaRegistryClient schemaRegistryClient = new CachedSchemaRegistryClient(
+            (String) getKafkaConfig().get(KafkaProtobufDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG),
+            1000, // max schemas to cache
+            new HashMap<>()
+    )) {
+
+      // Step 2: Fetch schema from Schema Registry
+      System.out.println("Fetching schema for subject: " + subject);
+
+      SchemaMetadata schemaMetadata = schemaRegistryClient.getLatestSchemaMetadata(subject);
+
+      // Step 3: Parse the protobuf schema
+      ProtobufSchema protobufSchema = new ProtobufSchema(schemaMetadata.getSchema());
+
+      // Step 4: Build descriptor from the protobuf schema
+      Descriptors.Descriptor descriptor = protobufSchema.toDescriptor();
+
+      // Validate that we have a valid descriptor
+      if (descriptor == null) {
+        throw new RuntimeException("Failed to build descriptor from protobuf schema");
+      }
+
+
+      return descriptor;
+    } catch (Exception e) {
+      System.err.println("Error building descriptor from Schema Registry: " + e.getMessage());
+      throw e;
+    }
   }
 
   @Override
