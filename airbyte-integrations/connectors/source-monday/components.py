@@ -21,11 +21,13 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.types import Record
@@ -678,3 +680,25 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
 
         slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
         yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
+
+
+class MondayStateMigration(StateMigration):
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        del stream_state["activity_logs"]
+        return stream_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return "activity_logs" in stream_state
+
+
+@dataclass
+class MondayTransformation(RecordTransformation):
+    def transform(self, record: MutableMapping[str, Any], config: Optional[Config] = None, **kwargs) -> MutableMapping[str, Any]:
+        # Oncall issue: https://github.com/airbytehq/oncall/issues/4337
+        column_values = record.get("column_values", [])
+        for values in column_values:
+            display_value, text = values.get("display_value"), values.get("text")
+            if display_value and not text:
+                values["text"] = display_value
+
+        return record
