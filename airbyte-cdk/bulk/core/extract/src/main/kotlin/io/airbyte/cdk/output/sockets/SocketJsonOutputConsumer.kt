@@ -48,7 +48,6 @@ class SocketJsonOutputConsumer(
                 // Such messages don't linger in the buffer, they are flushed to stdout immediately,
                 // along with whatever might have already been lingering inside.
                 // This prints a newline after the message.
-                log.info { "AirbyteMessage sent over SOCKET: $airbyteMessage" }
                 withLockFlush()
             }
         }
