@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.kafka.format;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-// import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
@@ -267,14 +267,14 @@ public class ProtobufFormat extends AbstractFormat {
         if (iterator.hasNext()) {
           final ConsumerRecord<String, DynamicMessage> record = iterator.next();
           DynamicMessage protobuf_data = record.value();
-//          ObjectMapper mapper = new ObjectMapper();
-          ProtobufMapper protobufMapper = new ProtobufMapper();
+         ObjectMapper mapper = new ObjectMapper();
+          // ProtobufMapper protobufMapper = new ProtobufMapper();
           JsonNode output;
           try {
             // Convert protobuf to JSON using JsonFormat
-            // String jsonString = JsonFormat.printer().print(protobuf_data);
-            // output = mapper.readTree(jsonString);
-            output = protobufMapper.valueToTree(protobuf_data);
+            String jsonString = JsonFormat.printer().print(protobuf_data);
+            output = mapper.readTree(jsonString);
+            // output = protobufMapper.valueToTree(protobuf_data);
           } catch (Exception e) {
             LOGGER.error("Exception whilst reading protobuf data from stream", e);
             throw new RuntimeException(e);
