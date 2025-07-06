@@ -271,19 +271,19 @@ public class ProtobufFormat extends AbstractFormat {
           final ConsumerRecord<String, DynamicMessage> record = iterator.next();
           DynamicMessage protobuf_data = record.value();
           ObjectMapper mapper = new ObjectMapper();
-          String namespace = protobuf_data.getDescriptorForType().getFile().getPackage();
-          String name = protobuf_data.getDescriptorForType().getName();
+//          String namespace = protobuf_data.getDescriptorForType().getFile().getPackage();
+//          String name = protobuf_data.getDescriptorForType().getName();
           JsonNode output;
           try {
             // Convert protobuf to JSON using JsonFormat
             String jsonString = JsonFormat.printer().print(protobuf_data);
             output = mapper.readTree(jsonString);
 
-            if (StringUtils.isNoneEmpty(namespace) && StringUtils.isNoneEmpty(name)) {
-              String namespaceString = String.format("{\"protobuf_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
-              JsonNode namespaceNode = mapper.readTree(namespaceString);
-              ((ObjectNode) output).set("_namespace_", namespaceNode);
-            }
+//            if (StringUtils.isNoneEmpty(namespace) && StringUtils.isNoneEmpty(name)) {
+//              String namespaceString = String.format("{\"protobuf_schema\": \"%s\",\"name\":\"%s\"}", namespace, name);
+//              JsonNode namespaceNode = mapper.readTree(namespaceString);
+//              ((ObjectNode) output).set("_namespace_", namespaceNode);
+//            }
           } catch (Exception e) {
             LOGGER.error("Exception whilst reading protobuf data from stream", e);
             throw new RuntimeException(e);
@@ -293,7 +293,7 @@ public class ProtobufFormat extends AbstractFormat {
               .withRecord(new AirbyteRecordMessage()
                   .withStream(record.topic())
                   .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("value", output).build())));
+                  .withData(output));
         }
 
         return endOfData();
