@@ -48,7 +48,7 @@ jobs:
     # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
     # which explains why which we went down from 64 cores to 16.
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
-    name: Gradle Check
+    name: CDK Check
     timeout-minutes: 60
     steps:
       - name: Checkout Airbyte
