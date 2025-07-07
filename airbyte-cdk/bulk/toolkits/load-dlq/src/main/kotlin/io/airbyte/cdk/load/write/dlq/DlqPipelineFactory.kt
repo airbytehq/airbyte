@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.pipeline.dlq.DlqLoaderPipelineStep
+import io.airbyte.cdk.load.pipeline.dlq.DlqNoopPipelineStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatterStep
@@ -49,11 +50,21 @@ class DlqPipelineFactory(
                         outputQueue = dlqInputQueue,
                         taskFactory = pipelineStepTaskFactory,
                         dlqLoader = dlqLoader,
-                        deadLetterQueueEnabled = dlqPipelineSteps.isNotEmpty(),
                     ),
-                    *dlqPipelineSteps.toTypedArray(),
+                    *getFinalDlqPipelineSteps().toTypedArray(),
                 )
             ) {}
+
+    private fun getFinalDlqPipelineSteps(): List<LoadPipelineStep> =
+        dlqPipelineSteps.ifEmpty {
+            listOf(
+                DlqNoopPipelineStep(
+                    numWorkers = objectLoader.numPartWorkers,
+                    taskFactory = pipelineStepTaskFactory,
+                    dlqInputQueue = dlqInputQueue,
+                )
+            )
+        }
 }
 
 /** A Micronaut Factory to help initialize the component required for a DeadLetterQueuePipeline */

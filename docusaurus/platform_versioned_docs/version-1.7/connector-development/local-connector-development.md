@@ -90,7 +90,7 @@ For high-throughput connectors, we also use:
 To install the `airbyte-cdk` CLI, first install `uv` using the instructions above. Then you can install or upgrade the `airbyte-cdk` CLI using:
 
 ```bash
-uv install --upgrade 'airbyte-cdk[dev]'
+uv tool install --upgrade 'airbyte-cdk[dev]'
 ```
 
 For a list of available commands in the `airbyte-cdk` CLI, run `airbyte-cdk --help`.

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-eventzilla
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.56.7@sha256:41be3ac5f569004b6a25507cd40f5152e3691aecd2a9a3f873eb4c559903412d
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.57.3@sha256:a193ed90a8b69ea54d148db7cb556e8c7e840ad22eb101d7cedc0190d64a9595
   connectorSubtype: api
   connectorType: source
   definitionId: ba6ddcf2-00c7-44f2-9cee-2d295bd0c854
-  dockerImageTag: 0.0.23
+  dockerImageTag: 0.0.24
   dockerRepository: airbyte/source-eventzilla
   githubIssueLabel: source-eventzilla
   icon: icon.svg

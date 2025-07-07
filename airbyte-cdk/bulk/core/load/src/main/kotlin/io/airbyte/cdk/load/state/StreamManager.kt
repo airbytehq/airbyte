@@ -29,14 +29,21 @@ data object StreamProcessingSucceeded : StreamResult
 data class CheckpointValue(
     val records: Long,
     val serializedBytes: Long,
+    val rejectedRecords: Long = 0, // TODO there should not be a default here
 ) {
     operator fun plus(other: CheckpointValue): CheckpointValue {
-        return CheckpointValue(records + other.records, serializedBytes + other.serializedBytes)
+        return CheckpointValue(
+            records = records + other.records,
+            serializedBytes = serializedBytes + other.serializedBytes,
+            rejectedRecords = rejectedRecords + other.rejectedRecords,
+        )
     }
 
     override fun equals(other: Any?): Boolean {
         if (other != null && other is CheckpointValue) {
-            return this.records == other.records && this.serializedBytes == other.serializedBytes
+            return this.records == other.records &&
+                this.serializedBytes == other.serializedBytes &&
+                this.rejectedRecords == other.rejectedRecords
         }
         return false
     }
@@ -225,7 +232,12 @@ class StreamManager(
         val countsForState = checkpointCountsByState.filter { (it.key == state) }.values
         val recordCount = countsForState.sumOf { it[checkpointId]?.records ?: 0L }
         val serializedBytes = countsForState.sumOf { it[checkpointId]?.serializedBytes ?: 0L }
-        return CheckpointValue(records = recordCount, serializedBytes = serializedBytes)
+        val rejectedRecords = countsForState.sumOf { it[checkpointId]?.rejectedRecords ?: 0L }
+        return CheckpointValue(
+            records = recordCount,
+            serializedBytes = serializedBytes,
+            rejectedRecords = rejectedRecords,
+        )
     }
 
     fun committedCount(checkpointId: CheckpointId): CheckpointValue {
@@ -234,8 +246,13 @@ class StreamManager(
 
         val records = maxOf(persistedCount.records, completedCount.records)
         val bytes = maxOf(persistedCount.serializedBytes, completedCount.serializedBytes)
+        val rejectedRecords = maxOf(persistedCount.rejectedRecords, completedCount.rejectedRecords)
 
-        return CheckpointValue(records = records, serializedBytes = bytes)
+        return CheckpointValue(
+            records = records,
+            serializedBytes = bytes,
+            rejectedRecords = rejectedRecords,
+        )
     }
 
     fun setReadCountForCheckpointFromState(checkpointId: CheckpointId, records: Long) {
@@ -254,15 +271,8 @@ class StreamManager(
             recordsReadPerCheckpoint[checkpointId]
                 ?: throw IllegalStateException("No read count for checkpoint $checkpointId.")
 
-        val persistedCount = countByStateForCheckpoint(checkpointId, BatchState.PERSISTED)
-        val completedCount = countByStateForCheckpoint(checkpointId, BatchState.COMPLETE)
-
-        if (persistedCount.records == readCount) {
-            return true
-        }
-
-        // Completed implies persisted.
-        return completedCount.records == readCount
+        val persistedRecordCount = persistedRecordCountForCheckpoint(checkpointId)
+        return persistedRecordCount == readCount
     }
 
     /**
@@ -284,7 +294,8 @@ class StreamManager(
                 .filter { (state, _) -> state == BatchState.COMPLETE }
                 .values
                 .flatMap { it.values }
-                .sumOf { it.records }
+                // Make sure to consider rejected records as well for completion
+                .sumOf { it.records + it.rejectedRecords }
 
         return completedCount == readCount
     }
@@ -300,9 +311,15 @@ class StreamManager(
 
     fun persistedRecordCountForCheckpoint(checkpointId: CheckpointId): Long {
         val persistedCount =
-            checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.records ?: 0L
+            checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.let {
+                it.records + it.rejectedRecords
+            }
+                ?: 0L
         val completeCount =
-            checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.records ?: 0L
+            checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.let {
+                it.records + it.rejectedRecords
+            }
+                ?: 0L
         return max(persistedCount, completeCount)
     }
 

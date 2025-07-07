@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
-  dockerImageTag: 1.0.16
+  dockerImageTag: 1.0.17
   dockerRepository: airbyte/source-pardot
   githubIssueLabel: source-pardot
   icon: salesforcepardot.svg
@@ -34,5 +34,5 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.56.7@sha256:41be3ac5f569004b6a25507cd40f5152e3691aecd2a9a3f873eb4c559903412d
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.57.3@sha256:a193ed90a8b69ea54d148db7cb556e8c7e840ad22eb101d7cedc0190d64a9595
 metadataSpecVersion: "1.0"

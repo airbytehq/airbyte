@@ -93,6 +93,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.17 | 2025-07-05 | [62559](https://github.com/airbytehq/airbyte/pull/62559) | Update dependencies |
 | 1.0.16 | 2025-06-28 | [61048](https://github.com/airbytehq/airbyte/pull/61048) | Update dependencies |
 | 1.0.15 | 2025-06-20 | [61736](https://github.com/airbytehq/airbyte/pull/61736) | Fix lifecycle_stages -  was erroneously top-level instead of a property of column |
 | 1.0.14 | 2025-05-24 | [60515](https://github.com/airbytehq/airbyte/pull/60515) | Update dependencies |

@@ -40,6 +40,7 @@ Docs : https://developers.rentcast.io/reference/introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-07-05 | [62745](https://github.com/airbytehq/airbyte/pull/62745) | Update dependencies |
 | 0.0.27 | 2025-06-28 | [62282](https://github.com/airbytehq/airbyte/pull/62282) | Update dependencies |
 | 0.0.26 | 2025-06-21 | [61790](https://github.com/airbytehq/airbyte/pull/61790) | Update dependencies |
 | 0.0.25 | 2025-06-14 | [61298](https://github.com/airbytehq/airbyte/pull/61298) | Update dependencies |

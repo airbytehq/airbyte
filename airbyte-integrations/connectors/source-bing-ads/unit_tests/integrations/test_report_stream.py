@@ -16,10 +16,16 @@ from airbyte_cdk.models import SyncMode
 
 
 SOURCE_BING_ADS = resolve_manifest(source=SourceBingAds(None, None, None)).record.data["manifest"]
-MANIFEST_STREAMS = [stream["name"] for stream in SOURCE_BING_ADS["streams"]] + [
-    stream_params.get("name")
-    for stream_params in SOURCE_BING_ADS["dynamic_streams"][0]["components_resolver"]["stream_parameters"]["list_of_parameters_for_stream"]
-]
+MANIFEST_STREAMS = (
+    [stream["name"] for stream in SOURCE_BING_ADS["streams"]]
+    + [
+        stream_params.get("name")
+        for stream_params in SOURCE_BING_ADS["dynamic_streams"][0]["components_resolver"]["stream_parameters"][
+            "list_of_parameters_for_stream"
+        ]
+    ]
+    + ["custom_report"]
+)
 
 SECOND_READ_FREEZE_TIME = "2024-05-08"
 
@@ -276,7 +282,7 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = provided_state[0].stream.stream_state.state[self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        if "hourly" in self.stream_name:
+        if "hourly" in self.stream_name or (hasattr(self, "custom_report_aggregation") and self.custom_report_aggregation == "Hourly"):
             assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
         else:
             assert job_end_time == SECOND_READ_FREEZE_TIME
@@ -347,7 +353,7 @@ class TestSuiteReportStream(TestReportStream):
 
         last_successful_sync_cursor_value = vars(provided_state[0].stream.stream_state)[self.account_id][self.cursor_field]
         assert job_start_time == last_successful_sync_cursor_value
-        if "hourly" in self.stream_name:
+        if "hourly" in self.stream_name or (hasattr(self, "custom_report_aggregation") and self.custom_report_aggregation == "Hourly"):
             assert job_end_time == f"{SECOND_READ_FREEZE_TIME}T00:00:00+00:00"
         else:
             assert job_end_time == SECOND_READ_FREEZE_TIME
@@ -374,7 +380,7 @@ class TestSuiteReportStream(TestReportStream):
         first_read_state = deepcopy(self.first_read_state)
         # this corresponds to the last read record as we don't have started_date in the config
         # the self.first_read_state is set using the config start date so it is not correct for this test
-        if "hourly" in self.stream_name:
+        if "hourly" in self.stream_name or (hasattr(self, "custom_report_aggregation") and self.custom_report_aggregation == "Hourly"):
             first_read_state["state"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
             first_read_state["states"][0]["cursor"][self.cursor_field] = "2023-11-12T00:00:00+00:00"
             assert output.most_recent_state.stream_state.__dict__ == first_read_state

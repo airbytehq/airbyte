@@ -44,56 +44,6 @@ def test_source_check_connection_failed_invalid_creds(config, logger_mock):
 
 
 @patch.object(source_bing_ads.source, "Client")
-def test_validate_custom_reposts(mocked_client, config_with_custom_reports, logger_mock):
-    reporting_service_mock = MagicMock()
-    reporting_service_mock._get_service_info_dict.return_value = SERVICE_INFO_DICT_V13
-    mocked_client.get_service.return_value = reporting_service_mock
-    mocked_client.environment = "production"
-    res = source(config_with_custom_reports).validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
-    assert res is None
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_validate_custom_reposts_failed_invalid_report_columns(mocked_client, config_with_custom_reports, logger_mock):
-    reporting_service_mock = MagicMock()
-    reporting_service_mock._get_service_info_dict.return_value = SERVICE_INFO_DICT_V13
-    mocked_client.get_service.return_value = reporting_service_mock
-    mocked_client.environment = "production"
-    config_with_custom_reports["custom_reports"][0]["report_columns"] = ["TimePeriod", "NonExistingColumn", "ConversionRate"]
-
-    with pytest.raises(AirbyteTracedException) as e:
-        source(config_with_custom_reports).validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
-    assert e.value.internal_message == (
-        "my test custom report: Reporting Columns are invalid. "
-        "Columns that you provided don't belong to Reporting Data Object Columns:"
-        " ['TimePeriod', 'NonExistingColumn', 'ConversionRate']. "
-        "Please ensure it is correct in Bing Ads Docs."
-    )
-    assert (
-        "Config validation error: my test custom report: Reporting Columns are "
-        "invalid. Columns that you provided don't belong to Reporting Data Object "
-        "Columns: ['TimePeriod', 'NonExistingColumn', 'ConversionRate']. Please "
-        "ensure it is correct in Bing Ads Docs."
-    ) in e.value.message
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_get_custom_reports(mocked_client, config_with_custom_reports):
-    custom_reports = source(config_with_custom_reports).get_custom_reports(config_with_custom_reports, mocked_client)
-    assert isinstance(custom_reports, list)
-    assert custom_reports[0].report_name == "DSAAutoTargetPerformanceReport"
-    assert custom_reports[0].report_aggregation == "Weekly"
-    assert "AccountId" in custom_reports[0].custom_report_columns
-
-
-def test_clear_reporting_object_name():
-    reporting_object = source(config={})._clear_reporting_object_name("DSAAutoTargetPerformanceReportRequest")
-    assert reporting_object == "DSAAutoTargetPerformanceReport"
-    reporting_object = source(config={})._clear_reporting_object_name("DSAAutoTargetPerformanceReport")
-    assert reporting_object == "DSAAutoTargetPerformanceReport"
-
-
-@patch.object(source_bing_ads.source, "Client")
 def test_campaigns_request_params(mocked_client, config):
     campaigns = Campaigns(mocked_client, config)
 
