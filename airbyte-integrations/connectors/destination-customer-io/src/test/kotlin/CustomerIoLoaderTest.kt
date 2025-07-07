@@ -20,6 +20,7 @@ import java.io.InputStream
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,9 +48,9 @@ class CustomerIoStateTest {
         every { httpClient.send(any()) } returns aResponse(200)
         state.accumulate(aRecord())
 
-        val rejectedRecords = state.flush() ?: throw IllegalStateException("Expected empty list")
+        val rejectedRecords = state.flush()
 
-        assertTrue { rejectedRecords.isEmpty() }
+        assertNull(rejectedRecords )
     }
 
     @Test
@@ -70,10 +71,10 @@ class CustomerIoStateTest {
         state.accumulate(aRecord())
         state.accumulate(rejectedRecord)
 
-        val rejectedRecords = state.flush() ?: throw IllegalStateException("Expected empty list")
+        val rejectedRecords = state.flush() ?: throw IllegalStateException("Expected list with one element")
 
         assertEquals(
-            listOf<DestinationRecordRaw>(
+            listOf(
                 rejectedRecord.toDlqRecord(
                     mapOf("reason" to "a_reason", "field" to "a_field", "message" to "a_message")
                 )
