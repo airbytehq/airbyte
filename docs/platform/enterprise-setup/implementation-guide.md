@@ -502,7 +502,7 @@ spec:
                 # format is ${RELEASE_NAME}-airbyte-server-svc
                 name: airbyte-enterprise-airbyte-server-svc
                 port:
-                  number: 80 # service port, example: 8080
+                  number: 8000 # service port, example: 8080
             path: /
             pathType: Prefix
 ```
@@ -547,7 +547,7 @@ spec:
               service:
                 name: airbyte-enterprise-airbyte-server-svc
                 port:
-                  number: 80
+                  number: 8000
             path: /
             pathType: Prefix
 ```
