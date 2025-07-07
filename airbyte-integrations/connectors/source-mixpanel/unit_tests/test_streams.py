@@ -795,7 +795,7 @@ def test_export_incremental_read(export_config, engage_response):
     time_ts = int((pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp())
     request_params = [
         (
-            {"from_date": "2021-12-27", "to_date": "2022-06-01", "from_time": time_ts, "to_time": 1650758339},
+            {"from_date": "2022-03-19", "to_date": "2022-06-01", "from_time": time_ts, "to_time": 1650758339},
             {"properties": {"time": "2022-04-18T21:59:59Z"}},
         ),
     ]
@@ -863,7 +863,7 @@ def test_export_lookback_window(export_config):
 
     # Verify slice parameters
     expected_end = pendulum.parse("2021-07-10T00:00:00Z").format("YYYY-MM-DD")  # From config end_date
-    expected_start = (pendulum.parse(config["start_date"]) - timedelta(days=config["attribution_window"])).format(
+    expected_start = (pendulum.parse(state_value) - timedelta(days=config["attribution_window"])).format(
         "YYYY-MM-DD"
     )  # 16:28:00 - 2 hours due to lookback
 

@@ -311,27 +311,25 @@ class EngagePropertiesDpathExtractor(DpathExtractor):
 class ExportHttpRequester(MixpanelHttpRequester):
     cursor_field = "time"
     default_project_timezone = "US/Pacific"
+    _to_date_lookback_window = 1
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
 
-        _from_date_lookback_window = max(
+        self._from_date_lookback_window = max(
             self.config.get("export_lookback_window", 0), self.config.get("attribution_window", 0) * 24 * 60 * 60
         )
-        _to_date_lookback_window = 1
+
+        self._start_date = None
+
         if self.config.get("end_date"):
             self._validate_end_date()
             self._end_date = pendulum.parse(self.config.get("end_date")).date()
         else:
             self._end_date = (
                 pendulum.today(tz=self.config.get("project_timezone", self.default_project_timezone))
-                - timedelta(days=_to_date_lookback_window)
+                - timedelta(days=self._to_date_lookback_window)
             ).date()
-
-        if self.config.get("start_date"):
-            self._start_date = pendulum.parse(self.config.get("start_date")).date() - timedelta(seconds=_from_date_lookback_window)
-        else:
-            self._start_date = (pendulum.now() - timedelta(days=365)).date()
 
     def _validate_end_date(self) -> None:
         date_str = self.config.get("end_date")
@@ -347,6 +345,11 @@ class ExportHttpRequester(MixpanelHttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
+        if not self._start_date:
+            self._start_date = pendulum.parse(
+                stream_slice.cursor_slice.get("start_time")
+            ).date() - timedelta(seconds=self._from_date_lookback_window)
+
         request_params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         start_time = int(pendulum.parse(stream_slice.cursor_slice.get("start_time")).timestamp())
