@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.load.http.getBodyOrEmpty
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.dlq.toDlqRecord
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.dlq.DlqLoader
@@ -68,8 +69,12 @@ class CustomerIoState(
                 200 -> emptyList()
                 207 ->
                     decoder.decode(response.getBodyOrEmpty()).get("errors").asIterable().map {
-                        orderedRecords[it.get("batch_index").asInt()]
-                    } // FIXME also add reason, field and message as part of meta
+                        orderedRecords[it.get("batch_index").asInt()].toDlqRecord(mapOf(
+                            "rejected_reason" to it.get("reason").asText(),
+                            "rejected_field" to it.get("field").asText(),
+                            "rejected_message" to it.get("message").asText(),
+                        ))
+                    }
                 else ->
                     throw IllegalStateException(
                         "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
