@@ -272,7 +272,9 @@ public class ProtobufFormat extends AbstractFormat {
           JsonNode output;
           try {
             // Convert protobuf to JSON using JsonFormat
-            String jsonString = JsonFormat.printer().print(protobuf_data);
+            String jsonString = JsonFormat.printer()
+              .includingDefaultValueFields()
+              .print(protobuf_data);
             output = mapper.readTree(jsonString);
             // output = protobufMapper.valueToTree(protobuf_data);
           } catch (Exception e) {
