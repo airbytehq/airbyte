@@ -38,19 +38,19 @@ spec:
         paths:
           - backend:
               service:
-                # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-airbyte-server-svc
-                port:
-                  number: 80 # service port, example: 8080
-            path: /
-            pathType: Prefix
-          - backend:
-              service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
                 name: airbyte-airbyte-connector-builder-server-svc
                 port:
                   number: 80 # service port, example: 8080
             path: /api/v1/connector_builder
+            pathType: Prefix
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-server-svc
+                name: airbyte-airbyte-server-svc
+                port:
+                  number: 80 # service port, example: 8080
+            path: /
             pathType: Prefix
 ```
 
@@ -95,17 +95,17 @@ spec:
         paths:
           - backend:
               service:
-                name: airbyte-airbyte-server-svc
-                port:
-                  number: 80
-            path: /
-            pathType: Prefix
-          - backend:
-              service:
                 name: airbyte-airbyte-connector-builder-server-svc
                 port:
                   number: 80
             path: /api/v1/connector_builder
+            pathType: Prefix
+          - backend:
+              service:
+                name: airbyte-airbyte-server-svc
+                port:
+                  number: 80
+            path: /
             pathType: Prefix
 ```
 
