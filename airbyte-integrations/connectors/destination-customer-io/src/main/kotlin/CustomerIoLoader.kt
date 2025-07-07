@@ -51,7 +51,7 @@ class CustomerIoState(
     fun flush(): List<DestinationRecordRaw>? {
         if (batch.isEmpty) {
             logger.info { "No records in batch hence the HTTP request will be performed" }
-            return emptyList()
+            return null
         }
 
         val response: Response =
@@ -66,7 +66,7 @@ class CustomerIoState(
 
         response.use {
             return when (response.statusCode) {
-                200 -> emptyList()
+                200 -> null
                 207 ->
                     decoder.decode(response.getBodyOrEmpty()).get("errors").asIterable().map {
                         orderedRecords[it.get("batch_index").asInt()].toDlqRecord(
