@@ -128,7 +128,7 @@
       "description": "E-mail address of a user. If employee is linked to a user, the user email is stored in this property",
       "type": [
         "null",
-        "integer"
+        "string"
       ]
     },
     "EmployeeHID": {
