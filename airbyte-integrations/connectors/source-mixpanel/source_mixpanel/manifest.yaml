@@ -822,7 +822,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - revenue
+    - cohorts
 
 api_budget:
   type: HTTPAPIBudget
