@@ -489,6 +489,7 @@ definitions:
     - type: CustomTransformation
       class_name: "source_mixpanel.components.PropertiesTransformation"
       properties_field: "properties"
+      format_properties_to_string: true
     - type: DpathFlattenFields
       delete_origin_value: true
       field_path:
@@ -496,7 +497,10 @@ definitions:
     - type: AddFields
       fields:
         - path: ["time"]
-          value: "{{ format_datetime(record.get('time', record.get('properties', {}).get('time')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          value: "{{ record.get('time', record.get('properties', {}).get('time')) }}"
+          value_type: integer
+        - path: ["time"]
+          value: "{{ format_datetime(record['time'], '%Y-%m-%dT%H:%M:%SZ') }}"
 
   export_schema_loader:
     type: DynamicSchemaLoader

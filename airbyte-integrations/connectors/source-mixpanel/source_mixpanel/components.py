@@ -422,9 +422,11 @@ class ExportErrorHandler(DefaultErrorHandler):
 
 class PropertiesTransformation(RecordTransformation):
     properties_field: str = None
+    format_properties_to_string: bool = False
 
-    def __init__(self, properties_field: str = None) -> None:
+    def __init__(self, properties_field: str = None, format_properties_to_string: bool = False) -> None:
         self.properties_field = properties_field
+        self.format_properties_to_string = format_properties_to_string
 
     def transform(
         self,
@@ -437,7 +439,7 @@ class PropertiesTransformation(RecordTransformation):
         to_transform = record[self.properties_field] if self.properties_field else record
 
         for result in transform_property_names(to_transform.keys()):
-            updated_record[result.transformed_name] = str(to_transform[result.source_name])
+            updated_record[result.transformed_name] = str(to_transform[result.source_name]) if self.format_properties_to_string else to_transform[result.source_name]
 
         if self.properties_field:
             record[self.properties_field].clear()
