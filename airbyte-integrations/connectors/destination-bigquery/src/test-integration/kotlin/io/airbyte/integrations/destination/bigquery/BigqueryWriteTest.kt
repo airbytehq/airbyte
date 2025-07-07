@@ -35,6 +35,7 @@ abstract class BigqueryWriteTest(
     dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
+    coercesLegacyUnions: Boolean,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
@@ -48,6 +49,7 @@ abstract class BigqueryWriteTest(
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
+        coercesLegacyUnions = coercesLegacyUnions,
         preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
         commitDataIncrementally = false,
@@ -71,6 +73,7 @@ abstract class BigqueryRawTablesWriteTest(
         dedupBehavior = null,
         nullEqualsUnset = false,
         Untyped,
+        coercesLegacyUnions = false,
     )
 
 abstract class BigqueryDirectLoadWriteTest(
@@ -110,6 +113,7 @@ abstract class BigqueryDirectLoadWriteTest(
             numberIsFixedPointPrecision38Scale9 = true,
             timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
+        coercesLegacyUnions = true,
     )
 
 class StandardInsertRawOverrideRawTables :

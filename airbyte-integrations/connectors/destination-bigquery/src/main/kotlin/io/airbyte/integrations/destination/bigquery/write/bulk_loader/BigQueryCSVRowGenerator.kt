@@ -28,7 +28,8 @@ class BigQueryCSVRowGenerator {
     fun generate(record: DestinationRecordRaw, schema: ObjectType): List<Any> {
         val enrichedRecord =
             record.asEnrichedDestinationRecordAirbyteValue(
-                extractedAtAsTimestampWithTimezone = true
+                extractedAtAsTimestampWithTimezone = true,
+                respectLegacyUnions = true,
             )
 
         enrichedRecord.declaredFields.values.forEach { value ->
