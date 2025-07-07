@@ -486,7 +486,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: localhost # host, example: airbyte.example.com
+    - host: airbyte.example.com # replace with your host
       http:
         paths:
           - backend:
@@ -533,7 +533,7 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-    - host: airbyte.local # e.g. airbyte.example.com
+    - host: airbyte.example.com # replace with your host
       http:
         paths:
           - backend:
