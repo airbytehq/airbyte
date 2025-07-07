@@ -22,7 +22,6 @@ class CustomerIoSpecification : ConfigurationSpecificationWithDlq() {
     @get:JsonProperty("credentials")
     @get:JsonSchemaInject(json = """{"order": 0}""")
     val credentials: CustomerIoCredentialsSpecification = CustomerIoCredentialsSpecification()
-
 }
 
 class CustomerIoCredentialsSpecification {
