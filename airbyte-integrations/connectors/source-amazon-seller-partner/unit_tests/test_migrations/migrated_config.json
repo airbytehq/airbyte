@@ -7,10 +7,19 @@
   "region": "US",
   "report_options_list": [
     {
-      "stream_name": "GET_REPORT",
+      "report_name": "TEST_REPORT_1",
+      "stream_name": "GET_REPORT_1",
+      "options_list": [
+        { "option_name": "reportPeriod", "option_value": "WEEK" }
+      ]
+    },
+    {
+      "report_name": "TEST_REPORT_2",
+      "stream_name": "GET_REPORT_2",
       "options_list": [
         { "option_name": "reportPeriod", "option_value": "WEEK" }
       ]
     }
-  ]
+  ],
+  "account_type": "Vendor"
 }
