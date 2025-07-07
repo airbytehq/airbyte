@@ -100,7 +100,7 @@ fun interface ProtoEncoder<T> {
  * @param setValue A lambda function that sets the value in the builder for the given type T.
  * @return A ProtoEncoder instance that encodes values of type T into AirbyteValueProtobuf.
  */
-inline private fun <T> generateProtoEncoder(
+private inline fun <T> generateProtoEncoder(
     crossinline setValue:
         (
             AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
