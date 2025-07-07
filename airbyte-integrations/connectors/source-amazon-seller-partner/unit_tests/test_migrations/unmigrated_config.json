@@ -5,16 +5,5 @@
   "replication_start_date": "2022-09-01T00:00:00Z",
   "aws_environment": "PRODUCTION",
   "region": "US",
-  "report_options_list": [
-    {
-      "report_name": "GET_REPORT",
-      "stream_name": "GET_REPORT",
-      "options_list": [
-        {
-          "option_name": "reportPeriod",
-          "option_value": "WEEK"
-        }
-      ]
-    }
-  ]
+  "report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}, \"GET_REPORT_2\": {\"reportPeriod_2\": \"DAY\"}}"
 }
