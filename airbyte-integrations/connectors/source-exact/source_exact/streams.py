@@ -548,13 +548,13 @@ class SyncManufacturingShopOrders(ExactSyncStream):
 
 
 class SyncPayrollEmployees(ExactSyncStream):
-    """Stream to sync the endpoint `/sync/Payroll/Employees`"""
+    """Stream to sync the endpoint `sync/Payroll/Employees`"""
 
-    endpoint = "/sync/Payroll/Employees"
+    endpoint = "sync/Payroll/Employees"
 
 
 class SyncPayrollEmploymentOrganisations(ExactSyncStream):
-    """Stream to sync the endpoint `/sync/Payroll/EmploymentOrganizations`"""
+    """Stream to sync the endpoint `sync/Payroll/EmploymentOrganizations`"""
 
     endpoint = "sync/Payroll/EmploymentOrganizations"
 
@@ -562,7 +562,7 @@ class SyncPayrollEmploymentOrganisations(ExactSyncStream):
 class SyncPayrollEmployments(ExactSyncStream):
     """Stream to sync the endpoint `sync/Payroll/Employments`"""
 
-    endpoint = "/sync/Payroll/Employments"
+    endpoint = "sync/Payroll/Employments"
 
 
 class SyncProjectProjectPlanning(ExactSyncStream):
