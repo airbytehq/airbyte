@@ -21,7 +21,6 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -50,7 +49,7 @@ class CustomerIoStateTest {
 
         val rejectedRecords = state.flush()
 
-        assertNull(rejectedRecords )
+        assertNull(rejectedRecords)
     }
 
     @Test
@@ -71,7 +70,8 @@ class CustomerIoStateTest {
         state.accumulate(aRecord())
         state.accumulate(rejectedRecord)
 
-        val rejectedRecords = state.flush() ?: throw IllegalStateException("Expected list with one element")
+        val rejectedRecords =
+            state.flush() ?: throw IllegalStateException("Expected list with one element")
 
         assertEquals(
             listOf(
