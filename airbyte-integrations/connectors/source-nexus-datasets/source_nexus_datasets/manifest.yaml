@@ -1,0 +1,147 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - "datasets"
+##Do not check the actual endpoint here, just add one endpoint here only to check the follwoing
+    ##Authentication
+    ##Connectivity
+    ##User Permissions (may be covered with authentication above)
+    ##probably like /rest/310/analytics
+
+definitions:
+  streams:
+    datasets:
+      type: DeclarativeStream
+      name: datasets
+      $parameters:
+        path: "{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode={{ config['mode'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonlDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets"
+    records:
+      type: DeclarativeStream
+      name: records
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://03100670-8969-4472-a593-d7a8cef4488b-00-15uejhh5ki8b9.janeway.replit.dev
+          path: /api/export
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonlDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets"
+    
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_nexus_datasets.auth.NexusCustomAuthenticator
+      config: "{{ config }}"
+
+streams:
+  - "#/definitions/streams/datasets"
+  - "#/definitions/streams/records"
+  
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/nexus-datasets
+  connection_specification:
+    title: Nexus Datasets Spec
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_url
+      - user_id
+      - access_key_id
+      - secret_key
+      - api_key
+      - dataset_path
+      - dataset_name
+    additionalProperties: true
+    properties:
+      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+      base_url:
+        type: "string"
+        description: "The base URL of the Nexus API."
+        #default: "https://fte-6e684ff308644fdfa46f4cd4d56e720f-infornexus.fte.gtnexus.info/rest/3.1"
+        default: "https://fte-8faff6f82b424ed489e48095f4e58e91-infornexus.fte.gtnexus.info"
+        pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
+      user_id:
+        type: "string"
+        description: "The user id of the Nexus API."
+        default: "DataApiAgent@5717988960038861"
+      access_key_id:
+        type: "string"
+        description: "The access key id of the Nexus API."
+        #ifte access key : 1002n4gZdrcg92foZad
+        #default: "1002n4gZdsbiu8fnZ8o"
+        default: "1002n4gZe6nns3onZtu"
+      secret_key:
+        type: "string"
+        description: "The secret key for HMAC authentication."
+        #ifte key : ptojjqg3pn6yff5tjpzkkhz3f7rkmabz6f6es5l2rv7poq2k27i22h55k7c3nw43dqrzcpsheuvy4xq4bw2rcxt6f5fex6twk2j4ppq
+        #default: "nm4ufrysnrtm35itswpn7p4xyusixk33td44hjt4a25uxtm3mtqwrukc5n4xmjlatojpcsrpwufs7qtd6kvi7al4bhtolzze3qsuc3q"
+        default: "uqhc7uqfmqwnyzmxd4fuskgotad4cl7xhdj6ac5rkf7eecphk22zpkc5lmhct75bcwpwi6hrnc6zos46hwks55ggha57o2wnskuolfa"
+      api_key:
+        type: string
+        description: "The nexus data API Key"
+        default: "4354c1f5a341853211138ad8afb740ffdafc6527"
+      dataset_path:
+        type: string
+        description: "Data Set Path"
+        default: "rest/3.1/analytics/dataset"
+        airbyte_hidden: true
+      dataset_name:
+        type: string
+        description: "Data Set Name"
+        default: "ExportDataSetSeven_PurchaseOrderTest3"
+      dataset_export_prefix:
+        type: string
+        description: "Data Export Prefix"
+        default: "export"
+        airbyte_hidden: true
+      mode:
+        type: string
+        title: Mode
+        description: Sync mode
+        enum:
+          - Full
+          - Incremental
+        default: Full
+        
+schemas:
+  datasets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+      

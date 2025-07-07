@@ -1,0 +1,82 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "uid": {
+        "type": "string"
+      },
+      "datasetName": {
+        "type": "string"
+      },
+      "modelName": {
+        "type": "string"
+      },
+      "lastUpdated": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "publisherUid": {
+        "type": "string"
+      },
+      "isConsolidated": {
+        "type": "string",
+        "enum": ["true", "false"]
+      },
+      "revision": {
+        "type": "string"
+      },
+      "__metadata": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "uid": {
+            "type": "string"
+          },
+          "createTimestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifyTimestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "self": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "apiVersion",
+          "type",
+          "uid",
+          "createTimestamp",
+          "modifyTimestamp",
+          "status",
+          "fingerprint",
+          "self"
+        ]
+      }
+    },
+    "required": [
+      "uid",
+      "datasetName",
+      "modelName",
+      "lastUpdated",
+      "publisherUid",
+      "isConsolidated",
+      "revision",
+      "__metadata"
+    ]
+  }
+  

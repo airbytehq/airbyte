@@ -1,0 +1,35 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-nexus-datasets
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9e1fe63c-80ad-44fe-8927-10e66c9e209b
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-nexus-datasets
+  githubIssueLabel: source-nexus-datasets
+  icon: nexus-datasets.svg
+  license: MIT
+  name: Nexus Datasets
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/nexus-datasets
+  tags:
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"

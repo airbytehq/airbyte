@@ -1,0 +1,11 @@
+# Ignore virtual environments
+venv/
+.venv/
+myenv/
+venv_39/
+
+# Python artifacts
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
