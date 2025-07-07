@@ -28,6 +28,7 @@ The Navan connector supports travel booking data such as hotels and flights.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2025-07-05 | [62545](https://github.com/airbytehq/airbyte/pull/62545) | Update dependencies |
 | 0.0.21 | 2025-06-28 | [62308](https://github.com/airbytehq/airbyte/pull/62308) | Update dependencies |
 | 0.0.20 | 2025-06-21 | [61069](https://github.com/airbytehq/airbyte/pull/61069) | Update dependencies |
 | 0.0.19 | 2025-05-24 | [60511](https://github.com/airbytehq/airbyte/pull/60511) | Update dependencies |

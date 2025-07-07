@@ -97,6 +97,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.2 | 2025-07-05 | [62592](https://github.com/airbytehq/airbyte/pull/62592) | Update dependencies |
 | 0.13.1 | 2025-06-28 | [54308](https://github.com/airbytehq/airbyte/pull/54308) | Update dependencies |
 | 0.13.0 | 2025-06-25 | [62069](https://github.com/airbytehq/airbyte/pull/62069) | Promoting release candidate 0.13.0-rc.5 to a main version. |
 | 0.13.0-rc.5 | 2025-06-11| [61506](https://github.com/airbytehq/airbyte/pull/61506) |  Add better error handling for companies stream, update SDM, & add advanced_auth |
