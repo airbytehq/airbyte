@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 import io.airbyte.cdk.load.integrationTest.DlqStateFactory
 import io.airbyte.cdk.load.integrationTest.DlqTestState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
