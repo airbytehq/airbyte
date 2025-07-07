@@ -7,7 +7,6 @@
     "ID": {
       "description": "Record ID, Primary Key",
       "type": "integer"
-
     },
     "Amount": {
       "description": "The sum of the amounts of all transactions in the grouping",
@@ -19,42 +18,58 @@
     "AmountCredit": {
       "description": "The sum of the amounts of all credit transactions in the grouping",
       "type": [
-        "null", "number"
+        "null",
+        "number"
       ]
     },
     "AmountDebit": {
       "description": "The sum of the amounts of all debit transactions in the grouping",
       "type": [
-        "null", "number"
+        "null",
+        "number"
       ]
     },
     "BalanceType": {
       "description": "Balance type of the G/L account, B = Balance Sheet, W = Profit & Loss.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostCenterCode": {
       "description": "The code of the cost center",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostCenterDescription": {
       "description": "The description of the cost center.",
       "type": [
-        "null", "string"
+        "null",
+        "string"
       ]
     },
     "CostUnitCode": {
       "description": "The code of the cost unit",
       "type": [
-        "null", "string"
+        "null",
+        "string"
       ]
     },
     "CostUnitDescription": {
       "description": "The description of the cost unit",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Count": {
       "description": "The number of transactions in the grouping",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Division": {
       "description": "Division code",
@@ -87,7 +102,8 @@
     "ReportingPeriod": {
       "description": "The reporting period of the transactions in the grouping",
       "type": [
-        "null", "integer"
+        "null",
+        "integer"
       ]
     },
     "ReportingYear": {
@@ -100,13 +116,15 @@
     "Status": {
       "description": "Status: 20 = Open, 50 = Processed. To get 'after entry' results, both Open and Processed amounts have to be included. This is by default, so it requires no extra filtering.",
       "type": [
-        "null", "integer"
+        "null",
+        "integer"
       ]
     },
     "Type": {
       "description": "The type of the transactions in the grouping",
       "type": [
-        "null", "integer"
+        "null",
+        "integer"
       ]
     }
   }

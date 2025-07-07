@@ -134,7 +134,9 @@ at [Exact Knowledge Base](https://support.exactonline.com/community/s/knowledge-
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                             |
-|---------|------------|-----------------------------------------------------------|-------------------------------------|
-| 0.1.0   | 2022-12-14 | [20480](https://github.com/airbytehq/airbyte/pull/20480)  | New Source: Exact                   | 
-| 0.2.0   | 2025-00-00 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Update of source to airbyte-cdk v.6 |
+| Version | Date       | Pull Request                                              | Subject                                                                  |
+|---------|------------|-----------------------------------------------------------|--------------------------------------------------------------------------|
+| 0.1.0   | 2022-12-14 | [20480](https://github.com/airbytehq/airbyte/pull/20480)  | New Source: Exact                                                        | 
+| 0.2.0   | 2025-01-01 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Update of source to airbyte-cdk v.6                                      |
+| 0.2.10  | 2025-07-07 |                                                           | Update of stream FinancialReceivablesList to have a working cursor field |
+

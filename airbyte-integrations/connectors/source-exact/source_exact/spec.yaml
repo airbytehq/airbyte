@@ -28,6 +28,10 @@ connectionSpecification:
         - refresh_token
         - token_expiry_date
       properties:
+        client_id:
+          type: string
+          title: OAuth Client ID
+          description: OAuth client_id, can be found at apps.exactonline.com.
         access_token:
           type: string
           title: OAuth Access Token
@@ -41,11 +45,7 @@ connectionSpecification:
         token_expiry_date:
           type: string
           title: OAuth Token Expiry Date
-          description: Timestamp when the token expires.
-        client_id:
-          type: string
-          title: OAuth Client ID
-          description: OAuth client_id, can be found at apps.exactonline.com.
+          description: Timestamp when the token expires. Write as YYYY-MM-ddTHH:mm
         client_secret:
           type: string
           title: OAuth Client Secret
