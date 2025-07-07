@@ -266,5 +266,5 @@ check:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 1) }}"
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
   max_concurrency: 10

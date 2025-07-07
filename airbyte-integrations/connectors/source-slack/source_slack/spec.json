@@ -108,9 +108,9 @@
       "num_workers": {
         "type": "integer",
         "title": "Number of concurrent workers",
-        "minimum": 1,
+        "minimum": 2,
         "maximum": 10,
-        "default": 1,
+        "default": 2,
         "examples": [2, 3],
         "description": "The number of worker threads to use for the sync.",
         "order": 7
