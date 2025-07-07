@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.clickhouse_v2.write.load
 
 import com.clickhouse.client.api.Client
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
@@ -29,13 +28,11 @@ class ClickhouseDirectLoaderFactoryTest {
 
     @MockK lateinit var munger: RecordMunger
 
-    @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
-
     private lateinit var factory: ClickhouseDirectLoaderFactory
 
     @BeforeEach
     fun setup() {
-        factory = ClickhouseDirectLoaderFactory(clickhouseClient, stateStore, munger, catalog)
+        factory = ClickhouseDirectLoaderFactory(clickhouseClient, stateStore, munger)
     }
 
     @ParameterizedTest
