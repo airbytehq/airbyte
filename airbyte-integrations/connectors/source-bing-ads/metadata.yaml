@@ -27,7 +27,7 @@ data:
   name: Bing Ads
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-bing-ads
   registryOverrides:
     cloud:
