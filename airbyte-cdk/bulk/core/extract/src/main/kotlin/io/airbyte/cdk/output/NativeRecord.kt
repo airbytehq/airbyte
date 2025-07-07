@@ -40,7 +40,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
-import java.time.format.DateTimeFormatter
 
 // A value of a field along with its encoder
 class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R>) {
@@ -133,8 +132,7 @@ val localDateProtoEncoder =
     }
 val urlProtoEncoder =
     generateProtoEncoder<URL> { builder, url -> builder.setString(url.toExternalForm()) }
-val doubleProtoEncoder =
-    generateProtoEncoder<Double> { builder, value -> builder.setNumber(value) }
+val doubleProtoEncoder = generateProtoEncoder<Double> { builder, value -> builder.setNumber(value) }
 val byteProtoEncoder =
     generateProtoEncoder<Byte> { builder, value -> builder.setInteger(value.toLong()) }
 val binaryProtoEncoder =
@@ -155,10 +153,8 @@ val booleanProtoEncoder =
     generateProtoEncoder<Boolean> { builder, value -> builder.setBoolean(value) }
 val offsetDateTimeProtoEncoder =
     generateProtoEncoder<OffsetDateTime> { builder, decoded ->
-        builder.setTimestampWithTimezone(decoded.format(offsetDateTimeFormatter))
+        builder.setTimestampWithTimezone(decoded.format(OffsetDateTimeCodec.formatter))
     }
-const val offsetDateTimePattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
-val offsetDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(offsetDateTimePattern)
 val floatProtoEncoder =
     generateProtoEncoder<Float> { builder, decoded -> builder.setNumber(decoded.toDouble()) }
 
