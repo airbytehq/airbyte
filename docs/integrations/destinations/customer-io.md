@@ -41,4 +41,5 @@ In order to configure this connector, you only have to generate your API key (Wo
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
-| 0.0.1   | 2025-06-26 | [#xxxxx](https://github.com/airbytehq/airbyte/pull/xxxxx) | Initial release of the Customer IO destination connector |
+| 0.0.2   | 2025-07-08 | [#xxxxx](https://github.com/airbytehq/airbyte/pull/xxxxx) | Checker should validate DLQ                              |
+| 0.0.1   | 2025-07-07 | [#62083](https://github.com/airbytehq/airbyte/pull/62083) | Initial release of the Customer IO destination connector |
