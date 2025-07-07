@@ -16,6 +16,12 @@ logger = logging.getLogger("airbyte_logger")
 
 
 class EnumEncoder(json.JSONEncoder):
+    """
+    Custom JSON encoder to handle Enum serialization.
+    This was added so we can emit control message as Json string.
+    dataclasses won't provide a json method.
+    """
+
     def default(self, obj):
         if isinstance(obj, Enum):
             return obj.value
