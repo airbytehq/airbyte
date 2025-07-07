@@ -18,6 +18,8 @@ import java.io.ByteArrayOutputStream
 import java.time.Clock
 import java.util.concurrent.ConcurrentHashMap
 
+// This class emits Airbyte messages in JSONL format to a socket data channel.
+// It accepts a data channel acquired by the caller.
 class SocketJsonOutputConsumer(
     private val dataChannel: SocketDataChannel,
     clock: Clock,
