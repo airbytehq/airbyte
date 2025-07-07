@@ -31,6 +31,20 @@ definitions:
     error_handler:
       $ref: "#/definitions/base_error_handler"
 
+  stream_requester:
+    type: CustomRequester
+    class_name: "source_google_ads.components.GoogleAdsHttpRequester"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas"
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'][0] }}/googleAds:searchStream"
+    http_method: POST
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+
   base_error_handler:
     type: DefaultErrorHandler
     response_filters:
@@ -56,7 +70,7 @@ definitions:
   base_retriever:
     type: SimpleRetriever
     requester:
-      $ref: "#/definitions/base_requester"
+      $ref: "#/definitions/stream_requester"
     record_selector:
       $ref: "#/definitions/base_selector"
     paginator:
@@ -70,6 +84,71 @@ definitions:
       - id
     retriever:
       $ref: "#/definitions/base_retriever"
+
+  incremental_stream_base:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/stream_requester"
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/customer_client"
+              parent_key: "clientCustomer"
+              partition_field: "customer_id"
+              extra_fields: [["manager"]]
+    transformations:
+      - type: KeysToSnakeCase
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: segments.date
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P{{ config.get('conversion_window_days', 14) }}D
+      cursor_granularity: P1D
+      step: P14D
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('end_date', today_utc()) }}"
+        datetime_format: "%Y-%m-%d"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+
+  incremental_non_manager_stream_base:
+    $ref: "#/definitions/incremental_stream_base"
+    retriever:
+      $ref: "#/definitions/incremental_stream_base/retriever"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/customer_client_non_manager"
+              parent_key: "clientCustomer"
+              partition_field: "customer_id"
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
@@ -113,6 +192,9 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["results", "*", "customerClient"]
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (( record['id'] in config['customer_ids'] ) if config['customer_ids'] else True ) and ( record['status'] in ( config['customer_status_filter'] or ['UNKNOWN', 'ENABLED', 'CANCELED', 'SUSPENDED', 'CLOSED'] ) ) }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -162,151 +244,13 @@ definitions:
 
   # Stream Definitions
   campaign_stream:
-    $ref: "#/definitions/stream_base"
+    $ref: "#/definitions/incremental_non_manager_stream_base"
     name: campaign
     primary_key:
       - campaign.id
       - segments.date
       - segments.hour
       - segments.ad_network_type
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'][0] }}/googleAds:searchStream"
-        http_method: POST
-        request_headers:
-          Content-Type: application/json
-          developer-token: '{{ config["credentials"]["developer_token"] }}'
-          login-customer-id: "{{ stream_partition['parent_slice'][0]['customer_id'] }}"
-        request_body:
-          type: RequestBodyJsonObject
-          value:
-            query: >
-              SELECT
-                campaign.accessible_bidding_strategy,
-                campaign.ad_serving_optimization_status,
-                campaign.advertising_channel_sub_type,
-                campaign.advertising_channel_type,
-                campaign.app_campaign_setting.app_id,
-                campaign.app_campaign_setting.app_store,
-                campaign.app_campaign_setting.bidding_strategy_goal_type,
-                campaign.base_campaign,
-                campaign.bidding_strategy,
-                campaign.bidding_strategy_type,
-                campaign.campaign_budget,
-                campaign_budget.amount_micros,
-                campaign.commission.commission_rate_micros,
-                campaign.dynamic_search_ads_setting.domain_name,
-                campaign.dynamic_search_ads_setting.feeds,
-                campaign.dynamic_search_ads_setting.language_code,
-                campaign.dynamic_search_ads_setting.use_supplied_urls_only,
-                campaign.end_date,
-                campaign.excluded_parent_asset_field_types,
-                campaign.experiment_type,
-                campaign.final_url_suffix,
-                campaign.frequency_caps,
-                campaign.geo_target_type_setting.negative_geo_target_type,
-                campaign.geo_target_type_setting.positive_geo_target_type,
-                campaign.hotel_setting.hotel_center_id,
-                campaign.id,
-                campaign.labels,
-                campaign.local_campaign_setting.location_source_type,
-                campaign.manual_cpc.enhanced_cpc_enabled,
-                campaign.manual_cpm,
-                campaign.manual_cpv,
-                campaign.maximize_conversion_value.target_roas,
-                campaign.maximize_conversions.target_cpa_micros,
-                campaign.name,
-                campaign.network_settings.target_content_network,
-                campaign.network_settings.target_google_search,
-                campaign.network_settings.target_partner_search_network,
-                campaign.network_settings.target_search_network,
-                campaign.optimization_goal_setting.optimization_goal_types,
-                campaign.optimization_score,
-                campaign.payment_mode,
-                campaign.percent_cpc.cpc_bid_ceiling_micros,
-                campaign.percent_cpc.enhanced_cpc_enabled,
-                campaign.real_time_bidding_setting.opt_in,
-                campaign.resource_name,
-                campaign.selective_optimization.conversion_actions,
-                campaign.serving_status,
-                campaign.shopping_setting.campaign_priority,
-                campaign.shopping_setting.enable_local,
-                campaign.shopping_setting.merchant_id,
-                campaign.start_date,
-                campaign.status,
-                campaign.target_cpa.cpc_bid_ceiling_micros,
-                campaign.target_cpa.cpc_bid_floor_micros,
-                campaign.target_cpa.target_cpa_micros,
-                campaign.target_cpm.target_frequency_goal.target_count,
-                campaign.target_cpm.target_frequency_goal.time_unit,
-                campaign.target_impression_share.cpc_bid_ceiling_micros,
-                campaign.target_impression_share.location,
-                campaign.target_impression_share.location_fraction_micros,
-                campaign.target_roas.cpc_bid_ceiling_micros,
-                campaign.target_roas.cpc_bid_floor_micros,
-                campaign.target_roas.target_roas,
-                campaign.target_spend.cpc_bid_ceiling_micros,
-                campaign.target_spend.target_spend_micros,
-                campaign.targeting_setting.target_restrictions,
-                campaign.tracking_setting.tracking_url,
-                campaign.tracking_url_template,
-                campaign.url_custom_parameters,
-                campaign.vanity_pharma.vanity_pharma_display_url_mode,
-                campaign.vanity_pharma.vanity_pharma_text,
-                campaign.video_brand_safety_suitability,
-                metrics.clicks,
-                metrics.ctr,
-                metrics.conversions,
-                metrics.conversions_value,
-                metrics.cost_micros,
-                metrics.impressions,
-                metrics.video_views,
-                metrics.video_quartile_p100_rate,
-                metrics.active_view_cpm,
-                metrics.active_view_ctr,
-                metrics.active_view_impressions,
-                metrics.active_view_measurability,
-                metrics.active_view_measurable_cost_micros,
-                metrics.active_view_measurable_impressions,
-                metrics.active_view_viewability,
-                metrics.average_cost,
-                metrics.average_cpc,
-                metrics.average_cpm,
-                metrics.interactions,
-                metrics.interaction_event_types,
-                metrics.value_per_conversion,
-                metrics.cost_per_conversion,
-                segments.date,
-                segments.hour,
-                segments.ad_network_type
-              FROM
-                campaign
-              WHERE
-                segments.date >= '{{ stream_interval['start_time'] }}'
-                AND segments.date <= '{{ stream_interval['end_time'] }}'
-              ORDER BY
-                segments.date ASC
-      record_selector:
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
-      partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1
-        deduplicate: true
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream: "#/definitions/customer_client_non_manager"
-              parent_key: "clientCustomer"
-              partition_field: "customer_id"
     transformations:
       - type: KeysToSnakeCase
       - type: CustomTransformation
@@ -329,31 +273,25 @@ definitions:
                  | list }}
       - type: RemoveFields
         field_pointers: [["metrics.video_quartile_p_100_rate"]]
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: segments.date
-      datetime_format: "%Y-%m-%d"
-      lookback_window: P{{ config.get('conversion_window_days', 14) }}D
-      cursor_granularity: P1D
-      step: P14D
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', today_utc()) }}"
-        datetime_format: "%Y-%m-%d"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign"
 
+  ad_group_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: ad_group
+    primary_key:
+      - ad_group.id
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ad_group"
+
 streams:
   - "#/definitions/campaign_stream"
+  - "#/definitions/ad_group_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -361,6 +299,177 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  ad_group:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      campaign.id:
+        description: The unique identifier of the campaign to which the ad group belongs.
+        type:
+          - "null"
+          - integer
+      ad_group.ad_rotation_mode:
+        description: The rotation mode for ads within the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.base_ad_group:
+        description: The base ad group associated with this ad group.
+        type:
+          - "null"
+          - string
+      ad_group.campaign:
+        description: The campaign to which the ad group belongs.
+        type:
+          - "null"
+          - string
+      metrics.cost_micros:
+        description: The cost in micros for the ad group.
+        type:
+          - "null"
+          - integer
+      ad_group.cpc_bid_micros:
+        description: The cost-per-click bid for the ad group in micros.
+        type:
+          - "null"
+          - integer
+      ad_group.cpm_bid_micros:
+        description: The cost-per-thousand impressions bid for the ad group in micros.
+        type:
+          - "null"
+          - integer
+      ad_group.cpv_bid_micros:
+        description: The cost-per-view bid for the ad group in micros.
+        type:
+          - "null"
+          - integer
+      ad_group.display_custom_bid_dimension:
+        description: Custom bid dimension settings for the display network.
+        type:
+          - "null"
+          - string
+      ad_group.effective_target_cpa_micros:
+        description: The effective target cost-per-acquisition bid in micros.
+        type:
+          - "null"
+          - integer
+      ad_group.effective_target_cpa_source:
+        description: The source of the effective target CPA bid.
+        type:
+          - "null"
+          - string
+      ad_group.effective_target_roas:
+        description: The effective target return on ad spend bid.
+        type:
+          - "null"
+          - number
+      ad_group.effective_target_roas_source:
+        description: The source of the effective target ROAS bid.
+        type:
+          - "null"
+          - string
+      ad_group.excluded_parent_asset_field_types:
+        description:
+          Field types excluded from being used as asset fields in the ad
+          group.
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      ad_group.optimized_targeting_enabled:
+        description: Indicates whether optimized targeting is enabled for the ad group.
+        type:
+          - "null"
+          - boolean
+      ad_group.final_url_suffix:
+        description: The final URL suffix for the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.id:
+        description: The unique identifier for the ad group.
+        type:
+          - "null"
+          - integer
+      ad_group.labels:
+        description: Labels associated with the ad group.
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      ad_group.name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.percent_cpc_bid_micros:
+        description:
+          The percentage of the cost-per-click bid that is paid for the
+          ad group.
+        type:
+          - "null"
+          - integer
+      ad_group.resource_name:
+        description: The resource name of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.status:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.target_cpa_micros:
+        description: The target cost-per-acquisition bid in micros for the ad group.
+        type:
+          - "null"
+          - integer
+      ad_group.target_cpm_micros:
+        description:
+          The target cost-per-thousand impressions bid in micros for the
+          ad group.
+        type:
+          - "null"
+          - integer
+      ad_group.target_roas:
+        description: The target return on ad spend bid for the ad group.
+        type:
+          - "null"
+          - number
+      ad_group.targeting_setting.target_restrictions:
+        description: Targeting restrictions defined for the ad group.
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      ad_group.tracking_url_template:
+        description: The tracking URL template for the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.type:
+        description: The type of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.url_custom_parameters:
+        description: Custom parameters for the ad group's URLs.
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      segments.date:
+        description: The date segment for the data.
+        type:
+          - "null"
+          - string
+        format: date
+    additionalProperties: true
+
   campaign:
     $schema: http://json-schema.org/schema#
     type: object
