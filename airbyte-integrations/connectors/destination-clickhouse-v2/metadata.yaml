@@ -16,7 +16,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse-v2
   tags:
     - language:java
   ab_internal:
