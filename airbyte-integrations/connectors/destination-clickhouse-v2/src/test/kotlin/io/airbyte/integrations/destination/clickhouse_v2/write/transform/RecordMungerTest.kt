@@ -81,14 +81,15 @@ class RecordMungerTest {
         val input =
             mockk<DestinationRecordRaw>(relaxed = true) {
                 every { asEnrichedDestinationRecordAirbyteValue(any()) } answers { coerced }
-                every { schemaFields } returns linkedMapOf(
-                    "user_field_1" to FieldType(StringType, false),
-                    "user_field_2" to FieldType(StringType, false),
-                    "user_field_3" to FieldType(IntegerType, false),
-                    "user_field_4" to FieldType(BooleanType, false),
-                    // this field is a union type so it should be turned into a json string
-                    "user_field_5" to FieldType(UnionType(setOf(), false), false),
-                )
+                every { schemaFields } returns
+                    linkedMapOf(
+                        "user_field_1" to FieldType(StringType, false),
+                        "user_field_2" to FieldType(StringType, false),
+                        "user_field_3" to FieldType(IntegerType, false),
+                        "user_field_4" to FieldType(BooleanType, false),
+                        // this field is a union type so it should be turned into a json string
+                        "user_field_5" to FieldType(UnionType(setOf(), false), false),
+                    )
             }
 
         val output = munger.transformForDest(input)
