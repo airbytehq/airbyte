@@ -437,7 +437,7 @@ class PropertiesTransformation(RecordTransformation):
         to_transform = record[self.properties_field] if self.properties_field else record
 
         for result in transform_property_names(to_transform.keys()):
-            updated_record[result.transformed_name] = to_transform[result.source_name]
+            updated_record[result.transformed_name] = str(to_transform[result.source_name])
 
         if self.properties_field:
             record[self.properties_field].clear()
