@@ -95,7 +95,13 @@ fun interface ProtoEncoder<T> {
     ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 }
 
-inline fun <T> protoEncoderGenerator(
+/**
+ * Generates a ProtoEncoder for a specific type T.
+ *
+ * @param setValue A lambda function that sets the value in the builder for the given type T.
+ * @return A ProtoEncoder instance that encodes values of type T into AirbyteValueProtobuf.
+ */
+inline private fun <T> generateProtoEncoder(
     crossinline setValue:
         (
             AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
@@ -110,53 +116,53 @@ inline fun <T> protoEncoderGenerator(
     }
 
 val offsetTimeProtoEncoder =
-    protoEncoderGenerator<OffsetTime> { builder, value ->
+    generateProtoEncoder<OffsetTime> { builder, value ->
         builder.setString(value.format(OffsetTimeCodec.formatter))
     }
 val localDateTimeProtoEncoder =
-    protoEncoderGenerator<LocalDateTime> { builder, value ->
+    generateProtoEncoder<LocalDateTime> { builder, value ->
         builder.setString(value.format(OffsetTimeCodec.formatter))
     }
 val localTimeProtoEncoder =
-    protoEncoderGenerator<LocalTime> { builder, time ->
+    generateProtoEncoder<LocalTime> { builder, time ->
         builder.setString(time.format(LocalTimeCodec.formatter))
     }
 val localDateProtoEncoder =
-    protoEncoderGenerator<LocalDate> { builder, date ->
+    generateProtoEncoder<LocalDate> { builder, date ->
         builder.setString(date.format(LocalDateCodec.formatter))
     }
 val urlProtoEncoder =
-    protoEncoderGenerator<URL> { builder, url -> builder.setString(url.toExternalForm()) }
+    generateProtoEncoder<URL> { builder, url -> builder.setString(url.toExternalForm()) }
 val doubleProtoEncoder =
-    protoEncoderGenerator<Double> { builder, value -> builder.setNumber(value) }
+    generateProtoEncoder<Double> { builder, value -> builder.setNumber(value) }
 val byteProtoEncoder =
-    protoEncoderGenerator<Byte> { builder, value -> builder.setInteger(value.toLong()) }
+    generateProtoEncoder<Byte> { builder, value -> builder.setInteger(value.toLong()) }
 val binaryProtoEncoder =
-    protoEncoderGenerator<ByteBuffer> { builder, decoded ->
+    generateProtoEncoder<ByteBuffer> { builder, decoded ->
         builder.setStringBytes(decoded.toByteString()) // TODO: check here. Need base64 encoded?
     }
 val shortProtoEncoder =
-    protoEncoderGenerator<Short> { builder, value -> builder.setInteger(value.toLong()) }
+    generateProtoEncoder<Short> { builder, value -> builder.setInteger(value.toLong()) }
 val bigDecimalProtoEncoder =
-    protoEncoderGenerator<BigDecimal> { builder, decoded ->
+    generateProtoEncoder<BigDecimal> { builder, decoded ->
         builder.setBigDecimal(decoded.toPlainString()) // TODO: check here. why string?
     }
-val longProtoEncoder = protoEncoderGenerator<Long> { builder, value -> builder.setInteger(value) }
-val textProtoEncoder = protoEncoderGenerator<String> { builder, value -> builder.setString(value) }
+val longProtoEncoder = generateProtoEncoder<Long> { builder, value -> builder.setInteger(value) }
+val textProtoEncoder = generateProtoEncoder<String> { builder, value -> builder.setString(value) }
 val intProtoEncoder =
-    protoEncoderGenerator<Int> { builder, value -> builder.setInteger(value.toLong()) }
+    generateProtoEncoder<Int> { builder, value -> builder.setInteger(value.toLong()) }
 val booleanProtoEncoder =
-    protoEncoderGenerator<Boolean> { builder, value -> builder.setBoolean(value) }
+    generateProtoEncoder<Boolean> { builder, value -> builder.setBoolean(value) }
 val offsetDateTimeProtoEncoder =
-    protoEncoderGenerator<OffsetDateTime> { builder, decoded ->
+    generateProtoEncoder<OffsetDateTime> { builder, decoded ->
         builder.setTimestampWithTimezone(decoded.format(offsetDateTimeFormatter))
     }
 const val offsetDateTimePattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
 val offsetDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(offsetDateTimePattern)
 val floatProtoEncoder =
-    protoEncoderGenerator<Float> { builder, decoded -> builder.setNumber(decoded.toDouble()) }
+    generateProtoEncoder<Float> { builder, decoded -> builder.setNumber(decoded.toDouble()) }
 
-val nullProtoEncoder = protoEncoderGenerator<Any?> { builder, _ -> builder.setIsNull(true) }
+val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
 val anyProtoEncoder = textProtoEncoder
 // typealias AnyProtoEncoder = TextProtoEncoder
 
