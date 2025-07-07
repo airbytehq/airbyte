@@ -19,7 +19,7 @@ data:
   license: MIT
   name: Customer IO
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/destination-customer-io
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/customer-io
   tags:
     - language:java
   ab_internal:
