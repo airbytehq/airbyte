@@ -2,7 +2,7 @@
 products: embedded
 ---
 
-# Prerequisites & Setup
+# Get Started with Widget
 
 ## Airbyte Credentials
 
@@ -18,7 +18,7 @@ In addition to the Embedded keys above, you will require an external user id, `E
 
 ## Configure .env
 
-Clone the [sample app via Github](https://github.com/quintonwall/airbyte-embedded-sampleapp), and navigate to sonar-demoapp/server.
+Clone the [sample app via Github](https://github.com/airbytehq/embedded-sampleweb-reactjs), and navigate to embedded-sampleweb-reactjs/server.
 
 ```bash
 git clone <repository-url>
