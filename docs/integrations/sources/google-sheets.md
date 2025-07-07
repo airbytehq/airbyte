@@ -287,15 +287,16 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.11.0 | 2025-06-11 | [61489](https://github.com/airbytehq/airbyte/pull/61489) | Feature: Added Streeam Name Override Options|
-| 0.10.0 | 2025-06-09 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added additional sanitization flags when using Convert Column Names to SQL-Compliant Format (names_conversion)|
-| 0.9.6 | 2025-05-22 | [60874](https://github.com/airbytehq/airbyte/pull/60874) | Use custom backoff policy on 429 errors for single sheets |
-| 0.9.5 | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`|
-| 0.9.4 | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies |
-| 0.9.3 | 2025-02-22 | [54434](https://github.com/airbytehq/airbyte/pull/54434) | Update dependencies |
-| 0.9.2 | 2025-02-15 | [53720](https://github.com/airbytehq/airbyte/pull/53720) | Update dependencies |
-| 0.9.1 | 2025-02-08 | [51696](https://github.com/airbytehq/airbyte/pull/51696) | Update dependencies |
-| 0.9.0 | 2025-02-04 | [53154](https://github.com/airbytehq/airbyte/pull/53154) | Promoting release candidate 0.9.0-rc.3 to a main version. |
+| 0.12.0-rc.1| 2025-07-02 | [62456](https://github.com/airbytehq/airbyte/pull/62456) | Feature: migrate connector to manifest-only format                                                                                                                     |
+| 0.11.0     | 2025-06-11 | [61489](https://github.com/airbytehq/airbyte/pull/61489) | Feature: Added Streeam Name Override Options                                                                                                                           |
+| 0.10.0     | 2025-06-09 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added additional sanitization flags when using Convert Column Names to SQL-Compliant Format (names_conversion)                                                |
+| 0.9.6      | 2025-05-22 | [60874](https://github.com/airbytehq/airbyte/pull/60874) | Use custom backoff policy on 429 errors for single sheets                                                                                                              |
+| 0.9.5      | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`                                                                                                 |
+| 0.9.4      | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies                                                                                                                                                    |
+| 0.9.3      | 2025-02-22 | [54434](https://github.com/airbytehq/airbyte/pull/54434) | Update dependencies                                                                                                                                                    |
+| 0.9.2      | 2025-02-15 | [53720](https://github.com/airbytehq/airbyte/pull/53720) | Update dependencies                                                                                                                                                    |
+| 0.9.1      | 2025-02-08 | [51696](https://github.com/airbytehq/airbyte/pull/51696) | Update dependencies                                                                                                                                                    |
+| 0.9.0      | 2025-02-04 | [53154](https://github.com/airbytehq/airbyte/pull/53154) | Promoting release candidate 0.9.0-rc.3 to a main version.                                                                                                              |
 | 0.9.0-rc.3 | 2025-01-31 | [52682](https://github.com/airbytehq/airbyte/pull/52682) | Fix stream name typing                                                                                                                                                 |
 | 0.9.0-rc.2 | 2025-01-31 | [52671](https://github.com/airbytehq/airbyte/pull/52671) | Fix sheet id encoding                                                                                                                                                  |
 | 0.9.0-rc.1 | 2025-01-30 | [50843](https://github.com/airbytehq/airbyte/pull/50843) | Migrate to low-code                                                                                                                                                    |
