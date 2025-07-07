@@ -1,5 +1,5 @@
 {
-  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse",
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse-v2",
   "connectionSpecification" : {
     "$schema" : "http://json-schema.org/draft-07/schema#",
     "title" : "Clickhouse Specification Oss",
@@ -47,9 +47,16 @@
         "title" : "Password",
         "order" : 5,
         "airbyte_secret" : true
+      },
+      "enable_json" : {
+        "type" : "boolean",
+        "description" : "Use the JSON type for Object fields. If disabled, the JSON will be converted to a string.",
+        "title" : "Enable JSON",
+        "order" : 6,
+        "default" : false
       }
     },
-    "required" : [ "hostname", "port", "protocol", "database", "username", "password" ],
+    "required" : [ "hostname", "port", "protocol", "database", "username", "password", "enable_json" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"

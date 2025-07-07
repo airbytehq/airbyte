@@ -24,7 +24,7 @@ class FailSyncTask(
     private val destinationWriter: DestinationWriter,
     private val exception: Exception,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*>,
+    private val checkpointManager: CheckpointManager,
 ) : Task {
     private val log = KotlinLogging.logger {}
 
@@ -43,7 +43,7 @@ class FailSyncTask(
 @Singleton
 class FailSyncTaskFactory(
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*>,
+    private val checkpointManager: CheckpointManager,
     private val destinationWriter: DestinationWriter
 ) {
     fun make(taskLauncher: DestinationTaskLauncher, exception: Exception): FailSyncTask {
