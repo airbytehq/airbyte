@@ -852,9 +852,9 @@ schemas:
           - string
           - "null"
         format: date-time
-      rescheduled:
+      rescheduledToUid:
         type:
-          - boolean
+          - string
           - "null"
       absentHost:
         type:
