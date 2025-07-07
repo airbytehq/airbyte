@@ -13,6 +13,7 @@ API Reference: https://developer.paddle.com/api-reference/overview
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
+| adjustments | id | DefaultPaginator | ✅ |  ✅  |
 | customers | id | DefaultPaginator | ✅ |  ✅  |
 | customer_addresses | id | DefaultPaginator | ✅ |  ✅  |
 | discounts | id | DefaultPaginator | ✅ |  ✅  |
@@ -33,6 +34,9 @@ API Reference: https://developer.paddle.com/api-reference/overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.1 | 2025-07-05 | [62566](https://github.com/airbytehq/airbyte/pull/62566) | Update dependencies |
+| 0.1.0 | 2025-07-01 | [62479](https://github.com/airbytehq/airbyte/pull/62479) | Add adjustments stream |
+| 0.0.11 | 2025-07-01 | [62461](https://github.com/airbytehq/airbyte/pull/62461) | Add constant retry backoff per Paddle API Docs |
 | 0.0.10 | 2025-06-28 | [62318](https://github.com/airbytehq/airbyte/pull/62318) | Update dependencies |
 | 0.0.9 | 2025-06-21 | [61917](https://github.com/airbytehq/airbyte/pull/61917) | Update dependencies |
 | 0.0.8 | 2025-06-14 | [60485](https://github.com/airbytehq/airbyte/pull/60485) | Update dependencies |

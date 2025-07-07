@@ -42,6 +42,11 @@
       "statusCode": 301
     },
     {
+      "source": "/changelog",
+      "destination": "/release_notes",
+      "statusCode": 301
+    },
+    {
       "source": "/connector-development/config-based/understanding-the-yaml-file/stream-slicers",
       "destination": "/platform/connector-development/config-based/understanding-the-yaml-file/partition-router",
       "statusCode": 301
