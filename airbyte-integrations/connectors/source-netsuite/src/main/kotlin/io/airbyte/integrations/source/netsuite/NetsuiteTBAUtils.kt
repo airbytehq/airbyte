@@ -10,8 +10,6 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.lang3.RandomStringUtils
 
-private val log = KotlinLogging.logger {}
-
 /**
  * How TBA works in SuiteAnalytics connect over jdbc: the values of client Id (aka consumer key),
  * client secret, token id and token secret are used to calculate an HMAC sha256 hash on a base
@@ -32,6 +30,8 @@ private val log = KotlinLogging.logger {}
  * with a token password that was previously used is not allowed. A TBA authenticated connection is
  * valid for up to 60 minutes.
  */
+private val log = KotlinLogging.logger {}
+
 const val USERNAME = "user"
 const val PASSWORD = "password"
 const val TBA_USER = "TBA"
@@ -42,7 +42,7 @@ const val TOKEN_SECRET = "token_secret"
 
 private fun computeShaHash(baseString: String, key: String, algorithm: String): String {
     val bytes: ByteArray = key.toByteArray()
-    val signingKey: SecretKeySpec = SecretKeySpec(bytes, algorithm)
+    val signingKey = SecretKeySpec(bytes, algorithm)
     val messageAuthenticationCode: Mac = Mac.getInstance(algorithm)
     messageAuthenticationCode.init(signingKey)
     val hash: ByteArray? = messageAuthenticationCode.doFinal(baseString.toByteArray())

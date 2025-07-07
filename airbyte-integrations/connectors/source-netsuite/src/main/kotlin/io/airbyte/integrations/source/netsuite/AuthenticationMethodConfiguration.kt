@@ -19,6 +19,7 @@ import io.micronaut.context.annotation.ConfigurationProperties
 @JsonSubTypes(
     JsonSubTypes.Type(value = PasswordAuthentication::class, name = "password_authentication"),
     JsonSubTypes.Type(value = TokenBasedAuthentication::class, name = "token_based_authentication"),
+    JsonSubTypes.Type(value = OAuth2Authentication::class, name = "oauth2_authentication"),
 )
 @JsonSchemaTitle("Authentication Method")
 @JsonSchemaDescription(
@@ -83,6 +84,40 @@ data class TokenBasedAuthentication(
     val tokenSecret: String,
 ) : AuthenticationMethodConfiguration
 
+@JsonSchemaTitle("OAuth2 Authentication")
+@JsonSchemaDescription(
+    "Authenticate using OAuth2. " +
+        "This requires a consumer key, the private part of the certificate with which netsuite OAuth2 Client Credentials was setup " +
+        "and the certificate ID for the OAuth2 setup entry. "
+)
+data class OAuth2Authentication(
+    @get:JsonProperty("client_id", required = true)
+    @param:JsonProperty("client_id", required = true)
+    @JsonSchemaTitle("Consumer Key")
+    @JsonPropertyDescription(
+        "The consumer key used for OAuth2 authentication. " +
+            "This is generated in NetSuite when creating an integration record."
+    )
+    @JsonSchemaInject(json = """{"order":1}""")
+    val clientId: String,
+    @get:JsonProperty("key_id", required = true)
+    @param:JsonProperty("key_id", required = true)
+    @JsonSchemaTitle("Certificate ID")
+    @JsonPropertyDescription("The certificate ID for the OAuth 2.0 Client Credentials Setup entry.")
+    @JsonSchemaInject(json = """{"order":2}""")
+    val keyId: String,
+    @get:JsonProperty("oauth2_private_key", required = true)
+    @param:JsonProperty("oauth2_private_key", required = true)
+    @JsonSchemaTitle("OAuth2 Private Key")
+    @JsonPropertyDescription(
+        "The private portion of the certificate with which OAuth2 was setup. ( created with openssl " +
+            "req -new -x509 -newkey rsa:4096 -keyout private.pem -sigopt rsa_padding_mode:pss " +
+            "-sha256 -sigopt rsa_pss_saltlen:64 -out public.pem -nodes -days 365 )",
+    )
+    @JsonSchemaInject(json = """{"order":3,"multiline":true,"airbyte_secret": true}""")
+    val oauth2PrivateKey: String,
+) : AuthenticationMethodConfiguration
+
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.authentication_method")
 class MicronautPropertiesFriendlyAuthenticationMethodConfigurationSpecification {
     var method: String = "password_authentication" // default to password authentication
@@ -92,12 +127,15 @@ class MicronautPropertiesFriendlyAuthenticationMethodConfigurationSpecification 
     var clientSecret: String? = null
     var tokenId: String? = null
     var tokenSecret: String? = null
+    var keyId: String? = null
+    var oauth2PrivateKey: String? = null
 
     fun asAuthenticationMethodConfiguration(): AuthenticationMethodConfiguration =
         when (method) {
             "password_authentication" -> PasswordAuthentication(password)
             "token_based_authentication" ->
                 TokenBasedAuthentication(clientId!!, clientSecret!!, tokenId!!, tokenSecret!!)
+            "oauth2_authentication" -> OAuth2Authentication(clientId!!, keyId!!, oauth2PrivateKey!!)
             else -> throw ConfigErrorException("invalid value $method")
         }
 }

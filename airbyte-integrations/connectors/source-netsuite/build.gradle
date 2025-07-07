@@ -5,7 +5,7 @@ plugins {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc']
-    cdk = '0.409'
+    cdk = '0.521'
 }
 
 application {
@@ -17,4 +17,7 @@ dependencies {
     // a local repo.
     implementation files('libs/NQjc.jar')
     implementation 'org.apache.commons:commons-lang3:3.17.0'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+    implementation 'io.ktor:ktor-client-cio-jvm:3.1.2'
+    implementation 'io.ktor:ktor-client-core-jvm:3.1.2'
 }

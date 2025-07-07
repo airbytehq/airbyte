@@ -95,6 +95,45 @@
               "token_id",
               "token_secret"
             ]
+          },
+          {
+            "title": "OAuth2 Authentication",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Authenticate using OAuth2. This requires a consumer key, the private part of the certificate with which netsuite OAuth2 Client Credentials was setup and the certificate ID for the OAuth2 setup entry. ",
+            "properties": {
+              "authentication_method": {
+                "type": "string",
+                "enum": ["oauth2_authentication"],
+                "default": "oauth2_authentication"
+              },
+              "client_id": {
+                "type": "string",
+                "description": "The consumer key used for OAuth2 authentication. This is generated in NetSuite when creating an integration record.",
+                "title": "Consumer Key",
+                "order": 1
+              },
+              "key_id": {
+                "type": "string",
+                "description": "The certificate ID for the OAuth 2.0 Client Credentials Setup entry.",
+                "title": "Certificate ID",
+                "order": 2
+              },
+              "oauth2_private_key": {
+                "type": "string",
+                "description": "The private portion of the certificate with which OAuth2 was setup. ( created with openssl req -new -x509 -newkey rsa:4096 -keyout private.pem -sigopt rsa_padding_mode:pss -sha256 -sigopt rsa_pss_saltlen:64 -out public.pem -nodes -days 365 )",
+                "title": "OAuth2 Private Key",
+                "order": 3,
+                "multiline": true,
+                "airbyte_secret": true
+              }
+            },
+            "required": [
+              "authentication_method",
+              "client_id",
+              "key_id",
+              "oauth2_private_key"
+            ]
           }
         ],
         "description": "Configure how to authenticate to Netsuite. Options include username/password or token-based authentication.",

@@ -14,6 +14,9 @@ import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
+import java.time.Instant
+import java.util.Date
+import java.util.function.Supplier
 
 private val log = KotlinLogging.logger {}
 
@@ -23,7 +26,7 @@ data class NetsuiteSourceConfiguration(
     override val realPort: Int,
     override val sshTunnel: SshTunnelMethodConfiguration,
     override val sshConnectionOptions: SshConnectionOptions,
-    override val jdbcUrlFmt: String,
+    val urlFmt: Supplier<String>,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String> = emptySet(),
     val incremental: IncrementalConfiguration,
@@ -37,6 +40,9 @@ data class NetsuiteSourceConfiguration(
         when (incremental) {
             UserDefinedCursorIncrementalConfiguration -> null
         }
+
+    override val jdbcUrlFmt: String
+        get() = urlFmt.get()
 
     /** Required to inject [NetsuiteSourceConfiguration] directly. */
     @Factory
@@ -63,6 +69,9 @@ class NetsuiteSourceConfigurationFactory :
         NetsuiteSourceConfigurationSpecification,
         NetsuiteSourceConfiguration,
     > {
+
+    var oauth2AccessToken: String? = null
+
     override fun makeWithoutExceptionHandling(
         pojo: NetsuiteSourceConfigurationSpecification,
     ): NetsuiteSourceConfiguration {
@@ -85,10 +94,11 @@ class NetsuiteSourceConfigurationFactory :
                 jdbcProperties[CLIENT_SECRET] = authenticationMethod.clientSecret
                 jdbcProperties[TOKEN_ID] = authenticationMethod.tokenId
                 jdbcProperties[TOKEN_SECRET] = authenticationMethod.tokenSecret
-                // Token password needs is not reusable and recalculated for each connection.
+                // Token password is not reusable and recalculated for each connection.
                 // replace the plain JDBC properties map with a token dispensing map.
                 props = OAuth1TokenDispensingJdbcProperties(jdbcProperties, pojo.accountId)
             }
+            is OAuth2Authentication -> jdbcProperties.remove("password")
         }
 
         // Parse URL parameters.
@@ -108,9 +118,30 @@ class NetsuiteSourceConfigurationFactory :
         }
         Class.forName("com.netsuite.jdbc.openaccess.OpenAccessDriver")
 
-        val address =
-            "%s:%d;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=${pojo.accountId};RoleID=${pojo.roleId})"
-        val jdbcUrlFmt = "jdbc:ns://${address}"
+        /** Checks if the access token is about to expire within the next minute. */
+        fun isAccessTokenNeedRefresh(): Boolean {
+            oauth2AccessToken?.let {
+                return oauth2GetAccessTokenExpiration(it)
+                    .before(Date.from(Instant.now().plus(Duration.ofMinutes(1))))
+            }
+            return true
+        }
+
+        val jdbcUrlFormatSupplier: () -> String = {
+            val address =
+                if (authenticationMethod is OAuth2Authentication) {
+                    synchronized(this) {
+                        if (isAccessTokenNeedRefresh()) {
+                            oauth2AccessToken =
+                                oauth2Authenticate(pojo.accountId, authenticationMethod)
+                        }
+                    }
+                    "%s:%d;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=${pojo.accountId};RoleID=${pojo.roleId};OAuth2Token=$oauth2AccessToken)"
+                } else {
+                    "%s:%d;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=${pojo.accountId};RoleID=${pojo.roleId})"
+                }
+            "jdbc:ns://$address"
+        }
 
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =
@@ -129,7 +160,7 @@ class NetsuiteSourceConfigurationFactory :
             realPort = realPort,
             sshTunnel = sshTunnel,
             sshConnectionOptions = sshOpts,
-            jdbcUrlFmt = jdbcUrlFmt,
+            urlFmt = jdbcUrlFormatSupplier,
             jdbcProperties = props,
             incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
