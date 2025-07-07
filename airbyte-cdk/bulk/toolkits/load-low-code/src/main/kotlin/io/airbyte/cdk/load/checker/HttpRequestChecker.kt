@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.consumeBodyToString
-import java.io.InputStreamReader
 
 class HttpRequestChecker<C : DestinationConfiguration>(private val requester: HttpRequester) :
     DestinationChecker<C> {
