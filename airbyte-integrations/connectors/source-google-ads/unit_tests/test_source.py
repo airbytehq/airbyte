@@ -11,6 +11,7 @@ from unittest.mock import Mock, call
 import pendulum
 import pytest
 from pendulum import duration, today
+from source_google_ads.components import GoogleAdsPerPartitionStateMigration
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
@@ -535,3 +536,51 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
 
     assert updated_stream.days_of_data_storage == 90
     assert updated_stream.slice_duration == duration(days=0)
+
+
+@pytest.mark.parametrize(
+    "input_state, expected",
+    [
+        # no partitions ⇒ empty
+        ({}, {}),
+        # single partition ⇒ that date
+        (
+            {"123": {"segments.date": "2120-10-10"}},
+            {"use_global_cursor": True, "state": {"segments.date": "2120-10-10"}},
+        ),
+        # multiple partitions ⇒ pick the earliest date
+        (
+            {
+                "a": {"segments.date": "2020-01-02"},
+                "b": {"segments.date": "2020-01-01"},
+            },
+            {"use_global_cursor": True, "state": {"segments.date": "2020-01-01"}},
+        ),
+        # mixed: only one has the cursor field
+        (
+            {
+                "a": {"segments.date": "2020-01-02"},
+                "b": {"other": "x"},
+            },
+            {"use_global_cursor": True, "state": {"segments.date": "2020-01-02"}},
+        ),
+        # none have the cursor field ⇒ empty
+        (
+            {
+                "a": {"foo": "bar"},
+                "b": {"baz": 42},
+            },
+            {},
+        ),
+        # no state in the input ⇒ empty
+        ({"parent_state": {}, "lookback_window": 13, "use_global_cursor": True}, {}),
+        # already migrated state ⇒ no change
+        (
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+        ),
+    ],
+)
+def test_migrate_various_partitions(input_state, expected):
+    migrator = GoogleAdsPerPartitionStateMigration(config=None)
+    assert migrator.migrate(input_state) == expected
