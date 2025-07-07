@@ -341,6 +341,7 @@ class FinancialGLAccountClassificationMappings(ExactOtherStream):
     """Stream to sync to the endpoint `financial/GLAccountClassificationMappings`"""
 
     endpoint = "financial/GLAccountClassificationMappings"
+    cursor_field = []
 
 
 class FinancialReceivablesList(ExactOtherStream):
