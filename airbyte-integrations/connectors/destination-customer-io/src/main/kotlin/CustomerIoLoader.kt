@@ -69,11 +69,13 @@ class CustomerIoState(
                 200 -> emptyList()
                 207 ->
                     decoder.decode(response.getBodyOrEmpty()).get("errors").asIterable().map {
-                        orderedRecords[it.get("batch_index").asInt()].toDlqRecord(mapOf(
-                            "rejected_reason" to it.get("reason").asText(),
-                            "rejected_field" to it.get("field").asText(),
-                            "rejected_message" to it.get("message").asText(),
-                        ))
+                        orderedRecords[it.get("batch_index").asInt()].toDlqRecord(
+                            mapOf(
+                                "rejected_reason" to it.get("reason").asText(),
+                                "rejected_field" to it.get("field").asText(),
+                                "rejected_message" to it.get("message").asText(),
+                            )
+                        )
                     }
                 else ->
                     throw IllegalStateException(

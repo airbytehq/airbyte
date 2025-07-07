@@ -7,7 +7,6 @@ import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.dlq.toDlqRecord
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.customerio.CustomerIoState
@@ -62,13 +61,25 @@ class CustomerIoStateTest {
                     .put("event_name", "rejected_event_name")
             )
         every { httpClient.send(any()) } returns
-            aResponse(207, """{"errors": [{"batch_index": 1, "reason": "a_reason", "field": "a_field", "message": "a_message"}]}""".toByteArray().inputStream())
+            aResponse(
+                207,
+                """{"errors": [{"batch_index": 1, "reason": "a_reason", "field": "a_field", "message": "a_message"}]}"""
+                    .toByteArray()
+                    .inputStream()
+            )
         state.accumulate(aRecord())
         state.accumulate(rejectedRecord)
 
         val rejectedRecords = state.flush() ?: throw IllegalStateException("Expected empty list")
 
-        assertEquals(listOf<DestinationRecordRaw>(rejectedRecord.toDlqRecord(mapOf("reason" to "a_reason", "field" to "a_field", "message" to "a_message"))), rejectedRecords)
+        assertEquals(
+            listOf<DestinationRecordRaw>(
+                rejectedRecord.toDlqRecord(
+                    mapOf("reason" to "a_reason", "field" to "a_field", "message" to "a_message")
+                )
+            ),
+            rejectedRecords
+        )
     }
 
     @Test
@@ -88,8 +99,17 @@ class CustomerIoStateTest {
     }
 
     fun aRecord(data: JsonNode = Jsons.objectNode()): DestinationRecordRaw {
-        val rawData = DestinationRecordJsonSource(AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(
-            AirbyteRecordMessage().withStream("any_stream").withEmittedAt(0L).withData(Jsons.objectNode().put("random", UUID.randomUUID().toString()))))
+        val rawData =
+            DestinationRecordJsonSource(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage()
+                            .withStream("any_stream")
+                            .withEmittedAt(0L)
+                            .withData(data)
+                    )
+            )
         return DestinationRecordRaw(
             stream = mockk(relaxed = true),
             rawData = rawData,
