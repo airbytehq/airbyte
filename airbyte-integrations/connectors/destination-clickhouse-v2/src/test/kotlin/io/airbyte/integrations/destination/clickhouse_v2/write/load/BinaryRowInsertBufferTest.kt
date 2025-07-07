@@ -13,21 +13,17 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
-import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.cdk.util.Jsons
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -36,7 +32,6 @@ import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.math.BigDecimal
-import java.util.Date
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -66,7 +61,7 @@ class BinaryRowInsertBufferTest {
         every {
             clickhouseClient.getTableSchema(Fixtures.TEST_NAME, Fixtures.TEST_NAMESPACE)
         } returns schema
-        buffer = BinaryRowInsertBuffer(tableName, clickhouseClient, StringType)
+        buffer = BinaryRowInsertBuffer(tableName, clickhouseClient)
     }
 
     @Test
@@ -81,11 +76,6 @@ class BinaryRowInsertBufferTest {
     fun `#accumulate writes and commits single value fields`(record: Map<String, AirbyteValue>) {
         val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
         buffer.writer = writer
-
-        val mFormattedSchema = mockk<Map<String, FieldType>>()
-        every { mFormattedSchema[any()] } returns
-            FieldType(UnknownType(io.airbyte.protocol.models.Jsons.emptyObject()), true)
-        buffer.formattedSchema = mFormattedSchema
 
         buffer.accumulate(record)
 
@@ -116,11 +106,6 @@ class BinaryRowInsertBufferTest {
     ) {
         val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
         buffer.writer = writer
-
-        val mFormattedSchema = mockk<Map<String, FieldType>>()
-        every { mFormattedSchema[any()] } returns
-            FieldType(UnknownType(io.airbyte.protocol.models.Jsons.emptyObject()), true)
-        buffer.formattedSchema = mFormattedSchema
 
         buffer.accumulate(record)
 
@@ -155,19 +140,6 @@ class BinaryRowInsertBufferTest {
                 ClickHouseFormat.RowBinary
             )
         }
-    }
-
-    @ParameterizedTest
-    @MethodSource("writeMatrix")
-    fun `test write`(value: Any) {
-        val writer = mockk<RowBinaryFormatWriter>(relaxed = true)
-        buffer.writer = writer
-
-        buffer.write("field", value, true)
-        verify { writer.setValue("field", value) }
-
-        buffer.write("field", value, false)
-        verify { writer.setValue("field", value.serializeToString()) }
     }
 
     companion object {
@@ -247,16 +219,6 @@ class BinaryRowInsertBufferTest {
                         "field1" to Fixtures.objectValue,
                     )
                 ),
-            )
-
-        @JvmStatic
-        fun writeMatrix() =
-            listOf(
-                Arguments.of(true),
-                Arguments.of(42),
-                Arguments.of(123.3),
-                Arguments.of("str"),
-                Arguments.of(mockk<Date>(relaxed = true)),
             )
     }
 
