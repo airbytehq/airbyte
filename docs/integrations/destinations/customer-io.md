@@ -9,6 +9,7 @@ The Customer IO destination connector allows you to sync data to Customer IO, a 
 ### Destination Objects + Operations
 
 Here are the destination objects and their respective operations that are currently supported:
+* [Person](https://docs.customer.io/journeys/create-update-person/): Identifies a person and assigns traits to them.
 * [Person Events](https://docs.customer.io/journeys/events/): Track an event for a user that is known or not by Customer IO. Use `event_id` to leverage event deduplication.
 
 ### Features
