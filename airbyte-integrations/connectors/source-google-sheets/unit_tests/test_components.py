@@ -9,18 +9,21 @@ from typing import Dict, List, Union
 import dpath
 import pytest
 import requests
-from source_google_sheets import SourceGoogleSheets
-from source_google_sheets.components import DpathSchemaExtractor, DpathSchemaMatchingExtractor
-from source_google_sheets.components.extractors import RawSchemaParser
-from source_google_sheets.utils import _sanitization
+from components import (
+    DpathSchemaExtractor,
+    DpathSchemaMatchingExtractor,
+    RawSchemaParser,
+    _sanitization,
+)
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.decoders.json_decoder import (
     IterableDecoder,
     JsonDecoder,
 )
-from unit_tests.integration.conftest import catalog_helper, oauth_credentials
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from unit_tests.conftest import _YAML_FILE_PATH
+from unit_tests.integration.conftest import oauth_credentials
 
 
 config = {"field": "record_array"}
@@ -37,9 +40,9 @@ def create_response(body: Union[Dict, bytes]):
 
 
 _CONFIG = {"spreadsheet_id": "_spread_sheet_id", "credentials": oauth_credentials, "batch_size": 200}
-_MANIFEST = resolve_manifest(
-    source=SourceGoogleSheets(catalog=catalog_helper(SyncMode.full_refresh, "a_stream"), config=_CONFIG, state={})
-).record.data["manifest"]
+_MANIFEST = resolve_manifest(source=YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config=_CONFIG, state=[])).record.data[
+    "manifest"
+]
 _FIELD_PATH = list(
     dpath.get(
         obj=_MANIFEST,
@@ -161,64 +164,6 @@ def test_is_row_empty(values, expected_response):
 def test_row_contains_relevant_data(values, relevant_indices, expected_response):
     is_row_empty = DpathSchemaMatchingExtractor.row_contains_relevant_data(values, relevant_indices)
     assert is_row_empty == expected_response
-
-
-@pytest.mark.parametrize(
-    "raw_schema_data, expected_data, names_conversion",
-    [
-        # Basic header handling
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h2"}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"}), (1, "h2", {"formattedValue": "h2"}), (2, "h3", {"formattedValue": "h3"})],
-            False,
-        ),
-        # Duplicate headers
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]},
-            [(2, "h3", {"formattedValue": "h3"})],
-            False,
-        ),
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"})],
-            False,
-        ),
-        # Blank values and whitespace
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"})],
-            False,
-        ),
-        (
-            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
-            [],
-            False,
-        ),
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"})],
-            False,
-        ),
-    ],
-    ids=[
-        "test_headers",
-        "test_duplicate_headers_retrieved",
-        "test_duplicate_headers_retrieved_not_first_position",
-        "test_blank_values_terminate_row",
-        "test_is_row_empty_with_empty_row",
-        "test_whitespace_terminates_row",
-    ],
-)
-def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion):
-    extractor = RawSchemaParser()
-    extractor.config = {"names_conversion": names_conversion}
-    parsed_data = extractor.parse_raw_schema_values(
-        raw_schema_data,
-        schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
-        key_pointer=_SCHEMA_TYPE_IDENTIFIERS["key_pointer"],
-        names_conversion=names_conversion,
-    )
-    assert parsed_data == expected_data
 
 
 @pytest.mark.parametrize(

@@ -7,8 +7,6 @@ from typing import Any
 
 import pytest
 from requests import Response
-from source_monday.extractor import MondayIncrementalItemsExtractor
-from source_monday.state_migration import MondayStateMigration
 
 
 @pytest.mark.parametrize(
@@ -24,9 +22,9 @@ from source_monday.state_migration import MondayStateMigration
         ({"activity_logs": None, "other_key": "value"}, {"other_key": "value"}, True),
     ],
 )
-def test_monday_state_migration(input_state, expected_state, expected_should_migrate):
+def test_monday_state_migration(input_state, expected_state, expected_should_migrate, components_module):
     """Test both migrate and should_migrate methods of MondayStateMigration."""
-    migration = MondayStateMigration()
+    migration = components_module.MondayStateMigration()
 
     # Test should_migrate
     should_migrate_result = migration.should_migrate(input_state)
@@ -46,8 +44,8 @@ def _create_response(content: Any) -> Response:
     return response
 
 
-def test_null_records(caplog):
-    extractor = MondayIncrementalItemsExtractor(
+def test_null_records(caplog, components_module):
+    extractor = components_module.MondayIncrementalItemsExtractor(
         field_path=["data", "boards", "*"],
         config={},
         parameters={},
