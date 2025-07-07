@@ -10,7 +10,7 @@
         "null",
         "string"
       ]
-    }
+    },
     "Code": {
       "description": "Department Code",
       "type": [

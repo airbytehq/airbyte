@@ -337,7 +337,7 @@ class BudgetBudgets(ExactOtherStream):
     endpoint = "budget/Budgets"
 
 
-class FinancialGLAccountClassificationMapping(ExactOtherStream):
+class FinancialGLAccountClassificationMappings(ExactOtherStream):
     """Stream to sync to the endpoint `financial/GLAccountClassificationMappings`"""
 
     endpoint = "financial/GLAccountClassificationMappings"
@@ -348,7 +348,10 @@ class FinancialReceivablesList(ExactOtherStream):
 
     endpoint = "read/financial/ReceivablesList"
     primary_key = "HID"
-    cursor_field = None
+    # An empty cursor field as this stream has no cursor, will fail if set to None,
+    # Inspired by the Stream(ABC), perhaps refactor the ExactSyncStream or let this class
+    # Inherit from Exact stream so we do not have to redifine the cursor field here
+    cursor_field = []
 
 
 class FinancialReportingBalance(ExactOtherStream):
