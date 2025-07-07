@@ -51,6 +51,7 @@ constructor(
     private val flushFailure: FlushFailure,
     private val stateManager: GlobalAsyncStateManager,
     private val workerPool: ExecutorService = Executors.newFixedThreadPool(5),
+    flushOnEveryMessage: Boolean = false,
 ) : AutoCloseable {
     private val supervisorThread: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
     private val debugLoop: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
@@ -66,6 +67,7 @@ constructor(
                 runningFlushWorkers,
                 isClosing,
                 flusher,
+                flushOnEveryMessage,
             )
     }
 

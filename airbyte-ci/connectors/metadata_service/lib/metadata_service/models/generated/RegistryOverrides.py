@@ -27,9 +27,13 @@ class NormalizationDestinationDefinitionConfig(BaseModel):
         ...,
         description="a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.",
     )
-    normalizationTag: str = Field(..., description="a field indicating the tag of the docker repository to be used for normalization.")
+    normalizationTag: str = Field(
+        ...,
+        description="a field indicating the tag of the docker repository to be used for normalization.",
+    )
     normalizationIntegrationType: str = Field(
-        ..., description="a field indicating the type of integration dialect to use for normalization."
+        ...,
+        description="a field indicating the type of integration dialect to use for normalization.",
     )
 
 
@@ -54,8 +58,18 @@ class ResourceRequirements(BaseModel):
 
 
 class JobType(BaseModel):
-    __root__: Literal["get_spec", "check_connection", "discover_schema", "sync", "reset_connection", "connection_updater", "replicate"] = (
-        Field(..., description="enum that describes the different types of jobs that the platform runs.", title="JobType")
+    __root__: Literal[
+        "get_spec",
+        "check_connection",
+        "discover_schema",
+        "sync",
+        "reset_connection",
+        "connection_updater",
+        "replicate",
+    ] = Field(
+        ...,
+        description="enum that describes the different types of jobs that the platform runs.",
+        title="JobType",
     )
 
 
@@ -72,7 +86,8 @@ class ActorDefinitionResourceRequirements(BaseModel):
         extra = Extra.forbid
 
     default: Optional[ResourceRequirements] = Field(
-        None, description="if set, these are the requirements that should be set for ALL jobs run for this actor definition."
+        None,
+        description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 

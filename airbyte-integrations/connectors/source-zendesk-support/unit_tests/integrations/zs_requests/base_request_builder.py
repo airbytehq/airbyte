@@ -30,12 +30,7 @@ class ZendeskSuppportRequestBuilder(abc.ABC):
         """A request body"""
 
     def build(self) -> HttpRequest:
-        return HttpRequest(
-            url=self.url,
-            query_params=self.query_params,
-            headers=self.headers,
-            body=self.request_body
-        )
+        return HttpRequest(url=self.url, query_params=self.query_params, headers=self.headers, body=self.request_body)
 
 
 class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
@@ -43,6 +38,7 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
         self._resource: str = resource
         self._subdomain: str = subdomain
         self._authenticator: str = None
+        self._client_access_token: Optional[str] = None
 
     @property
     def url(self) -> str:
@@ -60,6 +56,10 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
 
     def with_authenticator(self, authenticator: Authenticator) -> "ZendeskSupportBaseRequestBuilder":
         self._authenticator: Authenticator = authenticator
+        return self
+
+    def with_client_access_token(self, client_access_token: str) -> "ZendeskSupportBaseRequestBuilder":
+        self._client_access_token: str = client_access_token
         return self
 
     def with_subdomain(self, subdomain: str) -> "ZendeskSupportBaseRequestBuilder":

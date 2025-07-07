@@ -9,11 +9,12 @@ from typing import Any, Dict, Mapping
 
 import numpy as np
 import pandas as pd
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import ConnectorConfig
 from destination_aws_datalake.stream_writer import DictEncoder, StreamWriter
+
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 def get_config() -> Mapping[str, Any]:

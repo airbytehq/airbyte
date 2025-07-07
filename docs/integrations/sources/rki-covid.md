@@ -56,6 +56,24 @@ Select start date
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.41 | 2025-05-24 | [60457](https://github.com/airbytehq/airbyte/pull/60457) | Update dependencies |
+| 0.1.40 | 2025-05-10 | [59011](https://github.com/airbytehq/airbyte/pull/59011) | Update dependencies |
+| 0.1.39 | 2025-04-19 | [58373](https://github.com/airbytehq/airbyte/pull/58373) | Update dependencies |
+| 0.1.38 | 2025-04-12 | [57951](https://github.com/airbytehq/airbyte/pull/57951) | Update dependencies |
+| 0.1.37 | 2025-04-05 | [57319](https://github.com/airbytehq/airbyte/pull/57319) | Update dependencies |
+| 0.1.36 | 2025-03-29 | [56738](https://github.com/airbytehq/airbyte/pull/56738) | Update dependencies |
+| 0.1.35 | 2025-03-22 | [56224](https://github.com/airbytehq/airbyte/pull/56224) | Update dependencies |
+| 0.1.34 | 2025-03-08 | [54024](https://github.com/airbytehq/airbyte/pull/54024) | Update dependencies |
+| 0.1.33 | 2025-02-08 | [53027](https://github.com/airbytehq/airbyte/pull/53027) | Update dependencies |
+| 0.1.32 | 2025-01-25 | [52527](https://github.com/airbytehq/airbyte/pull/52527) | Update dependencies |
+| 0.1.31 | 2025-01-18 | [51863](https://github.com/airbytehq/airbyte/pull/51863) | Update dependencies |
+| 0.1.30 | 2025-01-11 | [51297](https://github.com/airbytehq/airbyte/pull/51297) | Update dependencies |
+| 0.1.29 | 2024-12-28 | [50707](https://github.com/airbytehq/airbyte/pull/50707) | Update dependencies |
+| 0.1.28 | 2024-12-21 | [50237](https://github.com/airbytehq/airbyte/pull/50237) | Update dependencies |
+| 0.1.27 | 2024-12-14 | [49724](https://github.com/airbytehq/airbyte/pull/49724) | Update dependencies |
+| 0.1.26 | 2024-12-12 | [49099](https://github.com/airbytehq/airbyte/pull/49099) | Update dependencies |
+| 0.1.25 | 2024-11-25 | [48677](https://github.com/airbytehq/airbyte/pull/48677) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.24 | 2024-10-29 | [47083](https://github.com/airbytehq/airbyte/pull/47083) | Update dependencies |
 | 0.1.23 | 2024-10-12 | [46791](https://github.com/airbytehq/airbyte/pull/46791) | Update dependencies |
 | 0.1.22 | 2024-10-05 | [46495](https://github.com/airbytehq/airbyte/pull/46495) | Update dependencies |
 | 0.1.21 | 2024-09-28 | [46123](https://github.com/airbytehq/airbyte/pull/46123) | Update dependencies |

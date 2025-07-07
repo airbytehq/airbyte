@@ -11,6 +11,8 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
@@ -18,12 +20,16 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailure
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Duration
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import org.junit.jupiter.api.Assertions
 
 object TestFixtures {
@@ -38,7 +44,7 @@ object TestFixtures {
     ) =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("events")),
-            fields = listOf(id, ts, msg),
+            schema = setOf(id, ts, msg),
             configuredSyncMode =
                 if (withCursor) ConfiguredSyncMode.INCREMENTAL else ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = listOf(id).takeIf { withPK },
@@ -85,13 +91,14 @@ object TestFixtures {
                 maxConcurrency,
                 maxSnapshotReadTime
             )
+
+        val concurrencyResource = ConcurrencyResource(configuration)
         return DefaultJdbcSharedState(
             configuration,
-            BufferingOutputConsumer(ClockFactory().fixed()),
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
-            ConcurrencyResource(configuration),
-            NoOpGlobalLockResource()
+            concurrencyResource,
+            ResourceAcquirer(listOf(concurrencyResource))
         )
     }
 
@@ -156,9 +163,13 @@ object TestFixtures {
             Assertions.assertEquals(q.sql, mockedQuery!!.expectedQuerySpec.toString())
             Assertions.assertEquals(parameters, mockedQuery.expectedParameters, q.sql)
             return object : SelectQuerier.Result {
-                val wrapped: Iterator<ObjectNode> = mockedQuery.results.iterator()
+                val wrapped: Iterator<NativeRecordPayload> = mockedQuery.results.iterator()
                 override fun hasNext(): Boolean = wrapped.hasNext()
-                override fun next(): ObjectNode = wrapped.next()
+                override fun next(): SelectQuerier.ResultRow =
+                    object : SelectQuerier.ResultRow {
+                        override val data: NativeRecordPayload = wrapped.next()
+                        override val changes: Map<Field, FieldValueChange> = emptyMap()
+                    }
                 override fun close() {}
             }
         }
@@ -167,17 +178,13 @@ object TestFixtures {
     data class MockedQuery(
         val expectedQuerySpec: SelectQuerySpec,
         val expectedParameters: SelectQuerier.Parameters,
-        val results: List<ObjectNode>
+        val results: List<NativeRecordPayload>
     ) {
         constructor(
             expectedQuerySpec: SelectQuerySpec,
             expectedParameters: SelectQuerier.Parameters,
-            vararg rows: String,
-        ) : this(
-            expectedQuerySpec,
-            expectedParameters,
-            rows.map { Jsons.readTree(it) as ObjectNode },
-        )
+            vararg rows: NativeRecordPayload,
+        ) : this(expectedQuerySpec, expectedParameters, rows.toList())
     }
 
     object MockSelectQueryGenerator : SelectQueryGenerator {
@@ -185,8 +192,27 @@ object TestFixtures {
             SelectQuery(ast.toString(), listOf(), listOf())
     }
 
-    object MockStateQuerier : StateQuerier {
-        override val feeds: List<Feed> = listOf()
-        override fun current(feed: Feed): OpaqueStateValue? = null
+    object MockMetaFieldDecorator : MetaFieldDecorator {
+        override val globalCursor: MetaField? = null
+        override val globalMetaFields: Set<MetaField> = emptySet()
+
+        override fun decorateRecordData(
+            timestamp: OffsetDateTime,
+            globalStateValue: OpaqueStateValue?,
+            stream: Stream,
+            recordData: ObjectNode
+        ) {}
     }
+
+    fun Stream.bootstrap(opaqueStateValue: OpaqueStateValue?): StreamFeedBootstrap =
+        StreamFeedBootstrap(
+            outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
+            metaFieldDecorator = MockMetaFieldDecorator,
+            stateManager = StateManager(initialStreamStates = mapOf(this to opaqueStateValue)),
+            stream = this,
+            DataChannelFormat.JSONL,
+            DataChannelMedium.STDIO,
+            8192,
+            ClockFactory().fixed()
+        )
 }

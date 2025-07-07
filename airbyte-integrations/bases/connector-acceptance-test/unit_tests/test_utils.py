@@ -14,10 +14,11 @@ from unittest.mock import Mock
 
 import pytest
 import yaml
-from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from connector_acceptance_test.config import EmptyStreamConfiguration
 from connector_acceptance_test.utils import common
 from connector_acceptance_test.utils.compare import make_hashable
+
+from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 def not_sorted_data():

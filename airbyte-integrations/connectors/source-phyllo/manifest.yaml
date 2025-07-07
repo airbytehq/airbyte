@@ -1,0 +1,1252 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://dashboard.getphyllo.com/
+
+  API Reference:
+  https://docs.getphyllo.com/docs/api-reference/introduction/introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - work-platforms
+
+definitions:
+  streams:
+    work-platforms:
+      type: DeclarativeStream
+      name: work-platforms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/work-platforms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/work-platforms"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/profiles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profiles"
+    content_items:
+      type: DeclarativeStream
+      name: content_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/social/contents
+          http_method: GET
+          request_parameters:
+            account_id: "{{ stream_partition['acc_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: acc_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from_date
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/content_items"
+    social_income_transactions:
+      type: DeclarativeStream
+      name: social_income_transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/social/income/transactions
+          http_method: GET
+          request_parameters:
+            account_id: "{{ stream_partition['acc_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: acc_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: transaction_from_date
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: transaction_to_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/social_income_transactions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['environment'] }}.getphyllo.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"client_secret\"] }}"
+      username: "{{ config[\"client_id\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/work-platforms"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/content_items"
+  - $ref: "#/definitions/streams/social_income_transactions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - environment
+      - client_secret
+      - start_date
+    properties:
+      client_id:
+        type: string
+        description: >-
+          Your Client ID for the Phyllo API. You can find this in the Phyllo
+          Developer Dashboard under API credentials.
+        name: client_id
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      environment:
+        type: string
+        description: >-
+          The environment for the API (e.g., 'api.sandbox', 'api.staging',
+          'api')
+        enum:
+          - api.sandbox
+          - api.staging
+          - api
+        name: environment
+        order: 1
+        title: Environment
+        default: api
+      client_secret:
+        type: string
+        description: >-
+          Your Client Secret for the Phyllo API. You can find this in the Phyllo
+          Developer Dashboard under API credentials.
+        name: client_secret
+        order: 2
+        title: Client Secret
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 3
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    work-platforms: true
+    users: true
+    accounts: true
+    profiles: true
+    content_items: true
+    social_income_transactions: true
+  testedStreams:
+    work-platforms:
+      hasRecords: true
+      streamHash: 9d1408fe067b63848faa035bbb09e1ae2f81cf4b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 2bc1283f498fa6b624bc438469cc06e1806dae8c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accounts:
+      hasRecords: true
+      streamHash: 5e0c50602c8c153734ac9f30574d5ad737822f22
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    profiles:
+      hasRecords: true
+      streamHash: e969c3ab492bd7fa42590864a8f0de7f47d7f86b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    content_items:
+      hasRecords: true
+      streamHash: 288a998809c76b7c44e52ed11831c10d8eef80f6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    social_income_transactions:
+      hasRecords: true
+      streamHash: dc9d948f93c4c5ce0d5cdb80d1113c7feff66468
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://docs.getphyllo.com/docs/api-reference/api/ref
+
+schemas:
+  work-platforms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      logo_url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - object
+          - "null"
+        properties:
+          activity:
+            type:
+              - object
+              - "null"
+            properties:
+              is_supported:
+                type:
+                  - boolean
+                  - "null"
+          engagement:
+            type:
+              - object
+              - "null"
+            properties:
+              audience:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  is_supported:
+                    type:
+                      - boolean
+                      - "null"
+              is_supported:
+                type:
+                  - boolean
+                  - "null"
+          identity:
+            type:
+              - object
+              - "null"
+            properties:
+              audience:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  is_supported:
+                    type:
+                      - boolean
+                      - "null"
+              is_supported:
+                type:
+                  - boolean
+                  - "null"
+          income:
+            type:
+              - object
+              - "null"
+            properties:
+              is_supported:
+                type:
+                  - boolean
+                  - "null"
+          publish_content:
+            type:
+              - object
+              - "null"
+            properties:
+              is_supported:
+                type:
+                  - boolean
+                  - "null"
+          switch:
+            type:
+              - object
+              - "null"
+            properties:
+              is_supported:
+                type:
+                  - boolean
+                  - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          activity:
+            type:
+              - object
+              - "null"
+            properties:
+              last_sync_at:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+          engagement:
+            type:
+              - object
+              - "null"
+            properties:
+              audience:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  last_sync_at:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              last_sync_at:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+          identity:
+            type:
+              - object
+              - "null"
+            properties:
+              audience:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  last_sync_at:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              last_sync_at:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+          income:
+            type:
+              - object
+              - "null"
+            properties:
+              data_available_from:
+                type:
+                  - string
+                  - "null"
+              last_sync_at:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      platform_profile_id:
+        type:
+          - string
+          - "null"
+      platform_profile_name:
+        type:
+          - string
+          - "null"
+      platform_profile_published_at:
+        type:
+          - string
+          - "null"
+      platform_username:
+        type:
+          - string
+          - "null"
+      profile_pic_url:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      username:
+        type:
+          - string
+          - "null"
+      work_platform:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - updated_at
+  profiles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          platform_username:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+      category:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      date_of_birth:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            email_id:
+              type:
+                - string
+                - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image_url:
+        type:
+          - string
+          - "null"
+      introduction:
+        type:
+          - string
+          - "null"
+      is_business:
+        type:
+          - boolean
+          - "null"
+      is_verified:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      nick_name:
+        type:
+          - string
+          - "null"
+      phone_numbers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            phone_number:
+              type:
+                - string
+                - "null"
+      platform_account_type:
+        type:
+          - string
+          - "null"
+      platform_profile_id:
+        type:
+          - string
+          - "null"
+      platform_profile_name:
+        type:
+          - string
+          - "null"
+      platform_profile_published_at:
+        type:
+          - string
+          - "null"
+      reputation:
+        type:
+          - object
+          - "null"
+        properties:
+          content_count:
+            type:
+              - number
+              - "null"
+          content_group_count:
+            type:
+              - number
+              - "null"
+          follower_count:
+            type:
+              - number
+              - "null"
+          following_count:
+            type:
+              - number
+              - "null"
+          like_count:
+            type:
+              - number
+              - "null"
+          subscriber_count:
+            type:
+              - number
+              - "null"
+          watch_time_in_hours:
+            type:
+              - number
+              - "null"
+      updated_at:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      username:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      work_platform:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - updated_at
+  content_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          platform_username:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      engagement:
+        type:
+          - object
+          - "null"
+        properties:
+          comment_count:
+            type:
+              - number
+              - "null"
+          dislike_count:
+            type:
+              - number
+              - "null"
+          impression_organic_count:
+            type:
+              - number
+              - "null"
+          like_count:
+            type:
+              - number
+              - "null"
+          reach_organic_count:
+            type:
+              - number
+              - "null"
+          save_count:
+            type:
+              - number
+              - "null"
+          view_count:
+            type:
+              - number
+              - "null"
+          watch_time_in_hours:
+            type:
+              - number
+              - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      format:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_owned_by_platform_user:
+        type:
+          - boolean
+          - "null"
+      media_urls:
+        type:
+          - array
+          - "null"
+      platform_profile_id:
+        type:
+          - string
+          - "null"
+      platform_profile_name:
+        type:
+          - string
+          - "null"
+      published_at:
+        type:
+          - string
+          - "null"
+      thumbnail_url:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+      work_platform:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - updated_at
+  social_income_transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          platform_username:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      cpm:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      platform_profile_id:
+        type:
+          - string
+          - "null"
+      platform_profile_name:
+        type:
+          - string
+          - "null"
+      transaction_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      work_platform:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - updated_at

@@ -1,0 +1,389 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for
+  [Papersign](https://paperform.co/products/papersign/) enables seamless
+  integration between Airbyte and Papersign, allowing automated data syncs
+  between your Papersign documents and other platforms. This connector
+  facilitates the extraction, transformation, and loading of e-signature data,
+  document statuses, and user interactions, streamlining workflows and ensuring
+  your e-signature data is easily accessible across systems.
+
+check:
+  type: CheckStream
+  stream_names:
+    - documents
+
+definitions:
+  streams:
+    documents:
+      type: DeclarativeStream
+      name: documents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /documents
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - documents
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/documents"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /folders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - folders
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
+    spaces:
+      type: DeclarativeStream
+      name: spaces
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /spaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - spaces
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/spaces"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /folders/{{ stream_partition.folder_id }}/webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - webhooks
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: folder_id
+              stream:
+                $ref: "#/definitions/streams/folders"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.paperform.co/v1/papersign
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/documents"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/spaces"
+  - $ref: "#/definitions/streams/webhooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Generate it on your account page at
+          https://paperform.co/account/developer.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    documents: true
+    folders: true
+    spaces: true
+    webhooks: true
+  testedStreams:
+    documents:
+      streamHash: a59e7aff6341401663261c4dfa54fa0d64aabdb9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    folders:
+      streamHash: 4c2adb17d08b637fa0ebdad93ca1052403353a3b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    spaces:
+      streamHash: 212fa07c2680bd48e6f635aa1f86e75f35727043
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: c7677b1788e9080c894e3e42cda63df94e057f60
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://paperform.readme.io/reference/getting-started-1
+
+schemas:
+  documents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      completed_at_utc:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type:
+          - string
+          - "null"
+      folder:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          space_id:
+            type:
+              - number
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      sent_at_utc:
+        type:
+          - string
+          - "null"
+      signers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            custom_attributes:
+              type:
+                - array
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      space:
+        type:
+          - object
+          - "null"
+        properties:
+          allow_team_access:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          root_folder_id:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at_utc:
+        type:
+          - string
+          - "null"
+      variables:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      space_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  spaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      allow_team_access:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      root_folder_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      folder:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          space_id:
+            type:
+              - number
+              - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      scope:
+        type:
+          - string
+          - "null"
+      target_url:
+        type:
+          - string
+          - "null"
+      triggers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id

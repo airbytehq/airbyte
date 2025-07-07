@@ -7,43 +7,36 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
-import io.airbyte.cdk.load.write.StreamLoader
-import io.micronaut.context.annotation.Secondary
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import jakarta.inject.Singleton
 
-interface CloseStreamTask : StreamLevel, ImplementorScope
-
-/**
- * Wraps @[StreamLoader.close] and marks the stream as closed in the stream manager. Also starts the
- * teardown task.
- */
-class DefaultCloseStreamTask(
+class CloseStreamTask(
     private val syncManager: SyncManager,
-    override val stream: DestinationStream,
+    val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher
-) : CloseStreamTask {
+) : Task {
+    override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
-        streamLoader.close()
-        syncManager.getStreamManager(stream.descriptor).markSucceeded()
-        taskLauncher.handleStreamClosed(streamLoader.stream)
+        val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
+        streamLoader.close(
+            hadNonzeroRecords = syncManager.getStreamManager(streamDescriptor).hadNonzeroRecords(),
+        )
+        syncManager.getStreamManager(streamDescriptor).markProcessingSucceeded()
+        taskLauncher.handleStreamClosed()
     }
 }
 
-interface CloseStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): CloseStreamTask
-}
-
 @Singleton
-@Secondary
-class DefaultCloseStreamTaskFactory(private val syncManager: SyncManager) : CloseStreamTaskFactory {
-    override fun make(
+class CloseStreamTaskFactory(
+    private val syncManager: SyncManager,
+) {
+    fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream
+        streamDescriptor: DestinationStream.Descriptor,
     ): CloseStreamTask {
-        return DefaultCloseStreamTask(syncManager, stream, taskLauncher)
+        return CloseStreamTask(syncManager, streamDescriptor, taskLauncher)
     }
 }

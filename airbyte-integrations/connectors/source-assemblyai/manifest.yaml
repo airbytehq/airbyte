@@ -1,0 +1,510 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.assemblyai.com/
+  API Reference: https://www.assemblyai.com/docs/api-reference/overview
+
+check:
+  type: CheckStream
+  stream_names:
+    - transcripts
+
+definitions:
+  streams:
+    transcripts:
+      type: DeclarativeStream
+      name: transcripts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/transcript
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transcripts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('page_details', {}).get('next_url') }}"
+            stop_condition: "{{ not response.get('page_details', {}).get('next_url') }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transcripts"
+    transcript_sentences:
+      type: DeclarativeStream
+      name: transcript_sentences
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/transcript/{{ stream_partition['tr_id'] }}/sentences
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sentences
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('page_details', {}).get('next_url') }}"
+            stop_condition: "{{ not response.get('page_details', {}).get('next_url') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: tr_id
+              stream:
+                $ref: "#/definitions/streams/transcripts"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transcript_sentences"
+    paragraphs:
+      type: DeclarativeStream
+      name: paragraphs
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/transcript/{{ stream_partition['tr_id'] }}/paragraphs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - paragraphs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('page_details', {}).get('next_url') }}"
+            stop_condition: "{{ not response.get('page_details', {}).get('next_url') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: tr_id
+              stream:
+                $ref: "#/definitions/streams/transcripts"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/paragraphs"
+    transcript_subtitle:
+      type: DeclarativeStream
+      name: transcript_subtitle
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/transcript/{{ stream_partition['tr_id'] }}/redacted-audio
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('page_details', {}).get('next_url') }}"
+            stop_condition: "{{ not response.get('page_details', {}).get('next_url') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: tr_id
+              stream:
+                $ref: "#/definitions/streams/transcripts"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transcript_subtitle"
+    lemur_response:
+      type: DeclarativeStream
+      name: lemur_response
+      primary_key:
+        - request_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lemur/v3/{{ config['request_id'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Paid plan required
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lemur_response"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.assemblyai.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/transcripts"
+  - $ref: "#/definitions/streams/transcript_sentences"
+  - $ref: "#/definitions/streams/paragraphs"
+  - $ref: "#/definitions/streams/transcript_subtitle"
+  - $ref: "#/definitions/streams/lemur_response"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+      - subtitle_format
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your AssemblyAI API key. You can find it in the AssemblyAI dashboard
+          at https://www.assemblyai.com/app/api-keys.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      subtitle_format:
+        type: string
+        description: The subtitle format for transcript_subtitle stream
+        enum:
+          - vtt
+          - srt
+        order: 2
+        title: Subtitle format
+        default: srt
+      request_id:
+        type: string
+        description: The request ID for LeMur responses
+        title: Request Id
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    transcripts: true
+    transcript_sentences: true
+    paragraphs: true
+    transcript_subtitle: true
+    lemur_response: false
+  testedStreams:
+    transcripts:
+      hasRecords: true
+      streamHash: 06e1b92194bb0c57832a1387c3e8a6a91d6b4916
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transcript_sentences:
+      hasRecords: true
+      streamHash: e1b38b8145f420209c42103d3d493e32945ec59a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    paragraphs:
+      hasRecords: true
+      streamHash: 17b1156e8fa033a0cad8b030fa0e46b527aa0753
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transcript_subtitle:
+      hasRecords: true
+      streamHash: 47770f6ed7a302ac2c5e8e20e52f78623b771912
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lemur_response:
+      streamHash: 9092a38b58acab23480e89d66e4e21bc02c1b03d
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.assemblyai.com/docs/api-reference/overview
+
+schemas:
+  transcripts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      audio_url:
+        type:
+          - string
+          - "null"
+      completed:
+        type:
+          - string
+          - "null"
+      created:
+        type: string
+      error:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      resource_url:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created
+  transcript_sentences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      confidence:
+        type:
+          - number
+          - "null"
+      end:
+        type:
+          - number
+          - "null"
+      start:
+        type:
+          - number
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      words:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            confidence:
+              type:
+                - number
+                - "null"
+            end:
+              type:
+                - number
+                - "null"
+            start:
+              type:
+                - number
+                - "null"
+            text:
+              type:
+                - string
+                - "null"
+    required:
+      - uuid
+  paragraphs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      confidence:
+        type:
+          - number
+          - "null"
+      end:
+        type:
+          - number
+          - "null"
+      start:
+        type:
+          - number
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      words:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            confidence:
+              type:
+                - number
+                - "null"
+            end:
+              type:
+                - number
+                - "null"
+            start:
+              type:
+                - number
+                - "null"
+            text:
+              type:
+                - string
+                - "null"
+    required:
+      - uuid
+  transcript_subtitle:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      redacted_audio_url:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  lemur_response:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      request_id:
+        type:
+          - string
+          - "null"
+      response:
+        type:
+          - string
+          - "null"
+      usage:
+        type:
+          - object
+          - "null"
+        properties:
+          input_tokens:
+            type:
+              - number
+              - "null"
+          output_tokens:
+            type:
+              - number
+              - "null"
+    title: Generated schema for Root

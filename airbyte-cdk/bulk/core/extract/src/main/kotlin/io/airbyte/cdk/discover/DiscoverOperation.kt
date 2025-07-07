@@ -38,11 +38,7 @@ class DiscoverOperation(
                     val primaryKey: List<List<String>> = metadataQuerier.primaryKey(streamID)
                     val discoveredStream = DiscoveredStream(streamID, fields, primaryKey)
                     val airbyteStream: AirbyteStream =
-                        if (config.global) {
-                            airbyteStreamFactory.createGlobal(discoveredStream)
-                        } else {
-                            airbyteStreamFactory.createNonGlobal(discoveredStream)
-                        }
+                        airbyteStreamFactory.create(config, discoveredStream)
                     airbyteStreams.add(airbyteStream)
                 }
             }

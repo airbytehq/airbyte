@@ -41,7 +41,12 @@ data object CliRunner {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteSourceRunner(args, featureFlags.systemEnv, out.beanDefinition)
+                AirbyteSourceRunner(
+                    args,
+                    additionalMicronautEnvs = emptyList(),
+                    featureFlags.systemEnv,
+                    out.beanDefinition
+                )
             }
         return CliRunnable(runnable, out.results)
     }
@@ -52,22 +57,34 @@ data object CliRunner {
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
-        inputStream: InputStream,
+        inputStream: InputStream?,
+        additionalMicronautEnvs: List<String> = emptyList(),
+        micronautProperties: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): CliRunnable {
-        val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
-            RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
-                .singleton(true)
-                .build()
+        val inputBeanDefinition: RuntimeBeanDefinition<InputStream>? =
+            inputStream?.let {
+                RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
+                    .singleton(true)
+                    .named("inputStream")
+                    .replaces(InputStream::class.java)
+                    .build()
+            }
         val out = CliRunnerOutputStream()
         val configPath: Path? = inputFileFromString(configContents)
         val runnable: Runnable =
             makeRunnable(op, configPath, catalog, state) { args: Array<String> ->
                 AirbyteDestinationRunner(
                     args,
+                    additionalMicronautEnvs = additionalMicronautEnvs,
                     featureFlags.systemEnv,
-                    inputBeanDefinition,
-                    out.beanDefinition,
+                    micronautProperties,
+                    *arrayOf(
+                            inputBeanDefinition,
+                            out.beanDefinition,
+                        )
+                        .filterNotNull()
+                        .toTypedArray()
                 )
             }
         return CliRunnable(runnable, out.results)
@@ -80,6 +97,8 @@ data object CliRunner {
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         featureFlags: Set<FeatureFlag> = setOf(),
+        additionalMicronautEnvs: List<String> = emptyList(),
+        micronautProperties: Map<String, String> = emptyMap(),
         vararg input: AirbyteMessage,
     ): CliRunnable {
         val inputJsonBytes: ByteArray =
@@ -97,6 +116,8 @@ data object CliRunner {
             catalog,
             state,
             inputStream,
+            additionalMicronautEnvs,
+            micronautProperties,
             *featureFlags.toTypedArray()
         )
     }

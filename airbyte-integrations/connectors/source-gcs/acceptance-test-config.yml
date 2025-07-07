@@ -16,6 +16,8 @@ acceptance_tests:
         status: exception
       - config_path: "secrets/config_glob.json"
         status: succeed
+      - config_path: "secrets/config_oauth.json"
+        status: succeed
   discovery:
     tests:
       - config_path: "secrets/config.json"

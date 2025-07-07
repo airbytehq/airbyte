@@ -8,6 +8,7 @@ import pandas as pd
 from dagster import AutoMaterializePolicy, FreshnessPolicy, OpExecutionContext, Output, asset
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
+
 GROUP_NAME = "slack"
 
 USER_REQUEST_CHUNK_SIZE = 2000

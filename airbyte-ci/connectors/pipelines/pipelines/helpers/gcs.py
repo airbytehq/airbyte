@@ -8,6 +8,7 @@ from typing import Tuple
 
 from google.cloud import storage  # type: ignore
 from google.oauth2 import service_account  # type: ignore
+
 from pipelines import main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 

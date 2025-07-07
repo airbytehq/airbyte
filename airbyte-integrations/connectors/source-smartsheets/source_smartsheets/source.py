@@ -9,7 +9,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .sheet import SmartSheetAPIWrapper
-from .streams import SmartsheetStream
+from .streams import SmartsheetReportStream, SmartsheetStream
 
 
 class SourceSmartsheets(AbstractSource):
@@ -19,4 +19,6 @@ class SourceSmartsheets(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List["Stream"]:
         sheet = SmartSheetAPIWrapper(config)
+        if sheet.is_report:
+            return [SmartsheetReportStream(sheet, config)]
         return [SmartsheetStream(sheet, config)]

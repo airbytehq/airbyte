@@ -15,6 +15,7 @@ import yaml  # type: ignore
 from asyncer import asyncify
 from dagger import Directory, Platform
 from github import PullRequest
+
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
@@ -60,6 +61,7 @@ class ConnectorContext(PipelineContext):
         should_save_report: bool = True,
         code_tests_only: bool = False,
         use_local_cdk: bool = False,
+        use_cdk_ref: Optional[str] = None,
         use_host_gradle_dist_tar: bool = False,
         enable_report_auto_open: bool = True,
         docker_hub_username: Optional[Secret] = None,
@@ -110,6 +112,7 @@ class ConnectorContext(PipelineContext):
         self.should_save_report = should_save_report
         self.code_tests_only = code_tests_only
         self.use_local_cdk = use_local_cdk
+        self.use_cdk_ref = use_cdk_ref
         self.use_host_gradle_dist_tar = use_host_gradle_dist_tar
         self.enable_report_auto_open = enable_report_auto_open
         self.docker_hub_username = docker_hub_username

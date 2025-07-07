@@ -6,16 +6,17 @@ import uuid
 from typing import Any, Dict, List, Mapping, Optional
 
 import dpath.util
+
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from destination_vectara.client import VectaraClient
 
+
 METADATA_STREAM_FIELD = "_ab_stream"
 
 
 class VectaraWriter:
-
     write_buffer: List[Mapping[str, Any]] = []
     flush_interval = 1000
 

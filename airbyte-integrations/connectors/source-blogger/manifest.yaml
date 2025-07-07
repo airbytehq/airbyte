@@ -1,0 +1,726 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  Google Blogger is a free blogging platform by Google that allows users to
+  create and manage their own blogs with ease. It offers customizable templates,
+  user-friendly tools, and integration with other Google services, making it
+  simple to publish content and reach a wide audience. 
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /blogger/v3/users/self/blogs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: nextPageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    blogs:
+      type: DeclarativeStream
+      name: blogs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /blogger/v3/blogs/{{ stream_partition.blog_id }}/posts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: nextPageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: blog_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/blogs"
+    posts:
+      type: DeclarativeStream
+      name: posts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /blogger/v3/blogs/{{ stream_partition.blog_id
+            }}/posts/{{stream_partition.post_id}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: nextPageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: blog_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+                incremental_dependency: true
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: post_id
+                stream:
+                  $ref: "#/definitions/streams/blogs"
+                incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/posts"
+    pages:
+      type: DeclarativeStream
+      name: pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /blogger/v3/blogs/{{ stream_partition.blog_id }}/pages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: nextPageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: blog_id
+              stream:
+                $ref: "#/definitions/streams/users"
+              incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pages"
+    comments:
+      type: DeclarativeStream
+      name: comments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /blogger/v3/blogs/{{ stream_partition.blog_id
+            }}/posts/{{stream_partition.post_id}}/comments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: nextPageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: blog_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: post_id
+                stream:
+                  $ref: "#/definitions/streams/posts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.googleapis.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/blogs"
+  - $ref: "#/definitions/streams/posts"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/comments"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    blogs: true
+    posts: true
+    pages: true
+    comments: false
+  testedStreams:
+    users:
+      streamHash: 15cb44e17561fd4b25260ebe00aad383411149f3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    blogs:
+      streamHash: 4ba8428f9ddcfd4ade1172ff2853a75adda47812
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    posts:
+      streamHash: 376828a8fecbce3ba7db12fdb33c3b05baed7481
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pages:
+      streamHash: b061c8d16a2a61985797a20ed0bc503cf1fa2449
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    comments:
+      streamHash: 378e96f990cd6f073b99d89f3ae3ead328f8588f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/blogger/docs/3.0/using
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - object
+          - "null"
+        properties:
+          country:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          variant:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pages:
+        type:
+          - object
+          - "null"
+        properties:
+          selfLink:
+            type:
+              - string
+              - "null"
+          totalItems:
+            type:
+              - number
+              - "null"
+      posts:
+        type:
+          - object
+          - "null"
+        properties:
+          selfLink:
+            type:
+              - string
+              - "null"
+          totalItems:
+            type:
+              - number
+              - "null"
+      published:
+        type:
+          - string
+          - "null"
+      selfLink:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  blogs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          image:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      blog:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      content:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - string
+          - "null"
+      replies:
+        type:
+          - object
+          - "null"
+        properties:
+          selfLink:
+            type:
+              - string
+              - "null"
+          totalItems:
+            type:
+              - string
+              - "null"
+      selfLink:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          image:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      blog:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      content:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - string
+          - "null"
+      replies:
+        type:
+          - object
+          - "null"
+        properties:
+          selfLink:
+            type:
+              - string
+              - "null"
+          totalItems:
+            type:
+              - string
+              - "null"
+      selfLink:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+  pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          image:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      blog:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      content:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - string
+          - "null"
+      selfLink:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          image:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      blog:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      content:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      post:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      published:
+        type:
+          - string
+          - "null"
+      selfLink:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true

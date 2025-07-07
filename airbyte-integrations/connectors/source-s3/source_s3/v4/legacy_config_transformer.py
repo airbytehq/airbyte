@@ -12,6 +12,7 @@ from source_s3.source_files_abstract.formats.csv_spec import CsvFormat
 from source_s3.source_files_abstract.formats.jsonl_spec import JsonlFormat
 from source_s3.source_files_abstract.formats.parquet_spec import ParquetFormat
 
+
 SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 

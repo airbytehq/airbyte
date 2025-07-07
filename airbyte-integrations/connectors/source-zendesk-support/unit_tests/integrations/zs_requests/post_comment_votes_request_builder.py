@@ -2,7 +2,7 @@
 
 import calendar
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -10,7 +10,9 @@ from .request_authenticators.authenticator import Authenticator
 
 class PostCommentVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
     @classmethod
-    def post_comment_votes_endpoint(cls, authenticator: Authenticator, post_id: int, post_comment_id: int) -> "PostCommentVotesRequestBuilder":
+    def post_comment_votes_endpoint(
+        cls, authenticator: Authenticator, post_id: int, post_comment_id: int
+    ) -> "PostCommentVotesRequestBuilder":
         return cls("d3v-airbyte", f"community/posts/{post_id}/comments/{post_comment_id}/votes").with_authenticator(authenticator)
 
     def __init__(self, subdomain: str, resource: str) -> None:
@@ -30,8 +32,8 @@ class PostCommentVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
             params["page[after]"] = self._page_after
         return params
 
-    def with_start_time(self, start_time: int) -> "PostCommentVotesRequestBuilder":
-        self._start_time: int = calendar.timegm(pendulum.parse(start_time).utctimetuple())
+    def with_start_time(self, start_time: str) -> "PostCommentVotesRequestBuilder":
+        self._start_time: int = calendar.timegm(ab_datetime_parse(start_time).utctimetuple())
         return self
 
     def with_page_size(self, page_size: int) -> "PostCommentVotesRequestBuilder":

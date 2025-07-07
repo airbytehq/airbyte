@@ -12,10 +12,12 @@ import freezegun
 import pendulum
 import pytest
 import responses
-from airbyte_cdk.models import Type as MessageType
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator
 from source_iterable.source import SourceIterable
+
+from airbyte_cdk.models import Type as MessageType
+
 
 TEST_START_DATE = "2020"
 

@@ -11,6 +11,7 @@ from typing import Any, Callable, List, Mapping, cast
 
 import dill
 import orjson
+
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer
 
 

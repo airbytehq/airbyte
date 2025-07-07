@@ -1,0 +1,345 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: Mobile device management
+
+check:
+  type: CheckStream
+  stream_names:
+    - computers
+
+definitions:
+  streams:
+    computers:
+      type: DeclarativeStream
+      name: computers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/computers-inventory
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - name
+              value: "{{ record['general']['name'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - lastContactTime
+              value: "{{ record['general']['lastContactTime'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - capableUsers
+              value: "{{ record['general']['mdmCapable']['capableUsers'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - managementId
+              value: "{{ record['general']['managementId'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/computers"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.jamfcloud.com
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: https://{{ config['subdomain'] }}.jamfcloud.com/api/v1/auth/token
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"password\"] }}"
+          username: "{{ config[\"username\"] }}"
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+      session_token_path:
+        - token
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/computers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - subdomain
+      - username
+    properties:
+      subdomain:
+        type: string
+        description: The unique subdomain for your Jamf Pro instance.
+        name: subdomain
+        order: 0
+        title: Subdomain
+      username:
+        type: string
+        order: 1
+        title: Username
+      password:
+        type: string
+        order: 2
+        title: Password
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    computers: true
+  testedStreams:
+    computers:
+      streamHash: 12ee68a838da92cb315d63ff387e10612a99e349
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developer.jamf.com/jamf-pro/reference/jamf-pro-api
+    openapiSpecUrl: https://airbyte.jamfcloud.com/api/schema
+
+schemas:
+  computers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      capableUsers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      general:
+        type:
+          - object
+          - "null"
+        properties:
+          declarativeDeviceManagementEnabled:
+            type:
+              - boolean
+              - "null"
+          enrolledViaAutomatedDeviceEnrollment:
+            type:
+              - boolean
+              - "null"
+          enrollmentMethod:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              objectName:
+                type:
+                  - string
+                  - "null"
+              objectType:
+                type:
+                  - string
+                  - "null"
+          extensionAttributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                dataType:
+                  type:
+                    - string
+                    - "null"
+                definitionId:
+                  type:
+                    - string
+                    - "null"
+                enabled:
+                  type:
+                    - boolean
+                    - "null"
+                inputType:
+                  type:
+                    - string
+                    - "null"
+                multiValue:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                values:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          initialEntryDate:
+            type:
+              - string
+              - "null"
+          itunesStoreAccountActive:
+            type:
+              - boolean
+              - "null"
+          jamfBinaryVersion:
+            type:
+              - string
+              - "null"
+          lastContactTime:
+            type:
+              - string
+              - "null"
+          lastEnrolledDate:
+            type:
+              - string
+              - "null"
+          lastIpAddress:
+            type:
+              - string
+              - "null"
+          lastReportedIp:
+            type:
+              - string
+              - "null"
+          managementId:
+            type:
+              - string
+              - "null"
+          mdmCapable:
+            type:
+              - object
+              - "null"
+            properties:
+              capable:
+                type:
+                  - boolean
+                  - "null"
+              capableUsers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          mdmProfileExpiration:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          platform:
+            type:
+              - string
+              - "null"
+          remoteManagement:
+            type:
+              - object
+              - "null"
+            properties:
+              managed:
+                type:
+                  - boolean
+                  - "null"
+          reportDate:
+            type:
+              - string
+              - "null"
+          site:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          supervised:
+            type:
+              - boolean
+              - "null"
+          userApprovedMdm:
+            type:
+              - boolean
+              - "null"
+      id:
+        type: string
+      lastContactTime:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      udid:
+        type:
+          - string
+          - "null"
+    required:
+      - id

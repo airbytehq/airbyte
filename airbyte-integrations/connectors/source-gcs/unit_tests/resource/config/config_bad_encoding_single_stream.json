@@ -10,5 +10,9 @@
         "encoding": "utf16"
       }
     }
-  ]
+  ],
+  "credentials": {
+    "service_account": "{\"type\": \"service_account\"}",
+    "auth_type": "Service"
+  }
 }

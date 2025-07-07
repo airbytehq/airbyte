@@ -1,0 +1,2772 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  API Documentation:
+  https://docs.clarifai.com/api-guide/api-overview/helpful-api-resources/using-postman-with-clarifai-apis
+
+check:
+  type: CheckStream
+  stream_names:
+    - applications
+
+definitions:
+  streams:
+    applications:
+      type: DeclarativeStream
+      name: applications
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/users/{{config.user_id}}/apps
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - apps
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/applications"
+    datasets:
+      type: DeclarativeStream
+      name: datasets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/datasets
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - datasets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets"
+    models:
+      type: DeclarativeStream
+      name: models
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/models
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - models
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/models"
+    model_versions:
+      type: DeclarativeStream
+      name: model_versions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/models/{{stream_partition.model_id}}/versions
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - model_versions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: app_id
+                stream:
+                  $ref: "#/definitions/streams/applications"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: model_id
+                stream:
+                  $ref: "#/definitions/streams/models"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/model_versions"
+    worklows:
+      type: DeclarativeStream
+      name: worklows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/workflows
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workflows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/worklows"
+    app_inputs:
+      type: DeclarativeStream
+      name: app_inputs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/inputs
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - inputs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/app_inputs"
+    app_inputs_jobs:
+      type: DeclarativeStream
+      name: app_inputs_jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/inputs/jobs/add
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - inputs_add_jobs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/app_inputs_jobs"
+    app_concepts:
+      type: DeclarativeStream
+      name: app_concepts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            v2/users/{{config.user_id}}/apps/{{stream_partition.app_id}}/concepts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits has been hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - concepts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/applications"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/app_concepts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.clarifai.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/applications"
+  - $ref: "#/definitions/streams/datasets"
+  - $ref: "#/definitions/streams/models"
+  - $ref: "#/definitions/streams/model_versions"
+  - $ref: "#/definitions/streams/worklows"
+  - $ref: "#/definitions/streams/app_inputs"
+  - $ref: "#/definitions/streams/app_inputs_jobs"
+  - $ref: "#/definitions/streams/app_concepts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - user_id
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      user_id:
+        type: string
+        description: User ID found in settings
+        order: 1
+        title: User ID
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    applications: true
+    datasets: true
+    models: true
+    model_versions: true
+    worklows: true
+    app_inputs: true
+    app_inputs_jobs: true
+    app_concepts: true
+  testedStreams:
+    applications:
+      streamHash: 7e2444a1eb9792a977b9b4d29b3efaad631dbb5b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    datasets:
+      streamHash: 277102714313efee407ed87ca217b0974557e87a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    models:
+      streamHash: d04e9cb6340029639dd7b7ea1b10fe211655dfa7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    model_versions:
+      streamHash: 3f6242e411f00bf0fe8f21d8c1fadf40b82986fc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    worklows:
+      streamHash: 28467564977f3092be217f2c6f96db9bdafc7ee4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    app_inputs:
+      streamHash: cf291760c7b92a410463c0408c3a85e32a8c699c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    app_inputs_jobs:
+      streamHash: a746c75b17c51a1d0f626c14b9af98ae0d390e99
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    app_concepts:
+      streamHash: b3e2aba813f4f40de4470e38e55320020153ba91
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  applications:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          app_duplication:
+            type:
+              - object
+              - "null"
+            properties:
+              source_app_id:
+                type:
+                  - string
+                  - "null"
+              source_user_id:
+                type:
+                  - string
+                  - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      default_language:
+        type:
+          - string
+          - "null"
+      default_workflow:
+        type:
+          - object
+          - "null"
+        properties:
+          app_id:
+            type:
+              - string
+              - "null"
+          check_consents:
+            type:
+              - array
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          modified_at:
+            type:
+              - string
+              - "null"
+          use_cases:
+            type:
+              - array
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - object
+              - "null"
+            properties:
+              gettable:
+                type:
+                  - number
+                  - "null"
+      default_workflow_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image:
+        type:
+          - object
+          - "null"
+        properties:
+          hosted:
+            type:
+              - object
+              - "null"
+            properties:
+              crossorigin:
+                type:
+                  - string
+                  - "null"
+              prefix:
+                type:
+                  - string
+                  - "null"
+              sizes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              suffix:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      is_template:
+        type:
+          - boolean
+          - "null"
+      modified_at:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      sample_ms:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - object
+          - "null"
+        properties:
+          gettable:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+      - modified_at
+  datasets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          annotation_filter_config:
+            type:
+              - object
+              - "null"
+            properties:
+              annotation_filter:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  app_id:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  modified_at:
+                    type:
+                      - string
+                      - "null"
+                  user_id:
+                    type:
+                      - string
+                      - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          dataset_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              /:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  bounding_boxes_count:
+                    type:
+                      - string
+                      - "null"
+                  embeddings_count:
+                    type:
+                      - string
+                      - "null"
+                  frames_count:
+                    type:
+                      - string
+                      - "null"
+                  inputs_count:
+                    type:
+                      - string
+                      - "null"
+                  inputs_with_geo_count:
+                    type:
+                      - string
+                      - "null"
+                  inputs_with_metadata_count:
+                    type:
+                      - string
+                      - "null"
+                  masks_count:
+                    type:
+                      - string
+                      - "null"
+                  points_count:
+                    type:
+                      - string
+                      - "null"
+                  polygons_count:
+                    type:
+                      - string
+                      - "null"
+                  positive_frame_tags_count:
+                    type:
+                      - string
+                      - "null"
+                  positive_input_tags_count:
+                    type:
+                      - string
+                      - "null"
+                  positive_region_tags_count:
+                    type:
+                      - string
+                      - "null"
+                  regions_count:
+                    type:
+                      - string
+                      - "null"
+                  unlabeled_inputs_count:
+                    type:
+                      - string
+                      - "null"
+          modified_at:
+            type:
+              - string
+              - "null"
+          request_origin:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              code:
+                type:
+                  - number
+                  - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - object
+              - "null"
+            properties:
+              gettable:
+                type:
+                  - number
+                  - "null"
+      description:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      default_annotation_filter:
+        type:
+          - object
+          - "null"
+        properties:
+          app_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          modified_at:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      modified_at:
+        type: string
+      user_id:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - object
+          - "null"
+        properties:
+          gettable:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+      - modified_at
+  models:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          presetInputs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                alt:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      check_consents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image:
+        type:
+          - object
+          - "null"
+        properties:
+          hosted:
+            type:
+              - object
+              - "null"
+            properties:
+              crossorigin:
+                type:
+                  - string
+                  - "null"
+              prefix:
+                type:
+                  - string
+                  - "null"
+              sizes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              suffix:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      languages:
+        type:
+          - array
+          - "null"
+      languages_full:
+        type:
+          - array
+          - "null"
+      license_type:
+        type:
+          - number
+          - "null"
+      model_type_id:
+        type:
+          - string
+          - "null"
+      model_version:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+            properties:
+              asymmetric_search_prompt:
+                type:
+                  - string
+                  - "null"
+          active_concept_count:
+            type:
+              - number
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          completed_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          import_info:
+            type:
+              - object
+              - "null"
+            properties:
+              params:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  model_name:
+                    type:
+                      - string
+                      - "null"
+                  pipeline_name:
+                    type:
+                      - string
+                      - "null"
+                  tokenizer_name:
+                    type:
+                      - string
+                      - "null"
+                  toolkit:
+                    type:
+                      - string
+                      - "null"
+          inference_compute_info:
+            type:
+              - object
+              - "null"
+          input_info:
+            type:
+              - object
+              - "null"
+            properties:
+              base_embed_model:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  app_id:
+                    type:
+                      - string
+                      - "null"
+                  check_consents:
+                    type:
+                      - array
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  languages:
+                    type:
+                      - array
+                      - "null"
+                  languages_full:
+                    type:
+                      - array
+                      - "null"
+                  model_type_id:
+                    type:
+                      - string
+                      - "null"
+                  model_version:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                  toolkits:
+                    type:
+                      - array
+                      - "null"
+                  use_cases:
+                    type:
+                      - array
+                      - "null"
+                  user_id:
+                    type:
+                      - string
+                      - "null"
+              fields_map:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  image:
+                    type:
+                      - string
+                      - "null"
+                  text:
+                    type:
+                      - string
+                      - "null"
+              params:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  text_token_max_count_warning:
+                    type:
+                      - number
+                      - "null"
+                  text_token_warning_limit:
+                    type:
+                      - number
+                      - "null"
+          license:
+            type:
+              - string
+              - "null"
+          metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              status:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  code:
+                    type:
+                      - number
+                      - "null"
+              summary:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  lopq_metrics:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        brute_force_ndcg:
+                          type:
+                            - number
+                            - "null"
+                        k:
+                          type:
+                            - number
+                            - "null"
+                        kendall_tau_vs_brute_force:
+                          type:
+                            - number
+                            - "null"
+                        lopq_ndcg:
+                          type:
+                            - number
+                            - "null"
+                        most_frequent_code_percent:
+                          type:
+                            - number
+                            - "null"
+                        recall_vs_brute_force:
+                          type:
+                            - number
+                            - "null"
+                  macro_avg_f1_score:
+                    type:
+                      - number
+                      - "null"
+                  macro_avg_precision:
+                    type:
+                      - number
+                      - "null"
+                  macro_avg_recall:
+                    type:
+                      - number
+                      - "null"
+                  macro_avg_roc_auc:
+                    type:
+                      - number
+                      - "null"
+                  macro_std_f1_score:
+                    type:
+                      - number
+                      - "null"
+                  macro_std_roc_auc:
+                    type:
+                      - number
+                      - "null"
+                  top1_accuracy:
+                    type:
+                      - number
+                      - "null"
+                  top5_accuracy:
+                    type:
+                      - number
+                      - "null"
+          output_info:
+            type:
+              - object
+              - "null"
+            properties:
+              fields_map:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  "":
+                    type:
+                      - string
+                      - "null"
+                  concepts:
+                    type:
+                      - string
+                      - "null"
+                  embeddings:
+                    type:
+                      - string
+                      - "null"
+                  regions[...].data.concepts,regions[...].region_info.keypoint_locations:
+                    type:
+                      - string
+                      - "null"
+                  regions[...].data.concepts[...].id:
+                    type:
+                      - string
+                      - "null"
+                  regions[...].data.concepts[...].value:
+                    type:
+                      - string
+                      - "null"
+                  regions[...].data.text:
+                    type:
+                      - string
+                      - "null"
+                  regions[...].region_info.bounding_box:
+                    type:
+                      - string
+                      - "null"
+                  regions[...].region_info.mask,regions[...].data.concepts:
+                    type:
+                      - string
+                      - "null"
+                  regions[...].value:
+                    type:
+                      - string
+                      - "null"
+                  text:
+                    type:
+                      - string
+                      - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+              output_config:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  concepts_mutually_exclusive:
+                    type:
+                      - boolean
+                      - "null"
+                  max_concepts:
+                    type:
+                      - number
+                      - "null"
+                  min_value:
+                    type:
+                      - number
+                      - "null"
+              params:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  alignment_type:
+                    type:
+                      - string
+                      - "null"
+                  detection_threshold:
+                    type:
+                      - number
+                      - "null"
+                  margin:
+                    type:
+                      - number
+                      - "null"
+                  max_concepts:
+                    type:
+                      - number
+                      - "null"
+                  max_disappeared:
+                    type:
+                      - number
+                      - "null"
+                  max_distance:
+                    type:
+                      - number
+                      - "null"
+                  min_confidence:
+                    type:
+                      - number
+                      - "null"
+                  min_value:
+                    type:
+                      - number
+                      - "null"
+                  min_visible_frames:
+                    type:
+                      - number
+                      - "null"
+                  output_size:
+                    type:
+                      - number
+                      - "null"
+                  select_concepts:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - string
+                            - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              code:
+                type:
+                  - number
+                  - "null"
+          total_input_count:
+            type:
+              - number
+              - "null"
+          train_info:
+            type:
+              - object
+              - "null"
+            properties:
+              dataset:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  version:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - string
+                          - "null"
+                      metadata:
+                        type:
+                          - object
+                          - "null"
+                      annotation_filter_config:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          annotation_filter:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              app_id:
+                                type:
+                                  - string
+                                  - "null"
+                              created_at:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              modified_at:
+                                type:
+                                  - string
+                                  - "null"
+                              user_id:
+                                type:
+                                  - string
+                                  - "null"
+                      app_id:
+                        type:
+                          - string
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      dataset_id:
+                        type:
+                          - string
+                          - "null"
+                      embed_model_version_ids:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      metrics:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          /:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              bounding_boxes_count:
+                                type:
+                                  - string
+                                  - "null"
+                              embeddings_count:
+                                type:
+                                  - string
+                                  - "null"
+                              frames_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_with_geo_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_with_metadata_count:
+                                type:
+                                  - string
+                                  - "null"
+                              masks_count:
+                                type:
+                                  - string
+                                  - "null"
+                              points_count:
+                                type:
+                                  - string
+                                  - "null"
+                              polygons_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_frame_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_input_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_region_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              regions_count:
+                                type:
+                                  - string
+                                  - "null"
+                              unlabeled_inputs_count:
+                                type:
+                                  - string
+                                  - "null"
+                          /INPUT_TYPE:image:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              bounding_boxes_count:
+                                type:
+                                  - string
+                                  - "null"
+                              embeddings_count:
+                                type:
+                                  - string
+                                  - "null"
+                              frames_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_with_geo_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_with_metadata_count:
+                                type:
+                                  - string
+                                  - "null"
+                              masks_count:
+                                type:
+                                  - string
+                                  - "null"
+                              points_count:
+                                type:
+                                  - string
+                                  - "null"
+                              polygons_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_frame_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_input_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_region_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              regions_count:
+                                type:
+                                  - string
+                                  - "null"
+                              unlabeled_inputs_count:
+                                type:
+                                  - string
+                                  - "null"
+                          /INPUT_TYPE:text:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              bounding_boxes_count:
+                                type:
+                                  - string
+                                  - "null"
+                              embeddings_count:
+                                type:
+                                  - string
+                                  - "null"
+                              frames_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_with_geo_count:
+                                type:
+                                  - string
+                                  - "null"
+                              inputs_with_metadata_count:
+                                type:
+                                  - string
+                                  - "null"
+                              masks_count:
+                                type:
+                                  - string
+                                  - "null"
+                              points_count:
+                                type:
+                                  - string
+                                  - "null"
+                              polygons_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_frame_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_input_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              positive_region_tags_count:
+                                type:
+                                  - string
+                                  - "null"
+                              regions_count:
+                                type:
+                                  - string
+                                  - "null"
+                              unlabeled_inputs_count:
+                                type:
+                                  - string
+                                  - "null"
+                      modified_at:
+                        type:
+                          - string
+                          - "null"
+                      request_origin:
+                        type:
+                          - number
+                          - "null"
+                      status:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          description:
+                            type:
+                              - string
+                              - "null"
+                          code:
+                            type:
+                              - number
+                              - "null"
+                      user_id:
+                        type:
+                          - string
+                          - "null"
+                      visibility:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          gettable:
+                            type:
+                              - number
+                              - "null"
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  metadata:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      split:
+                        type:
+                          - string
+                          - "null"
+                  app_id:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  modified_at:
+                    type:
+                      - string
+                      - "null"
+                  user_id:
+                    type:
+                      - string
+                      - "null"
+                  visibility:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      gettable:
+                        type:
+                          - number
+                          - "null"
+              params:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  beta:
+                    type:
+                      - number
+                      - "null"
+                  coarse_clusters:
+                    type:
+                      - number
+                      - "null"
+                  dataset_id:
+                    type:
+                      - string
+                      - "null"
+                  dataset_version_id:
+                    type:
+                      - string
+                      - "null"
+                  eval_holdout_fraction:
+                    type:
+                      - number
+                      - "null"
+                  max_num_query_embeddings:
+                    type:
+                      - number
+                      - "null"
+                  max_visited:
+                    type:
+                      - number
+                      - "null"
+                  model_config:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      _name_or_path:
+                        type:
+                          - string
+                          - "null"
+                      _num_labels:
+                        type:
+                          - number
+                          - "null"
+                      architectures:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      attention_probs_dropout_prob:
+                        type:
+                          - number
+                          - "null"
+                      directionality:
+                        type:
+                          - string
+                          - "null"
+                      gradient_checkpointing:
+                        type:
+                          - boolean
+                          - "null"
+                      hidden_act:
+                        type:
+                          - string
+                          - "null"
+                      hidden_dropout_prob:
+                        type:
+                          - number
+                          - "null"
+                      hidden_size:
+                        type:
+                          - number
+                          - "null"
+                      id2label:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          "0":
+                            type:
+                              - string
+                              - "null"
+                          "1":
+                            type:
+                              - string
+                              - "null"
+                          "2":
+                            type:
+                              - string
+                              - "null"
+                          "3":
+                            type:
+                              - string
+                              - "null"
+                          "4":
+                            type:
+                              - string
+                              - "null"
+                          "5":
+                            type:
+                              - string
+                              - "null"
+                          "6":
+                            type:
+                              - string
+                              - "null"
+                          "7":
+                            type:
+                              - string
+                              - "null"
+                          "8":
+                            type:
+                              - string
+                              - "null"
+                      initializer_range:
+                        type:
+                          - number
+                          - "null"
+                      intermediate_size:
+                        type:
+                          - number
+                          - "null"
+                      label2id:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          B-LOC:
+                            type:
+                              - number
+                              - "null"
+                          B-MISC:
+                            type:
+                              - number
+                              - "null"
+                          B-ORG:
+                            type:
+                              - number
+                              - "null"
+                          B-PER:
+                            type:
+                              - number
+                              - "null"
+                          I-LOC:
+                            type:
+                              - number
+                              - "null"
+                          I-MISC:
+                            type:
+                              - number
+                              - "null"
+                          I-ORG:
+                            type:
+                              - number
+                              - "null"
+                          I-PER:
+                            type:
+                              - number
+                              - "null"
+                          LABEL_0:
+                            type:
+                              - number
+                              - "null"
+                          O:
+                            type:
+                              - number
+                              - "null"
+                      layer_norm_eps:
+                        type:
+                          - number
+                          - "null"
+                      max_position_embeddings:
+                        type:
+                          - number
+                          - "null"
+                      model_type:
+                        type:
+                          - string
+                          - "null"
+                      num_attention_heads:
+                        type:
+                          - number
+                          - "null"
+                      num_hidden_layers:
+                        type:
+                          - number
+                          - "null"
+                      pad_token_id:
+                        type:
+                          - number
+                          - "null"
+                      pooler_fc_size:
+                        type:
+                          - number
+                          - "null"
+                      pooler_num_attention_heads:
+                        type:
+                          - number
+                          - "null"
+                      pooler_num_fc_layers:
+                        type:
+                          - number
+                          - "null"
+                      pooler_size_per_head:
+                        type:
+                          - number
+                          - "null"
+                      pooler_type:
+                        type:
+                          - string
+                          - "null"
+                      position_embedding_type:
+                        type:
+                          - string
+                          - "null"
+                      torch_dtype:
+                        type:
+                          - string
+                          - "null"
+                      transformers_version:
+                        type:
+                          - string
+                          - "null"
+                      type_vocab_size:
+                        type:
+                          - number
+                          - "null"
+                      use_cache:
+                        type:
+                          - boolean
+                          - "null"
+                      vocab_size:
+                        type:
+                          - number
+                          - "null"
+                  num_results_per_query:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - number
+                        - "null"
+                  query_holdout_fraction:
+                    type:
+                      - number
+                      - "null"
+                  quota:
+                    type:
+                      - number
+                      - "null"
+                  test_split_percent:
+                    type:
+                      - number
+                      - "null"
+                  to_be_indexed_queries_fraction:
+                    type:
+                      - number
+                      - "null"
+                  tokenizer_config:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      clean_up_tokenization_spaces:
+                        type:
+                          - boolean
+                          - "null"
+                      cls_token:
+                        type:
+                          - string
+                          - "null"
+                      do_basic_tokenize:
+                        type:
+                          - boolean
+                          - "null"
+                      do_lower_case:
+                        type:
+                          - boolean
+                          - "null"
+                      mask_token:
+                        type:
+                          - string
+                          - "null"
+                      max_len:
+                        type:
+                          - number
+                          - "null"
+                      model_max_length:
+                        type:
+                          - number
+                          - "null"
+                      name_or_path:
+                        type:
+                          - string
+                          - "null"
+                      pad_token:
+                        type:
+                          - string
+                          - "null"
+                      sep_token:
+                        type:
+                          - string
+                          - "null"
+                      tokenize_chinese_chars:
+                        type:
+                          - boolean
+                          - "null"
+                      tokenizer_class:
+                        type:
+                          - string
+                          - "null"
+                      unk_token:
+                        type:
+                          - string
+                          - "null"
+                  train_iters:
+                    type:
+                      - number
+                      - "null"
+                  training_timeout:
+                    type:
+                      - number
+                      - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - object
+              - "null"
+            properties:
+              gettable:
+                type:
+                  - number
+                  - "null"
+      modified_at:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - number
+          - "null"
+      task:
+        type:
+          - string
+          - "null"
+      toolkits:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      use_cases:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - object
+          - "null"
+        properties:
+          gettable:
+            type:
+              - number
+              - "null"
+      workflow_recommended:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - modified_at
+  model_versions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      active_concept_count:
+        type:
+          - number
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      import_info:
+        type:
+          - object
+          - "null"
+      input_info:
+        type:
+          - object
+          - "null"
+        properties:
+          fields_map:
+            type:
+              - object
+              - "null"
+            properties:
+              image:
+                type:
+                  - string
+                  - "null"
+      output_info:
+        type:
+          - object
+          - "null"
+        properties:
+          fields_map:
+            type:
+              - object
+              - "null"
+            properties:
+              concepts:
+                type:
+                  - string
+                  - "null"
+              regions[...].data.concepts[...].id:
+                type:
+                  - string
+                  - "null"
+              regions[...].data.concepts[...].value:
+                type:
+                  - string
+                  - "null"
+              regions[...].region_info.bounding_box:
+                type:
+                  - string
+                  - "null"
+          message:
+            type:
+              - string
+              - "null"
+          output_config:
+            type:
+              - object
+              - "null"
+            properties:
+              max_concepts:
+                type:
+                  - number
+                  - "null"
+              min_value:
+                type:
+                  - number
+                  - "null"
+          params:
+            type:
+              - object
+              - "null"
+            properties:
+              detection_threshold:
+                type:
+                  - number
+                  - "null"
+              max_concepts:
+                type:
+                  - number
+                  - "null"
+              min_value:
+                type:
+                  - number
+                  - "null"
+              select_concepts:
+                type:
+                  - array
+                  - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - number
+              - "null"
+      train_info:
+        type:
+          - object
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - object
+          - "null"
+        properties:
+          gettable:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  worklows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          presetInputs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      check_consents:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image:
+        type:
+          - object
+          - "null"
+        properties:
+          hosted:
+            type:
+              - object
+              - "null"
+            properties:
+              crossorigin:
+                type:
+                  - string
+                  - "null"
+              prefix:
+                type:
+                  - string
+                  - "null"
+              sizes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              suffix:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      nodes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            model:
+              type:
+                - object
+                - "null"
+              properties:
+                app_id:
+                  type:
+                    - string
+                    - "null"
+                check_consents:
+                  type:
+                    - array
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                languages:
+                  type:
+                    - array
+                    - "null"
+                languages_full:
+                  type:
+                    - array
+                    - "null"
+                model_type_id:
+                  type:
+                    - string
+                    - "null"
+                model_version:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                toolkits:
+                  type:
+                    - array
+                    - "null"
+                use_cases:
+                  type:
+                    - array
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+            node_inputs:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  node_id:
+                    type:
+                      - string
+                      - "null"
+            output_info_override:
+              type:
+                - object
+                - "null"
+              properties:
+                params:
+                  type:
+                    - object
+                    - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      use_cases:
+        type:
+          - array
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - object
+          - "null"
+        properties:
+          gettable:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  app_inputs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          concepts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                app_id:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+          text:
+            type:
+              - object
+              - "null"
+            properties:
+              hosted:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  crossorigin:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  sizes:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+              text_info:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  char_count:
+                    type:
+                      - number
+                      - "null"
+                  encoding:
+                    type:
+                      - string
+                      - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  app_inputs_jobs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      progress:
+        type:
+          - object
+          - "null"
+        properties:
+          success_count:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  app_concepts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+      visibility:
+        type:
+          - object
+          - "null"
+        properties:
+          gettable:
+            type:
+              - number
+              - "null"
+    required:
+      - id

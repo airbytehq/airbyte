@@ -2,7 +2,7 @@
 
 import calendar
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -30,8 +30,8 @@ class PostsCommentsRequestBuilder(ZendeskSupportBaseRequestBuilder):
             params["page[after]"] = self._page_after
         return params
 
-    def with_start_time(self, start_time: int) -> "PostsCommentsRequestBuilder":
-        self._start_time: int = calendar.timegm(pendulum.parse(start_time).utctimetuple())
+    def with_start_time(self, start_time: str) -> "PostsCommentsRequestBuilder":
+        self._start_time: int = calendar.timegm(ab_datetime_parse(start_time).utctimetuple())
         return self
 
     def with_page_size(self, page_size: int) -> "PostsCommentsRequestBuilder":

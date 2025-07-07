@@ -6,6 +6,7 @@ from copy import deepcopy
 from typing import Any, List, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -39,7 +40,7 @@ class SourceKyve(AbstractSource):
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")
 
-        for (pool_id, start_id) in zip(pools, start_ids):
+        for pool_id, start_id in zip(pools, start_ids):
             response = requests.get(f"{config['url_base']}/kyve/query/v1beta1/pool/{pool_id}")
             pool_data = response.json().get("pool").get("data")
 

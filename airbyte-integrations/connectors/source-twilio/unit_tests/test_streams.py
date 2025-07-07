@@ -8,7 +8,6 @@ from unittest.mock import patch
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
 from freezegun import freeze_time
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.source import SourceTwilio
@@ -27,6 +26,10 @@ from source_twilio.streams import (
     UsageTriggers,
 )
 
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http import HttpStream
+
+
 TEST_CONFIG = {
     "account_sid": "airbyte.io",
     "auth_token": "secret",
@@ -43,7 +46,6 @@ TEST_INSTANCE = SourceTwilio()
 
 
 class TestTwilioStream:
-
     CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
 
     @pytest.mark.parametrize(
@@ -60,14 +62,14 @@ class TestTwilioStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (Accounts, ['name']),
+            (Accounts, ["name"]),
         ],
     )
     def test_changeable_fields(self, stream_cls, expected):
-        with patch.object(Accounts, "changeable_fields", ['name']):
-          stream = stream_cls(**self.CONFIG)
-          result = stream.changeable_fields
-          assert result == expected
+        with patch.object(Accounts, "changeable_fields", ["name"]):
+            stream = stream_cls(**self.CONFIG)
+            result = stream.changeable_fields
+            assert result == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -108,12 +110,12 @@ class TestTwilioStream:
     )
     def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
         with patch.object(TwilioStream, "changeable_fields", ["name"]):
-          stream = stream_cls(**self.CONFIG)
-          url = f"{stream.url_base}{stream.path()}"
-          requests_mock.get(url, json=test_response)
-          response = requests.get(url)
-          result = list(stream.parse_response(response))
-          assert result[0]['id'] == expected[0]['id']
+            stream = stream_cls(**self.CONFIG)
+            url = f"{stream.url_base}{stream.path()}"
+            requests_mock.get(url, json=test_response)
+            response = requests.get(url)
+            result = list(stream.parse_response(response))
+            assert result[0]["id"] == expected[0]["id"]
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -151,14 +153,13 @@ class TestTwilioStream:
             ("Fri, 11 Dec 2020 04:28:40 +0000", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
             ("2020-12-11T04:28:40Z", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
             ("some_string", {}, "some_string"),
-        ]
+        ],
     )
     def test_transform_function(self, original_value, field_schema, expected_value):
         assert Accounts.custom_transform_function(original_value, field_schema) == expected_value
 
 
 class TestIncrementalTwilioStream:
-
     CONFIG = TEST_CONFIG
     CONFIG.pop("account_sid")
     CONFIG.pop("auth_token")
@@ -168,7 +169,7 @@ class TestIncrementalTwilioStream:
         [
             (
                 Calls,
-                {"EndTime>": "2022-01-01", "EndTime<": "2022-01-02"},
+                StreamSlice(partition={}, cursor_slice={"EndTime>": "2022-01-01", "EndTime<": "2022-01-02"}),
                 {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
                 {
                     "EndTime>": "2022-01-01",
@@ -194,7 +195,7 @@ class TestIncrementalTwilioStream:
     def test_read_records(self, stream_cls, record, expected):
         stream = stream_cls(**self.CONFIG)
         with patch.object(HttpStream, "read_records", return_value=record):
-            result = stream.read_records(sync_mode=None)
+            result = stream.read_records(sync_mode=None, stream_slice=StreamSlice(partition={}, cursor_slice={}))
             assert list(result) == expected
 
     @pytest.mark.parametrize(
@@ -230,17 +231,42 @@ class TestIncrementalTwilioStream:
         (
             (
                 Messages,
-                {"date_sent": "2022-11-13 23:39:00"},
+                {
+                    "states": [
+                        {
+                            "partition": {"key": "value"},
+                            "cursor": {"date_sent": "2022-11-13 23:39:00"},
+                        }
+                    ]
+                },
                 [
                     {"DateSent>": "2022-11-13 23:39:00Z", "DateSent<": "2022-11-14 23:39:00Z"},
                     {"DateSent>": "2022-11-14 23:39:00Z", "DateSent<": "2022-11-15 23:39:00Z"},
                     {"DateSent>": "2022-11-15 23:39:00Z", "DateSent<": "2022-11-16 12:03:11Z"},
                 ],
             ),
-            (UsageRecords, {"start_date": "2021-11-16 00:00:00"}, [{"StartDate": "2021-11-16", "EndDate": "2022-11-16"}]),
+            (
+                UsageRecords,
+                {
+                    "states": [
+                        {
+                            "partition": {"key": "value"},
+                            "cursor": {"start_date": "2021-11-16 00:00:00"},
+                        }
+                    ]
+                },
+                [{"StartDate": "2021-11-16", "EndDate": "2022-11-16"}],
+            ),
             (
                 Recordings,
-                {"date_created": "2021-11-16 00:00:00"},
+                {
+                    "states": [
+                        {
+                            "partition": {"key": "value"},
+                            "cursor": {"date_created": "2021-11-16 00:00:00"},
+                        }
+                    ]
+                },
                 [
                     {"DateCreated>": "2021-11-16 00:00:00Z", "DateCreated<": "2022-11-16 00:00:00Z"},
                     {"DateCreated>": "2022-11-16 00:00:00Z", "DateCreated<": "2022-11-16 12:03:11Z"},
@@ -251,12 +277,11 @@ class TestIncrementalTwilioStream:
     def test_generate_dt_ranges(self, stream_cls, state, expected_dt_ranges):
         stream = stream_cls(authenticator=TEST_CONFIG.get("authenticator"), start_date="2000-01-01 00:00:00")
         stream.state = state
-        dt_ranges = list(stream.generate_date_ranges())
+        dt_ranges = list(stream.generate_date_ranges({"key": "value"}))
         assert dt_ranges == expected_dt_ranges
 
 
 class TestTwilioNestedStream:
-
     CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
 
     @pytest.mark.parametrize(
@@ -279,13 +304,13 @@ class TestTwilioNestedStream:
                 Addresses,
                 Accounts,
                 [{"subresource_uris": {"addresses": "123"}}],
-                [{"subresource_uri": "123"}],
+                [StreamSlice(partition={"subresource_uri": "123"}, cursor_slice={})],
             ),
             (
                 DependentPhoneNumbers,
                 Addresses,
                 [{"subresource_uris": {"addresses": "123"}, "sid": "123", "account_sid": "456"}],
-                [{"sid": "123", "account_sid": "456"}],
+                [StreamSlice(partition={"sid": "123", "account_sid": "456"}, cursor_slice={})],
             ),
         ],
     )
@@ -299,7 +324,6 @@ class TestTwilioNestedStream:
 
 
 class TestUsageNestedStream:
-
     CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
 
     @pytest.mark.parametrize(
@@ -319,8 +343,8 @@ class TestUsageNestedStream:
             (
                 UsageTriggers,
                 Accounts,
-                [{"sid": "234", "account_sid": "678"}],
-                [{"account_sid": "234"}],
+                [{"sid": "234", "account_sid": "678", "date_created": "2022-11-16 00:00:00"}],
+                [StreamSlice(partition={"account_sid": "234", "date_created": "2022-11-16 00:00:00"}, cursor_slice={})],
             ),
         ],
     )

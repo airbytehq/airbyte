@@ -9,9 +9,13 @@ import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { SpecSchema } from "@site/src/components/SpecSchema";
 import MDXComponents from "@theme-original/MDXComponents";
 import { CardWithIcon } from "../../components/Card/Card";
+import { CopyPageButton } from "../../components/CopyPageButton/CopyPageButton";
 import { Details } from "../../components/Details";
+import { DocMetaTags } from "../../components/DocMetaTags";
 import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
 import { Grid } from "../../components/Grid/Grid";
+import { YoutubeEmbed } from "../../components/YoutubeEmbed";
+
 export default {
   // Re-use the default mapping
   ...MDXComponents,
@@ -27,4 +31,7 @@ export default {
   EntityRelationshipDiagram,
   CardWithIcon,
   Grid,
+  YoutubeEmbed,
+  DocMetaTags,
+  CopyPageButton,
 };

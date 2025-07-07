@@ -1,4 +1,4 @@
-version: 5.12.0
+version: 5.15.0
 
 type: DeclarativeSource
 
@@ -155,8 +155,8 @@ definitions:
           cursor_field: type
           request_option:
             type: RequestOption
-            inject_into: body_json
             field_name: type
+            inject_into: body_json
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -182,41 +182,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/directoryroles"
-    auditlogs:
-      type: DeclarativeStream
-      name: auditlogs
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /auditLogs/directoryaudits
-          http_method: GET
-          request_parameters:
-            $top: "5"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - value
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: $skiptoken
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response.get("@odata.nextLink") |
-              regex_search('\$skiptoken=([^&]+)') }}
-            stop_condition: "{{ response.get('@odata.nextLink') is not defined }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/auditlogs"
     directoryroletemplates:
       type: DeclarativeStream
       name: directoryroletemplates
@@ -374,7 +339,7 @@ definitions:
       grant_type: client_credentials
       client_secret: "{{ config[\"client_secret\"] }}"
       refresh_request_body:
-        scope: "{{ config['application_id_uri'] }}"
+        scope: https://graph.microsoft.com/.default
       token_refresh_endpoint: >-
         https://login.microsoftonline.com/{{ config['tenant_id']
         }}/oauth2/v2.0/token
@@ -385,7 +350,6 @@ streams:
   - $ref: "#/definitions/streams/applications"
   - $ref: "#/definitions/streams/user_owned_deleted_items"
   - $ref: "#/definitions/streams/directoryroles"
-  - $ref: "#/definitions/streams/auditlogs"
   - $ref: "#/definitions/streams/directoryroletemplates"
   - $ref: "#/definitions/streams/directoryaudits"
   - $ref: "#/definitions/streams/serviceprincipals"
@@ -401,7 +365,6 @@ spec:
       - client_id
       - client_secret
       - tenant_id
-      - application_id_uri
       - user_id
     properties:
       client_id:
@@ -419,14 +382,9 @@ spec:
         order: 2
         title: Tenant Id
         airbyte_secret: true
-      application_id_uri:
-        type: string
-        order: 3
-        title: Application Id URI
-        airbyte_secret: true
       user_id:
         type: string
-        order: 4
+        order: 3
         title: User Id
         airbyte_secret: true
     additionalProperties: true
@@ -438,7 +396,6 @@ metadata:
     applications: true
     user_owned_deleted_items: true
     directoryroles: true
-    auditlogs: true
     directoryroletemplates: true
     directoryaudits: true
     serviceprincipals: true
@@ -446,82 +403,75 @@ metadata:
     adminconsentrequestpolicy: true
   testedStreams:
     users:
-      streamHash: e9680d9cc418081a2f5fd4e59d7f575b311b8dc5
+      streamHash: a3a8dbf864ffb336f197dcd7b5dc94276ac3804c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     groups:
-      streamHash: c1a0432c5ce81363e75b39b503b7203fdecfeba6
+      streamHash: f4d8c25569bc03e4282b8ab0e2206fe801f7abb4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     applications:
-      streamHash: 66f078a70b0c4d468592c3fa1b538bac620b2e7d
+      streamHash: aec5be1d8ca55d7d6d329969a469413a2799d204
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     user_owned_deleted_items:
-      streamHash: 9265a6b09eed6ababab8f15d3522dca6e123febe
+      streamHash: f58339e36ff71c6055a1279d2ccc551a2280fa3f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     directoryroles:
-      streamHash: 6ce30c704704828c251bbf8f402778fd8f639edb
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    auditlogs:
-      streamHash: d49fef83c93794e449409ac2a45685458e45ca57
+      streamHash: 1e2973d7b724fe91d182c756dd1b4bb2b1d4d81b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     directoryroletemplates:
-      streamHash: e885ecb2033544abad560f266f37176ade361abd
+      streamHash: 4ae0addeaa79492f472e034533b850b557b08fc1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     directoryaudits:
-      streamHash: 7c99e2b68ff2f120774a2091a4ac074c9efed0bc
+      streamHash: dee13f722e03affc089a46bfc8be8ecd910074a8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     serviceprincipals:
-      streamHash: 77a66c133cdcb1882c3dccbafc8fcd2c8164b4a8
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 1a75792a5cb5d162fc0aaeda12e27a876fe42470
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     identityproviders:
-      streamHash: af1b879e50673feb9b02c80422ad985050cbd927
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 2a6f02761e0744572579767de223c98b35d89890
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     adminconsentrequestpolicy:
-      streamHash: cbc9761c8b766e847cda5438825d79774f0175b9
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: c65392dbc76dd3c1700fc307a0cec08113d18deb
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: >-
       https://learn.microsoft.com/en-us/graph/api/resources/identity-network-access-overview?view=graph-rest-1.0
@@ -1100,107 +1050,6 @@ schemas:
           - "null"
     required:
       - id
-  auditlogs:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      activityDateTime:
-        type:
-          - string
-          - "null"
-      activityDisplayName:
-        type:
-          - string
-          - "null"
-      additionalDetails:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            key:
-              type:
-                - string
-                - "null"
-            value:
-              type:
-                - string
-                - "null"
-      category:
-        type:
-          - string
-          - "null"
-      correlationId:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      initiatedBy:
-        type:
-          - object
-          - "null"
-        properties:
-          app:
-            type:
-              - object
-              - "null"
-            properties:
-              displayName:
-                type:
-                  - string
-                  - "null"
-              servicePrincipalId:
-                type:
-                  - string
-                  - "null"
-              servicePrincipalName:
-                type:
-                  - string
-                  - "null"
-      loggedByService:
-        type:
-          - string
-          - "null"
-      operationType:
-        type:
-          - string
-          - "null"
-      result:
-        type:
-          - string
-          - "null"
-      resultReason:
-        type:
-          - string
-          - "null"
-      targetResources:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            modifiedProperties:
-              type:
-                - array
-                - "null"
-    required:
-      - id
   directoryroletemplates:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1263,20 +1112,20 @@ schemas:
           - object
           - "null"
         properties:
-          app:
+          user:
             type:
               - object
               - "null"
             properties:
-              displayName:
+              id:
                 type:
                   - string
                   - "null"
-              servicePrincipalId:
+              ipAddress:
                 type:
                   - string
                   - "null"
-              servicePrincipalName:
+              userPrincipalName:
                 type:
                   - string
                   - "null"
@@ -1309,6 +1158,14 @@ schemas:
               type:
                 - string
                 - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            groupType:
+              type:
+                - string
+                - "null"
             id:
               type:
                 - string
@@ -1316,6 +1173,27 @@ schemas:
             modifiedProperties:
               type:
                 - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  displayName:
+                    type:
+                      - string
+                      - "null"
+                  newValue:
+                    type:
+                      - string
+                      - "null"
+                  oldValue:
+                    type:
+                      - string
+                      - "null"
+            userPrincipalName:
+              type:
+                - string
                 - "null"
     required:
       - id

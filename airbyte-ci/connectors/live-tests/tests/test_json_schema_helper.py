@@ -16,6 +16,8 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
+from pydantic import BaseModel
+
 from live_tests.commons.json_schema_helper import (
     ComparableType,
     JsonSchemaHelper,
@@ -23,7 +25,6 @@ from live_tests.commons.json_schema_helper import (
     get_expected_schema_structure,
     get_object_structure,
 )
-from pydantic import BaseModel
 
 
 def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any, Any]]:

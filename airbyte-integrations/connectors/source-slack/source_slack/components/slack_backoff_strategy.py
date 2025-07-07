@@ -4,8 +4,9 @@
 import logging
 from typing import Optional, Union
 
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from requests import RequestException, Response
+
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 
 class SlackBackoffStrategy(BackoffStrategy):

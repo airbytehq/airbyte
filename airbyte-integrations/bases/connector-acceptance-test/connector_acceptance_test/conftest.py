@@ -17,6 +17,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Set
 
 import dagger
 import pytest
+
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (

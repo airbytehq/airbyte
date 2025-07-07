@@ -2,109 +2,193 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import json
+from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
-from airbyte_cdk.models import OrchestratorType, Type
-from airbyte_cdk.sources import Source
-from source_amazon_seller_partner.config_migrations import MigrateAccountType, MigrateReportOptions, MigrateStreamNameOption
-from source_amazon_seller_partner.source import SourceAmazonSellerPartner
 
-CMD = "check"
-SOURCE: Source = SourceAmazonSellerPartner()
+from .conftest import get_source
 
 
-def load_config(config_path: str) -> Mapping[str, Any]:
+MIGRATIONS_TEST_DIRECTORY = Path(__file__).parent / "test_migrations"
+
+
+def load_config(config_path: Path) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
         return json.load(config)
 
 
-class TestMigrateAccountType:
-    test_not_migrated_config_path = "unit_tests/test_migrations/account_type_migration/not_migrated_config.json"
-    test_migrated_config_path = "unit_tests/test_migrations/account_type_migration/migrated_config.json"
+UNMIGRATED_CONFIG = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "report_options": '{"GET_REPORT": {"reportPeriod": "WEEK"}, "GET_REPORT_2": {"reportPeriod_2": "DAY"}}',
+}
 
-    def test_migrate_config(self, capsys):
-        config = load_config(self.test_not_migrated_config_path)
-        assert "account_type" not in config
-        migration_instance = MigrateAccountType()
-        migration_instance.migrate([CMD, "--config", self.test_not_migrated_config_path], SOURCE)
-        control_msg = json.loads(capsys.readouterr().out)
-        assert control_msg["type"] == Type.CONTROL.value
-        assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
-        migrated_config = control_msg["control"]["connectorConfig"]["config"]
-        assert migrated_config["account_type"] == "Seller"
+MIGRATED_CONFIG = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "report_options_list": [
+        {
+            "report_name": "TEST_REPORT_1",
+            "stream_name": "GET_REPORT_1",
+            "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+        },
+        {
+            "report_name": "TEST_REPORT_2",
+            "stream_name": "GET_REPORT_2",
+            "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+        },
+    ],
+    "account_type": "Vendor",
+}
 
-    def test_should_not_migrate(self):
-        config = load_config(self.test_migrated_config_path)
-        assert config["account_type"]
-        migration_instance = MigrateAccountType()
-        assert not migration_instance._should_migrate(config)
+INVALID_STREAM_NAMES_CONFIG = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "report_options_list": [
+        {
+            "report_name": "report_name",
+            "stream_name": "duplicate_stream_name",
+            "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+        },
+        {
+            "report_name": "report_name",
+            "stream_name": "duplicate_stream_name",
+            "options_list": [{"option_name": "reportPeriod_2", "option_value": "DAY"}],
+        },
+    ],
+    "account_type": "Vendor",
+}
+
+INVALID_OPTION_NAMES_CONFIG = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "report_options_list": [
+        {
+            "report_name": "report_name_1",
+            "stream_name": "stream_1",
+            "options_list": [
+                {"option_name": "reportPeriod", "option_value": "WEEK"},
+                {"option_name": "reportPeriod", "option_value": "DAY"},
+            ],
+        },
+    ],
+    "account_type": "Vendor",
+}
+
+CONFIG_WITHOUT_REPORT_OPTIONS_LIST = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "account_type": "Vendor",
+}
 
 
-class TestMigrateReportOptions:
-    test_not_migrated_config_path = "unit_tests/test_migrations/report_options_migration/not_migrated_config.json"
-    test_migrated_config_path = "unit_tests/test_migrations/report_options_migration/migrated_config.json"
+class TestMigrations:
+    test_unmigrated_config_path = MIGRATIONS_TEST_DIRECTORY / "unmigrated_config.json"
+    test_migrated_config_path = MIGRATIONS_TEST_DIRECTORY / "migrated_config.json"
 
-    @pytest.mark.parametrize(
-        ("input_config", "expected_report_options_list"),
-        (
-            (
-                {"report_options": '{"GET_REPORT": {"reportPeriod": "WEEK"}}'},
-                [{"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]}],
-            ),
-            ({"report_options": None}, []),
-            ({"report_options": "{{}"}, []),
-            ({}, []),
-        ),
-    )
-    def test_transform_report_options(self, input_config, expected_report_options_list):
-        expected_config = {**input_config, "report_options_list": expected_report_options_list}
-        assert MigrateReportOptions._transform(input_config) == expected_config
+    def test_migrate_config(self, components_module):
+        try:
+            config_copy = dict(UNMIGRATED_CONFIG)
+            assert "account_type" not in config_copy
+            get_source(config_copy, config_path=str(self.test_unmigrated_config_path))
+            migrated_config = load_config(self.test_unmigrated_config_path)
+            assert migrated_config["account_type"] == "Seller"
+            assert isinstance(migrated_config["report_options_list"], list)
+            assert len(migrated_config["report_options_list"]) == 2
+            assert migrated_config["report_options_list"][0]["report_name"] == "GET_REPORT"
+            assert migrated_config["report_options_list"][0]["stream_name"] == "GET_REPORT"
+            assert migrated_config["report_options_list"][0]["options_list"][0]["option_name"] == "reportPeriod"
+            assert migrated_config["report_options_list"][0]["options_list"][0]["option_value"] == "WEEK"
+            assert migrated_config["report_options_list"][1]["report_name"] == "GET_REPORT_2"
+            assert migrated_config["report_options_list"][1]["stream_name"] == "GET_REPORT_2"
+            assert migrated_config["report_options_list"][1]["options_list"][0]["option_name"] == "reportPeriod_2"
+            assert migrated_config["report_options_list"][1]["options_list"][0]["option_value"] == "DAY"
+        finally:
+            with self.test_unmigrated_config_path.open("w") as f:
+                json.dump(config_copy, f)
 
-    def test_migrate_config(self, capsys):
-        config = load_config(self.test_not_migrated_config_path)
-        assert "report_options_list" not in config
-        migration_instance = MigrateReportOptions()
-        migration_instance.migrate([CMD, "--config", self.test_not_migrated_config_path], SOURCE)
-        control_msg = json.loads(capsys.readouterr().out)
-        assert control_msg["type"] == Type.CONTROL.value
-        assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
-        migrated_config = control_msg["control"]["connectorConfig"]["config"]
-        expected_report_options_list = [
-            {"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]},
-        ]
-        assert migrated_config["report_options_list"] == expected_report_options_list
+    def test_already_migrated_config(self, components_module):
+        try:
+            config_copy = dict(MIGRATED_CONFIG)
+            get_source(config_copy, config_path=str(self.test_migrated_config_path))
+            migrated_config = load_config(self.test_migrated_config_path)
+            print("migrated_config", migrated_config)
+            assert migrated_config["account_type"] == "Vendor"
+            assert migrated_config["report_options_list"] == MIGRATED_CONFIG["report_options_list"]
+            assert migrated_config["report_options_list"][0]["report_name"] == MIGRATED_CONFIG["report_options_list"][0]["report_name"]
+            assert migrated_config["report_options_list"][0]["stream_name"] == MIGRATED_CONFIG["report_options_list"][0]["stream_name"]
+            assert (
+                migrated_config["report_options_list"][0]["options_list"][0]["option_name"]
+                == MIGRATED_CONFIG["report_options_list"][0]["options_list"][0]["option_name"]
+            )
+            assert (
+                migrated_config["report_options_list"][0]["options_list"][0]["option_value"]
+                == MIGRATED_CONFIG["report_options_list"][0]["options_list"][0]["option_value"]
+            )
+            assert migrated_config["report_options_list"][1]["report_name"] == MIGRATED_CONFIG["report_options_list"][1]["report_name"]
+            assert migrated_config["report_options_list"][1]["stream_name"] == MIGRATED_CONFIG["report_options_list"][1]["stream_name"]
+            assert (
+                migrated_config["report_options_list"][1]["options_list"][0]["option_name"]
+                == MIGRATED_CONFIG["report_options_list"][1]["options_list"][0]["option_name"]
+            )
+            assert (
+                migrated_config["report_options_list"][1]["options_list"][0]["option_value"]
+                == MIGRATED_CONFIG["report_options_list"][1]["options_list"][0]["option_value"]
+            )
+        finally:
+            with self.test_migrated_config_path.open("w") as f:
+                json.dump(config_copy, f)
 
-    def test_should_not_migrate(self):
-        config = load_config(self.test_migrated_config_path)
-        assert config["report_options_list"]
-        migration_instance = MigrateReportOptions()
-        assert not migration_instance._should_migrate(config)
+
+class TestTransformations:
+    def test_transformation(self):
+        config_1 = dict(MIGRATED_CONFIG)
+        config_2 = dict(MIGRATED_CONFIG)
+        config_2["aws_environment"] = "SANDBOX"
+        config_2["region"] = "SA"
+        source_1 = get_source(config_1)
+        source_2 = get_source(config_2)
+
+        # PRODUCTION, US
+        assert source_1._config["endpoint"] == "https://sellingpartnerapi-na.amazon.com"
+        assert source_1._config["marketplace_id"] == "ATVPDKIKX0DER"
+
+        # SANDBOX, SA
+        assert source_2._config["endpoint"] == "https://sandbox.sellingpartnerapi-eu.amazon.com"
+        assert source_2._config["marketplace_id"] == "A17E79C6D8DWNP"
 
 
-class TestMigrateStreamNameOption:
-    test_not_migrated_config_path = "unit_tests/test_migrations/stream_name_option_migration/not_migrated_config.json"
-    test_migrated_config_path = "unit_tests/test_migrations/stream_name_option_migration/migrated_config.json"
+class TestValidations:
+    @pytest.mark.parametrize("config", [INVALID_STREAM_NAMES_CONFIG, INVALID_OPTION_NAMES_CONFIG])
+    def test_given_invalid_config_then_it_should_raise_error(self, config):
+        source = get_source(config)
+        with pytest.raises(ValueError) as e:
+            source.streams(config)
+        assert "should be unique across all" in str(e.value)
 
-    def test_migrate_config(self, capsys):
-        config = load_config(self.test_not_migrated_config_path)
-        for options_list in config["report_options_list"]:
-            assert "report_name" not in options_list
-
-        migration_instance = MigrateStreamNameOption()
-        migration_instance.migrate([CMD, "--config", self.test_not_migrated_config_path], SOURCE)
-        control_msg = json.loads(capsys.readouterr().out)
-        assert control_msg["type"] == Type.CONTROL.value
-        assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
-        migrated_config = control_msg["control"]["connectorConfig"]["config"]
-        for options_list in migrated_config["report_options_list"]:
-            assert options_list["report_name"] == options_list["stream_name"]
-
-    def test_should_not_migrate(self):
-        config = load_config(self.test_migrated_config_path)
-        migration_instance = MigrateStreamNameOption()
-        assert not migration_instance._should_migrate(config)
-        for options_list in config["report_options_list"]:
-            assert options_list["stream_name"]
+    @pytest.mark.parametrize("config", [MIGRATED_CONFIG, CONFIG_WITHOUT_REPORT_OPTIONS_LIST])
+    def test_given_valid_config_then_it_should_not_raise_error(self, config):
+        source = get_source(config)
+        source.streams(config)

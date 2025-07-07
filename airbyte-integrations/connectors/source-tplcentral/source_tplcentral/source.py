@@ -7,10 +7,11 @@ import logging
 from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import requests
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from requests.auth import HTTPBasicAuth
 from source_tplcentral.streams import Customers, Inventory, Items, Orders, StockDetails, StockSummaries
 
 

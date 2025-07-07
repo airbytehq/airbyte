@@ -8,7 +8,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
+
+from pipelines import hacks
+from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
@@ -24,6 +26,7 @@ if TYPE_CHECKING:
 
     from anyio import Semaphore
     from github import PullRequest
+
     from pipelines.models.steps import StepResult
 
 UP_TO_DATE_PR_LABEL = "up-to-date"
@@ -59,12 +62,16 @@ def get_pr_creation_arguments(
     step_results: Iterable[StepResult],
     dependency_updates: Iterable[DependencyUpdate],
 ) -> Tuple[Tuple, Dict]:
-    return (modified_files,), {
-        "branch_id": f"up-to-date/{context.connector.technical_name}",
-        "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
-        "pr_title": f"🐙 {context.connector.technical_name}: run up-to-date pipeline [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
-        "pr_body": get_pr_body(context, step_results, dependency_updates),
-    }
+    return (
+        (modified_files,),
+        {
+            "branch_id": f"up-to-date/{context.connector.technical_name}",
+            "commit_message": "[up-to-date]"  # << We can skip Vercel builds if this is in the commit message
+            + "; ".join(step_result.step.title for step_result in step_results if step_result.success),
+            "pr_title": f"🐙 {context.connector.technical_name}: run up-to-date pipeline [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
+            "pr_body": get_pr_body(context, step_results, dependency_updates),
+        },
+    )
 
 
 ## MAIN FUNCTION
@@ -88,11 +95,10 @@ async def run_connector_up_to_date_pipeline(
             upgrade_base_image_in_metadata_result = await upgrade_base_image_in_metadata.run()
             step_results.append(upgrade_base_image_in_metadata_result)
             if upgrade_base_image_in_metadata_result.success:
-                connector_directory = upgrade_base_image_in_metadata_result.output
+                connector_directory = upgrade_base_image_in_metadata_result.output["updated_connector_directory"]
                 exported_modified_files = await upgrade_base_image_in_metadata.export_modified_files(context.connector.code_directory)
                 context.logger.info(f"Exported files following the base image upgrade: {exported_modified_files}")
                 all_modified_files.update(exported_modified_files)
-                connector_directory = upgrade_base_image_in_metadata_result.output
 
             if context.connector.is_using_poetry:
                 # We run the poetry update step after the base image upgrade because the base image upgrade may change the python environment
@@ -126,7 +132,7 @@ async def run_connector_up_to_date_pipeline(
             # to fill the PR body with the correct information about what exactly got updated.
             if create_pull_request:
                 # Building connector images is also universal across connector technologies.
-                build_result = await BuildConnectorImages(context).run()
+                build_result = await run_connector_build(context)
                 step_results.append(build_result)
                 dependency_updates: List[DependencyUpdate] = []
 
@@ -141,10 +147,13 @@ async def run_connector_up_to_date_pipeline(
 
                 # We open a PR even if build is failing.
                 # This might allow a developer to fix the build in the PR.
-                # ---
-                # We are skipping CI on this first PR creation attempt to avoid useless runs:
-                # the new changelog entry is missing, it will fail QA checks
-                initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True, labels=DEFAULT_PR_LABELS)
+                initial_pr_creation = CreateOrUpdatePullRequest(
+                    context,
+                    labels=DEFAULT_PR_LABELS,
+                    # Reduce pressure on rate limit, since we need to push a
+                    # a follow-on commit anyway once we have the PR number:
+                    skip_ci=True,
+                )
                 pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                     all_modified_files, context, step_results, dependency_updates
                 )
@@ -157,8 +166,12 @@ async def run_connector_up_to_date_pipeline(
                 documentation_directory = await context.get_repo_dir(
                     include=[str(context.connector.local_connector_documentation_directory)]
                 ).directory(str(context.connector.local_connector_documentation_directory))
+
+                changelog_entry_comment = hacks.determine_changelog_entry_comment(
+                    upgrade_base_image_in_metadata_result, CHANGELOG_ENTRY_COMMENT
+                )
                 add_changelog_entry = AddChangelogEntry(
-                    context, documentation_directory, new_version, CHANGELOG_ENTRY_COMMENT, created_pr.number
+                    context, documentation_directory, new_version, changelog_entry_comment, created_pr.number
                 )
                 add_changelog_entry_result = await add_changelog_entry.run()
                 step_results.append(add_changelog_entry_result)
@@ -170,7 +183,15 @@ async def run_connector_up_to_date_pipeline(
                     context.logger.info(f"Exported files following the changelog entry: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
                     final_labels = DEFAULT_PR_LABELS + [AUTO_MERGE_PR_LABEL] if auto_merge else DEFAULT_PR_LABELS
-                    post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=final_labels)
+                    post_changelog_pr_update = CreateOrUpdatePullRequest(
+                        context,
+                        labels=final_labels,
+                        # For this 'up-to-date' pipeline, we want GitHub to merge organically
+                        # if/when all required checks pass. Maintainers can also easily disable
+                        # auto-merge if they want to review or update the PR before merging.
+                        github_auto_merge=auto_merge,
+                        skip_ci=False,
+                    )
                     pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                         all_modified_files, context, step_results, dependency_updates
                     )

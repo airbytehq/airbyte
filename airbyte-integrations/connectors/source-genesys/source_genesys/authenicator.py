@@ -8,6 +8,7 @@ from urllib import parse
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
+
 logger = logging.getLogger("airbyte")
 
 

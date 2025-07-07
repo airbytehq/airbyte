@@ -6,14 +6,18 @@ package io.airbyte.cdk.load.test.util.destination_process
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
+import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.env.yaml.YamlPropertySourceLoader
 import java.nio.file.Files
 import java.nio.file.Path
-
-const val DOCKERIZED_TEST_ENV = "DOCKERIZED_INTEGRATION_TEST"
 
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker
@@ -25,14 +29,21 @@ const val DOCKERIZED_TEST_ENV = "DOCKERIZED_INTEGRATION_TEST"
  * 5. [shutdown] once you have no more messages to send to the destination
  */
 interface DestinationProcess {
+    val dataChannelMedium: DataChannelMedium
+
     /**
      * Run the destination process. Callers who want to interact with the destination should
      * `launch` this method.
      */
     suspend fun run()
 
-    fun sendMessage(message: AirbyteMessage)
-    fun sendMessages(vararg messages: AirbyteMessage) {
+    /**
+     * Sending raw strings is not recommended now that we're using multiple serialization formats,
+     * unless you're trying to send a poison pill.
+     */
+    suspend fun sendMessage(string: String)
+    suspend fun sendMessage(message: InputMessage, broadcast: Boolean = false)
+    suspend fun sendMessages(vararg messages: InputMessage) {
         messages.forEach { sendMessage(it) }
     }
 
@@ -43,6 +54,11 @@ interface DestinationProcess {
      * Signal the destination to exit (i.e. close its stdin stream), then wait for it to terminate.
      */
     suspend fun shutdown()
+
+    /** Terminate the destination as immediately as possible. */
+    suspend fun kill()
+
+    fun verifyFileDeleted()
 }
 
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
@@ -54,18 +70,32 @@ abstract class DestinationProcessFactory {
      */
     lateinit var testName: String
 
+    /**
+     * If [useFileTransfer] is enabled, the process should create a file for the connector to
+     * transfer.
+     */
     abstract fun createDestinationProcess(
         command: String,
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
+        useFileTransfer: Boolean = false,
+        micronautProperties: Map<Property, String> = emptyMap(),
+        dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+        dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+        namespaceMappingConfig: NamespaceMappingConfig =
+            NamespaceMappingConfig(NamespaceDefinitionType.SOURCE),
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 
     companion object {
-        fun get(): DestinationProcessFactory =
+        /**
+         * [additionalMicronautEnvs] is only passed into the non-docker connector. We assume that
+         * the dockerized connector is capable of setting its own micronaut environments.
+         */
+        fun get(additionalMicronautEnvs: List<String>): DestinationProcessFactory =
             when (val runner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER")) {
                 null,
-                "non-docker" -> NonDockerizedDestinationFactory()
+                "non-docker" -> NonDockerizedDestinationFactory(additionalMicronautEnvs)
                 "docker" -> {
                     val rawProperties: Map<String, Any?> =
                         YamlPropertySourceLoader()

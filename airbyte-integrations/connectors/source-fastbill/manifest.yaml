@@ -1,0 +1,1401 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - invoices
+
+definitions:
+  streams:
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - INVOICE_ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api.php
+          http_method: POST
+          request_body_json:
+            LIMIT: 100
+            SERVICE: invoice.get
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - RESPONSE
+              - INVOICES
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: OFFSET
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    recurring_invoices:
+      type: DeclarativeStream
+      name: recurring_invoices
+      primary_key:
+        - INVOICE_ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api.php
+          http_method: POST
+          request_body_json:
+            LIMIT: 100
+            SERVICE: recurring.get
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - RESPONSE
+              - INVOICES
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: OFFSET
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recurring_invoices"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - ARTICLE_ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api.php
+          http_method: POST
+          request_body_json:
+            LIMIT: 100
+            SERVICE: article.get
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - RESPONSE
+              - ARTICLES
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: OFFSET
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    revenues:
+      type: DeclarativeStream
+      name: revenues
+      primary_key:
+        - INVOICE_ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api.php
+          http_method: POST
+          request_body_json:
+            LIMIT: 100
+            SERVICE: revenue.get
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - RESPONSE
+              - REVENUES
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: OFFSET
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/revenues"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - CUSTOMER_ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api.php
+          http_method: POST
+          request_body_json:
+            LIMIT: 100
+            SERVICE: customer.get
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - RESPONSE
+              - CUSTOMERS
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: OFFSET
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+  base_requester:
+    type: HttpRequester
+    url_base: https://my.fastbill.com/api/1.0
+    authenticator:
+      class_name: source_declarative_manifest.components.CustomAuthenticator
+      password: "{{ config[\"api_key\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/recurring_invoices"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/revenues"
+  - $ref: "#/definitions/streams/customers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - api_key
+    properties:
+      username:
+        type: string
+        description: Username for Fastbill account
+        order: 0
+        title: Username
+      api_key:
+        type: string
+        description: Fastbill API key
+        order: 1
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    invoices: false
+    recurring_invoices: false
+    products: false
+    revenues: false
+    customers: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    invoices:
+      streamHash: 20857ec38cdfc474738705385285d6859e74866e
+    recurring_invoices:
+      streamHash: 9f9b69113f6ac08925352b114b516d219d6e93a1
+    products:
+      streamHash: 7e92ddc1f8374019dc37c33f961beebe45c44af5
+    revenues:
+      streamHash: d161fe2af92a08a53bd6937db97adcc1bcf8c64f
+    customers:
+      streamHash: 4707ba52e52e71f51211199a0dad1427be27c13b
+  assist: {}
+
+schemas:
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      ADDRESS:
+        type: string
+        description: Customer address
+        empty: true
+      ADDRESS_2:
+        type: string
+        description: Additional address information
+        empty: true
+      BANK_ACCOUNT_NUMBER:
+        type: string
+        description: Customer's bank account number
+        empty: true
+      BANK_ACCOUNT_OWNER:
+        type: string
+        description: Name of the bank account owner
+        empty: true
+      BANK_BIC:
+        type: string
+        description: Bank Identifier Code
+        empty: true
+      BANK_CODE:
+        type: string
+        description: Bank code
+        empty: true
+      BANK_IBAN:
+        type: string
+        description: International Bank Account Number
+        empty: true
+      BANK_NAME:
+        type: string
+        description: Name of the bank
+        empty: true
+      CASH_DISCOUNT_DAYS:
+        type: string
+        description: Number of days to avail cash discount
+      CASH_DISCOUNT_PERCENT:
+        type: string
+        description: Percentage of cash discount offered
+      CITY:
+        type: string
+        description: Customer's city
+        empty: true
+      CONTACT_ID:
+        type: string
+        description: Contact ID
+      COUNTRY_CODE:
+        type: string
+        description: Customer's country code
+      CURRENCY_CODE:
+        type: string
+        description: Currency code
+      CUSTOMER_COSTCENTER_ID:
+        type: string
+        description: Customer's cost center ID
+      CUSTOMER_ID:
+        type: string
+        description: Customer ID
+      CUSTOMER_NUMBER:
+        type: string
+        description: Customer number
+      DELIVERY_DATE:
+        type: string
+        description: Date of delivery
+      DOCUMENT_URL:
+        type: string
+        description: URL to access the document
+      DUE_DATE:
+        type: string
+        description: Due date for payment
+      FIRST_NAME:
+        type: string
+        description: Customer's first name
+        empty: true
+      INTROTEXT:
+        type: string
+        description: Introductory text
+        empty: true
+      INVOICE_DATE:
+        type: string
+        description: Date of the invoice
+      INVOICE_ID:
+        type: string
+        description: Invoice ID
+      INVOICE_NUMBER:
+        type: string
+        description: Invoice number
+      INVOICE_TITLE:
+        type: string
+        description: Title of the invoice
+        empty: true
+      IS_CANCELED:
+        type: string
+        description: Flag indicating if the invoice is canceled
+      ITEMS:
+        type:
+          - "null"
+          - array
+        description: Items included in the invoice
+        items:
+          type: object
+          properties:
+            ARTICLE_NUMBER:
+              type: string
+              description: Article number
+            CATEGORY:
+              type:
+                - "null"
+                - array
+              description: Category of the item
+              items: {}
+            CATEGORY_ID:
+              type:
+                - "null"
+                - array
+              description: Category ID
+              items: {}
+            COMPLETE_GROSS:
+              type: number
+              description: Total gross amount for the item
+            COMPLETE_NET:
+              type: number
+              description: Total net amount for the item
+            DESCRIPTION:
+              type: string
+              description: Description of the item
+              empty: true
+            INVOICE_ITEM_ID:
+              type: integer
+              description: Invoice item ID
+            QUANTITY:
+              type: integer
+              description: Quantity of the item
+            SORT_ORDER:
+              type: integer
+              description: Order in which the item appears
+            UNIT_PRICE:
+              type: number
+              description: Unit price of the item
+            VAT_PERCENT:
+              type: integer
+              description: VAT percentage for the item
+            VAT_VALUE:
+              type: number
+              description: VAT value for the item
+      LASTUPDATE:
+        type: string
+        description: Last update date
+      LAST_NAME:
+        type: string
+        description: Customer's last name
+        empty: true
+      NOTE:
+        type: string
+        description: Additional note
+        empty: true
+      ORGANIZATION:
+        type: string
+        description: Customer's organization
+        empty: true
+      PAID_DATE:
+        type: string
+        description: Date when the invoice was paid
+      PAYMENTS:
+        type:
+          - "null"
+          - array
+        description: Payment details
+        items:
+          description: Individual payment details
+      PAYMENT_INFO:
+        type: string
+        description: Payment information
+      PAYMENT_TYPE:
+        type: string
+        description: Type of payment
+        empty: true
+      PROJECT_ID:
+        type: string
+        description: Project ID
+      SALUTATION:
+        type: string
+        description: Salutation for the customer
+        empty: true
+      SERVICE_PERIOD_END:
+        type: string
+        description: End date of the service period
+      SERVICE_PERIOD_START:
+        type: string
+        description: Start date of the service period
+      SUB_TOTAL:
+        type: number
+        description: Subtotal amount
+      TEMPLATE_ID:
+        type: string
+        description: Template ID
+        empty: true
+      TOTAL:
+        type: number
+        description: Total amount
+      TYPE:
+        type: string
+        description: Type of the invoice
+      VAT_CASE:
+        type: string
+        description: VAT case
+      VAT_ID:
+        type: string
+        description: VAT ID
+      VAT_ITEMS:
+        type:
+          - "null"
+          - array
+        description: VAT details for items
+        items:
+          type: object
+          properties:
+            COMPLETE_NET:
+              type: number
+              description: Total net amount for VAT
+            VAT_PERCENT:
+              type: integer
+              description: VAT percentage
+            VAT_VALUE:
+              type: number
+              description: VAT value
+      VAT_TOTAL:
+        type: number
+        description: Total VAT amount
+      ZIPCODE:
+        type: string
+        description: Customer's ZIP code
+        empty: true
+  recurring_invoices:
+    type:
+      - object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      ADDRESS:
+        type:
+          - "null"
+          - string
+        description: Customer's street address
+        empty: true
+      ADDRESS_2:
+        type:
+          - "null"
+          - string
+        description: Additional address information
+        empty: true
+      BANK_ACCOUNT_NUMBER:
+        type:
+          - "null"
+          - string
+        description: Customer's bank account number
+        empty: true
+      BANK_ACCOUNT_OWNER:
+        type:
+          - "null"
+          - string
+        description: Owner's name of the bank account
+        empty: true
+      BANK_BIC:
+        type:
+          - "null"
+          - string
+        description: Bank Identifier Code
+        empty: true
+      BANK_CODE:
+        type:
+          - "null"
+          - string
+        description: Bank code or routing number
+        empty: true
+      BANK_IBAN:
+        type:
+          - "null"
+          - string
+        description: International Bank Account Number
+        empty: true
+      BANK_NAME:
+        type:
+          - "null"
+          - string
+        description: Name of the customer's bank
+        empty: true
+      CASH_DISCOUNT_DAYS:
+        type:
+          - "null"
+          - string
+        description: Number of days for cash discount
+      CASH_DISCOUNT_PERCENT:
+        type:
+          - "null"
+          - string
+        description: Percentage of cash discount
+      CITY:
+        type:
+          - "null"
+          - string
+        description: Customer's city
+        empty: true
+      CONTACT_ID:
+        type:
+          - "null"
+          - string
+        description: Contact ID of the customer
+      CURRENCY_CODE:
+        type:
+          - "null"
+          - string
+        description: Currency code used for the invoice
+      CUSTOMER_COSTCENTER_ID:
+        type:
+          - "null"
+          - string
+        description: Customer's cost center ID
+      CUSTOMER_ID:
+        type:
+          - "null"
+          - string
+        description: Unique ID of the customer
+      CUSTOMER_NUMBER:
+        type:
+          - "null"
+          - string
+        description: Customer's unique identification number
+      DELIVERY_DATE:
+        type:
+          - "null"
+          - string
+        description: Date of delivery
+      EMAIL_NOTIFY:
+        type:
+          - "null"
+          - string
+        description: Flag to indicate if customer was notified via email
+      FIRST_NAME:
+        type:
+          - "null"
+          - string
+        description: Customer's first name
+        empty: true
+      FREQUENCY:
+        type:
+          - "null"
+          - string
+        description: Frequency of the recurring invoice
+      INTROTEXT:
+        type:
+          - "null"
+          - string
+        description: Introduction text for the invoice
+        empty: true
+      INVOICE_ID:
+        type:
+          - string
+        description: Unique ID of the invoice
+      INVOICE_TITLE:
+        type:
+          - "null"
+          - string
+        description: Title of the invoice
+      ITEMS:
+        type:
+          - "null"
+          - array
+        description: List of items in the invoice
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            ARTICLE_NUMBER:
+              type:
+                - "null"
+                - string
+              description: Article number of the item
+            CATEGORY:
+              type:
+                - "null"
+                - string
+                - array
+              description: Category of the item
+              empty: true
+              items: {}
+            CATEGORY_ID:
+              type:
+                - "null"
+                - integer
+                - array
+              description: Unique ID of the category
+              items: {}
+            COMPLETE_GROSS:
+              type:
+                - "null"
+                - number
+              description: Total gross amount of the item
+            COMPLETE_NET:
+              type:
+                - "null"
+                - number
+              description: Total net amount of the item
+            DESCRIPTION:
+              type:
+                - "null"
+                - string
+              description: Description of the item
+            INVOICE_ITEM_ID:
+              type:
+                - "null"
+                - number
+              description: Unique ID of the invoice item
+            QUANTITY:
+              type:
+                - "null"
+                - number
+              description: Quantity of the item
+            SORT_ORDER:
+              type:
+                - "null"
+                - number
+              description: Order in which the item appears
+            UNIT_PRICE:
+              type:
+                - "null"
+                - number
+              description: Price per unit of the item
+            VAT_PERCENT:
+              type:
+                - "null"
+                - number
+              description: VAT percentage applied to the item
+            VAT_VALUE:
+              type:
+                - "null"
+                - number
+              description: VAT value of the item
+      LAST_NAME:
+        type:
+          - "null"
+          - string
+        description: Customer's last name
+        empty: true
+      NOTE:
+        type:
+          - "null"
+          - string
+        description: Additional notes or comments
+        empty: true
+      OCCURENCES:
+        type:
+          - "null"
+          - string
+        description: Number of occurrences for the recurring invoice
+      ORGANIZATION:
+        type:
+          - "null"
+          - string
+        description: Customer's organization
+        empty: true
+      OUTPUT_TYPE:
+        type:
+          - "null"
+          - string
+        description: Output format type
+      PAYMENT_TYPE:
+        type:
+          - "null"
+          - string
+        description: Payment method type
+      PROJECT_ID:
+        type:
+          - "null"
+          - string
+        description: ID of the associated project
+      SALUTATION:
+        type:
+          - "null"
+          - string
+        description: Customer's salutation
+        empty: true
+      SERVICE_PERIOD_END:
+        type:
+          - "null"
+          - string
+        description: End date of the service period
+      SERVICE_PERIOD_START:
+        type:
+          - "null"
+          - string
+        description: Start date of the service period
+      START_DATE:
+        type:
+          - "null"
+          - string
+        description: Start date of the recurring invoice
+      SUB_TOTAL:
+        type:
+          - "null"
+          - number
+        description: Total amount before tax
+      TEMPLATE_ID:
+        type:
+          - "null"
+          - string
+        description: Unique ID of the template used for the invoice
+        empty: true
+      TOTAL:
+        type:
+          - "null"
+          - number
+        description: Total amount including tax
+      TYPE:
+        type:
+          - "null"
+          - string
+        description: Type of the recurring invoice
+      VAT_CASE:
+        type:
+          - "null"
+          - string
+        description: VAT case type
+      VAT_ITEMS:
+        type:
+          - "null"
+          - array
+        description: List of VAT items in the invoice
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            COMPLETE_NET:
+              type:
+                - "null"
+                - number
+              description: Total net amount of the VAT item
+            VAT_PERCENT:
+              type:
+                - "null"
+                - number
+              description: VAT percentage for the VAT item
+            VAT_VALUE:
+              type:
+                - "null"
+                - number
+              description: VAT value of the VAT item
+      VAT_TOTAL:
+        type:
+          - "null"
+          - number
+        description: Total VAT amount
+      ZIPCODE:
+        type:
+          - "null"
+          - string
+        description: Customer's ZIP code
+        empty: true
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      ARTICLE_ID:
+        type: string
+        description: Unique identifier for the product article.
+      ARTICLE_NUMBER:
+        type: string
+        description: Identification number for the product article.
+      CURRENCY_CODE:
+        type: string
+        description: The currency code used for the price of the product article.
+      DESCRIPTION:
+        type: string
+        description: Detailed description of the product article.
+        empty: true
+      IS_GROSS:
+        type: number
+        description: Indicates whether the price is gross or net (inclusive of tax).
+      TAGS:
+        type:
+          - string
+          - "null"
+        description: Tags associated with the product article.
+        empty: true
+      TITLE:
+        type: string
+        description: Title or name of the product article.
+      UNIT:
+        type: string
+        description: Unit of measurement for the product article (e.g., piece, kg).
+      UNIT_PRICE:
+        type: string
+        description: Price per unit of the product article.
+      VAT_PERCENT:
+        type: string
+        description: >-
+          The percentage of Value Added Tax applied to the product article
+          price.
+  revenues:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      ADDRESS:
+        type:
+          - "null"
+          - string
+        description: Customer's street address
+        empty: true
+      ADDRESS_2:
+        type:
+          - "null"
+          - string
+        description: Additional address information (e.g., apartment number)
+        empty: true
+      BANK_ACCOUNT_NUMBER:
+        type:
+          - "null"
+          - string
+        description: Customer's bank account number
+        empty: true
+      BANK_ACCOUNT_OWNER:
+        type:
+          - "null"
+          - string
+        description: The name of the bank account owner
+        empty: true
+      BANK_BIC:
+        type:
+          - "null"
+          - string
+        description: Bank Identifier Code for the customer's bank
+        empty: true
+      BANK_CODE:
+        type:
+          - "null"
+          - string
+        description: Bank code for the customer's bank
+        empty: true
+      BANK_IBAN:
+        type:
+          - "null"
+          - string
+        description: International Bank Account Number (IBAN)
+        empty: true
+      BANK_NAME:
+        type:
+          - "null"
+          - string
+        description: Name of the customer's bank
+        empty: true
+      CASH_DISCOUNT_DAYS:
+        type:
+          - "null"
+          - string
+        description: Number of days within which cash discount can be availed
+      CASH_DISCOUNT_PERCENT:
+        type:
+          - "null"
+          - string
+        description: Percentage of cash discount available on the invoice
+      CITY:
+        type:
+          - "null"
+          - string
+        description: City where the customer is located
+        empty: true
+      CONTACT_ID:
+        type:
+          - "null"
+          - string
+        description: ID of the contact associated with the invoice
+      COUNTRY_CODE:
+        type:
+          - "null"
+          - string
+        description: Country code of the customer's location
+      CURRENCY_CODE:
+        type:
+          - "null"
+          - string
+        description: Currency code used for the invoice
+      CUSTOMER_COSTCENTER_ID:
+        type:
+          - "null"
+          - string
+        description: ID of the cost center associated with the customer
+      CUSTOMER_ID:
+        type:
+          - "null"
+          - string
+        description: Unique ID of the customer
+      CUSTOMER_NUMBER:
+        type:
+          - "null"
+          - string
+        description: Customer's identification number
+      DELIVERY_DATE:
+        type:
+          - "null"
+          - string
+        description: Date when the invoice delivery is scheduled
+      DOCUMENT_URL:
+        type:
+          - "null"
+          - string
+        description: URL link to access the invoice document
+      DUE_DATE:
+        type:
+          - "null"
+          - string
+        description: Due date for payment of the invoice
+      FIRST_NAME:
+        type:
+          - "null"
+          - string
+        description: Customer's first name
+        empty: true
+      INTROTEXT:
+        type:
+          - "null"
+          - string
+        description: Introduction text for the invoice
+        empty: true
+      INVOICE_DATE:
+        type:
+          - "null"
+          - string
+        description: Date when the invoice was issued
+      INVOICE_ID:
+        type:
+          - string
+        description: Unique ID of the invoice
+      INVOICE_NUMBER:
+        type:
+          - "null"
+          - string
+        description: Unique number assigned to the invoice
+      INVOICE_TITLE:
+        type:
+          - "null"
+          - string
+        description: Title or subject of the invoice
+        empty: true
+      IS_CANCELED:
+        type:
+          - "null"
+          - string
+        description: Indicates if the invoice is canceled
+      ITEMS:
+        type:
+          - array
+          - "null"
+        description: Contains information about the items related to the revenues data.
+        items:
+          type: object
+          properties:
+            ARTICLE_NUMBER:
+              type:
+                - "null"
+                - string
+              description: Unique number assigned to the item
+            CATEGORY:
+              type:
+                - "null"
+                - array
+                - string
+              description: Category to which the item belongs
+              empty: true
+            CATEGORY_ID:
+              type:
+                - "null"
+                - array
+                - integer
+              description: ID of the category to which the item belongs
+            COMPLETE_GROSS:
+              type:
+                - "null"
+                - number
+              description: Total gross amount for the item
+            COMPLETE_NET:
+              type:
+                - "null"
+                - integer
+              description: Total net amount for the item
+            DESCRIPTION:
+              type:
+                - "null"
+                - string
+              description: Description of the item
+            INVOICE_ITEM_ID:
+              type:
+                - "null"
+                - integer
+              description: Unique ID of the invoice item
+            QUANTITY:
+              type:
+                - "null"
+                - integer
+              description: Quantity of the item
+            SORT_ORDER:
+              type:
+                - "null"
+                - integer
+              description: Order in which the item appears in the invoice
+            UNIT_PRICE:
+              type:
+                - "null"
+                - integer
+              description: Price per unit of the item
+            VAT_PERCENT:
+              type:
+                - "null"
+                - integer
+              description: VAT percentage applicable to the item
+            VAT_VALUE:
+              type:
+                - "null"
+                - number
+              description: VAT amount for the item
+      LASTUPDATE:
+        type:
+          - "null"
+          - string
+        description: Date of the last update made to the invoice
+      LAST_NAME:
+        type:
+          - "null"
+          - string
+        description: Customer's last name
+        empty: true
+      NOTE:
+        type:
+          - "null"
+          - string
+        description: Additional notes or comments related to the invoice
+        empty: true
+      ORGANIZATION:
+        type:
+          - "null"
+          - string
+        description: Name of the customer's organization
+        empty: true
+      PAID_DATE:
+        type:
+          - "null"
+          - string
+        description: Date when the invoice was paid
+      PAYMENTS:
+        type:
+          - "null"
+          - array
+        description: >-
+          Contains details of the payments made corresponding to the revenues
+          data.
+        items:
+          AMOUNT:
+            type:
+              - string
+              - "null"
+            description: Amount of the payment
+          CURRENCY_CODE:
+            type:
+              - string
+              - "null"
+            description: Currency code of the payment
+          DATE:
+            type:
+              - string
+              - "null"
+            description: Date when the payment was made
+          NOTE:
+            type:
+              - string
+              - "null"
+            description: Any additional notes related to the payment
+            empty: true
+          PAYMENT_ID:
+            type:
+              - string
+              - "null"
+            description: Unique ID of the payment
+          TYPE:
+            type:
+              - string
+              - "null"
+            description: Type of payment (e.g., credit card, bank transfer)
+      PAYMENT_INFO:
+        type:
+          - "null"
+          - string
+        description: Information related to the payment
+      PAYMENT_TYPE:
+        type:
+          - "null"
+          - string
+        description: Type of payment (e.g., partial, full)
+        empty: true
+      PROJECT_ID:
+        type:
+          - "null"
+          - string
+        description: ID of the project associated with the invoice
+      SALUTATION:
+        type:
+          - "null"
+          - string
+        description: Salutation used for addressing the customer (Mr., Ms.)
+        empty: true
+      SERVICE_PERIOD_END:
+        type:
+          - "null"
+          - string
+        description: End date of the service period covered by the invoice
+        empty: true
+      SERVICE_PERIOD_START:
+        type:
+          - "null"
+          - string
+        description: Start date of the service period covered by the invoice
+        empty: true
+      SUB_TOTAL:
+        type:
+          - "null"
+          - integer
+        description: Subtotal amount before applying taxes or discounts
+      TEMPLATE_ID:
+        type:
+          - "null"
+          - string
+        description: ID of the template used for generating the invoice
+        empty: true
+      TOTAL:
+        type:
+          - number
+          - "null"
+        description: Total amount including all taxes and discounts
+      TYPE:
+        type:
+          - "null"
+          - string
+        description: Type of the invoice (e.g., sales, service)
+      VAT_CASE:
+        type:
+          - "null"
+          - string
+        description: VAT case type (e.g., domestic, intra-community)
+      VAT_ID:
+        type:
+          - "null"
+          - string
+        description: VAT identification number
+      VAT_ITEMS:
+        type:
+          - array
+          - "null"
+        description: >-
+          Includes VAT (Value Added Tax) related items associated with the
+          revenues data.
+        items:
+          type: object
+          properties:
+            COMPLETE_NET:
+              type:
+                - "null"
+                - integer
+              description: Total net amount for the VAT item
+            VAT_PERCENT:
+              type:
+                - "null"
+                - integer
+              description: VAT percentage for the VAT item
+            VAT_VALUE:
+              type:
+                - "null"
+                - number
+              description: VAT value for the VAT item
+      VAT_TOTAL:
+        type:
+          - "null"
+          - number
+        description: Total VAT amount for the invoice
+      ZIPCODE:
+        type:
+          - "null"
+          - string
+        description: Zip code of the customer's location
+        empty: true
+  customers:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      ACADEMIC_DEGREE:
+        type: string
+        description: Academic degree of the customer
+        empty: true
+      ADDRESS:
+        type: string
+        description: Primary address of the customer
+        empty: true
+      ADDRESS_2:
+        type: string
+        description: Secondary address of the customer
+        empty: true
+      BANK_ACCOUNT_MANDATE_REFERENCE:
+        type: string
+        description: Reference for the bank account mandate
+        empty: true
+      BANK_ACCOUNT_NUMBER:
+        type: string
+        description: Bank account number
+        empty: true
+      BANK_ACCOUNT_OWNER:
+        type: string
+        description: Owner of the bank account
+        empty: true
+      BANK_BIC:
+        type: string
+        description: Bank Identification Code
+        empty: true
+      BANK_CODE:
+        type: string
+        description: Bank code associated with the bank account
+        empty: true
+      BANK_IBAN:
+        type: string
+        description: International Bank Account Number
+        empty: true
+      BANK_NAME:
+        type: string
+        description: Name of the bank
+        empty: true
+      CITY:
+        type: string
+        description: City of the customer
+        empty: true
+      COUNTRY_CODE:
+        type: string
+        description: Country code of the customer
+      CREATED:
+        type: string
+        description: Date and time when the customer record was created
+        format: date-time
+      CURRENCY_CODE:
+        type: string
+        description: Currency code used for transactions
+      CUSTOMER_ACCOUNT:
+        type: string
+        description: Customer account details
+        empty: true
+      CUSTOMER_ID:
+        type: string
+        description: Unique identifier for the customer
+      CUSTOMER_NUMBER:
+        type: string
+        description: Customer number for identification
+      CUSTOMER_TYPE:
+        type: string
+        description: Type of customer
+        empty: true
+      DAYS_FOR_PAYMENT:
+        type: string
+        description: Number of days allowed for payment
+        empty: true
+      DOCUMENT_HISTORY_URL:
+        type: string
+        description: URL for customer's document history
+        empty: true
+      EMAIL:
+        type: string
+        description: Email address of the customer
+        empty: true
+      FAX:
+        type: string
+        description: Fax number of the customer
+        empty: true
+      FIRST_NAME:
+        type: string
+        description: First name of the customer
+        empty: true
+      LASTUPDATE:
+        type: string
+        description: Last update timestamp for the customer record
+      LAST_NAME:
+        type: string
+        description: Last name of the customer
+        empty: true
+      MOBILE:
+        type: string
+        description: Mobile phone number of the customer
+        empty: true
+      NEWSLETTER_OPTIN:
+        type: string
+        description: Opt-in status for receiving newsletters
+        empty: true
+      ORGANIZATION:
+        type: string
+        description: Organization or company name
+        empty: true
+      PAYMENT_TYPE:
+        type: string
+        description: Payment type preferred by the customer
+        empty: true
+      PHONE:
+        type: string
+        description: Primary phone number of the customer
+        empty: true
+      PHONE_2:
+        type: string
+        description: Secondary phone number of the customer
+        empty: true
+      POSITION:
+        type: string
+        description: Position or job title of the customer
+        empty: true
+      SALUTATION:
+        type: string
+        description: Salutation used when addressing the customer
+        empty: true
+      SECONDARY_ADDRESS:
+        type: string
+        description: Secondary address details
+        empty: true
+      SHOW_PAYMENT_NOTICE:
+        type: string
+        description: Flag indicating whether payment notice should be displayed
+        empty: true
+      TAGS:
+        type: string
+        description: Tags or labels associated with the customer
+        empty: true
+      TOP:
+        type: string
+        description: Top level customer identifier
+        empty: true
+      VAT_ID:
+        type: string
+        description: Value Added Tax (VAT) identification number
+      WEBSITE:
+        type: string
+        description: Website URL of the customer
+        empty: true
+      ZIPCODE:
+        type: string
+        description: ZIP or postal code of the customer
+        empty: true

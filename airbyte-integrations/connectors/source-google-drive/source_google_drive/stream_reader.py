@@ -6,27 +6,56 @@
 import io
 import json
 import logging
+import os
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from os.path import getsize
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-from airbyte_cdk import AirbyteTracedException, FailureType
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
+
+from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
+from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
+from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
 from .spec import SourceGoogleDriveSpec
+
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
-EXPORTABLE_DOCUMENTS_MIME_TYPES = [
-    GOOGLE_DOC_MIME_TYPE,
-    "application/vnd.google-apps.presentation",
-    "application/vnd.google-apps.drawing",
-]
+GOOGLE_PRESENTATION_MIME_TYPE = "application/vnd.google-apps.presentation"
+GOOGLE_SPREADSHEET_MIME_TYPE = "application/vnd.google-apps.spreadsheet"
+GOOGLE_DRAWING_MIME_TYPE = "application/vnd.google-apps.drawing"
+EXPORTABLE_DOCUMENTS_MIME_TYPES = [GOOGLE_DOC_MIME_TYPE, GOOGLE_PRESENTATION_MIME_TYPE, GOOGLE_DRAWING_MIME_TYPE]
+
+EXPORT_MEDIA_MIME_TYPE_DOC = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+EXPORT_MEDIA_MIME_TYPE_SPREADSHEET = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+EXPORT_MEDIA_MIME_TYPE_PRESENTATION = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+EXPORT_MEDIA_MIME_TYPE_PDF = "application/pdf"
+
+# This key is used to relate the required mimeType parameter for export_media() method
+EXPORT_MEDIA_MIME_TYPE_KEY = "exportable_mime_type"
+DOCUMENT_FILE_EXTENSION_KEY = "document_file_extension"
+
+DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
+    GOOGLE_DOC_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_DOC, DOCUMENT_FILE_EXTENSION_KEY: ".docx"},
+    GOOGLE_SPREADSHEET_MIME_TYPE: {
+        EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_SPREADSHEET,
+        DOCUMENT_FILE_EXTENSION_KEY: ".xlsx",
+    },
+    GOOGLE_PRESENTATION_MIME_TYPE: {
+        EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PRESENTATION,
+        DOCUMENT_FILE_EXTENSION_KEY: ".pptx",
+    },
+    GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
+}
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -34,9 +63,21 @@ class GoogleDriveRemoteFile(RemoteFile):
     # The mime type of the file as returned by the Google Drive API
     # This is not the same as the mime type when opened by the parser (e.g. google docs is exported as docx)
     original_mime_type: str
+    view_link: str
+    # Only populated for items in shared drives.
+    drive_id: Optional[str] = None
+    created_at: datetime
+
+    @property
+    def url(self) -> str:
+        if self.drive_id:
+            return f"https://drive.google.com/open?id={self.id}&driveId={self.drive_id}"
+        return self.view_link
 
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
+    FILE_SIZE_LIMIT = 1_500_000_000
+
     def __init__(self):
         super().__init__()
         self._drive_service = None
@@ -59,27 +100,33 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceGoogleDriveSpec)
         self._config = value
 
-    @property
-    def google_drive_service(self):
+    def _build_google_service(self, service_name: str, version: str, scopes: List[str] = None):
         if self.config is None:
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
-            raise ValueError("Source config is missing; cannot create the Google Drive client.")
+            raise ValueError(f"Source config is missing; cannot create the Google {service_name} client.")
         try:
-            if self._drive_service is None:
-                if self.config.credentials.auth_type == "Client":
-                    creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
-                else:
-                    creds = service_account.Credentials.from_service_account_info(json.loads(self.config.credentials.service_account_info))
-                self._drive_service = build("drive", "v3", credentials=creds)
+            if self.config.credentials.auth_type == "Client":
+                creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
+            else:
+                creds = service_account.Credentials.from_service_account_info(
+                    json.loads(self.config.credentials.service_account_info), scopes=scopes
+                )
+            google_service = build(service_name, version, credentials=creds)
         except Exception as e:
             raise AirbyteTracedException(
                 internal_message=str(e),
-                message="Could not authenticate with Google Drive. Please check your credentials.",
+                message=f"Could not authenticate with Google {service_name}. Please check your credentials.",
                 failure_type=FailureType.config_error,
                 exception=e,
             )
 
+        return google_service
+
+    @property
+    def google_drive_service(self):
+        if self._drive_service is None:
+            self._drive_service = self._build_google_service("drive", "v3")
         return self._drive_service
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
@@ -97,10 +144,11 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             (path, folder_id) = folder_id_queue.pop()
             # fetch all files in this folder (1000 is the max page size)
             # supportsAllDrives and includeItemsFromAllDrives are required to access files in shared drives
+            # ref https://developers.google.com/workspace/drive/api/reference/rest/v3/files#File
             request = service.files().list(
                 q=f"'{folder_id}' in parents",
                 pageSize=1000,
-                fields="nextPageToken, files(id, name, modifiedTime, mimeType)",
+                fields="nextPageToken, files(id, name, modifiedTime, mimeType, webViewLink, driveId, createdTime)",
                 supportsAllDrives=True,
                 includeItemsFromAllDrives=True,
             )
@@ -123,6 +171,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         continue
                     else:
                         last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                        created_at = datetime.strptime(new_file["createdTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
                         original_mime_type = new_file["mimeType"]
                         mime_type = (
                             self._get_export_mime_type(original_mime_type)
@@ -132,9 +181,12 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         remote_file = GoogleDriveRemoteFile(
                             uri=file_name,
                             last_modified=last_modified,
+                            created_at=created_at,
                             id=new_file["id"],
                             original_mime_type=original_mime_type,
                             mime_type=mime_type,
+                            drive_id=new_file.get("driveId"),
+                            view_link=new_file.get("webViewLink"),
                         )
                         if self.file_matches_globs(remote_file, globs):
                             yield remote_file
@@ -146,6 +198,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         """
         Returns true if the given file is a Google App document that can be exported.
         """
+        if self.use_file_transfer():
+            return mime_type in DOWNLOADABLE_DOCUMENTS_MIME_TYPES
         return mime_type in EXPORTABLE_DOCUMENTS_MIME_TYPES
 
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
@@ -176,10 +230,100 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def _get_export_mime_type(self, original_mime_type: str):
         """
         Returns the mime type to export Google App documents as.
-
-        Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
         """
+        if self.use_file_transfer():
+            return DOWNLOADABLE_DOCUMENTS_MIME_TYPES[original_mime_type][EXPORT_MEDIA_MIME_TYPE_KEY]
+
         if original_mime_type.startswith(GOOGLE_DOC_MIME_TYPE):
+            # Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
             return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         else:
             return "application/pdf"
+
+    def file_size(self, file: GoogleDriveRemoteFile) -> int:
+        """
+        Retrieves the size of a file in Google Drive.
+
+        Args:
+            file (RemoteFile): The file to get the size for.
+
+        Returns:
+            int: The file size in bytes.
+        ref: https://developers.google.com/drive/api/reference/rest/v3/files/get
+        """
+        try:
+            file_metadata = self.google_drive_service.files().get(fileId=file.id, fields="size", supportsAllDrives=True).execute()
+            return int(file_metadata["size"])
+        except KeyError:
+            raise ErrorFetchingMetadata(f"Size was expected in metadata response but was missing")
+        except Exception as e:
+            raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
+
+    def upload(
+        self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+        """
+        Downloads a file from Google Drive to a specified local directory.
+
+        Args:
+            file (RemoteFile): The file to download, containing its Google Drive ID.
+            local_directory (str): The local directory to save the file.
+            logger (logging.Logger): Logger for debugging and information.
+
+        Returns:
+            Dict[str, str | int]: Contains the local file path and file size in bytes.
+        ref: https://developers.google.com/drive/api/guides/manage-downloads#python
+        """
+        file_size = self.file_size(file)
+        # I'm putting this check here so we can remove the safety wheels per connector when ready.
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
+        try:
+            file_paths = self._get_file_transfer_paths(source_file_relative_path=file.uri, staging_directory=local_directory)
+            local_file_path = file_paths[self.LOCAL_FILE_PATH]
+            file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
+            file_name = file_paths[self.FILE_NAME]
+
+            if self._is_exportable_document(file.original_mime_type):
+                request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
+
+                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
+                local_file_path += file_extension
+                file_relative_path += file_extension
+                file_name += file_extension
+            else:
+                request = self.google_drive_service.files().get_media(fileId=file.id)
+
+            with open(local_file_path, "wb") as local_file:
+                downloader = MediaIoBaseDownload(local_file, request)
+                done = False
+                while not done:
+                    status, done = downloader.next_chunk(num_retries=5)
+                    progress = status.resumable_progress / status.total_size * 100 if status.total_size else 0
+                    logger.info(f"Processing file {file.uri}, progress: {progress:.2f}%")
+
+            logger.info(f"Finished uploading file {file.uri} to {local_file_path}")
+            # native google objects seems to be reporting lower size through the api than the final download size
+            file_size = getsize(local_file_path)
+
+            file_record_data = FileRecordData(
+                folder=file_paths[self.FILE_FOLDER],
+                file_name=file_name,
+                bytes=file_size,
+                id=file.id,
+                mime_type=file.mime_type,
+                created_at=file.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                updated_at=file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                source_uri=file.url,
+            )
+            file_reference = AirbyteRecordMessageFileReference(
+                staging_file_url=local_file_path,
+                source_file_relative_path=file_relative_path,
+                file_size_bytes=file_size,
+            )
+            return file_record_data, file_reference
+
+        except Exception as e:
+            raise ErrorDownloadingFile(f"There was an error while trying to download the file {file.uri}: {str(e)}")

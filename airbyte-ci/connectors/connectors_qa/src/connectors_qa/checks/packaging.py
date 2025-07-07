@@ -3,9 +3,10 @@
 import semver
 import toml
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
+from pydash.objects import get  # type: ignore
+
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
-from pydash.objects import get  # type: ignore
 
 
 class PackagingCheck(Check):
@@ -42,8 +43,8 @@ class CheckConnectorUsesPoetry(PackagingCheck):
         )
 
 
-class CheckPublishToPyPiIsEnabled(PackagingCheck):
-    name = "Python connectors must have PyPi publishing enabled"
+class CheckPublishToPyPiIsDeclared(PackagingCheck):
+    name = "Python connectors must have PyPi publishing declared."
     description = f"Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `{consts.METADATA_FILE_NAME}` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in {consts.METADATA_FILE_NAME}. This is to ensure that all connectors can be published to PyPi and can be used in `PyAirbyte`."
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
@@ -52,14 +53,14 @@ class CheckPublishToPyPiIsEnabled(PackagingCheck):
     applies_to_connector_types = ["source"]
 
     def _run(self, connector: Connector) -> CheckResult:
-        publish_to_pypi_is_enabled = get(connector.metadata, "remoteRegistries.pypi.enabled", False)
-        if not publish_to_pypi_is_enabled:
+        publish_to_pypi_is_enabled = get(connector.metadata, "remoteRegistries.pypi.enabled")
+        if publish_to_pypi_is_enabled is None:
             return self.create_check_result(
                 connector=connector,
                 passed=False,
-                message=f"PyPi publishing is not enabled. Please enable it in the {consts.METADATA_FILE_NAME} file",
+                message=f"PyPi publishing is not declared. Please set it in the {consts.METADATA_FILE_NAME} file",
             )
-        return self.create_check_result(connector=connector, passed=True, message="PyPi publishing is enabled")
+        return self.create_check_result(connector=connector, passed=True, message="PyPi publishing is declared")
 
 
 class CheckManifestOnlyConnectorBaseImage(PackagingCheck):
@@ -234,6 +235,6 @@ ENABLED_CHECKS = [
     CheckConnectorLicenseMatchInPyproject(),
     CheckVersionFollowsSemver(),
     CheckConnectorVersionMatchInPyproject(),
-    CheckPublishToPyPiIsEnabled(),
+    CheckPublishToPyPiIsDeclared(),
     CheckManifestOnlyConnectorBaseImage(),
 ]

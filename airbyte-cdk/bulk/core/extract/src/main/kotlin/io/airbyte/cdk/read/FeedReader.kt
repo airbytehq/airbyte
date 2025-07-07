@@ -3,9 +3,15 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Clock
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.toKotlinDuration
@@ -28,8 +34,26 @@ import kotlinx.coroutines.withTimeout
 class FeedReader(
     val root: RootReader,
     val feed: Feed,
+    val resourceAcquirer: ResourceAcquirer,
+    val dataChannelFormat: DataChannelFormat,
+    val dataChannelMedium: DataChannelMedium,
+    val bufferByteSizeThresholdForFlush: Int,
+    val clock: Clock,
 ) {
     private val log = KotlinLogging.logger {}
+
+    private val stateId: AtomicInteger = AtomicInteger(1)
+    private val feedBootstrap: FeedBootstrap<*> =
+        FeedBootstrap.create(
+            root.outputConsumer,
+            root.metaFieldDecorator,
+            root.stateManager,
+            feed,
+            dataChannelFormat,
+            dataChannelMedium,
+            bufferByteSizeThresholdForFlush,
+            clock
+        )
 
     /** Reads records from this [feed]. */
     suspend fun read() {
@@ -41,10 +65,11 @@ class FeedReader(
                 log.info {
                     "no more partitions to read for '${feed.label}' in round $partitionsCreatorID"
                 }
-                // Publish a checkpoint if applicable.
-                maybeCheckpoint()
                 // Publish stream completion.
                 root.streamStatusManager.notifyComplete(feed)
+                // Publish a checkpoint if applicable.
+                maybeCheckpoint(true)
+
                 break
             }
             // Launch coroutines which read from each partition.
@@ -73,7 +98,7 @@ class FeedReader(
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
                 log.info { "Attempting bootstrap using ${factory::class}." }
-                return@run factory.make(root.stateManager, feed) ?: continue
+                return@run factory.make(feedBootstrap) ?: continue
             }
             throw SystemErrorException(
                 "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
@@ -196,7 +221,14 @@ class FeedReader(
         }
         var checkpoint: PartitionReadCheckpoint
         try {
-            withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            if (partitionReader is UnlimitedTimePartitionReader) {
+                partitionReader.run()
+            } else {
+                log.info {
+                    "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
+                }
+                withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            }
             log.info {
                 "completed reading partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"
@@ -278,9 +310,22 @@ class FeedReader(
                         "processing result (success = ${pendingResult.isSuccess}) from reading " +
                             label(pendingPartitionReaderID)
                     }
-                    val (opaqueStateValue: OpaqueStateValue, numRecords: Long) =
+                    val (
+                        opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?
+                    ) =
                         pendingResult.getOrThrow()
-                    root.stateManager.scoped(feed).set(opaqueStateValue, numRecords)
+                    root.stateManager
+                        .scoped(feed)
+                        .set(
+                            opaqueStateValue,
+                            numRecords,
+                            partitionId,
+                            when (dataChannelMedium) {
+                                // State messages in SOCKET mode have an incrementing integer ID.
+                                DataChannelMedium.SOCKET -> stateId.getAndIncrement()
+                                DataChannelMedium.STDIO -> null
+                            }
+                        )
                     log.info {
                         "updated state of '${feed.label}', moved it $numRecords record(s) forward"
                     }
@@ -289,7 +334,7 @@ class FeedReader(
                 }
             } finally {
                 // Publish a checkpoint if applicable.
-                maybeCheckpoint()
+                maybeCheckpoint(false)
             }
         }
     }
@@ -297,14 +342,89 @@ class FeedReader(
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
-    private fun maybeCheckpoint() {
+    // Acquires resources for the OutputMessageRouter and executes the provided action with it
+    private fun doWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
+        val acquiredSocket: SocketResource.AcquiredSocket =
+            resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET)
+                as? SocketResource.AcquiredSocket
+                ?: throw IllegalStateException("No output socket available for checkpoint.")
+        acquiredSocket.use {
+            OutputMessageRouter(
+                    feedBootstrap.dataChannelMedium,
+                    feedBootstrap.dataChannelFormat,
+                    feedBootstrap.outputConsumer,
+                    emptyMap(),
+                    feedBootstrap,
+                    mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
+                )
+                .use { doWithRouter(it) }
+        }
+    }
+
+    // In STDIO mode (legacy) we emit state messages to standard output.
+    // In SOCKET mode we emil state messages to stadard output and also states and stream statuses
+    // are sent over sockets,
+    // According to the configured format (json or protobuf).
+    // This function emit to stdout and also uses running partition readers to emit pending states
+    // and stream statuses.
+    // Finally when all readers are done, it acquires socket resource and use it to emit the pending
+    // states and stream statuses.
+    private fun maybeCheckpoint(finalCheckpoint: Boolean) {
         val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
-        if (stateMessages.isEmpty()) {
+        if (stateMessages.isEmpty() && PartitionReader.pendingStates.isEmpty()) {
             return
         }
+
+        // Old flow - checkpoint state messages to stdout
+        if (dataChannelMedium == DataChannelMedium.STDIO) {
+            log.info { "checkpoint of ${stateMessages.size} state message(s)" }
+            for (stateMessage in stateMessages) {
+                root.outputConsumer.accept(stateMessage)
+            }
+            return
+        }
+        // New flow
+
         log.info { "checkpoint of ${stateMessages.size} state message(s)" }
         for (stateMessage in stateMessages) {
+            // checkpoint state messages to stdout
             root.outputConsumer.accept(stateMessage)
+            when (finalCheckpoint) {
+                false -> {
+                    // While there are still active PartitionReader instances we use them to emit
+                    // state and status messages
+                    PartitionReader.pendingStates.add(stateMessage)
+                }
+                true -> {
+                    // If this is the final checkpoint, we initialize the OutputMessageRouter and
+                    // emit pending message thourgh it
+                    doWithMessageRouter { it.acceptNonRecord(stateMessage) }
+                }
+            }
+        }
+
+        // If this is the final checkpoint, we initialzie the OutputMessageRouter and emit all
+        // pending messages through it
+        if (finalCheckpoint) {
+            doWithMessageRouter {
+                while (PartitionReader.pendingStates.isNotEmpty()) {
+                    val message: Any = PartitionReader.pendingStates.poll() ?: break
+                    when (message) {
+                        is AirbyteStateMessage -> {
+                            it.acceptNonRecord(message)
+                        }
+                        is AirbyteStreamStatusTraceMessage -> {
+                            it.acceptNonRecord(message)
+                        }
+                        else -> {
+                            log.warn {
+                                "Unknown message type in pending states queue: ${message::class}"
+                            }
+                            continue // Skip unknown messages.
+                        }
+                    }
+                }
+            }
         }
     }
 }

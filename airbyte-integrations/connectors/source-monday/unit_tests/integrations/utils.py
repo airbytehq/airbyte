@@ -1,21 +1,38 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import operator
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from airbyte_cdk.models import AirbyteMessage
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_protocol.models import SyncMode
-from source_monday import SourceMonday
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path / "manifest.yaml"
+    return Path(__file__).parent.parent.parent / "manifest.yaml"
+
+
+_YAML_FILE_PATH = _get_manifest_path()
+print(f"Using YAML file path: {_YAML_FILE_PATH}")
 
 
 def read_stream(
     stream_name: str, sync_mode: SyncMode, config: Dict[str, Any], state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    return read(SourceMonday(), config, catalog, state, expecting_exception)
+    return read(
+        YamlDeclarativeSource(config=config, catalog=catalog, state=state, path_to_yaml=_YAML_FILE_PATH),
+        config,
+        catalog,
+        state,
+        expecting_exception,
+    )
 
 
 def get_log_messages_by_log_level(logs: List[AirbyteMessage], log_level: LogLevel) -> List[str]:

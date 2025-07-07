@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_freshcaller import SourceFreshcaller
+
+from airbyte_cdk.entrypoint import launch
 
 
 def run():

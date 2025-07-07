@@ -8,14 +8,20 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 from github import Auth, Github
 
-from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, BASE_BRANCH, MERGE_METHOD
+from .consts import (
+    AIRBYTE_REPO,
+    AUTO_MERGE_BYPASS_CI_CHECKS_LABEL,
+    AUTO_MERGE_LABEL,
+    BASE_BRANCH,
+    MERGE_METHOD,
+)
 from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
-from .pr_validators import ENABLED_VALIDATORS
+from .pr_validators import VALIDATOR_MAPPING
 
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
@@ -49,13 +55,44 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     Returns:
         bool: True if the PR is auto-mergeable, False otherwise
     """
-    for validator in ENABLED_VALIDATORS:
+
+    validators = get_pr_validators(pr)
+    for validator in validators:
         is_valid, error = validator(head_commit, pr, required_checks)
         if not is_valid:
             if error:
                 logger.info(f"PR #{pr.number} - {error}")
             return False
     return True
+
+
+def get_pr_validators(pr: PullRequest) -> set[Callable]:
+    """
+    Get the validator for a PR based on its labels
+
+    Args:
+        pr (PullRequest): The PR to get the validator for
+
+    Returns:
+        list[callable]: The validators
+    """
+    validators: set[Callable] = set()
+    for label in pr.labels:
+        if label.name in VALIDATOR_MAPPING:
+            # Add these to our validators set:
+            validators |= VALIDATOR_MAPPING[label.name]
+
+    if not validators:
+        # We shouldn't reach this point, but if we do, we raise an error.
+        # TODO: We could consider returning a dummy callable which always returns False,
+        # but for now, we raise an error to ensure we catch any misconfigurations.
+        raise ValueError(
+            f"PR #{pr.number} does not have a valid auto-merge label. "
+            f"Expected one of [{', '.join(VALIDATOR_MAPPING.keys())}], but got: "
+            f"[{'; '.join(label.name for label in pr.labels)}]",
+        )
+
+    return validators
 
 
 def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 60) -> Optional[PullRequest]:
@@ -134,9 +171,13 @@ def auto_merge() -> None:
         main_branch = repo.get_branch(BASE_BRANCH)
         logger.info(f"Fetching required passing contexts for {BASE_BRANCH}")
         required_passing_contexts = set(main_branch.get_required_status_checks().contexts)
-        candidate_issues = gh_client.search_issues(f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL} base:{BASE_BRANCH} state:open")
+        candidate_issues = gh_client.search_issues(
+            f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} base:{BASE_BRANCH} state:open"
+        )
         prs = [issue.as_pull_request() for issue in candidate_issues]
-        logger.info(f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the {AUTO_MERGE_LABEL} label")
+        logger.info(
+            f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the '{AUTO_MERGE_LABEL}' or '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label"
+        )
         merged_prs = []
         for pr in prs:
             back_off_if_rate_limited(gh_client)

@@ -89,7 +89,7 @@ Firebolt. Each table will contain 3 columns:
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Firebolt is `TIMESTAMP`.
 - `_airbyte_data`: a json blob representing the event data. The column type in Firebolt is `VARCHAR`
-  but can be be parsed with JSON functions.
+  but can be parsed with JSON functions.
 
 ## Changelog
 
@@ -98,6 +98,24 @@ Firebolt. Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.2.40 | 2025-05-24 | [59866](https://github.com/airbytehq/airbyte/pull/59866) | Update dependencies |
+| 0.2.39 | 2025-05-03 | [59316](https://github.com/airbytehq/airbyte/pull/59316) | Update dependencies |
+| 0.2.38 | 2025-04-26 | [58725](https://github.com/airbytehq/airbyte/pull/58725) | Update dependencies |
+| 0.2.37 | 2025-04-19 | [57623](https://github.com/airbytehq/airbyte/pull/57623) | Update dependencies |
+| 0.2.36 | 2025-04-05 | [57115](https://github.com/airbytehq/airbyte/pull/57115) | Update dependencies |
+| 0.2.35 | 2025-03-29 | [56607](https://github.com/airbytehq/airbyte/pull/56607) | Update dependencies |
+| 0.2.34 | 2025-03-22 | [56156](https://github.com/airbytehq/airbyte/pull/56156) | Update dependencies |
+| 0.2.33 | 2025-03-08 | [55391](https://github.com/airbytehq/airbyte/pull/55391) | Update dependencies |
+| 0.2.32 | 2025-03-01 | [54853](https://github.com/airbytehq/airbyte/pull/54853) | Update dependencies |
+| 0.2.31 | 2025-02-22 | [54217](https://github.com/airbytehq/airbyte/pull/54217) | Update dependencies |
+| 0.2.30 | 2025-02-15 | [53940](https://github.com/airbytehq/airbyte/pull/53940) | Update dependencies |
+| 0.2.29 | 2025-02-08 | [53427](https://github.com/airbytehq/airbyte/pull/53427) | Update dependencies |
+| 0.2.28 | 2025-02-01 | [52946](https://github.com/airbytehq/airbyte/pull/52946) | Update dependencies |
+| 0.2.27 | 2025-01-25 | [49292](https://github.com/airbytehq/airbyte/pull/49292) | Update dependencies |
+| 0.2.26 | 2025-01-17 | [51560](https://github.com/airbytehq/airbyte/pull/51560) | Fix connection issues |
+| 0.2.25 | 2024-11-25 | [48672](https://github.com/airbytehq/airbyte/pull/48672) | Update dependencies |
+| 0.2.24 | 2024-10-29 | [47780](https://github.com/airbytehq/airbyte/pull/47780) | Update dependencies |
+| 0.2.23 | 2024-10-28 | [47100](https://github.com/airbytehq/airbyte/pull/47100) | Update dependencies |
 | 0.2.22 | 2024-10-12 | [46841](https://github.com/airbytehq/airbyte/pull/46841) | Update dependencies |
 | 0.2.21 | 2024-10-05 | [46420](https://github.com/airbytehq/airbyte/pull/46420) | Update dependencies |
 | 0.2.20 | 2024-09-28 | [46144](https://github.com/airbytehq/airbyte/pull/46144) | Update dependencies |

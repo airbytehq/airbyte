@@ -73,6 +73,31 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------- |
+| 0.1.41 | 2025-05-10 | [59814](https://github.com/airbytehq/airbyte/pull/59814) | Update dependencies |
+| 0.1.40 | 2025-05-03 | [58718](https://github.com/airbytehq/airbyte/pull/58718) | Update dependencies |
+| 0.1.39 | 2025-04-19 | [58282](https://github.com/airbytehq/airbyte/pull/58282) | Update dependencies |
+| 0.1.38 | 2025-04-12 | [57610](https://github.com/airbytehq/airbyte/pull/57610) | Update dependencies |
+| 0.1.37 | 2025-04-05 | [57162](https://github.com/airbytehq/airbyte/pull/57162) | Update dependencies |
+| 0.1.36 | 2025-03-29 | [56564](https://github.com/airbytehq/airbyte/pull/56564) | Update dependencies |
+| 0.1.35 | 2025-03-22 | [56159](https://github.com/airbytehq/airbyte/pull/56159) | Update dependencies |
+| 0.1.34 | 2025-03-08 | [55363](https://github.com/airbytehq/airbyte/pull/55363) | Update dependencies |
+| 0.1.33 | 2025-03-01 | [54889](https://github.com/airbytehq/airbyte/pull/54889) | Update dependencies |
+| 0.1.32 | 2025-02-22 | [54246](https://github.com/airbytehq/airbyte/pull/54246) | Update dependencies |
+| 0.1.31 | 2025-02-15 | [53939](https://github.com/airbytehq/airbyte/pull/53939) | Update dependencies |
+| 0.1.30 | 2025-02-08 | [53389](https://github.com/airbytehq/airbyte/pull/53389) | Update dependencies |
+| 0.1.29 | 2025-02-01 | [52917](https://github.com/airbytehq/airbyte/pull/52917) | Update dependencies |
+| 0.1.28 | 2025-01-25 | [52171](https://github.com/airbytehq/airbyte/pull/52171) | Update dependencies |
+| 0.1.27 | 2025-01-18 | [51716](https://github.com/airbytehq/airbyte/pull/51716) | Update dependencies |
+| 0.1.26 | 2025-01-11 | [51232](https://github.com/airbytehq/airbyte/pull/51232) | Update dependencies |
+| 0.1.25 | 2025-01-04 | [50917](https://github.com/airbytehq/airbyte/pull/50917) | Update dependencies |
+| 0.1.24 | 2024-12-28 | [50459](https://github.com/airbytehq/airbyte/pull/50459) | Update dependencies |
+| 0.1.23 | 2024-12-21 | [50222](https://github.com/airbytehq/airbyte/pull/50222) | Update dependencies |
+| 0.1.22 | 2024-12-14 | [49290](https://github.com/airbytehq/airbyte/pull/49290) | Update dependencies |
+| 0.1.21 | 2024-11-25 | [48641](https://github.com/airbytehq/airbyte/pull/48641) | Update dependencies |
+| 0.1.20 | 2024-11-04 | [48191](https://github.com/airbytehq/airbyte/pull/48191) | Update dependencies |
+| 0.1.19 | 2024-10-29 | [47757](https://github.com/airbytehq/airbyte/pull/47757) | Update dependencies |
+| 0.1.18 | 2024-10-28 | [47621](https://github.com/airbytehq/airbyte/pull/47621) | Update dependencies |
+| 0.1.17 | 2024-10-28 | [47054](https://github.com/airbytehq/airbyte/pull/47054) | Update dependencies |
 | 0.1.16 | 2024-10-12 | [46774](https://github.com/airbytehq/airbyte/pull/46774) | Update dependencies |
 | 0.1.15 | 2024-10-05 | [46417](https://github.com/airbytehq/airbyte/pull/46417) | Update dependencies |
 | 0.1.14 | 2024-09-28 | [46137](https://github.com/airbytehq/airbyte/pull/46137) | Update dependencies |

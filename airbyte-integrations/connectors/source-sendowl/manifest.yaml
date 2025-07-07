@@ -1,0 +1,721 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  Sendowl is an All-in-One Digital Commerce Platform.
+
+  Using this connector we can extract data from products , packages , orders ,
+  discounts and subscriptions streams.
+
+  Docs : https://dashboard.sendowl.com/developers/api/introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - products
+
+definitions:
+  streams:
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - product
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    packages:
+      type: DeclarativeStream
+      name: packages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: packages
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - package
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/packages"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: orders
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - order
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: subscriptions
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscription
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.sendowl.com/api/v1/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/packages"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/subscriptions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - start_date
+    properties:
+      username:
+        type: string
+        description: Enter you API Key
+        order: 0
+        title: Username
+      password:
+        type: string
+        description: Enter your API secret
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    products: true
+    packages: true
+    orders: true
+    subscriptions: true
+  testedStreams:
+    products:
+      streamHash: 63213ed0bc54ab096345046384928c62a54a2fae
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    packages:
+      streamHash: 1cdb9d767bf538ee55a02c16560436c0d0e98d4c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    orders:
+      streamHash: 7e961e529e6132f752ef43f7e41942ea8ca634ea
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    subscriptions:
+      streamHash: 30bb1f21d6fabde3a2008adad9c55d3253a05045
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      add_to_cart_url:
+        type:
+          - string
+          - "null"
+      affiliate_sellable:
+        type:
+          - boolean
+          - "null"
+      attachment:
+        type:
+          - object
+          - "null"
+        properties:
+          filename:
+            type:
+              - string
+              - "null"
+          size:
+            type:
+              - number
+              - "null"
+      category:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      instant_buy_url:
+        type:
+          - string
+          - "null"
+      limit_to_single_qty_in_cart:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pdf_stamping:
+        type:
+          - boolean
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_is_minimum:
+        type:
+          - boolean
+          - "null"
+      product_image_url:
+        type:
+          - string
+          - "null"
+      product_type:
+        type:
+          - string
+          - "null"
+      sales_limit:
+        type:
+          - number
+          - "null"
+      sales_page_url:
+        type:
+          - string
+          - "null"
+      self_hosted_url:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  packages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      add_to_cart_url:
+        type:
+          - string
+          - "null"
+      affiliate_sellable:
+        type:
+          - boolean
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      components:
+        type:
+          - object
+          - "null"
+        properties:
+          product_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      instant_buy_url:
+        type:
+          - string
+          - "null"
+      limit_to_single_qty_in_cart:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_is_minimum:
+        type:
+          - boolean
+          - "null"
+      sales_page_url:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_allowed:
+        type:
+          - boolean
+          - "null"
+      buyer_email:
+        type:
+          - string
+          - "null"
+      buyer_name:
+        type:
+          - string
+          - "null"
+      can_market_to_buyer:
+        type:
+          - boolean
+          - "null"
+      cart:
+        type:
+          - object
+          - "null"
+        properties:
+          cart_items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                cart_item:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download_attempts:
+                      type:
+                        - number
+                        - "null"
+                    price_at_checkout:
+                      type:
+                        - string
+                        - "null"
+                    product_id:
+                      type:
+                        - number
+                        - "null"
+                    quantity:
+                      type:
+                        - number
+                        - "null"
+          completed_checkout_at:
+            type:
+              - string
+              - "null"
+          started_checkout_at:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      created_at:
+        type: string
+      download_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            download_item:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                accessible:
+                  type:
+                    - boolean
+                    - "null"
+                downloadable:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+      download_url:
+        type:
+          - string
+          - "null"
+      gateway:
+        type:
+          - string
+          - "null"
+      gateway_transaction_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: number
+      order_custom_checkout_fields:
+        type:
+          - array
+          - "null"
+      price_at_checkout:
+        type:
+          - string
+          - "null"
+      settled_currency:
+        type:
+          - string
+          - "null"
+      settled_gateway_fee:
+        type:
+          - string
+          - "null"
+      settled_gross:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      subscription_id:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_all_products:
+        type:
+          - boolean
+          - "null"
+      access_subset_products:
+        type:
+          - boolean
+          - "null"
+      affiliate_sellable:
+        type:
+          - boolean
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      commission_rate:
+        type:
+          - number
+          - "null"
+      components:
+        type:
+          - object
+          - "null"
+        properties:
+          product_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      custom_field:
+        type:
+          - string
+          - "null"
+      drip_items:
+        type:
+          - array
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      frequency_interval:
+        type:
+          - string
+          - "null"
+      frequency_value:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      instant_buy_url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      perform_redirect:
+        type:
+          - boolean
+          - "null"
+      product_image_url:
+        type:
+          - string
+          - "null"
+      recurring_price:
+        type:
+          - string
+          - "null"
+      recurring_type:
+        type:
+          - string
+          - "null"
+      sales_page_url:
+        type:
+          - string
+          - "null"
+      sell_service:
+        type:
+          - boolean
+          - "null"
+      sell_tangible_product:
+        type:
+          - boolean
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      trial_frequency:
+        type:
+          - string
+          - "null"
+      trial_no_of_occurrences:
+        type:
+          - number
+          - "null"
+      trial_price:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id

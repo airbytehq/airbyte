@@ -6,8 +6,12 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.TestFixtures.assertFailures
+import io.airbyte.cdk.read.TestFixtures.bootstrap
 import io.airbyte.cdk.read.TestFixtures.factory
 import io.airbyte.cdk.read.TestFixtures.id
 import io.airbyte.cdk.read.TestFixtures.msg
@@ -21,6 +25,13 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JdbcPartitionsCreatorTest {
+
+    private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
+        mutableMapOf(
+            "id" to FieldValueEncoder(id, IntCodec),
+            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec),
+            "msg" to FieldValueEncoder(string, TextCodec),
+        )
 
     @Test
     fun testConcurrentSnapshotWithCursor() {
@@ -44,7 +55,9 @@ class JdbcPartitionsCreatorTest {
                                     From(stream().name, stream().namespace),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"max":"$cursorUpperBound"}""",
+                            mutableMapOf(
+                                "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
+                            )
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -60,7 +73,7 @@ class JdbcPartitionsCreatorTest {
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -76,21 +89,22 @@ class JdbcPartitionsCreatorTest {
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
-                            """{"id":20000,"ts":"2024-08-02","msg":"bar"}""",
-                            """{"id":30000,"ts":"2024-08-03","msg":"baz"}""",
-                            """{"id":40000,"ts":"2024-08-04","msg":"quux"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
+                            idDateString(20000, "2024-08-02", "bar"),
+                            idDateString(30000, "2024-08-03", "baz"),
+                            idDateString(40000, "2024-08-04", "quux"),
                         )
                     ),
             )
         val expectedPartitions = 5 // adjust this as needed based on inputs
         val expectedFetchSize = 681 // adjust this as needed based on inputs
         val factory = sharedState.factory()
-        val initialPartition = factory.create(stream, opaqueStateValue = null).asPartition()
+        val initialPartition =
+            factory.create(stream.bootstrap(opaqueStateValue = null)).asPartition()
         factory.assertFailures()
         val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
         val partitions: List<DefaultJdbcSplittableSnapshotWithCursorPartition> =
-            concurrentPartitions(stream, factory, readers)
+            concurrentPartitions(stream, readers)
         val streamState: DefaultJdbcStreamState = partitions.first().streamState
         Assertions.assertEquals(
             LocalDateCodec.encode(cursorUpperBound),
@@ -135,7 +149,7 @@ class JdbcPartitionsCreatorTest {
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -151,21 +165,22 @@ class JdbcPartitionsCreatorTest {
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
-                            """{"id":20000,"ts":"2024-08-02","msg":"bar"}""",
-                            """{"id":30000,"ts":"2024-08-03","msg":"baz"}""",
-                            """{"id":40000,"ts":"2024-08-04","msg":"quux"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
+                            idDateString(20000, "2024-08-02", "bar"),
+                            idDateString(30000, "2024-08-03", "baz"),
+                            idDateString(40000, "2024-08-04", "quux"),
                         )
                     ),
             )
         val expectedPartitions = 5 // adjust this as needed based on inputs
         val expectedFetchSize = 681 // adjust this as needed based on inputs
         val factory = sharedState.factory()
-        val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
+        val initialPartition =
+            factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()
         factory.assertFailures()
         val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
         val partitions: List<DefaultJdbcSplittableSnapshotPartition> =
-            concurrentPartitions(stream, factory, readers)
+            concurrentPartitions(stream, readers)
         val streamState: DefaultJdbcStreamState = partitions.first().streamState
         Assertions.assertNull(streamState.cursorUpperBound)
         Assertions.assertEquals(expectedFetchSize, streamState.fetchSize)
@@ -184,11 +199,12 @@ class JdbcPartitionsCreatorTest {
         val stream = stream(withCursor = false)
         val sharedState = sharedState()
         val factory = sharedState.factory()
-        val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
+        val initialPartition =
+            factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()
         factory.assertFailures()
         val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
         val partitions: List<DefaultJdbcSplittableSnapshotPartition> =
-            concurrentPartitions(stream, factory, readers)
+            concurrentPartitions(stream, readers)
         // No sampling means no splitting.
         Assertions.assertEquals(1, partitions.size)
         Assertions.assertIterableEquals(
@@ -204,11 +220,12 @@ class JdbcPartitionsCreatorTest {
         val stream = stream(withCursor = false)
         val sharedState = sharedState()
         val factory = sharedState.factory()
-        val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
+        val initialPartition =
+            factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()
         factory.assertFailures()
         val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcSplittableSnapshotPartition =
-            sequentialPartition(stream, factory, readers)
+            sequentialPartition(stream, readers)
         Assertions.assertNull(readerPartition.streamState.cursorUpperBound)
         Assertions.assertNull(readerPartition.streamState.fetchSize)
         Assertions.assertIterableEquals(
@@ -245,7 +262,7 @@ class JdbcPartitionsCreatorTest {
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -261,20 +278,21 @@ class JdbcPartitionsCreatorTest {
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
-                            """{"id":20000,"ts":"2024-08-02","msg":"bar"}""",
-                            """{"id":30000,"ts":"2024-08-03","msg":"baz"}""",
-                            """{"id":40000,"ts":"2024-08-04","msg":"quux"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
+                            idDateString(20000, "2024-08-02", "bar"),
+                            idDateString(30000, "2024-08-03", "baz"),
+                            idDateString(40000, "2024-08-04", "quux"),
                         )
                     ),
             )
         val expectedFetchSize = 674 // adjust this as needed based on inputs
         val factory = sharedState.factory()
-        val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
+        val initialPartition =
+            factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()
         factory.assertFailures()
         val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcSplittableSnapshotPartition =
-            sequentialPartition(stream, factory, readers)
+            sequentialPartition(stream, readers)
         Assertions.assertNull(readerPartition.streamState.cursorUpperBound)
         Assertions.assertEquals(expectedFetchSize, readerPartition.streamState.fetchSize)
         Assertions.assertIterableEquals(listOf(id), readerPartition.checkpointColumns)
@@ -296,17 +314,21 @@ class JdbcPartitionsCreatorTest {
                                     From(stream().name, stream().namespace),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"max":"$cursorUpperBound"}""",
+                            mutableMapOf(
+                                "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
+                            )
                         ),
                     )
             )
         val factory = sharedState.factory()
         val initialPartition =
-            factory.create(stream, opaqueStateValue(cursor = cursorCheckpoint)).asPartition()
+            factory
+                .create(stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint)))
+                .asPartition()
         factory.assertFailures()
         val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcCursorIncrementalPartition =
-            sequentialPartition(stream, factory, readers)
+            sequentialPartition(stream, readers)
         Assertions.assertEquals(
             LocalDateCodec.encode(cursorUpperBound),
             readerPartition.streamState.cursorUpperBound,
@@ -333,18 +355,18 @@ class JdbcPartitionsCreatorTest {
                 mockedQueries = arrayOf()
             )
         val factory = sharedState.factory()
+        val bootstrap = stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint))
         run {
             // This warm start is particularly warm; the stream state has some transient state.
-            val streamState: DefaultJdbcStreamState = factory.streamState(stream)
+            val streamState: DefaultJdbcStreamState = factory.streamState(bootstrap)
             streamState.fetchSize = 1234
             streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         }
-        val initialPartition =
-            factory.create(stream, opaqueStateValue(cursor = cursorCheckpoint)).asPartition()
+        val initialPartition = factory.create(bootstrap).asPartition()
         factory.assertFailures()
         val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcCursorIncrementalPartition =
-            sequentialPartition(stream, factory, readers)
+            sequentialPartition(stream, readers)
         Assertions.assertEquals(ts, readerPartition.cursor)
         Assertions.assertEquals(
             LocalDateCodec.encode(cursorCheckpoint),
@@ -361,7 +383,6 @@ class JdbcPartitionsCreatorTest {
 
     inline fun <reified T : DefaultJdbcPartition> concurrentPartitions(
         stream: Stream,
-        factory: DefaultJdbcPartitionFactory,
         readers: List<PartitionReader>
     ): List<T> {
         Assertions.assertTrue(readers.isNotEmpty())
@@ -370,14 +391,12 @@ class JdbcPartitionsCreatorTest {
         for (reader in typedReaders) {
             Assertions.assertTrue(reader.partition is T)
             Assertions.assertEquals(stream, reader.stream)
-            Assertions.assertEquals(factory.streamState(stream), reader.partition.streamState)
         }
         return typedReaders.map { it.partition as T }
     }
 
     inline fun <reified T : DefaultJdbcPartition> sequentialPartition(
         stream: Stream,
-        factory: DefaultJdbcPartitionFactory,
         readers: List<PartitionReader>
     ): T {
         Assertions.assertTrue(readers.firstOrNull() is JdbcResumablePartitionReader<*>)
@@ -386,7 +405,6 @@ class JdbcPartitionsCreatorTest {
         Assertions.assertTrue(reader.partition is T)
         val partition = reader.partition as T
         Assertions.assertEquals(stream, reader.stream)
-        Assertions.assertEquals(factory.streamState(stream), partition.streamState)
         return partition
     }
 

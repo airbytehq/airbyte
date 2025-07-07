@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,26 +79,6 @@ class MongoDbSourceTest {
   }
 
   @Test
-  void testCheckOperationMissingDatabase() throws IOException {
-    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
-    final MongoIterable<String> iterable = mock(MongoIterable.class);
-
-    when(iterable.spliterator()).thenReturn(List.of("other").spliterator());
-    when(mongoClient.listDatabaseNames()).thenReturn(iterable);
-
-    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
-    when(mongoDatabase.runCommand(any())).thenReturn(response);
-    when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
-    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
-
-    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
-    assertNotNull(airbyteConnectionStatus);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-  }
-
-  @Test
   void testCheckOperationWithMissingConfiguration() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
@@ -129,7 +110,7 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertEquals("Target MongoDB database does not contain any authorized collections.", airbyteConnectionStatus.getMessage());
+    assertTrue(airbyteConnectionStatus.getMessage().contains("Target MongoDB databases do not contain any authorized collections"));
   }
 
   @Test
@@ -188,6 +169,7 @@ class MongoDbSourceTest {
     when(cursor.hasNext()).thenReturn(true, true, false);
     when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
     when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(aggregateIterable.maxTime(DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC, TimeUnit.SECONDS)).thenReturn(aggregateIterable);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
     when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
@@ -290,12 +272,12 @@ class MongoDbSourceTest {
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final boolean isSchemaEnforced) {
-    final Map<String, Object> baseConfig = Map.of(
-        MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
-        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
-        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
-        MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE,
-        SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
+    final Map<String, Object> baseConfig = new HashMap<>();
+    baseConfig.put(DATABASE_CONFIGURATION_KEY, List.of(DB_NAME));
+    baseConfig.put(MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/");
+    baseConfig.put(MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin");
+    baseConfig.put(MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE);
+    baseConfig.put(SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));

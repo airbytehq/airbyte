@@ -5,50 +5,44 @@
 package io.airbyte.cdk.load.task.implementor
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-
-interface OpenStreamTask : StreamLevel, ImplementorScope
+import kotlinx.coroutines.flow.fold
 
 /**
  * Wraps @[StreamLoader.start] and starts the spill-to-disk tasks.
  *
  * TODO: There's no reason to wait on initialization to start spilling to disk.
  */
-class DefaultOpenStreamTask(
+@Singleton
+class OpenStreamTask(
     private val destinationWriter: DestinationWriter,
     private val syncManager: SyncManager,
-    override val stream: DestinationStream,
-    private val taskLauncher: DestinationTaskLauncher
-) : OpenStreamTask {
+    private val openStreamQueue: MessageQueue<DestinationStream>
+) : Task {
+    override val terminalCondition: TerminalCondition = SelfTerminating
+
     override suspend fun execute() {
-        val streamLoader = destinationWriter.createStreamLoader(stream)
-        streamLoader.start()
-        syncManager.registerStartedStreamLoader(streamLoader)
-        taskLauncher.handleStreamStarted(stream)
-    }
-}
-
-interface OpenStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): OpenStreamTask
-}
-
-@Singleton
-@Secondary
-class DefaultOpenStreamTaskFactory(
-    private val destinationWriter: DestinationWriter,
-    private val syncManager: SyncManager
-) : OpenStreamTaskFactory {
-    override fun make(
-        taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream
-    ): OpenStreamTask {
-        return DefaultOpenStreamTask(destinationWriter, syncManager, stream, taskLauncher)
+        openStreamQueue.consume().fold(mutableSetOf<DestinationStream.Descriptor>()) {
+            streamsSeen,
+            stream ->
+            val streamLoader = destinationWriter.createStreamLoader(stream)
+            val result = runCatching {
+                streamLoader.start()
+                streamLoader
+            }
+            result.getOrThrow()
+            // in practice, if we're here, then `result` is by definition successful
+            // (because otherwise, getOrThrow would have thrown)
+            syncManager.registerStartedStreamLoader(stream.mappedDescriptor, result)
+            streamsSeen.add(stream.mappedDescriptor)
+            streamsSeen
+        }
     }
 }

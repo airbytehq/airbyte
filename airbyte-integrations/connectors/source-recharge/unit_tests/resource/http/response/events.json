@@ -1,0 +1,63 @@
+{
+  "next_cursor": null,
+  "previous_cursor": null,
+  "events": [
+    {
+      "id": 1,
+      "customer_id": 1,
+      "object_id": 1,
+      "created_at": "2024-10-28T12:56:16",
+      "custom_attributes": [],
+      "description": "Cancelled subscription for Something from Customer",
+      "object_type": "subscription",
+      "source": {
+        "account_id": null,
+        "api_token_id": null,
+        "account_email": null,
+        "api_token_name": null,
+        "origin": null,
+        "user_type": null
+      },
+      "updated_attributes": [],
+      "verb": "cancelled"
+    },
+    {
+      "id": 2,
+      "customer_id": 2,
+      "object_id": 2,
+      "created_at": "2024-10-28T14:41:32",
+      "custom_attributes": [],
+      "description": "Deleted charge #2",
+      "object_type": "charge",
+      "source": {
+        "account_id": null,
+        "api_token_id": null,
+        "account_email": null,
+        "api_token_name": null,
+        "origin": "somewhere",
+        "user_type": "customer"
+      },
+      "updated_attributes": [],
+      "verb": "deleted"
+    },
+    {
+      "id": 3,
+      "customer_id": 3,
+      "object_id": 3,
+      "created_at": "2024-10-28T15:41:02",
+      "custom_attributes": [],
+      "description": "Failed charge #3",
+      "object_type": "charge",
+      "source": {
+        "account_id": null,
+        "api_token_id": null,
+        "account_email": null,
+        "api_token_name": null,
+        "origin": "api",
+        "user_type": null
+      },
+      "updated_attributes": [],
+      "verb": "failed"
+    }
+  ]
+}

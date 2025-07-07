@@ -389,31 +389,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .values
-            .map { fields: List<JsonNode> ->
-                TableInfo<CommonField<Datatype>>(
-                    nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
-                    name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
-                    fields =
-                        fields
-                            // read the column metadata Json object, and determine its
-                            // type
-                            .map { f: JsonNode ->
-                                val datatype = sourceOperations.getDatabaseFieldType(f)
-                                val jsonType = getAirbyteType(datatype)
-                                LOGGER.debug {
-                                    "Table ${fields[0].get(INTERNAL_TABLE_NAME).asText()} column ${f.get(INTERNAL_COLUMN_NAME).asText()}" +
-                                        "(type ${f.get(INTERNAL_COLUMN_TYPE_NAME).asText()}[${f.get(INTERNAL_COLUMN_SIZE).asInt()}], " +
-                                        "nullable ${f.get(INTERNAL_IS_NULLABLE).asBoolean()}) -> $jsonType"
-                                }
-                                object :
-                                    CommonField<Datatype>(
-                                        f.get(INTERNAL_COLUMN_NAME).asText(),
-                                        datatype
-                                    ) {}
-                            },
-                    cursorFields = extractCursorFields(fields)
-                )
-            }
+            .map { fields: List<JsonNode> -> jsonFieldListToTableInfo(fields) }
     }
 
     private fun extractCursorFields(fields: List<JsonNode>): List<String> {
@@ -579,6 +555,54 @@ abstract class AbstractJdbcSource<Datatype>(
             )
     }
 
+    override fun discoverTable(
+        database: JdbcDatabase,
+        schema: String,
+        tableName: String
+    ): TableInfo<CommonField<Datatype>>? {
+        LOGGER.info { "Discover table: $schema.$tableName" }
+        return database
+            .bufferedResultSetQuery<JsonNode>(
+                { connection: Connection ->
+                    connection.metaData.getColumns(getCatalog(database), schema, tableName, null)
+                },
+                { resultSet: ResultSet -> this.getColumnMetadata(resultSet) }
+            )
+            .groupBy { t: JsonNode ->
+                ImmutablePair.of<String, String>(
+                    t.get(INTERNAL_SCHEMA_NAME).asText(),
+                    t.get(INTERNAL_TABLE_NAME).asText()
+                )
+            }
+            .values
+            .map { fields: List<JsonNode> -> jsonFieldListToTableInfo(fields) }
+            .filter { ti: TableInfo<CommonField<Datatype>> -> ti.name == tableName }
+            .firstOrNull()
+    }
+
+    private fun jsonFieldListToTableInfo(fields: List<JsonNode>): TableInfo<CommonField<Datatype>> {
+        return TableInfo<CommonField<Datatype>>(
+            nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
+            name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
+            fields =
+                fields
+                    // read the column metadata Json object, and determine its
+                    // type
+                    .map { f: JsonNode ->
+                        val datatype = sourceOperations.getDatabaseFieldType(f)
+                        val jsonType = getAirbyteType(datatype)
+                        LOGGER.debug {
+                            "Table ${fields[0].get(INTERNAL_TABLE_NAME).asText()} column ${f.get(INTERNAL_COLUMN_NAME).asText()}" +
+                                "(type ${f.get(INTERNAL_COLUMN_TYPE_NAME).asText()}[${f.get(INTERNAL_COLUMN_SIZE).asInt()}], " +
+                                "nullable ${f.get(INTERNAL_IS_NULLABLE).asBoolean()}) -> $jsonType"
+                        }
+                        object :
+                            CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {}
+                    },
+            cursorFields = extractCursorFields(fields)
+        )
+    }
+
     public override fun isCursorType(type: Datatype): Boolean {
         return sourceOperations.isCursorType(type)
     }
@@ -589,7 +613,7 @@ abstract class AbstractJdbcSource<Datatype>(
         schemaName: String?,
         tableName: String,
         cursorInfo: CursorInfo,
-        cursorFieldType: Datatype
+        cursorFieldType: Datatype,
     ): AutoCloseableIterator<AirbyteRecordData> {
         LOGGER.info { "Queueing query for table: $tableName" }
         val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
@@ -639,15 +663,15 @@ abstract class AbstractJdbcSource<Datatype>(
                                         schemaName,
                                         tableName
                                     )
+
                                 val sql =
                                     StringBuilder(
-                                        String.format(
-                                            "SELECT %s FROM %s WHERE %s %s ?",
-                                            wrappedColumnNames,
-                                            fullTableName,
-                                            quotedCursorField,
-                                            operator
-                                        )
+                                        when (cursorInfo.cutoffTime) {
+                                            null ->
+                                                "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ?"
+                                            else ->
+                                                "SELECT $wrappedColumnNames FROM $fullTableName WHERE $quotedCursorField $operator ? AND $quotedCursorField < ?"
+                                        }
                                     )
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
@@ -657,7 +681,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                 }
                                 val preparedStatement = connection.prepareStatement(sql.toString())
                                 LOGGER.info {
-                                    "Executing query for table $tableName: $preparedStatement"
+                                    "Executing query for table $tableName: ${sql.toString()}"
                                 }
                                 sourceOperations.setCursorField(
                                     preparedStatement,
@@ -665,9 +689,18 @@ abstract class AbstractJdbcSource<Datatype>(
                                     cursorFieldType,
                                     cursorInfo.cursor!!
                                 )
+
+                                if (cursorInfo.cutoffTime != null) {
+                                    sourceOperations.setCursorField(
+                                        preparedStatement,
+                                        2,
+                                        cursorFieldType,
+                                        cursorInfo.cutoffTime,
+                                    )
+                                }
                                 preparedStatement
                             },
-                            sourceOperations::convertDatabaseRowToAirbyteRecordData
+                            sourceOperations::convertDatabaseRowToAirbyteRecordData,
                         )
                     return@lazyIterator AutoCloseableIterators.fromStream<AirbyteRecordData>(
                         stream,
@@ -677,7 +710,7 @@ abstract class AbstractJdbcSource<Datatype>(
                     throw RuntimeException(e)
                 }
             },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -853,7 +886,7 @@ abstract class AbstractJdbcSource<Datatype>(
         catalog: ConfiguredAirbyteCatalog?,
         table: TableInfo<CommonField<Datatype>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): AutoCloseableIterator<AirbyteMessage> {
         val iterator =
             super.createReadIterator(
@@ -862,7 +895,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 catalog,
                 table,
                 stateManager,
-                emittedAt
+                emittedAt,
             )
         return when (airbyteStream.syncMode) {
             INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)

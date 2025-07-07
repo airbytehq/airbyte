@@ -10,6 +10,7 @@ from typing import Any, MutableMapping
 
 import pendulum
 
+
 START_DATE = "2023-01-01T00:00:00Z"
 ACCESS_TOKEN = "test_access_token"
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
@@ -29,6 +30,10 @@ class ConfigBuilder:
 
     def with_access_token(self, access_token: str) -> ConfigBuilder:
         self._config["access_token"] = access_token
+        return self
+
+    def with_lookback_window_days(self, lookback_window_days: int) -> ConfigBuilder:
+        self._config["lookback_window_days"] = lookback_window_days
         return self
 
     def build(self) -> MutableMapping[str, Any]:

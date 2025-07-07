@@ -8,6 +8,10 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import isodate
 import pendulum
+from dateutil.relativedelta import relativedelta
+from pendulum.parsing.exceptions import ParserError
+from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
+
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -30,9 +34,6 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from dateutil.relativedelta import relativedelta
-from pendulum.parsing.exceptions import ParserError
-from requests import codes, exceptions  # type: ignore[import]
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import (
@@ -45,6 +46,7 @@ from .streams import (
     RestSalesforceStream,
     RestSalesforceSubStream,
 )
+
 
 _DEFAULT_CONCURRENCY = 10
 _MAX_CONCURRENCY = 10
@@ -296,7 +298,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         try:
             yield from super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config)
         except exceptions.HTTPError as error:
-            error_data = error.response.json()[0]
+            try:
+                error_data = error.response.json()[0]
+            except JSONDecodeError as json_error:
+                raise error from json_error
             error_code = error_data.get("errorCode")
             url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":

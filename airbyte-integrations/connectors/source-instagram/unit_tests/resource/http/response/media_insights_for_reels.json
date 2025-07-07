@@ -49,18 +49,6 @@
       "id": "84386203808767123/insights/likes/lifetime"
     },
     {
-      "name": "plays",
-      "period": "lifetime",
-      "values": [
-        {
-          "value": 2385
-        }
-      ],
-      "title": "Plays",
-      "description": "The number of plays of your reel.",
-      "id": "84386203808767123/insights/plays/lifetime"
-    },
-    {
       "name": "reach",
       "period": "lifetime",
       "values": [
@@ -97,28 +85,16 @@
       "id": "84386203808767123/insights/shares/lifetime"
     },
     {
-      "name": "ig_reels_aggregated_all_plays_count",
+      "name": "views",
       "period": "lifetime",
       "values": [
         {
-          "value": 383
+          "value": 2006
         }
       ],
-      "title": "IG reels aggregated all plays count title",
-      "description": "IG reels aggregated all plays count description.",
-      "id": "84386203808767123/insights/ig_reels_aggregated_all_plays_count/lifetime"
-    },
-    {
-      "name": "clips_replays_count",
-      "period": "lifetime",
-      "values": [
-        {
-          "value": 102
-        }
-      ],
-      "title": "Clip Replays Count title",
-      "description": "Clip Replays Count description.",
-      "id": "84386203808767123/insights/clips_replays_count/lifetime"
+      "title": "Views",
+      "description": "The number of times your reel was viewed.",
+      "id": "84386203808767123/insights/views/lifetime"
     }
   ]
 }

@@ -6,7 +6,7 @@ Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyt
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
 - [Python base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/python/bases.py)
-- ~Java base image code declaration~ *TODO* 
+- [Java base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/java/bases.py)
 
 
 ## Where are the Dockerfiles?
@@ -29,7 +29,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### `{{ registry.ConnectorBaseImageClass.repository }}`
 
-| Version | Published | Docker Image Address | Changelog | 
+| Version | Published | Docker Image Address | Changelog |
 |---------|-----------|--------------|-----------|
 {%- for entry in registry.entries %}
 |  {{ entry.version }} | {{ "✅" if entry.published else "❌" }}| {{ entry.published_docker_image.address }} | {{ entry.changelog_entry.changelog_entry }} |
@@ -54,7 +54,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 It will:
   - Prompt you to pick which base image you'd like to publish.
   - Prompt you for a major/minor/patch/pre-release version bump.
-  - Prompt you for  a changelog message.
+  - Prompt you for a changelog message.
   - Run the sanity checks on the new version.
   - Optional: Publish the new version to DockerHub.
   - Regenerate the docs and the registry json file.
@@ -77,3 +77,30 @@ poetry run pytest
 poetry run mypy base_images --check-untyped-defs
 ```
 
+## CHANGELOG
+
+### 1.6.0
+- Add a Python base image 4.0.0 with Python 3.11.11.
+
+### 1.4.0
+- Declare a base image for our java connectors.
+
+### 1.3.1
+- Update the crane image address. The previous address was deleted by the maintainer.
+
+### 1.2.0
+- Improve new version prompt to pick bump type with optional pre-release version.
+
+### 1.1.0
+- Add a cache ttl for base image listing to avoid DockerHub rate limiting.
+
+### 1.0.4
+- Upgrade Dagger to `0.13.3`
+
+### 1.0.2
+
+- Improved support for images with non-semantic-versioned tags.
+
+### 1.0.1
+
+- Bumped dependencies ([#42581](https://github.com/airbytehq/airbyte/pull/42581))

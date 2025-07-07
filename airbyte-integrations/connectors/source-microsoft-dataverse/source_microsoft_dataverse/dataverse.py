@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 
@@ -25,7 +26,6 @@ class MicrosoftOauth2Authenticator(Oauth2Authenticator):
 
 
 class AirbyteType(Enum):
-
     String = {"type": ["null", "string"]}
     Boolean = {"type": ["null", "boolean"]}
     Timestamp = {"type": ["null", "string"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
@@ -34,7 +34,6 @@ class AirbyteType(Enum):
 
 
 class DataverseType(Enum):
-
     String = AirbyteType.String
     Uniqueidentifier = AirbyteType.String
     DateTime = AirbyteType.Timestamp

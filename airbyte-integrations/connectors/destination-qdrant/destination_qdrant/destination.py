@@ -15,6 +15,7 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_qdrant.config import ConfigModel
 from destination_qdrant.indexer import QdrantIndexer
 
+
 BATCH_SIZE = 256
 
 
@@ -29,7 +30,6 @@ class DestinationQdrant(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
         writer = Writer(
@@ -48,7 +48,6 @@ class DestinationQdrant(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
-
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/qdrant",
             supportsIncremental=True,

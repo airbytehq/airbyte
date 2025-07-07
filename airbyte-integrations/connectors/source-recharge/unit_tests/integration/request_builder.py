@@ -48,6 +48,10 @@ class RequestBuilder:
         self._headers["X-Recharge-Version"] = api_version
         return self
 
+    def with_created_min(self, value: str) -> RequestBuilder:
+        self._query_params["created_at_min"] = dt.datetime.strptime(value, DATE_TIME_FORMAT).strftime(DATE_TIME_FORMAT)
+        return self
+
     def build(self) -> HttpRequest:
         return HttpRequest(
             url=f"https://api.rechargeapps.com/{self._endpoint}",

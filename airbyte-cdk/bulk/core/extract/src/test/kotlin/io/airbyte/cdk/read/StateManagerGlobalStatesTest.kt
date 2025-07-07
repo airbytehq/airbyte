@@ -64,11 +64,15 @@ class StateManagerGlobalStatesTest {
         Assertions.assertNull(stateManager.scoped(streams.events).current())
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work results
-        stateManager.scoped(streams.global).set(Jsons.readTree("{\"cdc\":\"starting\"}"), 0L)
-        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L)
+        stateManager
+            .scoped(streams.global)
+            .set(Jsons.readTree("{\"cdc\":\"starting\"}"), 0L, null, null)
+        stateManager
+            .scoped(streams.kv)
+            .set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L, null, null)
         stateManager
             .scoped(streams.events)
-            .set(Jsons.readTree("{\"full_refresh\":\"ongoing\"}"), 456L)
+            .set(Jsons.readTree("{\"full_refresh\":\"ongoing\"}"), 456L, null, null)
         // test checkpoint messages
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
@@ -78,16 +82,11 @@ class StateManagerGlobalStatesTest {
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
                     |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
-                    |"stream_state":{"initial_sync":"ongoing"}}
+                    |"stream_state":{"initial_sync":"ongoing"}},
+                    |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
+                    |"stream_state":{"full_refresh":"ongoing"}}
                     |]},
-                    |"sourceStats":{"recordCount":123.0}
-                    |}
-                """.trimMargin(),
-                    """{
-                    |"type":"STREAM",
-                    |"stream":{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
-                    |"stream_state":{"full_refresh":"ongoing"}},
-                    |"sourceStats":{"recordCount":456.0}
+                    |"sourceStats":{"recordCount":579.0}
                     |}
                 """.trimMargin(),
                 )
@@ -114,7 +113,9 @@ class StateManagerGlobalStatesTest {
         Assertions.assertNull(stateManager.scoped(streams.events).current())
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work results for the kv stream
-        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L)
+        stateManager
+            .scoped(streams.kv)
+            .set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L, null, null)
         // test checkpoint messages
         val checkpointOngoing: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
@@ -124,7 +125,9 @@ class StateManagerGlobalStatesTest {
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
                     |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
-                    |"stream_state":{"initial_sync":"ongoing"}}
+                    |"stream_state":{"initial_sync":"ongoing"}},
+                    |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
+                    |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":123.0}
                     |}
                 """.trimMargin(),
@@ -134,10 +137,12 @@ class StateManagerGlobalStatesTest {
         )
         Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
         // update state manager with more fake work results for the kv stream
-        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 456L)
         stateManager
             .scoped(streams.kv)
-            .set(Jsons.readTree("{\"initial_sync\":\"completed\"}"), 789L)
+            .set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 456L, null, null)
+        stateManager
+            .scoped(streams.kv)
+            .set(Jsons.readTree("{\"initial_sync\":\"completed\"}"), 789L, null, null)
         // test checkpoint messages
         val checkpointCompleted: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
@@ -147,7 +152,9 @@ class StateManagerGlobalStatesTest {
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
                     |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
-                    |"stream_state":{"initial_sync":"completed"}}
+                    |"stream_state":{"initial_sync":"completed"}},
+                    |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
+                    |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":1245.0}
                     |}
                 """.trimMargin(),
@@ -187,7 +194,7 @@ class StateManagerGlobalStatesTest {
         // update state manager with fake work results
         stateManager
             .scoped(streams.kv)
-            .set(Jsons.readTree("{\"initial_sync\":\"completed\"}"), 789L)
+            .set(Jsons.readTree("{\"initial_sync\":\"completed\"}"), 789L, null, null)
         // test checkpoint messages
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
@@ -197,7 +204,9 @@ class StateManagerGlobalStatesTest {
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
                     |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
-                    |"stream_state":{"initial_sync":"completed"}}
+                    |"stream_state":{"initial_sync":"completed"}},
+                    |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
+                    |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":789.0}
                     |}
                 """.trimMargin(),
@@ -235,7 +244,9 @@ class StateManagerGlobalStatesTest {
         Assertions.assertNull(stateManager.scoped(streams.events).current())
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work results
-        stateManager.scoped(streams.global).set(Jsons.readTree("{\"cdc\":\"ongoing\"}"), 741L)
+        stateManager
+            .scoped(streams.global)
+            .set(Jsons.readTree("{\"cdc\":\"ongoing\"}"), 741L, null, null)
         // test checkpoint messages
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         Assertions.assertEquals(
@@ -245,7 +256,9 @@ class StateManagerGlobalStatesTest {
                     |"global":{"shared_state":{"cdc":"ongoing"},
                     |"stream_states":[
                     |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
-                    |"stream_state":{"initial_sync":"completed"}}
+                    |"stream_state":{"initial_sync":"completed"}},
+                    |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
+                    |"stream_state":{}}
                     |]},
                     |"sourceStats":{"recordCount":741.0}
                     |}
@@ -266,10 +279,13 @@ class StateManagerGlobalStatesTest {
         Assertions.assertEquals(1, global.streams.size)
         val kv: Stream = global.streams.first()
         Assertions.assertEquals("KV", kv.name)
-        Assertions.assertEquals(listOf("V", "K"), kv.fields.map { it.id })
+        Assertions.assertEquals(
+            listOf("V", "K", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at"),
+            kv.schema.map { it.id },
+        )
         Assertions.assertEquals(listOf("K"), kv.configuredPrimaryKey?.map { it.id })
         Assertions.assertEquals(ConfiguredSyncMode.INCREMENTAL, kv.configuredSyncMode)
-        val events: Stream = streams.filter { it.id != kv.id }.first()
+        val events: Stream = streams.first { it.id != kv.id }
         Assertions.assertEquals("EVENTS", events.name)
         Assertions.assertEquals(listOf("MSG", "ID", "TS"), events.fields.map { it.id })
         Assertions.assertEquals(listOf("ID"), events.configuredPrimaryKey?.map { it.id })

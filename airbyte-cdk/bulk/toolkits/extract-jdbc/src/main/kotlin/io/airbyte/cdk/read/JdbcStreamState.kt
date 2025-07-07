@@ -13,7 +13,15 @@ import com.fasterxml.jackson.databind.JsonNode
  */
 interface JdbcStreamState<A : JdbcSharedState> {
 
+    /**
+     * [StreamFeedBootstrap] instance passed to the [JdbcPartitionsCreatorFactory] instance which
+     * created this object.
+     */
+    val streamFeedBootstrap: StreamFeedBootstrap
+
+    /** Convenience getter for the current [Stream]. */
     val stream: Stream
+        get() = streamFeedBootstrap.feed
 
     /** The transient state shared by all partitions. Includes global resources. */
     val sharedState: A

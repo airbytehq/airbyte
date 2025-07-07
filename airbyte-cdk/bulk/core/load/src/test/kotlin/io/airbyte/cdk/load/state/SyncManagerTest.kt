@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.state
 
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
@@ -41,102 +42,102 @@ class SyncManagerTest {
     //  deferred; B) It should probably move into a writer wrapper.
 
     @Test
-    fun testAwaitAllStreamsCompletedSuccessfully() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+    fun testAwaitAllStreamsProcessedSuccessfully() = runTest {
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
         val completionChannel = Channel<Boolean>(Channel.UNLIMITED)
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
-        launch { completionChannel.send(syncManager.awaitAllStreamsCompletedSuccessfully()) }
+        launch { completionChannel.send(syncManager.awaitAllStreamsProcessedSuccessfully()) }
 
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager2.markSucceeded()
+        manager2.markProcessingSucceeded()
         Assertions.assertTrue(completionChannel.receive())
     }
 
     @Test
-    fun testAwaitAllStreamsCompletedSuccessfullyWithFailure() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+    fun testAwaitAllStreamsProcessedSuccessfullyWithFailure() = runTest {
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
 
         val completionChannel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { completionChannel.send(syncManager.awaitAllStreamsCompletedSuccessfully()) }
+        launch { completionChannel.send(syncManager.awaitAllStreamsProcessedSuccessfully()) }
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager2.markFailed(RuntimeException())
+        manager2.markProcessingFailed(RuntimeException())
         Assertions.assertFalse(completionChannel.receive())
     }
 
     @Test
     fun testIsActive() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
         Assertions.assertTrue(syncManager.isActive())
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         Assertions.assertTrue(syncManager.isActive())
-        manager2.markSucceeded()
+        manager2.markProcessingSucceeded()
         Assertions.assertTrue(syncManager.isActive())
-        syncManager.markSucceeded()
+        syncManager.markDestinationSucceeded()
         Assertions.assertFalse(syncManager.isActive())
     }
 
     @Test
     fun testAwaitSyncResult() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        val manager2 = syncManager.getStreamManager(stream2.descriptor)
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        val manager2 = syncManager.getStreamManager(stream2.mappedDescriptor)
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
-        val completionChannel = Channel<SyncResult>(Channel.UNLIMITED)
+        val completionChannel = Channel<DestinationResult>(Channel.UNLIMITED)
 
-        launch { completionChannel.send(syncManager.awaitSyncResult()) }
+        launch { completionChannel.send(syncManager.awaitDestinationResult()) }
 
         CoroutineTestUtils.assertThrows(IllegalStateException::class) {
-            syncManager.markSucceeded()
+            syncManager.markDestinationSucceeded()
         }
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         CoroutineTestUtils.assertThrows(IllegalStateException::class) {
-            syncManager.markSucceeded()
+            syncManager.markDestinationSucceeded()
         }
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
-        manager2.markSucceeded()
+        manager2.markProcessingSucceeded()
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
-        syncManager.markSucceeded()
-        Assertions.assertEquals(SyncSuccess, completionChannel.receive())
+        syncManager.markDestinationSucceeded()
+        Assertions.assertEquals(DestinationSuccess, completionChannel.receive())
     }
 
     @Test
     fun testCrashOnNoEndOfStream() = runTest {
-        val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        manager1.markEndOfStream()
+        val manager1 = syncManager.getStreamManager(stream1.mappedDescriptor)
+        manager1.markEndOfStream(true)
         // This should fail, because stream2 was not marked with end of stream
-        val e = assertThrows<IllegalStateException> { syncManager.markInputConsumed() }
+        val e = assertThrows<TransientErrorException> { syncManager.markInputConsumed() }
         assertEquals(
             // stream1 is fine, so the message only includes stream2
-            "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
+            "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
             e.message
         )
     }

@@ -69,6 +69,19 @@ object ValidatedJsonUtils {
     }
 
     fun <T> parseUnvalidated(
+        json: String,
+        klazz: Class<T>,
+    ): T {
+        val tree: JsonNode =
+            try {
+                Jsons.readTree(json)
+            } catch (e: Exception) {
+                throw ConfigErrorException("malformed json value while parsing for $klazz", e)
+            }
+        return parseUnvalidated(tree, klazz)
+    }
+
+    fun <T> parseUnvalidated(
         jsonNode: JsonNode,
         klazz: Class<T>,
     ): T =

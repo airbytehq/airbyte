@@ -4,14 +4,13 @@
 
 package io.airbyte.cdk.read.cdc
 
-import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
-import io.airbyte.cdk.read.Feed
-import io.airbyte.cdk.read.Global
+import io.airbyte.cdk.read.FeedBootstrap
+import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
-import io.airbyte.cdk.read.StateQuerier
+import io.airbyte.cdk.read.PartitionsCreatorFactorySupplier
+import io.airbyte.cdk.read.ResourceAcquirer
 import io.micronaut.core.annotation.Order
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicReference
@@ -21,10 +20,17 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreatorFactory] implementation for CDC with Debezium. */
 class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val globalLockResource: CdcGlobalLockResource,
-    val outputConsumer: OutputConsumer,
-    val debeziumOps: DebeziumOperations<T>,
+    val resourceAcquirer: ResourceAcquirer,
+    val cdcPartitionsCreatorDbzOps: CdcPartitionsCreatorDebeziumOperations<T>,
+    val cdcPartitionReaderDbzOps: CdcPartitionReaderDebeziumOperations<T>,
 ) : PartitionsCreatorFactory {
+
+    /**
+     * [AtomicReference] to a WAL position lower bound value shared by all [CdcPartitionsCreator]s.
+     * This value is updated by the [CdcPartitionsCreator] based on the incumbent state and is used
+     * to detect stalls.
+     */
+    private val lowerBoundReference = AtomicReference<T>()
 
     /**
      * [AtomicReference] to a WAL position upper bound value shared by all [CdcPartitionsCreator]s.
@@ -32,21 +38,30 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
      */
     private val upperBoundReference = AtomicReference<T>()
 
-    override fun make(stateQuerier: StateQuerier, feed: Feed): PartitionsCreator? {
-        if (feed !is Global) {
+    /** [AtomicReference] used to trigger resetting a sync when not null. */
+    private val resetReason = AtomicReference<String?>(null)
+
+    override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
+        if (feedBootstrap !is GlobalFeedBootstrap) {
             // Fall through on non-Global streams.
             return null
         }
-        val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         return CdcPartitionsCreator(
             concurrencyResource,
-            globalLockResource,
-            stateQuerier,
-            outputConsumer,
-            debeziumOps,
-            debeziumOps,
+            resourceAcquirer,
+            feedBootstrap,
+            cdcPartitionsCreatorDbzOps,
+            cdcPartitionReaderDbzOps,
+            lowerBoundReference,
             upperBoundReference,
-            opaqueStateValue,
+            resetReason,
         )
     }
+}
+
+@Singleton
+class CdcPartitionsCreatorFactorySupplier<T : CdcPartitionsCreatorFactory<C>, C : Comparable<C>>(
+    val factory: T
+) : PartitionsCreatorFactorySupplier<T> {
+    override fun get(): T = factory
 }

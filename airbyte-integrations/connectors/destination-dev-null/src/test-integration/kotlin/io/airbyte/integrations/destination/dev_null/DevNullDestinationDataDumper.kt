@@ -18,4 +18,11 @@ object DevNullDestinationDataDumper : DestinationDataDumper {
         // have tests that try to read back the records
         throw NotImplementedError()
     }
+
+    override fun dumpFile(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): Map<String, String> {
+        throw NotImplementedError()
+    }
 }

@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference
 /** Default implementation of [JdbcStreamState]. */
 class DefaultJdbcStreamState(
     override val sharedState: DefaultJdbcSharedState,
-    override val stream: Stream,
+    override val streamFeedBootstrap: StreamFeedBootstrap,
 ) : JdbcStreamState<DefaultJdbcSharedState> {
 
     override var cursorUpperBound: JsonNode?

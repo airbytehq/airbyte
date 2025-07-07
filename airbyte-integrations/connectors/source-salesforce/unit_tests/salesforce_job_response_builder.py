@@ -9,18 +9,18 @@ from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder, fin
 class JobCreateResponseBuilder:
     def __init__(self) -> None:
         self._response = {
-           "id": "any_id",
-           "operation": "query",
-           "object": "Account",
-           "createdById": "005R0000000GiwjIAC",
-           "createdDate": "2018-12-17T21:00:17.000+0000",
-           "systemModstamp": "2018-12-17T21:00:17.000+0000",
-           "state": "UploadComplete",
-           "concurrencyMode": "Parallel",
-           "contentType": "CSV",
-           "apiVersion": 46.0,
-           "lineEnding": "LF",
-           "columnDelimiter": "COMMA"
+            "id": "any_id",
+            "operation": "query",
+            "object": "Account",
+            "createdById": "005R0000000GiwjIAC",
+            "createdDate": "2018-12-17T21:00:17.000+0000",
+            "systemModstamp": "2018-12-17T21:00:17.000+0000",
+            "state": "UploadComplete",
+            "concurrencyMode": "Parallel",
+            "contentType": "CSV",
+            "apiVersion": 46.0,
+            "lineEnding": "LF",
+            "columnDelimiter": "COMMA",
         }
         self._status_code = 200
 
@@ -52,11 +52,11 @@ class JobInfoResponseBuilder:
     def with_status_code(self, status_code: int) -> "JobInfoResponseBuilder":
         self._status_code = status_code
         return self
-    
+
     def with_error_message(self, error_message: str) -> "JobInfoResponseBuilder":
         self._response["errorMessage"] = error_message
         return self
-    
+
     def get_response(self) -> any:
         return self._response
 

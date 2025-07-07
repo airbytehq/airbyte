@@ -11,13 +11,16 @@ from typing import Dict, List, Mapping, Optional, Tuple, Type
 
 import dagger
 import semver
+
 from base_images import consts, published_image
 from base_images.bases import AirbyteConnectorBaseImage
+from base_images.java.bases import AirbyteJavaConnectorBaseImage
 from base_images.python.bases import AirbyteManifestOnlyConnectorBaseImage, AirbytePythonConnectorBaseImage
 from base_images.utils import docker
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 
-MANAGED_BASE_IMAGES = [AirbytePythonConnectorBaseImage]
+
+MANAGED_BASE_IMAGES = [AirbytePythonConnectorBaseImage, AirbyteJavaConnectorBaseImage]
 
 
 @dataclass
@@ -105,7 +108,10 @@ class VersionRegistry:
 
     @staticmethod
     async def get_all_published_base_images(
-        dagger_client: dagger.Client, docker_credentials: Tuple[str, str], ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage]
+        dagger_client: dagger.Client,
+        docker_credentials: Tuple[str, str],
+        ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage],
+        cache_ttl_seconds: int = 0,
     ) -> List[published_image.PublishedImage]:
         """Returns all the published base images for a given base image version class.
 
@@ -113,23 +119,28 @@ class VersionRegistry:
             dagger_client (dagger.Client): The dagger client used to build the registry.
             docker_credentials (Tuple[str, str]): The docker credentials used to fetch published images from DockerHub.
             ConnectorBaseImageClass (Type[AirbyteConnectorBaseImage]): The base image version class bound to the registry.
-
+            cache_ttl_seconds (int, optional): The cache time to live in seconds for crane output. Defaults to 0.
         Returns:
             List[published_image.PublishedImage]: The published base images for a given base image version class.
         """
-        crane_client = docker.CraneClient(dagger_client, docker_credentials)
+        crane_client = docker.CraneClient(dagger_client, docker_credentials, cache_ttl_seconds=cache_ttl_seconds)
         remote_registry = docker.RemoteRepository(crane_client, consts.REMOTE_REGISTRY, ConnectorBaseImageClass.repository)  # type: ignore
         return await remote_registry.get_all_images()
 
     @staticmethod
     async def load(
-        ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage], dagger_client: dagger.Client, docker_credentials: Tuple[str, str]
+        ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage],
+        dagger_client: dagger.Client,
+        docker_credentials: Tuple[str, str],
+        cache_ttl_seconds: int = 0,
     ) -> VersionRegistry:
         """Instantiates a registry by fetching available versions from the remote registry and loading the changelog from disk.
 
         Args:
             ConnectorBaseImageClass (Type[AirbyteConnectorBaseImage]): The base image version class bound to the registry.
-
+            dagger_client (dagger.Client): The dagger client used to build the registry.
+            docker_credentials (Tuple[str, str]): The docker credentials used to fetch published images from DockerHub.
+            cache_ttl_seconds (int, optional): The cache time to live in seconds for crane output. Defaults to 0.
         Returns:
             VersionRegistry: The registry.
         """
@@ -141,7 +152,7 @@ class VersionRegistry:
 
         # Instantiate a crane client and a remote registry to fetch published images from DockerHub
         published_docker_images = await VersionRegistry.get_all_published_base_images(
-            dagger_client, docker_credentials, ConnectorBaseImageClass
+            dagger_client, docker_credentials, ConnectorBaseImageClass, cache_ttl_seconds=cache_ttl_seconds
         )
 
         # Build a dict of published images by version number for easier lookup
@@ -246,16 +257,30 @@ class VersionRegistry:
             return None
 
 
-async def get_python_registry(dagger_client: dagger.Client, docker_credentials: Tuple[str, str]) -> VersionRegistry:
-    return await VersionRegistry.load(AirbytePythonConnectorBaseImage, dagger_client, docker_credentials)
+async def get_python_registry(
+    dagger_client: dagger.Client, docker_credentials: Tuple[str, str], cache_ttl_seconds: int = 0
+) -> VersionRegistry:
+    return await VersionRegistry.load(
+        AirbytePythonConnectorBaseImage, dagger_client, docker_credentials, cache_ttl_seconds=cache_ttl_seconds
+    )
 
 
-async def get_manifest_only_registry(dagger_client: dagger.Client, docker_credentials: Tuple[str, str]) -> VersionRegistry:
-    return await VersionRegistry.load(AirbyteManifestOnlyConnectorBaseImage, dagger_client, docker_credentials)
+async def get_manifest_only_registry(
+    dagger_client: dagger.Client, docker_credentials: Tuple[str, str], cache_ttl_seconds: int = 0
+) -> VersionRegistry:
+    return await VersionRegistry.load(
+        AirbyteManifestOnlyConnectorBaseImage, dagger_client, docker_credentials, cache_ttl_seconds=cache_ttl_seconds
+    )
+
+
+async def get_java_registry(
+    dagger_client: dagger.Client, docker_credentials: Tuple[str, str], cache_ttl_seconds: int = 0
+) -> VersionRegistry:
+    return await VersionRegistry.load(AirbyteJavaConnectorBaseImage, dagger_client, docker_credentials, cache_ttl_seconds=cache_ttl_seconds)
 
 
 async def get_registry_for_language(
-    dagger_client: dagger.Client, language: ConnectorLanguage, docker_credentials: Tuple[str, str]
+    dagger_client: dagger.Client, language: ConnectorLanguage, docker_credentials: Tuple[str, str], cache_ttl_seconds: int = 0
 ) -> VersionRegistry:
     """Returns the registry for a given language.
     It is meant to be used externally to get the registry for a given connector language.
@@ -264,7 +289,7 @@ async def get_registry_for_language(
         dagger_client (dagger.Client): The dagger client used to build the registry.
         language (ConnectorLanguage): The connector language.
         docker_credentials (Tuple[str, str]): The docker credentials used to fetch published images from DockerHub.
-
+        cache_ttl_seconds (int, optional): The cache time to live in seconds for crane output. Defaults to 0.
     Raises:
         NotImplementedError: Raised if the registry for the given language is not implemented yet.
 
@@ -272,9 +297,11 @@ async def get_registry_for_language(
         VersionRegistry: The registry for the given language.
     """
     if language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-        return await get_python_registry(dagger_client, docker_credentials)
+        return await get_python_registry(dagger_client, docker_credentials, cache_ttl_seconds=cache_ttl_seconds)
     elif language is ConnectorLanguage.MANIFEST_ONLY:
-        return await get_manifest_only_registry(dagger_client, docker_credentials)
+        return await get_manifest_only_registry(dagger_client, docker_credentials, cache_ttl_seconds=cache_ttl_seconds)
+    elif language is ConnectorLanguage.JAVA:
+        return await get_java_registry(dagger_client, docker_credentials, cache_ttl_seconds=cache_ttl_seconds)
     else:
         raise NotImplementedError(f"Registry for language {language} is not implemented yet.")
 
@@ -282,5 +309,6 @@ async def get_registry_for_language(
 async def get_all_registries(dagger_client: dagger.Client, docker_credentials: Tuple[str, str]) -> List[VersionRegistry]:
     return [
         await get_python_registry(dagger_client, docker_credentials),
-        # await get_java_registry(dagger_client),
+        await get_java_registry(dagger_client, docker_credentials),
+        # await get_manifest_only_registry(dagger_client, docker_credentials),
     ]

@@ -11,6 +11,9 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 
 import pendulum
 import requests  # type: ignore[import]
+from pendulum import DateTime  # type: ignore[attr-defined]
+from requests import exceptions
+
 from airbyte_cdk import (
     BearerAuthenticator,
     CursorPaginationStrategy,
@@ -34,6 +37,7 @@ from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
+from airbyte_cdk.sources.declarative.partition_routers import AsyncJobPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
@@ -46,12 +50,11 @@ from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import exceptions
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
+
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -428,12 +431,12 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
             yield from [StreamSlice(partition={}, cursor_slice={})]
             return
 
-        for slice_start, slice_end in self._cursor.generate_slices():
+        for stream_slice in self._cursor.stream_slices():
             yield StreamSlice(
                 partition={},
                 cursor_slice={
-                    "start_date": slice_start.isoformat(timespec="milliseconds"),
-                    "end_date": slice_end.isoformat(timespec="milliseconds"),
+                    "start_date": stream_slice["start_date"].replace("Z", "+00:00"),
+                    "end_date": stream_slice["end_date"].replace("Z", "+00:00"),
                 },
             )
 
@@ -579,7 +582,7 @@ class BulkSalesforceStream(SalesforceStream):
             decoder=decoder,
             stream_response=False,
         )
-        polling_id_interpolation = "{{stream_slice['create_job_response'].json()['id'] }}"
+        polling_id_interpolation = "{{creation_response['id']}}"
         polling_requester = HttpRequester(
             name=f"{self.name} - polling requester",
             url_base=url_base,
@@ -604,7 +607,7 @@ class BulkSalesforceStream(SalesforceStream):
             stream_response=False,
         )
         # "GET", url, headers = {"Accept-Encoding": "gzip"}, request_kwargs = {"stream": True}
-        download_id_interpolation = "{{stream_slice['url']}}"
+        download_id_interpolation = "{{download_target}}"
         job_download_components_name = f"{self.name} - download requester"
         download_requester = HttpRequester(
             name=job_download_components_name,
@@ -631,7 +634,7 @@ class BulkSalesforceStream(SalesforceStream):
         download_retriever = SimpleRetriever(
             requester=download_requester,
             record_selector=RecordSelector(
-                extractor=ResponseToFileExtractor(),
+                extractor=ResponseToFileExtractor(parameters={}),
                 record_filter=None,
                 transformations=[],
                 schema_normalization=TypeTransformer(TransformConfig.NoTransform),
@@ -701,7 +704,7 @@ class BulkSalesforceStream(SalesforceStream):
             stream_response=False,
         )
         status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
-        urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
+        download_target_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
@@ -716,7 +719,7 @@ class BulkSalesforceStream(SalesforceStream):
                 "Aborted": AsyncJobStatus.FAILED,
                 "Failed": AsyncJobStatus.FAILED,
             },
-            urls_extractor=urls_extractor,
+            download_target_extractor=download_target_extractor,
             job_timeout=self.DEFAULT_WAIT_TIMEOUT,
         )
         record_selector = RecordSelector(
@@ -732,14 +735,18 @@ class BulkSalesforceStream(SalesforceStream):
                 config={},
                 parameters={},
                 record_selector=record_selector,
-                stream_slicer=stream_slicer,
-                job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository,
-                    stream_slices,
-                    self._job_tracker,
-                    self._message_repository,
-                    exceptions_to_break_on=[BulkNotSupportedException],
-                    has_bulk_parent=has_bulk_parent,
+                stream_slicer=AsyncJobPartitionRouter(
+                    job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                        job_repository,
+                        stream_slices,
+                        self._job_tracker,
+                        self._message_repository,
+                        exceptions_to_break_on=[BulkNotSupportedException],
+                        has_bulk_parent=has_bulk_parent,
+                    ),
+                    stream_slicer=stream_slicer,
+                    config=config,
+                    parameters={},
                 ),
             ),
             config={},
@@ -805,7 +812,7 @@ class BulkSalesforceStream(SalesforceStream):
             yield from self._rest_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def _is_async_job_slice(self, stream_slice):
-        return isinstance(stream_slice, StreamSlice) and "partition" in stream_slice.partition
+        return isinstance(stream_slice, StreamSlice) and "jobs" in stream_slice.extra_fields
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -894,11 +901,14 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         if not self._stream_slicer_cursor:
             raise ValueError("Cursor should be set at this point")
 
-        for slice_start, slice_end in self._stream_slicer_cursor.generate_slices():
-            yield {
-                "start_date": slice_start.isoformat(timespec="milliseconds"),
-                "end_date": slice_end.isoformat(timespec="milliseconds"),
-            }
+        for stream_slice in self._stream_slicer_cursor.stream_slices():
+            yield StreamSlice(
+                partition={},
+                cursor_slice={
+                    "start_date": stream_slice["start_date"].replace("Z", "+00:00"),
+                    "end_date": stream_slice["end_date"].replace("Z", "+00:00"),
+                },
+            )
 
     @property
     def stream_slice_step(self) -> pendulum.Duration:

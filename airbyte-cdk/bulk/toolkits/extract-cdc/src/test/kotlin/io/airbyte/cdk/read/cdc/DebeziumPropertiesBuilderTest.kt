@@ -9,6 +9,7 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.OffsetDateTimeFieldType
 import io.airbyte.cdk.discover.StringFieldType
+import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Stream
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -46,10 +47,10 @@ class DebeziumPropertiesBuilderTest {
                     StreamIdentifier.from(
                         StreamDescriptor().withName(name).withNamespace(namespace)
                     ),
-                fields = fields.toList(),
+                schema = fields.toSet() + setOf(TestMetaFieldDecorator.GlobalCursor),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = null,
-                configuredCursor = null,
+                configuredCursor = TestMetaFieldDecorator.GlobalCursor,
             )
         val streams: List<Stream> =
             listOf(

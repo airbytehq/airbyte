@@ -7,6 +7,8 @@
 # Generated files
 .docusaurus
 .cache-loader
+src/data/declarative_component_schema.yaml
+src/data/connector_registry_slim.json
 
 # Misc
 .DS_Store
@@ -20,3 +22,5 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+CLAUDE.local.md

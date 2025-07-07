@@ -1,0 +1,42 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 300
+  allowedHosts:
+    hosts:
+      - box.com
+      - boxcloud.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-box-data-extract
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    # baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 852b8bda-6a51-4fc6-854e-6beace1614a8
+  dockerImageTag: 0.1.13
+  dockerRepository: airbyte/source-box-data-extract
+  githubIssueLabel: source-box-data-extract
+  icon: icon.svg
+  license: MIT
+  name: Box Data Extract
+  releaseDate: 2025-02-15
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/box-data-extract
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  tags:
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"

@@ -60,7 +60,6 @@ from .utils import read_full_refresh
 
 
 class SourceGithub(AbstractSource):
-
     continue_sync_on_stream_failure = True
 
     @staticmethod

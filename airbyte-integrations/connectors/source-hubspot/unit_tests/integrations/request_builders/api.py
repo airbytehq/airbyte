@@ -26,8 +26,7 @@ class OAuthRequestBuilder(AbstractRequestBuilder):
     def build(self) -> HttpRequest:
         client_id, client_secret, refresh_token = self._params["client_id"], self._params["client_secret"], self._params["refresh_token"]
         return HttpRequest(
-            url=self.URL,
-            body=f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}"
+            url=self.URL, body=f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}"
         )
 
 

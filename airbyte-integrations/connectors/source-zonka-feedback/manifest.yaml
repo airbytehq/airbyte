@@ -1,0 +1,995 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the Zonka Feedback source that ingests data from the Zonka API.
+
+
+  Zonka Feedback simplifies CX, allowing you to start meaningful two-way
+  conversations with customers via powerful surveys. Design stunning surveys in
+  minutes, gather data from all touchpoints, understand customers better with AI
+  analytics & close the feedback loop — all within one powerful platform
+  https://www.zonkafeedback.com/
+
+
+  To use this source, you must first create an account. Once logged in, click on
+  Settings -> Developers -> API & Data Center. Note down your Data center and
+  generate your auth token. 
+
+
+  For more information about the API visit
+  https://apidocs.zonkafeedback.com/#intro
+
+check:
+  type: CheckStream
+  stream_names:
+    - responses
+
+definitions:
+  streams:
+    responses:
+      type: DeclarativeStream
+      name: responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /responses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/responses"
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+    surveys:
+      type: DeclarativeStream
+      name: surveys
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /surveys
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surveys"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - emailAddress
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - list
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /locations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['datacenter'] }}.apis.zonkafeedback.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"auth_token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Z-API-TOKEN
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/responses"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/surveys"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/locations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - datacenter
+      - auth_token
+    properties:
+      datacenter:
+        type: string
+        description: The identifier for the data center, such as 'us1' or 'e' for EU.
+        enum:
+          - us1
+          - e
+        name: dc_id
+        order: 0
+        title: Data Center ID
+      auth_token:
+        type: string
+        description: >-
+          Auth token to use. Generate it by navigating to Company Settings >
+          Developers > API in your Zonka Feedback account.
+        name: auth_token
+        order: 1
+        title: Auth Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    responses: true
+    workspaces: true
+    surveys: true
+    contacts: true
+    tasks: true
+    users: true
+    locations: true
+  testedStreams:
+    responses:
+      streamHash: 45864c9dfee8dd94b7c81f10f499cec03ad2127e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workspaces:
+      streamHash: c644d7a7709ab8218f21f01df8f1e7dc6ecbc2f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    surveys:
+      streamHash: fe999cb8cb8a1d8d883e3882c1522bfd77203288
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: 190251275e488fbf11a35e28457e9c9ca949ba63
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: 587a5b308da89877d45ce0d3470c8aadc191dc92
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 225b8c2205b1ab9f83a2b900ddbf5a6ad14e3728
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      hasRecords: true
+      streamHash: f79c494a0cdd71761274ad3cb8b8068cd6179fdf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://apidocs.zonkafeedback.com/#intro
+
+schemas:
+  responses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      NPS:
+        type:
+          - number
+          - "null"
+      browser:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      contactAttributes:
+        type:
+          - array
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      geoLocation:
+        type:
+          - string
+          - "null"
+      hasComments:
+        type:
+          - string
+          - "null"
+      hasNotes:
+        type:
+          - string
+          - "null"
+      hasTask:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isImportant:
+        type:
+          - string
+          - "null"
+      isStarred:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      locationName:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      ratedUserId:
+        type:
+          - string
+          - "null"
+      ratedUserName:
+        type:
+          - string
+          - "null"
+      receivedDate:
+        type:
+          - string
+          - "null"
+      receivedDateLocal:
+        type:
+          - string
+          - "null"
+      respondentDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          emailAddress:
+            type:
+              - string
+              - "null"
+          externalId:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      respondentId:
+        type:
+          - string
+          - "null"
+      responseAttributes:
+        type:
+          - array
+          - "null"
+      responseURL:
+        type:
+          - string
+          - "null"
+      surveyId:
+        type:
+          - string
+          - "null"
+      surveyLanguage:
+        type:
+          - string
+          - "null"
+      surveyName:
+        type:
+          - string
+          - "null"
+      surveyResponse:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            answer:
+              type:
+                - string
+                - "null"
+            questionId:
+              type:
+                - string
+                - "null"
+            questionLabel:
+              type:
+                - string
+                - "null"
+            variableId:
+              type:
+                - string
+                - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      takenByUserId:
+        type:
+          - string
+          - "null"
+      takenByUserName:
+        type:
+          - string
+          - "null"
+      taskIds:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      webDevice:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      modifiedBy:
+        type:
+          - string
+          - "null"
+      modifiedDate:
+        type:
+          - string
+          - "null"
+      workspaceName:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  surveys:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      locationId:
+        type:
+          - array
+          - "null"
+      modifiedBy:
+        type:
+          - string
+          - "null"
+      modifiedDate:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      webSurveyTitle:
+        type:
+          - string
+          - "null"
+      webSurveyURLs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+      workspaceName:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      androidSessionCounts:
+        type:
+          - number
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+      averageNps:
+        type:
+          - number
+          - "null"
+      bounced:
+        type:
+          - boolean
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      contactSource:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdDate:
+        type:
+          - string
+          - "null"
+      emailAddress:
+        type: string
+      firstReferringSite:
+        type:
+          - string
+          - "null"
+      hasNote:
+        type:
+          - boolean
+          - "null"
+      historyImportedFromAnonymous:
+        type:
+          - boolean
+          - "null"
+      iosSessionCounts:
+        type:
+          - number
+          - "null"
+      lastEmailSurveySentDatetime:
+        type:
+          - string
+          - "null"
+      lastNps:
+        type:
+          - number
+          - "null"
+      lastPage:
+        type:
+          - string
+          - "null"
+      lastReferringSite:
+        type:
+          - string
+          - "null"
+      lastResponseDateTime:
+        type:
+          - string
+          - "null"
+      lastSurveyViewedDate:
+        type:
+          - string
+          - "null"
+      lastSurveyViewedId:
+        type:
+          - string
+          - "null"
+      lists:
+        type:
+          - array
+          - "null"
+      locations:
+        type:
+          - array
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - string
+          - "null"
+      modifiedDate:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      numNotes:
+        type:
+          - number
+          - "null"
+      numPendingTasks:
+        type:
+          - number
+          - "null"
+      numTasks:
+        type:
+          - number
+          - "null"
+      pagesViewedCount:
+        type:
+          - number
+          - "null"
+      pre_mongified_id:
+        type:
+          - number
+          - "null"
+      sessionCounts:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      surveys:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      surveysVisits:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      totalResponses:
+        type:
+          - number
+          - "null"
+      uniqueId:
+        type:
+          - string
+          - "null"
+      unsubscribeEmail:
+        type:
+          - boolean
+          - "null"
+      unsubscribeSMS:
+        type:
+          - boolean
+          - "null"
+      utm_campaign:
+        type:
+          - string
+          - "null"
+      utm_content:
+        type:
+          - string
+          - "null"
+      utm_medium:
+        type:
+          - string
+          - "null"
+      utm_source:
+        type:
+          - string
+          - "null"
+      utm_term:
+        type:
+          - string
+          - "null"
+      webSessionCounts:
+        type:
+          - number
+          - "null"
+      widgetsAnswered:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      widgetsVisited:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - emailAddress
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      description:
+        type:
+          - string
+          - "null"
+      assignedTo:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      dueDateTime:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCompleted:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      reminderSetting:
+        type:
+          - string
+          - "null"
+      responseId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      designation:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isOwner:
+        type:
+          - boolean
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      lastLogin:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id

@@ -66,8 +66,13 @@ definitions:
       $ref: "#/definitions/authenticator"
     error_handler:
       type: DefaultErrorHandler
-      description: >-
-        The default error handler
+      max_retries: 10
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 2
   requester_deprecated_api:
     $ref: "#/definitions/requester_base"
     # for deprecated retriever we should use `2021-01` api version
@@ -145,6 +150,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%dT%H:%M:%S"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      lookback_window: P{{ config.get('lookback_window_days', 0) }}D
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -152,6 +158,23 @@ definitions:
       start_time_option:
         type: RequestOption
         field_name: "updated_at_min"
+        inject_into: request_parameter
+  base_incremental_events_stream:
+    $ref: "#/definitions/base_modern_api_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: "created_at_min"
         inject_into: request_parameter
 
   # FULL-REFRESH STREAMS
@@ -173,15 +196,14 @@ definitions:
     $parameters:
       name: "metafields"
       data_path: "metafields"
-  # PRODUCTS
-  products_stream:
+  # PLANS
+  plans_stream:
     description: >-
-      Products Stream: https://developer.rechargepayments.com/2021-11/products/products_list
-      Products endpoint has 422 error with 2021-11 API version
-    $ref: "#/definitions/base_deprecated_api_stream"
+      Plans Stream: https://developer.rechargepayments.com/2021-11/plans/plans_list
+    $ref: "#/definitions/base_modern_api_stream"
     $parameters:
-      name: "products"
-      data_path: "products"
+      name: "plans"
+      data_path: "plans"
   # SHOP
   shop_stream:
     description: >-
@@ -206,6 +228,13 @@ definitions:
             value: "{{ record.shop.get('id') or record.store.get('id') }}"
     $parameters:
       name: "shop"
+  payment_methods_stream:
+    description: >-
+      Payment Methods Stream: https://developer.rechargepayments.com/2021-11/payment_methods/payment_methods_list
+    $ref: "#/definitions/base_modern_api_stream"
+    $parameters:
+      name: "payment_methods"
+      data_path: "payment_methods"
 
   # INCREMENTAL STREAMS
   # ADDRESSES
@@ -256,6 +285,29 @@ definitions:
     $parameters:
       name: "subscriptions"
       data_path: "subscriptions"
+  events_stream:
+    description: >-
+      Events Stream: https://developer.rechargepayments.com/2021-11/events/events_list
+    $ref: "#/definitions/base_incremental_events_stream"
+    $parameters:
+      name: "events"
+      data_path: "events"
+  # BUNDLE SELECTIONS
+  bundle_selections_stream:
+    description: >-
+      Bundle Selections Stream: https://developer.rechargepayments.com/2021-11/bundle_selections/bundle_selection_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "bundle_selections"
+      data_path: "bundle_selections"
+  # CREDIT ADJUSTMENTS
+  credit_adjustments_stream:
+    description: >-
+      Credit Adjustments Stream: https://developer.rechargepayments.com/2021-11/credits/credit_adjustment_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "credit_adjustments"
+      data_path: "credit_adjustments"
 
 streams:
   - "#/definitions/addresses_stream"
@@ -265,9 +317,13 @@ streams:
   - "#/definitions/discounts_stream"
   - "#/definitions/metafields_stream"
   - "#/definitions/onetimes_stream"
-  - "#/definitions/products_stream"
+  - "#/definitions/plans_stream"
   - "#/definitions/shop_stream"
   - "#/definitions/subscriptions_stream"
+  - "#/definitions/events_stream"
+  - "#/definitions/bundle_selections_stream"
+  - "#/definitions/credit_adjustments_stream"
+  - "#/definitions/payment_methods_stream"
   # The `orders` stream remains implemented in `streams.py` due to:
   # 1. Inability to resolve `$ref` conditionally
   # 2. Inability to dynamically switch between paginators (diff api versions, require diff pagination approach) (or create the CustomPaginator component)

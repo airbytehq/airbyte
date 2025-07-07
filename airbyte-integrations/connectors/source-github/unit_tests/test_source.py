@@ -8,10 +8,11 @@ from unittest.mock import MagicMock
 
 import pytest
 import responses
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github import constants
 from source_github.source import SourceGithub
+
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import command_check
 

@@ -76,6 +76,32 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 2.0.24 | 2025-05-24 | [60420](https://github.com/airbytehq/airbyte/pull/60420) | Update dependencies |
+| 2.0.23 | 2025-05-10 | [59399](https://github.com/airbytehq/airbyte/pull/59399) | Update dependencies |
+| 2.0.22 | 2025-04-26 | [58888](https://github.com/airbytehq/airbyte/pull/58888) | Update dependencies |
+| 2.0.21 | 2025-04-19 | [58342](https://github.com/airbytehq/airbyte/pull/58342) | Update dependencies |
+| 2.0.20 | 2025-04-12 | [57776](https://github.com/airbytehq/airbyte/pull/57776) | Update dependencies |
+| 2.0.19 | 2025-04-05 | [57246](https://github.com/airbytehq/airbyte/pull/57246) | Update dependencies |
+| 2.0.18 | 2025-03-29 | [56528](https://github.com/airbytehq/airbyte/pull/56528) | Update dependencies |
+| 2.0.17 | 2025-03-25 | [54206](https://github.com/airbytehq/airbyte/pull/54206) | remove default end date value |
+| 2.0.16 | 2025-03-22 | [55994](https://github.com/airbytehq/airbyte/pull/55994) | Update dependencies |
+| 2.0.15 | 2025-03-08 | [55280](https://github.com/airbytehq/airbyte/pull/55280) | Update dependencies |
+| 2.0.14 | 2025-03-01 | [54921](https://github.com/airbytehq/airbyte/pull/54921) | Update dependencies |
+| 2.0.13 | 2025-02-22 | [54444](https://github.com/airbytehq/airbyte/pull/54444) | Update dependencies |
+| 2.0.12 | 2025-02-20 | [54180](https://github.com/airbytehq/airbyte/pull/54180) | 🐛 Source Datadog : Fix the Pagination in the logs stream |
+| 2.0.11 | 2025-02-15 | [53705](https://github.com/airbytehq/airbyte/pull/53705) | Update dependencies |
+| 2.0.10 | 2025-02-08 | [53382](https://github.com/airbytehq/airbyte/pull/53382) | Update dependencies |
+| 2.0.9 | 2025-02-01 | [52866](https://github.com/airbytehq/airbyte/pull/52866) | Update dependencies |
+| 2.0.8 | 2025-01-25 | [52350](https://github.com/airbytehq/airbyte/pull/52350) | Update dependencies |
+| 2.0.7 | 2025-01-18 | [51677](https://github.com/airbytehq/airbyte/pull/51677) | Update dependencies |
+| 2.0.6 | 2024-01-16 | [48537](https://github.com/airbytehq/airbyte/pull/48537) | Update default start and end dates for logs stream, if they are not configured as default |
+| 2.0.5 | 2025-01-11 | [51122](https://github.com/airbytehq/airbyte/pull/51122) | Update dependencies |
+| 2.0.4 | 2024-12-28 | [50567](https://github.com/airbytehq/airbyte/pull/50567) | Update dependencies |
+| 2.0.3 | 2024-12-21 | [49988](https://github.com/airbytehq/airbyte/pull/49988) | Update dependencies |
+| 2.0.2 | 2024-12-14 | [49472](https://github.com/airbytehq/airbyte/pull/49472) | Update dependencies |
+| 2.0.1 | 2024-12-12 | [48300](https://github.com/airbytehq/airbyte/pull/48300) | Update dependencies |
+| 2.0.0 | 2024-12-06 | [48833](https://github.com/airbytehq/airbyte/pull/48833) | Remove `is_read_only` parameter from dashboards stream schema |
+| 1.1.1 | 2024-10-28 | [46502](https://github.com/airbytehq/airbyte/pull/46502) | Update dependencies |
 | 1.1.0 | 2023-10-04 | [46387](https://github.com/airbytehq/airbyte/pull/46387) | Migrate to manifest only |
 | 1.0.6 | 2024-09-28 | [46190](https://github.com/airbytehq/airbyte/pull/46190) | Update dependencies |
 | 1.0.5 | 2024-09-21 | [45771](https://github.com/airbytehq/airbyte/pull/45771) | Update dependencies |

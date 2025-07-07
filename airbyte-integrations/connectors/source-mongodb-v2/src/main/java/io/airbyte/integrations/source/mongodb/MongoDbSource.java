@@ -59,28 +59,48 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
-        final String databaseName = sourceConfig.getDatabaseName();
-        if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
-          /*
-           * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
-           * needs to actually execute a command in order to fetch the cluster description. Querying for the
-           * authorized collections guarantees that the cluster description will be available to the driver.
-           */
-          if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
-            return new AirbyteConnectionStatus()
-                .withMessage("Target MongoDB database does not contain any authorized collections.")
-                .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        final List<String> databaseNames = sourceConfig.getDatabaseNames();
+
+        if (databaseNames.isEmpty()) {
+          return new AirbyteConnectionStatus()
+              .withMessage("No databases specified in the configuration.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+
+        /*
+         * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
+         * needs to actually execute a command in order to fetch the cluster description. Querying for the
+         * authorized collections guarantees that the cluster description will be available to the driver.
+         */
+        boolean hasAuthorizedCollections = false;
+        List<String> databasesWithoutPermission = new ArrayList<>();
+
+        for (String databaseName : databaseNames) {
+          if (!MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
+            hasAuthorizedCollections = true;
+            LOGGER.info("Found authorized collections in database: {}", databaseName);
+          } else {
+            databasesWithoutPermission.add(databaseName);
+            LOGGER.warn("No authorized collections found in database: {}", databaseName);
           }
-          if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
-            LOGGER.error("Target MongoDB instance is not a replica set cluster.");
-            return new AirbyteConnectionStatus()
-                .withMessage("Target MongoDB instance is not a replica set cluster.")
-                .withStatus(AirbyteConnectionStatus.Status.FAILED);
-          }
-        } else {
-          LOGGER.error("Unable to perform connection check.  Database '" + databaseName + "' does not exist.");
-          return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage("Database does not exist.  Please check the source's configured database name.");
+        }
+
+        if (!databasesWithoutPermission.isEmpty()) {
+          LOGGER.warn("The following databases have no authorized collections: {}", String.join(", ", databasesWithoutPermission));
+        }
+
+        if (!hasAuthorizedCollections) {
+          return new AirbyteConnectionStatus()
+              .withMessage("Target MongoDB databases do not contain any authorized collections. Databases without permissions: "
+                  + String.join(", ", databasesWithoutPermission))
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+
+        if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
+          LOGGER.error("Target MongoDB instance is not a replica set cluster.");
+          return new AirbyteConnectionStatus()
+              .withMessage("Target MongoDB instance is not a replica set cluster.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
@@ -108,11 +128,19 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
-        final String databaseName = sourceConfig.getDatabaseName();
+        final List<String> databaseNames = sourceConfig.getDatabaseNames();
         final Integer sampleSize = sourceConfig.getSampleSize();
         final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
-        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced);
-        return new AirbyteCatalog().withStreams(streams);
+        final Integer discoverTimeout = sourceConfig.getStreamDiscoveryTimeoutSeconds();
+
+        List<AirbyteStream> allStreams = new ArrayList<>();
+        for (String databaseName : databaseNames) {
+          LOGGER.info("Discovering collections in database: {}", databaseName);
+          List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout);
+          allStreams.addAll(streams);
+        }
+
+        return new AirbyteCatalog().withStreams(allStreams);
       }
     } catch (final IllegalArgumentException e) {
       LOGGER.error("Unable to perform schema discovery operation.", e);
@@ -178,15 +206,26 @@ public class MongoDbSource extends BaseConnector implements Source {
     if (stateManager.getCdcState() == null) {
       stateManager.updateCdcState(new MongoDbCdcState(null, sourceConfig.getEnforceSchema()));
     }
-    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators = initialSnapshotHandler.getIterators(
-        streams,
-        stateManager,
-        mongoClient.getDatabase(sourceConfig.getDatabaseName()),
-        sourceConfig,
-        true,
-        true,
-        emmitedAt,
-        Optional.empty());
+
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators = new ArrayList<>();
+
+    for (String databaseName : sourceConfig.getDatabaseNames()) {
+      List<ConfiguredAirbyteStream> databaseStreams = streams.stream()
+          .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
+          .toList();
+      if (!databaseStreams.isEmpty()) {
+        LOGGER.info("Processing full refresh for database: {} with {} streams", databaseName, databaseStreams.size());
+        fullRefreshIterators.addAll(initialSnapshotHandler.getIterators(
+            databaseStreams,
+            stateManager,
+            mongoClient.getDatabase(databaseName),
+            sourceConfig,
+            true,
+            true,
+            emmitedAt,
+            Optional.empty()));
+      }
+    }
 
     return fullRefreshIterators;
   }
