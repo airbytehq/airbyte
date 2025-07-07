@@ -456,7 +456,7 @@ jobs:
                 "${{ needs.connectors-lint.result }}" == "success" ]]; then
             echo "result=success" | tee -a $GITHUB_OUTPUT
           else
-            echo "result=failed" | tee -a $GITHUB_OUTPUT
+            echo "result=failure" | tee -a $GITHUB_OUTPUT
           fi
 
       # In slash commands and when not running within a fork, we want to upload
