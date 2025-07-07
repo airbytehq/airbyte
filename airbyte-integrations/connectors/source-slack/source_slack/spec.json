@@ -115,14 +115,14 @@
         "description": "The number of worker threads to use for the sync.",
         "order": 7
       },
-      "channel_messages_time_step": {
+      "channel_messages_window_size": {
         "type": "integer",
         "order": 8,
         "default": 100,
         "minimum": 1,
         "maximum": 100,
-        "title": "Channel messages stream slice step size (in days)",
-        "description": "Indicates the step size of channel_messages stream.",
+        "title": "Channel messages date window size (in days)",
+        "description": "The size (in days) of the date window that will be used while syncing data from the channel messages stream. A smaller window will allow for greater parallelization when syncing records, but can lead to rate limiting errors.",
         "examples": [30, 10, 5]
       }
     }
