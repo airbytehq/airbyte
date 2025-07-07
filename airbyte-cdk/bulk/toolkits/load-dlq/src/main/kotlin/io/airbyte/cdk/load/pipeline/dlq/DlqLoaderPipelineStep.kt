@@ -89,7 +89,7 @@ class DlqLoaderAccumulator<S>(
 
     private fun getOutput(rejectedRecords: List<DestinationRecordRaw>?) =
         when (rejectedRecords) {
-            null -> DlqStepOutput(BatchState.COMPLETE, null)
+            null, emptyList<DestinationRecordRaw>() -> DlqStepOutput(BatchState.COMPLETE, null)
             else -> DlqStepOutput(BatchState.STAGED, rejectedRecords)
         }
 }
