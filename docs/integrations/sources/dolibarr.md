@@ -11,6 +11,7 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 - For the API Key access create a Dolibarr user in your installation with the permissions to "read" modules corresponding to the REST API end points you will use with the streams. (some streams or end points, like GET company information, will require that your user be administrator or have read/write permissions to works fine with the GET end point)
 - In the setup/modify menu of the user created in the previous step, generate the API Key (different to the user password) that will be required for the setup of the connector.
 - Now your are ready to work with this connector.
+- For additional information about the use and configuration of your Dolibarr connection please review this guide: [Integration of Dolibarr to the Airbyte data integration platform](https://wiki.dolibarr.org/index.php?title=Integration_of_Dolibarr_to_the_Airbyte_data_integration_platform)
 
 ## Configuration
 
