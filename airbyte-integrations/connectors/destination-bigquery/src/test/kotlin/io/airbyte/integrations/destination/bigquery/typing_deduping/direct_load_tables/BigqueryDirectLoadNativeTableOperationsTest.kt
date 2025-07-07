@@ -179,7 +179,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     listOf(listOf("bar")),
                     emptyList(),
                 ),
-                ObjectTypeWithoutSchema,
+                ObjectType(linkedMapOf("bar" to FieldType(IntegerType, nullable = true))),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
@@ -227,7 +227,15 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     listOf(listOf("a1"), listOf("b1"), listOf("c1"), listOf("d1"), listOf("e1")),
                     emptyList()
                 ),
-                ObjectTypeWithoutSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "a1" to FieldType(IntegerType, nullable = true),
+                        "b1" to FieldType(IntegerType, nullable = true),
+                        "c1" to FieldType(IntegerType, nullable = true),
+                        "d1" to FieldType(IntegerType, nullable = true),
+                        "e1" to FieldType(IntegerType, nullable = true),
+                    )
+                ),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
