@@ -31,7 +31,7 @@ abstract class BigqueryWriteTest(
     expectedRecordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean,
     preserveUndeclaredFields: Boolean,
-    commitDataIncrementallyToEmptyDestination: Boolean,
+    commitDataIncrementallyToEmptyDestinationOnAppend: Boolean,
     dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
@@ -51,7 +51,9 @@ abstract class BigqueryWriteTest(
         preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
         commitDataIncrementally = false,
-        commitDataIncrementallyToEmptyDestination = commitDataIncrementallyToEmptyDestination,
+        commitDataIncrementallyToEmptyDestinationOnAppend =
+            commitDataIncrementallyToEmptyDestinationOnAppend,
+        commitDataIncrementallyToEmptyDestinationOnDedupe = false,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
@@ -67,7 +69,7 @@ abstract class BigqueryRawTablesWriteTest(
         UncoercedExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
         preserveUndeclaredFields = true,
-        commitDataIncrementallyToEmptyDestination = false,
+        commitDataIncrementallyToEmptyDestinationOnAppend = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
         Untyped,
@@ -86,7 +88,7 @@ abstract class BigqueryDirectLoadWriteTest(
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
         preserveUndeclaredFields = false,
-        commitDataIncrementallyToEmptyDestination = true,
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
         dedupBehavior =
             DedupBehavior(
                 cdcDeletionMode =
