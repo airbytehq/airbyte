@@ -43,6 +43,7 @@ import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.state.CheckpointId
@@ -67,6 +68,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -104,6 +106,25 @@ data class StronglyTyped(
     val integerCanBeLarge: Boolean = true,
     /** Whether the destination supports numbers larger than 1e39-1 */
     val numberCanBeLarge: Boolean = true,
+    /**
+     * Clearly redundant with other fields on this struct. We should do some sort of refactor here.
+     * Many warehouse destinations use a NUMERIC(38, 9) type for number columns. This flag enables a
+     * test case to validate some specific rounding/truncation behavior for fixed-point numbers.
+     */
+    val numberIsFixedPointPrecision38Scale9: Boolean = false,
+    /**
+     * No effect unless [numberIsFixedPointPrecision38Scale9] is set.
+     *
+     * If your connector relies on the warehouse to truncate/round off numbers with too many decimal
+     * places, and therefore does not populate an `airbyte_meta.changes` entry, you should enable
+     * this flag.
+     *
+     * This is not best practice, but is compatible with historical behavior, and we don't have a
+     * strong preference to enforce populating the `changes` list in this case.
+     */
+    val truncatedNumbersPopulateAirbyteMeta: Boolean = true,
+    /** No effect unless [numberIsFixedPointPrecision38Scale9] is set. */
+    val truncatedNumberRoundingMode: RoundingMode = RoundingMode.HALF_UP,
     /**
      * In some strongly-typed destinations, timetz columns are actually weakly typed. For example,
      * Bigquery writes timetz values into STRING columns, and doesn't actually validate that they
@@ -182,9 +203,6 @@ enum class UnionBehavior {
      * option, no validation is performed.
      */
     STRINGIFY,
-
-    /** Union fields are written as strings, no validation is performed */
-    STRICT_STRINGIFY,
 }
 
 enum class UnknownTypesBehavior {
@@ -272,6 +290,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     val dedupBehavior: DedupBehavior?,
     val stringifySchemalessObjects: Boolean,
+    val stringifyUnionObjects: Boolean = false,
     val schematizedObjectBehavior: SchematizedNestedValueBehavior,
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
@@ -2426,7 +2445,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 makeRecord("""{"id": 3}"""),
                 // A record that verifies numeric behavior.
                 // 99999999999999999999999999999999 is out of range for int64.
-                // 50000.0000000000000001 can't be represented as a standard float64,
                 // and gets rounded off.
                 // 1e39 is greater than the typical max 1e39-1 for database/warehouse destinations
                 // (decimal points are to force jackson to recognize it as a decimal)
@@ -2435,7 +2453,6 @@ abstract class BasicFunctionalityIntegrationTest(
                         {
                           "id": 4,
                           "struct": {"foo": 50000.0000000000000001},
-                          "number": 50000.0000000000000001,
                           "integer": 99999999999999999999999999999999,
                           "number": 1.0000000000000000000000000000000000000000e39
                         }
@@ -2779,6 +2796,160 @@ abstract class BasicFunctionalityIntegrationTest(
                             "number" to -1.0,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
+     * Further tests for number/int types. For historical reasons, some of the records in
+     * [testBasicTypes] also cover numerics.
+     */
+    @Test
+    open fun testNumericTypes() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(allTypesBehavior is StronglyTyped)
+        // TODO ideally we would have some more flexibility here, but it's kind of painful to
+        //   configure our tests already.
+        assumeTrue((allTypesBehavior as StronglyTyped).numberIsFixedPointPrecision38Scale9)
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "number" to FieldType(NumberType, nullable = true),
+                        "integer" to FieldType(IntegerType, nullable = true),
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium()
+            )
+        fun makeRecord(data: String) =
+            InputRecord(
+                stream,
+                data,
+                emittedAtMs = 100,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
+            )
+        // large numbers, 0, and -1 are already tested in testBasicTypes, but add them here also.
+        // Eventually we should remove them from testBasicTypes, but that would require a less dumb
+        // test config system.
+        val roundingModeTest = "5e-10"
+        val highPrecisionTest = "12345678912345678912345678912.3456789123"
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                // Test that we can handle numbers which require scale=10.
+                // Depending on destination behavior, these should either be
+                // truncated to 0, or rounded to +/-1e9
+                makeRecord(
+                    """
+                        {
+                          "id": 1,
+                          "number": $roundingModeTest
+                        }
+                    """.trimIndent(),
+                ),
+                makeRecord(
+                    """
+                        {
+                          "id": 2,
+                          "number": -$roundingModeTest
+                        }
+                    """.trimIndent(),
+                ),
+                // Similarly, test that we can handle numbers with precision=39,
+                // but that still fit within a (38, 9) field's min/max values.
+                makeRecord(
+                    """
+                        {
+                          "id": 3,
+                          "number": $highPrecisionTest
+                        }
+                    """.trimIndent(),
+                ),
+                makeRecord(
+                    """
+                        {
+                          "id": 4,
+                          "number": -$highPrecisionTest
+                        }
+                    """.trimIndent(),
+                ),
+            ),
+        )
+        val roundingModeExpectedValue =
+            BigDecimal(roundingModeTest).setScale(9, allTypesBehavior.truncatedNumberRoundingMode)
+        val highPrecisionExpectedValue =
+            BigDecimal(highPrecisionTest).setScale(9, allTypesBehavior.truncatedNumberRoundingMode)
+        val meta =
+            OutputRecord.Meta(
+                syncId = 42,
+                changes =
+                    listOfNotNull(
+                        if (allTypesBehavior.truncatedNumbersPopulateAirbyteMeta) {
+                            Change(
+                                "number",
+                                AirbyteRecordMessageMetaChange.Change.TRUNCATED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            )
+                        } else {
+                            null
+                        }
+                    ),
+            )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "number" to roundingModeExpectedValue,
+                        ),
+                    airbyteMeta = meta,
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 2,
+                            "number" to roundingModeExpectedValue.negate(),
+                        ),
+                    airbyteMeta = meta,
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 3,
+                            "number" to highPrecisionExpectedValue,
+                        ),
+                    airbyteMeta = meta,
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 4,
+                            "number" to highPrecisionExpectedValue.negate(),
+                        ),
+                    airbyteMeta = meta,
                 ),
             ),
             stream,
@@ -3248,7 +3419,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         StringValue(value.serializeToString())
                     }
-                UnionBehavior.STRICT_STRINGIFY -> StringValue(value.toString())
             }
         val expectedRecords: List<OutputRecord> =
             listOf(
@@ -3273,35 +3443,48 @@ abstract class BasicFunctionalityIntegrationTest(
                             "union_of_objects_with_properties_identical" to
                                 schematizedObject(linkedMapOf("id" to 10, "name" to "Joe")),
                             "union_of_objects_with_properties_overlapping" to
-                                schematizedObject(
-                                    linkedMapOf("id" to 20, "name" to "Jane", "flagged" to true)
-                                ),
+                                if (stringifyUnionObjects) {
+                                    """{"id":20,"name":"Jane","flagged":true}"""
+                                } else {
+                                    schematizedObject(
+                                        linkedMapOf("id" to 20, "name" to "Jane", "flagged" to true)
+                                    )
+                                },
                             "union_of_objects_with_properties_contradicting" to
-                                // can't just call schematizedObject(... unionValue) - there's some
-                                // nontrivial interactions here
-                                when (schematizedObjectBehavior) {
-                                    // these two cases are simple
-                                    SchematizedNestedValueBehavior.PASS_THROUGH,
-                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
-                                        linkedMapOf(
-                                            "id" to unionValue("integer", 1),
-                                            "name" to "Jenny"
-                                        )
-                                    // If we stringify, then the nested union value is _not_
-                                    // processed
-                                    // (note that `id` is mapped to 1 and not "1")
-                                    SchematizedNestedValueBehavior.STRINGIFY ->
-                                        """{"id":1,"name":"Jenny"}"""
+                                if (stringifyUnionObjects) {
+                                    """{"id":1,"name":"Jenny"}"""
+                                } else {
+                                    // can't just call schematizedObject(... unionValue) - there's
+                                    // some
+                                    // nontrivial interactions here
+                                    when (schematizedObjectBehavior) {
+                                        // these two cases are simple
+                                        SchematizedNestedValueBehavior.PASS_THROUGH,
+                                        SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                            linkedMapOf(
+                                                "id" to unionValue("integer", 1),
+                                                "name" to "Jenny"
+                                            )
+                                        // If we stringify, then the nested union value is _not_
+                                        // processed
+                                        // (note that `id` is mapped to 1 and not "1")
+                                        SchematizedNestedValueBehavior.STRINGIFY ->
+                                            """{"id":1,"name":"Jenny"}"""
+                                    }
                                 },
                             "union_of_objects_with_properties_nonoverlapping" to
-                                schematizedObject(
-                                    linkedMapOf(
-                                        "id" to 30,
-                                        "name" to "Phil",
-                                        "flagged" to false,
-                                        "description" to "Very Phil",
+                                if (stringifyUnionObjects) {
+                                    """{"id":30,"name":"Phil","flagged":false,"description":"Very Phil"}"""
+                                } else {
+                                    schematizedObject(
+                                        linkedMapOf(
+                                            "id" to 30,
+                                            "name" to "Phil",
+                                            "flagged" to false,
+                                            "description" to "Very Phil",
+                                        )
                                     )
-                                )
+                                }
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -3315,25 +3498,37 @@ abstract class BasicFunctionalityIntegrationTest(
                             "union_of_objects_with_properties_identical" to
                                 schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_nonoverlapping" to
-                                schematizedObject(linkedMapOf()),
+                                if (stringifyUnionObjects) {
+                                    """{}"""
+                                } else {
+                                    schematizedObject(linkedMapOf())
+                                },
                             "union_of_objects_with_properties_overlapping" to
-                                schematizedObject(linkedMapOf()),
+                                if (stringifyUnionObjects) {
+                                    """{}"""
+                                } else {
+                                    schematizedObject(linkedMapOf())
+                                },
                             "union_of_objects_with_properties_contradicting" to
-                                // similar to the previous record - need to handle this branch
-                                // manually
-                                when (schematizedObjectBehavior) {
-                                    // these two cases are simple
-                                    SchematizedNestedValueBehavior.PASS_THROUGH,
-                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
-                                        linkedMapOf(
-                                            "id" to unionValue("string", "seal-one-hippity"),
-                                            "name" to "James"
-                                        )
-                                    // If we stringify, then the nested union value is _not_
-                                    // processed
-                                    // (note that `id` is mapped to 1 and not "1")
-                                    SchematizedNestedValueBehavior.STRINGIFY ->
-                                        """{"id":"seal-one-hippity","name":"James"}"""
+                                if (stringifyUnionObjects) {
+                                    """{"id":"seal-one-hippity","name":"James"}"""
+                                } else {
+                                    // similar to the previous record - need to handle this branch
+                                    // manually
+                                    when (schematizedObjectBehavior) {
+                                        // these two cases are simple
+                                        SchematizedNestedValueBehavior.PASS_THROUGH,
+                                        SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                            linkedMapOf(
+                                                "id" to unionValue("string", "seal-one-hippity"),
+                                                "name" to "James"
+                                            )
+                                        // If we stringify, then the nested union value is _not_
+                                        // processed
+                                        // (note that `id` is mapped to 1 and not "1")
+                                        SchematizedNestedValueBehavior.STRINGIFY ->
+                                            """{"id":"seal-one-hippity","name":"James"}"""
+                                    }
                                 }
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),

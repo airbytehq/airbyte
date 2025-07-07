@@ -15,6 +15,7 @@ data class ClickhouseConfiguration(
     val database: String,
     val username: String,
     val password: String,
+    val enableJson: Boolean,
 ) : DestinationConfiguration() {
     val endpoint = "$protocol://$hostname:$port"
     val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
@@ -29,27 +30,43 @@ class ClickhouseConfigurationFactory :
     DestinationConfigurationFactory<ClickhouseSpecification, ClickhouseConfiguration> {
     override fun makeWithoutExceptionHandling(
         pojo: ClickhouseSpecification
-    ): ClickhouseConfiguration =
-        ClickhouseConfiguration(
+    ): ClickhouseConfiguration {
+        val protocol =
+            when (pojo) {
+                is ClickhouseSpecificationOss -> pojo.protocol.value
+                else -> ClickhouseConnectionProtocol.HTTPS.value
+            }
+
+        return ClickhouseConfiguration(
             pojo.hostname,
             pojo.port,
-            pojo.protocol.value,
+            protocol,
             pojo.database,
             pojo.username,
             pojo.password,
+            pojo.enableJson,
         )
+    }
 
     fun makeWithOverrides(
         spec: ClickhouseSpecification,
         overrides: Map<String, String> = emptyMap()
     ): ClickhouseConfiguration {
+        val protocol =
+            when (spec) {
+                is ClickhouseSpecificationOss -> spec.protocol.value
+                else -> ClickhouseConnectionProtocol.HTTPS.value
+            }
+
         return ClickhouseConfiguration(
             hostname = overrides.getOrDefault("hostname", spec.hostname),
             port = overrides.getOrDefault("port", spec.port),
-            protocol = overrides.getOrDefault("protocol", spec.protocol.value),
+            protocol = overrides.getOrDefault("protocol", protocol),
             database = overrides.getOrDefault("database", spec.database),
             password = overrides.getOrDefault("password", spec.password),
             username = overrides.getOrDefault("username", spec.username),
+            enableJson =
+                overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
         )
     }
 }

@@ -50,11 +50,22 @@ access to the database.
 
 ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
-7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
+7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`. 
+
+:::info
+Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
+This allows you to sync multiple collections across different databases using a single source.
+
+The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
+:::
+
+![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
+
+8. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
 ![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
-8. Click on "Add User" at the bottom to save the user.
+9. Click on "Add User" at the bottom to save the user.
 
 ![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
@@ -138,7 +149,7 @@ The source will test the connection to the MongoDB instance upon creation.
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
-In addtion MongoDB source now allows for syncing in a full refresh mode.
+In addition, MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
@@ -147,12 +158,12 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 ### Full Refresh
 
 The Full refresh sync mode added in v4.0.0 allows for reading a the entire contents of a collection, repeatedly.
-The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for netwrok error for example,
+The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for network error for example,
 Rather than starting over it will continue its full refresh read from a last known point.
 
 ### Schema Enforcement
 
-By default the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configureable number of docuemnts and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
+By default, the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configurable number of documents and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
 
 When the schema enforced option is disabled, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
 This allows for greater flexibility in reading data that is unstructured or vary a lot in between documents in a single collection.
