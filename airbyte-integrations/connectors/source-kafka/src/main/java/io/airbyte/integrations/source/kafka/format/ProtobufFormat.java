@@ -81,7 +81,8 @@ public class ProtobufFormat extends AbstractFormat {
   // Reusable instances for better performance
   private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
   private static final JsonFormat.Printer PROTOBUF_JSON_PRINTER = JsonFormat.printer()
-      .includingDefaultValueFields();
+      .includingDefaultValueFields()
+      .preservingProtoFieldNames();
 
   private KafkaConsumer<String, DynamicMessage> consumer;
 
@@ -239,7 +240,6 @@ public class ProtobufFormat extends AbstractFormat {
 
   /**
    * Builds Airbyte Field definitions from a Protobuf Descriptor.
-   * Converts Protobuf field names from snake_case to camelCase.
    *
    * @param descriptor Protobuf message descriptor
    * @return List of Airbyte Field objects
@@ -248,11 +248,11 @@ public class ProtobufFormat extends AbstractFormat {
     List<Field> fields = new ArrayList<>();
     
     for (Descriptors.FieldDescriptor fieldDescriptor : descriptor.getFields()) {
-      String fieldName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, fieldDescriptor.getName());
+      String fieldName = fieldDescriptor.getName();
       JsonSchemaType fieldType = getJsonSchemaTypeFromProtobufField(fieldDescriptor);
       fields.add(Field.of(fieldName, fieldType));
     }
-    
+
     return fields;
   }
 
