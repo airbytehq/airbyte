@@ -46,7 +46,6 @@ import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.state.CheckpointId
@@ -323,7 +322,9 @@ abstract class BasicFunctionalityIntegrationTest(
      *
      * (warehouse destinations with direct-load tables should set this to true).
      */
-    val commitDataIncrementallyToEmptyDestination: Boolean =
+    val commitDataIncrementallyToEmptyDestinationOnAppend: Boolean =
+        commitDataIncrementally || commitDataIncrementallyOnAppend,
+    val commitDataIncrementallyToEmptyDestinationOnDedupe: Boolean =
         commitDataIncrementally || commitDataIncrementallyOnAppend,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
@@ -1102,7 +1103,7 @@ abstract class BasicFunctionalityIntegrationTest(
         dumpAndDiffRecords(
             parsedConfig,
             listOfNotNull(
-                if (commitDataIncrementally) {
+                if (commitDataIncrementally || commitDataIncrementallyToEmptyDestinationOnDedupe) {
                     OutputRecord(
                         extractedAt = 1234,
                         generationId = 12,
@@ -1398,7 +1399,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         dumpAndDiffRecords(
             parsedConfig,
-            if (commitDataIncrementallyToEmptyDestination) {
+            if (commitDataIncrementallyToEmptyDestinationOnAppend) {
                 listOf(
                     makeOutputRecord(
                         id = 1,
