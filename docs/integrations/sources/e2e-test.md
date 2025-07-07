@@ -19,7 +19,7 @@ The single-stream catalog config exists just for convenient, since in many testi
 Here is its configuration:
 
 | Mock Catalog Type | Parameters          | Type    | Required | Default             | Notes                                                                                                                                                   |
-| ----------------- | ------------------- | ------- | -------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-------------------|---------------------|---------|----------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Single-stream     | stream name         | string  | yes      |                     | Name of the stream in the catalog.                                                                                                                      |
 |                   | stream schema       | json    | yes      |                     | Json schema of the stream in the catalog. It must be a valid Json schema.                                                                               |
 |                   | stream duplication  | integer | no       | 1                   | Duplicate the stream N times to quickly create a multi-stream catalog.                                                                                  |
@@ -73,7 +73,8 @@ This mode is also excluded from the Cloud variant of this connector.
 The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
 | Version | Date       | Pull request                                                                                                      | Subject                                                                                               |
-| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+|---------|------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| 2.2.3   | 2024-05-09 | [59761](https://github.com/airbytehq/airbyte/pull/59761)                                                          | Update to new gradle flow.                                                                            |
 | 2.2.2   | 2024-04-25 | [37581](https://github.com/airbytehq/airbyte/pull/37581)                                                          | bump jsonschemafriend to 0.12.4                                                                       |
 | 2.2.1   | 2024-02-13 | [35231](https://github.com/airbytehq/airbyte/pull/35231)                                                          | Adopt JDK 0.20.4.                                                                                     |
 | 2.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485)                                                          | Remove LEGACY state                                                                                   |

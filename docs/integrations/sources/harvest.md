@@ -91,6 +91,11 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.18 | 2025-05-24 | [60670](https://github.com/airbytehq/airbyte/pull/60670) | Update dependencies |
+| 1.2.17 | 2025-05-10 | [59910](https://github.com/airbytehq/airbyte/pull/59910) | Update dependencies |
+| 1.2.16 | 2025-05-05 | [59215](https://github.com/airbytehq/airbyte/pull/59215) | Fix missing schema for `time_team`, `users`, `time_entries`, `company`, & `project_assignments` streams. |
+| 1.2.15 | 2025-05-03 | [59254](https://github.com/airbytehq/airbyte/pull/59254) | Update dependencies |
+| 1.2.14 | 2025-04-26 | [58767](https://github.com/airbytehq/airbyte/pull/58767) | Update dependencies |
 | 1.2.13 | 2025-04-19 | [58170](https://github.com/airbytehq/airbyte/pull/58170) | Update dependencies |
 | 1.2.12 | 2025-04-12 | [57717](https://github.com/airbytehq/airbyte/pull/57717) | Update dependencies |
 | 1.2.11 | 2025-04-05 | [57034](https://github.com/airbytehq/airbyte/pull/57034) | Update dependencies |

@@ -24,6 +24,14 @@ Replicates the budgets, accounts, categories, payees, transactions, and category
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.29 | 2025-07-05 | [62699](https://github.com/airbytehq/airbyte/pull/62699) | Update dependencies |
+| 0.0.28 | 2025-06-28 | [62201](https://github.com/airbytehq/airbyte/pull/62201) | Update dependencies |
+| 0.0.27 | 2025-06-21 | [61764](https://github.com/airbytehq/airbyte/pull/61764) | Update dependencies |
+| 0.0.26 | 2025-06-15 | [61198](https://github.com/airbytehq/airbyte/pull/61198) | Update dependencies |
+| 0.0.25 | 2025-05-24 | [60761](https://github.com/airbytehq/airbyte/pull/60761) | Update dependencies |
+| 0.0.24 | 2025-05-10 | [59948](https://github.com/airbytehq/airbyte/pull/59948) | Update dependencies |
+| 0.0.23 | 2025-05-04 | [59555](https://github.com/airbytehq/airbyte/pull/59555) | Update dependencies |
+| 0.0.22 | 2025-04-26 | [58936](https://github.com/airbytehq/airbyte/pull/58936) | Update dependencies |
 | 0.0.21 | 2025-04-19 | [58566](https://github.com/airbytehq/airbyte/pull/58566) | Update dependencies |
 | 0.0.20 | 2025-04-12 | [58012](https://github.com/airbytehq/airbyte/pull/58012) | Update dependencies |
 | 0.0.19 | 2025-04-05 | [57373](https://github.com/airbytehq/airbyte/pull/57373) | Update dependencies |

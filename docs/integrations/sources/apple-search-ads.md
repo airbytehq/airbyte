@@ -29,12 +29,12 @@ This page contains the setup guide and reference information for the Apple Ads s
 
 ## Supported sync modes
 
-The Apple Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Apple Ads source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -71,6 +71,12 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.8.2 | 2025-06-15 | [61626](https://github.com/airbytehq/airbyte/pull/61626) | Update dependencies |
+| 0.8.1 | 2025-05-17 | [60627](https://github.com/airbytehq/airbyte/pull/60627) | Update dependencies |
+| 0.8.0 | 2025-05-13 | [60241](https://github.com/airbytehq/airbyte/pull/60241) | Add token refresh endpoint override configuration override |
+| 0.7.9 | 2025-05-10 | [59888](https://github.com/airbytehq/airbyte/pull/59888) | Update dependencies |
+| 0.7.8 | 2025-05-03 | [59308](https://github.com/airbytehq/airbyte/pull/59308) | Update dependencies |
+| 0.7.7 | 2025-04-26 | [58712](https://github.com/airbytehq/airbyte/pull/58712) | Update dependencies |
 | 0.7.6 | 2025-04-19 | [58275](https://github.com/airbytehq/airbyte/pull/58275) | Update dependencies |
 | 0.7.5 | 2025-04-12 | [57658](https://github.com/airbytehq/airbyte/pull/57658) | Update dependencies |
 | 0.7.4 | 2025-04-05 | [57158](https://github.com/airbytehq/airbyte/pull/57158) | Update dependencies |

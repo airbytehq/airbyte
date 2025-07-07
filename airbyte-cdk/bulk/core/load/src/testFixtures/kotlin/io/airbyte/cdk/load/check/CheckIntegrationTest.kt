@@ -7,18 +7,21 @@ package io.airbyte.cdk.load.check
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestinationFactory
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.util.regex.Pattern
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -28,7 +31,7 @@ data class CheckTestConfig(
     val name: String? = null,
 )
 
-open class CheckIntegrationTest<T : ConfigurationSpecification>(
+abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
     additionalMicronautEnvs: List<String> = emptyList(),
@@ -43,6 +46,13 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
     ) {
+    @BeforeEach
+    fun setupProcessFactory() {
+        if (destinationProcessFactory is NonDockerizedDestinationFactory) {
+            destinationProcessFactory.injectInputStream = false
+        }
+    }
+
     @Test
     open fun testSuccessConfigs() {
         for (tc in successConfigFilenames) {
@@ -53,6 +63,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     configContents = updatedConfig,
                     featureFlags = tc.featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
+                    dataChannelMedium = DataChannelMedium.STDIO,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
@@ -83,6 +94,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     configContents = updatedConfig,
                     featureFlags = featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
+                    dataChannelMedium = DataChannelMedium.STDIO
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()

@@ -40,6 +40,8 @@ In order to connect, you need:
 
 | Version | Date       | Pull Request                                              | Subject                        |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------- |
+| 0.1.46 | 2025-05-10 | [59351](https://github.com/airbytehq/airbyte/pull/59351) | Update dependencies |
+| 0.1.45 | 2025-04-26 | [58703](https://github.com/airbytehq/airbyte/pull/58703) | Update dependencies |
 | 0.1.44 | 2025-04-19 | [58292](https://github.com/airbytehq/airbyte/pull/58292) | Update dependencies |
 | 0.1.43 | 2025-04-12 | [57616](https://github.com/airbytehq/airbyte/pull/57616) | Update dependencies |
 | 0.1.42 | 2025-04-05 | [57129](https://github.com/airbytehq/airbyte/pull/57129) | Update dependencies |

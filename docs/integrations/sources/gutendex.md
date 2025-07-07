@@ -106,6 +106,9 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                              | Subject                                     |
 | :------ |:-----------| :-------------------------------------------------------- |:--------------------------------------------|
+| 0.2.12 | 2025-05-24 | [60673](https://github.com/airbytehq/airbyte/pull/60673) | Update dependencies |
+| 0.2.11 | 2025-05-10 | [59245](https://github.com/airbytehq/airbyte/pull/59245) | Update dependencies |
+| 0.2.10 | 2025-04-26 | [58752](https://github.com/airbytehq/airbyte/pull/58752) | Update dependencies |
 | 0.2.9 | 2025-04-19 | [58168](https://github.com/airbytehq/airbyte/pull/58168) | Update dependencies |
 | 0.2.8 | 2025-04-12 | [57706](https://github.com/airbytehq/airbyte/pull/57706) | Update dependencies |
 | 0.2.7 | 2025-04-05 | [57046](https://github.com/airbytehq/airbyte/pull/57046) | Update dependencies |

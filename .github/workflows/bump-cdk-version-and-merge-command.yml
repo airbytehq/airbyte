@@ -9,9 +9,379 @@ on:
         default: airbytehq/airbyte
         options:
           - airbytehq/airbyte
+      version:
+        description: "Version to bump to. Defaults to the latest version."
+        type: string
+        required: true
+        default: latest
 jobs:
-  bump-cdk-version-and-merge:
+  bump-cdk-version:
     runs-on: ubuntu-24.04
+    outputs:
+      # Output the matrix config as a JSON string
+      modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches
+          fetch-depth: 0
+      - name: Validate provided version
+        run: |
+          # Extract the provided version
+          provided_version="${{ github.event.inputs.version }}"
+
+          # Extract the current version from version.properties
+          current_version=$(grep '^version=' airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties | cut -d'=' -f2)
+
+          # Check if the provided version follows SemVer
+          if ! [[ "$provided_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Provided version '$provided_version' is not a valid SemVer version."
+            exit 1
+          fi
+
+          # Compare the provided version with the current version
+          if [ "$(printf '%s\n' "$current_version" "$provided_version" | sort -V | head -n1)" = "$provided_version" ] && [ "$current_version" != "$provided_version" ]; then
+            echo "Error: Provided version '$provided_version' is not greater than the current version '$current_version'."
+            exit 1
+          fi
+
+          echo "Provided version '$provided_version' is valid and greater than the current version '$current_version'."
+
+      - name: Update version.properties
+        run: |
+          # Extract the provided version
+          provided_version="${{ github.event.inputs.version }}"
+
+          # Update the version in version.properties
+          sed -i "s/^version=.*/version=$provided_version/" airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties
+
+          echo "Updated version.properties with version '$provided_version'."
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update cdkVersionRequired in build.gradle files
+        id: export-connection-modified
+        run: |
+          # Ensure the local repository knows about the latest state of origin/master
+          # This brings the commit history from the remote 'origin' for the 'master' branch
+          # It doesn't change your local working files or your current branch
+          git fetch origin master
+
+          # Find the common ancestor commit between the current branch (HEAD) and origin/master
+          # This identifies the point where your current branch diverged from master
+          merge_base=$(git merge-base HEAD origin/master)
+          echo "Merge base commit: $merge_base"
+          # Check if merge_base could be found (e.g., if branches are unrelated)
+          if [ -z "$merge_base" ]; then
+            echo "Error: Could not find a common ancestor between HEAD and origin/master."
+            exit 1
+          fi
+
+          # Get the list of files *modified* (status 'M') on the current branch
+          # since it diverged from the master branch (at the merge-base).
+          # We compare HEAD against the merge_base commit.
+          # --diff-filter=M ensures we only list files that were modified,
+          # excluding added (A), deleted (D), renamed (R), etc.
+          modified_files=$(git diff --name-only --diff-filter=M $merge_base HEAD)
+          echo "Modified files since merge base: $modified_files"
+          # Check if any files were modified
+          if [ -z "$modified_files" ]; then
+            echo "No files were modified on the current branch compared to its merge-base with origin/master."
+            connector_folders=""
+          else
+            # Extract unique connector folder names from the list of modified files
+            connector_folders=$(echo "$modified_files" | \
+              grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
+              sort | \
+              uniq)
+          fi
+
+          echo "Modified connector folders (files modified on this branch only): $connector_folders"
+
+          MODIFIED_LIST_JSON=$(echo "$connector_folders" | tr ',' '\n' | jq -R . | jq -c -s .)
+
+          echo "Modified connector folders: $MODIFIED_LIST_JSON"
+          echo "modified_connectors=$MODIFIED_LIST_JSON" >> $GITHUB_OUTPUT
+
+          echo "$connector_folders" | while read -r folder; do
+            gradle_file="airbyte-integrations/connectors/$folder/build.gradle"
+            if [ -f "$gradle_file" ]; then
+              sed -i "s/cdkVersionRequired = '.*'/cdkVersionRequired = '${{ github.event.inputs.version }}'/" "$gradle_file"
+              sed -i "/useLocalCdk/d" "$gradle_file"
+            fi
+          done
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "Bump the cdk version to ${{ github.event.inputs.version }}"
+          git push
+
+  publish-java-cdk:
+    needs: [bump-cdk-version]
+    uses: ./.github/workflows/publish-java-cdk-command.yml
+    with:
+      gitref: ${{ github.ref_name }}
+      dry-run: true
+      force: true
+    secrets: inherit
+
+  publish-connectors:
+    needs: [bump-cdk-version, publish-java-cdk]
+    uses: ./.github/workflows/publish_connectors.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
+    with:
+      connectors-options: "--name=${{ matrix.connector_name }}"
+      publish-options: --pre-release
+    secrets: inherit
+
+  update-changelog-and-merge:
+    runs-on: ubuntu-24.04
+    needs: [publish-connectors]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Install Python
+        id: install_python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install Poetry
+        id: install_poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+      - name: Merge the changelog of the connectors
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub Actions
+          AUTO_MERGE_PRODUCTION: false
+        run: |
+
+          # Script to update the changelog in a connector's markdown documentation.
+          #
+          # Usage: ./update_changelog.sh <pr_number> <connector_type>-<connector_name> "<message>"
+          #   pr_number: The GitHub Pull Request number (e.g., 12345)
+          #   connector_type-connector_name: The type (source or destination) and name of the connector (e.g., source-postgres, destination-bigquery)
+          #   message: The description for the changelog entry (enclose in quotes)
+
+          # --- Configuration ---
+          DOCS_BASE_DIR="docs/integrations"
+          SOURCES_DIR="${DOCS_BASE_DIR}/sources" # Directory name remains plural
+          DESTINATIONS_DIR="${DOCS_BASE_DIR}/destinations" # Directory name remains plural
+          GITHUB_REPO_URL="https://github.com/airbytehq/airbyte"
+          CHANGELOG_HEADER="| Version | Date | Pull Request | Subject |"
+          # Updated Regex pattern for the separator line (using --* instead of -+)
+          # Matches lines like |---|---|---|---| or | :--- | -------- | ---: | :-----: | etc.
+          CHANGELOG_SEPARATOR_PATTERN='^[[:space:]]*\|[[:space:]]*:?--*:?[[:space:]]*\|[[:space:]]*:?--*:?[[:space:]]*\|[[:space:]]*:?--*:?[[:space:]]*\|[[:space:]]*:?--*:?[[:space:]]*\|[[:space:]]*$'
+
+          # --- Main Function ---
+          changelog_update() {
+              # --- Argument Validation ---
+              if [ "$#" -ne 3 ]; then
+                  echo "Usage (within script): changelog_update <pr_number> <connector_type>-<connector_name> \"<message>\""
+                  echo "Example: changelog_update 12345 source-postgres \"Fix data type mismatch\""
+                  # Exit the script if arguments are incorrect
+                  exit 1
+              fi
+
+              local pr_number="$1" # Use local to keep variables scoped to the function
+              local full_connector_name="$2" # e.g., source-postgres
+              local message="$3"
+              local connector_type=""
+              local connector_name=""
+              local target_dir=""
+              local filepath=""
+              local separator_line_num=""
+              local data_line_num=""
+              local latest_version_line=""
+              local latest_version=""
+              local major=""
+              local minor=""
+              local patch=""
+              local new_patch=""
+              local new_version=""
+              local today_date=""
+              local pr_link=""
+              local new_row=""
+
+              # Validate PR number is a number
+              if ! [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+                  echo "Error: pr_number must be an integer."
+                  exit 1 # Exit script on error
+              fi
+
+              # --- Parse Connector Type and Name & Find File ---
+              # Check for singular prefixes 'source-' and 'destination-'
+              if [[ "$full_connector_name" == source-* ]]; then
+                  connector_type="source" # Use singular type for consistency
+                  # Remove the 'source-' prefix using parameter expansion
+                  connector_name="${full_connector_name#source-}"
+                  target_dir="${SOURCES_DIR}" # Use plural directory name
+                  filepath="${target_dir}/${connector_name}.md"
+              elif [[ "$full_connector_name" == destination-* ]]; then
+                  connector_type="destination" # Use singular type for consistency
+                  # Remove the 'destination-' prefix
+                  connector_name="${full_connector_name#destination-}"
+                  target_dir="${DESTINATIONS_DIR}" # Use plural directory name
+                  filepath="${target_dir}/${connector_name}.md"
+              else
+                  # Updated error message to reflect singular prefixes
+                  echo "Error: Invalid connector name format. Expected 'source-<name>' or 'destination-<name>', but got '${full_connector_name}'."
+                  exit 1
+              fi
+
+              # Check if the actual connector name part is empty after stripping prefix
+              if [ -z "$connector_name" ]; then
+                  echo "Error: Connector name part is empty in '${full_connector_name}'. Expected 'source-<name>' or 'destination-<name>'."
+                  exit 1
+              fi
+
+              # Check if the file exists
+              if [ ! -f "$filepath" ]; then
+                  # Updated error message slightly
+                  echo "Error: Could not find documentation file for connector '${connector_name}' (type: ${connector_type}) at expected path: ${filepath}"
+                  exit 1
+              fi
+
+              echo "Found connector file: ${filepath}"
+
+              # --- Locate Changelog Separator Line Number using grep ---
+              # Use grep -n -E to find the line number of the separator using extended regex
+              # head -n 1 ensures we only get the first match if there are multiple
+              echo "DEBUG: Searching for pattern '${CHANGELOG_SEPARATOR_PATTERN}' in file '${filepath}'" # Debugging line
+              separator_line_num=$(grep -n -E "${CHANGELOG_SEPARATOR_PATTERN}" "$filepath" | head -n 1 | cut -d: -f1)
+
+              if [ -z "$separator_line_num" ]; then
+                  echo "Error: Could not find the changelog separator pattern matching '${CHANGELOG_SEPARATOR_PATTERN}' in ${filepath}"
+                  # Add more debug info: show lines around where the changelog might be
+                  echo "DEBUG: Checking lines around the expected changelog section..."
+                  grep -C 5 -i "changelog" "$filepath" || echo "DEBUG: 'changelog' keyword not found."
+                  exit 1 # Exit script on error
+              fi
+              echo "DEBUG: Found separator on line number: ${separator_line_num}" # Debugging line
+
+              # Calculate the line number for the first data row (immediately after separator)
+              data_line_num=$((separator_line_num + 1))
+
+              # --- Extract Latest Version Line using awk ---
+              # Use awk to print the specific line number calculated above
+              latest_version_line=$(awk -v line_num="$data_line_num" 'NR == line_num { print }' "$filepath")
+              echo "DEBUG: Line content at ${data_line_num}: ${latest_version_line}" # Debugging line
+
+              if [ -z "$latest_version_line" ]; then
+                  # This might happen if the separator is the very last line
+                  echo "Error: Found separator on line ${separator_line_num}, but could not read data from the next line (${data_line_num}) in ${filepath}"
+                  exit 1 # Exit script on error
+              fi
+
+              # Extract the version string from the first column (field 2 because of leading '|')
+              # Use awk again for field splitting, removing leading/trailing whitespace
+              latest_version=$(echo "$latest_version_line" | awk -F '|' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+
+              if [ -z "$latest_version" ]; then
+                  echo "Error: Could not extract latest version from line ${data_line_num}: '${latest_version_line}'"
+                  exit 1 # Exit script on error
+              fi
+
+              echo "Latest version found: ${latest_version}"
+
+              # --- Increment Version (Patch) ---
+              # Validate basic SemVer format (X.Y.Z)
+              if ! [[ "$latest_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  echo "Error: Extracted version '${latest_version}' does not look like a valid SemVer (X.Y.Z)."
+                  exit 1 # Exit script on error
+              fi
+
+              # Split version and increment patch number
+              major=$(echo "$latest_version" | cut -d. -f1)
+              minor=$(echo "$latest_version" | cut -d. -f2)
+              patch=$(echo "$latest_version" | cut -d. -f3)
+
+              new_patch=$((patch + 1))
+              new_version="${major}.${minor}.${new_patch}"
+
+              echo "New version: ${new_version}"
+
+              # --- Prepare New Changelog Row ---
+              today_date=$(date '+%Y-%m-%d')
+              pr_link="[${pr_number}](${GITHUB_REPO_URL}/pull/${pr_number})"
+              # Ensure message doesn't contain pipes, otherwise it breaks the table
+              if [[ "$message" == *"|"* ]]; then
+                  echo "Warning: Message contains '|' characters. Replacing with '-' to avoid breaking table format."
+                  message=$(echo "$message" | tr '|' '-')
+              fi
+
+              new_row="| ${new_version} | ${today_date} | ${pr_link} | ${message} |"
+
+              echo "New row to insert:"
+              echo "$new_row"
+
+              # --- Insert New Row into File ---
+              # Use sed to find the separator line *number* and append the new row after it.
+              # The -i option without an extension modifies the file in place.
+              # NOTE: The new_row variable needs to be indented correctly for the sed 'a\' command.
+              # We add the 10 spaces manually here.
+              sed -i "${separator_line_num}a\\
+          ${new_row}
+          " "$filepath"
+
+              # Check if sed command was successful
+              if [ $? -ne 0 ]; then
+                  echo "Error: sed command failed to insert the new row."
+                  # Note: No backup file to restore from.
+                  exit 1 # Exit script on error
+              fi
+
+              echo "Successfully updated changelog in ${filepath}"
+              # Removed message about backup file
+
+              # Function implicitly returns 0 on success if no exit code is specified
+          }
+
+          # Ensure the branch has the most recent updates from the master branch
+          git fetch origin master
+
+          modified_files=$(git diff --name-only origin/master)
+
+          # Process the list to get the unique connector folder names
+          connector_folders=$(echo "$modified_files" | \
+          grep -oP 'airbyte-integrations/connectors/\K[^/]+' | \
+          sort | \
+          uniq)
+
+          # Read each line from the connector_folders variable
+          echo "$connector_folders" | while read -r folder; do
+            CONNECTOR_NAME=$(echo "$folder" | cut -d'-' -f2-)
+            PR_NUM=$(gh pr list --state open --head "${{ github.ref_name }}" --json number --jq '.[0].number')
+            echo "The PR number is: $PR_NUM"
+            changelog_update "$PR_NUM" "$folder" "Update CDK version"
+            git add .
+            git commit -m "Update changelog for $folder"
+            git push
+          done
+
+      - name: Run auto merge
+        shell: bash
+        working-directory: airbyte-ci/connectors/auto_merge
+        env:
+          # We need a custom Github Token as some API endpoints
+          # are not available from GHA auto generated tokens
+          # like the one to list branch protection rules...
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          AUTO_MERGE_PRODUCTION: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE }}
+        run: |
+          poetry install
+          poetry run auto-merge

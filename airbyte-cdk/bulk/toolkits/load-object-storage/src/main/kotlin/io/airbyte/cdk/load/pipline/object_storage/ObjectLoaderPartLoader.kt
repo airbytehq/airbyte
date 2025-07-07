@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 
 /**
@@ -36,6 +37,7 @@ class UploadsInProgress<T : RemoteObject<*>> {
     val byKey: ConcurrentHashMap<String, ObjectLoaderPartLoader.State<T>> = ConcurrentHashMap()
 }
 
+// TODO: Add unit tests
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderPartLoader<T : RemoteObject<*>>(
@@ -68,7 +70,9 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         val upload: Deferred<StreamingUpload<T>>,
         override val objectKey: String,
         val partIndex: Int,
-        val isFinal: Boolean
+        val isFinal: Boolean,
+        // keep track of whether it's empty so the bookkeeper can ignore it
+        val empty: Boolean = false,
     ) : PartResult<T> {
         override val state: BatchState = BatchState.STAGED
     }
@@ -78,7 +82,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
 
     override suspend fun start(key: ObjectKey, part: Int): State<T> {
         val stream = catalog.getStream(key.stream)
-        return uploads.byKey.computeIfAbsent(key.objectKey) {
+        return uploads.byKey.computeIfAbsent(key.uploadId ?: key.objectKey) {
             State(
                 key.objectKey,
                 CoroutineScope(Dispatchers.IO).async {
@@ -90,20 +94,51 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
             )
         }
     }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun acceptWithExperimentalCoroutinesApi(
+        input: ObjectLoaderPartFormatter.FormattedPart,
+        state: State<T>
+    ): BatchAccumulatorResult<State<T>, PartResult<T>> {
+        log.debug { "Uploading part $input" }
+        if (!input.part.isFinal && input.part.bytes == null) {
+            throw IllegalStateException("Empty non-final part received: this should not happen")
+        }
+
+        val upload =
+            if (state.streamingUpload.isCompleted) {
+                state.streamingUpload.getCompleted()
+            } else {
+                state.streamingUpload.await()
+            }
+
+        input.part.bytes?.let { bytes -> upload.uploadPart(bytes, input.part.partIndex) }
+        val output =
+            LoadedPart(
+                state.streamingUpload,
+                input.part.key,
+                input.part.partIndex,
+                input.part.isFinal,
+                input.part.bytes == null,
+            )
+        return IntermediateOutput(state, output)
+    }
 
     override suspend fun accept(
         input: ObjectLoaderPartFormatter.FormattedPart,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, PartResult<T>> {
         log.info { "Uploading part $input" }
+        if (!input.part.isFinal && input.part.bytes == null) {
+            throw IllegalStateException("Empty non-final part received: this should not happen")
+        }
         input.part.bytes?.let { state.streamingUpload.await().uploadPart(it, input.part.partIndex) }
-            ?: throw IllegalStateException("Empty non-final part received: this should not happen")
         val output =
             LoadedPart(
                 state.streamingUpload,
                 input.part.key,
                 input.part.partIndex,
-                input.part.isFinal
+                input.part.isFinal,
+                input.part.bytes == null,
             )
         return IntermediateOutput(state, output)
     }

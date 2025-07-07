@@ -220,7 +220,7 @@ Expand to see details about Shopify connector limitations and troubleshooting
 
 #### Rate limiting
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
+Shopify has some [rate limit restrictions](https://shopify.dev/docs/api/usage/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries.
@@ -246,6 +246,9 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.7 | 2025-06-02 | [59015](https://github.com/airbytehq/airbyte/pull/59015) | 🐙 source-shopify: Update dependencies [2025-05-17] |
+| 3.0.6 | 2025-05-28 | [60797](https://github.com/airbytehq/airbyte/pull/60797) | Fix 500s on `orders` & `order_refunds` streams by adding dynamic page limit. |
+| 3.0.5 | 2025-04-23 | [58598](https://github.com/airbytehq/airbyte/pull/58598) | Fix AttributeError with Null `measurement_weight` fields for `product_variants` streams |
 | 3.0.4 | 2025-04-19 | [58431](https://github.com/airbytehq/airbyte/pull/58431) | Update dependencies |
 | 3.0.3 | 2025-04-12 | [57984](https://github.com/airbytehq/airbyte/pull/57984) | Update dependencies |
 | 3.0.2 | 2025-04-05 | [57449](https://github.com/airbytehq/airbyte/pull/57449) | Update dependencies |

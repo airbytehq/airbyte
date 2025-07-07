@@ -1,10 +1,11 @@
-import React from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import styles from "./HeaderDecoration.module.css";
-import { Chip } from "./Chip";
-import { Callout } from "./Callout";
+import React from "react";
 import { getSupportLevelDisplay } from "../connector_registry";
+import { Callout } from "./Callout";
+import { Chip } from "./Chip";
+import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
+import styles from "./HeaderDecoration.module.css";
 
 // Extend Day.js with the relativeTime plugin
 dayjs.extend(relativeTime);
@@ -14,17 +15,19 @@ dayjs.extend(relativeTime);
 const CHECK_ICON = (
   <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512">
     <title>Available</title>
-    <path 
+    <path
       fill="currentColor"
-      d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/>
-    </svg>
+      d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"
+    />
+  </svg>
 );
 const CROSS_ICON = (
   <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512">
     <title>Not available</title>
-    <path 
+    <path
       fill="currentColor"
-      d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
+      d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+    />
   </svg>
 );
 
@@ -233,6 +236,7 @@ const ConnectorMetadataCallout = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
+  definitionId,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
@@ -278,13 +282,15 @@ const ConnectorMetadataCallout = ({
       </MetadataStat>
       {supportLevel !== "archived" && (
         <MetadataStat label="Connector Version">
-          <a href={github_url} target="_blank">
-            {dockerImageTag}&nbsp;
-          </a>
+          {!isEnterprise && github_url ? (
+            <a href={github_url} target="_blank">
+              {dockerImageTag}&nbsp;
+            </a>
+          ) : (
+            <span>{dockerImageTag}</span>
+          )}
           {lastUpdated && (
-            <span>{`(last updated ${dayjs(
-              lastUpdated,
-            ).fromNow()})`}</span>
+            <span>{`(last updated ${dayjs(lastUpdated).fromNow()})`}</span>
           )}
         </MetadataStat>
       )}
@@ -308,8 +314,21 @@ const ConnectorMetadataCallout = ({
       )}
       {isEnterprise && (
         <MetadataStat label="Enterprise Connector">
-          This premium connector is only available with a license. <a href="https://airbyte.com/company/talk-to-sales" target="_blank">Talk to Sales </a>.
-        </MetadataStat> 
+          <strong>
+            This premium connector is available to Enterprise customers at an
+            additional cost
+          </strong>
+          .{" "}
+          <a href="https://airbyte.com/company/talk-to-sales" target="_blank">
+            Talk to Sales{" "}
+          </a>
+          .
+        </MetadataStat>
+      )}
+      {definitionId && (
+        <MetadataStat label="Definition ID">
+          <code>{definitionId}</code>
+        </MetadataStat>
       )}
     </dl>
   </Callout>
@@ -346,6 +365,7 @@ export const HeaderDecoration = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
+  definitionId,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -355,12 +375,18 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <ConnectorTitle
-        iconUrl={iconUrl}
-        originalTitle={originalTitle}
-        originalId={originalId}
-        isArchived={isArchived}
-      />
+      <div
+        className={styles.connectorHeader}
+   
+      >
+        <ConnectorTitle
+          iconUrl={iconUrl}
+          originalTitle={originalTitle}
+          originalId={originalId}
+          isArchived={isArchived}
+        />
+        <CopyPageButton />
+      </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
         isOss={isOss}
@@ -374,6 +400,7 @@ export const HeaderDecoration = ({
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
         lastUpdated={lastUpdated}
+        definitionId={definitionId}
       />
     </>
   );

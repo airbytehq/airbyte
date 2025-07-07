@@ -19,8 +19,12 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.time.ZonedDateTime
 
 sealed interface AirbyteValue {
+    val airbyteType: AirbyteType
+        get() = airbyteTypeOf(this)
+
     companion object {
         fun from(value: Any?): AirbyteValue =
             when (value) {
@@ -35,6 +39,7 @@ sealed interface AirbyteValue {
                 is BigDecimal -> NumberValue(value)
                 is LocalDate -> DateValue(value)
                 is OffsetDateTime -> TimestampWithTimezoneValue(value)
+                is ZonedDateTime -> TimestampWithTimezoneValue(value.toOffsetDateTime())
                 is LocalDateTime -> TimestampWithoutTimezoneValue(value)
                 is OffsetTime -> TimeWithTimezoneValue(value)
                 is LocalTime -> TimeWithoutTimezoneValue(value)
@@ -45,6 +50,24 @@ sealed interface AirbyteValue {
                     throw IllegalArgumentException(
                         "Unrecognized value (${value.javaClass.name}: $value"
                     )
+            }
+
+        fun airbyteTypeOf(value: AirbyteValue): AirbyteType =
+            when (value) {
+                // ArrayType requires the type of the object which we do not convey
+                is ArrayValue -> StringType
+                is BooleanValue -> BooleanType
+                is DateValue -> DateType
+                is IntegerValue -> IntegerType
+                // Null is awkward because the value doesn't track the actual type information
+                is NullValue -> StringType
+                is NumberValue -> NumberType
+                is ObjectValue -> ObjectTypeWithoutSchema
+                is StringValue -> StringType
+                is TimeWithTimezoneValue -> TimeTypeWithTimezone
+                is TimeWithoutTimezoneValue -> TimeTypeWithoutTimezone
+                is TimestampWithTimezoneValue -> TimestampTypeWithTimezone
+                is TimestampWithoutTimezoneValue -> TimestampTypeWithoutTimezone
             }
     }
 }
@@ -191,8 +214,8 @@ class EnrichedAirbyteValue(
      * @param newValue The new (truncated) value to use
      */
     fun truncate(
-        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
-        newValue: AirbyteValue
+        newValue: AirbyteValue,
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION
     ) {
         val truncateChange = Meta.Change(field = name, change = Change.TRUNCATED, reason = reason)
 

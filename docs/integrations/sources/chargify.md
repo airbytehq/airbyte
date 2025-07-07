@@ -45,6 +45,9 @@ Please follow the [Chargify documentation for generating an API key](https://dev
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.5.22 | 2025-05-10 | [59941](https://github.com/airbytehq/airbyte/pull/59941) | Update dependencies |
+| 0.5.21 | 2025-05-03 | [59395](https://github.com/airbytehq/airbyte/pull/59395) | Update dependencies |
+| 0.5.20 | 2025-04-26 | [58707](https://github.com/airbytehq/airbyte/pull/58707) | Update dependencies |
 | 0.5.19 | 2025-04-19 | [58365](https://github.com/airbytehq/airbyte/pull/58365) | Update dependencies |
 | 0.5.18 | 2025-04-12 | [57796](https://github.com/airbytehq/airbyte/pull/57796) | Update dependencies |
 | 0.5.17 | 2025-04-05 | [57153](https://github.com/airbytehq/airbyte/pull/57153) | Update dependencies |

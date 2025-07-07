@@ -23,6 +23,9 @@ import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.kafka.connect.source.SourceRecord
 
@@ -150,7 +153,7 @@ class CdcPartitionReader<T : Comparable<T>>(
             // At this point, if we haven't returned already, we need to close down the engine.
             log.info { "Shutting down Debezium engine: ${closeReason.message}." }
             // TODO : send close analytics message
-            Thread({ engine.close() }, "debezium-close").start()
+            runBlocking() { launch(Dispatchers.IO + Job()) { engine.close() } }
         }
 
         private fun emitRecord(event: DebeziumEvent): EventType {

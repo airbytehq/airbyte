@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
-import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationFailure
 import io.airbyte.cdk.load.write.DestinationWriter
@@ -15,7 +14,6 @@ import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.InsertLoadTypeConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLDataSourceFactory
-import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 
@@ -23,10 +21,7 @@ import javax.sql.DataSource
 class MSSQLWriter(
     private val config: MSSQLConfiguration,
     private val dataSourceFactory: MSSQLDataSourceFactory,
-    @Value("\${airbyte.destination.core.record-batch-size-override:null}")
-    private val recordBatchSizeOverride: Long? = null,
     private val streamStateStore: StreamStateStore<MSSQLStreamState>,
-    private val destinationConfig: DestinationConfiguration,
 ) : DestinationWriter {
 
     /** Lazily initialized when [setup] is called. */
@@ -49,21 +44,18 @@ class MSSQLWriter(
                     stream = stream,
                     dataSource = dataSourceNotNull,
                     sqlBuilder = sqlBuilder,
-                    bulkUploadDataSource = loadConfig.bulkLoadDataSource,
                     defaultSchema = config.schema,
                     azureBlobClient =
                         AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig),
-                    validateValuesPreLoad = loadConfig.validateValuesPreLoad ?: false,
-                    recordBatchSizeOverride = recordBatchSizeOverride,
                     streamStateStore = streamStateStore,
-                    destinationConfig,
                 )
             }
             is InsertLoadTypeConfiguration -> {
                 MSSQLStreamLoader(
                     dataSource = dataSourceNotNull,
                     stream = stream,
-                    sqlBuilder = sqlBuilder
+                    sqlBuilder = sqlBuilder,
+                    streamStateStore = streamStateStore
                 )
             }
         }

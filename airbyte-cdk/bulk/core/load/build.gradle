@@ -12,6 +12,8 @@ kotlin {
 }
 
 dependencies {
+    api("com.github.f4b6a3:uuid-creator:6.1.1")
+
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation 'org.apache.commons:commons-lang3:3.17.0'
 
@@ -27,6 +29,8 @@ dependencies {
 
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'com.fasterxml.jackson.module:jackson-module-afterburner'
+
+    integrationTestImplementation testFixtures(project)
 }
 
 def integrationTestTask = tasks.register('integrationTest', Test) {
@@ -56,7 +60,8 @@ project.tasks.matching {
     it.name == 'spotbugsIntegrationTestLegacy' ||
             it.name == 'spotbugsIntegrationTest' ||
             it.name == 'spotbugsTest' ||
-            it.name == 'spotbugsMain'
+            it.name == 'spotbugsMain' ||
+            it.name == 'spotbugsTestFixtures'
 }.configureEach {
     enabled = false
 }

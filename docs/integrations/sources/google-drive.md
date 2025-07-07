@@ -320,6 +320,10 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.4.2 | 2025-05-24 | [60621](https://github.com/airbytehq/airbyte/pull/60621) | Update dependencies |
+| 0.4.1 | 2025-05-10 | [58227](https://github.com/airbytehq/airbyte/pull/58227) | Update dependencies |
+| 0.4.0 | 2025-05-06 | [59690](https://github.com/airbytehq/airbyte/pull/59690) | Promoting release candidate 0.4.0-rc.1 to a main version. |
+| 0.4.0-rc.1 | 2025-04-30 | [57496](https://github.com/airbytehq/airbyte/pull/57496) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.3.4 | 2025-04-12 | [57675](https://github.com/airbytehq/airbyte/pull/57675) | Update dependencies |
 | 0.3.3 | 2025-04-05 | [57072](https://github.com/airbytehq/airbyte/pull/57072) | Update dependencies |
 | 0.3.2 | 2025-03-29 | [56665](https://github.com/airbytehq/airbyte/pull/56665) | Update dependencies |

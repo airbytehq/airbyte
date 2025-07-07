@@ -2,20 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import timedelta
-
 import pytest
 import responses
-from conftest import find_stream
-from responses import matchers
-from source_jira.source import SourceJira
-from source_jira.streams import IssueFields, Issues, PullRequests
-from source_jira.utils import read_full_refresh, read_incremental
+from conftest import _YAML_FILE_PATH, find_stream, read_full_refresh
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -133,23 +127,6 @@ def test_issues_fields_stream(config, mock_fields_response):
 
     assert len(records) == 6
     assert len(responses.calls) == 1
-
-
-@responses.activate
-def test_python_issues_fields_ids_by_name(config, mock_fields_response):
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-    stream = IssueFields(**args)
-
-    expected_ids_by_name = {
-        "Development": ["PrIssueId"],
-        "Status Category Changed": ["statuscategorychangedate"],
-        "Issue Type": ["issuetype"],
-        "Parent": ["parent"],
-        "Issue Type2": ["issuetype2"],
-        "Issue Type3": ["issuetype3"],
-    }
-    assert expected_ids_by_name == stream.field_ids_by_name()
 
 
 @responses.activate
@@ -399,7 +376,9 @@ def test_screen_tabs_stream(config, mock_screen_response, screen_tabs_response):
 @responses.activate
 def test_sprints_stream(config, mock_board_response, mock_sprints_response):
     output = read(
-        SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("sprints", SyncMode.full_refresh).build()
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
+        config,
+        CatalogBuilder().with_stream("sprints", SyncMode.full_refresh).build(),
     )
 
     assert len(output.records) == 3
@@ -444,7 +423,7 @@ def test_sprint_issues_stream(config, mock_board_response, mock_fields_response,
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("sprint_issues", SyncMode.full_refresh).build(),
     )
@@ -614,166 +593,6 @@ def test_declarative_issues_stream(config, mock_projects_responses_additional_pr
 
 
 @responses.activate
-def test_python_issues_stream(config, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter, caplog):
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"] + ["Project3"]}
-    stream = Issues(**args)
-    records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
-    assert len(records) == 1
-
-    # check if only None values was filtered out from 'fields' field
-    assert "empty_field" not in records[0]["fields"]
-    assert "non_empty_field" in records[0]["fields"]
-
-    assert len(responses.calls) == 3
-    error_message = (
-        "Stream `issues`. An error occurred, details: The user doesn't have "
-        "permission to the project. Please grant the user to the project. Errors: "
-        "[\"The value '3' does not exist for the field 'project'.\"]"
-    )
-    assert error_message in caplog.messages
-
-
-@responses.activate
-@pytest.mark.parametrize(
-    "status_code, response_errorMessages, expected_log_message",
-    (
-        (
-            400,
-            ["The value 'incorrect_project' does not exist for the field 'project'."],
-            (
-                "Stream `issues`. An error occurred, details: The user doesn't have permission to the project."
-                " Please grant the user to the project. "
-                "Errors: [\"The value 'incorrect_project' does not exist for the field 'project'.\"]"
-            ),
-        ),
-        (
-            403,
-            ["The value 'incorrect_project' doesn't have permission for the field 'project'."],
-            (
-                "Stream `issues`. An error occurred, details:"
-                " Errors: [\"The value 'incorrect_project' doesn't have permission for the field 'project'.\"]"
-            ),
-        ),
-    ),
-)
-def test_python_issues_stream_skip_on_http_codes_error_handling(config, status_code, response_errorMessages, expected_log_message, caplog):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
-        json={"values": [{"key": "incorrect_project", "id": "incorrect_project"}]},
-    )
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
-        match=[
-            matchers.query_param_matcher(
-                {
-                    "maxResults": 50,
-                    "fields": "*all",
-                    "jql": "updated >= 1609459200000 and project in (incorrect_project) ORDER BY updated asc",
-                    "expand": "renderedFields,transitions,changelog",
-                }
-            )
-        ],
-        json={"errorMessages": response_errorMessages},
-        status=status_code,
-    )
-
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": "incorrect_project"}
-    stream = Issues(**args)
-
-    records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
-
-    assert len(records) == 0
-    assert expected_log_message in caplog.messages
-
-
-def test_python_issues_stream_updated_state(config):
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-    stream = Issues(**args)
-
-    updated_state = stream._get_updated_state(
-        current_stream_state={"updated": "2021-01-01T00:00:00Z"}, latest_record={"updated": "2021-01-02T00:00:00Z"}
-    )
-    assert updated_state == {"updated": "2021-01-02T00:00:00Z"}
-
-
-@pytest.mark.parametrize(
-    "dev_field, has_pull_request",
-    (
-        ("PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1}", True),
-        ("PullRequestOverallDetails{openCount=0, mergedCount=0, declinedCount=0}", False),
-        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=1}", True),
-        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=0}", False),
-        ("{}", False),
-    ),
-)
-def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pull_request):
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-    issues_stream = Issues(**args)
-    issue_fields_stream = IssueFields(**args)
-    incremental_args = {
-        **args,
-        "start_date": ab_datetime_parse(config["start_date"]),
-        "lookback_window_minutes": timedelta(minutes=0),
-    }
-    pull_requests_stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
-
-    assert has_pull_request == pull_requests_stream.has_pull_requests(dev_field)
-
-
-@responses.activate
-def test_python_pull_requests_stream_has_pull_request(
-    config, mock_fields_response, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter
-):
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-    issues_stream = Issues(**args)
-    issue_fields_stream = IssueFields(**args)
-    incremental_args = {
-        **args,
-        "start_date": ab_datetime_parse(config["start_date"]),
-        "lookback_window_minutes": timedelta(minutes=0),
-    }
-    stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
-
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/dev-status/1.0/issue/detail?maxResults=50&issueId=10627&applicationType=GitHub&dataType=branch",
-        json={"detail": [{"id": "1", "name": "Source Jira: pull request"}]},
-    )
-
-    records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
-
-    assert len(records) == 1
-    assert len(responses.calls) == 4
-
-
-@pytest.mark.parametrize(
-    "start_date, lookback_window, stream_state, expected_query",
-    [
-        (ab_datetime_parse("2023-09-09T00:00:00Z"), 0, None, None),
-        (None, 10, {"updated": "2023-12-14T09:47:00"}, "updated >= 1702546620000"),
-        (None, 0, {"updated": "2023-12-14T09:47:00"}, "updated >= 1702547220000"),
-    ],
-)
-def test_issues_stream_jql_compare_date(config, start_date, lookback_window, stream_state, expected_query, caplog):
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {
-        "authenticator": authenticator,
-        "domain": config["domain"],
-        "projects": config.get("projects", []) + ["Project3"],
-        "lookback_window_minutes": timedelta(minutes=lookback_window),
-    }
-    stream = Issues(**args)
-    assert stream.jql_compare_date(stream_state) == expected_query
-
-
-@responses.activate
 def test_python_issue_comments_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_comments_response):
     responses.add(
         responses.GET,
@@ -831,7 +650,7 @@ def test_project_permissions_stream(config, mock_non_deleted_projects_responses,
 @responses.activate
 def test_project_email_stream(config, mock_non_deleted_projects_responses, mock_project_emails):
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("project_email", SyncMode.full_refresh).build(),
     )
@@ -849,7 +668,7 @@ def test_project_components_stream(config, mock_non_deleted_projects_responses, 
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("project_components", SyncMode.full_refresh).build(),
     )
@@ -867,7 +686,7 @@ def test_permissions_stream(config, permissions_response):
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None),
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
         config,
         CatalogBuilder().with_stream("permissions", SyncMode.full_refresh).build(),
     )
@@ -890,7 +709,9 @@ def test_labels_stream(config, labels_response):
     )
 
     output = read(
-        SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("labels", SyncMode.full_refresh).build()
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
+        config,
+        CatalogBuilder().with_stream("labels", SyncMode.full_refresh).build(),
     )
 
     assert len(output.records) == 2
@@ -965,8 +786,6 @@ def test_project_versions_stream(config, mock_non_deleted_projects_responses, pr
         json=projects_versions_response,
     )
 
-    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = find_stream("project_versions", config)
     records = list(read_full_refresh(stream))
 
@@ -1027,7 +846,9 @@ def test_skip_slice(
 ):
     config["projects"] = config.get("projects", []) + ["Project3", "Project4"]
     output = read(
-        SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build()
+        YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)),
+        config,
+        CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build(),
     )
     assert len(output.records) == expected_records_number
 

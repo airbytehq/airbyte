@@ -232,6 +232,9 @@ FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------- |
+| 0.1.9 | 2025-05-10 | [59992](https://github.com/airbytehq/airbyte/pull/59992) | Update dependencies |
+| 0.1.8 | 2025-05-03 | [59430](https://github.com/airbytehq/airbyte/pull/59430) | Update dependencies |
+| 0.1.7 | 2025-04-26 | [58913](https://github.com/airbytehq/airbyte/pull/58913) | Update dependencies |
 | 0.1.6 | 2025-04-12 | [57799](https://github.com/airbytehq/airbyte/pull/57799) | Update dependencies |
 | 0.1.5 | 2025-04-05 | [57218](https://github.com/airbytehq/airbyte/pull/57218) | Update dependencies |
 | 0.1.4 | 2025-03-29 | [56519](https://github.com/airbytehq/airbyte/pull/56519) | Update dependencies |

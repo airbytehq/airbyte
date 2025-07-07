@@ -22,14 +22,19 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType.UnionBehavior
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JsonSchemaToAirbyteSchemaTypeTest {
     private fun ofType(type: String): ObjectNode {
-        return JsonNodeFactory.instance.objectNode().put("type", type)
+        val node = JsonNodeFactory.instance.objectNode()
+        node.putArray("type").add("null").add(type)
+        return node
     }
 
     private val defaultJsonSchemaToAirbyteType = JsonSchemaToAirbyteType(UnionBehavior.DEFAULT)
@@ -155,14 +160,15 @@ class JsonSchemaToAirbyteSchemaTypeTest {
 
     @Test
     fun testArrayWithSingleSchema() {
-        val schemaNode = JsonNodeFactory.instance.objectNode().put("type", "array")
-        val itemsNode = schemaNode.putObject("items").put("type", "string") as ObjectNode
+        val schemaNode = ofType("array")
+        val itemsNode = schemaNode.putObject("items")
+        itemsNode.putArray("type").add("null").add("string")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is ArrayType)
         val arrayType = airbyteType as ArrayType
         Assertions.assertEquals(FieldType(StringType, true), arrayType.items)
 
-        itemsNode.put("type", "integer")
+        itemsNode.putArray("type").add("null").add("integer")
         val airbyteType2 = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType2 is ArrayType)
         val arrayType2 = airbyteType2 as ArrayType
@@ -178,6 +184,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
             val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
             Assertions.assertTrue(airbyteType is UnionType)
             val unionType = airbyteType as UnionType
+            Assertions.assertFalse(unionType.isLegacyUnion)
             Assertions.assertEquals(2, unionType.options.size)
             Assertions.assertTrue(unionType.options.contains(StringType))
             Assertions.assertTrue(unionType.options.contains(IntegerType))
@@ -193,7 +200,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
             val airbyteType = legacyJsonSchemaToAirbyteType.convert(schemaNode)
             Assertions.assertTrue(airbyteType is UnionType)
             val unionType = airbyteType as UnionType
-            Assertions.assertTrue(unionType.isLegacyUnion)
+            Assertions.assertFalse(unionType.isLegacyUnion)
             Assertions.assertEquals(2, unionType.options.size)
             Assertions.assertTrue(unionType.options.contains(StringType))
             Assertions.assertTrue(unionType.options.contains(IntegerType))
@@ -207,6 +214,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is UnionType)
         val unionType = airbyteType as UnionType
+        Assertions.assertFalse(unionType.isLegacyUnion)
         Assertions.assertEquals(3, unionType.options.size)
         Assertions.assertTrue(unionType.options.contains(StringType))
     }
@@ -238,6 +246,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val field1 = objectType.properties["field1"]!!
         Assertions.assertTrue(field1.type is UnionType)
         val unionType = field1.type as UnionType
+        Assertions.assertFalse(unionType.isLegacyUnion)
         Assertions.assertEquals(2, unionType.options.size)
         Assertions.assertTrue(unionType.options.contains(StringType))
         Assertions.assertTrue(unionType.options.contains(IntegerType))
@@ -271,10 +280,11 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val schemaNode = JsonNodeFactory.instance.objectNode()
         schemaNode.putArray("type").add("object").add("array")
         schemaNode.putObject("properties").replace("field1", ofType("string"))
-        schemaNode.putObject("items").put("type", "integer")
+        schemaNode.putObject("items").putArray("type").add("null").add("integer")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is UnionType)
         val unionType = airbyteType as UnionType
+        Assertions.assertFalse(unionType.isLegacyUnion)
         Assertions.assertEquals(2, unionType.options.size)
         val objectOption = unionType.options.find { it is ObjectType }!!
         val arrayOption = unionType.options.find { it is ArrayType }!!
@@ -292,7 +302,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val schemaNode = JsonNodeFactory.instance.objectNode()
         schemaNode.putArray("type").add("object").add("array")
         schemaNode.putObject("properties").replace("field1", ofType("string"))
-        schemaNode.putObject("items").put("type", "integer")
+        schemaNode.putObject("items").putArray("type").add("null").add("integer")
         val airbyteType = legacyJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is UnionType)
         val unionType = airbyteType as UnionType
@@ -355,5 +365,91 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val schemaNode = ofType("string").put("format", "foo")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is StringType)
+    }
+
+    @Test
+    fun testInvalidSchema() {
+        val schemaNode = Jsons.readTree("\"foo\"")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        // Note that we inject the original node into a `{type: ____}` node.
+        // Arguably we shouldn't, but this is preserving some legacy type-parsing behavior.
+        assertEquals(UnknownType(Jsons.readTree("""{"type":"foo"}""")), airbyteType)
+    }
+
+    /** Similar to [testInvalidSchema], except we can recognize the type name. */
+    @Test
+    fun testParseableInvalidSchema() {
+        val schemaNode = Jsons.readTree("\"string\"")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(StringType, airbyteType)
+    }
+
+    @Test
+    fun testInvalidObject() {
+        val schemaNode =
+            Jsons.readTree(
+                """
+                    {
+                      "type": "object",
+                      "properties": {
+                          "foo": "bar"
+                      }
+                    }
+                """.trimIndent()
+            )
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            ObjectType(
+                linkedMapOf(
+                    "foo" to FieldType(UnknownType(Jsons.readTree("\"bar\"")), nullable = true)
+                ),
+                additionalProperties = false
+            ),
+            airbyteType,
+        )
+    }
+
+    @Test
+    fun testInvalidArray() {
+        val schemaNode = Jsons.readTree("""{"type": "array", "items": "foo"}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            ArrayType(FieldType(UnknownType(Jsons.readTree("\"foo\"")), nullable = true)),
+            airbyteType,
+        )
+    }
+
+    @Test
+    fun testInvalidUnion() {
+        // Unions should have a list of options, not a single plain option.
+        // But if it's a single plain option, we can always try parsing it.
+        val schemaNode = Jsons.readTree("""{"oneOf": {"type": "string"}}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(StringType, airbyteType)
+    }
+
+    @Test
+    fun testInvalidUnionOption() {
+        val schemaNode = Jsons.readTree("""{"oneOf": ["foo"]}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        // unions with a single option just promote that option to the top-level type.
+        // Similar to testInvalidSchema, we also try promoting to a `{type: __}` schema.
+        assertEquals(UnknownType(Jsons.readTree("""{"type": "foo"}""")), airbyteType)
+    }
+
+    @Test
+    fun testInvalidUnionMultipleOptions() {
+        val schemaNode = Jsons.readTree("""{"oneOf": ["foo", "bar"]}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            UnionType(
+                setOf(
+                    UnknownType(Jsons.readTree("""{"type": "foo"}""")),
+                    UnknownType(Jsons.readTree("""{"type": "bar"}""")),
+                ),
+                isLegacyUnion = false
+            ),
+            airbyteType,
+        )
     }
 }

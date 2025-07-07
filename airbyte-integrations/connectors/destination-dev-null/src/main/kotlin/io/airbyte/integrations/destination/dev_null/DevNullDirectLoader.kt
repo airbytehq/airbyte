@@ -12,7 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.random.Random
 
-/** Wraps the configured operation in logic that acks all state so far every N records. */
+/** Wraps the configured operation in logic that acks all state so far every N records */
 abstract class DevNullDirectLoader(
     private val config: DevNullConfiguration,
 ) : DirectLoader {
@@ -20,7 +20,7 @@ abstract class DevNullDirectLoader(
 
     abstract fun acceptInner(record: DestinationRecordRaw)
 
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         acceptInner(record)
         return if (++recordCount % config.ackRatePerRecord == 0L) {
             DirectLoader.Complete
@@ -29,12 +29,12 @@ abstract class DevNullDirectLoader(
         }
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         /* do nothing */
     }
 
     override fun close() {
-        /* do nothing */
+        /* do even more nothing */
     }
 }
 

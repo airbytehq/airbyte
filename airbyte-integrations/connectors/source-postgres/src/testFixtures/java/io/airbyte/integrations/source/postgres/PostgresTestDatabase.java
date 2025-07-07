@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.cdc.PostgresDebeziumStateUtil;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
@@ -198,6 +199,12 @@ public class PostgresTestDatabase extends
       return this.with("replication_method", Jsons.jsonNode(ImmutableMap.builder().put("method", "Xmin").build()));
     }
 
+  }
+
+  @Override
+  public void close() {
+    PostgresDebeziumStateUtil.disposeInitialState();
+    super.close();
   }
 
 }

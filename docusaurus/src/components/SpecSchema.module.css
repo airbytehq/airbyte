@@ -70,14 +70,14 @@
 .contentItem {
   grid-row: span 1;
   grid-column: span 1;
-  background-color:var(--ifm-table-cell-color);
+  background-color: var(--ifm-table-cell-color);
   padding: 7px;
 }
 
 .descriptionItem {
   grid-row: span 1;
   grid-column: span 3;
-  background-color:var(--ifm-table-cell-color);
+  background-color: var(--ifm-table-cell-color);
   margin: 0;
   padding: 7px;
   border-left: 1px solid var(--ifm-table-border-color);

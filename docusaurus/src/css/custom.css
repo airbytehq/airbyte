@@ -18,7 +18,7 @@
   --ifm-code-font-size: 95%;
   --ifm-navbar-height: 82px;
   --ifm-alert-border-color: #615eff;
-  --ifm-navbar-link-color: #615eff;
+
   --ifm-font-family-base: "Inter";
   --ifm-alert-shadow: none;
   --ifm-menu-color: var(--ifm-color-emphasis-900);
@@ -46,7 +46,7 @@
   --color-dark-blue-40: hsl(230, 23%, 95%);
   --color-dark-blue-700: hsl(236, 43%, 31%);
   --color-red-400: hsl(0, 73%, 50%);
-
+  --color-orange-400: hsl(9, 100%, 60%);
   --modal-overlay-background: hsla(241, 51%, 20%, 50%);
   --icon-background: transparent;
 }
@@ -69,7 +69,7 @@ html[data-theme="dark"] {
   --ifm-table-stripe-background: transparent;
   --ifm-table-head-background: var(--color-blue-30);
   --ifm-table-head-color: hsl(240, 100%, 98%);
-  --ifm-table-border-color:hsl(240, 100%, 98%);
+  --ifm-table-border-color: hsl(240, 100%, 98%);
 
   --color-grey-40: hsl(240, 14%, 14%);
   --color-grey-100: hsl(240, 15%, 15%);
@@ -81,9 +81,22 @@ html[data-theme="dark"] {
   --color-dark-blue-700: hsl(240, 100%, 98%);
   --color-white: hsl(0, 0%, 16%);
   --color-red-400: hsl(0, 81%, 71%);
+  --color-orange-400: hsl(9, 100%, 60%);
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
+  --markprompt-background: var(--ifm-background-color) !important;
+  --markprompt-background-accent: var(--ifm-background-color) !important;
+}
+
+/* Hide sidebar on the homepage */
+html.plugin-id-default aside.theme-doc-sidebar-container {
+  visibility: hidden !important;
+}
+
+/* Hide breadcrumbs on the homepage */
+html.plugin-id-default nav.theme-doc-breadcrumbs {
+  visibility: hidden;
 }
 
 .admonition-icon,
@@ -159,9 +172,12 @@ span.DocSearch-Button-Placeholder {
   text-decoration: none;
 }
 
+.navbar .navbar__item {
+  margin-right: 0.5em;
+}
+
 .navbar__category {
   font-weight: 700;
-  font-size: 0.8em;
   padding: 0.4em 0 0.4em 0.4em;
   color: var(--docsearch-text-color);
   background-color: var(--ifm-hover-overlay);
@@ -171,9 +187,13 @@ span.DocSearch-Button-Placeholder {
   margin-top: 1.1em;
 }
 
-/* Hide the breadcrumbs if they have only the house as an entry (i.e. on the start page) */
-.breadcrumbs:has(li:first-child:last-child) {
-  display: none;
+ul.table-of-contents {
+  padding-left: 0;
+  border: 0;
+}
+
+ul.table-of-contents li {
+  margin-left: 0;
 }
 
 nav.theme-doc-breadcrumbs {
@@ -187,6 +207,21 @@ ul.breadcrumbs > li.breadcrumbs__item > a.breadcrumbs__link {
 ul.breadcrumbs > li.breadcrumbs__item > span.breadcrumbs__link {
   color: var(--ifm-font-color-base);
   background: none;
+}
+
+article span.badge {
+  margin-bottom: 20px;
+  background-color: var(--color-green-40);
+  border: 1px solid var(--color-green-800);
+  color: var(--color-green-800);
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+html[data-theme="dark"] article span.badge {
+  background-color: var(--color-grey-40);
+  border: 1px solid var(--color-dark-blue-40);
+  color: var(--color-dark-blue-40);
 }
 
 .cloudStatusLink {
@@ -258,7 +293,6 @@ The variables for them have been added to :root at the top of this file */
   color: var(--color-active-nav-item-text);
 }
 
-
 table {
   border-spacing: 0;
   border-collapse: separate;
@@ -305,4 +339,70 @@ table thead tr:hover {
 svg.inline-svg {
   max-height: 1em;
   max-width: 1em;
+}
+
+nav a.navbar__link--active {
+  color: var(--ifm-color-primary) !important;
+  border-bottom: 3px solid var(--ifm-color-primary);
+}
+
+.MarkpromptContentDialog[data-variant="sheet"] {
+  z-index: 201 !important; /* This needs to be greater than var(--ifm-z-index-fixed) */
+}
+.MarkpromptBranding {
+  display: none !important;
+}
+
+.MarkpromptDefaultViewExamplePromptButton {
+  color: var(--color-gray-40) !important;
+  border: 1px solid var(--color-dark-blue-40) !important;
+  border-radius: 4px !important;
+}
+
+.MarkpromptOverlay {
+  z-index: 201 !important;
+}
+
+.MarkpromptContentDialog[data-variant="sheet"] {
+  max-width: 580px !important;
+}
+
+.MarkpromptMessageAvatarContainer {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatarImage {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatar {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptContentDialog {
+  --markprompt-text-size: 1em !important;
+  --markprompt-text-size-code: 1em !important;
+}
+
+.MarkpromptPrompt {
+  padding-block: 0.35rem !important;
+}
+
+/* Header with button styling */
+.header-with-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-with-button h1 {
+  margin-bottom: 0;
+}
+
+/* Force no margin on the bottom when inside a flex container */
+header h1 {
+  margin-bottom: 0;
 }

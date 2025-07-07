@@ -1,3 +1,14 @@
+.header  {
+  flex-grow:1;
+} 
+
+.connectorHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 .connectorIcon {
   max-height: 40px;
   max-width: 40px;
@@ -5,7 +16,7 @@
   margin-right: 10px;
 }
 
-div.connectorMetadataCallout  {
+div.connectorMetadataCallout {
   margin-bottom: 15px;
   padding: 14px 20px;
   background-color: var(--color-grey-40);
@@ -20,7 +31,8 @@ div.connectorMetadataCallout  {
   row-gap: 8px;
 }
 
-.connectorMetadata dt, .connectorMetadata dd {
+.connectorMetadata dt,
+.connectorMetadata dd {
   display: inline-block;
 }
 
@@ -72,7 +84,6 @@ html[data-theme="dark"] .metadataStatValue a {
   gap: 8px;
   flex-wrap: wrap;
 }
-
 
 .connectorMetadata .availability > span {
   display: inline-flex;

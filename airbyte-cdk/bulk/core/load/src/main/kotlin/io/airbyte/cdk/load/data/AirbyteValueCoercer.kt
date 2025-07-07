@@ -157,11 +157,9 @@ object AirbyteValueCoercer {
     private fun offsetDateTime(it: StringValue): OffsetDateTime {
         val odt =
             try {
-                ZonedDateTime.parse(it.value, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
-                    .toOffsetDateTime()
+                ZonedDateTime.parse(it.value, DATE_TIME_FORMATTER).toOffsetDateTime()
             } catch (e: Exception) {
-                LocalDateTime.parse(it.value, AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER)
-                    .atOffset(ZoneOffset.UTC)
+                LocalDateTime.parse(it.value, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
             }
         return odt
     }

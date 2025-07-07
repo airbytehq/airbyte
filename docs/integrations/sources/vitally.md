@@ -41,6 +41,11 @@ The Vitally connector should not run into Vitally API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.4.2 | 2025-05-24 | [60783](https://github.com/airbytehq/airbyte/pull/60783) | Update dependencies |
+| 0.4.1 | 2025-05-10 | [59942](https://github.com/airbytehq/airbyte/pull/59942) | Update dependencies |
+| 0.4.0 | 2025-05-05 | [58062](https://github.com/airbytehq/airbyte/pull/58062) | Fix subdomain parameter config |
+| 0.3.10 | 2025-05-04 | [59561](https://github.com/airbytehq/airbyte/pull/59561) | Update dependencies |
+| 0.3.9 | 2025-04-26 | [58951](https://github.com/airbytehq/airbyte/pull/58951) | Update dependencies |
 | 0.3.8 | 2025-04-20 | [58018](https://github.com/airbytehq/airbyte/pull/58018) | Update dependencies |
 | 0.3.7 | 2025-04-05 | [57478](https://github.com/airbytehq/airbyte/pull/57478) | Update dependencies |
 | 0.3.6 | 2025-03-29 | [56894](https://github.com/airbytehq/airbyte/pull/56894) | Update dependencies |

@@ -47,6 +47,8 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                    |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
+| 0.3.18 | 2025-05-10 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies |
+| 0.3.17 | 2025-05-03 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies |
 | 0.3.16 | 2025-04-19 | [57766](https://github.com/airbytehq/airbyte/pull/57766) | Update dependencies |
 | 0.3.15 | 2025-04-05 | [57225](https://github.com/airbytehq/airbyte/pull/57225) | Update dependencies |
 | 0.3.14 | 2025-03-29 | [56546](https://github.com/airbytehq/airbyte/pull/56546) | Update dependencies |

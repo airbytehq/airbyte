@@ -235,6 +235,14 @@ insights_record = {
             "description": "Description8.",
             "id": "insta_id/insights/shares/lifetime",
         },
+        {
+            "name": "views",
+            "period": "lifetime",
+            "values": [{"value": 2147}],
+            "title": "title8",
+            "description": "Description8.",
+            "id": "insta_id/insights/views/lifetime",
+        },
     ]
 }
 
@@ -246,4 +254,5 @@ insights_record_transformed = {
     "reach": 1842,
     "saved": 7,
     "shares": 1,
+    "views": 2147,
 }

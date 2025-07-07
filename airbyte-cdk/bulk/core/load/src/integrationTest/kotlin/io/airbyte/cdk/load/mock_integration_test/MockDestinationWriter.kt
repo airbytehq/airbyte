@@ -8,24 +8,30 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.BatchState
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
-import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.test.mock.MockDestinationConfiguration
+import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.Instant
-import java.util.UUID
-import javax.inject.Singleton
-import kotlinx.coroutines.delay
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
-class MockDestinationWriter : DestinationWriter {
+@Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
+class MockDestinationWriter(
+    private val config: MockDestinationConfiguration,
+) : DestinationWriter {
+    override suspend fun setup() {
+        if (config.foo != 0) {
+            throw IllegalArgumentException("Foo should be 0")
+        }
+    }
+
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return MockStreamLoader(stream)
     }
@@ -33,32 +39,19 @@ class MockDestinationWriter : DestinationWriter {
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
-    private val log = KotlinLogging.logger {}
-
-    abstract class MockBatch : Batch {
-        override val groupId: String? = null
-    }
-
-    data class LocalBatch(val records: List<DestinationRecordRaw>) : MockBatch() {
-        override val state = BatchState.STAGED
-    }
-    data class LocalFileBatch(val file: DestinationFile) : MockBatch() {
-        override val state = BatchState.STAGED
-    }
-
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             when (val importType = stream.importType) {
                 is Append -> {
                     MockDestinationBackend.commitFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor)
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor)
                     )
                 }
                 is Dedupe -> {
                     MockDestinationBackend.commitAndDedupeFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor),
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor),
                         importType.primaryKey,
                         importType.cursor,
                     )
@@ -66,62 +59,13 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 else -> throw IllegalArgumentException("Unsupported import type $importType")
             }
             MockDestinationBackend.deleteOldRecords(
-                getFilename(stream.descriptor),
+                getFilename(stream.mappedDescriptor),
                 stream.minimumGenerationId
             )
-        }
-    }
-
-    override suspend fun processRecords(
-        records: Iterator<DestinationRecordRaw>,
-        totalSizeBytes: Long,
-        endOfStream: Boolean
-    ): Batch {
-        return LocalBatch(records.asSequence().toList())
-    }
-
-    override suspend fun processBatch(batch: Batch): Batch {
-        return when (batch) {
-            is LocalBatch -> {
-                log.info { "Persisting ${batch.records.size} records for ${stream.descriptor}" }
-                batch.records.forEach {
-                    val recordAirbyteValue = it.asDestinationRecordAirbyteValue()
-                    val filename = getFilename(it.stream.descriptor, staging = true)
-                    val record =
-                        OutputRecord(
-                            UUID.randomUUID(),
-                            Instant.ofEpochMilli(recordAirbyteValue.emittedAtMs),
-                            Instant.ofEpochMilli(System.currentTimeMillis()),
-                            stream.generationId,
-                            recordAirbyteValue.data as ObjectValue,
-                            OutputRecord.Meta(
-                                changes = recordAirbyteValue.meta?.changes ?: listOf(),
-                                syncId = stream.syncId
-                            ),
-                        )
-                    // blind insert into the staging area. We'll dedupe on commit.
-                    MockDestinationBackend.insert(filename, record)
-                }
-                // HACK: This destination is too fast and causes a race
-                // condition between consuming and flushing state messages
-                // that causes the test to fail. This would not be an issue
-                // in a real sync, because we would always either get more
-                // data or an end-of-stream that would force a final flush.
-                delay(100L)
-                SimpleBatch(state = BatchState.COMPLETE)
+        } else {
+            logger.info {
+                "Skipping commit because stream ${stream.mappedDescriptor.toPrettyString()} was not successful"
             }
-            else -> throw IllegalStateException("Unexpected batch type: $batch")
         }
-    }
-
-    companion object {
-        fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
-            getFilename(stream.namespace, stream.name, staging)
-        fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
-            if (staging) {
-                "(${namespace},${name},staging)"
-            } else {
-                "(${namespace},${name})"
-            }
     }
 }
