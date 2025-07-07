@@ -314,6 +314,9 @@ class BigqueryDirectLoadSqlGenerator(
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema -> StandardSQLTypeName.JSON
                 is UnionType ->
+                    // This needs to stay aligned with the UnionType handling in
+                    // BigqueryRecordFormatter.validateAirbyteValue. If we change this logic, we
+                    // should also update that file.
                     if (type.isLegacyUnion) {
                         toDialectType(type.chooseType())
                     } else {

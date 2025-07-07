@@ -347,17 +347,23 @@ class BigQueryRecordFormatter(
                         }
                     }
                 }
+                // This needs to stay aligned with BigquerySqlGenerator.toDialectType.
+                // If we change legacy union behavior, then we should modify this logic.
                 is UnionType -> {
-                    val chosenType = type.chooseType()
-                    val coerced = AirbyteValueCoercer.coerce(value, chosenType)
-                    return coerced?.let { validateAirbyteValue(coerced, chosenType) }
-                        ?: ValidatedValue(
-                            NullValue,
-                            ValidationFailure(
-                                Change.NULLED,
-                                Reason.DESTINATION_SERIALIZATION_ERROR
-                            ),
-                        )
+                    if (type.isLegacyUnion) {
+                        val chosenType = type.chooseType()
+                        val coerced = AirbyteValueCoercer.coerce(value, chosenType)
+                        return coerced?.let { validateAirbyteValue(coerced, chosenType) }
+                            ?: ValidatedValue(
+                                NullValue,
+                                ValidationFailure(
+                                    Change.NULLED,
+                                    Reason.DESTINATION_SERIALIZATION_ERROR
+                                ),
+                            )
+                    }
+                    // non-legacy unions don't require validation, because we write to a JSON column
+                    // (and therefore all values are valid)
                 }
                 else -> {}
             }
