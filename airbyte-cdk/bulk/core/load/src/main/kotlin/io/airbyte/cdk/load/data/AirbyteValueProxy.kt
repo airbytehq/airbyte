@@ -8,8 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
+import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
+import io.airbyte.cdk.util.Jsons.objectNode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.math.BigInteger
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Provides a universal view over raw data, agnostic of the serialization format. Fields are
@@ -28,6 +33,9 @@ interface AirbyteValueProxy {
     fun getTimestampWithoutTimezone(field: FieldAccessor): String?
     fun getJsonBytes(field: FieldAccessor): ByteArray?
     fun getJsonNode(field: FieldAccessor): JsonNode?
+    fun getJsonNode(field: String): JsonNode?
+    fun hasField(field: FieldAccessor): Boolean
+    fun undeclaredFields(declaredFields: Array<FieldAccessor>): Set<String>
     data class FieldAccessor(val index: Int, val name: String, val type: AirbyteType)
 }
 
@@ -61,3 +69,40 @@ fun AirbyteValueProxy.asJson(orderedSchema: Array<FieldAccessor>): ObjectNode {
     }
     return objectNode
 }
+
+fun AirbyteValueProxy.getAirbyteValue(field: FieldAccessor): AirbyteValue? =
+    try {
+        when (field.type) {
+            is ArrayType,
+            is ArrayTypeWithoutSchema,
+            is ObjectType,
+            is ObjectTypeWithoutSchema,
+            is ObjectTypeWithEmptySchema,
+            is UnionType,
+            is UnknownType -> this.getJsonNode(field)?.let { v -> JsonToAirbyteValue().convert(v) }
+                    ?: NullValue
+            is BooleanType -> this.getBoolean(field)?.let { v -> BooleanValue(v) } ?: NullValue
+            is IntegerType -> this.getInteger(field)?.let { v -> IntegerValue(v) } ?: NullValue
+            is NumberType -> this.getNumber(field)?.let { v -> NumberValue(v) } ?: NullValue
+            is StringType -> this.getString(field)?.let { v -> StringValue(v) } ?: NullValue
+            is TimeTypeWithTimezone ->
+                this.getTimeWithTimezone(field)?.let { v -> TimeWithTimezoneValue(v) } ?: NullValue
+            is TimeTypeWithoutTimezone ->
+                this.getTimeWithoutTimezone(field)?.let { v -> TimeWithoutTimezoneValue(v) }
+                    ?: NullValue
+            is TimestampTypeWithTimezone ->
+                this.getTimestampWithTimezone(field)?.let { v -> TimestampWithTimezoneValue(v) }
+                    ?: NullValue
+            is TimestampTypeWithoutTimezone ->
+                this.getTimestampWithoutTimezone(field)?.let { v ->
+                    TimestampWithoutTimezoneValue(v)
+                }
+                    ?: NullValue
+            is DateType -> this.getDate(field)?.let { v -> DateValue(v) } ?: NullValue
+        }
+    } catch (e: Exception) {
+        logger.info {
+            "Field ${field.name} could not be converted to type ${field.type}.  Reason: ${e.message}"
+        }
+        null
+    }

@@ -6,11 +6,12 @@ package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.getAirbyteValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.protobuf.toAirbyteValue
 import io.airbyte.cdk.load.state.CheckpointId
@@ -64,40 +65,38 @@ data class DestinationRecordRaw(
     fun asEnrichedDestinationRecordAirbyteValue(
         extractedAtAsTimestampWithTimezone: Boolean = false
     ): EnrichedDestinationRecordAirbyteValue {
-        val rawJson = asJsonRecord()
+        val proxy = rawData.asAirbyteValueProxy()
 
+        // Get the fields from the schema
+        val fieldAccessors = stream.airbyteValueProxyFieldAccessors
         val declaredFields = LinkedHashMap<String, EnrichedAirbyteValue>()
         val undeclaredFields = LinkedHashMap<String, JsonNode>()
 
         // Process fields from the raw JSON.
         // First, get the declared fields, in the order defined by the catalog
-        schemaFields.forEach { (fieldName, fieldType) ->
-            if (!rawJson.has(fieldName)) {
+        fieldAccessors.forEach { fieldAccessor ->
+            if (!proxy.hasField(fieldAccessor)) {
                 return@forEach
             }
-
-            val fieldValue = rawJson[fieldName]
+            val fieldValue = proxy.getAirbyteValue(fieldAccessor)
             val enrichedValue =
                 EnrichedAirbyteValue(
                     abValue = NullValue,
-                    type = fieldType.type,
-                    name = fieldName,
+                    type = fieldAccessor.type,
+                    name = fieldAccessor.name,
                     airbyteMetaField = null,
                 )
-            AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType.type)?.let {
-                enrichedValue.abValue = it
-            }
+            fieldValue?.let { enrichedValue.abValue = fieldValue }
                 ?: enrichedValue.nullify(
                     AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
 
-            declaredFields[fieldName] = enrichedValue
+            declaredFields[fieldAccessor.name] = enrichedValue
         }
+
         // Then, get the undeclared fields
-        rawJson.fields().forEach { (fieldName, fieldValue) ->
-            if (!schemaFields.contains(fieldName)) {
-                undeclaredFields[fieldName] = fieldValue
-            }
+        proxy.undeclaredFields(fieldAccessors).forEach { field ->
+            undeclaredFields[field] = proxy.getJsonNode(field)!!
         }
 
         return EnrichedDestinationRecordAirbyteValue(
