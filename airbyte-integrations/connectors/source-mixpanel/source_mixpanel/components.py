@@ -311,6 +311,7 @@ class EngagePropertiesDpathExtractor(DpathExtractor):
 class ExportHttpRequester(MixpanelHttpRequester):
     cursor_field = "time"
     default_project_timezone = "US/Pacific"
+    _to_date_lookback_window = 1
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -318,8 +319,8 @@ class ExportHttpRequester(MixpanelHttpRequester):
         self._from_date_lookback_window = max(
             self.config.get("export_lookback_window", 0), self.config.get("attribution_window", 0) * 24 * 60 * 60
         )
-        self._to_date_lookback_window = 1
-        self._time_lookback_window = self.config.get("export_lookback_window", 0)
+
+        self._start_date = None
 
         if self.config.get("end_date"):
             self._validate_end_date()
@@ -344,17 +345,19 @@ class ExportHttpRequester(MixpanelHttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
+        if not self._start_date:
+            self._start_date = pendulum.parse(
+                stream_slice.cursor_slice.get("start_time")
+            ).date() - timedelta(seconds=self._from_date_lookback_window)
+
         request_params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        start_time = stream_slice.cursor_slice.get("start_time")
+        start_time = int(pendulum.parse(stream_slice.cursor_slice.get("start_time")).timestamp())
+        end_time = int(pendulum.parse(stream_slice.cursor_slice.get("end_time")).timestamp())
 
-        from_date_value = (pendulum.parse(start_time) - timedelta(seconds=self._from_date_lookback_window)).date()
-        to_date_value = self._end_date
-        time_value = int((pendulum.parse(start_time) - timedelta(seconds=self._time_lookback_window)).timestamp())
-
-        request_params["from_date"] = from_date_value.format("YYYY-MM-DD")
-        request_params["to_date"] = to_date_value.format("YYYY-MM-DD")
-        request_params["where"] = f'properties["$time"]>=datetime({time_value})'
+        request_params["from_date"] = self._start_date
+        request_params["to_date"] = self._end_date
+        request_params["where"] = f'properties["$time"]>=datetime({start_time}) and properties["$time"]<datetime({end_time})'
 
         return request_params
 
@@ -422,9 +425,11 @@ class ExportErrorHandler(DefaultErrorHandler):
 
 class PropertiesTransformation(RecordTransformation):
     properties_field: str = None
+    format_properties_to_string: bool = False
 
-    def __init__(self, properties_field: str = None) -> None:
+    def __init__(self, properties_field: str = None, format_properties_to_string: bool = False) -> None:
         self.properties_field = properties_field
+        self.format_properties_to_string = format_properties_to_string
 
     def transform(
         self,
@@ -437,7 +442,7 @@ class PropertiesTransformation(RecordTransformation):
         to_transform = record[self.properties_field] if self.properties_field else record
 
         for result in transform_property_names(to_transform.keys()):
-            updated_record[result.transformed_name] = to_transform[result.source_name]
+            updated_record[result.transformed_name] = str(to_transform[result.source_name]) if self.format_properties_to_string else to_transform[result.source_name]
 
         if self.properties_field:
             record[self.properties_field].clear()
