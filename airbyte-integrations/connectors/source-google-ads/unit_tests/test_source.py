@@ -6,7 +6,7 @@
 import logging
 import re
 from collections import namedtuple
-from unittest.mock import Mock, call, MagicMock
+from unittest.mock import MagicMock, Mock, call
 
 import pendulum
 import pytest
@@ -542,11 +542,7 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
     "input_state, records_and_slices, expected",
     [
         # no partitions ⇒ empty
-        (
-            {},
-            [],
-            {}
-        ),
+        ({}, [], {}),
         # single partition ⇒ one migrated state
         (
             {"123": {"segments.date": "2120-10-10"}},
@@ -557,80 +553,43 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
             {
                 "states": [
                     {
-                        "partition": {
-                            "customer_id": "123",
-                            "parent_slice": {
-                                "customer_id": "456",
-                                "parent_slice": {}
-                            }
-                        },
-                        "cursor": {"segments.date": "2120-10-10"}
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2120-10-10"},
                     }
                 ],
-                "state": {"segments.date": "2120-10-10"}
-            }
+                "state": {"segments.date": "2120-10-10"},
+            },
         ),
         # multiple partitions ⇒ only those matching state, with earliest date
         (
-            {
-                "a": {"segments.date": "2020-01-02"},
-                "b": {"segments.date": "2020-01-01"},
-                "z": {"segments.date": "2021-01-01"}
-            },
+            {"a": {"segments.date": "2020-01-02"}, "b": {"segments.date": "2020-01-01"}, "z": {"segments.date": "2021-01-01"}},
             [
                 ({"id": "b", "clientCustomer": "b"}, {"customer_id": "p1"}),
                 ({"id": "a", "clientCustomer": "a"}, {"customer_id": "p2"}),
                 # a record that won't match legacy state
-                ({"id": "x", "clientCustomer": "x"}, {"customer_id": "p3"})
+                ({"id": "x", "clientCustomer": "x"}, {"customer_id": "p3"}),
             ],
             {
                 "states": [
                     {
-                        "partition": {
-                            "customer_id": "b",
-                            "parent_slice": {
-                                "customer_id": "p1",
-                                "parent_slice": {}
-                            }
-                        },
-                        "cursor": {"segments.date": "2020-01-01"}
+                        "partition": {"customer_id": "b", "parent_slice": {"customer_id": "p1", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-01"},
                     },
                     {
-                        "partition": {
-                            "customer_id": "a",
-                            "parent_slice": {
-                                "customer_id": "p2",
-                                "parent_slice": {}
-                            }
-                        },
-                        "cursor": {"segments.date": "2020-01-02"}
-                    }
+                        "partition": {"customer_id": "a", "parent_slice": {"customer_id": "p2", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-02"},
+                    },
                 ],
-                "state": {"segments.date": "2020-01-01"}
-            }
+                "state": {"segments.date": "2020-01-01"},
+            },
         ),
         # none have the cursor field ⇒ empty
-        (
-            {
-                "x": {"foo": "bar"},
-                "y": {"baz": 42}
-            },
-            [],
-            {}
-        ),
+        ({"x": {"foo": "bar"}, "y": {"baz": 42}}, [], {}),
         # already migrated state ⇒ unchanged
         (
-            {
-                "use_global_cursor": True,
-                "lookback_window": 15,
-                "state": {"segments.date": "2020-01-02"}
-            },
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
             [],
-            {
-                "use_global_cursor": True,
-                "lookback_window": 15,
-                "state": {"segments.date": "2020-01-02"}
-            }
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
         ),
     ],
 )

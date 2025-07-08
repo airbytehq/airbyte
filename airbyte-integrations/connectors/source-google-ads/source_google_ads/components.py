@@ -53,11 +53,13 @@ class CustomerClientFilter(RecordFilter):
     ) -> Iterable[Mapping[str, Any]]:
         for record in records:
             # Filter out records based on customer_ids if provided in the config
-            if self.config.get("customer_ids") and (record['id'] not in self.config['customer_ids']):
+            if self.config.get("customer_ids") and (record["id"] not in self.config["customer_ids"]):
                 continue
 
             # Filter out records based on customer status if provided in the config
-            if record['status'] not in (self.config.get('customer_status_filter') or ['UNKNOWN', 'ENABLED', 'CANCELED', 'SUSPENDED', 'CLOSED']):
+            if record["status"] not in (
+                self.config.get("customer_status_filter") or ["UNKNOWN", "ENABLED", "CANCELED", "SUSPENDED", "CLOSED"]
+            ):
                 continue
 
             key = record[self.UNIQUE_KEY]
@@ -177,10 +179,7 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
         slices = self._parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
 
         for slice in slices:
-            for record in self._parent_stream.read_records(
-                    stream_slice=slice,
-                    sync_mode=SyncMode.full_refresh
-                ):
+            for record in self._parent_stream.read_records(stream_slice=slice, sync_mode=SyncMode.full_refresh):
                 yield record, slice
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -205,22 +204,19 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
             if customer_id in customer_ids_in_state:
                 legacy_partition_state = stream_state[customer_id]
 
-                partitions_state.append({
-                    "partition": {
-                        "customer_id": record["clientCustomer"],
-                        "parent_slice": {
-                            "customer_id": slice.get("customer_id"), "parent_slice": {}
-                        }
-                    },
-                    "cursor": legacy_partition_state
-                })
+                partitions_state.append(
+                    {
+                        "partition": {
+                            "customer_id": record["clientCustomer"],
+                            "parent_slice": {"customer_id": slice.get("customer_id"), "parent_slice": {}},
+                        },
+                        "cursor": legacy_partition_state,
+                    }
+                )
 
         if not partitions_state:
             logger.warning("No matching customer clients found during state migration.")
             return {}
 
-        state= {
-            "states": partitions_state,
-            "state": min_state
-        }
+        state = {"states": partitions_state, "state": min_state}
         return state
