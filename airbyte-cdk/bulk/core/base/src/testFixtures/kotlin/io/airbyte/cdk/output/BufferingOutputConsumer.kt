@@ -41,10 +41,10 @@ class BufferingOutputConsumer(
             synchronized(this) { field = value }
         }
 
-    override fun accept(input: AirbyteMessage) {
+    override fun accept(airbyteMessage: AirbyteMessage) {
         // Deep copy the input, which may be reused and mutated later on.
         val m: AirbyteMessage =
-            Jsons.readValue(Jsons.writeValueAsBytes(input), AirbyteMessage::class.java)
+            Jsons.readValue(Jsons.writeValueAsBytes(airbyteMessage), AirbyteMessage::class.java)
         synchronized(this) {
             messages.add(m)
             when (m.type) {
