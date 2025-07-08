@@ -5,7 +5,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 import requests
 
@@ -172,6 +172,17 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state and "state" not in stream_state
 
+    def _read_parent_stream(self) -> Iterable[Tuple[Mapping[str, Any], StreamSlice]]:
+        # iterate all slices of the customer_client stream
+        slices = self._parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+
+        for slice in slices:
+            for record in self._parent_stream.read_records(
+                    stream_slice=slice,
+                    sync_mode=SyncMode.full_refresh
+                ):
+                yield record, slice
+
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):
             return stream_state
@@ -183,41 +194,33 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
             logger.warning("No valid cursor field found in the stream state. Returning empty state.")
             return {}
 
+        min_state = min(stream_state_values, key=lambda state: state[self._cursor_field])
+
         customer_ids_in_state = list(stream_state.keys())
 
         partitions_state = []
 
-        # iterate all slices of the customer_client stream
-        slices = self._parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for record, slice in self._read_parent_stream():
+            customer_id = record.get("id")
+            if customer_id in customer_ids_in_state:
+                legacy_partition_state = stream_state[customer_id]
 
-        for slice in slices:
-            records = list(
-                self._parent_stream.read_records(
-                    stream_slice=slice,
-                    sync_mode=SyncMode.full_refresh
-                )
-            )
-
-            for record in records:
-                customer_id = record.get("id")
-                if customer_id in customer_ids_in_state:
-                    legacy_partition_state = stream_state[customer_id]
-
-                    partitions_state.append({
-                        "partition": {
-                            "customer_id": record["clientCustomer"],
-                            "parent_slice": {
-                                "customer_id": slice.get("customer_id"), "parent_slice": {}
-                            }
-                        },
-                        "cursor": legacy_partition_state
-                    })
+                partitions_state.append({
+                    "partition": {
+                        "customer_id": record["clientCustomer"],
+                        "parent_slice": {
+                            "customer_id": slice.get("customer_id"), "parent_slice": {}
+                        }
+                    },
+                    "cursor": legacy_partition_state
+                })
 
         if not partitions_state:
             logger.warning("No matching customer clients found during state migration.")
             return {}
 
         state= {
-            "states": partitions_state
+            "states": partitions_state,
+            "state": min_state
         }
         return state
