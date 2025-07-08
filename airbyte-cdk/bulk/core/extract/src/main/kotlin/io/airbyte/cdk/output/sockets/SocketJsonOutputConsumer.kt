@@ -10,7 +10,6 @@ import io.airbyte.cdk.output.StreamToTemplateMap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import java.io.ByteArrayOutputStream
 import java.time.Clock
 
 // Emits Airbyte messages in JSONL format to a socket data channel.
