@@ -7,6 +7,11 @@ data:
       enabled: true
     cloud:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2025-04-28"
+        message: "The verison makes domain field mandatory in specification. The connector will not work without domain field in the configuration."
   remoteRegistries:
     pypi:
       enabled: true
@@ -19,7 +24,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
-  dockerImageTag: 0.3.21
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-okta
   githubIssueLabel: source-okta
   icon: icon.svg
