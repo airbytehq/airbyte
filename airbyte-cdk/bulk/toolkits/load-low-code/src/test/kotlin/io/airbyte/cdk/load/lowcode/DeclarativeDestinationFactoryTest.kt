@@ -4,11 +4,16 @@
 
 package io.airbyte.cdk.load.lowcode
 
+import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
+import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
+import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
 import io.airbyte.cdk.util.ResourceUtils
 import io.mockk.EqMatcher
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -18,7 +23,8 @@ import org.junit.jupiter.api.Test
 class MockConfig(
     val apiId: String,
     val apiToken: String,
-) : DestinationConfiguration()
+    override val objectStorageConfig: ObjectStorageConfig = DisabledObjectStorageConfig(),
+) : DestinationConfiguration(), ObjectStorageConfigProvider
 
 val VALID_API_ID: String = "api_id"
 val VALID_API_TOKEN: String = "api_token"
@@ -43,9 +49,11 @@ class DeclarativeDestinationFactoryTest {
         )
         mockkConstructor(BasicAccessAuthenticator::class)
         val config = MockConfig(VALID_API_ID, VALID_API_TOKEN)
+        val dlqChecker = mockk<DlqChecker>()
+        every { dlqChecker.check(any()) } returns Unit
 
         try {
-            DeclarativeDestinationFactory(config).createDestinationChecker().check(config)
+            DeclarativeDestinationFactory(config).createDestinationChecker(dlqChecker).check(config)
 
             verify {
                 constructedWith<BasicAccessAuthenticator>(
