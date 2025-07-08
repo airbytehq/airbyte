@@ -7,8 +7,11 @@ package io.airbyte.cdk.load.lowcode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import dev.failsafe.RetryPolicy
+import io.airbyte.cdk.load.check.dlq.DlqChecker
+import io.airbyte.cdk.load.checker.CompositeDlqChecker
 import io.airbyte.cdk.load.checker.HttpRequestChecker
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.RequestMethod
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
@@ -25,15 +28,17 @@ import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 
-class DeclarativeDestinationFactory<T : DestinationConfiguration>(private val config: T) {
+class DeclarativeDestinationFactory<T>(private val config: T) where
+T : DestinationConfiguration,
+T : ObjectStorageConfigProvider {
     private val stringInterpolator: StringInterpolator = StringInterpolator()
 
-    fun createDestinationChecker(): HttpRequestChecker<T> {
+    fun createDestinationChecker(dlqChecker: DlqChecker): CompositeDlqChecker<T> {
         val mapper = ObjectMapper(YAMLFactory())
         val manifestContent = ResourceUtils.readResource("manifest.yaml")
         val manifest: DeclarativeDestinationModel =
             mapper.readValue(manifestContent, DeclarativeDestinationModel::class.java)
-        return createChecker(manifest.checker)
+        return CompositeDlqChecker(createChecker(manifest.checker), dlqChecker)
     }
 
     private fun createAuthenticator(
