@@ -65,6 +65,8 @@ class BufferingOutputConsumer(
 
     override fun close() {}
 
+    override fun withLockFlush() {}
+
     fun records(): List<AirbyteRecordMessage> =
         synchronized(this) { listOf(*records.toTypedArray()) }
 
