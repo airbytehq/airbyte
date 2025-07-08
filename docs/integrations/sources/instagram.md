@@ -146,7 +146,7 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0-rc.2   | 2025-07-09 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd) | Migrate `UserInsights` stream to low-code |
+| 4.1.0-rc.2   | 2025-07-09 | [62844](https://github.com/airbytehq/airbyte/pull/62844) | Migrate `UserInsights` stream to low-code |
 
 | 4.1.0-rc.1   | 2025-05-27 | [60848](https://github.com/airbytehq/airbyte/pull/60848) | Add `views` metric to `StoryInsights` and `MediaInsights` streams. |
 | 4.0.5 | 2025-05-10 | [59798](https://github.com/airbytehq/airbyte/pull/59798) | Update dependencies |
