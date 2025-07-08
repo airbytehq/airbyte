@@ -24,7 +24,6 @@ class CustomerIoSpecification : ConfigurationSpecificationWithDlq() {
     val credentials: CustomerIoCredentialsSpecification = CustomerIoCredentialsSpecification()
 }
 
-
 //
 class CustomerIoCredentialsSpecification {
     @get:JsonSchemaTitle("Site ID")
