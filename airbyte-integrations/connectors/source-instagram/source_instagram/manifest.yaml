@@ -554,13 +554,11 @@ definitions:
             period: "{{ stream_partition.extra_fields['query_properties'][0] }}"
             metric: "{{ stream_partition.extra_fields['query_properties'][1] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
