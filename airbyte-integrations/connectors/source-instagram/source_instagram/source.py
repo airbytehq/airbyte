@@ -4,6 +4,8 @@
 
 from typing import Any, Mapping, Optional, Tuple
 
+import pendulum
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
@@ -38,3 +40,11 @@ class SourceInstagram(YamlDeclarativeSource):
             error_msg = repr(exc)
             return False, error_msg
         return super().check_connection(logger, config)
+
+    def _validate_start_date(self, config):
+        # If start_date is not found in config, set it to 2 years ago
+        if not config.get("start_date"):
+            config["start_date"] = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+        else:
+            if pendulum.parse(config["start_date"]) > pendulum.now():
+                raise ValueError("Please fix the start_date parameter in config, it cannot be in the future")

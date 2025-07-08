@@ -510,6 +510,9 @@ definitions:
     UserInsights:
       type: DeclarativeStream
       name: user_insights
+      primary_key:
+        - business_account_id
+        - date
       retriever:
         type: SimpleRetriever
         requester:
@@ -620,6 +623,10 @@ definitions:
               value_type: string
       state_migrations:
         - type: LegacyToPerPartitionStateMigration
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/UserInsights"
     Api:
       type: DeclarativeStream
       name: Api
@@ -698,8 +705,8 @@ streams:
   - $ref: "#/definitions/streams/UserLifetimeInsights"
   - $ref: "#/definitions/streams/Stories"
   - $ref: "#/definitions/streams/StoryInsights"
-  - $ref: "#/definitions/streams/UserInsights"
   - $ref: "#/definitions/streams/Api"
+  - $ref: "#/definitions/streams/UserInsights"
 
 # Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
 concurrency_level:
@@ -1216,6 +1223,53 @@ schemas:
         type:
           - "null"
           - integer
+  UserInsights:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      page_id:
+        description: The unique identifier for the user's Instagram page.
+        type:
+          - "null"
+          - string
+      business_account_id:
+        description: The unique identifier for the user's business account.
+        type:
+          - "null"
+          - string
+      date:
+        description: The date and time the insights data was fetched.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      follower_count:
+        description: The total number of followers for the user's account.
+        type:
+          - "null"
+          - integer
+      reach:
+        description: The total number of unique accounts that have seen the user's content.
+        type:
+          - "null"
+          - integer
+      reach_week:
+        description: The total reach in the last week.
+        type:
+          - "null"
+          - integer
+      reach_days_28:
+        description: The total reach in the last 28 days.
+        type:
+          - "null"
+          - integer
+      online_followers:
+        description: The number of followers who are currently online.
+        type:
+          - "null"
+          - object
   Api:
     type: object
     $schema: http://json-schema.org/schema#
