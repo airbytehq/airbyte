@@ -604,13 +604,6 @@ def test_state_migration(input_state, records_and_slices, expected):
         return (r for r, s in records_and_slices if s == stream_slice)
 
     stream_mock.read_records.side_effect = fake_read_records
-    stream_mock.SyncMode.full_refresh = "full_refresh"
-
-    # The transformer is also used in the migration
-    transformer_mock = MagicMock()
-    transformer_mock.transform.side_effect = lambda record, schema: record
-    stream_mock.transformer = transformer_mock
-    stream_mock.get_json_schema.return_value = {}
 
     migrator = GoogleAdsPerPartitionStateMigration(config=None, customer_client_stream=stream_mock)
 
