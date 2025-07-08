@@ -10,6 +10,7 @@ import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
+import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.Stream
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreator] implementation for CDC with Debezium. */
 class CdcPartitionsCreator<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
+    val resourceAcquirer: ResourceAcquirer,
     val feedBootstrap: GlobalFeedBootstrap,
     val creatorOps: CdcPartitionsCreatorDebeziumOperations<T>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
@@ -106,14 +108,14 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         // Build and return PartitionReader instance, if applicable.
         val partitionReader =
             CdcPartitionReader(
-                concurrencyResource,
-                feedBootstrap.streamRecordConsumers(),
+                resourceAcquirer,
                 readerOps,
                 upperBound,
                 debeziumProperties,
                 startingOffset,
                 startingSchemaHistory,
                 warmStartState !is ValidDebeziumWarmStartState,
+                feedBootstrap
             )
         val lowerBound: T = creatorOps.position(startingOffset)
         val lowerBoundInPreviousRound: T? = lowerBoundReference.getAndSet(lowerBound)

@@ -24,10 +24,10 @@ data class DestinationRecordRaw(
     val checkpointId: CheckpointId? = null,
     val airbyteRawId: UUID,
 ) {
-    val schema = stream.schema
-
     // Currently file transfer is only supported for non-socket implementations
     val fileReference: FileReference? = rawData.fileReference
+
+    val schema = stream.schema
 
     /**
      * DEPRECATED: Now that we support multiple formats for speed, this is no longer an
@@ -60,14 +60,13 @@ data class DestinationRecordRaw(
         val proxy = rawData.asAirbyteValueProxy()
 
         // Get the fields from the schema
-        val schemaFields = stream.airbyteValueProxyFieldAccessors
-
+        val fieldAccessors = stream.airbyteValueProxyFieldAccessors
         val declaredFields = LinkedHashMap<String, EnrichedAirbyteValue>()
         val undeclaredFields = LinkedHashMap<String, JsonNode>()
 
         // Process fields from the raw JSON.
         // First, get the declared fields, in the order defined by the catalog
-        schemaFields.forEach { fieldAccessor ->
+        fieldAccessors.forEach { fieldAccessor ->
             if (!proxy.hasField(fieldAccessor)) {
                 return@forEach
             }
@@ -88,7 +87,7 @@ data class DestinationRecordRaw(
         }
 
         // Then, get the undeclared fields
-        proxy.undeclaredFields(schemaFields).forEach { field ->
+        proxy.undeclaredFields(fieldAccessors).forEach { field ->
             undeclaredFields[field] = proxy.getJsonNode(field)!!
         }
 

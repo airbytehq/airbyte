@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.azure_blob_storage
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.ObjectStorageDataDumper
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobStorageClientFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
@@ -28,7 +29,7 @@ class AzureBlobStorageDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): ObjectStorageDataDumper {
         val config: AzureBlobStorageConfiguration<*> =
-            AzureBlobStorageConfigurationFactory()
+            AzureBlobStorageConfigurationFactory(DestinationCatalog(listOf(stream)))
                 .makeWithoutExceptionHandling(spec as AzureBlobStorageSpecification)
         val pathFactory = ObjectStoragePathFactory.from(config)
         val client = AzureBlobStorageClientFactory(config).make()

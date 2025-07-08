@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
@@ -22,6 +23,9 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
+private const val DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS = 0.4
+private const val FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS = 0.2
+
 class AzureBlobStorageConfiguration<T : OutputStream>(
     // Client-facing configuration
     override val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration,
@@ -37,7 +41,7 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     //   after we finish performance tuning
     val numPartWorkers: Int = 2,
     val numUploadWorkers: Int = 5,
-    val maxMemoryRatioReservedForParts: Double = 0.4,
+    val maxMemoryRatioReservedForParts: Double = DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 10L * 1024 * 1024,
 ) :
@@ -65,7 +69,7 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
 }
 
 @Singleton
-class AzureBlobStorageConfigurationFactory :
+class AzureBlobStorageConfigurationFactory(private val destinationCatalog: DestinationCatalog) :
     DestinationConfigurationFactory<
         AzureBlobStorageSpecification, AzureBlobStorageConfiguration<*>> {
     override fun makeWithoutExceptionHandling(
@@ -80,6 +84,12 @@ class AzureBlobStorageConfigurationFactory :
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration =
                 ObjectStorageCompressionConfiguration(NoopProcessor),
+            maxMemoryRatioReservedForParts =
+                if (destinationCatalog.streams.any { it.isFileBased }) {
+                    FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
+                } else {
+                    DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
+                }
         )
     }
 }

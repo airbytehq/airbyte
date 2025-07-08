@@ -238,7 +238,9 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.refresh() } just runs
         every { table.manageSnapshots().createBranch(any()).commit() } throws
             IllegalArgumentException("branch already exists")
-        every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
+        every {
+            table.manageSnapshots().replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
+        } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
@@ -390,7 +392,9 @@ internal class S3DataLakeStreamLoaderTest {
         every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
-        every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
+        every {
+            table.manageSnapshots().replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
+        } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
