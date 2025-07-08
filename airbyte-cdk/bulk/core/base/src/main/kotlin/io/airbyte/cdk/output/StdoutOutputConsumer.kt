@@ -76,7 +76,10 @@ abstract class BaseStdoutOutputConsumer(
 
     protected val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
 
-    protected open fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
+    protected open fun getOrCreateRecordTemplate(
+        stream: String,
+        namespace: String?
+    ): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
                 unNamespacedTemplates
@@ -180,7 +183,10 @@ class StdoutOutputConsumer(
      */
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
-) : StandardOutputConsumer(clock,) {
+) :
+    StandardOutputConsumer(
+        clock,
+    ) {
     override fun withLockFlush() {
         if (buffer.size() > 0) {
             stdout.println(buffer.toString(Charsets.UTF_8))

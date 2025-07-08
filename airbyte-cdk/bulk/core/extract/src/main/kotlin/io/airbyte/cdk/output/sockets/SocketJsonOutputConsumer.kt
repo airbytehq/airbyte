@@ -4,20 +4,14 @@
 
 package io.airbyte.cdk.output.sockets
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.SequenceWriter
 import io.airbyte.cdk.output.BaseStdoutOutputConsumer
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.RecordTemplate
 import io.airbyte.cdk.output.StreamToTemplateMap
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.time.Clock
-import java.util.concurrent.ConcurrentHashMap
 
 // Emits Airbyte messages in JSONL format to a socket data channel.
 // It accepts a data channel acquired by the caller.
