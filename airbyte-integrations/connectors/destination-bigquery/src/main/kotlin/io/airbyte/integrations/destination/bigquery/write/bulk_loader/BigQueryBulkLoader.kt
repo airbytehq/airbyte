@@ -43,8 +43,14 @@ class BigQueryBulkLoader(
         val csvOptions =
             CsvOptions.newBuilder()
                 .setSkipLeadingRows(1)
-                .setAllowQuotedNewLines(true) // safe for long JSON strings
+                // safe for long JSON strings
+                .setAllowQuotedNewLines(true)
                 .setAllowJaggedRows(true)
+                // Currently doesn't actually do anything, due to a GCP SDK bug
+                // https://github.com/googleapis/java-bigquery/issues/3873
+                // Once that's fixed + we upgrade to the fixed library version,
+                // this option will allow us to write ASCII NULL (\0) into string columns.
+                .setPreserveAsciiControlCharacters(true)
                 .build()
 
         val configuration =
