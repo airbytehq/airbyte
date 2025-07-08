@@ -130,14 +130,9 @@ def test_streams_string_date(requests_mock, config_raw):
     ),
 )
 def test_config_validation(config, expected_is_success, expected_error_message, requests_mock):
-    requests_mock.get(
-        "https://eu.mixpanel.com/api/query/engage/revenue?project_id=2397709&from_date=2021-02-01&to_date=2021-02-10",
-        status_code=200,
-        json=[{}],
-    )
-    requests_mock.get(
-        "https://eu.mixpanel.com/api/query/engage/revenue?from_date=2021-02-01&to_date=2021-03-02", status_code=200, json=[{}]
-    )
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+    requests_mock.get("https://eu.mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+
     try:
         is_success, message = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(MagicMock(), config)
     except AirbyteTracedException as e:
