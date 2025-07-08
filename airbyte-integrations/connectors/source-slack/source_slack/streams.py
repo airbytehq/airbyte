@@ -106,6 +106,7 @@ class ChanneledStream(SlackStream, ABC):
 
 class Channels(ChanneledStream):
     data_field = "channels"
+    is_resumable = False
 
     @property
     def use_cache(self) -> bool:
@@ -231,6 +232,8 @@ class ChannelMessages(HttpSubStream, IncrementalMessageStream):
 
 
 class Threads(IncrementalMessageStream):
+    is_resumable = False
+
     def __init__(self, lookback_window: Mapping[str, int], **kwargs):
         self.messages_lookback_window = lookback_window
         super().__init__(**kwargs)
