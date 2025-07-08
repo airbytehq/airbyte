@@ -1,0 +1,10 @@
+checker:
+  type: HttpRequestChecker
+  requester:
+    type: HttpRequester
+    url: https://track.customer.io/api/v1/accounts/region
+    method: GET
+    authenticator:
+      type: BasicAccessAuthenticator
+      username: "{{ config.credentials.siteId }}"
+      password: "{{ config.credentials.apiKey }}"

@@ -1528,7 +1528,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.data)
     }
 
-    protected fun expectedCatalogForDiscover(): AirbyteCatalog {
+    protected open fun expectedCatalogForDiscover(): AirbyteCatalog {
         val expectedCatalog = Jsons.clone(catalog)
 
         val columns =

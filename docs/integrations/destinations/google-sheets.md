@@ -100,7 +100,7 @@ Airbyte only supports replicating `Grid Sheets`, which means only text is replic
 
 The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 60 requests per 60 seconds per user and 300 requests per 60 seconds per project, which will result in slow sync speeds. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits.
 
-### <a name="limitations"></a>Limitations
+### Limitations {#limitations}
 
 Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync may fail or, in some cases, data will be truncated to comply with limits.
 

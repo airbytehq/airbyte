@@ -1,8 +1,8 @@
 {
-  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse",
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse-v2",
   "connectionSpecification" : {
     "$schema" : "http://json-schema.org/draft-07/schema#",
-    "title" : "Clickhouse Specification",
+    "title" : "Clickhouse Specification Cloud",
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
@@ -16,27 +16,31 @@
         "type" : "string",
         "description" : "HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443",
         "title" : "Port",
-        "order" : 1
+        "order" : 1,
+        "default" : "8443"
       },
       "protocol" : {
         "type" : "string",
         "enum" : [ "http", "https" ],
-        "description" : "HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443",
+        "description" : "Protocol for the database connection string.",
         "title" : "Protocol",
         "order" : 2,
+        "default" : "https",
         "airbyte_hidden" : true
       },
       "database" : {
         "type" : "string",
         "description" : "Name of the database.",
         "title" : "Database",
-        "order" : 3
+        "order" : 3,
+        "default" : "default"
       },
       "username" : {
         "type" : "string",
         "description" : "Username to use to access the database.",
         "title" : "Username",
-        "order" : 4
+        "order" : 4,
+        "default" : "default"
       },
       "password" : {
         "type" : "string",
@@ -44,9 +48,16 @@
         "title" : "Password",
         "order" : 5,
         "airbyte_secret" : true
+      },
+      "enable_json" : {
+        "type" : "boolean",
+        "description" : "Use the JSON type when possible. If disabled, the JSON will be converted to a string.",
+        "title" : "Enable JSON",
+        "order" : 6,
+        "default" : false
       }
     },
-    "required" : [ "hostname", "port", "protocol", "database", "username", "password" ],
+    "required" : [ "hostname", "port", "protocol", "database", "username", "password", "enable_json" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"

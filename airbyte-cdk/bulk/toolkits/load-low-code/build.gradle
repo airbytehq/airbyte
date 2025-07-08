@@ -1,0 +1,12 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-dlq')
+    implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-http')
+    api 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+    api 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    api 'com.hubspot.jinjava:jinjava:2.7.4'
+
+    testFixturesApi 'org.jetbrains.kotlin:kotlin-test'
+}

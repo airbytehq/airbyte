@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.data.protobuf.toAirbyteValue
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.util.*
@@ -24,10 +25,16 @@ data class DestinationRecordRaw(
     val checkpointId: CheckpointId? = null,
     val airbyteRawId: UUID,
 ) {
-    val schema = stream.schema
-
     // Currently file transfer is only supported for non-socket implementations
     val fileReference: FileReference? = rawData.fileReference
+
+    val schema = stream.schema
+
+    val schemaFields: SequencedMap<String, FieldType> =
+        when (schema) {
+            is ObjectType -> schema.properties
+            else -> linkedMapOf()
+        }
 
     /**
      * DEPRECATED: Now that we support multiple formats for speed, this is no longer an
@@ -37,10 +44,13 @@ data class DestinationRecordRaw(
 
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
-            stream,
-            asJsonRecord().toAirbyteValue(),
-            rawData.emittedAtMs,
-            rawData.sourceMeta
+            stream = stream,
+            data =
+                if (rawData is DestinationRecordProtobufSource) {
+                    rawData.toAirbyteValue(stream.airbyteValueProxyFieldAccessors)
+                } else asJsonRecord().toAirbyteValue(),
+            emittedAtMs = rawData.emittedAtMs,
+            meta = rawData.sourceMeta,
         )
     }
 
@@ -55,13 +65,6 @@ data class DestinationRecordRaw(
         extractedAtAsTimestampWithTimezone: Boolean = false
     ): EnrichedDestinationRecordAirbyteValue {
         val rawJson = asJsonRecord()
-
-        // Get the fields from the schema
-        val schemaFields: SequencedMap<String, FieldType> =
-            when (schema) {
-                is ObjectType -> schema.properties
-                else -> linkedMapOf()
-            }
 
         val declaredFields = LinkedHashMap<String, EnrichedAirbyteValue>()
         val undeclaredFields = LinkedHashMap<String, JsonNode>()
