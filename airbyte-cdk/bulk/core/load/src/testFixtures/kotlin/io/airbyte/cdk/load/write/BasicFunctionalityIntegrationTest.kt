@@ -26,7 +26,9 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -294,6 +296,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val schematizedObjectBehavior: SchematizedNestedValueBehavior,
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
+    val coercesLegacyUnions: Boolean = false,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
     /**
@@ -3737,6 +3740,80 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedRecords,
             stream,
             primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
+     * Run a sync with a legacy union of number|boolean. Validate that we correctly coerce/null
+     * nonobvious values.
+     */
+    @Test
+    open fun testCoerceLegacyUnions() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(coercesLegacyUnions)
+        val stream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "x" to
+                            FieldType(
+                                // It's easier to just hardcode a jsonschema here.
+                                // In theory we could modify AirbyteTypeToJsonSchema to do this,
+                                // but legacy unions are really annoying to construct.
+                                UnknownType(Jsons.readTree("""{"type": ["number", "boolean"]}""")),
+                                nullable = true
+                            ),
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 12,
+                namespaceMapper = namespaceMapperForMedium(),
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                // 42 wrapped in a string - should be coerced to 42
+                InputRecord(stream, """{"x": "42"}""", emittedAtMs = 1234),
+                // "potato" is not a valid number, should get nulled out.
+                InputRecord(stream, """{"x": "potato"}""", emittedAtMs = 2345),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 42,
+                    data = mapOf("x" to NumberValue(BigDecimal.valueOf(42))),
+                    airbyteMeta = OutputRecord.Meta(syncId = 12),
+                ),
+                OutputRecord(
+                    extractedAt = 2345,
+                    generationId = 42,
+                    data = mapOf("x" to NullValue),
+                    airbyteMeta =
+                        OutputRecord.Meta(
+                            syncId = 12,
+                            changes =
+                                listOf(
+                                    Change(
+                                        "x",
+                                        AirbyteRecordMessageMetaChange.Change.NULLED,
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_SERIALIZATION_ERROR,
+                                    ),
+                                ),
+                        ),
+                ),
+            ),
+            stream,
+            primaryKey = emptyList(),
             cursor = null,
         )
     }
