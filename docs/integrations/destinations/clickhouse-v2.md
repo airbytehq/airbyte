@@ -78,6 +78,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                                  | Subject                                             |
 |:--------|:-----------|:--------------------------------------------------------------|:----------------------------------------------------|
+| 0.1.10  | 2025-07-08 | [\#62861](https://github.com/airbytehq/airbyte/pull/62861)    | Set user agent header for internal CH telemetry.    |
 | 0.1.9   | 2025-07-03 | [\#62509](https://github.com/airbytehq/airbyte/pull/62509)    | Simplify union stringification behavior.            |
 | 0.1.8   | 2025-06-30 | [\#62100](https://github.com/airbytehq/airbyte/pull/62100)    | Add JSON support.                                   |
 | 0.1.7   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047)    | Remove the use of the internal namespace.           |
