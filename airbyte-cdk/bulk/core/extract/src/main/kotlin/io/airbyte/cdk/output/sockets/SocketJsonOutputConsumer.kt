@@ -21,8 +21,6 @@ class SocketJsonOutputConsumer(
     val bufferByteSizeThresholdForFlush: Int,
     private val additionalProperties: Map<String, String>,
 ) : BaseStdoutOutputConsumer(clock) {
-    override val buffer = ByteArrayOutputStream()
-
     override fun withLockFlush() {
         if (buffer.size() > 0) {
             buffer.writeTo(dataChannel.outputStream)

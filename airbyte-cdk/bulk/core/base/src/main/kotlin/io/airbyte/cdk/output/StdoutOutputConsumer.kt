@@ -28,7 +28,7 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 abstract class BaseStdoutOutputConsumer(
     clock: Clock,
 ) : OutputConsumer(clock) {
-    protected open val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
+    protected open val buffer = ByteArrayOutputStream()
     protected val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     protected val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
 
