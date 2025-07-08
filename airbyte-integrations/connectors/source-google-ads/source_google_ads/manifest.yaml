@@ -133,6 +133,7 @@ definitions:
     state_migrations:
       - type: CustomStateMigration
         class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        customer_client_stream: "#/definitions/customer_client"
 
   incremental_non_manager_stream_base:
     $ref: "#/definitions/incremental_stream_base"
@@ -193,8 +194,8 @@ definitions:
           type: DpathExtractor
           field_path: ["results", "*", "customerClient"]
         record_filter:
-          type: RecordFilter
-          condition: "{{ (( record['id'] in config['customer_ids'] ) if config['customer_ids'] else True ) and ( record['status'] in ( config['customer_status_filter'] or ['UNKNOWN', 'ENABLED', 'CANCELED', 'SUSPENDED', 'CLOSED'] ) ) }}"
+          type: CustomRecordFilter
+          class_name: "source_google_ads.components.CustomerClientFilter"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -232,8 +233,8 @@ definitions:
           type: DpathExtractor
           field_path: ["results", "*", "customerClient"]
         record_filter:
-          type: RecordFilter
-          condition: "{{ (( record['id'] in config['customer_ids'] ) if config['customer_ids'] else True ) and ( record['status'] in ( config['customer_status_filter'] or ['UNKNOWN', 'ENABLED', 'CANCELED', 'SUSPENDED', 'CLOSED'] ) ) }}"
+          type: CustomRecordFilter
+          class_name: "source_google_ads.components.CustomerClientFilter"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
