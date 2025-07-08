@@ -507,6 +507,119 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/StoryInsights"
+    UserInsights:
+      type: DeclarativeStream
+      name: user_insights
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          path: "{{ stream_partition.business_account_id }}/insights"
+          http_method: GET
+          query_properties:
+            type: QueryProperties
+            # This is a bit of a tricky way that we structure our query groupings so that we can
+            # request pairs of each period and their associated metrics to request.
+            #
+            # By ordering the list by each pair and creating property chunks of two, we can reference
+            # them when building request_parameters and still allow for the records to be merged
+            property_list:
+              # Chunk 1: period: day, metrics: follower_count,reach
+              - day
+              - "follower_count,reach"
+              # Chunk 2: period: week, metrics: reach
+              - week
+              - reach
+              # Chunk 3: period: days_28, metrics: reach
+              - days_28
+              - reach
+              # Chunk 4: period: lifetime, metrics: online_followers
+              - lifetime
+              - online_followers
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: property_count
+              property_limit: 2
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key:
+                  - date
+          request_parameters:
+            # Because of how we structured the query properties chunks above, the period will be the
+            # first entry in the current query properties chunk and metrics is the second entry
+            period: "{{ stream_partition.extra_fields['query_properties'][0] }}"
+            metric: "{{ stream_partition.extra_fields['query_properties'][1] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_instagram.components.UserInsightsExtractor
+            field_path:
+              - data
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: source_instagram.components.RFC3339DatetimeSchemaNormalization
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: source_instagram.components.UserInsightsSubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: account
+              partition_field: business_account_id
+              stream:
+                $ref: "#/definitions/streams/Api"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        # The Instagram API expects date time range parameters in 2025-06-01T07:00:00Z format, but the
+        # API response returns date as 2025-06-01T07:00:00+0000. This requires that start_datetime and
+        # end_datetime specify a different datetime_format than the outer DatetimeBasedCursor which is
+        # used to persist state in RFC 3339 format (+00:00)
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('start_date', (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        step: P1D
+        cursor_granularity: PT0S
+        start_time_option:
+          type: RequestOption
+          field_name: since
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: until
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: "{{ stream_partition.extra_fields.get('page_id') }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path:
+                - business_account_id
+              value: "{{ stream_partition.get('business_account_id') }}"
+              value_type: string
+      state_migrations:
+        - type: LegacyToPerPartitionStateMigration
     Api:
       type: DeclarativeStream
       name: Api
@@ -585,6 +698,7 @@ streams:
   - $ref: "#/definitions/streams/UserLifetimeInsights"
   - $ref: "#/definitions/streams/Stories"
   - $ref: "#/definitions/streams/StoryInsights"
+  - $ref: "#/definitions/streams/UserInsights"
   - $ref: "#/definitions/streams/Api"
 
 # Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
