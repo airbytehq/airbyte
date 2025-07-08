@@ -1,13 +1,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from unittest.mock import MagicMock
-from .conftest import find_stream, read_full_refresh
+import json
+from unittest.mock import MagicMock, patch
+
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import CustomerLabel
+
 from airbyte_cdk.models import SyncMode
-import json
-from unittest.mock import patch
+
+from .conftest import find_stream, read_full_refresh
+
 
 def test_query_customer_label_stream(customers, config):
     credentials = config["credentials"]
@@ -24,7 +27,7 @@ def test_query_customer_label_stream(customers, config):
     )
 
 
-@patch.object(SourceGoogleAds, 'get_customers', return_value=[])
+@patch.object(SourceGoogleAds, "get_customers", return_value=[])
 def test_query_shopping_performance_view_stream(customers, config, requests_mock):
     config["end_date"] = "2021-01-10"
     config["conversion_window_days"] = 3
@@ -32,12 +35,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     stream = find_stream("shopping_performance_view", config)
 
     # Mocked responses
-    access_token_response = [
-        {
-            "json": {"access_token": "access_token"},
-            "status_code": 200
-        }
-    ]
+    access_token_response = [{"json": {"access_token": "access_token"}, "status_code": 200}]
 
     accessible_customers_response = [
         {
@@ -69,29 +67,11 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
             "json": {
                 "results": [
                     {
-                        "AdGroup": {
-                            "id": 1,
-                            "name": "Test Ad Group",
-                            "status": "ENABLED"
-                        },
-                        "Customer": {
-                            "descriptiveName": "Test Customer",
-                            "id": 1234567890
-                        },
-                        "Campaign": {
-                            "id": 1234,
-                            "name": "Test Campaign",
-                            "status": "ENABLED"
-                        },
-                        "Segments": {
-                            "date": "2021-01-08",
-                            "adNetworkType": "SEARCH"
-                        },
-                        "Metrics": {
-                            "clicks": 25,
-                            "ctr": 0.5,
-                            "impressions": 500
-                        }
+                        "AdGroup": {"id": 1, "name": "Test Ad Group", "status": "ENABLED"},
+                        "Customer": {"descriptiveName": "Test Customer", "id": 1234567890},
+                        "Campaign": {"id": 1234, "name": "Test Campaign", "status": "ENABLED"},
+                        "Segments": {"date": "2021-01-08", "adNetworkType": "SEARCH"},
+                        "Metrics": {"clicks": 25, "ctr": 0.5, "impressions": 500},
                     }
                 ]
             },
@@ -101,8 +81,12 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
 
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
-    requests_mock.register_uri("GET", "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers", accessible_customers_response)
-    requests_mock.register_uri("POST", "https://googleads.googleapis.com/v18/customers/1234567890/googleAds:searchStream", customers_response)
+    requests_mock.register_uri(
+        "GET", "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers", accessible_customers_response
+    )
+    requests_mock.register_uri(
+        "POST", "https://googleads.googleapis.com/v18/customers/1234567890/googleAds:searchStream", customers_response
+    )
 
     request_history = requests_mock.register_uri(
         "POST",
@@ -129,7 +113,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
         "segments.ad_network_type": "SEARCH",
         "metrics.clicks": 25,
         "metrics.ctr": 0.5,
-        "metrics.impressions": 500
+        "metrics.impressions": 500,
     }
 
     # Assert the entire record

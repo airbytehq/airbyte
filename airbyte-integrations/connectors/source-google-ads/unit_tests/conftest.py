@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import pytest
-
 from source_google_ads import SourceGoogleAds
 from source_google_ads.models import CustomerModel
 
@@ -68,12 +67,14 @@ def additional_customers(config, customers):
 def customers_manager(config):
     return [CustomerModel(id=_id, time_zone="local", is_manager_account=True) for _id in config["customer_id"].split(",")]
 
+
 def find_stream(stream_name, config, state=None):
     streams = SourceGoogleAds(config, None, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
 
 def read_full_refresh(stream_instance: Stream):
     res = []
