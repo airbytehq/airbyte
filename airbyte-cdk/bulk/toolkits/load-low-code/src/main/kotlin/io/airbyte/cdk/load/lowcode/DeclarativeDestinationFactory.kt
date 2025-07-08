@@ -28,7 +28,9 @@ import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 
-class DeclarativeDestinationFactory<T>(private val config: T) where T : DestinationConfiguration, T : ObjectStorageConfigProvider {
+class DeclarativeDestinationFactory<T>(private val config: T) where
+T : DestinationConfiguration,
+T : ObjectStorageConfigProvider {
     private val stringInterpolator: StringInterpolator = StringInterpolator()
 
     fun createDestinationChecker(dlqChecker: DlqChecker): CompositeDlqChecker<T> {
