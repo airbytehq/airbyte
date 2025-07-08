@@ -99,12 +99,12 @@ def test_streams_string_date(requests_mock, config_raw):
         (
             {"credentials": {"api_secret": "secret"}, "start_date": "20 Jan 2021"},
             False,
-            "time data '20 Jan 2021' does not match format '%Y-%m-%dT%H:%M:%SZ'",
+            "Could not parse start date: 20 Jan 2021. Please enter a valid start date.",
         ),
         (
             {"credentials": {"api_secret": "secret"}, "end_date": "20 Jan 2021"},
             False,
-            "time data '20 Jan 2021' does not match format '%Y-%m-%dT%H:%M:%SZ'",
+            "Could not parse end date: 20 Jan 2021. Please enter a valid end date.",
         ),
         (
             {"credentials": {"username": "user", "secret": "secret"}},
