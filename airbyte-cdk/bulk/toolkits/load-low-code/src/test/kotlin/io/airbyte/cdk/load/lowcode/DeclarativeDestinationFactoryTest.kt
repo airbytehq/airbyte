@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.lowcode
 
+import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
@@ -48,9 +49,11 @@ class DeclarativeDestinationFactoryTest {
         )
         mockkConstructor(BasicAccessAuthenticator::class)
         val config = MockConfig(VALID_API_ID, VALID_API_TOKEN)
+        val dlqChecker = mockk<DlqChecker>()
+        every { dlqChecker.check(any()) } returns Unit
 
         try {
-            DeclarativeDestinationFactory(config).createDestinationChecker(mockk()).check(config)
+            DeclarativeDestinationFactory(config).createDestinationChecker(dlqChecker).check(config)
 
             verify {
                 constructedWith<BasicAccessAuthenticator>(
