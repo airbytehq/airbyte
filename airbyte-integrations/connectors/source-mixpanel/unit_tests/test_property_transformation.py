@@ -7,14 +7,15 @@ Test case, when custom Export, ExportSchema properties contains names,
 that will conflict in further data normalization, like:
 `userName` and `username`
 """
+
 from unittest.mock import MagicMock
 
 import pytest
+from source_mixpanel.streams import Export
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
-from source_mixpanel.streams import Export
 from .utils import get_url_to_mock, init_stream, setup_response
 
 
