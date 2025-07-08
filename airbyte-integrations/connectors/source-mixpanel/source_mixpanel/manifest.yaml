@@ -810,7 +810,8 @@ streams:
   - "#/definitions/annotations_stream"
   - "#/definitions/cohort_members_stream"
   - "#/definitions/funnels_stream"
-  - "#/definitions/export_stream"
+# TODO: export stream is using old python implementation
+#  - "#/definitions/export_stream"
 
 check:
   type: CheckStream
