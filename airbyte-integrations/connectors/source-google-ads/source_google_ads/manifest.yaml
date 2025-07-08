@@ -300,10 +300,21 @@ definitions:
       schema:
         $ref: "#/schemas/customer"
 
+  customer_label_stream:
+    $ref: "#/definitions/stream_base"
+    name: customer_label
+    primary_key:
+      - customer_label.resource_name
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/customer_label"
+
 streams:
   - "#/definitions/ad_group_stream"
   - "#/definitions/campaign_stream"
   - "#/definitions/customer_stream"
+  - "#/definitions/customer_label_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -481,7 +492,6 @@ schemas:
           - string
         format: date
     additionalProperties: true
-
   campaign:
     $schema: http://json-schema.org/schema#
     type: object
@@ -1119,3 +1129,30 @@ schemas:
         - 'null'
         - string
         format: date
+  customer_label:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      customer_label.resource_name:
+        description: The resource name that uniquely identifies the customer label in
+          the system.
+        type:
+        - 'null'
+        - string
+      customer_label.customer:
+        description: The name or details of the customer that the label is associated
+          with.
+        type:
+        - 'null'
+        - string
+      customer.id:
+        description: The unique identifier of the customer associated with the label.
+        type:
+        - 'null'
+        - integer
+      customer_label.label:
+        description: The category or tag applied to the customer for specific identification
+          or grouping.
+        type:
+        - 'null'
+        - string

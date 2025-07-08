@@ -33,9 +33,7 @@ from .streams import (
     CampaignCriterion,
     CampaignLabel,
     ClickView,
-    # Customer,
     CustomerClient,
-    CustomerLabel,
     DisplayKeywordView,
     GeographicView,
     KeywordView,
@@ -252,8 +250,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
             CampaignCriterion(**default_config),
             CampaignLabel(google_api, customers=customers),
             ClickView(**incremental_config),
-            # Customer(**incremental_config),
-            CustomerLabel(**default_config),
             Label(**default_config),
             UserInterest(**default_config),
         ]

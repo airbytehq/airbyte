@@ -278,14 +278,6 @@ class CustomerClient(GoogleAdsStream):
             yield record
 
 
-class CustomerLabel(GoogleAdsStream):
-    """
-    Customer Label stream: https://developers.google.com/google-ads/api/fields/v18/customer_label
-    """
-
-    primary_key = ["customer_label.resource_name"]
-
-
 class ServiceAccounts(GoogleAdsStream):
     """
     This stream is intended to be used as a service class, not exposed to a user
