@@ -35,6 +35,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.slot
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -648,9 +649,10 @@ class LoadPipelineStepTaskUTest {
                 parentCheckpointCounts = mapOf(),
                 parentRecord =
                     DestinationRecordRaw(
-                        mockk(relaxed = true),
-                        mockk(relaxed = true),
-                        "serialized".length.toLong()
+                        stream = mockk(relaxed = true),
+                        rawData = mockk(relaxed = true),
+                        serializedSizeBytes = "serialized".length.toLong(),
+                        airbyteRawId = UUID.randomUUID()
                     ),
             )
 

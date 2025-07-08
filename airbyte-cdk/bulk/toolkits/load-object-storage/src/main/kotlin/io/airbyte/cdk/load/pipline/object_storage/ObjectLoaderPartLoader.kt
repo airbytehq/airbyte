@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 
 /**
@@ -92,6 +93,34 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
                 },
             )
         }
+    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun acceptWithExperimentalCoroutinesApi(
+        input: ObjectLoaderPartFormatter.FormattedPart,
+        state: State<T>
+    ): BatchAccumulatorResult<State<T>, PartResult<T>> {
+        log.debug { "Uploading part $input" }
+        if (!input.part.isFinal && input.part.bytes == null) {
+            throw IllegalStateException("Empty non-final part received: this should not happen")
+        }
+
+        val upload =
+            if (state.streamingUpload.isCompleted) {
+                state.streamingUpload.getCompleted()
+            } else {
+                state.streamingUpload.await()
+            }
+
+        input.part.bytes?.let { bytes -> upload.uploadPart(bytes, input.part.partIndex) }
+        val output =
+            LoadedPart(
+                state.streamingUpload,
+                input.part.key,
+                input.part.partIndex,
+                input.part.isFinal,
+                input.part.bytes == null,
+            )
+        return IntermediateOutput(state, output)
     }
 
     override suspend fun accept(

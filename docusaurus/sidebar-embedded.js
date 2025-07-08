@@ -1,6 +1,6 @@
 export default {
   embedded: [
-    {
+    { 
       type: "category",
       collapsible: false,
       label: "Airbyte Embedded",
@@ -12,6 +12,7 @@ export default {
         "prerequisites-setup",
         "develop-your-app",
         "use-embedded",
+        "managing-embedded",
       ]
     }
   ],

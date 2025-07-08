@@ -27,6 +27,12 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
+    ExponentialBackoffStrategy,
+    WaitTimeFromHeaderBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
@@ -426,7 +432,7 @@ class EntitySchemaNormalization(TypeTransformer):
         try:
             return ab_datetime_parse(datetime_str)
         except (ValueError, TypeError, OverflowError) as ex:
-            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+            pass
 
         try:
             return ab_datetime_parse(int(datetime_str) // 1000)
@@ -615,6 +621,58 @@ def build_associations_retriever(
             config=config,
             parameters=parameters,
         ),
+        error_handler=DefaultErrorHandler(
+            backoff_strategies=[
+                WaitTimeFromHeaderBackoffStrategy(header="Retry-After", config=config, parameters=parameters),
+                ExponentialBackoffStrategy(config=config, parameters=parameters),
+            ],
+            response_filters=[
+                HttpResponseFilter(
+                    action="RETRY",
+                    http_codes={429},
+                    error_message="HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="RETRY",
+                    http_codes={502, 503},
+                    error_message="HubSpot server error (5xx). Retrying with exponential backoff...",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="RETRY",
+                    http_codes={401},
+                    error_message="Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="FAIL",
+                    http_codes={530},
+                    error_message="The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="FAIL",
+                    http_codes={403},
+                    error_message="Access denied (403). The authenticated user does not have permissions to access the resource.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="FAIL",
+                    http_codes={400},
+                    error_message="Bad request (400). Please verify your credentials and try again.",
+                    config=config,
+                    parameters=parameters,
+                ),
+            ],
+            config=config,
+            parameters=parameters,
+        ),
         config=config,
         parameters=parameters,
     )
@@ -677,7 +735,11 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         if (last_page_size < self.page_size) or last_page_size == 0 or not response.json().get("paging"):
             return None
 
-        return {"after": last_page_token_value["after"] + last_page_size}
+        last_id_of_previous_chunk = last_page_token_value.get("id")
+        if last_id_of_previous_chunk:
+            return {"after": last_page_token_value["after"] + last_page_size, self.primary_key: last_id_of_previous_chunk}
+        else:
+            return {"after": last_page_token_value["after"] + last_page_size}
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size

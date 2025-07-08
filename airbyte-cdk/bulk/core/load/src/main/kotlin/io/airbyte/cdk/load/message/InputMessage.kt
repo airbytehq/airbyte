@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
@@ -188,14 +189,19 @@ sealed interface InputCheckpoint : InputMessage
 
 data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckpoint {
     constructor(
-        stream: DestinationStream,
+        unmappedNamespace: String?,
+        unmappedName: String,
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
     ) : this(
         StreamCheckpoint(
-            Checkpoint(stream, state = blob.deserializeToNode()),
+            Checkpoint(
+                unmappedNamespace = unmappedNamespace,
+                unmappedName = unmappedName,
+                state = blob.deserializeToNode()
+            ),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
             emptyMap(),
@@ -208,7 +214,9 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
 
 data class InputGlobalCheckpoint(
     val sharedState: JsonNode?,
-    val checkpointKey: CheckpointKey? = null
+    val checkpointKey: CheckpointKey? = null,
+    val streamStates: List<Checkpoint> = emptyList(),
+    val sourceRecordCount: Long? = null,
 ) : InputCheckpoint {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
@@ -216,12 +224,20 @@ data class InputGlobalCheckpoint(
             .withState(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(AirbyteGlobalState().withSharedState(sharedState))
+                    .withGlobal(
+                        AirbyteGlobalState()
+                            .withSharedState(sharedState)
+                            .withStreamStates(streamStates.map { it.asProtocolObject() })
+                    )
                     .also {
                         if (checkpointKey != null) {
                             it.additionalProperties["partition_id"] =
                                 checkpointKey.checkpointId.value
                             it.additionalProperties["id"] = checkpointKey.checkpointIndex.value
+                        }
+                        if (sourceRecordCount != null) {
+                            it.sourceStats =
+                                AirbyteStateStats().withRecordCount(sourceRecordCount.toDouble())
                         }
                     }
             )

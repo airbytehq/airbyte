@@ -534,6 +534,11 @@ class S3V2WriteTestJsonUncompressedSockets :
     override fun testClear() {
         super.testClear()
     }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
 }
 
 class S3V2WriteTestJsonUncompressedSocketsProtobuf :
@@ -548,6 +553,7 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
         allTypesBehavior = Untyped,
         // Because proto uses a fixed-sized array of typed unions, nulls are always present
         nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
         mismatchedTypesUnrepresentable = true,
         dataChannelMedium = DataChannelMedium.SOCKET,
         dataChannelFormat = DataChannelFormat.PROTOBUF,
@@ -556,5 +562,10 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
     @Disabled("Clear will never run in socket mode")
     override fun testClear() {
         super.testClear()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
     }
 }
