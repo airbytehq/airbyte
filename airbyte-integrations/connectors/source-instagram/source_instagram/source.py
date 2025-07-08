@@ -1,16 +1,13 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
+from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
-from airbyte_cdk.sources.streams.core import Stream
 from source_instagram.api import InstagramAPI
-from source_instagram.streams import UserInsights
 
 
 """
@@ -41,21 +38,3 @@ class SourceInstagram(YamlDeclarativeSource):
             error_msg = repr(exc)
             return False, error_msg
         return super().check_connection(logger, config)
-
-    def _validate_start_date(self, config):
-        # If start_date is not found in config, set it to 2 years ago
-        if not config.get("start_date"):
-            config["start_date"] = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
-        else:
-            if pendulum.parse(config["start_date"]) > pendulum.now():
-                raise ValueError("Please fix the start_date parameter in config, it cannot be in the future")
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        streams = super().streams(config)
-        return streams + self.get_non_low_code_streams(config=config)
-
-    def get_non_low_code_streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        api = InstagramAPI(access_token=config["access_token"])
-        self._validate_start_date(config)
-        streams = [UserInsights(api=api, start_date=config["start_date"])]
-        return streams
