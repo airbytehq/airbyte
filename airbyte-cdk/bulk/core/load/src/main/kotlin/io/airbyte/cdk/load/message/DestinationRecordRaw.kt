@@ -7,7 +7,9 @@ package io.airbyte.cdk.load.message
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.getAirbyteValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
