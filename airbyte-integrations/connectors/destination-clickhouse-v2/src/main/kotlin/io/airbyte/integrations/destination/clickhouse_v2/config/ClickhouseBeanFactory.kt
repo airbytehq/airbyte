@@ -58,6 +58,7 @@ class ClickhouseBeanFactory {
                 // allow JSON transcoding as a string
                 .serverSetting(ServerSettings.INPUT_FORMAT_BINARY_READ_JSON_AS_STRING, "1")
                 .serverSetting(ServerSettings.OUTPUT_FORMAT_BINARY_WRITE_JSON_AS_STRING, "1")
+                .setClientName("airbyte-v2")
                 .build()
         }
     }
