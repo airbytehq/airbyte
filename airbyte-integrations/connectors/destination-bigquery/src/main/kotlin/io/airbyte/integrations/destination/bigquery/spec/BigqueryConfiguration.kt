@@ -21,6 +21,9 @@ data class BigqueryConfiguration(
     val legacyRawTablesOnly: Boolean,
 ) : DestinationConfiguration() {
     override val numOpenStreamWorkers = 3
+    // currently the base cdk declares 0.2 as the default.
+    // use 0.4 so that we support 20MiB records.
+    override val maxMessageQueueMemoryUsageRatio = 0.4
 }
 
 sealed interface LoadingMethodConfiguration
