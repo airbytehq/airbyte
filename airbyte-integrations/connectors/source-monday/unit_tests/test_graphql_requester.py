@@ -5,11 +5,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_monday import MondayGraphqlRequester
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 
 
 nested_object_schema = {
@@ -77,13 +76,19 @@ nested_array_schema = {
         ),
     ],
 )
-def test_get_request_params(mocker, input_schema, graphql_query, stream_name, config, next_page_token):
-    mocker.patch.object(MondayGraphqlRequester, "_get_schema_root_properties", return_value=input_schema)
-    requester = MondayGraphqlRequester(
+def test_get_request_params(components_module, input_schema, graphql_query, stream_name, config, next_page_token):
+    mock_schema = {
+        stream_name: {
+            "properties": input_schema,
+        }
+    }
+
+    requester = components_module.MondayGraphqlRequester(
         name="a name",
         url_base="https://api.monday.com/v2",
         path="a-path",
         http_method=HttpMethod.GET,
+        schema_loader=InlineSchemaLoader(schema=mock_schema, parameters={}),
         request_options_provider=MagicMock(),
         authenticator=MagicMock(),
         error_handler=MagicMock(),
@@ -96,40 +101,44 @@ def test_get_request_params(mocker, input_schema, graphql_query, stream_name, co
 
 
 @pytest.fixture
-def monday_requester():
-    return MondayGraphqlRequester(
+def monday_requester(components_module):
+    mock_schema = {
+        "activity_logs": {
+            "properties": {
+                "updated_at_int": {"type": "integer"},
+                "created_at_int": {"type": "integer"},
+                "pulse_id": {"type": "integer"},
+                "board_id": {"type": "integer"},
+                "other_field": {"type": "string"},
+                "yet_another_field": {"type": "boolean"},
+            }
+        }
+    }
+    mock_schema_loader = InlineSchemaLoader(schema=mock_schema, parameters={"name": "activity_logs"})
+    return components_module.MondayGraphqlRequester(
         name="a name",
         url_base="https://api.monday.com/v2",
         path="a-path",
         config={},
         parameters={"name": "activity_logs"},
+        schema_loader=mock_schema_loader,
         limit=InterpolatedString.create("100", parameters={"name": "activity_logs"}),
         nested_limit=InterpolatedString.create("100", parameters={"name": "activity_logs"}),
     )
 
 
-def test_get_schema_root_properties(mocker, monday_requester):
-    mock_schema = {
-        "properties": {
-            "updated_at_int": {"type": "integer"},
-            "created_at_int": {"type": "integer"},
-            "pulse_id": {"type": "integer"},
-            "board_id": {"type": "integer"},
-            "other_field": {"type": "string"},
-            "yet_another_field": {"type": "boolean"},
-        }
-    }
-
-    mocker.patch.object(JsonFileSchemaLoader, "get_json_schema", return_value=mock_schema)
+def test_get_schema_root_properties(monday_requester):
     requester = monday_requester
     result_schema = requester._get_schema_root_properties()
 
     assert result_schema == {"other_field": {"type": "string"}, "yet_another_field": {"type": "boolean"}}
 
 
-def test_build_activity_query(mocker, monday_requester):
+def test_build_activity_query(components_module, mocker, monday_requester):
     object_arguments = {"stream_slice": {"start_time": 1636738688}}
-    mocker.patch.object(MondayGraphqlRequester, "_get_object_arguments", return_value="stream_state:{{ stream_state['updated_at_int'] }}")
+    mocker.patch.object(
+        components_module.MondayGraphqlRequester, "_get_object_arguments", return_value="stream_state:{{ stream_state['updated_at_int'] }}"
+    )
     requester = monday_requester
 
     result = requester._build_activity_query(object_name="activity_logs", field_schema={}, sub_page=None, **object_arguments)

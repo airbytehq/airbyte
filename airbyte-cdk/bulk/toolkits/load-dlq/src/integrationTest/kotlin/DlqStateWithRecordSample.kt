@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import java.math.BigInteger
 
-class DlqStateWithRecordSample : DlqTestState {
+open class DlqStateWithRecordSample : DlqTestState {
     private val records: MutableList<DestinationRecordRaw> = mutableListOf()
 
     override fun accumulate(record: DestinationRecordRaw) {

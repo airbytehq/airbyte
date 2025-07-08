@@ -482,28 +482,28 @@ kind: Ingress
 metadata:
   name: # ingress name, example: enterprise-demo
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - host: # host, example: enterprise-demo.airbyte.com
+    - host: airbyte.example.com # replace with your host
       http:
         paths:
           - backend:
               service:
-                # format is ${RELEASE_NAME}-airbyte-webapp-svc
-                name: airbyte-enterprise-airbyte-webapp-svc
+                # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
+                name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
                   number: 80 # service port, example: 8080
-            path: /
+            path: /api/v1/connector_builder
             pathType: Prefix
           - backend:
               service:
-                # format is ${RELEASE_NAME}-airbyte-keycloak-svc
-                name: airbyte-enterprise-airbyte-keycloak-svc
+                # format is ${RELEASE_NAME}-airbyte-server-svc
+                name: airbyte-enterprise-airbyte-server-svc
                 port:
-                  number: 8180
-            path: /auth
+                  number: 8000 # service port, example: 8080
+            path: /
             pathType: Prefix
 ```
 
@@ -516,12 +516,12 @@ If you are intending on using Amazon Application Load Balancer (ALB) for ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: # ingress name, e.g. enterprise-demo
+  name: airbyte-ingress # ingress name, e.g. airbyte-production-ingress
   annotations:
     # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
     # Redirects HTTP traffic to HTTPS.
-    ingress.kubernetes.io/ssl-redirect: "true"
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
     # Creates an internal ALB, which is only accessible within your VPC or through a VPN.
     alb.ingress.kubernetes.io/scheme: internal
     # Specifies the ARN of the SSL certificate managed by AWS ACM, essential for HTTPS.
@@ -533,22 +533,22 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-    - host: # e.g. enterprise-demo.airbyte.com
+    - host: airbyte.example.com # replace with your host
       http:
         paths:
           - backend:
               service:
-                name: airbyte-enterprise-airbyte-webapp-svc
+                name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
                   number: 80
-            path: /
+            path: /api/v1/connector_builder
             pathType: Prefix
           - backend:
               service:
-                name: airbyte-enterprise-airbyte-keycloak-svc
+                name: airbyte-enterprise-airbyte-server-svc
                 port:
-                  number: 8180
-            path: /auth
+                  number: 8000
+            path: /
             pathType: Prefix
 ```
 
