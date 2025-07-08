@@ -23,10 +23,15 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.data.diffWith
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType.UnionBehavior
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import java.nio.file.Files
+import java.nio.file.Paths
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -43,6 +48,31 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val stringType = ofType("string")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(stringType)
         Assertions.assertTrue(airbyteType is StringType)
+    }
+
+    @Test
+    fun `old vs new implementation should be same`() {
+        val resource = javaClass.classLoader.getResource("catalog-from-init-container.json")
+        Assertions.assertNotNull(resource, "catalog.json should be present in test resources")
+
+        val path = Paths.get(resource.toURI())
+        val content = Files.readString(path)
+
+        val deserialize =
+            io.airbyte.protocol.models.Jsons.deserialize(
+                content,
+                ConfiguredAirbyteCatalog::class.java,
+            )
+
+        val jsonSchemaToAirbyteType = JsonSchemaToAirbyteType(UnionBehavior.DEFAULT)
+        val newOne = jsonSchemaToAirbyteType.convert(deserialize.streams[0].stream.jsonSchema)
+        val jsonSchemaToAirbyteTypeOld =
+            JsonSchemaToAirbyteTypeOld(JsonSchemaToAirbyteTypeOld.UnionBehavior.DEFAULT)
+        val oldOne = jsonSchemaToAirbyteTypeOld.convert(deserialize.streams[0].stream.jsonSchema)
+        val diffWith = newOne.diffWith(oldOne)
+        assertNull(
+            diffWith
+        ) // Field 'cpc' nullable differs: false vs true (false in new one, true in old one)
     }
 
     @Test

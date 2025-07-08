@@ -149,3 +149,81 @@ data class UnionType(
 data class UnknownType(val schema: JsonNode) : AirbyteType()
 
 data class FieldType(val type: AirbyteType, val nullable: Boolean)
+
+fun AirbyteType.diffWith(other: AirbyteType): String? {
+    if (this::class != other::class) {
+        return "Type mismatch: ${this::class.simpleName} vs ${other::class.simpleName}"
+    }
+
+    return when (this) {
+        is StringType,
+        is BooleanType,
+        is IntegerType,
+        is NumberType,
+        is DateType,
+        is TimestampTypeWithTimezone,
+        is TimestampTypeWithoutTimezone,
+        is TimeTypeWithTimezone,
+        is TimeTypeWithoutTimezone,
+        is ObjectTypeWithEmptySchema,
+        is ObjectTypeWithoutSchema,
+        is ArrayTypeWithoutSchema -> null
+        is ArrayType -> {
+            val otherArray = other as ArrayType
+            this.items.type.diffWith(otherArray.items.type)?.let { "Array items differ: $it" }
+        }
+        is ObjectType -> {
+            val otherObj = other as ObjectType
+            if (this.additionalProperties != otherObj.additionalProperties) {
+                return "Object.additionalProperties differs: $additionalProperties vs ${otherObj.additionalProperties}"
+            }
+
+            if (this.required.toSet() != otherObj.required.toSet()) {
+                return "Object.required differs: ${this.required} vs ${otherObj.required}"
+            }
+
+            val allKeys = this.properties.keys + otherObj.properties.keys
+            for (key in allKeys) {
+                val thisField = this.properties[key]
+                val otherField = otherObj.properties[key]
+                if (thisField == null || otherField == null) {
+                    return "Property key mismatch: $key is present in one and missing in other"
+                }
+                if (thisField.nullable != otherField.nullable) {
+                    return "Field '$key' nullable differs: ${thisField.nullable} vs ${otherField.nullable}"
+                }
+                thisField.type.diffWith(otherField.type)?.let {
+                    return "Field '$key' type differs: $it"
+                }
+            }
+            null
+        }
+        is UnionType -> {
+            val otherUnion = other as UnionType
+            if (this.isLegacyUnion != otherUnion.isLegacyUnion) {
+                return "Union.isLegacyUnion differs: $isLegacyUnion vs ${otherUnion.isLegacyUnion}"
+            }
+
+            val thisOptions = this.options.sortedBy { it::class.simpleName }
+            val otherOptions = otherUnion.options.sortedBy { it::class.simpleName }
+
+            if (thisOptions.size != otherOptions.size) {
+                return "Union options size differs: ${thisOptions.size} vs ${otherOptions.size}"
+            }
+
+            for ((a, b) in thisOptions.zip(otherOptions)) {
+                a.diffWith(b)?.let {
+                    return "Union option differs: $it"
+                }
+            }
+            null
+        }
+        is UnknownType -> {
+            val otherUnknown = other as UnknownType
+            if (this.schema != otherUnknown.schema) {
+                return "UnknownType schema differs: ${this.schema} vs ${otherUnknown.schema}"
+            }
+            null
+        }
+    }
+}

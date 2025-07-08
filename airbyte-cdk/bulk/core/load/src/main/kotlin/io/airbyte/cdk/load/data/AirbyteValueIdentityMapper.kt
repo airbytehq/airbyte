@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 interface AirbyteValueMapper {
     fun map(
@@ -35,6 +36,7 @@ open class AirbyteValueIdentityMapper(
         val path: List<String> = emptyList(),
         val changes: MutableSet<Meta.Change> = mutableSetOf(),
     )
+    private val log = KotlinLogging.logger {}
 
     override fun map(
         value: AirbyteValue,
@@ -87,6 +89,7 @@ open class AirbyteValueIdentityMapper(
                     is UnknownType -> mapUnknown(value, context)
                 }
             } catch (e: Exception) {
+                log.error(e) { "Expected At mapInner $e" }
                 nulledOut(schema, context)
             }
 

@@ -1,0 +1,3794 @@
+{
+  "streams" : [
+    {
+      "stream" : {
+        "name" : "ads_insights",
+        "json_schema" : {
+          "type" : "object",
+          "$schema" : "http://json-schema.org/schema#",
+          "properties" : {
+            "cpc" : {
+              "type" : "number"
+            },
+            "cpm" : {
+              "type" : "number"
+            },
+            "cpp" : {
+              "type" : "number"
+            },
+            "ctr" : {
+              "type" : "number"
+            },
+            "ad_id" : {
+              "type" : "string"
+            },
+            "reach" : {
+              "type" : "integer"
+            },
+            "spend" : {
+              "type" : "number"
+            },
+            "clicks" : {
+              "type" : "integer"
+            },
+            "actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "ad_name" : {
+              "type" : "string"
+            },
+            "adset_id" : {
+              "type" : "string"
+            },
+            "wish_bid" : {
+              "type" : "number"
+            },
+            "date_stop" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "frequency" : {
+              "type" : "number"
+            },
+            "objective" : {
+              "type" : "string"
+            },
+            "account_id" : {
+              "type" : "string"
+            },
+            "adset_name" : {
+              "type" : "string"
+            },
+            "date_start" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "unique_ctr" : {
+              "type" : "number"
+            },
+            "auction_bid" : {
+              "type" : "number"
+            },
+            "buying_type" : {
+              "type" : "string"
+            },
+            "campaign_id" : {
+              "type" : "string"
+            },
+            "conversions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "impressions" : {
+              "type" : "integer"
+            },
+            "website_ctr" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "account_name" : {
+              "type" : "string"
+            },
+            "created_time" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "social_spend" : {
+              "type" : "number"
+            },
+            "updated_time" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "action_values" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "campaign_name" : {
+              "type" : "string"
+            },
+            "purchase_roas" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "unique_clicks" : {
+              "type" : "integer"
+            },
+            "unique_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "full_view_reach" : {
+              "type" : "number"
+            },
+            "outbound_clicks" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "quality_ranking" : {
+              "type" : "string"
+            },
+            "account_currency" : {
+              "type" : "string"
+            },
+            "ad_click_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "conversion_values" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_ad_click" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_thruplay" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "optimization_goal" : {
+              "type" : "string"
+            },
+            "inline_link_clicks" : {
+              "type" : "integer"
+            },
+            "video_play_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "attribution_setting" : {
+              "type" : "string"
+            },
+            "cost_per_conversion" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "outbound_clicks_ctr" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "canvas_avg_view_time" : {
+              "type" : "number"
+            },
+            "cost_per_action_type" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "ad_impression_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "catalog_segment_value" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_unique_click" : {
+              "type" : "number"
+            },
+            "full_view_impressions" : {
+              "type" : "number"
+            },
+            "inline_link_click_ctr" : {
+              "type" : "number"
+            },
+            "website_purchase_roas" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "estimated_ad_recallers" : {
+              "type" : "number"
+            },
+            "inline_post_engagement" : {
+              "type" : "integer"
+            },
+            "unique_link_clicks_ctr" : {
+              "type" : "number"
+            },
+            "unique_outbound_clicks" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "auction_competitiveness" : {
+              "type" : "number"
+            },
+            "canvas_avg_view_percent" : {
+              "type" : "number"
+            },
+            "catalog_segment_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "conversion_rate_ranking" : {
+              "type" : "string"
+            },
+            "converted_product_value" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_outbound_click" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "engagement_rate_ranking" : {
+              "type" : "string"
+            },
+            "mobile_app_purchase_roas" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_play_curve_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "array"
+                    ],
+                    "items" : {
+                      "type" : [
+                        "null",
+                        "integer"
+                      ]
+                    }
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "unique_inline_link_clicks" : {
+              "type" : "integer"
+            },
+            "video_p25_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_p50_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_p75_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_p95_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "auction_max_competitor_bid" : {
+              "type" : "number"
+            },
+            "converted_product_quantity" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_15_sec_video_view" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_inline_link_click" : {
+              "type" : "number"
+            },
+            "unique_outbound_clicks_ctr" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_p100_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_time_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_unique_action_type" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "unique_inline_link_click_ctr" : {
+              "type" : "number"
+            },
+            "video_15_sec_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_30_sec_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_unique_outbound_click" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_avg_time_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_estimated_ad_recallers" : {
+              "type" : "number"
+            },
+            "cost_per_inline_post_engagement" : {
+              "type" : "number"
+            },
+            "cost_per_unique_inline_link_click" : {
+              "type" : "number"
+            },
+            "instant_experience_clicks_to_open" : {
+              "type" : "number"
+            },
+            "instant_experience_clicks_to_start" : {
+              "type" : "number"
+            },
+            "instant_experience_outbound_clicks" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_play_retention_graph_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "array"
+                    ],
+                    "items" : {
+                      "type" : [
+                        "null",
+                        "integer"
+                      ]
+                    }
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "cost_per_2_sec_continuous_video_view" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_play_retention_0_to_15s_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "array"
+                    ],
+                    "items" : {
+                      "type" : [
+                        "null",
+                        "integer"
+                      ]
+                    }
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_continuous_2_sec_watched_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "video_play_retention_20_to_60s_actions" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "array"
+                    ],
+                    "items" : {
+                      "type" : [
+                        "null",
+                        "integer"
+                      ]
+                    }
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "qualifying_question_qualify_answer_rate" : {
+              "type" : "number"
+            },
+            "catalog_segment_value_omni_purchase_roas" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "catalog_segment_value_mobile_purchase_roas" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "catalog_segment_value_website_purchase_roas" : {
+              "type" : [
+                "null",
+                "array"
+              ],
+              "items" : {
+                "type" : [
+                  "null",
+                  "object"
+                ],
+                "properties" : {
+                  "lead" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "value" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "1d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_view" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "7d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "28d_click" : {
+                    "type" : [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "action_type" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_target_id" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "action_destination" : {
+                    "type" : [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties" : true
+        },
+        "supported_sync_modes" : [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor" : true,
+        "default_cursor_field" : [
+          "date_start"
+        ],
+        "source_defined_primary_key" : [
+          [
+            "date_start"
+          ],
+          [
+            "account_id"
+          ],
+          [
+            "ad_id"
+          ]
+        ],
+        "namespace" : "fb_br",
+        "is_resumable" : true
+      },
+      "sync_mode" : "incremental",
+      "cursor_field" : [
+        "date_start"
+      ],
+      "destination_sync_mode" : "append",
+      "primary_key" : [
+        [
+          "date_start"
+        ],
+        [
+          "account_id"
+        ],
+        [
+          "ad_id"
+        ]
+      ],
+      "generation_id" : 0,
+      "minimum_generation_id" : 0,
+      "sync_id" : 4,
+      "include_files" : false
+    }
+  ]
+}
