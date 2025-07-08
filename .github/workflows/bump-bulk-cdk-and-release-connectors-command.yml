@@ -11,7 +11,7 @@ on:
           - airbytehq/airbyte
 jobs:
   publish-bulk-cdk:
-    uses: ./.github/workflows/publish-bulk-cdk.yml
+    uses: ./.github/workflows/java-bulk-cdk-publish.yml
     secrets: inherit
   bump-cdk-version:
     runs-on: ubuntu-24.04
