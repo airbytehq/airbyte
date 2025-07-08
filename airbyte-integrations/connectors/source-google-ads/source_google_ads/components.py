@@ -145,5 +145,13 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
         return stream_state and "state" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        min_state = min(stream_state.values(), key=lambda state: state[self._cursor_field])
+        if not self.should_migrate(stream_state):
+            return stream_state
+        stream_state_values = [
+            stream_state for stream_state in stream_state.values() if isinstance(stream_state, dict) and self._cursor_field in stream_state
+        ]
+        if not stream_state_values:
+            logger.warning("No valid cursor field found in the stream state. Returning empty state.")
+            return {}
+        min_state = min(stream_state_values, key=lambda state: state[self._cursor_field])
         return {"use_global_cursor": True, "state": min_state}

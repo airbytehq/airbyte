@@ -23,18 +23,16 @@ All sync modes are supported.
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
-Airbyte types will be converted as follows:
+Airbyte types will be converted to ClickHouse types as follows:
 
-    BooleanType -> Bool
-    DateType -> Date32
-    IntegerType -> Int64
-    NumberType (float) -> DECIMAL128(9)
-    StringType -> String
-    TimeTypeWithTimezone -> String
-    TimeTypeWithoutTimezone -> String
-    TimestampTypeWithTimezone -> DateTime64(3)
-    TimestampTypeWithoutTimezone -> DateTime64(3)
-    Other Misc. -> String
+- Decimal types are NUMBER128(9) — 9 digit precision
+- Timestamp are DateTime64(3) — millisecond precision
+- Object types are JSON **if JSON is enabled in the actor config**; otherwise they are converted to String
+- Integers are Int64
+- Booleans are Bool
+- Strings are String
+- Unions will be converted to String
+- Arrays will be converted to String
 
 ### Requirements
 
@@ -78,13 +76,16 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                               | Subject                                             |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------|
-| 0.1.6   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047) | Hide protocol option when running on cloud.         |
-| 0.1.5   | 2025-06-24 | [\#62043](https://github.com/airbytehq/airbyte/pull/62043) | Expose database protocol config option.             |
-| 0.1.4   | 2025-06-24 | [\#62040](https://github.com/airbytehq/airbyte/pull/62040) | Checker inserts into configured DB.                 |
-| 0.1.3   | 2025-06-24 | [\#62038](https://github.com/airbytehq/airbyte/pull/62038) | Allow the client to connect to the resolved DB.     |
-| 0.1.2   | 2025-06-23 | [\#62028](https://github.com/airbytehq/airbyte/pull/62028) | Enable the registry in OSS and cloud.               |
-| 0.1.1   | 2025-06-23 | [\#62022](https://github.com/airbytehq/airbyte/pull/62022) | Publish first beta version and pin the CDK version. |
-| 0.1.0   | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024) | Release first beta version.                         |
+| Version | Date       | Pull Request                                                  | Subject                                             |
+|:--------|:-----------|:--------------------------------------------------------------|:----------------------------------------------------|
+| 0.1.9   | 2025-07-03 | [\#62509](https://github.com/airbytehq/airbyte/pull/62509)    | Simplify union stringification behavior.            |
+| 0.1.8   | 2025-06-30 | [\#62100](https://github.com/airbytehq/airbyte/pull/62100)    | Add JSON support.                                   |
+| 0.1.7   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047)    | Remove the use of the internal namespace.           |
+| 0.1.6   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047)    | Hide protocol option when running on cloud.         |
+| 0.1.5   | 2025-06-24 | [\#62043](https://github.com/airbytehq/airbyte/pull/62043)    | Expose database protocol config option.             |
+| 0.1.4   | 2025-06-24 | [\#62040](https://github.com/airbytehq/airbyte/pull/62040)    | Checker inserts into configured DB.                 |
+| 0.1.3   | 2025-06-24 | [\#62038](https://github.com/airbytehq/airbyte/pull/62038)    | Allow the client to connect to the resolved DB.     |
+| 0.1.2   | 2025-06-23 | [\#62028](https://github.com/airbytehq/airbyte/pull/62028)    | Enable the registry in OSS and cloud.               |
+| 0.1.1   | 2025-06-23 | [\#62022](https://github.com/airbytehq/airbyte/pull/62022)    | Publish first beta version and pin the CDK version. |
+| 0.1.0   | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024)    | Release first beta version.                         |
 </details>
