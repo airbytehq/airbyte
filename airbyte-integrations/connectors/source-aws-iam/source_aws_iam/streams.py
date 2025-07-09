@@ -44,20 +44,23 @@ class IAMPoliciesStream(BaseIAMStream):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         paginator = self.iam.get_paginator("list_policies")
-        for page in paginator.paginate(Scope="Local"):
-            for policy in page.get("Policies", []):
-                # Fetch the latest policy version document
-                try:
-                    policy_version = self.iam.get_policy_version(
-                        PolicyArn=policy["Arn"],
-                        VersionId=policy["DefaultVersionId"]
-                    )
-                    policy["PolicyVersion"] = policy_version.get("PolicyVersion")
-                except Exception as e:
-                    # If we can't fetch the policy version, set it to None
-                    policy["PolicyVersion"] = None
-                
-                yield policy
+        
+        # Always scan both customer-managed (Local) and AWS managed (AWS) policies
+        for scope in ["Local", "AWS"]:
+            for page in paginator.paginate(Scope=scope):
+                for policy in page.get("Policies", []):
+                    # Fetch the latest policy version document
+                    try:
+                        policy_version = self.iam.get_policy_version(
+                            PolicyArn=policy["Arn"],
+                            VersionId=policy["DefaultVersionId"]
+                        )
+                        policy["PolicyVersion"] = policy_version.get("PolicyVersion")
+                    except Exception as e:
+                        # If we can't fetch the policy version, set it to None
+                        policy["PolicyVersion"] = None
+                    
+                    yield policy
 
 
 class IAMRolesStream(BaseIAMStream):
