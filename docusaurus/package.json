@@ -111,6 +111,8 @@
     "cssnano-preset-advanced": "6.0.2",
     "dayjs": "^1.11.11",
     "del": "6.1.1",
+    "docusaurus-plugin-openapi-docs": "^4.5.1",
+    "docusaurus-theme-openapi-docs": "^4.5.1",
     "dotenv": "^16.4.5",
     "html-loader": "^4.2.0",
     "js-yaml": "^4.1.0",
