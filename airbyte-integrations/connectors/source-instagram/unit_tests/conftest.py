@@ -2,11 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import sys
+from pathlib import Path
 from typing import List
 
 from facebook_business import FacebookAdsApi, FacebookSession
 from pytest import fixture
-from source_instagram.api import InstagramAPI as API
+
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
@@ -20,6 +25,34 @@ def mock_sleep(mocker):
 @fixture(scope="session", name="account_id")
 def account_id_fixture():
     return "unknown_account"
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+
+
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
+
+def find_stream(stream_name, config, state=None):
+    state = StateBuilder().build() if not state else state
+    streams = get_source(config, state).streams(config=config)
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
 
 
 @fixture(name="config")
@@ -69,15 +102,11 @@ def fb_account_response_fixture(account_id, some_config, requests_mock):
 
 @fixture(name="api")
 def api_fixture(some_config, requests_mock, fb_account_response):
-    api = API(access_token=some_config["access_token"])
-
     requests_mock.register_uri(
         "GET",
         FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/accounts?" f"access_token={some_config['access_token']}&summary=true",
         [fb_account_response],
     )
-
-    return api
 
 
 @fixture(name="user_insight_data")

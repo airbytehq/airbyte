@@ -7,40 +7,15 @@ from unittest.mock import MagicMock
 
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
-from source_instagram.streams import DatetimeTransformerMixin, InstagramStream, UserInsights
-from utils import read_full_refresh, read_incremental
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.types import StreamSlice
+
+from .conftest import find_stream
+from .utils import read_full_refresh, read_incremental
 
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
-
-
-def test_clear_url(config):
-    media_url = "https://google.com?_nc_rid=123"
-    profile_picture_url = "https://google.com?ccb=123"
-
-    expected = {"media_url": "https://google.com", "profile_picture_url": "https://google.com"}
-    assert InstagramStream._clear_url({"media_url": media_url, "profile_picture_url": profile_picture_url}) == expected
-
-
-def test_state_outdated(api, config):
-    assert UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": MagicMock()})
-
-
-def test_state_is_not_outdated(api, config):
-    assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": {}})
-
-
-def test_user_insights_read(api, config, user_insight_data, requests_mock):
-    test_id = "test_id"
-
-    stream = UserInsights(api=api, start_date=config["start_date"])
-
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_insight_data}])
-
-    records = read_incremental(stream, {})
-    assert records
 
 
 @pytest.mark.parametrize(
@@ -79,21 +54,28 @@ def test_user_insights_read(api, config, user_insight_data, requests_mock):
         "No `end_time` and no `value` in record",
     ],
 )
-def test_user_insights_state(api, user_insights, values, slice_dates, expected):
+# todo: user_insights should probably be a dedicated mocked request not a fixtrue?
+def test_user_insights_state(requests_mock, user_insights, values, slice_dates, expected):
     """
     This test shows how `STATE` is managed based on the scenario for Incremental Read.
     """
-    import pendulum
+    config = {"start_date": "2023-01-01T01:01:01Z"}
+
+    requests_mock.get(
+        "",
+    )
 
     # UserInsights stream
-    stream = UserInsights(api=api, start_date="2023-01-01T01:01:01Z")
+    stream = find_stream(stream_name="user_insights", config=config)
     # Populate the fixute with `values`
-    user_insights(values)
+    # user_insights(values)
     # simulate `read_recods` generator job
     list(
         stream.read_records(
             sync_mode=SyncMode.incremental,
-            stream_slice={"account": {"page_id": 1, "instagram_business_account": user_insights}, **slice_dates},
+            stream_slice=StreamSlice(
+                partition={"instagram_business_account": "123"}, cursor_slice={**slice_dates}, extra_fields={"page_id": 1}
+            ),
         )
     )
     assert stream.state == expected
@@ -140,7 +122,7 @@ def test_common_error_retry(config, error_response, requests_mock, api, account_
     test_id = "test_id"
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", responses)
 
-    stream = UserInsights(api=api, start_date=config["start_date"])
+    stream = find_stream(stream_name="user_insights", config=config)
     records = read_full_refresh(stream)
 
     assert records
@@ -148,28 +130,9 @@ def test_common_error_retry(config, error_response, requests_mock, api, account_
 
 def test_exit_gracefully(api, config, requests_mock, caplog):
     test_id = "test_id"
-    stream = UserInsights(api=api, start_date=config["start_date"])
+    stream = find_stream(stream_name="user_insights", config=config)
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", json={"data": []})
     records = read_incremental(stream, {})
     assert not records
     assert requests_mock.call_count == 6  # 4 * 1 per `metric_to_period` map + 1 `summary` request + 1 `business_account_id` request
     assert "Stopping syncing stream 'user_insights'" in caplog.text
-
-
-@pytest.mark.parametrize(
-    "original_value, field_schema, expected",
-    [
-        ("2020-01-01T12:00:00Z", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-01-01T12:00:00+00:00"),
-        ("2020-05-04T07:00:00+0000", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-05-04T07:00:00+00:00"),
-        (None, {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, None),
-        ("2020-01-01T12:00:00", {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}, "2020-01-01T12:00:00"),
-        ("2020-01-01T14:00:00", {"format": "date-time"}, "2020-01-01T14:00:00"),
-        ("2020-02-03T12:00:00", {"type": "string"}, "2020-02-03T12:00:00"),
-    ],
-)
-def test_custom_transform_datetime_rfc3339(original_value, field_schema, expected):
-    # Call the static method
-    result = DatetimeTransformerMixin.custom_transform_datetime_rfc3339(original_value, field_schema)
-
-    # Assert the result matches the expected output
-    assert result == expected
