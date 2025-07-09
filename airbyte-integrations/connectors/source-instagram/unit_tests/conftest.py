@@ -44,36 +44,18 @@ def some_config_future_date_fixture(account_id):
 
 @fixture(name="fb_account_response")
 def fb_account_response_fixture(account_id, some_config, requests_mock):
-    account = {"id": "test_id", "instagram_business_account": {"id": "test_id"}}
-    requests_mock.register_uri(
-        "GET",
-        FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/"
-        f"?access_token={some_config['access_token']}&fields=instagram_business_account",
-        json=account,
-    )
-    return {
-        "json": {
-            "data": [
-                {
-                    "access_token": "access_token",
-                    "category": "Software company",
-                    "id": f"act_{account_id}",
-                    "paging": {"cursors": {"before": "cursor", "after": "cursor"}},
-                    "summary": {"total_count": 1},
-                    "status_code": 200,
-                }
-            ]
-        }
-    }
+    return {"json": {"data": [{"id": "test_id", "name": "Test Page", "instagram_business_account": {"id": "test_id"}}]}}
 
 
 @fixture(name="api")
 def api_fixture(some_config, requests_mock, fb_account_response):
     api = API(access_token=some_config["access_token"])
 
+    # Mock the new API call pattern that includes fields parameter
     requests_mock.register_uri(
         "GET",
-        FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/accounts?" f"access_token={some_config['access_token']}&summary=true",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/accounts?"
+        f"access_token={some_config['access_token']}&fields=id%2Cname%2Cinstagram_business_account%7Bid%7D",
         [fb_account_response],
     )
 
