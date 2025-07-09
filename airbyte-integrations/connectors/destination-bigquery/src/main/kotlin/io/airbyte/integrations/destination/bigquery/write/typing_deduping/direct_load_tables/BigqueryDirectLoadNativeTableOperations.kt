@@ -319,16 +319,33 @@ class BigqueryDirectLoadNativeTableOperations(
                 )
             }
 
+        // we do two alters initially.
+        // the first does the basic alters (drop+add columns).
+        // the second alter sets up the _changed_ columns' temp columns.
+        // We do this because the temp columns may have been left over from the previous sync
+        // (if the schema change failed).
+        // And you can't just `alter table drop column foo, add column foo` - those have to be
+        // in separate statements.
         val initialAlterations =
             columnsToRemove.map { name -> """DROP COLUMN `$name`""" } +
-                columnsToAdd.map { (name, type) -> """ADD COLUMN `$name` $type""" } +
-                // in the initial statement, we just add the temporary column.
-                typeChangePlans.map { plan ->
-                    """ADD COLUMN `${plan.tempColumnName}` ${plan.newType}"""
-                }
-        databaseHandler.executeWithRetries(
-            """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
-        )
+                columnsToAdd.map { (name, type) -> """ADD COLUMN `$name` $type""" }
+        val addTempColumns =
+            typeChangePlans.map { plan ->
+                """ADD COLUMN `${plan.tempColumnName}` ${plan.newType}"""
+            }
+        // Need to add explicit checks on both branches.
+        // If we have no added/dropped columns, we will skip the first alter table.
+        // If we have no changed columns, we will skip the second alter.
+        if (initialAlterations.isNotEmpty()) {
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
+            )
+        }
+        if (addTempColumns.isNotEmpty()) {
+            databaseHandler.executeWithRetries(
+                """ALTER TABLE $tableId ${addTempColumns.joinToString(",")}"""
+            )
+        }
 
         // now we execute the rest of the table alterations.
         // these happen on a per-column basis, so that a failed UPDATE statement in one column
@@ -343,7 +360,7 @@ class BigqueryDirectLoadNativeTableOperations(
                 )
             } catch (e: Exception) {
                 val message =
-                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table."
+                    "Error while updating schema for table ${tableName.toPrettyString()} (attempting to change column $realColumnName from $originalType to $newType). You should manually update the schema for this table, or refresh the stream and remove existing records. Details: ${e.message}"
                 logger.warn(e) { message }
                 // no rollback logic. On the next sync, we'll see the temp columns in columnsToDrop.
                 throw ConfigErrorException(message, e)
@@ -383,11 +400,32 @@ class BigqueryDirectLoadNativeTableOperations(
             columnNameMapping: ColumnNameMapping,
             existingTable: StandardTableDefinition,
         ): Boolean {
-            return (existingTable.clustering != null &&
+            // We always want to set a clustering config, so if the table doesn't have one,
+            // then we should fix it.
+            if (existingTable.clustering == null) {
+                return false
+            }
+
+            val existingClusteringFields = HashSet<String>(existingTable.clustering!!.fields)
+            // We're OK with a column being in the clustering config that we don't expect
+            // (e.g. user set a composite PK, then makes one of those fields no longer a PK).
+            // It doesn't really hurt us to have that extra clustering config.
+            val clusteringConfigIsSupersetOfExpectedConfig =
                 containsAllIgnoreCase(
-                    HashSet<String>(existingTable.clustering!!.fields),
+                    existingClusteringFields,
                     BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping),
-                ))
+                )
+            // We do, however, validate that all the clustering fields actually exist in the
+            // intended schema.
+            // This is so that we don't try to drop columns that bigquery is clustering against
+            // (because bigquery throws an error in that case).
+            val clusteringConfigReferencesExistingFields =
+                containsAllIgnoreCase(
+                    columnNameMapping.values + Meta.COLUMN_NAMES,
+                    existingClusteringFields,
+                )
+            return clusteringConfigIsSupersetOfExpectedConfig &&
+                clusteringConfigReferencesExistingFields
         }
 
         @VisibleForTesting

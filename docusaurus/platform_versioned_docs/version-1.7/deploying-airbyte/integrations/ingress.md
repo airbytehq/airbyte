@@ -29,22 +29,31 @@ kind: Ingress
 metadata:
   name: airbyte-ingress # ingress name, example: airbyte-production-ingress
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - host: localhost # host, example: airbyte.company.example
+    - host: airbyte.example.com # replace with your host
       http:
         paths:
           - backend:
               service:
-                # format is ${RELEASE_NAME}-airbyte-webapp-svc
-                name: airbyte-airbyte-webapp-svc
+                # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
+                name: airbyte-airbyte-connector-builder-server-svc
                 port:
                   number: 80 # service port, example: 8080
+            path: /api/v1/connector_builder
+            pathType: Prefix
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-server-svc
+                name: airbyte-airbyte-server-svc
+                port:
+                  number: 8000 # service port, example: 8080
             path: /
             pathType: Prefix
 ```
+
 </TabItem>
 <TabItem value="Amazon ALB" label="Amazon ALB">
 
@@ -55,11 +64,10 @@ First you need to have an ALB deployed. You can read more about ALBs in the deta
 
 The recommended method for Cluster Ingress is an AWS ALB. This configuration is outside the scope of this documentation. You can find more information on how to correctly configure an ALB Ingress Controller by reading the official [Route application and HTTP traffic with Application Load Balancers](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html) documentation provided by Amazon.
 
-Once the AWS Load Balancer Controller has been correctly installed the Airbyte installation process will be able to automatically create an ALB for you. You can combine the ALB with AWS Certificate Manager (ACM) to secure your instance with TLS. The ACM documentation can be found here: [Getting Started with AWS Certificate Manager](https://aws.amazon.com/certificate-manager/getting-started/). To use the ACM certificate, you can specify the certificate-arn when creating the Kubernetes Ingress. For more information see the [Kubernetes Ingress Annotations documentation](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.1/guide/ingress/annotations/#certificate-arn).
+Once the AWS Load Balancer Controller has been correctly installed the Airbyte installation process is able to automatically create an ALB for you. You can combine the ALB with AWS Certificate Manager (ACM) to secure your instance with TLS. The ACM documentation can be found here: [Getting Started with AWS Certificate Manager](https://aws.amazon.com/certificate-manager/getting-started/). To use the ACM certificate, you can specify the certificate-arn when creating the Kubernetes Ingress. For more information see the [Kubernetes Ingress Annotations documentation](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.1/guide/ingress/annotations/#certificate-arn).
 </details>
 
-If you intend to use Amazon Application Load Balancer (ALB) for ingress, this ingress definition will be close to what's needed to get up and running:
-
+If you intend to use Amazon Application Load Balancer (ALB) for ingress, this ingress definition is close to what's needed to get up and running:
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -70,7 +78,7 @@ metadata:
     # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
     # Redirects HTTP traffic to HTTPS.
-    ingress.kubernetes.io/ssl-redirect: "true"
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
     # Creates an internal ALB, which is only accessible within your VPC or through a VPN.
     alb.ingress.kubernetes.io/scheme: internal
     # Specifies the ARN of the SSL certificate managed by AWS ACM, essential for HTTPS.
@@ -82,14 +90,21 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-    - host: localhost # e.g. airbyte.company.example
+    - host: airbyte.example.com # replace with your host
       http:
         paths:
           - backend:
               service:
-                name: airbyte-airbyte-webapp-svc
+                name: airbyte-airbyte-connector-builder-server-svc
                 port:
                   number: 80
+            path: /api/v1/connector_builder
+            pathType: Prefix
+          - backend:
+              service:
+                name: airbyte-airbyte-server-svc
+                port:
+                  number: 8000
             path: /
             pathType: Prefix
 ```

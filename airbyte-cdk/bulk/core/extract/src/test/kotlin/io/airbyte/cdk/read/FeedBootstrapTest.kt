@@ -4,9 +4,13 @@
 
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.IntCodec
+import io.airbyte.cdk.data.LocalDateTimeCodec
+import io.airbyte.cdk.data.NullCodec
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
@@ -14,10 +18,15 @@ import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.discover.TestMetaFieldDecorator.GlobalCursor
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -53,8 +62,21 @@ class FeedBootstrapTest {
         streamStateValue: OpaqueStateValue? = null
     ): StateManager = StateManager(global, globalStateValue, mapOf(stream to streamStateValue))
 
+    val dcm = DataChannelMedium.STDIO
+    val dcf = DataChannelFormat.JSONL
+    val bufferSize = 8192
+    val clock = ClockFactory().fixed()
     fun Feed.bootstrap(stateManager: StateManager): FeedBootstrap<*> =
-        FeedBootstrap.create(outputConsumer, metaFieldDecorator, stateManager, this)
+        FeedBootstrap.create(
+            outputConsumer,
+            metaFieldDecorator,
+            stateManager,
+            this,
+            dcf,
+            dcm,
+            bufferSize,
+            clock
+        )
 
     fun expected(vararg data: String): List<String> {
         val ts = outputConsumer.recordEmittedAt.toEpochMilli()
@@ -68,9 +90,9 @@ class FeedBootstrapTest {
         Assertions.assertEquals(1, globalBootstrap.streamRecordConsumers().size)
         val (actualStreamID, consumer) = globalBootstrap.streamRecordConsumers().toList().first()
         Assertions.assertEquals(stream.id, actualStreamID)
-        consumer.accept(Jsons.readTree(GLOBAL_RECORD_DATA) as ObjectNode, changes = null)
+        consumer.accept(GLOBAL_RECORD_DATA, changes = null)
         Assertions.assertEquals(
-            expected(GLOBAL_RECORD_DATA),
+            expected(GLOBAL_RECORD_DATA_JSON),
             outputConsumer.records().map(Jsons::writeValueAsString)
         )
     }
@@ -83,9 +105,9 @@ class FeedBootstrapTest {
         Assertions.assertEquals(1, globalBootstrap.streamRecordConsumers().size)
         val (actualStreamID, consumer) = globalBootstrap.streamRecordConsumers().toList().first()
         Assertions.assertEquals(stream.id, actualStreamID)
-        consumer.accept(Jsons.readTree(GLOBAL_RECORD_DATA) as ObjectNode, changes = null)
+        consumer.accept(GLOBAL_RECORD_DATA, changes = null)
         Assertions.assertEquals(
-            expected(GLOBAL_RECORD_DATA),
+            expected(GLOBAL_RECORD_DATA_JSON),
             outputConsumer.records().map(Jsons::writeValueAsString)
         )
     }
@@ -105,7 +127,7 @@ class FeedBootstrapTest {
         Assertions.assertNull(globalBootstrap.currentState)
         Assertions.assertNull(globalBootstrap.currentState(stream))
         // Set new global state and checkpoint
-        stateManager.scoped(global).set(Jsons.arrayNode(), 0L)
+        stateManager.scoped(global).set(Jsons.arrayNode(), 0L, null, null)
         stateManager.checkpoint().forEach { outputConsumer.accept(it) }
         // Check that everything is as it should be.
         Assertions.assertEquals(Jsons.arrayNode(), globalBootstrap.currentState)
@@ -124,7 +146,7 @@ class FeedBootstrapTest {
         Assertions.assertEquals(1, streamBootstrap.streamRecordConsumers().size)
         val (actualStreamID, consumer) = streamBootstrap.streamRecordConsumers().toList().first()
         Assertions.assertEquals(stream.id, actualStreamID)
-        consumer.accept(Jsons.readTree(STREAM_RECORD_INPUT_DATA) as ObjectNode, changes = null)
+        consumer.accept(STREAM_RECORD_INPUT_DATA, changes = null)
         Assertions.assertEquals(
             expected(STREAM_RECORD_OUTPUT_DATA),
             outputConsumer.records().map(Jsons::writeValueAsString)
@@ -144,7 +166,7 @@ class FeedBootstrapTest {
         Assertions.assertEquals(1, streamBootstrap.streamRecordConsumers().size)
         val (actualStreamID, consumer) = streamBootstrap.streamRecordConsumers().toList().first()
         Assertions.assertEquals(stream.id, actualStreamID)
-        consumer.accept(Jsons.readTree(STREAM_RECORD_INPUT_DATA) as ObjectNode, changes = null)
+        consumer.accept(STREAM_RECORD_INPUT_DATA, changes = null)
         Assertions.assertEquals(
             expected(STREAM_RECORD_OUTPUT_DATA),
             outputConsumer.records().map(Jsons::writeValueAsString)
@@ -155,13 +177,15 @@ class FeedBootstrapTest {
     fun testChanges() {
         val stateManager = StateManager(initialStreamStates = mapOf(stream to null))
         val streamBootstrap = stream.bootstrap(stateManager) as StreamFeedBootstrap
-        val consumer: StreamRecordConsumer = streamBootstrap.streamRecordConsumer()
+        val consumer: StreamRecordConsumer =
+            streamBootstrap.streamRecordConsumers().toList().first().second
         val changes =
             mapOf(
                 k to FieldValueChange.RECORD_SIZE_LIMITATION_TRUNCATION,
                 v to FieldValueChange.RETRIEVAL_FAILURE_TOTAL,
             )
-        consumer.accept(Jsons.readTree("""{"k":1}""") as ObjectNode, changes)
+        val msg: NativeRecordPayload = mutableMapOf("k" to FieldValueEncoder(1, IntCodec))
+        consumer.accept(msg, changes)
         Assertions.assertEquals(
             listOf(
                 Jsons.writeValueAsString(
@@ -209,7 +233,12 @@ class FeedBootstrapTest {
         val consumer = bootstrap.streamRecordConsumers().toList().first().second
 
         // Test that a record gets CDC metadata decoration even without a global feed
-        consumer.accept(Jsons.readTree("""{"k":3,"v":"trigger"}""") as ObjectNode, changes = null)
+        val msg: NativeRecordPayload =
+            mutableMapOf(
+                "k" to FieldValueEncoder(3, IntCodec),
+                "v" to FieldValueEncoder("trigger", TextCodec)
+            )
+        consumer.accept(msg, changes = null)
 
         val recordOutput = outputConsumer.records().map(Jsons::writeValueAsString).first()
         val recordJson = Jsons.readTree(recordOutput)
@@ -231,9 +260,25 @@ class FeedBootstrapTest {
     }
 
     companion object {
-        const val GLOBAL_RECORD_DATA =
+        const val GLOBAL_RECORD_DATA_JSON =
             """{"k":1,"v":"foo","_ab_cdc_lsn":123,"_ab_cdc_updated_at":"2024-03-01T01:02:03.456789","_ab_cdc_deleted_at":null}"""
-        const val STREAM_RECORD_INPUT_DATA = """{"k":2,"v":"bar"}"""
+        val GLOBAL_RECORD_DATA: NativeRecordPayload =
+            mutableMapOf(
+                "k" to FieldValueEncoder(1, IntCodec),
+                "v" to FieldValueEncoder("foo", TextCodec),
+                "_ab_cdc_lsn" to FieldValueEncoder(123, IntCodec),
+                "_ab_cdc_updated_at" to
+                    FieldValueEncoder(
+                        LocalDateTime.parse("2024-03-01T01:02:03.456789"),
+                        LocalDateTimeCodec
+                    ),
+                "_ab_cdc_deleted_at" to FieldValueEncoder(null, NullCodec)
+            )
+        val STREAM_RECORD_INPUT_DATA: NativeRecordPayload =
+            mutableMapOf(
+                "k" to FieldValueEncoder(2, IntCodec),
+                "v" to FieldValueEncoder("bar", TextCodec)
+            )
         const val STREAM_RECORD_OUTPUT_DATA =
             """{"k":2,"v":"bar","_ab_cdc_lsn":{},"_ab_cdc_updated_at":"2069-04-20T00:00:00.000000Z","_ab_cdc_deleted_at":null}"""
         const val RESET_STATE =

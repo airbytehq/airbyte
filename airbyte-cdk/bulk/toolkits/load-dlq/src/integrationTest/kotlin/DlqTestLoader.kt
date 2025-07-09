@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.integrationTest
 
 import DlqStateWithRecordSample
-import io.airbyte.cdk.command.ConfigurationSpecification
+import DlqStateWithSampleAndEmptyList
 import io.airbyte.cdk.load.MockObjectStorageClient
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.check.dlq.DlqChecker
@@ -13,10 +13,9 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageSpec
+import io.airbyte.cdk.load.command.dlq.ConfigurationSpecificationWithDlq
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
-import io.airbyte.cdk.load.command.dlq.ObjectStorageSpec
 import io.airbyte.cdk.load.command.dlq.toObjectStorageConfig
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -36,10 +35,9 @@ import jakarta.inject.Singleton
 
 const val DLQ_INTEGRATION_TEST_ENV = "dlq-integration-test"
 const val DLQ_SAMPLE_TEST = "dlq-sample-test"
+const val DLQ_SAMPLE_WITH_EMPTY_LIST_TEST = "dlq-sample-with-empty-list-test"
 
-class DlqTestSpec : ConfigurationSpecification() {
-    val objectStorageConfig: ObjectStorageSpec = DisabledObjectStorageSpec()
-}
+class DlqTestSpec : ConfigurationSpecificationWithDlq()
 
 class DlqTestConfig(override val objectStorageConfig: ObjectStorageConfig) :
     DestinationConfiguration(), ObjectStorageConfigProvider
@@ -128,6 +126,11 @@ class DlqTestFactory {
     @Singleton
     @Secondary
     fun dlqStateFromRecordSampleFactory(): DlqStateFactory = DlqStateWithRecordSample.Factory()
+
+    @Singleton
+    @Requires(env = [DLQ_SAMPLE_WITH_EMPTY_LIST_TEST])
+    fun dlqStateFromRecordSampleWithEmptyListFactory(): DlqStateFactory =
+        DlqStateWithSampleAndEmptyList.Factory()
 
     @Singleton
     @Requires(env = [DLQ_SAMPLE_TEST])
