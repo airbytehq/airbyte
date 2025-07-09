@@ -107,7 +107,7 @@ jobs:
         run: |
           # Default to ubuntu-24.04 for all connectors
           echo "jvm-runner-type=ubuntu-24.04" >> $GITHUB_OUTPUT
-          if [[ "${{ github.repository }}" == "airbytehq/airbyte" ]]; then
+          if [[ "${{ github.repository }}" == "airbytehq/airbyte" || "${{ github.repository }}" == "airbytehq/airbyte-enterprise" ]]; then
             # Within our own repo, we can use the custom (larger) runner
             echo "jvm-runner-type=linux-24.04-large" | tee -a "$GITHUB_OUTPUT"
           fi
