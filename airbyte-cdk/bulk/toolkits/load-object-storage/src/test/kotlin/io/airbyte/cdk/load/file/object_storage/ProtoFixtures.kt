@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.file.object_storage
 
 import com.google.protobuf.kotlin.toByteString
@@ -38,10 +42,10 @@ abstract class ProtoFixtures {
     val syncId = 42L
     val generationId = 314L
 
-     lateinit var stream: DestinationStream
-     var protoSource: DestinationRecordProtobufSource? = null
-     lateinit var record: DestinationRecordRaw
-     lateinit var fieldAccessors: Array<AirbyteValueProxy.FieldAccessor>
+    lateinit var stream: DestinationStream
+    var protoSource: DestinationRecordProtobufSource? = null
+    lateinit var record: DestinationRecordRaw
+    lateinit var fieldAccessors: Array<AirbyteValueProxy.FieldAccessor>
 
     @BeforeEach
     fun setUp() {
@@ -147,26 +151,28 @@ abstract class ProtoFixtures {
 
         protoSource = DestinationRecordProtobufSource(airbyteMessageProto)
 
-        val dummyType = ObjectType(
-            linkedMapOf(
-                "bool_col" to FieldType(BooleanType, false),
-                "int_col" to FieldType(IntegerType, false),
-                "num_col" to FieldType(NumberType, false),
-                "string_col" to FieldType(StringType, false),
-                "date_col" to FieldType(DateType, false),
-                "time_tz_col" to FieldType(TimeTypeWithTimezone, false),
-                "time_no_tz_col" to FieldType(TimeTypeWithoutTimezone, false),
-                "ts_tz_col" to FieldType(TimestampTypeWithTimezone, false),
-                "ts_no_tz_col" to FieldType(TimestampTypeWithoutTimezone, false),
-                "array_col" to FieldType(ArrayType(FieldType(StringType, false)), false),
-                "obj_col" to FieldType(
-                    ObjectType(linkedMapOf("k" to FieldType(StringType, false))),
-                    false,
+        val dummyType =
+            ObjectType(
+                linkedMapOf(
+                    "bool_col" to FieldType(BooleanType, false),
+                    "int_col" to FieldType(IntegerType, false),
+                    "num_col" to FieldType(NumberType, false),
+                    "string_col" to FieldType(StringType, false),
+                    "date_col" to FieldType(DateType, false),
+                    "time_tz_col" to FieldType(TimeTypeWithTimezone, false),
+                    "time_no_tz_col" to FieldType(TimeTypeWithoutTimezone, false),
+                    "ts_tz_col" to FieldType(TimestampTypeWithTimezone, false),
+                    "ts_no_tz_col" to FieldType(TimestampTypeWithoutTimezone, false),
+                    "array_col" to FieldType(ArrayType(FieldType(StringType, false)), false),
+                    "obj_col" to
+                        FieldType(
+                            ObjectType(linkedMapOf("k" to FieldType(StringType, false))),
+                            false,
+                        ),
+                    "union_col" to FieldType(UnionType(setOf(StringType), false), false),
+                    "unknown_col" to FieldType(UnknownType(Jsons.emptyObject()), false),
                 ),
-                "union_col" to FieldType(UnionType(setOf(StringType), false), false),
-                "unknown_col" to FieldType(UnknownType(Jsons.emptyObject()), false),
-            ),
-        )
+            )
 
         stream = mockk {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
@@ -183,8 +189,7 @@ abstract class ProtoFixtures {
             }
     }
 
-    @AfterEach
-    fun tearDown() = unmockkAll()
+    @AfterEach fun tearDown() = unmockkAll()
 
     private fun field(name: String, type: AirbyteType, idx: Int): AirbyteValueProxy.FieldAccessor =
         mockk {

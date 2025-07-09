@@ -21,12 +21,13 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
     @Test
     fun `formatter writes ND-JSON with trailing newline`() {
         val out = ByteArrayOutputStream()
-        val formatter = ProtoToCsvFormatter(
-            stream,
-            out,
-            rootLevelFlattening = true,
-            extractedAtAsTimestampWithTimezone = false,
-        )
+        val formatter =
+            ProtoToCsvFormatter(
+                stream,
+                out,
+                rootLevelFlattening = true,
+                extractedAtAsTimestampWithTimezone = false,
+            )
 
         formatter.accept(record)
         formatter.flush()
@@ -48,12 +49,13 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
     @Test
     fun `formatter writes ND-JSON with trailing newline non-flatten`() {
         val out = ByteArrayOutputStream()
-        val formatter = ProtoToCsvFormatter(
-            stream,
-            out,
-            rootLevelFlattening = false,
-            extractedAtAsTimestampWithTimezone = false,
-        )
+        val formatter =
+            ProtoToCsvFormatter(
+                stream,
+                out,
+                rootLevelFlattening = false,
+                extractedAtAsTimestampWithTimezone = false,
+            )
 
         formatter.accept(record)
         formatter.flush()
@@ -81,6 +83,10 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
         val formatter = ProtoToCsvFormatter(stream, ByteArrayOutputStream(), false, false)
 
         val ex = assertThrows(RuntimeException::class.java) { formatter.accept(nonProtoRecord) }
-        assertTrue(ex.message!!.contains("ProtoToCsvFormatter only supports DestinationRecordProtobufSource"))
+        assertTrue(
+            ex.message!!.contains(
+                "ProtoToCsvFormatter only supports DestinationRecordProtobufSource"
+            )
+        )
     }
 }

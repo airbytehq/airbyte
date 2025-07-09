@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.file.object_storage
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder
@@ -28,7 +32,6 @@ class ProtoToCsvWriter(
             emptyMap()
         }
 
-
     private val rowBuf: Array<Any?> = arrayOfNulls(header.size)
 
     fun toCsvRow(
@@ -53,8 +56,11 @@ class ProtoToCsvWriter(
             var i = 0
             while (i < columns.size) {
                 val column = columns[i]
-                val index = rowIndex[column.name]
-                    ?: throw IllegalArgumentException("Column '${column.name}' not found in row index")
+                val index =
+                    rowIndex[column.name]
+                        ?: throw IllegalArgumentException(
+                            "Column '${column.name}' not found in row index"
+                        )
                 rowBuf[index] = fetchValue(proxy, column)
                 i++
             }
@@ -136,5 +142,4 @@ class ProtoToCsvWriter(
         }
 
     private fun escape(s: String): String = String(jsonEscaper.quoteAsString(s))
-
 }
