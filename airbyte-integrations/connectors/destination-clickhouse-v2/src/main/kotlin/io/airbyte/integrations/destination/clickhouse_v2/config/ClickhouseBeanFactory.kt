@@ -19,7 +19,8 @@ import jakarta.inject.Singleton
 class ClickhouseBeanFactory {
     @Singleton
     fun clickhouseClient(config: ClickhouseConfiguration): Client {
-        val builder = Client.Builder()
+        val builder =
+            Client.Builder()
                 .addEndpoint(config.endpoint)
                 .setUsername(config.username)
                 .setPassword(config.password)
