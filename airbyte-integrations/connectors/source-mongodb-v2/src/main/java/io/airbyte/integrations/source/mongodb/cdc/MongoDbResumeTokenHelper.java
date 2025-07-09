@@ -11,11 +11,8 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
@@ -31,21 +28,42 @@ public class MongoDbResumeTokenHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
 
   /**
-   * Retrieves the most recent resume token from MongoDB server.
+   * Retrieves the most recent resume token for the specified databases and collections from the
+   * MongoDB server.
+   *
+   * This method constructs a change stream pipeline that matches events for the provided list of
+   * databases and their corresponding collections. It then opens a change stream and retrieves the
+   * latest available resume token, which can be used to resume reading from the change stream at a
+   * later time.
    *
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
-   * @return The most recent resume token value.
+   * @param databaseNames A list of database names to monitor.
+   * @param streamsByDatabase A list of lists, where each inner list contains
+   *        {@link ConfiguredAirbyteStream} objects representing the collections to monitor for each
+   *        database.
+   * @return The most recent resume token value as a {@link BsonDocument}, or null if no token is
+   *         available.
    */
-  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient,
-                                                      final String databaseName,
-                                                      final ConfiguredAirbyteCatalog catalog) {
-    final List<String> collectionsList = catalog.getStreams().stream()
-        .map(s -> s.getStream().getName())
-        .toList();
-    LOGGER.info("Resume token for db {} with collection filter {}", databaseName, Arrays.toString(collectionsList.toArray()));
-    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
-        Filters.in("ns.coll", collectionsList)));
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
+  public static BsonDocument getMostRecentResumeTokenForDatabases(final MongoClient mongoClient,
+                                                                  final List<String> databaseNames,
+                                                                  final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
+
+    // databaseNames and streamsByDatabase must be the same length
+    List<Bson> orFilters = new ArrayList<>();
+    for (int i = 0; i < databaseNames.size(); i++) {
+      String dbName = databaseNames.get(i);
+      List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
+      List<String> collectionNames = streams.stream()
+          .map(s -> s.getStream().getName())
+          .toList();
+      // Match documents where ns.db == dbName and ns.coll in collectionNames
+      orFilters.add(Filters.and(
+          Filters.eq("ns.db", dbName),
+          Filters.in("ns.coll", collectionNames)));
+    }
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
+    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
     try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
       /*
        * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,

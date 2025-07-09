@@ -1,3 +1,7 @@
+---
+  dockerRepository: airbyte/source-sharepoint-enterprise
+---
+
 # SharePoint Enterprise
 
 <HideInUI>
