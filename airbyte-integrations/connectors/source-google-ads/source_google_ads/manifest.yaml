@@ -40,7 +40,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'][0] }}/googleAds:searchStream"
+    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"

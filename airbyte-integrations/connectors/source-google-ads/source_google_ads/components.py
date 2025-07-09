@@ -262,7 +262,7 @@ class GoogleAdsHttpRequester(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
-        manager = stream_slice.extra_fields.get("manager", [False])[0]
+        manager = stream_slice.extra_fields.get("manager", False)
         fields = [
             field
             for field in schema.keys()
@@ -282,5 +282,5 @@ class GoogleAdsHttpRequester(HttpRequester):
     ) -> Mapping[str, Any]:
         return {
             "developer-token": self.config["credentials"]["developer_token"],
-            "login-customer-id": stream_slice["parent_slice"][0]["customer_id"],
+            "login-customer-id": stream_slice["parent_slice"]["customer_id"],
         }
