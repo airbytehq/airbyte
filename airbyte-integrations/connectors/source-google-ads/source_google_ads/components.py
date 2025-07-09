@@ -5,11 +5,14 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
@@ -32,6 +35,39 @@ class AccessibleAccountsExtractor(RecordExtractor):
         if response_data:
             for resource_name in response_data:
                 yield {"accessible_customer_id": resource_name.split("/")[-1]}
+
+
+@dataclass
+class CustomerClientFilter(RecordFilter):
+    """
+    Filter duplicated records based on the "clientCustomer" field.
+    This can happen when customer client account may be accessible from multiple customer client accounts.
+    """
+
+    UNIQUE_KEY = "clientCustomer"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._seen_keys = set()
+
+    def filter_records(
+        self, records: List[Mapping[str, Any]], stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in records:
+            # Filter out records based on customer_ids if provided in the config
+            if self.config.get("customer_ids") and (record["id"] not in self.config["customer_ids"]):
+                continue
+
+            # Filter out records based on customer status if provided in the config
+            if record["status"] not in (
+                self.config.get("customer_status_filter") or ["UNKNOWN", "ENABLED", "CANCELED", "SUSPENDED", "CLOSED"]
+            ):
+                continue
+
+            key = record[self.UNIQUE_KEY]
+            if key not in self._seen_keys:
+                self._seen_keys.add(key)
+                yield record
 
 
 @dataclass
@@ -125,38 +161,88 @@ class DoubleQuotedDictTypeTransformer(TypeTransformer):
 
 class GoogleAdsPerPartitionStateMigration(StateMigration):
     """
-    Transforms the input state for per-partitioned streams from the legacy format to the low-code global cursor format.
+    Migrates legacy per-partition Google Ads state to low code format
+    that includes parent_slice for each customer_id partition.
+
 
     Example input state:
     {
-      "1234567890": {"segments.date": "2120-10-10"}
+      "1234567890": {"segments.date": "2120-10-10"},
+      "0987654321": {"segments.date": "2120-10-11"}
     }
     Example output state:
     {
-      "state": {"use_global_cursor": True, "segments.date": "2120-10-10"}
+      "states": [
+        {
+            "partition": { "customer_id": "1234567890", "parent_slice": {"customer_id": "1234567890_parent", "parent_slice": {}}},
+            "cursor": {"segments.date": "2120-10-10"}
+        },
+        {
+            "partition": { "customer_id": "0987654321", "parent_slice": {"customer_id": "0987654321_parent", "parent_slice": {}}},
+            "cursor": {"segments.date": "2120-10-11"}
+        }
+      ],
+      "state": {"segments.date": "2120-10-10"}
     }
     """
 
     config: Config
+    customer_client_stream: DeclarativeStream
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, customer_client_stream: DeclarativeStream):
         self._config = config
+        self._parent_stream = customer_client_stream
         self._cursor_field = "segments.date"
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state and "state" not in stream_state
 
+    def _read_parent_stream(self) -> Iterable[Tuple[Mapping[str, Any], StreamSlice]]:
+        # iterate all slices of the customer_client stream
+        slices = self._parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+
+        for slice in slices:
+            for record in self._parent_stream.read_records(stream_slice=slice, sync_mode=SyncMode.full_refresh):
+                yield record, slice
+
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):
             return stream_state
+
         stream_state_values = [
             stream_state for stream_state in stream_state.values() if isinstance(stream_state, dict) and self._cursor_field in stream_state
         ]
         if not stream_state_values:
             logger.warning("No valid cursor field found in the stream state. Returning empty state.")
             return {}
+
         min_state = min(stream_state_values, key=lambda state: state[self._cursor_field])
-        return {"use_global_cursor": True, "state": min_state}
+
+        customer_ids_in_state = list(stream_state.keys())
+
+        partitions_state = []
+
+        for record, slice in self._read_parent_stream():
+            customer_id = record.get("id")
+            if customer_id in customer_ids_in_state:
+                legacy_partition_state = stream_state[customer_id]
+
+                partitions_state.append(
+                    {
+                        "partition": {
+                            "customer_id": record["clientCustomer"],
+                            "parent_slice": {"customer_id": slice.get("customer_id"), "parent_slice": {}},
+                        },
+                        "cursor": legacy_partition_state,
+                    }
+                )
+
+        if not partitions_state:
+            logger.warning("No matching customer clients found during state migration.")
+            return {}
+
+        state = {"states": partitions_state, "state": min_state}
+        return state
 
 
 @dataclass
@@ -176,7 +262,7 @@ class GoogleAdsHttpRequester(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
-        manager = stream_slice.extra_fields.get("manager", [False])[0]
+        manager = stream_slice.extra_fields.get("manager", False)
         fields = [
             field
             for field in schema.keys()
@@ -196,5 +282,5 @@ class GoogleAdsHttpRequester(HttpRequester):
     ) -> Mapping[str, Any]:
         return {
             "developer-token": self.config["credentials"]["developer_token"],
-            "login-customer-id": stream_slice["parent_slice"][0]["customer_id"],
+            "login-customer-id": stream_slice["parent_slice"]["customer_id"],
         }
