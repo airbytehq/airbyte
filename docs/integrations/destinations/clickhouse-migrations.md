@@ -1,4 +1,4 @@
-# ClickHouse Migration Guide
+# Clickhouse Migration Guide
 
 ## Upgrading to 2.0.0
 
