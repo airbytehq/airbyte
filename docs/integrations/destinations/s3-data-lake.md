@@ -312,6 +312,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.33  | 2025-07-09 | [62888](https://github.com/airbytehq/airbyte/pull/62888)   | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario                                |
 | 0.3.32  | 2025-07-08 | [62852](https://github.com/airbytehq/airbyte/pull/62852)   | Fix metadata (revert accidental archiving)                                                                                      |
 | 0.3.31  | 2025-07-07 | [62835](https://github.com/airbytehq/airbyte/pull/62835)   | Pin to latest CDK version 0.522                                                                                                 |
 | 0.3.30  | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105)   | ReplaceBranch to staging from main instead of fast forwarding                                                                   |
