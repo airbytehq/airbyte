@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 abstract class FullRefreshTest(
-    private val testDbExecutor: TestDbExecutor,
-    private val testAssetResourceNamer: TestAssetResourceNamer
+    testDbExecutor: TestDbExecutor,
+    testAssetResourceNamer: TestAssetResourceNamer
 ) : BaseConnectorTest(testDbExecutor, testAssetResourceNamer) {
 
     override fun setupTestData() {
