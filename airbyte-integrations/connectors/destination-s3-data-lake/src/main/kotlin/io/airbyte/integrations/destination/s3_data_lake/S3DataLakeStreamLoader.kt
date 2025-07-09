@@ -117,7 +117,8 @@ class S3DataLakeStreamLoader(
                 icebergTableCleaner.deleteGenerationId(
                     table,
                     stagingBranchName,
-                    generationIdsToDelete
+                    generationIdsToDelete,
+                    stream
                 )
                 //  Doing it again to push the deletes from the staging to main branch
                 logger.info {
