@@ -6,23 +6,7 @@ package io.airbyte.cdk.load.file.object_storage
 import com.fasterxml.jackson.core.JsonEncoding
 import com.fasterxml.jackson.core.JsonGenerator
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.data.collectUnknownPaths
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -35,35 +19,6 @@ class ProtoToJsonFormatter(
     private val outputStream: OutputStream,
     rootLevelFlattening: Boolean
 ) : ObjectStorageFormattingWriter {
-
-    private fun AirbyteType.collectUnknownPaths(currentPath: String = ""): Set<String> {
-        fun join(prefix: String, segment: String) =
-            if (prefix == "") segment else "$prefix.$segment"
-
-        return when (this) {
-            is UnknownType -> setOf(currentPath)
-            StringType,
-            BooleanType,
-            IntegerType,
-            NumberType,
-            DateType,
-            TimestampTypeWithTimezone,
-            TimestampTypeWithoutTimezone,
-            TimeTypeWithTimezone,
-            TimeTypeWithoutTimezone,
-            ObjectTypeWithoutSchema,
-            ObjectTypeWithEmptySchema,
-            ArrayTypeWithoutSchema -> emptySet()
-            is ObjectType ->
-                properties
-                    .flatMap { (name, field) ->
-                        field.type.collectUnknownPaths(join(currentPath, name))
-                    }
-                    .toSet()
-            is ArrayType -> items.type.collectUnknownPaths(currentPath)
-            is UnionType -> options.flatMap { it.collectUnknownPaths(currentPath) }.toSet()
-        }
-    }
 
     private val fastWriter =
         ProtoToJsonWriter(stream.airbyteValueProxyFieldAccessors, rootLevelFlattening)
