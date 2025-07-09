@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class ProtoToCsvFormattingTest : ProtoFixtures() {
 
     @Test
-    fun `formatter writes ND-JSON with trailing newline`() {
+    fun `formatter writes csv with trailing newline`() {
         val out = ByteArrayOutputStream()
         val formatter =
             ProtoToCsvFormatter(
@@ -47,7 +47,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
     }
 
     @Test
-    fun `formatter writes ND-JSON with trailing newline non-flatten`() {
+    fun `formatter writes csv with trailing newline non-flatten`() {
         val out = ByteArrayOutputStream()
         val formatter =
             ProtoToCsvFormatter(

@@ -151,8 +151,7 @@ data class UnknownType(val schema: JsonNode) : AirbyteType()
 data class FieldType(val type: AirbyteType, val nullable: Boolean)
 
 fun AirbyteType.collectUnknownPaths(currentPath: String = ""): Set<String> {
-    fun join(prefix: String, segment: String) =
-        if (prefix == "") segment else "$prefix.$segment"
+    fun join(prefix: String, segment: String) = if (prefix == "") segment else "$prefix.$segment"
 
     return when (this) {
         is UnknownType -> setOf(currentPath)
