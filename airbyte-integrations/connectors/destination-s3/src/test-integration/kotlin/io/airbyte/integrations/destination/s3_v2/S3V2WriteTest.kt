@@ -39,7 +39,6 @@ abstract class S3V2WriteTest(
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
     schematizedArrayBehavior: SchematizedNestedValueBehavior,
     unionBehavior: UnionBehavior,
-    preserveUndeclaredFields: Boolean,
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
@@ -63,7 +62,6 @@ abstract class S3V2WriteTest(
         schematizedObjectBehavior = schematizedObjectBehavior,
         schematizedArrayBehavior = schematizedArrayBehavior,
         unionBehavior = unionBehavior,
-        preserveUndeclaredFields = preserveUndeclaredFields,
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
@@ -320,10 +318,9 @@ class S3V2WriteTestJsonUncompressed :
         S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
     ) {
     @Test
@@ -347,10 +344,9 @@ class S3V2WriteTestJsonRootLevelFlattening :
         S3V2TestUtils.JSON_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
     )
 
@@ -359,10 +355,9 @@ class S3V2WriteTestJsonGzip :
         S3V2TestUtils.JSON_GZIP_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
     )
 
@@ -371,10 +366,9 @@ class S3V2WriteTestCsvUncompressed :
         S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
     ) {
     @Test
@@ -396,7 +390,6 @@ class S3V2WriteTestCsvRootLevelFlattening :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset =
             true, // Technically true of unflattened as well, but no top-level fields are nullable
@@ -407,10 +400,9 @@ class S3V2WriteTestCsvGzip :
         S3V2TestUtils.CSV_GZIP_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
     )
 
@@ -422,7 +414,6 @@ class S3V2WriteTestAvroUncompressed :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
-        preserveUndeclaredFields = false,
         // this is technically false. Avro + parquet do have limits on numbers.
         // But float64 is weird, in that the actual _limits_ are unreasonably large -
         // but at that size, you have very little precision.
@@ -438,10 +429,9 @@ class S3V2WriteTestAvroBzip2 :
         S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
         AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
-        preserveUndeclaredFields = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
@@ -453,10 +443,9 @@ class S3V2WriteTestParquetUncompressed :
         S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
         AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
-        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
-        preserveUndeclaredFields = false,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
@@ -468,10 +457,9 @@ class S3V2WriteTestParquetSnappy :
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
         AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
-        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
-        preserveUndeclaredFields = false,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
@@ -487,7 +475,6 @@ class S3V2WriteTestEndpointURL :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset = true,
     )
@@ -501,7 +488,6 @@ class S3V2AmbiguousFilepath :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
     )
 
@@ -510,10 +496,9 @@ class S3V2CsvAssumeRole :
         S3V2TestUtils.CSV_ASSUME_ROLE_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
     )
 
@@ -522,10 +507,9 @@ class S3V2WriteTestJsonUncompressedSockets :
         S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
         dataChannelMedium = DataChannelMedium.SOCKET
     ) {
@@ -549,7 +533,6 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = false, // No such thing as "undeclared" fields in proto
         allTypesBehavior = Untyped,
         // Because proto uses a fixed-sized array of typed unions, nulls are always present
         nullEqualsUnset = true,

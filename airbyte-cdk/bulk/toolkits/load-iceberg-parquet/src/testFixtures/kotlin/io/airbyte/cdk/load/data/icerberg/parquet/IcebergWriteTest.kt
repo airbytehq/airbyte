@@ -53,7 +53,6 @@ abstract class IcebergWriteTest(
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
