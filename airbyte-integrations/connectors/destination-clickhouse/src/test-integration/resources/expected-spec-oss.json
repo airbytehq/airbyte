@@ -1,12 +1,12 @@
 {
-  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse-v2",
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse",
   "connectionSpecification" : {
     "$schema" : "http://json-schema.org/draft-07/schema#",
     "title" : "Clickhouse Specification Oss",
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
-      "hostname" : {
+      "host" : {
         "type" : "string",
         "description" : "Hostname of the database.",
         "title" : "Hostname",
@@ -56,7 +56,7 @@
         "default" : false
       }
     },
-    "required" : [ "hostname", "port", "protocol", "database", "username", "password", "enable_json" ],
+    "required" : [ "host", "port", "protocol", "database", "username", "password", "enable_json" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
