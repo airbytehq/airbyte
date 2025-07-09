@@ -6,7 +6,10 @@ import os
 from typing import Any, Mapping
 
 import pytest
+
 from unit_tests.conftest import get_source
+
+
 # from source_declarative_manifest.components import MigrateDataCenter
 
 
@@ -14,6 +17,7 @@ from unit_tests.conftest import get_source
 def load_config(config_path: str) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
         return json.load(config)
+
 
 # TODO Enable this unit test once the config migration logic is added to the PR
 # @pytest.mark.parametrize(
