@@ -7,11 +7,11 @@ data:
       - "*.api.mailchimp.com"
       - "login.mailchimp.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.0@sha256:4ee59c9d62c18191ab9b27dabc7de1ed89c519d54680e764ac055695f6cd2d1f
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 2.0.37
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   githubIssueLabel: source-mailchimp
@@ -48,8 +48,8 @@ data:
       - reports
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

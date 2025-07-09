@@ -4,7 +4,7 @@ import json
 from unittest import TestCase
 
 import freezegun
-from source_mailchimp import SourceMailchimp
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -52,7 +52,7 @@ class AutomationsTest(TestCase):
             HttpResponse(json.dumps(find_template("automations", __file__)), 200),
         )
 
-        source = SourceMailchimp()
+        source = get_source(_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1
@@ -88,7 +88,7 @@ class AutomationsTest(TestCase):
             ),
             HttpResponse(json.dumps(find_template("automations", __file__)), 200),
         )
-        source = SourceMailchimp()
+        source = get_source(_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1003
@@ -111,7 +111,7 @@ class AutomationsTest(TestCase):
             HttpResponse(json.dumps(find_template("automations", __file__)), 200),
         )
 
-        source = SourceMailchimp()
+        source = get_source(_CONFIG)
         actual_messages = read(
             source,
             config=_CONFIG,
