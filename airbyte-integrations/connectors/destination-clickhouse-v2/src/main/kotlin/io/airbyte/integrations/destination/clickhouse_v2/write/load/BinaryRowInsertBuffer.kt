@@ -57,6 +57,7 @@ class BinaryRowInsertBuffer(
 
     suspend fun flush() {
         log.info { "Beginning insert into ${tableName.name}" }
+        log.info { "Force a re-compile and run tests" }
 
         val insertResult =
             clickhouseClient
