@@ -39,6 +39,7 @@ import java.nio.file.Files
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 class ClickhouseDirectLoadWriterWithJson :
     ClickhouseDirectLoadWriter(
@@ -90,6 +91,8 @@ abstract class ClickhouseDirectLoadWriter(
         supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = true,
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
+        commitDataIncrementallyToEmptyDestinationOnDedupe = true,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
@@ -118,6 +121,12 @@ abstract class ClickhouseDirectLoadWriter(
     @Disabled("Clickhouse does not support file transfer, so this test is skipped.")
     override fun testBasicWriteFile() {
         // Clickhouse does not support file transfer, so this test is skipped.
+    }
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/13574")
+    override fun testBizarrePkSchemaEvolution() {
+        super.testBizarrePkSchemaEvolution()
     }
 }
 
