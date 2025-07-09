@@ -135,7 +135,7 @@ class GroupMembersAPI(StreamAPI):
             group_email = group.get("email")
             group_id = group.get("id")
             params = {"groupKey": group_id}
-            
+
             # Get members for this group and enrich with group context
             for member in self.read(partial(self._api_get, resource="members"), params=params):
                 # Enrich member with group context
