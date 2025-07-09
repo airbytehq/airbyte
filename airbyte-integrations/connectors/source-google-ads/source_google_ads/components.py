@@ -161,6 +161,27 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     """
     Migrates legacy per-partition Google Ads state to low code format
     that includes parent_slice for each customer_id partition.
+
+
+    Example input state:
+    {
+      "1234567890": {"segments.date": "2120-10-10"},
+      "0987654321": {"segments.date": "2120-10-11"}
+    }
+    Example output state:
+    {
+      "states": [
+        {
+            "partition": { "customer_id": "1234567890", "parent_slice": {"customer_id": "1234567890_parent", "parent_slice": {}}},
+            "cursor": {"segments.date": "2120-10-10"}
+        },
+        {
+            "partition": { "customer_id": "0987654321", "parent_slice": {"customer_id": "0987654321_parent", "parent_slice": {}}},
+            "cursor": {"segments.date": "2120-10-11"}
+        }
+      ],
+      "state": {"segments.date": "2120-10-10"}
+    }
     """
 
     config: Config
