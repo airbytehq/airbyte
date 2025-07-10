@@ -2046,6 +2046,10 @@ schemas:
         type:
           - string
           - "null"
+      custom_data:
+        type:
+          - object
+          - "null"
       subscription_id:
         type:
           - string
