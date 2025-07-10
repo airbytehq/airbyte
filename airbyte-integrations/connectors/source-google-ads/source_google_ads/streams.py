@@ -219,7 +219,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
         query = GoogleAds.convert_schema_into_query(
             fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
         )
-        print(f"\n\n {query} \n\n")
         return query
 
 

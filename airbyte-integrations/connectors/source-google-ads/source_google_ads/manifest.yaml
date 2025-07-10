@@ -309,7 +309,7 @@ definitions:
     $ref: "#/definitions/incremental_stream_base"
     name: ad_group_ad
     primary_key:
-      - ad_group_ad.id
+      - ad_group.id
       - ad_group_ad.ad.id
       - segments.date
     schema_loader:
@@ -344,7 +344,7 @@ definitions:
       schema:
         $ref: "#/schemas/ad_group_ad_legacy"
 
-  ad_group_label:
+  ad_group_label_stream:
     $ref: "#/definitions/full_refresh_stream_base"
     name: ad_group_label
     primary_key:
@@ -354,6 +354,16 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ad_group_label"
+
+  ad_group_criterion_label_stream:
+    $ref: "#/definitions/full_refresh_stream_base"
+    name: ad_group_criterion_label
+    primary_key:
+      - ad_group_criterion_label.resource_name
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ad_group_criterion_label"
 
   audience_stream:
     $ref: "#/definitions/full_refresh_stream_base"
@@ -463,7 +473,8 @@ streams:
   - "#/definitions/ad_group_ad_stream"
   - "#/definitions/ad_group_ad_label_stream"
   - "#/definitions/ad_group_ad_legacy_stream"
-  - "#/definitions/ad_group_label"
+  - "#/definitions/ad_group_label_stream"
+  - "#/definitions/ad_group_criterion_label_stream"
   - "#/definitions/audience_stream"
   - "#/definitions/campaign_stream"
   - "#/definitions/campaign_budget_stream"
@@ -3601,3 +3612,37 @@ schemas:
         type:
           - "null"
           - string
+  ad_group_criterion_label:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      ad_group.id:
+        description: The ID of the ad group to which the criterion label belongs.
+        type:
+          - "null"
+          - integer
+      label.id:
+        description: The ID of the label assigned to the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion_label.ad_group_criterion:
+        description: The ad group criterion to which the label is applied.
+        type:
+          - "null"
+          - string
+      ad_group_criterion_label.label:
+        description: The label assigned to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion_label.resource_name:
+        description: The resource name of the ad group criterion label.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.criterion_id:
+        description: The ID of the criterion associated with the ad group.
+        type:
+          - "null"
+          - integer
