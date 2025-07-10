@@ -1,5 +1,5 @@
 {
-  "host": "localhost",
+  "hostname": "localhost",
   "port": 8888,
   "protocol": "http",
   "username": "not_the_right_username",

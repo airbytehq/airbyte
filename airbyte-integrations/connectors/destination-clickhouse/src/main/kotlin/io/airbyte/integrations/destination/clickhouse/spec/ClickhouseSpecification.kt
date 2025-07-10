@@ -31,7 +31,7 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
 class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @get:JsonSchemaTitle("Hostname")
     @get:JsonPropertyDescription("Hostname of the database.")
-    @get:JsonProperty("host")
+    @get:JsonProperty("hostname")
     @get:JsonSchemaInject(json = """{"order": 0}""")
     override val hostname: String = ""
 
@@ -79,7 +79,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @get:JsonSchemaTitle("Hostname")
     @get:JsonPropertyDescription("Hostname of the database.")
-    @get:JsonProperty("host")
+    @get:JsonProperty("hostname")
     @get:JsonSchemaInject(json = """{"order": 0}""")
     override val hostname: String = ""
 
