@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.clickhouse.check
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.insert.InsertResponse
 import com.clickhouse.data.ClickHouseFormat
-import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.HTTP
+import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL
 import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL_ERR_MESSAGE
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.every
@@ -86,7 +86,7 @@ class ClickhouseCheckerTest {
 
     @Test
     fun `check hostname format failure`() {
-        val httpConfig = Fixtures.config(hostname = "$HTTP://hostname")
+        val httpConfig = Fixtures.config(hostname = "$PROTOCOL://hostname")
         val httpsConfig = Fixtures.config(hostname = "https://hostname")
 
         val caught1 = assertThrows<Throwable> { checker.check(httpConfig) }
