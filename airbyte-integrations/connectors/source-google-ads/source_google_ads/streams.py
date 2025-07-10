@@ -434,14 +434,6 @@ class UserInterest(GoogleAdsStream):
     primary_key = ["user_interest.user_interest_id"]
 
 
-class Audience(GoogleAdsStream):
-    """
-    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad_label
-    """
-
-    primary_key = ["customer.id", "audience.id"]
-
-
 class Label(GoogleAdsStream):
     """
     Label stream: https://developers.google.com/google-ads/api/fields/v18/label

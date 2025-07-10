@@ -259,8 +259,14 @@ class GoogleAdsHttpRequester(HttpRequester):
             # exclude metrics.* if this is a manager account
             if not (manager and field.startswith("metrics."))
         ]
+
+        if 'start_time' in stream_slice and 'end_time' in stream_slice:
+            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
+        else:
+            query = f"SELECT {', '.join(fields)} FROM {resource_name}"
+
         return {
-            "query": f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
+            "query": query
         }
 
     def get_request_headers(
