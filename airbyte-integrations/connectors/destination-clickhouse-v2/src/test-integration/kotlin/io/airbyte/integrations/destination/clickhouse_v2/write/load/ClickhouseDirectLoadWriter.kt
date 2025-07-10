@@ -200,7 +200,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
             .makeWithOverrides(
                 clickhouseSpecification,
                 mapOf(
-                    "host" to ClickhouseContainerHelper.getIpAddress()!!,
+                    "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
                     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
                     "protocol" to "http",
                     "username" to ClickhouseContainerHelper.getUsername()!!,
