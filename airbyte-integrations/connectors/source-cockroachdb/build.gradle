@@ -1,11 +1,11 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'airbyte-bulk-connector'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.20.4'
-    features = ['db-sources']
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+    cdk = 'local'
 }
 
 application {
