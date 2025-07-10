@@ -102,7 +102,7 @@ internal class S3DataLakeTableCleanerTest {
         val table = mockk<Table>()
         every { table.newScan().planFiles() } returns tasks
 
-        assertDoesNotThrow { cleaner.deleteIrrelevantGenerationId(table, "staging", stream) }
+        assertDoesNotThrow { cleaner.deleteOldGenerationData(table, "staging", stream) }
         verify(exactly = 0) { table.newDelete() }
     }
 
@@ -131,7 +131,7 @@ internal class S3DataLakeTableCleanerTest {
         every { delete.deleteFile(filePathToDelete) } returns delete
         every { delete.commit() } just Runs
 
-        assertDoesNotThrow { cleaner.deleteIrrelevantGenerationId(table, "staging", stream) }
+        assertDoesNotThrow { cleaner.deleteOldGenerationData(table, "staging", stream) }
 
         verify {
             table.newDelete().toBranch(eq("staging"))
@@ -165,7 +165,7 @@ internal class S3DataLakeTableCleanerTest {
         every { delete.deleteFile(filePathToDelete) } returns delete
         every { delete.commit() } just Runs
 
-        assertDoesNotThrow { cleaner.deleteIrrelevantGenerationId(table, "staging", stream) }
+        assertDoesNotThrow { cleaner.deleteOldGenerationData(table, "staging", stream) }
 
         verify {
             table.newDelete().toBranch(eq("staging"))

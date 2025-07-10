@@ -42,7 +42,7 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
         }
     }
 
-    fun deleteIrrelevantGenerationId(
+    fun deleteOldGenerationData(
         table: Table,
         stagingBranchName: String,
         stream: DestinationStream
