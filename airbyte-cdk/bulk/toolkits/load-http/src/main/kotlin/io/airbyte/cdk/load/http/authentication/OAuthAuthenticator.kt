@@ -25,7 +25,7 @@ class OAuthAuthenticator(
     private val clientSecret: String,
     private val refreshToken: String,
     private val httpClient: HttpClient =
-        AirbyteOkHttpClient(OkHttpClient.Builder().build(), RetryPolicy.ofDefaults())
+        AirbyteOkHttpClient(OkHttpClient.Builder().build())
 ) : Interceptor {
     object Constants {
         const val CLIENT_ID_FIELD_NAME: String = "client_id"
