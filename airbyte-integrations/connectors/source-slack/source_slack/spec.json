@@ -104,6 +104,26 @@
             "order": 1
           }
         ]
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 2,
+        "maximum": 10,
+        "default": 2,
+        "examples": [2, 3],
+        "description": "The number of worker threads to use for the sync.",
+        "order": 7
+      },
+      "channel_messages_window_size": {
+        "type": "integer",
+        "order": 8,
+        "default": 100,
+        "minimum": 1,
+        "maximum": 100,
+        "title": "Channel messages date window size (in days)",
+        "description": "The size (in days) of the date window that will be used while syncing data from the channel messages stream. A smaller window will allow for greater parallelization when syncing records, but can lead to rate limiting errors.",
+        "examples": [30, 10, 5]
       }
     }
   },
