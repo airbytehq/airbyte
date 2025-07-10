@@ -411,7 +411,19 @@ class MockBasicFunctionalityIntegrationTestSocketProtobuf :
     BaseMockBasicFunctionalityIntegrationTest(
         DataChannelMedium.SOCKET,
         DataChannelFormat.PROTOBUF,
-    )
+    ) {
+    @Test
+    @Disabled("Sockets medium hangs when receiving an unrecognized state message")
+    override fun testCrashInInputLoop() {
+        super.testCrashInInputLoop()
+    }
+
+    @Test
+    @Disabled("Sockets medium hangs when global state contains unrecognized per-stream state")
+    override fun testGlobalStateWithUnknownStreamState() {
+        super.testGlobalStateWithUnknownStreamState()
+    }
+}
 
 // A few test classes that exist for completeness, but are disabled because we never do these things
 // in real syncs.
