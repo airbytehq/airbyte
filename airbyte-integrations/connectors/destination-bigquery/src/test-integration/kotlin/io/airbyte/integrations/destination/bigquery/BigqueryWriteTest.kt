@@ -30,7 +30,6 @@ abstract class BigqueryWriteTest(
     dataDumper: DestinationDataDumper,
     expectedRecordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean,
-    preserveUndeclaredFields: Boolean,
     commitDataIncrementallyToEmptyDestinationOnAppend: Boolean,
     dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
@@ -50,7 +49,6 @@ abstract class BigqueryWriteTest(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         coercesLegacyUnions = coercesLegacyUnions,
-        preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyToEmptyDestinationOnAppend =
@@ -70,7 +68,6 @@ abstract class BigqueryRawTablesWriteTest(
         BigqueryRawTableDataDumper,
         UncoercedExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
-        preserveUndeclaredFields = true,
         commitDataIncrementallyToEmptyDestinationOnAppend = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
@@ -90,7 +87,6 @@ abstract class BigqueryDirectLoadWriteTest(
             .compose(RootLevelTimestampsToUtcMapper)
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
-        preserveUndeclaredFields = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
         dedupBehavior =
             DedupBehavior(
