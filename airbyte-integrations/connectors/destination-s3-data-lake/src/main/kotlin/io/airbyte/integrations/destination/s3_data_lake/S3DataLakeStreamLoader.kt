@@ -109,15 +109,10 @@ class S3DataLakeStreamLoader(
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
                 }
-                val generationIdsToDelete =
-                    (0 until stream.minimumGenerationId).map(
-                        icebergUtil::constructGenerationIdSuffix
-                    )
                 val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteGenerationId(
+                icebergTableCleaner.deleteIrrelevantGenerationId(
                     table,
                     stagingBranchName,
-                    generationIdsToDelete,
                     stream
                 )
                 //  Doing it again to push the deletes from the staging to main branch
