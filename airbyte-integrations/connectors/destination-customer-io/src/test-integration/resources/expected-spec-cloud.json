@@ -182,7 +182,7 @@
         "type" : "object"
       },
       "credentials" : {
-        "description" : "Enter the site_id and api_key to authenticate.",
+        "description" : "Enter the site ID and API key to authenticate.",
         "title" : "Credentials",
         "order" : 0,
         "type" : "object",
@@ -190,12 +190,16 @@
         "properties" : {
           "siteId" : {
             "type" : "string",
+            "description" : "Enter your Customer IO <a href=\"https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key\">Site ID</a>.",
+            "title" : "Site ID",
             "airbyte_secret" : true,
             "always_show" : true,
             "order" : 1
           },
           "apiKey" : {
             "type" : "string",
+            "description" : "Enter your Customer IO <a href=\"https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key\">API Key</a>.",
+            "title" : "API Key",
             "airbyte_secret" : true,
             "always_show" : true,
             "order" : 2
