@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse.check
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.insert.InsertResponse
 import com.clickhouse.data.ClickHouseFormat
+import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL_ERR_MESSAGE
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -48,16 +49,16 @@ class ClickhouseCheckerTest {
 
     @Test
     fun `check happy path - creates check table and inserts data`() {
-        checker.check(Fixtures.config)
+        checker.check(Fixtures.config())
 
         verify {
             client.execute(
-                "CREATE TABLE IF NOT EXISTS ${Fixtures.config.database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS ${Fixtures.config().database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()"
             )
         }
         verify {
             client.insert(
-                "${Fixtures.config.database}.${checker.tableName}",
+                "${Fixtures.config().database}.${checker.tableName}",
                 any<InputStream>(),
                 ClickHouseFormat.JSONEachRow
             )
@@ -82,11 +83,23 @@ class ClickhouseCheckerTest {
     }
 
     @Test
+    fun `check hostname format failure`() {
+        val httpConfig = Fixtures.config(hostname = "http://hostname")
+        val httpsConfig = Fixtures.config(hostname = "https://hostname")
+
+        val caught1 = assertThrows<Throwable> { checker.check(httpConfig) }
+        assertEquals(PROTOCOL_ERR_MESSAGE, caught1.message)
+
+        val caught2 = assertThrows<Throwable> { checker.check(httpsConfig) }
+        assertEquals(PROTOCOL_ERR_MESSAGE, caught2.message)
+    }
+
+    @Test
     fun `check table creation failure`() {
         val exception = Exception("blam")
         every { client.execute(any()) } throws exception
 
-        val caught = assertThrows<Exception> { checker.check(Fixtures.config) }
+        val caught = assertThrows<Exception> { checker.check(Fixtures.config()) }
         assertEquals(exception, caught)
     }
 
@@ -95,16 +108,16 @@ class ClickhouseCheckerTest {
         val exception = Exception("blam")
         every { client.insert(any(), any<InputStream>(), any()) } throws exception
 
-        val caught = assertThrows<Exception> { checker.check(Fixtures.config) }
+        val caught = assertThrows<Exception> { checker.check(Fixtures.config()) }
         assertEquals(exception, caught)
     }
 
     @Test
     fun `cleanup happy path - drops the check table`() {
-        checker.cleanup(Fixtures.config)
+        checker.cleanup(Fixtures.config())
 
         verify {
-            client.execute("DROP TABLE IF EXISTS ${Fixtures.config.database}.${checker.tableName}")
+            client.execute("DROP TABLE IF EXISTS ${Fixtures.config().database}.${checker.tableName}")
         }
     }
 
@@ -113,22 +126,30 @@ class ClickhouseCheckerTest {
         val exception = Exception("blam")
         every { client.execute(any()) } throws exception
 
-        val caught = assertThrows<Exception> { checker.cleanup(Fixtures.config) }
+        val caught = assertThrows<Exception> { checker.cleanup(Fixtures.config()) }
         assertEquals(exception, caught)
     }
 
     object Fixtures {
         const val MILLIS = 1234L
 
-        val config =
+        fun config(
+            hostname: String = "hostname",
+            port: String = "port",
+            protocol: String = "protocol",
+            database: String = "database",
+            username: String = "username",
+            password: String = "password",
+            enableJson: Boolean = false,
+        ): ClickhouseConfiguration =
             ClickhouseConfiguration(
-                hostname = "hostname",
-                port = "port",
-                protocol = "protocol",
-                database = "database",
-                username = "username",
-                password = "password",
-                enableJson = false,
+                hostname,
+                port,
+                protocol,
+                database,
+                username,
+                password,
+                enableJson,
             )
     }
 }
