@@ -396,6 +396,7 @@ module.exports = {
             "enterprise-setup/upgrading-from-community",
           ],
         },
+        "cloud-enterprise/readme",
         {
           type: "category",
           label: "Upgrading Airbyte",
