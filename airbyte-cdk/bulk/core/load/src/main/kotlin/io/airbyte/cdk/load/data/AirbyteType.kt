@@ -149,3 +149,31 @@ data class UnionType(
 data class UnknownType(val schema: JsonNode) : AirbyteType()
 
 data class FieldType(val type: AirbyteType, val nullable: Boolean)
+
+fun AirbyteType.collectUnknownPaths(currentPath: String = ""): Set<String> {
+    fun join(prefix: String, segment: String) = if (prefix == "") segment else "$prefix.$segment"
+
+    return when (this) {
+        is UnknownType -> setOf(currentPath)
+        StringType,
+        BooleanType,
+        IntegerType,
+        NumberType,
+        DateType,
+        TimestampTypeWithTimezone,
+        TimestampTypeWithoutTimezone,
+        TimeTypeWithTimezone,
+        TimeTypeWithoutTimezone,
+        ObjectTypeWithoutSchema,
+        ObjectTypeWithEmptySchema,
+        ArrayTypeWithoutSchema -> emptySet()
+        is ObjectType ->
+            properties
+                .flatMap { (name, field) ->
+                    field.type.collectUnknownPaths(join(currentPath, name))
+                }
+                .toSet()
+        is ArrayType -> items.type.collectUnknownPaths(currentPath)
+        is UnionType -> options.flatMap { it.collectUnknownPaths(currentPath) }.toSet()
+    }
+}
