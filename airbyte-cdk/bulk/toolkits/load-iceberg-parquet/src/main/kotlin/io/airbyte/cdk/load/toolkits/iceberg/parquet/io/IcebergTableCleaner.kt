@@ -42,11 +42,7 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
         }
     }
 
-    fun deleteGenerationId(
-        table: Table,
-        stagingBranchName: String,
-        stream: DestinationStream
-    ) {
+    fun deleteGenerationId(table: Table, stagingBranchName: String, stream: DestinationStream) {
         val currentGenerationIdSuffix = icebergUtil.constructGenerationIdSuffix(stream)
 
         table.newScan().planFiles().use { tasks ->
