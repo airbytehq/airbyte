@@ -92,7 +92,8 @@ internal class S3DataLakeTableCleanerTest {
     fun `deleteIrrelevantGenerationId handles empty scan results gracefully`() {
         val stream = mockStream()
         val icebergUtil: IcebergUtil = mockk {
-            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns "ab-generation-id-1-e"
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns
+                "ab-generation-id-1-e"
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
         val cleaner = IcebergTableCleaner(icebergUtil)
@@ -101,9 +102,7 @@ internal class S3DataLakeTableCleanerTest {
         val table = mockk<Table>()
         every { table.newScan().planFiles() } returns tasks
 
-        assertDoesNotThrow {
-            cleaner.deleteIrrelevantGenerationId(table, "staging", stream)
-        }
+        assertDoesNotThrow { cleaner.deleteIrrelevantGenerationId(table, "staging", stream) }
         verify(exactly = 0) { table.newDelete() }
     }
 
@@ -111,7 +110,8 @@ internal class S3DataLakeTableCleanerTest {
     fun `deleteIrrelevantGenerationId deletes matching file via deleteFile`() {
         val stream = mockStream()
         val icebergUtil: IcebergUtil = mockk {
-            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns "ab-generation-id-1-e"
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns
+                "ab-generation-id-1-e"
         }
         val cleaner = IcebergTableCleaner(icebergUtil)
         val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-0-e.parquet"
@@ -131,9 +131,7 @@ internal class S3DataLakeTableCleanerTest {
         every { delete.deleteFile(filePathToDelete) } returns delete
         every { delete.commit() } just Runs
 
-        assertDoesNotThrow {
-            cleaner.deleteIrrelevantGenerationId(table, "staging", stream)
-        }
+        assertDoesNotThrow { cleaner.deleteIrrelevantGenerationId(table, "staging", stream) }
 
         verify {
             table.newDelete().toBranch(eq("staging"))
@@ -146,7 +144,8 @@ internal class S3DataLakeTableCleanerTest {
     fun `deleteIrrelevantGenerationId deletes files with missing generation id prefix`() {
         val stream = mockStream()
         val icebergUtil: IcebergUtil = mockk {
-            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns "ab-generation-id-1-e"
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns
+                "ab-generation-id-1-e"
         }
         val cleaner = IcebergTableCleaner(icebergUtil)
         val filePathToDelete = "path/to/gen-5678/compacted-file.parquet"
@@ -166,9 +165,7 @@ internal class S3DataLakeTableCleanerTest {
         every { delete.deleteFile(filePathToDelete) } returns delete
         every { delete.commit() } just Runs
 
-        assertDoesNotThrow {
-            cleaner.deleteIrrelevantGenerationId(table, "staging", stream)
-        }
+        assertDoesNotThrow { cleaner.deleteIrrelevantGenerationId(table, "staging", stream) }
 
         verify {
             table.newDelete().toBranch(eq("staging"))

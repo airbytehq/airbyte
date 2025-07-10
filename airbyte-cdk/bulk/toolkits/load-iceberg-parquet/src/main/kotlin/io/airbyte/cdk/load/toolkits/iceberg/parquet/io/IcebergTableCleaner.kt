@@ -42,7 +42,11 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
         }
     }
 
-    fun deleteIrrelevantGenerationId(table: Table, stagingBranchName: String, stream: DestinationStream) {
+    fun deleteIrrelevantGenerationId(
+        table: Table,
+        stagingBranchName: String,
+        stream: DestinationStream
+    ) {
         val currentGenerationIdSuffix = icebergUtil.constructGenerationIdSuffix(stream)
 
         table.newScan().planFiles().use { tasks ->
