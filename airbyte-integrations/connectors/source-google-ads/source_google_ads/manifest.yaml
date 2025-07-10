@@ -133,6 +133,7 @@ definitions:
     state_migrations:
       - type: CustomStateMigration
         class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        customer_client_stream: "#/definitions/customer_client"
 
   incremental_non_manager_stream_base:
     $ref: "#/definitions/incremental_stream_base"
