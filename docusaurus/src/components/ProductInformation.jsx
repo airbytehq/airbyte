@@ -35,9 +35,10 @@ export const ProductInformation = ({ products }) => {
     products["oss-community"] || products["oss-*"] || products["all"];
   const ossEnterprise =
     products["oss-enterprise"] || products["oss-*"] || products["all"];
-  const cloud = products["cloud"] || products["cloud-teams"] || products["all"];
+  const cloud = products["cloud"] || products["cloud-teams"] || products["cloud-enterprise"] || products["all"];
   // cloud add-ons need to be specifically marked and are not part of the "all" shorthand
   const cloudTeams = products["cloud-teams"];
+  const cloudEnterprise = products["cloud-enterprise"];
   const embedded = products["embedded"];
 
   return (
@@ -45,7 +46,9 @@ export const ProductInformation = ({ products }) => {
       <Badge available={cloud}>
         Cloud{" "}
         {cloudTeams ? (
-          <span className={styles.withAddon}>with Teams add-on</span>
+          <span className={styles.withAddon}>Teams</span>
+        ) : cloudEnterprise ? (
+          <span className={styles.withAddon}>Enterprise</span>
         ) : (
           ""
         )}
