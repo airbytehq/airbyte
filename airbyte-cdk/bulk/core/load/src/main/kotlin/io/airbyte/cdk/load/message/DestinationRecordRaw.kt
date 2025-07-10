@@ -62,7 +62,8 @@ data class DestinationRecordRaw(
      * [TimestampWithTimezoneValue]).
      */
     fun asEnrichedDestinationRecordAirbyteValue(
-        extractedAtAsTimestampWithTimezone: Boolean = false
+        extractedAtAsTimestampWithTimezone: Boolean = false,
+        respectLegacyUnions: Boolean = false,
     ): EnrichedDestinationRecordAirbyteValue {
         val rawJson = asJsonRecord()
 
@@ -84,9 +85,12 @@ data class DestinationRecordRaw(
                     name = fieldName,
                     airbyteMetaField = null,
                 )
-            AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType.type)?.let {
-                enrichedValue.abValue = it
-            }
+            AirbyteValueCoercer.coerce(
+                    fieldValue.toAirbyteValue(),
+                    fieldType.type,
+                    respectLegacyUnions = respectLegacyUnions,
+                )
+                ?.let { enrichedValue.abValue = it }
                 ?: enrichedValue.nullify(
                     AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
