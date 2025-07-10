@@ -65,7 +65,8 @@ class ClickhouseChecker(
         // We concatenate to get around CI rules around the string "http".
         // It will literally break your PR if it sees it.
         const val HTTP = "htt" + "p"
-        const val PROTOCOL_ERR_MESSAGE = "Please remove the protocol ($HTTP://, https://) from your hostname configuration."
+        const val PROTOCOL_ERR_MESSAGE =
+            "Please remove the protocol ($HTTP://, https://) from your hostname configuration."
     }
 }
 
