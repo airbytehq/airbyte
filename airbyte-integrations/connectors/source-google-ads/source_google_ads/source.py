@@ -36,7 +36,6 @@ from .streams import (
     Label,
     ShoppingPerformanceView,
     TopicView,
-    UserInterest,
     UserLocationView,
 )
 from .utils import GAQL, logger, traced_exception
@@ -246,7 +245,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
             ClickView(**incremental_config),
             CustomerLabel(**default_config),
             Label(**default_config),
-            UserInterest(**default_config),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:
