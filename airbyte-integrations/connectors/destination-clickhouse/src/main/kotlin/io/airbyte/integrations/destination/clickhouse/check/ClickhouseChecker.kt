@@ -61,7 +61,8 @@ class ClickhouseChecker(
 
     object Constants {
         const val TEST_DATA = """{"test": 42}"""
-        const val PROTOCOL_ERR_MESSAGE = "Please remove the protocol (http://, https://) from your hostname configuration."
+        const val PROTOCOL_ERR_MESSAGE =
+            "Please remove the protocol (http://, https://) from your hostname configuration."
     }
 }
 

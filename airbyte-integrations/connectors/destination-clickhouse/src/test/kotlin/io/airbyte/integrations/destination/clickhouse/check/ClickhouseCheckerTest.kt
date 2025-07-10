@@ -118,9 +118,7 @@ class ClickhouseCheckerTest {
         val config = Fixtures.config()
         checker.cleanup(config)
 
-        verify {
-            client.execute("DROP TABLE IF EXISTS ${config.database}.${checker.tableName}")
-        }
+        verify { client.execute("DROP TABLE IF EXISTS ${config.database}.${checker.tableName}") }
     }
 
     @Test
