@@ -105,7 +105,7 @@ class S3DataLakeStreamLoader(
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
-            if (stream.minimumGenerationId > 0) {
+            if (stream.isSingleGenerationTruncate()) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
                 }

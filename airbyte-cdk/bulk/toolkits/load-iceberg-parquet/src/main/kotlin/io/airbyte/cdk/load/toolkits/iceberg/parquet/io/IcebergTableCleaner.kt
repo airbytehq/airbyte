@@ -45,53 +45,29 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
     fun deleteGenerationId(
         table: Table,
         stagingBranchName: String,
-        generationIdSuffix: List<String>,
         stream: DestinationStream
     ) {
-        val genIdsToDelete =
-            generationIdSuffix
-                .filter {
-                    icebergUtil.assertGenerationIdSuffixIsOfValidFormat(it)
-                    true
+        val currentGenerationIdSuffix = icebergUtil.constructGenerationIdSuffix(stream)
+
+        table.newScan().planFiles().use { tasks ->
+            tasks
+                .filter { task ->
+                    // Delete file if it doesn't contain the current generation ID prefix
+                    // This will also include any potential compaction file from previous generation
+                    // WARNING: This approach only works if users do not run compaction while the
+                    // truncate refresh sync is running. If compaction occurs during the sync, files
+                    // from the current generation may be renamed and lose their generation ID
+                    // suffix, causing them to be incorrectly deleted and resulting in data loss.
+                    // -------
+                    !task.file().location().contains(currentGenerationIdSuffix)
                 }
-                .toSet()
-
-        if (stream.isSingleGenerationTruncate()) {
-            // WARNING: This approach only works if users do not run compaction while the truncate
-            // refresh sync is running.If compaction occurs during the sync, files from the current
-            // generation may be renamed and lose their generation ID suffix, causing them to be
-            // incorrectly deleted and resulting in data loss.
-            // -------
-            // TODO: We need to eventually be able to handle to detect when a compaction was run.
-            // If it was run during the truncate refresh run then we should remove that snapshot
-            // or more like cherry pick the "valid" ones
-            val currentGenId = icebergUtil.constructGenerationIdSuffix(stream.minimumGenerationId)
-
-            table.newScan().planFiles().use { tasks ->
-                tasks
-                    .filter { task -> !task.file().location().contains(currentGenId) }
-                    .forEach { task ->
-                        table
-                            .newDelete()
-                            .toBranch(stagingBranchName)
-                            .deleteFile(task.file().location())
-                            .commit()
-                    }
-            }
-        } else {
-            table.newScan().planFiles().use { tasks ->
-                tasks
-                    .filter { task ->
-                        genIdsToDelete.any { id -> task.file().location().contains(id) }
-                    }
-                    .forEach { task ->
-                        table
-                            .newDelete()
-                            .toBranch(stagingBranchName)
-                            .deleteFile(task.file().location())
-                            .commit()
-                    }
-            }
+                .forEach { task ->
+                    table
+                        .newDelete()
+                        .toBranch(stagingBranchName)
+                        .deleteFile(task.file().location())
+                        .commit()
+                }
         }
     }
 }
