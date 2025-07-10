@@ -24,6 +24,7 @@ java {
     }
 }
 
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.singlestore.SingleStoreSource'
