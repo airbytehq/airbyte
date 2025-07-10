@@ -219,6 +219,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
         query = GoogleAds.convert_schema_into_query(
             fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
         )
+        print(f"\n\n {query} \n\n")
         return query
 
 
@@ -277,6 +278,12 @@ class CustomerClient(GoogleAdsStream):
             record["login_customer_id"] = stream_slice["login_customer_id"] if root_is_manager else "default"
             yield record
 
+class CustomerLabel(GoogleAdsStream):
+    """
+    Customer Label stream: https://developers.google.com/google-ads/api/fields/v18/customer_label
+    """
+
+    primary_key = ["customer_label.resource_name"]
 
 class ServiceAccounts(GoogleAdsStream):
     """
@@ -285,22 +292,6 @@ class ServiceAccounts(GoogleAdsStream):
 
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
     primary_key = ["customer.id"]
-
-
-class CampaignBudget(IncrementalGoogleAdsStream):
-    """
-    Campaigns stream: https://developers.google.com/google-ads/api/fields/v18/campaign_budget
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = [
-        "customer.id",
-        "campaign_budget.id",
-        "segments.date",
-        "segments.budget_campaign_association_status.campaign",
-        "segments.budget_campaign_association_status.status",
-    ]
-
 
 class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
     """
@@ -361,15 +352,6 @@ class AdGroupAdLabel(GoogleAdsStream):
     """
 
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "label.id"]
-
-
-class AccountPerformanceReport(IncrementalGoogleAdsStream):
-    """
-    AccountPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v18/customer
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
-    """
-
-    primary_key = ["customer.id", "segments.date", "segments.ad_network_type", "segments.device"]
 
 
 class AdGroupAdLegacy(IncrementalGoogleAdsStream):

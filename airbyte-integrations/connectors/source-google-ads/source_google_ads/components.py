@@ -4,9 +4,10 @@
 
 import json
 import logging
-from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, MutableMapping
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, MutableMapping, Union
 
+from airbyte_cdk import InterpolatedString
 import requests
 
 from airbyte_cdk.models import SyncMode
@@ -235,6 +236,11 @@ class GoogleAdsHttpRequester(HttpRequester):
     """
 
     schema_loader: InlineSchemaLoader = None
+    resource_name: Optional[Union[InterpolatedString, str]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._resource_name = InterpolatedString.create(self.resource_name, parameters=parameters)
 
     def get_request_body_json(
         self,
@@ -242,9 +248,11 @@ class GoogleAdsHttpRequester(HttpRequester):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
+
     ) -> MutableMapping[str, Any]:
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
         manager = stream_slice.extra_fields.get("manager", [False])[0]
+        resource_name = self._resource_name.eval(self.config) or self.name
         fields = [
             field
             for field in schema.keys()
@@ -252,7 +260,7 @@ class GoogleAdsHttpRequester(HttpRequester):
             if not (manager and field.startswith("metrics."))
         ]
         return {
-            "query": f"SELECT {', '.join(fields)} FROM {self.name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
+            "query": f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
         }
 
     def get_request_headers(

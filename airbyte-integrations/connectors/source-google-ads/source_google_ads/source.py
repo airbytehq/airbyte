@@ -18,7 +18,6 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AccountPerformanceReport,
     AdGroupAd,
     AdGroupAdLabel,
     AdGroupAdLegacy,
@@ -29,11 +28,11 @@ from .streams import (
     AdListingGroupCriterion,
     Audience,
     CampaignBiddingStrategy,
-    CampaignBudget,
     CampaignCriterion,
     CampaignLabel,
     ClickView,
     CustomerClient,
+    CustomerLabel,
     DisplayKeywordView,
     GeographicView,
     KeywordView,
@@ -250,6 +249,7 @@ class SourceGoogleAds(YamlDeclarativeSource):
             CampaignCriterion(**default_config),
             CampaignLabel(google_api, customers=customers),
             ClickView(**incremental_config),
+            CustomerLabel(**default_config),
             Label(**default_config),
             UserInterest(**default_config),
         ]
@@ -257,9 +257,7 @@ class SourceGoogleAds(YamlDeclarativeSource):
         if non_manager_accounts:
             streams.extend(
                 [
-                    CampaignBudget(**non_manager_incremental_config),
                     UserLocationView(**non_manager_incremental_config),
-                    AccountPerformanceReport(**non_manager_incremental_config),
                     TopicView(**non_manager_incremental_config),
                     DisplayKeywordView(**non_manager_incremental_config),
                     ShoppingPerformanceView(**non_manager_incremental_config),
