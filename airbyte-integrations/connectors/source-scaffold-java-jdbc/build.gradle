@@ -10,8 +10,6 @@ airbyteJavaConnector {
     useLocalCdk = false
 }
 
-airbyteJavaConnector.addCdkDependencies()
-
 application {
     mainClass = 'io.airbyte.integrations.source.scaffold-java-jdbc.ScaffoldJavaJdbcSource'
 }
