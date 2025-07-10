@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.config.NamespaceMappingConfig
@@ -20,6 +21,7 @@ import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_
 import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper
 import io.airbyte.cdk.load.test.mock.MockDestinationSpecification
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
+import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
@@ -36,20 +38,27 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class MockBasicFunctionalityIntegrationTest :
+abstract class BaseMockBasicFunctionalityIntegrationTest(
+    dataChannelMedium: DataChannelMedium,
+    dataChannelFormat: DataChannelFormat,
+) :
     BasicFunctionalityIntegrationTest(
         MockDestinationSpecification.CONFIG,
         MockDestinationSpecification::class.java,
         MockDestinationDataDumper,
         NoopDestinationCleaner,
-        UncoercedExpectedRecordMapper,
+        if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+            NoopExpectedRecordMapper
+        } else {
+            UncoercedExpectedRecordMapper
+        },
         NoopNameMapper,
         isStreamSchemaRetroactive = false,
         dedupBehavior = DedupBehavior(),
@@ -61,6 +70,9 @@ class MockBasicFunctionalityIntegrationTest :
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
         additionalMicronautEnvs = listOf(MOCK_TEST_MICRONAUT_ENVIRONMENT),
+        dataChannelMedium = dataChannelMedium,
+        dataChannelFormat = dataChannelFormat,
+        nullEqualsUnset = dataChannelFormat == DataChannelFormat.PROTOBUF,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -133,7 +145,7 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    fun testCrashInInputLoop() {
+    open fun testCrashInInputLoop() {
         val streamName = "tomato"
         val streamNamespace = "potato"
         val stream =
@@ -172,7 +184,7 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    fun testGlobalStateWithUnknownStreamState() {
+    open fun testGlobalStateWithUnknownStreamState() {
         val stream =
             DestinationStream(
                 randomizedNamespace,
@@ -386,3 +398,48 @@ class MockBasicFunctionalityIntegrationTest :
         }
     }
 }
+
+// Normal mode
+class MockBasicFunctionalityIntegrationTestStdioJsonl :
+    BaseMockBasicFunctionalityIntegrationTest(
+        DataChannelMedium.STDIO,
+        DataChannelFormat.JSONL,
+    )
+
+// Speed mode
+class MockBasicFunctionalityIntegrationTestSocketProtobuf :
+    BaseMockBasicFunctionalityIntegrationTest(
+        DataChannelMedium.SOCKET,
+        DataChannelFormat.PROTOBUF,
+    )
+
+// A few test classes that exist for completeness, but are disabled because we never do these things
+// in real syncs.
+// They're all broken in weird ways.
+@Disabled("not a real mode")
+class MockBasicFunctionalityIntegrationTestStdioProtobuf :
+    BaseMockBasicFunctionalityIntegrationTest(
+        DataChannelMedium.STDIO,
+        DataChannelFormat.PROTOBUF,
+    )
+
+@Disabled("not a real mode")
+class MockBasicFunctionalityIntegrationTestSocketJsonl :
+    BaseMockBasicFunctionalityIntegrationTest(
+        DataChannelMedium.SOCKET,
+        DataChannelFormat.JSONL,
+    )
+
+@Disabled("we don't use flatbuffers")
+class MockBasicFunctionalityIntegrationTestStdioFlatbuffer :
+    BaseMockBasicFunctionalityIntegrationTest(
+        DataChannelMedium.STDIO,
+        DataChannelFormat.FLATBUFFERS,
+    )
+
+@Disabled("we don't use flatbuffers")
+class MockBasicFunctionalityIntegrationTestSocketFlatbuffer :
+    BaseMockBasicFunctionalityIntegrationTest(
+        DataChannelMedium.SOCKET,
+        DataChannelFormat.FLATBUFFERS,
+    )
