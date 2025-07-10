@@ -257,8 +257,10 @@ class GoogleAdsHttpRequester(HttpRequester):
         ]
 
         if "start_time" in stream_slice and "end_time" in stream_slice:
+            # For incremental streams
             query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
         else:
+            # For full refresh streams
             query = f"SELECT {', '.join(fields)} FROM {resource_name}"
 
         return {"query": query}
