@@ -4,6 +4,15 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.io
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.mockk.Runs
@@ -26,6 +35,17 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class S3DataLakeTableCleanerTest {
+    private fun mockStream() =
+        DestinationStream(
+            unmappedNamespace = "testing",
+            unmappedName = "test",
+            importType = Append,
+            schema = ObjectTypeWithoutSchema,
+            generationId = 1,
+            minimumGenerationId = 0,
+            syncId = 1,
+            namespaceMapper = NamespaceMapper()
+        )
 
     @Test
     fun testClearingTableWithPrefix() {
@@ -71,6 +91,7 @@ internal class S3DataLakeTableCleanerTest {
 
     @Test
     fun `deleteGenerationId handles empty scan results gracefully`() {
+        val stream = mockStream()
         val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
@@ -82,13 +103,14 @@ internal class S3DataLakeTableCleanerTest {
         every { table.newScan().planFiles() } returns tasks
 
         assertDoesNotThrow {
-            cleaner.deleteGenerationId(table, "staging", listOf(generationIdSuffix))
+            cleaner.deleteGenerationId(table, "staging", listOf(generationIdSuffix), stream)
         }
         verify(exactly = 0) { table.newDelete() }
     }
 
     @Test
     fun `deleteGenerationId deletes matching file via deleteFile`() {
+        val stream = mockStream()
         val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
@@ -112,7 +134,7 @@ internal class S3DataLakeTableCleanerTest {
         every { delete.commit() } just Runs
 
         assertDoesNotThrow {
-            cleaner.deleteGenerationId(table, "staging", listOf(generationIdSuffix))
+            cleaner.deleteGenerationId(table, "staging", listOf(generationIdSuffix), stream)
         }
 
         verify {
@@ -125,6 +147,7 @@ internal class S3DataLakeTableCleanerTest {
 
     @Test
     fun `deleteGenerationId should not delete non matching file via deleteFile`() {
+        val stream = mockStream()
         val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
@@ -148,7 +171,7 @@ internal class S3DataLakeTableCleanerTest {
         every { delete.commit() } just Runs
 
         assertDoesNotThrow {
-            cleaner.deleteGenerationId(table, "staging", listOf("ab-generation-id-1-e"))
+            cleaner.deleteGenerationId(table, "staging", listOf("ab-generation-id-1-e"), stream)
         }
 
         verify(exactly = 0) {
