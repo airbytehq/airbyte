@@ -278,12 +278,14 @@ class CustomerClient(GoogleAdsStream):
             record["login_customer_id"] = stream_slice["login_customer_id"] if root_is_manager else "default"
             yield record
 
+
 class CustomerLabel(GoogleAdsStream):
     """
     Customer Label stream: https://developers.google.com/google-ads/api/fields/v18/customer_label
     """
 
     primary_key = ["customer_label.resource_name"]
+
 
 class ServiceAccounts(GoogleAdsStream):
     """
@@ -292,6 +294,7 @@ class ServiceAccounts(GoogleAdsStream):
 
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
     primary_key = ["customer.id"]
+
 
 class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
     """
@@ -389,6 +392,7 @@ class ClickView(IncrementalGoogleAdsStream):
     # where clause for cursor is inclusive from both sides, duration 0 will result in - '"2022-01-01" <= cursor AND "2022-01-01" >= cursor'
     # Queries including ClickView must have a filter limiting the results to one day
     slice_duration = pendulum.duration(days=0)
+
 
 class ChangeStatus(IncrementalGoogleAdsStream):
     """

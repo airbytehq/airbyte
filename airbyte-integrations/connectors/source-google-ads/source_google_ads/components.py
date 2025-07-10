@@ -5,11 +5,11 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, MutableMapping, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk import InterpolatedString
 import requests
 
+from airbyte_cdk import InterpolatedString
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -225,9 +225,6 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
         return state
 
 
-
-
-
 @dataclass
 class GoogleAdsHttpRequester(HttpRequester):
     """
@@ -248,7 +245,6 @@ class GoogleAdsHttpRequester(HttpRequester):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-
     ) -> MutableMapping[str, Any]:
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
         manager = stream_slice.extra_fields.get("manager", [False])[0]
@@ -260,14 +256,12 @@ class GoogleAdsHttpRequester(HttpRequester):
             if not (manager and field.startswith("metrics."))
         ]
 
-        if 'start_time' in stream_slice and 'end_time' in stream_slice:
+        if "start_time" in stream_slice and "end_time" in stream_slice:
             query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
         else:
             query = f"SELECT {', '.join(fields)} FROM {resource_name}"
 
-        return {
-            "query": query
-        }
+        return {"query": query}
 
     def get_request_headers(
         self,
