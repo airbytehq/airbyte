@@ -66,7 +66,7 @@ class ClickhouseChecker(
         // It will literally break your PR if it sees it.
         const val HTTP = "htt" + "p"
         const val PROTOCOL_ERR_MESSAGE =
-            "Please remove the protocol ($HTTP://, https://) from your hostname configuration."
+            "Please remove the protocol ($HTTP://, https://) from the hostname in your connector configuration."
     }
 }
 
