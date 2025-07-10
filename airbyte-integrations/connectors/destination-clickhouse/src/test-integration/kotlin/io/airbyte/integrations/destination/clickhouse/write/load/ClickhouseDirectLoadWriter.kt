@@ -39,7 +39,6 @@ import java.nio.file.Files
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 
 class ClickhouseDirectLoadWriterWithJson :
     ClickhouseDirectLoadWriter(
