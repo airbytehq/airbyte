@@ -5,7 +5,12 @@
 package io.airbyte.cdk.load.mock_integration_test
 
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
@@ -16,6 +21,7 @@ import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper
 import io.airbyte.cdk.load.test.mock.MockDestinationSpecification
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopNameMapper
+import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.Jsons
@@ -31,6 +37,9 @@ import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -249,5 +258,131 @@ class MockBasicFunctionalityIntegrationTest :
                 ),
             returnedStateMessage,
         )
+    }
+
+    private fun testNamespaceMapping(
+        namespaceMappingConfig: NamespaceMappingConfig,
+        namespaceValidator: (String?, String?, String, String) -> Unit
+    ) {
+        assumeTrue(dataChannelMedium == DataChannelMedium.SOCKET)
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream__$randomizedNamespace", // in case namespace == null
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+                namespaceMapper =
+                    NamespaceMapper(
+                        namespaceDefinitionType = namespaceMappingConfig.namespaceDefinitionType,
+                        streamPrefix = namespaceMappingConfig.streamPrefix,
+                        namespaceFormat = namespaceMappingConfig.namespaceFormat
+                    )
+            )
+        namespaceValidator(
+            stream.unmappedNamespace,
+            stream.mappedDescriptor.namespace,
+            stream.unmappedName,
+            stream.mappedDescriptor.name,
+        )
+        runSync(
+            updatedConfig,
+            DestinationCatalog(listOf(stream)),
+            listOf(
+                InputRecord(
+                    stream,
+                    """{"id": 42}""",
+                    emittedAtMs = 1234L,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            ),
+            useFileTransfer = false,
+            destinationProcessFactory = destinationProcessFactory,
+            namespaceMappingConfig = namespaceMappingConfig
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234L,
+                    generationId = 1,
+                    data = mapOf("id" to 42),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                )
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testNamespaceMappingDestinationNoPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(namespaceDefinitionType = NamespaceDefinitionType.DESTINATION)
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For destination namespace mapping, the namespace should be the unmapped name.
+            assertNull(mappedNamespace)
+            assertEquals(unmappedName, mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingDestinationWithPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.DESTINATION,
+                streamPrefix = "prefix_",
+            )
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For destination namespace mapping, the namespace should be the unmapped name.
+            assertNull(mappedNamespace)
+            assertEquals("prefix_$unmappedName", mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingSourceWithPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.SOURCE,
+                streamPrefix = "prefix_",
+            )
+        ) { unmappedNamespace, mappedNamespace, unmappedName, mappedName ->
+            // For source namespace mapping, the namespace should be the unmapped namespace.
+            assertEquals(unmappedNamespace, mappedNamespace)
+            assertEquals("prefix_$unmappedName", mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingCustomFormatNoPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
+                namespaceFormat = "custom_\${SOURCE_NAMESPACE}_namespace",
+            )
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For custom namespace mapping, the namespace should be the custom format.
+            assertEquals("custom_${randomizedNamespace}_namespace", mappedNamespace)
+            assertEquals(unmappedName, mappedName)
+        }
+    }
+
+    @Test
+    open fun testNamespaceMappingCustomFormatNoMacroWithPrefix() {
+        testNamespaceMapping(
+            NamespaceMappingConfig(
+                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
+                namespaceFormat = "custom_$randomizedNamespace",
+                streamPrefix = "prefix_",
+            )
+        ) { _, mappedNamespace, unmappedName, mappedName ->
+            // For custom namespace mapping, the namespace should be the custom format.
+            assertEquals("custom_${randomizedNamespace}", mappedNamespace)
+            assertEquals("prefix_$unmappedName", mappedName)
+        }
     }
 }

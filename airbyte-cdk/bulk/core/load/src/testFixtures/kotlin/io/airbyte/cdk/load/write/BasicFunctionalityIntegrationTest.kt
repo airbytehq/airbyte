@@ -16,7 +16,6 @@ import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -80,7 +79,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
@@ -3907,132 +3905,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 messages = listOf(InputGlobalCheckpoint(null, checkpointKeyForMedium()))
             )
-        }
-    }
-
-    private fun testNamespaceMapping(
-        namespaceMappingConfig: NamespaceMappingConfig,
-        namespaceValidator: (String?, String?, String, String) -> Unit
-    ) {
-        assumeTrue(dataChannelMedium == DataChannelMedium.SOCKET)
-        val stream =
-            DestinationStream(
-                unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_stream__$randomizedNamespace", // in case namespace == null
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 1,
-                minimumGenerationId = 1,
-                syncId = 42,
-                namespaceMapper =
-                    NamespaceMapper(
-                        namespaceDefinitionType = namespaceMappingConfig.namespaceDefinitionType,
-                        streamPrefix = namespaceMappingConfig.streamPrefix,
-                        namespaceFormat = namespaceMappingConfig.namespaceFormat
-                    )
-            )
-        namespaceValidator(
-            stream.unmappedNamespace,
-            stream.mappedDescriptor.namespace,
-            stream.unmappedName,
-            stream.mappedDescriptor.name,
-        )
-        runSync(
-            updatedConfig,
-            DestinationCatalog(listOf(stream)),
-            listOf(
-                InputRecord(
-                    stream,
-                    """{"id": 42}""",
-                    emittedAtMs = 1234L,
-                    checkpointId = checkpointKeyForMedium()?.checkpointId
-                )
-            ),
-            useFileTransfer = false,
-            destinationProcessFactory = destinationProcessFactory,
-            namespaceMappingConfig = namespaceMappingConfig
-        )
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 1234L,
-                    generationId = 1,
-                    data = mapOf("id" to 42),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
-            ),
-            stream,
-            primaryKey = listOf(listOf("id")),
-            cursor = null,
-        )
-    }
-
-    @Test
-    open fun testNamespaceMappingDestinationNoPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(namespaceDefinitionType = NamespaceDefinitionType.DESTINATION)
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For destination namespace mapping, the namespace should be the unmapped name.
-            assertNull(mappedNamespace)
-            assertEquals(unmappedName, mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingDestinationWithPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.DESTINATION,
-                streamPrefix = "prefix_",
-            )
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For destination namespace mapping, the namespace should be the unmapped name.
-            assertNull(mappedNamespace)
-            assertEquals("prefix_$unmappedName", mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingSourceWithPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.SOURCE,
-                streamPrefix = "prefix_",
-            )
-        ) { unmappedNamespace, mappedNamespace, unmappedName, mappedName ->
-            // For source namespace mapping, the namespace should be the unmapped namespace.
-            assertEquals(unmappedNamespace, mappedNamespace)
-            assertEquals("prefix_$unmappedName", mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingCustomFormatNoPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
-                namespaceFormat = "custom_\${SOURCE_NAMESPACE}_namespace",
-            )
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For custom namespace mapping, the namespace should be the custom format.
-            assertEquals("custom_${randomizedNamespace}_namespace", mappedNamespace)
-            assertEquals(unmappedName, mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingCustomFormatNoMacroWithPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
-                namespaceFormat = "custom_$randomizedNamespace",
-                streamPrefix = "prefix_",
-            )
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For custom namespace mapping, the namespace should be the custom format.
-            assertEquals("custom_${randomizedNamespace}", mappedNamespace)
-            assertEquals("prefix_$unmappedName", mappedName)
         }
     }
 
