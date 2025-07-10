@@ -274,6 +274,18 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
 **Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
 
+## Compaction
+
+:::caution
+**Do not run compaction during a truncate refresh sync to prevent data loss.**
+During a truncate refresh sync, the system deletes all files that don't belong to the latest generation. This includes:
+
+- Files without generation IDs (compacted files)
+- Files from previous generations
+
+If compaction runs simultaneously with the sync, it will delete files from the current generation, causing data loss. The system identifies generations by parsing file names for generation IDs.
+:::
+
 ## Considerations and limitations
 
 This section documents known considerations and limitations about how this Iceberg destination interacts with other products.
