@@ -3903,7 +3903,10 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 updatedConfig,
                 stream,
-                messages = listOf(InputGlobalCheckpoint(null, checkpointKeyForMedium()))
+                messages =
+                    listOf(
+                        InputGlobalCheckpoint(null, checkpointKeyForMedium(), sourceRecordCount = 0)
+                    )
             )
         }
     }
