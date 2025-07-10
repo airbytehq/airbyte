@@ -18,8 +18,6 @@ airbyteJavaConnector {
     useLocalCdk = false
 }
 
-airbyteJavaConnector.addCdkDependencies()
-
 java {
     compileJava {
         options.compilerArgs += "-Xlint:-try,-rawtypes"
