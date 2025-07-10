@@ -3,6 +3,8 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: integrationTests
