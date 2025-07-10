@@ -219,9 +219,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             buildKeyStore("trust") {
                 SSLCertificateUtils.keyStoreFromCertificate(
                     sslData.caCertificate,
-                    password,
-                    FileSystems.getDefault(),
-                    directory = "",
+                    password
                 )
             }
         extraJdbcProperties[TRUST_KEY_STORE_URL] = caCertKeyStoreUrl.toString()
@@ -236,10 +234,9 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         val clientCertKeyStoreUrl: URL =
             buildKeyStore("client") {
                 SSLCertificateUtils.keyStoreFromClientCertificate(
-                    sslData.clientCertificate,
-                    sslData.clientKey,
-                    password,
-                    directory = ""
+                    certString=sslData.clientCertificate,
+                    keyString=sslData.clientKey,
+                    keyStorePassword=password
                 )
             }
         extraJdbcProperties[CLIENT_KEY_STORE_URL] = clientCertKeyStoreUrl.toString()

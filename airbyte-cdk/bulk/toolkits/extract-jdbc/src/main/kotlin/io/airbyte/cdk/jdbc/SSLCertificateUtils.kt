@@ -46,6 +46,8 @@ private val log = KotlinLogging.logger {}
  */
 object SSLCertificateUtils {
 
+    private const val DEFAULT_ROOT_DIR = "/tmp"
+
     private const val PKCS_12 = "PKCS12"
     private const val X509 = "X.509"
     private val RANDOM: Random = SecureRandom()
@@ -258,7 +260,7 @@ object SSLCertificateUtils {
         certString: String,
         keyString: String,
         keyStorePassword: String,
-        directory: String
+        directory: String = DEFAULT_ROOT_DIR,
     ): URI {
         return keyStoreFromClientCertificate(
             certString,
