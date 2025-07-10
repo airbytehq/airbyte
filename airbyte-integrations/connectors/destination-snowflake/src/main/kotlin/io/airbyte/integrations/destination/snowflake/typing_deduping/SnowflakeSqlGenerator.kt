@@ -104,7 +104,7 @@ class SnowflakeSqlGenerator(
             |CREATE $forceCreateTable TABLE ${stream.id.quotedFinalTableId(suffix)} (
             |  "_AIRBYTE_RAW_ID" TEXT NOT NULL COLLATE 'utf8',
             |  "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
-            |  "_AIRBYTE_META" VARIANT NOT NULL,
+            |  "_AIRBYTE_META" VARIANT,
             |  "_AIRBYTE_GENERATION_ID" INTEGER
             |  $columnDeclarations
             |) data_retention_time_in_days = $retentionPeriodDays;
@@ -125,7 +125,7 @@ class SnowflakeSqlGenerator(
             // Remove eventually if insert+delete is proven to be bad
             if (useMergeForUpserts) {
                 return transactionally(
-                    upsertRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting),
+                    upsertRecords(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/),
                     checkpointRawTable(stream.id)
                 )
             }
@@ -133,20 +133,20 @@ class SnowflakeSqlGenerator(
                 stream,
                 finalSuffix,
                 minRawTimestamp,
-                useExpensiveSaferCasting
+                //useExpensiveSaferCasting
             )
         }
-        return insertRecordsNoDedupe(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+        return insertRecordsNoDedupe(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/)
     }
 
     private fun insertRecordsDedupe(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        // useExpensiveSaferCasting: Boolean
     ): Sql {
         val insertNewRecords =
-            insertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+            insertNewRecords(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/)
         val dedupFinalTable =
             dedupFinalTable(stream.id, finalSuffix, stream.primaryKey, stream.cursor)
         val cdcDeletes = cdcDeletes(stream, finalSuffix)
@@ -158,7 +158,7 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        safeCast: Boolean
+        // safeCast: Boolean
     ): String {
         val targetTable = "TARGET_TABLE"
         val sourceTable = "DEDUPED_RECORDS"
@@ -214,7 +214,7 @@ class SnowflakeSqlGenerator(
             """
             |MERGE INTO ${stream.id.quotedFinalTableId(finalSuffix)} as $targetTable
             |USING (
-            |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, safeCast).replaceIndent("  ")}
+            |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, /*safeCast*/).replaceIndent("  ")}
             |) $sourceTable
             |ON
             |${pkEqualityMatch.replaceIndent("  ")} $whenMatchedCdcDeleteCondition
@@ -236,27 +236,27 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        // useExpensiveSaferCasting: Boolean
     ): Sql {
         val insertNewRecords =
-            insertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+            insertNewRecords(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/)
         val checkpointRawTable = checkpointRawTable(stream.id)
         return transactionally(insertNewRecords, checkpointRawTable)
     }
 
     private fun extractAndCast(
         column: ColumnId,
-        airbyteType: AirbyteType,
-        useTryCast: Boolean
+        // airbyteType: AirbyteType,
+        // useTryCast: Boolean
     ): String {
-        return cast(
+        return "${column.originalName.quoted()}"/*cast(
             "${JavaBaseConstants.COLUMN_NAME_DATA.quoted()}:${escapeJsonIdentifier(column.originalName).quoted()}",
             airbyteType,
             useTryCast,
-        )
+        )*/
     }
 
-    private fun cast(sqlExpression: String, airbyteType: AirbyteType, useTryCast: Boolean): String {
+    /*private fun cast(sqlExpression: String, airbyteType: AirbyteType, useTryCast: Boolean): String {
         val castMethod = if (useTryCast) "TRY_CAST" else "CAST"
         if (airbyteType is Union) {
             // This is guaranteed to not be a Union, so we won't recurse infinitely
@@ -323,28 +323,27 @@ class SnowflakeSqlGenerator(
                 else -> "$castMethod(($sqlExpression)::text as $dialectType)"
             }
         }
-    }
+    }*/
 
     @VisibleForTesting
     fun insertNewRecords(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useTryCast: Boolean
+        // useTryCast: Boolean
     ): String {
         val selectRecordsFromRawTable =
-            selectTypedRecordsFromRawTable(stream, minRawTimestamp, useTryCast)
+            selectTypedRecordsFromRawTable(stream, minRawTimestamp, /*useTryCast*/)
 
         return """
             |INSERT INTO ${stream.id.quotedFinalTableId(finalSuffix)}(
-            |${stream.finalTableColumnsWithoutMeta { it }.replaceIndent("  ")},
-            |  "_AIRBYTE_META"
+            |${stream.finalTableColumnsWithoutMeta { it }.replaceIndent("  ")}
             |)
             |$selectRecordsFromRawTable;
             |""".trimMargin()
     }
 
-    private fun StreamConfig.projectionColumnsFromRawTable(safeCast: Boolean): String {
+    private fun StreamConfig.projectionColumnsFromRawTable(/*safeCast: Boolean*/): String {
         val adjustedExtractedAt =
             "${airbyteExtractedAtUtcForced(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.quoted())} as " +
                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.quoted()
@@ -356,27 +355,27 @@ class SnowflakeSqlGenerator(
                 "${
                 extractAndCast(
                     it.key,
-                    it.value,
-                    safeCast,
+                    // it.value,
+                    // safeCast,
                 )
             } as ${it.key.name.quoted()}"
             } +
                 listOf(
                     JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.quoted(),
                     adjustedExtractedAt,
-                    JavaBaseConstants.COLUMN_NAME_AB_META.quoted(),
+//                    JavaBaseConstants.COLUMN_NAME_AB_META.quoted(),
                     JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.quoted(),
                 )
 
         return columns.joinToString(", \n")
     }
 
-    private fun StreamConfig.typeCastError(safeCast: Boolean): String {
+    private fun StreamConfig.typeCastError(/*safeCast: Boolean*/): String {
         val caseStatement: (Map.Entry<ColumnId, AirbyteType>) -> String = { col ->
             """
                 |CASE
                 |  WHEN (TYPEOF("_airbyte_data":"${escapeJsonIdentifier(col.key.originalName)}") NOT IN ('NULL', 'NULL_VALUE'))
-                |    AND (${extractAndCast(col.key, col.value, safeCast)} IS NULL)
+                |    AND (${extractAndCast(col.key, /*col.value, safeCast*/)} IS NULL)
                 |    THEN OBJECT_CONSTRUCT('field', '${escapeSingleQuotedString(col.key.originalName)}', 'change', 'NULLED', 'reason', 'DESTINATION_TYPECAST_ERROR')
                 |  ELSE NULL
                 |END
@@ -405,47 +404,45 @@ class SnowflakeSqlGenerator(
     private fun selectTypedRecordsFromRawTable(
         stream: StreamConfig,
         minRawTimestamp: Optional<Instant>,
-        useTryCast: Boolean,
+        // useTryCast: Boolean,
     ): String {
-        val projectionColumnsFromRawTable = stream.projectionColumnsFromRawTable(useTryCast)
-        val typeCastErrorsArray =
-            """
-            |ARRAY_COMPACT(
-            |  ARRAY_CAT(
-            |    CASE WHEN "_airbyte_meta":"changes" IS NOT NULL 
-            |      THEN "_airbyte_meta":"changes" 
-            |      ELSE ARRAY_CONSTRUCT()
-            |    END,
-            |    ARRAY_CONSTRUCT(
-            |${stream.typeCastError(useTryCast).replaceIndent("      ")}
-            |    )
-            |  )
-            |)
-            |""".trimMargin()
+        val projectionColumnsFromRawTable = stream.projectionColumnsFromRawTable(/*useTryCast*/)
+        // val typeCastErrorsArray =
+        //     """
+        //     |ARRAY_COMPACT(
+        //     |  ARRAY_CAT(
+        //     |    CASE WHEN "_airbyte_meta":"changes" IS NOT NULL
+        //     |      THEN "_airbyte_meta":"changes"
+        //     |      ELSE ARRAY_CONSTRUCT()
+        //     |    END,
+        //     |    ARRAY_CONSTRUCT(
+        //     |${stream.typeCastError(/*useTryCast*/).replaceIndent("      ")}
+        //     |    )
+        //     |  )
+        //     |)
+        //     |""".trimMargin()
 
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
-        val abMetaColumn =
-            """
-            |CASE WHEN "_airbyte_meta" IS NOT NULL 
-            |  THEN OBJECT_INSERT("_airbyte_meta", 'changes', "_airbyte_cast_errors", true) 
-            |  ELSE OBJECT_CONSTRUCT('changes', "_airbyte_cast_errors") 
-            |END AS "_AIRBYTE_META"
-        """.trimMargin()
+        // val abMetaColumn =
+        //     """
+        //     |CASE WHEN "_airbyte_meta" IS NOT NULL
+        //     |  THEN OBJECT_INSERT("_airbyte_meta", 'changes', "_airbyte_cast_errors", true)
+        //     |  ELSE OBJECT_CONSTRUCT('changes', "_airbyte_cast_errors")
+        //     |END AS "_AIRBYTE_META"
+        // """.trimMargin()
 
         if (stream.postImportAction != ImportType.DEDUPE) {
             return """
                 |WITH intermediate_data AS (
                 |  SELECT
-                |${projectionColumnsFromRawTable.replaceIndent("    ")}, 
-                |${typeCastErrorsArray.replaceIndent("    ")} as "_airbyte_cast_errors"
+                |${projectionColumnsFromRawTable.replaceIndent("    ")}
                 |  FROM 
                 |    ${stream.id.rawTableId(QUOTE)}
                 |  WHERE
                 |    ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT.quoted()} IS NULL $extractedAtCondition
                 |)
                 |SELECT 
-                |${stream.finalTableColumnsWithoutMeta { "${it.quoted()} as ${it.uppercase().quoted()}" }.replaceIndent("  ")},
-                |${abMetaColumn.replaceIndent("  ")}
+                |${stream.finalTableColumnsWithoutMeta { "${it.quoted()} as ${it.uppercase().quoted()}" }.replaceIndent("  ")}
                 |FROM intermediate_data
             """.trimMargin()
         } else {
@@ -467,8 +464,7 @@ class SnowflakeSqlGenerator(
             return """
                 |WITH intermediate_data AS (
                 |  SELECT
-                |${projectionColumnsFromRawTable.replaceIndent("    ")}, 
-                |${typeCastErrorsArray.replaceIndent("    ")} as "_airbyte_cast_errors"
+                |${projectionColumnsFromRawTable.replaceIndent("    ")}
                 |  FROM 
                 |    ${stream.id.rawTableId(QUOTE)}
                 |  WHERE 
@@ -476,7 +472,6 @@ class SnowflakeSqlGenerator(
                 |), new_records AS (
                 |  SELECT
                 |${stream.finalTableColumnsWithoutMeta { "${it.quoted()} as ${it.uppercase().quoted()}" }.replaceIndent("    ")}, 
-                |${abMetaColumn.replaceIndent("    ")},
                 |    row_number() OVER (
                 |      PARTITION BY $pkList ORDER BY $cursorOrderClause "_AIRBYTE_EXTRACTED_AT" DESC
                 |    ) AS row_number
@@ -484,7 +479,6 @@ class SnowflakeSqlGenerator(
                 |)
                 |SELECT 
                 |${stream.finalTableColumnsWithoutMeta { it }.replaceIndent("  ")}, 
-                |  "_AIRBYTE_META"
                 |FROM 
                 |  new_records
                 |WHERE row_number = 1
