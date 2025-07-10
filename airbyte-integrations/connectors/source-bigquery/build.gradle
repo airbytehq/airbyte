@@ -21,8 +21,6 @@ java {
     }
 }
 
-airbyteJavaConnector.addCdkDependencies()
-
 application {
     mainClass = 'io.airbyte.integrations.source.bigquery.BigQuerySource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
