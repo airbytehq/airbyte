@@ -6,13 +6,10 @@ package io.airbyte.integrations.destination.s3_data_lake.io
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.mockk.Runs
@@ -35,14 +32,18 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class S3DataLakeTableCleanerTest {
-    private fun mockStream() =
+    private fun mockStream(
+        importType: ImportType = Append,
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0
+    ) =
         DestinationStream(
             unmappedNamespace = "testing",
             unmappedName = "test",
-            importType = Append,
+            importType = importType,
             schema = ObjectTypeWithoutSchema,
-            generationId = 1,
-            minimumGenerationId = 0,
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
             syncId = 1,
             namespaceMapper = NamespaceMapper()
         )
@@ -180,5 +181,82 @@ internal class S3DataLakeTableCleanerTest {
             delete.deleteFile(any<DataFile>())
             delete.commit()
         }
+    }
+
+    @Test
+    fun `deleteGenerationId truncate refresh - all files from current generation - no deletion`() {
+        val stream = mockStream(importType = Overwrite, generationId = 5, minimumGenerationId = 5)
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+            every { constructGenerationIdSuffix(5) } returns "ab-generation-id-5-e"
+        }
+        val cleaner = IcebergTableCleaner(icebergUtil)
+
+        val fileScanTask1 = mockk<FileScanTask>()
+        val fileScanTask2 = mockk<FileScanTask>()
+        val table = mockk<Table>()
+
+        every { fileScanTask1.file().location() } returns
+            "path/to/file1-ab-generation-id-5-e.parquet"
+        every { fileScanTask2.file().location() } returns
+            "path/to/file2-ab-generation-id-5-e.parquet"
+
+        val tasks = mockk<CloseableIterable<FileScanTask>>()
+        every { tasks.iterator() } returns
+            CloseableIterator.withClose(listOf(fileScanTask1, fileScanTask2).iterator())
+        every { tasks.close() } just Runs
+        every { table.newScan().planFiles() } returns tasks
+
+        assertDoesNotThrow {
+            cleaner.deleteGenerationId(table, "staging", listOf("ab-generation-id-4-e"), stream)
+        }
+
+        // Verify no deletions occurred
+        verify(exactly = 0) { table.newDelete() }
+    }
+
+    @Test
+    fun `deleteGenerationId truncate refresh - files without generation ID - delete them`() {
+        val stream = mockStream(importType = Overwrite, generationId = 5, minimumGenerationId = 5)
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+            every { constructGenerationIdSuffix(5) } returns "ab-generation-id-5-e"
+        }
+        val cleaner = IcebergTableCleaner(icebergUtil)
+
+        val fileScanTaskWithGen = mockk<FileScanTask>()
+        val fileScanTaskWithoutGen = mockk<FileScanTask>()
+        val table = mockk<Table>()
+
+        val fileWithGen = "path/to/file1-ab-generation-id-5-e.parquet"
+        val fileWithoutGen = "path/to/compacted-file-12345.parquet"
+
+        every { fileScanTaskWithGen.file().location() } returns fileWithGen
+        every { fileScanTaskWithoutGen.file().location() } returns fileWithoutGen
+
+        val tasks = mockk<CloseableIterable<FileScanTask>>()
+        every { tasks.iterator() } returns
+            CloseableIterator.withClose(
+                listOf(fileScanTaskWithGen, fileScanTaskWithoutGen).iterator()
+            )
+        every { tasks.close() } just Runs
+        every { table.newScan().planFiles() } returns tasks
+
+        val delete = mockk<DeleteFiles>()
+        every { table.newDelete().toBranch("staging") } returns delete
+        every { delete.deleteFile(fileWithoutGen) } returns delete
+        every { delete.commit() } just Runs
+
+        assertDoesNotThrow {
+            cleaner.deleteGenerationId(table, "staging", listOf("ab-generation-id-4-e"), stream)
+        }
+
+        // Verify only the file without generation ID was deleted
+        verify {
+            table.newDelete().toBranch("staging")
+            delete.deleteFile(fileWithoutGen)
+            delete.commit()
+        }
+        verify(exactly = 0) { delete.deleteFile(fileWithGen) }
     }
 }
