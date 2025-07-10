@@ -18,6 +18,7 @@ const addButtonToTitle = require("./src/remark/addButtonToTitle");
 const config = {
   future: {
     experimental_faster: true,
+    v4: true,
   },
   markdown: {
     mermaid: true,
