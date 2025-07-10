@@ -100,19 +100,16 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1
-        deduplicate: true
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream: "#/definitions/customer_client"
-              parent_key: "clientCustomer"
-              partition_field: "customer_id"
-              extra_fields: [["manager"]]
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
+            extra_fields: [["manager"]]
     transformations:
-      - type: KeysToSnakeCase
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
     incremental_sync:
@@ -133,22 +130,19 @@ definitions:
     state_migrations:
       - type: CustomStateMigration
         class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        customer_client_stream: "#/definitions/customer_client"
 
   incremental_non_manager_stream_base:
     $ref: "#/definitions/incremental_stream_base"
     retriever:
       $ref: "#/definitions/incremental_stream_base/retriever"
       partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1
-        deduplicate: true
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream: "#/definitions/customer_client_non_manager"
-              parent_key: "clientCustomer"
-              partition_field: "customer_id"
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client_non_manager"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
@@ -242,6 +236,20 @@ definitions:
             parent_key: "accessible_customer_id"
             partition_field: "customer_id"
 
+  transformations:
+    transform_metrics_interaction_event_types:
+      - type: AddedFieldDefinition
+        path: [ "metrics.interaction_event_types" ]
+        value: >-
+          {{ record['metrics.interaction_event_types']
+             | map('replace','UNSPECIFIED','0')
+             | map('replace','UNKNOWN','1')
+             | map('replace','CLICK','2')
+             | map('replace','ENGAGEMENT','3')
+             | map('replace','VIDEO_VIEW','4')
+             | map('replace','NONE','5')
+             | list }}
+
   # Stream Definitions
   campaign_stream:
     $ref: "#/definitions/incremental_non_manager_stream_base"
@@ -252,27 +260,13 @@ definitions:
       - segments.hour
       - segments.ad_network_type
     transformations:
-      - type: KeysToSnakeCase
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
-          # Renames video_quartile_p_100_rate to video_quartile_p100_rate
-          - path: ["metrics.video_quartile_p100_rate"]
-            value: "{{ record['metrics.video_quartile_p_100_rate'] or 0.0 }}"
-            value_type: number
-          - path: ["metrics.interaction_event_types"]
-            value: >-
-              {{ record['metrics.interaction_event_types']
-                 | map('replace','UNSPECIFIED','0')
-                 | map('replace','UNKNOWN','1')
-                 | map('replace','CLICK','2')
-                 | map('replace','ENGAGEMENT','3')
-                 | map('replace','VIDEO_VIEW','4')
-                 | map('replace','NONE','5')
-                 | list }}
-      - type: RemoveFields
-        field_pointers: [["metrics.video_quartile_p_100_rate"]]
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -298,6 +292,14 @@ definitions:
       - segments.date
       - segments.ad_network_type
       - segments.device"
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -323,6 +325,14 @@ definitions:
       - ad_group.id
       - ad_group_criterion.criterion_id
       - segments.date
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -345,6 +355,14 @@ definitions:
       - segments.date
       - segments.ad_network_type
       - segments.device
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -359,6 +377,14 @@ definitions:
       - user_location_view.targeting_location
       - segments.date
       - segments.ad_network_type
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
