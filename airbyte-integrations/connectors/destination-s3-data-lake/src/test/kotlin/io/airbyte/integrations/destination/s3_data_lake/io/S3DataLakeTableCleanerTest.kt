@@ -94,7 +94,6 @@ internal class S3DataLakeTableCleanerTest {
         val icebergUtil: IcebergUtil = mockk {
             every { constructGenerationIdSuffix(any<DestinationStream>()) } returns
                 "ab-generation-id-1-e"
-            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
         val cleaner = IcebergTableCleaner(icebergUtil)
 
