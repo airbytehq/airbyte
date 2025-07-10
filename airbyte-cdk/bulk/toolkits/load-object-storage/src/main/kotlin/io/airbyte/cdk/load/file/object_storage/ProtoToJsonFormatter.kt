@@ -22,8 +22,14 @@ class ProtoToJsonFormatter(
 
     private val fastWriter =
         ProtoToJsonWriter(stream.airbyteValueProxyFieldAccessors, rootLevelFlattening)
-    private val unknownColumns = stream.schema.collectUnknownPaths()
-    private val unknownColumnsPresent = unknownColumns.isNotEmpty()
+    private val unknownColumnChanges =
+        stream.schema.collectUnknownPaths().map {
+            Meta.Change(
+                it,
+                AirbyteRecordMessageMetaChange.Change.NULLED,
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+            )
+        }
 
     private val generator =
         Jsons.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
@@ -33,22 +39,12 @@ class ProtoToJsonFormatter(
     override fun accept(record: DestinationRecordRaw) {
         when (val source = record.rawData) {
             is DestinationRecordProtobufSource -> {
-                val changes = record.rawData.sourceMeta.changes.toMutableList()
-                if (unknownColumnsPresent) {
-                    unknownColumns.forEach {
-                        changes.add(
-                            Meta.Change(
-                                it,
-                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR,
-                            ),
-                        )
-                    }
-                }
-
                 generator.writeStartObject()
-                fastWriter.writeMeta(generator, record, changes) // _airbyte_* fields
+                fastWriter.writeMeta(
+                    generator,
+                    record,
+                    record.rawData.sourceMeta.changes + unknownColumnChanges
+                ) // _airbyte_* fields
                 fastWriter.writePayload(generator, source) // actual data
                 generator.writeEndObject()
                 generator.writeRaw('\n')

@@ -27,8 +27,14 @@ class ProtoToCsvFormatter(
 
     private val header: Array<String> = finalSchema.toCsvHeader()
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
-    private val unknownColumns = stream.schema.collectUnknownPaths()
-    private val unknownColumnsPresent = unknownColumns.isNotEmpty()
+    private val unknownColumnChanges =
+        stream.schema.collectUnknownPaths().map {
+            Meta.Change(
+                it,
+                AirbyteRecordMessageMetaChange.Change.NULLED,
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+            )
+        }
 
     private val writer =
         ProtoToCsvWriter(
@@ -43,19 +49,9 @@ class ProtoToCsvFormatter(
         require(src is DestinationRecordProtobufSource) {
             "ProtoToCsvFormatter only supports DestinationRecordProtobufSource"
         }
-        val changes = record.rawData.sourceMeta.changes.toMutableList()
-        if (unknownColumnsPresent) {
-            unknownColumns.forEach {
-                changes.add(
-                    Meta.Change(
-                        it,
-                        AirbyteRecordMessageMetaChange.Change.NULLED,
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
-                    ),
-                )
-            }
-        }
-        printer.printRecord(*writer.toCsvRow(record, src, changes))
+        printer.printRecord(
+            *writer.toCsvRow(record, src, record.rawData.sourceMeta.changes + unknownColumnChanges)
+        )
     }
 
     override fun flush() {
