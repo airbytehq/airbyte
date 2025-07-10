@@ -18,9 +18,7 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AdGroupAd,
     AdGroupAdLabel,
-    AdGroupAdLegacy,
     AdGroupBiddingStrategy,
     AdGroupCriterion,
     AdGroupCriterionLabel,
@@ -237,7 +235,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            AdGroupAd(**incremental_config),
             AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
@@ -261,7 +258,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
                     TopicView(**non_manager_incremental_config),
                     DisplayKeywordView(**non_manager_incremental_config),
                     ShoppingPerformanceView(**non_manager_incremental_config),
-                    AdGroupAdLegacy(**non_manager_incremental_config),
                     GeographicView(**non_manager_incremental_config),
                     KeywordView(**non_manager_incremental_config),
                 ]

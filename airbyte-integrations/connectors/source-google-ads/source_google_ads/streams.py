@@ -338,29 +338,12 @@ class AdGroupCriterionLabel(GoogleAdsStream):
     primary_key = ["ad_group_criterion_label.resource_name"]
 
 
-class AdGroupAd(IncrementalGoogleAdsStream):
-    """
-    Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad
-    """
-
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
-
-
 class AdGroupAdLabel(GoogleAdsStream):
     """
     Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad_label
     """
 
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "label.id"]
-
-
-class AdGroupAdLegacy(IncrementalGoogleAdsStream):
-    """
-    AdGroupAdReport stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
-    """
-
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date", "segments.ad_network_type"]
 
 
 class DisplayKeywordView(IncrementalGoogleAdsStream):
