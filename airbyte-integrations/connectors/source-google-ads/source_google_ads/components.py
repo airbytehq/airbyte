@@ -294,11 +294,15 @@ class KeysToSnakeCaseGoogleAdsTransformation(RecordTransformation):
     Transforms keys in a Google Ads record to snake_case.
     The difference with KeysToSnakeCaseTransformation is that this transformation doesn't add underscore before digits.
     """
-    token_pattern: re.Pattern[str] = re.compile(r"""
+
+    token_pattern: re.Pattern[str] = re.compile(
+        r"""
             \d*[A-Z]+[a-z]*\d*        # uppercase word (with optional leading/trailing digits)
           | \d*[a-z]+\d*              # lowercase word (with optional leading/trailing digits)
           | (?P<NoToken>[^a-zA-Z\d]+) # any non-alphanumeric separators
-        """, re.VERBOSE)
+        """,
+        re.VERBOSE,
+    )
 
     def transform(
         self,
