@@ -25,43 +25,12 @@ import java.util.concurrent.ConcurrentHashMap
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
 const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 
-/** A simple [OutputConsumer] such as standard output or buffering test output consumer. */
-abstract class StandardOutputConsumer(clock: Clock) : OutputConsumer(clock)
-
-/** Default implementation of [OutputConsumer]. */
-@Singleton
-@Secondary
-class StdoutOutputConsumer(
-    val stdout: PrintStream,
+abstract class BaseStdoutOutputConsumer(
     clock: Clock,
-    /**
-     * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
-     * buffer's size (in bytes) grows past this value.
-     *
-     * Flushing the record buffer to stdout is done by calling [println] which is synchronized. The
-     * choice of [println] is imposed by our use of the ConsoleJSONAppender log4j appended which
-     * concurrently calls [println] to print [AirbyteMessage]s of type LOG to standard output.
-     *
-     * Because calling [println] incurs both a synchronization overhead and a syscall overhead, the
-     * connector's performance will noticeably degrade if it's called too often. This happens
-     * primarily when emitting lots of tiny RECORD messages, which is typical of source connectors.
-     *
-     * For this reason, the [bufferByteSizeThresholdForFlush] value should not be too small. The
-     * default value of 4kB is good in this respect. For example, if the average serialized record
-     * size is 100 bytes, this will reduce the volume of [println] calls by a factor of 40.
-     *
-     * Conversely, the [bufferByteSizeThresholdForFlush] value should also not be too large.
-     * Otherwise, the output becomes bursty and this also degrades performance. As of today (and
-     * hopefully not for long) the platform still pipes the connector's stdout into socat to emit
-     * the output as TCP packets. While socat is buffered, its buffer size is only 8 kB. In any
-     * case, TCP packet sized (capped by the MTU) are also in the low kilobytes.
-     */
-    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
-    val bufferByteSizeThresholdForFlush: Int,
-) : StandardOutputConsumer(clock) {
-    private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
-    private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
-    private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
+) : OutputConsumer(clock) {
+    protected open val buffer = ByteArrayOutputStream()
+    protected val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
+    protected val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
 
     override fun accept(airbyteMessage: AirbyteMessage) {
         // This method effectively println's its JSON-serialized argument.
@@ -90,7 +59,7 @@ class StdoutOutputConsumer(
         }
     }
 
-    private fun withLockMaybeWriteNewline() {
+    protected fun withLockMaybeWriteNewline() {
         if (buffer.size() > 0) {
             buffer.write('\n'.code)
         }
@@ -103,56 +72,14 @@ class StdoutOutputConsumer(
         }
     }
 
-    private fun withLockFlush() {
-        if (buffer.size() > 0) {
-            stdout.println(buffer.toString(Charsets.UTF_8))
-            stdout.flush()
-            buffer.reset()
-        }
-    }
+    abstract fun withLockFlush()
 
-    override fun accept(record: AirbyteRecordMessage) {
-        // The serialization of RECORD messages can become a performance bottleneck for source
-        // connectors because they can come in much higher volumes than other message types.
-        // Specifically, with jackson, the bottleneck is in the object mapping logic.
-        // As it turns out, this object mapping logic is not particularly useful for RECORD messages
-        // because within a given stream the only variations occur in the "data" and the "meta"
-        // fields:
-        // - the "data" field is already an ObjectNode and is cheap to serialize,
-        // - the "meta" field is often unset.
-        // For this reason, this method builds and reuses a JSON template for each stream.
-        // Then, for each record, it serializes just "data" and "meta" to populate the template.
-        val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
-        synchronized(this) {
-            // Write a newline character to the buffer if it's not empty.
-            withLockMaybeWriteNewline()
-            // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
-            buffer.write(template.prefix)
-            // Serialize the record data ObjectNode to JSON, writing it to the buffer.
-            Jsons.writeTree(jsonGenerator, record.data)
-            jsonGenerator.flush()
-            // If the record has a AirbyteRecordMessageMeta instance set,
-            // write ',"meta":' followed by the serialized meta.
-            val meta: AirbyteRecordMessageMeta? = record.meta
-            if (meta != null) {
-                buffer.write(metaPrefixBytes)
-                sequenceWriter.write(meta)
-                sequenceWriter.flush()
-            }
-            // Write ',"emitted_at":...}}'.
-            buffer.write(template.suffix)
-            // Flush the buffer to stdout only once it has reached a certain size.
-            // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
-            // which otherwise becomes very apparent when lots of tiny records are involved.
-            if (buffer.size() >= bufferByteSizeThresholdForFlush) {
-                withLockFlush()
-            }
-        }
-    }
+    protected val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
 
-    private val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
-
-    private fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
+    protected open fun getOrCreateRecordTemplate(
+        stream: String,
+        namespace: String?
+    ): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
                 unNamespacedTemplates
@@ -164,8 +91,8 @@ class StdoutOutputConsumer(
         }
     }
 
-    private val namespacedTemplates = ConcurrentHashMap<String, StreamToTemplateMap>()
-    private val unNamespacedTemplates = StreamToTemplateMap()
+    protected val namespacedTemplates = ConcurrentHashMap<String, StreamToTemplateMap>()
+    protected val unNamespacedTemplates = StreamToTemplateMap()
 
     companion object {
         const val META_PREFIX = ""","meta":"""
@@ -220,6 +147,91 @@ class RecordTemplate(
 
         private const val DATA_PREFIX = """"data":"""
         private const val DATA_SPLIT_DELIMITER = "$DATA_PREFIX{}"
+    }
+}
+
+/** A simple [OutputConsumer] such as standard output or buffering test output consumer. */
+abstract class StandardOutputConsumer(clock: Clock) : BaseStdoutOutputConsumer(clock)
+
+/** Default implementation of [OutputConsumer]. */
+@Singleton
+@Secondary
+class StdoutOutputConsumer(
+    val stdout: PrintStream,
+    clock: Clock,
+    /**
+     * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
+     * buffer's size (in bytes) grows past this value.
+     *
+     * Flushing the record buffer to stdout is done by calling [println] which is synchronized. The
+     * choice of [println] is imposed by our use of the ConsoleJSONAppender log4j appended which
+     * concurrently calls [println] to print [AirbyteMessage]s of type LOG to standard output.
+     *
+     * Because calling [println] incurs both a synchronization overhead and a syscall overhead, the
+     * connector's performance will noticeably degrade if it's called too often. This happens
+     * primarily when emitting lots of tiny RECORD messages, which is typical of source connectors.
+     *
+     * For this reason, the [bufferByteSizeThresholdForFlush] value should not be too small. The
+     * default value of 4kB is good in this respect. For example, if the average serialized record
+     * size is 100 bytes, this will reduce the volume of [println] calls by a factor of 40.
+     *
+     * Conversely, the [bufferByteSizeThresholdForFlush] value should also not be too large.
+     * Otherwise, the output becomes bursty and this also degrades performance. As of today (and
+     * hopefully not for long) the platform still pipes the connector's stdout into socat to emit
+     * the output as TCP packets. While socat is buffered, its buffer size is only 8 kB. In any
+     * case, TCP packet sized (capped by the MTU) are also in the low kilobytes.
+     */
+    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
+    val bufferByteSizeThresholdForFlush: Int,
+) :
+    StandardOutputConsumer(
+        clock,
+    ) {
+    override fun withLockFlush() {
+        if (buffer.size() > 0) {
+            stdout.println(buffer.toString(Charsets.UTF_8))
+            stdout.flush()
+            buffer.reset()
+        }
+    }
+
+    override fun accept(record: AirbyteRecordMessage) {
+        // The serialization of RECORD messages can become a performance bottleneck for source
+        // connectors because they can come in much higher volumes than other message types.
+        // Specifically, with jackson, the bottleneck is in the object mapping logic.
+        // As it turns out, this object mapping logic is not particularly useful for RECORD messages
+        // because within a given stream the only variations occur in the "data" and the "meta"
+        // fields:
+        // - the "data" field is already an ObjectNode and is cheap to serialize,
+        // - the "meta" field is often unset.
+        // For this reason, this method builds and reuses a JSON template for each stream.
+        // Then, for each record, it serializes just "data" and "meta" to populate the template.
+        val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
+        synchronized(this) {
+            // Write a newline character to the buffer if it's not empty.
+            withLockMaybeWriteNewline()
+            // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
+            buffer.write(template.prefix)
+            // Serialize the record data ObjectNode to JSON, writing it to the buffer.
+            Jsons.writeTree(jsonGenerator, record.data)
+            jsonGenerator.flush()
+            // If the record has a AirbyteRecordMessageMeta instance set,
+            // write ',"meta":' followed by the serialized meta.
+            val meta: AirbyteRecordMessageMeta? = record.meta
+            if (meta != null) {
+                buffer.write(metaPrefixBytes)
+                sequenceWriter.write(meta)
+                sequenceWriter.flush()
+            }
+            // Write ',"emitted_at":...}}'.
+            buffer.write(template.suffix)
+            // Flush the buffer to stdout only once it has reached a certain size.
+            // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
+            // which otherwise becomes very apparent when lots of tiny records are involved.
+            if (buffer.size() >= bufferByteSizeThresholdForFlush) {
+                withLockFlush()
+            }
+        }
     }
 }
 
