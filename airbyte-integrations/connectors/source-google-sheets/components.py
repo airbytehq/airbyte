@@ -187,9 +187,20 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         self._values_to_match_key = parameters["values_to_match_key"]
         schema_type_identifier = parameters["schema_type_identifier"]
         names_conversion = self.config.get("names_conversion", False)
-        self._indexed_properties_to_match = self.extract_properties_to_match(
-            parameters["properties_to_match"], schema_type_identifier, names_conversion=names_conversion
-        )
+        
+        # Store parameters for later access
+        self.parameters = parameters
+        
+        # properties_to_match is set dynamically through components mapping
+        # so it might not be available during initialization
+        properties_to_match = parameters.get("properties_to_match")
+        if properties_to_match:
+            self._indexed_properties_to_match = self.extract_properties_to_match(
+                properties_to_match, schema_type_identifier, names_conversion=names_conversion
+            )
+        else:
+            # Initialize with empty dict, will be set later when properties_to_match is available
+            self._indexed_properties_to_match = {}
 
     def extract_properties_to_match(self, properties_to_match, schema_type_identifier, names_conversion):
         schema_pointer = schema_type_identifier.get("schema_pointer")
@@ -200,6 +211,16 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         ):
             indexed_properties[property_index] = property_parsed_value
         return indexed_properties
+
+    def update_properties_to_match(self, properties_to_match):
+        """Update the indexed properties when properties_to_match becomes available"""
+        schema_type_identifier = self.parameters.get("schema_type_identifier")
+        
+        if schema_type_identifier:
+            names_conversion = self.config.get("names_conversion", False)
+            self._indexed_properties_to_match = self.extract_properties_to_match(
+                properties_to_match, schema_type_identifier, names_conversion=names_conversion
+            )
 
     @staticmethod
     def match_properties_with_values(unmatched_values: List[str], indexed_properties: Dict[int, str]):
@@ -229,6 +250,13 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         raw_records_extracted = super().extract_records(response=response)
+        
+        # Check if we need to initialize properties_to_match from parameters
+        if not self._indexed_properties_to_match:
+            properties_to_match = self.parameters.get('properties_to_match')
+            if properties_to_match:
+                self.update_properties_to_match(properties_to_match)
+        
         for raw_record in raw_records_extracted:
             unmatched_values_collection = raw_record.get(self._values_to_match_key, [])
             for unmatched_values in unmatched_values_collection:
