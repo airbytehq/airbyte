@@ -18,21 +18,17 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AdGroupAdLabel,
     AdGroupBiddingStrategy,
     AdGroupCriterion,
-    AdGroupCriterionLabel,
     AdListingGroupCriterion,
     CampaignBiddingStrategy,
     CampaignCriterion,
-    CampaignLabel,
     ClickView,
     CustomerClient,
     CustomerLabel,
     DisplayKeywordView,
     GeographicView,
     KeywordView,
-    Label,
     ShoppingPerformanceView,
     TopicView,
     UserLocationView,
@@ -232,17 +228,13 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
-            AdGroupCriterionLabel(**default_config),
             AdListingGroupCriterion(**default_config),
             CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
-            CampaignLabel(google_api, customers=customers),
             ClickView(**incremental_config),
             CustomerLabel(**default_config),
-            Label(**default_config),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:

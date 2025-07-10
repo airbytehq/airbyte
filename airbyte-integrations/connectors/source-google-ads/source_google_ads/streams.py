@@ -302,15 +302,6 @@ class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
     primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
 
 
-class CampaignLabel(GoogleAdsStream):
-    """
-    Campaign labels stream: https://developers.google.com/google-ads/api/fields/v18/campaign_label
-    """
-
-    # Note that this is a string type. Google doesn't return a more convenient identifier.
-    primary_key = ["campaign.id", "label.id"]
-
-
 class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
     """
     Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v18/ad_group
@@ -318,23 +309,6 @@ class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
-
-
-class AdGroupCriterionLabel(GoogleAdsStream):
-    """
-    Ad Group Criterion Label stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_criterion_label
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group_criterion_label.resource_name"]
-
-
-class AdGroupAdLabel(GoogleAdsStream):
-    """
-    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad_label
-    """
-
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "label.id"]
 
 
 class DisplayKeywordView(IncrementalGoogleAdsStream):
@@ -415,15 +389,6 @@ class ClickView(IncrementalGoogleAdsStream):
     # where clause for cursor is inclusive from both sides, duration 0 will result in - '"2022-01-01" <= cursor AND "2022-01-01" >= cursor'
     # Queries including ClickView must have a filter limiting the results to one day
     slice_duration = pendulum.duration(days=0)
-
-
-class Label(GoogleAdsStream):
-    """
-    Label stream: https://developers.google.com/google-ads/api/fields/v18/label
-    """
-
-    primary_key = ["label.id"]
-
 
 class ChangeStatus(IncrementalGoogleAdsStream):
     """
