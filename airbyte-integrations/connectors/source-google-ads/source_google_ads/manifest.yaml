@@ -136,16 +136,12 @@ definitions:
     retriever:
       $ref: "#/definitions/incremental_stream_base/retriever"
       partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1
-        deduplicate: true
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream: "#/definitions/customer_client_non_manager"
-              parent_key: "clientCustomer"
-              partition_field: "customer_id"
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client_non_manager"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
