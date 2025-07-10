@@ -49,16 +49,17 @@ class ClickhouseCheckerTest {
 
     @Test
     fun `check happy path - creates check table and inserts data`() {
-        checker.check(Fixtures.config())
+        val config = Fixtures.config()
+        checker.check(config)
 
         verify {
             client.execute(
-                "CREATE TABLE IF NOT EXISTS ${Fixtures.config().database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()"
+                "CREATE TABLE IF NOT EXISTS ${config.database}.${checker.tableName} (test UInt8) ENGINE = MergeTree ORDER BY ()"
             )
         }
         verify {
             client.insert(
-                "${Fixtures.config().database}.${checker.tableName}",
+                "${config.database}.${checker.tableName}",
                 any<InputStream>(),
                 ClickHouseFormat.JSONEachRow
             )
@@ -114,10 +115,11 @@ class ClickhouseCheckerTest {
 
     @Test
     fun `cleanup happy path - drops the check table`() {
-        checker.cleanup(Fixtures.config())
+        val config = Fixtures.config()
+        checker.cleanup(config)
 
         verify {
-            client.execute("DROP TABLE IF EXISTS ${Fixtures.config().database}.${checker.tableName}")
+            client.execute("DROP TABLE IF EXISTS ${config.database}.${checker.tableName}")
         }
     }
 
