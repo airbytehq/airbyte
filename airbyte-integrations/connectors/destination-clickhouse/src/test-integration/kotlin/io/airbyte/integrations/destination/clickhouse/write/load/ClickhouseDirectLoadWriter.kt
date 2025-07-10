@@ -122,12 +122,6 @@ abstract class ClickhouseDirectLoadWriter(
     override fun testBasicWriteFile() {
         // Clickhouse does not support file transfer, so this test is skipped.
     }
-
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/13574")
-    override fun testBizarrePkSchemaEvolution() {
-        super.testBizarrePkSchemaEvolution()
-    }
 }
 
 class ClickhouseDataDumper(
