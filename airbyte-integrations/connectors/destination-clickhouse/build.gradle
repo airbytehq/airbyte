@@ -18,7 +18,7 @@ java {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.clickhouse_v2.ClickhouseV2DestinationKt'
+    mainClass = 'io.airbyte.integrations.destination.clickhouse.ClickhouseDestinationKt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
                                  '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
                                  '-XX:GCLockerRetryAllocationCount=100',
