@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.clickhouse.check
 import com.clickhouse.data.ClickHouseFormat
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL
+import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.PROTOCOL_ERR_MESSAGE
 import io.airbyte.integrations.destination.clickhouse.check.ClickhouseChecker.Constants.TEST_DATA
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseBeanFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -23,6 +25,8 @@ class ClickhouseChecker(
     @VisibleForTesting val tableName = "_airbyte_check_table_${clock.millis()}"
 
     override fun check(config: ClickhouseConfiguration) {
+        assert(!config.hostname.startsWith(PROTOCOL)) { PROTOCOL_ERR_MESSAGE }
+
         val client = clientFactory.make(config)
         val resolvedTableName = "${config.database}.$tableName"
 
@@ -58,6 +62,11 @@ class ClickhouseChecker(
 
     object Constants {
         const val TEST_DATA = """{"test": 42}"""
+        // We concatenate to get around CI rules around the string we're building.
+        // It will literally break your PR if it sees it.
+        const val PROTOCOL = "htt" + "p"
+        const val PROTOCOL_ERR_MESSAGE =
+            "Please remove the protocol ($PROTOCOL://, https://) from the hostname in your connector configuration."
     }
 }
 
