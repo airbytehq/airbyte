@@ -105,12 +105,21 @@ class DefaultObjectStorageFormattingWriterFactory(
                     rootLevelFlattening = flatten,
                 )
             is CSVFormatConfiguration ->
-                CSVFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    rootLevelFlattening = flatten,
-                    extractedAtAsTimestampWithTimezone = false,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToCsvFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                        extractedAtAsTimestampWithTimezone = false,
+                    )
+                } else {
+                    CSVFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                        extractedAtAsTimestampWithTimezone = false,
+                    )
+                }
         }
     }
 }
