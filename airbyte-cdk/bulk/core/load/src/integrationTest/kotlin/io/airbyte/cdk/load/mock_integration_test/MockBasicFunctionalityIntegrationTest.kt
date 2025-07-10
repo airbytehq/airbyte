@@ -203,7 +203,12 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                 stream,
                 listOf(
                     // Send one record, and one global state message
-                    InputRecord(stream, """{"id": 42}""", emittedAtMs = 1234),
+                    InputRecord(
+                        stream,
+                        """{"id": 42}""",
+                        emittedAtMs = 1234,
+                        checkpointId = checkpointKeyForMedium()?.checkpointId
+                    ),
                     InputGlobalCheckpoint(
                         Jsons.readTree("""{"foo": "bar"}"""),
                         checkpointKeyForMedium(),
@@ -222,9 +227,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                                 state = Jsons.readTree("""{"ghi": "jkl"}"""),
                             ),
                         ),
-                        // Obviously doesn't match reality (we only have one InputRecord).
-                        // But the destination isn't responsible for enforcing this, so it's fine.
-                        sourceRecordCount = 42,
+                        sourceRecordCount = 1,
                     )
                 ),
             )
@@ -236,16 +239,31 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
             "Expected sync to return exactly one state message. Got $returnedStateMessages",
         )
         val returnedStateMessage = returnedStateMessages.first().state
-        assertEquals(
+        val expectedStateMessage =
             AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                // Preserve the original source record count
-                .withSourceStats(AirbyteStateStats().withRecordCount(42.0))
+                .withSourceStats(AirbyteStateStats().withRecordCount(1.0))
                 // Attach our new destination record count
                 .withDestinationStats(AirbyteStateStats().withRecordCount(1.0))
                 // attach stats for speed mode
-                .withAdditionalProperty("committedBytesCount", 139)
                 .withAdditionalProperty("committedRecordsCount", 1)
+                .also { stateMessage ->
+                    when (dataChannelMedium) {
+                        DataChannelMedium.SOCKET -> {
+                            checkpointKeyForMedium()?.let {
+                                stateMessage.withAdditionalProperty(
+                                    "partition_id",
+                                    it.checkpointId.value
+                                )
+                                stateMessage.withAdditionalProperty("id", it.checkpointIndex.value)
+                            }
+                            stateMessage.withAdditionalProperty("committedBytesCount", 48)
+                        }
+                        DataChannelMedium.STDIO -> {
+                            stateMessage.withAdditionalProperty("committedBytesCount", 139)
+                        }
+                    }
+                }
                 .withGlobal(
                     AirbyteGlobalState()
                         .withSharedState(Jsons.readTree("""{"foo": "bar"}"""))
@@ -267,7 +285,9 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                                     .withStreamState(Jsons.readTree("""{"ghi": "jkl"}""")),
                             )
                         )
-                ),
+                )
+        assertEquals(
+            expectedStateMessage,
             returnedStateMessage,
         )
     }
@@ -416,12 +436,6 @@ class MockBasicFunctionalityIntegrationTestSocketProtobuf :
     @Disabled("Sockets medium hangs when receiving an unrecognized state message")
     override fun testCrashInInputLoop() {
         super.testCrashInInputLoop()
-    }
-
-    @Test
-    @Disabled("Sockets medium hangs when global state contains unrecognized per-stream state")
-    override fun testGlobalStateWithUnknownStreamState() {
-        super.testGlobalStateWithUnknownStreamState()
     }
 }
 
