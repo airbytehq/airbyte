@@ -1,12 +1,16 @@
 plugins {
-    id 'airbyte-bulk-connector'
+    id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
-airbyteBulkConnector {
-    core = 'extract'
-    toolkits = ['extract-jdbc']
-    cdk = 'local'
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
 }
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.oracle.OracleSource'
