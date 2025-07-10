@@ -361,6 +361,7 @@ streams:
   - "#/definitions/account_performance_report_stream"
   - "#/definitions/ad_group_stream"
   - "#/definitions/ad_group_ad_stream"
+  - "#/definitions/ad_group_ad_legacy_stream"
   - "#/definitions/campaign_stream"
   - "#/definitions/campaign_budget_stream"
   - "#/definitions/customer_stream"
