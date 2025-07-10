@@ -311,15 +311,6 @@ class CampaignLabel(GoogleAdsStream):
     primary_key = ["campaign.id", "label.id"]
 
 
-class AdGroupLabel(GoogleAdsStream):
-    """
-    Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_label
-    """
-
-    # Note that this is a string type. Google doesn't return a more convenient identifier.
-    primary_key = ["ad_group.id", "label.id"]
-
-
 class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
     """
     Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v18/ad_group
