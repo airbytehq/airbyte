@@ -1,6 +1,6 @@
 // Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-package io.airbyte.integrations.sourceTesting.tests
+package io.airbyte.cdk.test.fixtures.tests
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
@@ -14,12 +14,12 @@ import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.integrations.sourceTesting.ColumnDefinition
-import io.airbyte.integrations.sourceTesting.ColumnType
-import io.airbyte.integrations.sourceTesting.SqlDialect
-import io.airbyte.integrations.sourceTesting.TableDefinition
-import io.airbyte.integrations.sourceTesting.TestAssetResourceNamer
-import io.airbyte.integrations.sourceTesting.TestDbExecutor
+import io.airbyte.cdk.test.fixtures.cleanup.TestAssetResourceNamer
+import io.airbyte.cdk.test.fixtures.connector.ColumnDefinition
+import io.airbyte.cdk.test.fixtures.connector.ColumnType
+import io.airbyte.cdk.test.fixtures.connector.SqlDialect
+import io.airbyte.cdk.test.fixtures.connector.TableDefinition
+import io.airbyte.cdk.test.fixtures.connector.TestDbExecutor
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog

@@ -1,8 +1,8 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.sourceTesting.tests
+package io.airbyte.cdk.test.fixtures.tests
 
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.integrations.sourceTesting.IntegrationTestOperations
+import io.airbyte.cdk.test.fixtures.connector.IntegrationTestOperations
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest
