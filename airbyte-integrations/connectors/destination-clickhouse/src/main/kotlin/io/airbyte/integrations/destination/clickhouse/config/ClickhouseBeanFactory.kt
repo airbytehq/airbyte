@@ -18,14 +18,21 @@ import jakarta.inject.Singleton
 @Factory
 class ClickhouseBeanFactory {
     @Singleton
-    fun sshClient() {}
+    fun sshClient(): SSHClient? {}
 
     @Singleton
-    fun clickhouseClient(config: ClickhouseConfiguration): Client {
-        config.tunnelConfiguration
+    fun clickhouseClient(
+        config: ClickhouseConfiguration,
+        client: SHHClient?,
+    ): Client {
+        if (client != null) {
+            "${client.url}:${client.port}"
+            
+        }
 
         val builder =
             Client.Builder()
+                .addEndpoint(config.endpoint)
                 .addEndpoint(config.endpoint)
                 .setUsername(config.username)
                 .setPassword(config.password)
