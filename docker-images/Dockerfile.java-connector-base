@@ -44,3 +44,6 @@ ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f1016444
     /airbyte/javabase.sh
 ADD https://dtdg.co/latest-java-tracer \
     /airbyte/dd-java-agent.jar
+
+RUN chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh /airbyte/dd-java-agent.jar && \
+    chmod 750 /airbyte/base.sh /airbyte/javabase.sh
