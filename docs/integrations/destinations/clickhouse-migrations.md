@@ -15,8 +15,24 @@ different form. So any downstream pipelines will need updating to ingest the new
 data location / format.
 
 ## Gotchas
-* If the "Hostname" property in your configuration contains the protocol ("http 
-or "https"), you need to remove it. 
+
+### Namespaces and the default database
+
+In V2 namespaces are treated as equivalent to a ClickHouse "database". This
+means if you set a custom namespace for your connection that will be the
+database the connector will use for queries instead of the "database"
+configured in the Destination settings.
+
+Previously, namespaces where added as a prefix to the table name. If you have
+existing connections configured in this fashion you may want to remove them.
+
+### Hostname
+
+If the "Hostname" property in your configuration contains the protocol ("http
+or "https"), you will need to remove it.
+
+The previous versions incidentally tolerated the protocol being stored in the
+hostname field.
 
 ## Migrating existing data to the new format
 
