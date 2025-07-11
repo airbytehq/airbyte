@@ -24,6 +24,16 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 logger = logging.getLogger("airbyte")
 
+REPORT_MAPPING = {
+    "account_performance_report": "customer",
+    "ad_group_ad_legacy": "ad_group_ad",
+    "ad_group_bidding_strategy": "ad_group",
+    "ad_listing_group_criterion": "ad_group_criterion",
+    "campaign_real_time_bidding_settings": "campaign",
+    "campaign_bidding_strategy": "campaign",
+    "service_accounts": "customer",
+}
+
 
 class AccessibleAccountsExtractor(RecordExtractor):
     """
@@ -253,11 +263,6 @@ class GoogleAdsHttpRequester(HttpRequester):
     """
 
     schema_loader: InlineSchemaLoader = None
-    resource_name: Optional[Union[InterpolatedString, str]] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-        self._resource_name = InterpolatedString.create(self.resource_name, parameters=parameters)
 
     def get_request_body_json(
         self,
@@ -268,7 +273,7 @@ class GoogleAdsHttpRequester(HttpRequester):
     ) -> MutableMapping[str, Any]:
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
         manager = stream_slice.extra_fields.get("manager", False)
-        resource_name = self._resource_name.eval(self.config) or self.name
+        resource_name = REPORT_MAPPING.get(self.name, self.name)
         fields = [
             field
             for field in schema.keys()

@@ -100,16 +100,12 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1
-        deduplicate: true
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream: "#/definitions/customer_client"
-              parent_key: "clientCustomer"
-              partition_field: "customer_id"
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client_non_manager"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
     transformations:
       - type: KeysToSnakeCase
       - type: CustomTransformation
@@ -278,8 +274,6 @@ definitions:
       - segments.date
       - segments.ad_network_type
       - segments.device
-    $parameters:
-      resource_name: customer
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -328,8 +322,6 @@ definitions:
       - ad_group_ad.ad.id
       - segments.date
       - segments.ad_network_type
-    $parameters:
-      resource_name: ad_group_ad
     schema_loader:
       type: InlineSchemaLoader
       schema:
