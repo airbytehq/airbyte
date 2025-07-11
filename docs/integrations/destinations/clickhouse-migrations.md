@@ -14,6 +14,10 @@ with no changes, albeit writing data to a completely different location and in a
 different form. So any downstream pipelines will need updating to ingest the new
 data location / format.
 
+## Gotchas
+* If the "Hostname" property in your configuration contains the protocol ("http 
+or "https"), you need to remove it. 
+
 ## Migrating existing data to the new format
 
 Unfortunately Airbyte has no way to migrate the existing raw tables to the new
