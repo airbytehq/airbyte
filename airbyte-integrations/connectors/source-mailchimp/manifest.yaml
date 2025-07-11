@@ -56,6 +56,9 @@ definitions:
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.MailChimpOAuthDataCenterExtractor
 
   base_incremental_stream:
     retriever:
@@ -4777,6 +4780,17 @@ spec:
         description: Technical fields used to identify datacenter to send request to
         type: string
         airbyte_hidden: true
+  config_normalization_rules:
+    config_migrations:
+      - type: ConfigMigration
+        description: Extract the data center from API key credentials and add it to config for API requests
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["data_center"]
+                value: "{{ config.get('credentials', {}).get('apikey', '').split('-')[-1] if config.get('credentials', {}).get('apikey') and '-' in config.get('credentials', {}).get('apikey', '') else '' }}"
+            condition: "{{ config.get('credentials', {}).get('auth_type') == 'apikey' and config.get('credentials', {}).get('apikey') and config.get('credentials', {}).get('apikey', '').strip() and '-' in config.get('credentials', {}).get('apikey', '') }}"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
