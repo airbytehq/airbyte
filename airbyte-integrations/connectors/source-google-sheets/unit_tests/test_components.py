@@ -268,3 +268,24 @@ def test_multiple_flags_with_special_characters():
         )
         == "50th_percentile"
     )
+
+
+def test_dpath_schema_matching_extractor_without_properties_to_match():
+    """
+    Test that DpathSchemaMatchingExtractor can be instantiated without the
+    "properties_to_match" parameter in cases where it is not provided.
+    """
+    parameters_without_properties = {
+        "values_to_match_key": "values",
+        "schema_type_identifier": {"key_pointer": ["formattedValue"], "schema_pointer": ["values"]},
+    }
+
+    # This should not raise an exception
+    extractor = DpathSchemaMatchingExtractor(
+        field_path=_FIELD_PATH, config=config, decoder=decoder_json, parameters=parameters_without_properties
+    )
+
+    # Verify that the extractor was created successfully
+    assert extractor is not None
+    assert extractor._values_to_match_key == "values"
+    assert extractor._indexed_properties_to_match == {}
