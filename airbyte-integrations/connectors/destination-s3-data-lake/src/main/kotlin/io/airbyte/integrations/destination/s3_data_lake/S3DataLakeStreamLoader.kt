@@ -105,20 +105,12 @@ class S3DataLakeStreamLoader(
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
-            if (stream.minimumGenerationId > 0) {
+            if (stream.isSingleGenerationTruncate()) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
                 }
-                val generationIdsToDelete =
-                    (0 until stream.minimumGenerationId).map(
-                        icebergUtil::constructGenerationIdSuffix
-                    )
                 val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteGenerationId(
-                    table,
-                    stagingBranchName,
-                    generationIdsToDelete
-                )
+                icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
                 //  Doing it again to push the deletes from the staging to main branch
                 logger.info {
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
