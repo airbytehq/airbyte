@@ -42,14 +42,14 @@ spec:
                 name: airbyte-airbyte-connector-builder-server-svc
                 port:
                   number: 80 # service port, example: 8080
-            path: /api/v1/connector_builder
+            path: /api/v1/connector_builder/
             pathType: Prefix
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-server-svc
                 name: airbyte-airbyte-server-svc
                 port:
-                  number: 8000 # service port, example: 8080
+                  number: 8001 # service port, example: 8080
             path: /
             pathType: Prefix
 ```
@@ -98,13 +98,13 @@ spec:
                 name: airbyte-airbyte-connector-builder-server-svc
                 port:
                   number: 80
-            path: /api/v1/connector_builder
+            path: /api/v1/connector_builder/
             pathType: Prefix
           - backend:
               service:
                 name: airbyte-airbyte-server-svc
                 port:
-                  number: 8000
+                  number: 8001
             path: /
             pathType: Prefix
 ```
