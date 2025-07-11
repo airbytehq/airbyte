@@ -79,20 +79,7 @@ class StringInterpolationTest {
     }
 
     @Test
-    internal fun `test given InterpolatedMap with get method when eval then return value`() {
-        val objectNode = Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
-
-        val interpolatedValue =
-            StringInterpolator()
-                .interpolate(
-                    """{{ response.get("modificationMetadata").get("readOnlyValue") }}""",
-                    mapOf("response" to objectNode.toInterpolationContext())
-                )
-        assertEquals("readonly", interpolatedValue)
-    }
-
-    @Test
-    internal fun `test given InterpolatedMap with get accessor when eval then return value`() {
+    internal fun `test given ObjectNode with get accessor when eval then return value`() {
         val objectNode = Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
 
         val interpolatedValue =

@@ -22,9 +22,6 @@ import jinjava.javax.el.PropertyNotWritableException
  * language would need to use textual operator `get` (which is still allowed, but less expressive).
  * Given this class is registered as an ELResolver in the JinjavaConfig, the user will be able to
  * write `node["field"]` instead of `node.get("field").
- *
- * Note that this class relies on Maps to be InterpolatedMap so JsonNode will need to be wrapped as
- * InterpolatedMap before being passed as a binding to the render method.
  */
 private class MapGetOperatorELResolver : ELResolver() {
     override fun getCommonPropertyType(context: ELContext?, base: Any?): Class<*>? {
