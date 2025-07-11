@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.clickhouse.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
 
 data class ClickhouseConfiguration(
@@ -16,6 +17,7 @@ data class ClickhouseConfiguration(
     val username: String,
     val password: String,
     val enableJson: Boolean,
+    val tunnelConfig: SshTunnelMethodConfiguration?,
 ) : DestinationConfiguration() {
     val endpoint = "$protocol://$hostname:$port"
     val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
@@ -45,6 +47,7 @@ class ClickhouseConfigurationFactory :
             pojo.username,
             pojo.password,
             pojo.enableJson ?: false,
+            pojo.tunnelConfig,
         )
     }
 
@@ -67,6 +70,7 @@ class ClickhouseConfigurationFactory :
             username = overrides.getOrDefault("username", spec.username),
             enableJson =
                 overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
+            tunnelConfig = spec.tunnelConfig,
         )
     }
 }
