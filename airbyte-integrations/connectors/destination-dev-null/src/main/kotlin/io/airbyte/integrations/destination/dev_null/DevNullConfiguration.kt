@@ -40,7 +40,7 @@ data class DevNullConfiguration(val type: DevNullType, val ackRatePerRecord: Int
 class DevNullConfigurationFactory :
     DestinationConfigurationFactory<DevNullSpecification, DevNullConfiguration> {
     private val log = KotlinLogging.logger {}
-
+    // revert me;
     override fun makeWithoutExceptionHandling(pojo: DevNullSpecification): DevNullConfiguration {
         return when (pojo) {
             is DevNullSpecificationOss -> {
