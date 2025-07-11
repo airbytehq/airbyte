@@ -103,6 +103,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
     // databaseNames and streamsByDatabase must be the same length
     List<Bson> orFilters = new ArrayList<>();
+    LOGGER.info("The length of the database names is {}", databaseNames.size());
     for (int i = 0; i < databaseNames.size(); i++) {
       String dbName = databaseNames.get(i);
       List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
@@ -116,7 +117,17 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     }
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    final ChangeStreamIterable<BsonDocument> eventStream;
+    LOGGER.info("DEBUG: Database count: {}, databases: {}", databaseNames.size(), databaseNames);
+
+    // Use database-level watch when only one database is configured to minimize required permissions.
+    // Empty database validation is handled upstream in MongoDbSource.check()
+    if (databaseNames.size() == 1) {
+      LOGGER.info("We are using a single database stream {} as the first one", databaseNames.getFirst());
+      eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
+    } else {
+      eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    }
 
     // Attempt to start the stream after the saved offset.
     eventStream.resumeAfter(savedOffset);
