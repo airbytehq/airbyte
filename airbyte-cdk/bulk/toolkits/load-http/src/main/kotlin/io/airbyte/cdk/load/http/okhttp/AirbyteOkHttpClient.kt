@@ -37,8 +37,10 @@ class AirbyteOkHttpClient(
                 .method(request.method.toString(), request.body?.toRequestBody())
                 .apply { request.headers.forEach { header -> addHeader(header.key, header.value) } }
                 .build()
-        val response: okhttp3.Response =
-            FailsafeCall.with(retryPolicies[0], *retryPolicies.drop(1).toTypedArray()).compose(client.newCall(okhttpRequest)).execute()
+        val response = when (retryPolicies.isEmpty()) {
+            true -> client.newCall(okhttpRequest).execute()
+            false -> FailsafeCall.with(retryPolicies[0], *retryPolicies.drop(1).toTypedArray()).compose(client.newCall(okhttpRequest)).execute()
+        }
         return OkHttpResponse(response)
     }
 
