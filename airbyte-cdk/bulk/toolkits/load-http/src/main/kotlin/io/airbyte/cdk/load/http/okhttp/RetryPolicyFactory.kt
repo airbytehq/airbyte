@@ -26,13 +26,13 @@ class RetryPolicyFactory {
                 .withBackoff(1, 300, ChronoUnit.SECONDS)
                 .withMaxAttempts(10)
                 .onFailedAttempt{ e -> logger.warn { "Request got rate limited. Response body is: ${e.lastResult.body?.string() ?: "<empty>"}" } }
-                .onRetry{ e -> logger.warn { "Retrying rate limited request..." } }
+                .onRetry{ _ -> logger.warn { "Retrying rate limited request..." } }
                 .build(),
             fromPredicate{ response ->  response.code in 500..< 600 }
                 .withBackoff(1, 60, ChronoUnit.SECONDS)
                 .withMaxDuration(Duration.ofMinutes(10))
                 .onFailedAttempt{ e -> logger.warn { "Server error with status ${e.lastResult?.code}. . Response body is: ${e.lastResult?.body?.string() ?: "<empty>"}" } }
-                .onRetry{ e -> logger.warn { "Retrying request with server error..." } }
+                .onRetry{ _ -> logger.warn { "Retrying request with server error..." } }
                 .build(),
         )
     }
@@ -41,6 +41,6 @@ class RetryPolicyFactory {
         RetryPolicy.builder<Response>()
             .handleResultIf { predicate.test(it) }
             // Specifying handleIf is very weird because we don't care about exceptions here but the retry policy will fail if we don't check the exceptions and there is an exception. See: https://github.com/failsafe-lib/failsafe/blob/98bb496198e18436e654ddca39358a4634ca32bd/core/src/main/java/dev/failsafe/spi/FailurePolicy.java#L59-L60
-            .handleIf { exception ->  false}
+            .handleIf { _ ->  false}
 
 }
