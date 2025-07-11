@@ -25,7 +25,6 @@ dependencies {
     implementation 'net.snowflake:snowflake-jdbc:3.23.1'
     implementation 'org.apache.commons:commons-lang3:3.17.0'
 
-    testImplementation testFixtures(project(':airbyte-integrations:connector-testing:source'))
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
