@@ -1,5 +1,10 @@
 # Clickhouse Migration Guide
 
+## SSH Support :warning:
+
+SSH is not yet implemented for the new connector. If you require SSH support,
+please hold off on migrating for now.
+
 ## Upgrading to 2.0.0
 
 This version differs from 1.0.0 radically. Whereas 1.0.0 wrote all your data
@@ -13,6 +18,20 @@ While is treated as a "breaking change", connections should continue to function
 with no changes, albeit writing data to a completely different location and in a
 different form. So any downstream pipelines will need updating to ingest the new
 data location / format.
+
+## Migrating existing data to the new format
+
+Unfortunately Airbyte has no way to migrate the existing raw tables to the new
+typed format. The only "out of the box" way to get your data into the new format
+is to re-sync it from scratch.
+
+## Removing the old tables
+
+Because the new destination has no knowledge of the old destination's table
+naming semantics, we will not remove existing data. If you would like to, you
+will need to delete all the tables saved in the old format, which for most
+people should be under `airbyte_internal.{database}_raw__`, but may vary based
+on your specific configuration.
 
 ## Gotchas
 
@@ -33,22 +52,3 @@ or "https"), you will need to remove it.
 
 The previous versions incidentally tolerated the protocol being stored in the
 hostname field.
-
-## Migrating existing data to the new format
-
-Unfortunately Airbyte has no way to migrate the existing raw tables to the new
-typed format. The only "out of the box" way to get your data into the new format
-is to re-sync it from scratch.
-
-## Removing the old tables
-
-Because the new destination has no knowledge of the old destination's table
-naming semantics, we will not remove existing data. If you would like to, you
-will need to delete all the tables saved in the old format, which for most
-people should be under `airbyte_internal.{database}_raw__`, but may vary based
-on your specific configuration.
-
-## SSH Support
-
-SSH is not yet implemented for the new connector. If you require SSH support,
-please hold off on migrating for now.
