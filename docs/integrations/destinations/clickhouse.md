@@ -95,7 +95,8 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.0.2   | 2025-07-10 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928)   | Makes json optional in spec to work around UI issue.                           |
+| 2.0.3   | 2025-07-11 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928) | Publish metadata changes.                                                      |
+| 2.0.2   | 2025-07-10 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928) | Makes json optional in spec to work around UI issue.                           |
 | 2.0.1   | 2025-07-10 | [\#62906](https://github.com/airbytehq/airbyte/pull/62906) | Adds bespoke validation for legacy hostnames that contain a protocol.          |
 | 2.0.0   | 2025-07-10 | [\#62887](https://github.com/airbytehq/airbyte/pull/62887) | Cut 2.0.0 release. Replace existing connector.                                 |
 | 0.1.11  | 2025-07-09 | [\#62883](https://github.com/airbytehq/airbyte/pull/62883) | Only set JSON properties on client if enabled to support older CH deployments. |
