@@ -33,7 +33,8 @@ class BulkLoadCompletedUploadQueue<K : WithStream, T : RemoteObject<*>> {
             (0 until bulkLoader.maxNumConcurrentLoads)
                 .map {
                     ChannelMessageQueue<
-                        PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>(
+                        PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>
+                    >(
                         Channel(ObjectLoaderQueueBeanFactory.OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
                     )
                 }

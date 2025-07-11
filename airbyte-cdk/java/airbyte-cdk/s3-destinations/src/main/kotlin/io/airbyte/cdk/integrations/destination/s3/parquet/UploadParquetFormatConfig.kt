@@ -23,25 +23,25 @@ class UploadParquetFormatConfig(formatConfig: JsonNode) : UploadFormatConfig {
             UploadFormatConfig.withDefault(
                 formatConfig,
                 "block_size_mb",
-                ParquetConstants.DEFAULT_BLOCK_SIZE_MB
+                ParquetConstants.DEFAULT_BLOCK_SIZE_MB,
             )
         val maxPaddingSizeMb: Int =
             UploadFormatConfig.withDefault(
                 formatConfig,
                 "max_padding_size_mb",
-                ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB
+                ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB,
             )
         val pageSizeKb: Int =
             UploadFormatConfig.withDefault(
                 formatConfig,
                 "page_size_kb",
-                ParquetConstants.DEFAULT_PAGE_SIZE_KB
+                ParquetConstants.DEFAULT_PAGE_SIZE_KB,
             )
         val dictionaryPageSizeKb: Int =
             UploadFormatConfig.withDefault(
                 formatConfig,
                 "dictionary_page_size_kb",
-                ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB
+                ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB,
             )
 
         this.compressionCodec =
@@ -49,7 +49,7 @@ class UploadParquetFormatConfig(formatConfig: JsonNode) : UploadFormatConfig {
                 UploadFormatConfig.withDefault(
                         formatConfig,
                         "compression_codec",
-                        ParquetConstants.DEFAULT_COMPRESSION_CODEC.name
+                        ParquetConstants.DEFAULT_COMPRESSION_CODEC.name,
                     )
                     .uppercase(Locale.getDefault())
             )
@@ -61,7 +61,7 @@ class UploadParquetFormatConfig(formatConfig: JsonNode) : UploadFormatConfig {
             UploadFormatConfig.withDefault(
                 formatConfig,
                 "dictionary_encoding",
-                ParquetConstants.DEFAULT_DICTIONARY_ENCODING
+                ParquetConstants.DEFAULT_DICTIONARY_ENCODING,
             )
     }
 

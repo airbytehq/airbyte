@@ -28,7 +28,7 @@ object ConnectionFactory {
         username: String?,
         password: String?,
         connectionProperties: Map<String?, String?>,
-        jdbcConnectionString: String?
+        jdbcConnectionString: String?,
     ): Connection {
         try {
             val properties = Properties()

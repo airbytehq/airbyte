@@ -33,7 +33,7 @@ class JsonLSerializedBufferTest {
                     "column2" to "string value",
                     "another field" to true,
                     "nested_column" to mapOf("array_column" to listOf(1, 2, 3)),
-                ),
+                )
             )
         private const val STREAM = "stream1"
         private val streamPair = AirbyteStreamNameNamespacePair(STREAM, null)
@@ -76,14 +76,11 @@ class JsonLSerializedBufferTest {
         withCompression: Boolean,
         minExpectedByte: Long,
         maxExpectedByte: Long,
-        expectedData: String
+        expectedData: String,
     ) {
         val outputFile = buffer.file
-        (JsonLSerializedBuffer.createBufferFunction(null, { buffer })
-                .apply(
-                    streamPair,
-                    catalog,
-                ) as JsonLSerializedBuffer)
+        (JsonLSerializedBuffer.createBufferFunction(null, { buffer }).apply(streamPair, catalog)
+                as JsonLSerializedBuffer)
             .use { writer ->
                 writer.withCompression(withCompression)
                 writer.accept(message)
@@ -94,7 +91,7 @@ class JsonLSerializedBufferTest {
                 // deterministic
                 assertTrue(
                     writer.byteCount in minExpectedByte..maxExpectedByte,
-                    "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}"
+                    "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}",
                 )
                 val inputStream: InputStream =
                     if (withCompression) {
@@ -104,12 +101,7 @@ class JsonLSerializedBufferTest {
                     }
                 val actualData =
                     Jsons.deserialize(String(inputStream.readAllBytes(), StandardCharsets.UTF_8))
-                assertEquals(
-                    expectedData,
-                    Jsons.serialize(
-                        actualData["_airbyte_data"],
-                    ),
-                )
+                assertEquals(expectedData, Jsons.serialize(actualData["_airbyte_data"]))
             }
         assertFalse(outputFile.exists())
     }

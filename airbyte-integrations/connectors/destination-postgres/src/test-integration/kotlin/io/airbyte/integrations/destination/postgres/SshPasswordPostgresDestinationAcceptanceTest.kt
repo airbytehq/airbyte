@@ -27,12 +27,12 @@ class SshPasswordPostgresDestinationAcceptanceTest : SshPostgresDestinationAccep
     override fun testDataTypeTestWithNormalization(
         messagesFilename: String,
         catalogFilename: String,
-        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
+        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility,
     ) {
         super.testDataTypeTestWithNormalization(
             messagesFilename,
             catalogFilename,
-            testCompatibility
+            testCompatibility,
         )
     }
 

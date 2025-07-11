@@ -20,17 +20,17 @@ object NessieTestContainers {
             .withExposedService(
                 "nessie",
                 19120,
-                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)),
             )
             .withExposedService(
                 "minio",
                 9000,
-                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)),
             )
             .withExposedService(
                 "keycloak",
                 8080,
-                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)),
             )
     private val startNessieContainerRunOnce = AtomicBoolean(false)
 

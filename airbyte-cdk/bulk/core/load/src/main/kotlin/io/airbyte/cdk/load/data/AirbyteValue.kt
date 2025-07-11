@@ -98,6 +98,7 @@ value class BooleanValue(val value: Boolean) : AirbyteValue, Comparable<BooleanV
 @JvmInline
 value class IntegerValue(val value: BigInteger) : AirbyteValue, Comparable<IntegerValue> {
     constructor(value: Long) : this(BigInteger.valueOf(value))
+
     override fun compareTo(other: IntegerValue): Int = value.compareTo(other.value)
 }
 
@@ -109,7 +110,9 @@ value class NumberValue(val value: BigDecimal) : AirbyteValue, Comparable<Number
 @JvmInline
 value class DateValue(val value: LocalDate) : AirbyteValue, Comparable<DateValue> {
     constructor(date: String) : this(LocalDate.parse(date))
+
     override fun compareTo(other: DateValue): Int = value.compareTo(other.value)
+
     @JsonValue fun toJson() = value.toString()
 }
 
@@ -117,7 +120,9 @@ value class DateValue(val value: LocalDate) : AirbyteValue, Comparable<DateValue
 value class TimestampWithTimezoneValue(val value: OffsetDateTime) :
     AirbyteValue, Comparable<TimestampWithTimezoneValue> {
     constructor(timestamp: String) : this(OffsetDateTime.parse(timestamp))
+
     override fun compareTo(other: TimestampWithTimezoneValue): Int = value.compareTo(other.value)
+
     @JsonValue fun toJson() = value.toString()
 }
 
@@ -125,7 +130,9 @@ value class TimestampWithTimezoneValue(val value: OffsetDateTime) :
 value class TimestampWithoutTimezoneValue(val value: LocalDateTime) :
     AirbyteValue, Comparable<TimestampWithoutTimezoneValue> {
     constructor(timestamp: String) : this(LocalDateTime.parse(timestamp))
+
     override fun compareTo(other: TimestampWithoutTimezoneValue): Int = value.compareTo(other.value)
+
     @JsonValue fun toJson() = value.toString()
 }
 
@@ -133,7 +140,9 @@ value class TimestampWithoutTimezoneValue(val value: LocalDateTime) :
 value class TimeWithTimezoneValue(val value: OffsetTime) :
     AirbyteValue, Comparable<TimeWithTimezoneValue> {
     constructor(time: String) : this(OffsetTime.parse(time))
+
     override fun compareTo(other: TimeWithTimezoneValue): Int = value.compareTo(other.value)
+
     @JsonValue fun toJson() = value.toString()
 }
 
@@ -141,7 +150,9 @@ value class TimeWithTimezoneValue(val value: OffsetTime) :
 value class TimeWithoutTimezoneValue(val value: LocalTime) :
     AirbyteValue, Comparable<TimeWithoutTimezoneValue> {
     constructor(time: String) : this(LocalTime.parse(time))
+
     override fun compareTo(other: TimeWithoutTimezoneValue): Int = value.compareTo(other.value)
+
     @JsonValue fun toJson() = value.toString()
 }
 
@@ -160,6 +171,7 @@ value class ArrayValue(val values: List<AirbyteValue>) : AirbyteValue {
 @JvmInline
 value class ObjectValue(val values: LinkedHashMap<String, AirbyteValue>) : AirbyteValue {
     @JsonValue fun toJson() = values
+
     companion object {
         fun from(map: Map<String, Any?>): ObjectValue =
             ObjectValue(map.mapValuesTo(linkedMapOf()) { (_, v) -> AirbyteValue.from(v) })
@@ -215,7 +227,7 @@ class EnrichedAirbyteValue(
      */
     fun truncate(
         newValue: AirbyteValue,
-        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
     ) {
         val truncateChange = Meta.Change(field = name, change = Change.TRUNCATED, reason = reason)
 

@@ -33,7 +33,7 @@ class DockerProcessFactory(
     private val localMountSource: String?,
     private val fileTransferMountSource: Path?,
     private val networkName: String?,
-    private val envMap: Map<String, String>
+    private val envMap: Map<String, String>,
 ) : ProcessFactory {
     private val imageExistsScriptPath: Path
 
@@ -67,7 +67,7 @@ class DockerProcessFactory(
         jobMetadata: Map<String, String>,
         internalToExternalPorts: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
-        vararg args: String
+        vararg args: String,
     ): Process {
         try {
             if (!checkImageExists(imageName)) {
@@ -92,7 +92,7 @@ class DockerProcessFactory(
                     "-w",
                     rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
                     "--log-driver",
-                    "none"
+                    "none",
                 )
             val containerName: String =
                 ProcessFactory.Companion.createProcessName(
@@ -100,13 +100,13 @@ class DockerProcessFactory(
                     jobType,
                     jobId,
                     attempt,
-                    DOCKER_NAME_LEN_LIMIT
+                    DOCKER_NAME_LEN_LIMIT,
                 )
             LOGGER.info(
                 "Creating docker container = {} with resources {} and allowedHosts {}",
                 containerName,
                 resourceRequirements,
-                allowedHosts
+                allowedHosts,
             )
             cmd.add("--name")
             cmd.add(containerName)
@@ -232,7 +232,9 @@ class DockerProcessFactory(
          * to enable this for `destination-bigquery` start the services locally with:
          * ```
          * ```
+         *
          * VERSION="dev"
+         *
          * ```
          * DEBUG_CONTAINER_IMAGE="destination-bigquery" docker compose -f docker-compose.yaml -f
          * docker-compose.debug.yaml up ``` Additionally you may have to update the image version of your
@@ -260,7 +262,7 @@ class DockerProcessFactory(
                 java.util.List.of(
                     "-e",
                     "JAVA_TOOL_OPTIONS=" + System.getenv("DEBUG_CONTAINER_JAVA_OPTS"),
-                    "-p5005:5005"
+                    "-p5005:5005",
                 )
             } else {
                 emptyList<String>()

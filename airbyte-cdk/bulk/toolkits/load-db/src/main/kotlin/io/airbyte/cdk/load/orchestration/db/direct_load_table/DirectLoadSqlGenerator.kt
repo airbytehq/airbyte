@@ -19,15 +19,13 @@ interface DirectLoadSqlGenerator {
 
     /**
      * Replace the targetTable with the sourceTable. This is typically something like
+     *
      * ```sql
      * DROP TABLE IF EXISTS target;
      * ALTER TABLE source RENAME TO target;
      * ```
      */
-    fun overwriteTable(
-        sourceTableName: TableName,
-        targetTableName: TableName,
-    ): Sql
+    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql
 
     /**
      * Copy all records from sourceTable to targetTable. May assume that both tables exist, and have

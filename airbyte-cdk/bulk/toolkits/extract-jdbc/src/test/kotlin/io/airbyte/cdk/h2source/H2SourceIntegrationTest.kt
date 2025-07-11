@@ -129,10 +129,10 @@ class H2SourceIntegrationTest {
                 "h2source/expected-cursor-catalog.json",
                 "h2source/cursor-catalog.json",
                 SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/expected-messages-stream-cold-start.json",
+                    "h2source/expected-messages-stream-cold-start.json"
                 ),
                 SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/expected-messages-stream-warm-start.json",
+                    "h2source/expected-messages-stream-warm-start.json"
                 ),
             )
         }
@@ -154,7 +154,7 @@ class H2SourceIntegrationTest {
                 "h2source/incremental-only-catalog.json",
                 "h2source/state-too-far-ahead.json",
                 SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/expected-messages-stream-too-far-ahead.json",
+                    "h2source/expected-messages-stream-too-far-ahead.json"
                 ),
             )
         }
@@ -176,7 +176,7 @@ class H2SourceIntegrationTest {
                 "h2source/bad-catalog.json",
                 initialStateResource = null,
                 SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/expected-messages-stream-bad-catalog.json",
+                    "h2source/expected-messages-stream-bad-catalog.json"
                 ),
             )
         }
@@ -197,9 +197,7 @@ class H2SourceIntegrationTest {
                 Companion::emptyTablePrelude,
                 "h2source/incremental-only-catalog.json",
                 null,
-                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/empty.json",
-                ),
+                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages("h2source/empty.json"),
             )
         }
     }

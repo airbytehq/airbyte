@@ -26,7 +26,7 @@ object EntrypointEnvChecker {
         jobId: String,
         jobAttempt: Int,
         jobRoot: Path,
-        imageName: String
+        imageName: String,
     ): String? {
         val process =
             processFactory.create(
@@ -44,7 +44,7 @@ object EntrypointEnvChecker {
                 emptyMap(),
                 emptyMap(),
                 emptyMap(),
-                emptyMap()
+                emptyMap(),
             )
 
         val stdout =

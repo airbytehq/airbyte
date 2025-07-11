@@ -18,7 +18,7 @@ class MSSQLBulkLoadCheckTest :
                 CheckTestConfig(
                     Files.readString(Path.of(BulkInsert.CONFIG_FILE)),
                     name = "Bulk Load Check Should work",
-                ),
+                )
             ),
         emptyMap(),
         configUpdater = FakeConfigurationUpdater,

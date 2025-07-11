@@ -13,6 +13,7 @@ import org.apache.commons.cli.OptionGroup
 import org.apache.commons.cli.Options
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Parses command line args to a type safe config object for each command type. */
 class IntegrationCliParser {
     fun parse(args: Array<String>): IntegrationConfig {
@@ -161,13 +162,13 @@ class IntegrationCliParser {
                         Path.of(argsMap[JavaBaseConstants.ARGS_CATALOG_KEY]),
                         if (argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY))
                             Path.of(argsMap[JavaBaseConstants.ARGS_STATE_KEY])
-                        else null
+                        else null,
                     )
                 }
                 Command.WRITE -> {
                     IntegrationConfig.Companion.write(
                         Path.of(argsMap[JavaBaseConstants.ARGS_CONFIG_KEY]),
-                        Path.of(argsMap[JavaBaseConstants.ARGS_CATALOG_KEY])
+                        Path.of(argsMap[JavaBaseConstants.ARGS_CATALOG_KEY]),
                     )
                 }
             }

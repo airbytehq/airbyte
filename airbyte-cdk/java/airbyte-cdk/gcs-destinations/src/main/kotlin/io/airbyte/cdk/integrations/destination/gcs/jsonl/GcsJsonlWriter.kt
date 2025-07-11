@@ -31,7 +31,7 @@ class GcsJsonlWriter(
     config: GcsDestinationConfig,
     s3Client: AmazonS3,
     configuredStream: ConfiguredAirbyteStream,
-    uploadTimestamp: Timestamp
+    uploadTimestamp: Timestamp,
 ) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val uploadManager: StreamTransferManager
     private val outputStream: MultiPartOutputStream

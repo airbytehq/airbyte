@@ -68,7 +68,7 @@ class JdbcSSLConnectionUtils {
          *
          * @param config configuration
          * @return map containing relevant parsed values including location of keystore or an empty
-         * map
+         *   map
          */
         @JvmStatic
         fun parseSSLConfig(config: JsonNode): Map<String, String> {
@@ -97,7 +97,7 @@ class JdbcSSLConnectionUtils {
                                     TRUST_KEY_STORE_PASS,
                                     caCertKeyStorePair.right,
                                     TRUST_KEY_STORE_TYPE,
-                                    KEY_STORE_TYPE_PKCS12
+                                    KEY_STORE_TYPE_PKCS12,
                                 )
                             )
                         } catch (e: MalformedURLException) {
@@ -119,7 +119,7 @@ class JdbcSSLConnectionUtils {
                                     CLIENT_KEY_STORE_PASS,
                                     clientCertKeyStorePair.right,
                                     CLIENT_KEY_STORE_TYPE,
-                                    KEY_STORE_TYPE_PKCS12
+                                    KEY_STORE_TYPE_PKCS12,
                                 )
                             )
                         } catch (e: MalformedURLException) {
@@ -156,28 +156,28 @@ class JdbcSSLConnectionUtils {
                                     encryption[PARAM_CA_CERTIFICATE].asText(),
                                     clientKeyPassword,
                                     null,
-                                    null
+                                    null,
                                 )
                             caCertKeyStorePair = ImmutablePair(caCertKeyStoreUri, clientKeyPassword)
                         } catch (e: CertificateException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         } catch (e: IOException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         } catch (e: KeyStoreException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         } catch (e: NoSuchAlgorithmException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         }
                     }
@@ -217,39 +217,39 @@ class JdbcSSLConnectionUtils {
                                     encryption[PARAM_CLIENT_CERTIFICATE].asText(),
                                     encryption[PARAM_CLIENT_KEY].asText(),
                                     clientKeyPassword,
-                                    null
+                                    null,
                                 )
                             clientCertKeyStorePair =
                                 ImmutablePair(clientCertKeyStoreUri, clientKeyPassword)
                         } catch (e: CertificateException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: IOException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: KeyStoreException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: NoSuchAlgorithmException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: InvalidKeySpecException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: InterruptedException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         }
                     }

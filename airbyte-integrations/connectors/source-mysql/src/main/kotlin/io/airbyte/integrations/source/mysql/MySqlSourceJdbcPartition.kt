@@ -148,7 +148,7 @@ sealed class MySqlSourceJdbcResumablePartition(
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
                 NoWhere,
                 OrderBy(checkpointColumns),
-                Limit(sampleSize.toLong())
+                Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -168,7 +168,7 @@ sealed class MySqlSourceJdbcResumablePartition(
                     And(
                         zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
-                        } + listOf(lastLeaf),
+                        } + listOf(lastLeaf)
                     )
                 }
             val zippedUpperBound: List<Pair<Field, JsonNode>> =
@@ -184,7 +184,7 @@ sealed class MySqlSourceJdbcResumablePartition(
                     And(
                         zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
-                        } + listOf(lastLeaf),
+                        } + listOf(lastLeaf)
                     )
                 }
             return Where(And(Or(lowerBoundDisj), Or(upperBoundDisj)))
@@ -274,7 +274,7 @@ class MySqlSourceJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
-    override val lowerBound: List<JsonNode>?
+    override val lowerBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val upperBound: List<JsonNode>? = null
     override val completeState: OpaqueStateValue
@@ -326,7 +326,7 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
         streamState,
         primaryKey,
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
     // UpperBound is not used because the partition is not splittable.
     override val upperBound: List<JsonNode>? = null
@@ -362,7 +362,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
         streamState,
         primaryKey,
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -386,7 +386,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
                         checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                         cursor,
-                        stream
+                        stream,
                     )
             }
 }
@@ -408,7 +408,7 @@ class MySqlSourceJdbcCursorIncrementalPartition(
         streamState,
         listOf(cursor),
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
 
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
@@ -438,18 +438,18 @@ class MySqlJdbcConcurrentPartitionsCreatorFactory<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
->(
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+>(partitionFactory: JdbcPartitionFactory<A, S, P>) :
+    JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         MySqlJdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }
 
 class MySqlJdbcConcurrentPartitionsCreator<
-    A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
-    partition: P,
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
+    A : JdbcSharedState,
+    S : JdbcStreamState<A>,
+    P : JdbcPartition<S>,
+>(partition: P, partitionFactory: JdbcPartitionFactory<A, S, P>) :
+    JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
     val tableEstimateQuery =
         "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"

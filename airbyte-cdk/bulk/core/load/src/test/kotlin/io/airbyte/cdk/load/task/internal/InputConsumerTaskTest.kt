@@ -79,15 +79,13 @@ class InputConsumerTaskTest {
             {
                 val collector = firstArg<FlowCollector<Pair<Long, Reserved<DestinationMessage>>>>()
                 collector.emit(
-                    StubDestinationMessageFactory.makeRecord(
-                            MockDestinationCatalogFactory.stream1,
-                        )
+                    StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1)
                         .wrap(1L)
                 )
                 repeat(2) {
                     collector.emit(
                         StubDestinationMessageFactory.makeRecord(
-                                MockDestinationCatalogFactory.stream2,
+                                MockDestinationCatalogFactory.stream2
                             )
                             .wrap(it + 2L)
                     )
@@ -104,7 +102,7 @@ class InputConsumerTaskTest {
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
                 false,
-                NamespaceMapper(NamespaceDefinitionType.SOURCE)
+                NamespaceMapper(NamespaceDefinitionType.SOURCE),
             )
         val task =
             InputConsumerTask(
@@ -127,20 +125,18 @@ class InputConsumerTaskTest {
             {
                 val collector = firstArg<FlowCollector<Pair<Long, Reserved<DestinationMessage>>>>()
                 collector.emit(
-                    StubDestinationMessageFactory.makeRecord(
-                            MockDestinationCatalogFactory.stream1,
-                        )
+                    StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1)
                         .wrap(1L)
                 )
                 collector.emit(
                     StubDestinationMessageFactory.makeStreamComplete(
-                            MockDestinationCatalogFactory.stream1,
+                            MockDestinationCatalogFactory.stream1
                         )
                         .wrap(2L)
                 )
                 collector.emit(
                     StubDestinationMessageFactory.makeStreamComplete(
-                            MockDestinationCatalogFactory.stream2,
+                            MockDestinationCatalogFactory.stream2
                         )
                         .wrap(3L)
                 )
@@ -156,7 +152,7 @@ class InputConsumerTaskTest {
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
                 false,
-                NamespaceMapper(NamespaceDefinitionType.SOURCE)
+                NamespaceMapper(NamespaceDefinitionType.SOURCE),
             )
         val task =
             InputConsumerTask(
@@ -183,7 +179,7 @@ class InputConsumerTaskTest {
         data class TestEvent(
             val stream: DestinationStream,
             val count: Int,
-            val expectedStateIndex: Long
+            val expectedStateIndex: Long,
         )
 
         val batches =
@@ -286,12 +282,12 @@ class InputConsumerTaskTest {
             val expectedKey =
                 CheckpointKey(
                     checkpointIndex = CheckpointIndex(event.expectedCheckpointIndex),
-                    checkpointId = CheckpointId(event.expectedCheckpointIndex.toString())
+                    checkpointId = CheckpointId(event.expectedCheckpointIndex.toString()),
                 )
             Assertions.assertEquals(expectedKey, wrapped.checkpointKey)
             Assertions.assertEquals(
                 event.expectedStats,
-                wrapped.checkpoint.destinationStats?.recordCount
+                wrapped.checkpoint.destinationStats?.recordCount,
             )
         }
     }

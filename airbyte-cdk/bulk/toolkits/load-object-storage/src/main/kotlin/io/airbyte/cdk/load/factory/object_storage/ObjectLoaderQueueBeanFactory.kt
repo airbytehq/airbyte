@@ -31,9 +31,7 @@ import kotlin.math.max
 import kotlinx.coroutines.channels.Channel
 
 @Factory
-class ObjectLoaderQueueBeanFactory(
-    val loader: ObjectLoader,
-) {
+class ObjectLoaderQueueBeanFactory(val loader: ObjectLoader) {
     val log = KotlinLogging.logger {}
 
     companion object {
@@ -55,7 +53,7 @@ class ObjectLoaderQueueBeanFactory(
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderPartQueue") queue: ResourceReservingPartitionedQueue<*>,
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
-        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>,
     ): Long {
         if (dataChannelMedium == DataChannelMedium.SOCKET) {
             return max(
@@ -76,13 +74,14 @@ class ObjectLoaderQueueBeanFactory(
     fun recordObjectLoaderPartQueue(
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ResourceReservingPartitionedQueue<
-        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>
+    > {
         return ResourceReservingPartitionedQueue(
             globalMemoryManager,
             loader.maxMemoryRatioReservedForParts,
             loader.numUploadWorkers,
             loader.numPartWorkers,
-            loader.partSizeBytes
+            loader.partSizeBytes,
         )
     }
 
@@ -113,7 +112,7 @@ class ObjectLoaderQueueBeanFactory(
     @Singleton
     @Named("recordQueue")
     fun recordQueue(
-        @Named("numInputPartitions") numInputPartitions: Int,
+        @Named("numInputPartitions") numInputPartitions: Int
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
             Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
@@ -125,7 +124,7 @@ class ObjectLoaderQueueBeanFactory(
     @Named("fileQueue")
     @Requires(condition = IsFileTransferCondition::class)
     fun fileQueue(
-        @Named("numInputPartitions") numInputPartitions: Int,
+        @Named("numInputPartitions") numInputPartitions: Int
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
         return StrictPartitionedQueue(
             Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
@@ -142,13 +141,14 @@ class ObjectLoaderQueueBeanFactory(
     fun fileObjectLoaderPartQueue(
         @Named("globalMemoryManager") globalMemoryManager: ReservationManager
     ): ResourceReservingPartitionedQueue<
-        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>
+    > {
         return ResourceReservingPartitionedQueue(
             globalMemoryManager,
             loader.maxMemoryRatioReservedForParts,
             loader.numUploadWorkers,
             loader.numPartWorkers,
-            loader.partSizeBytes
+            loader.partSizeBytes,
         )
     }
 
@@ -184,7 +184,8 @@ class ObjectLoaderQueueBeanFactory(
             (0 until loader.numUploadCompleters)
                 .map {
                     ChannelMessageQueue<
-                        PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>>(
+                        PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<T>>
+                    >(
                         Channel(OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
                     )
                 }

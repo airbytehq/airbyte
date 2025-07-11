@@ -29,7 +29,7 @@ class BigQueryDatabase
 constructor(
     projectId: String?,
     jsonCreds: String?,
-    sourceOperations: BigQuerySourceOperations? = BigQuerySourceOperations()
+    sourceOperations: BigQuerySourceOperations? = BigQuerySourceOperations(),
 ) : SqlDatabase() {
     var bigQuery: BigQuery
     private var sourceOperations: BigQuerySourceOperations? = null
@@ -139,7 +139,7 @@ constructor(
 
     fun executeQuery(
         bigquery: BigQuery,
-        queryConfig: QueryJobConfiguration?
+        queryConfig: QueryJobConfiguration?,
     ): ImmutablePair<Job?, String?> {
         val jobId = JobId.of(UUID.randomUUID().toString())
         val queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build())

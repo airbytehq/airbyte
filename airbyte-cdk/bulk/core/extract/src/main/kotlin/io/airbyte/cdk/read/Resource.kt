@@ -34,16 +34,7 @@ enum class ResourceType {
  */
 @Singleton
 class ResourceAcquirer(val acquierers: List<Resource<*>>) {
-    @Inject
-    constructor(
-        cr: ConcurrencyResource,
-        sr: SocketResource
-    ) : this(
-        listOf(
-            cr,
-            sr,
-        )
-    )
+    @Inject constructor(cr: ConcurrencyResource, sr: SocketResource) : this(listOf(cr, sr))
 
     fun tryAcquire(requested: List<ResourceType>): Map<ResourceType, Resource.Acquired>? {
         val acquired = mutableMapOf<ResourceType, Resource.Acquired>()

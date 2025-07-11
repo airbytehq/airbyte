@@ -45,7 +45,7 @@ class JdbcAirbyteStreamFactoryTest {
 
         Assertions.assertEquals(
             listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-            stream.supportedSyncModes
+            stream.supportedSyncModes,
         )
         Assertions.assertTrue(stream.sourceDefinedCursor)
         Assertions.assertTrue(stream.isResumable)
@@ -74,7 +74,7 @@ class JdbcAirbyteStreamFactoryTest {
 
         Assertions.assertEquals(
             listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-            stream.supportedSyncModes
+            stream.supportedSyncModes,
         )
         Assertions.assertFalse(stream.sourceDefinedCursor)
         Assertions.assertTrue(stream.isResumable)

@@ -16,7 +16,7 @@ class StringInterpolationTest {
             StringInterpolator()
                 .interpolate(
                     "{{ first == second ? 'true' : 'false' }}",
-                    mapOf("first" to 1, "second" to 1)
+                    mapOf("first" to 1, "second" to 1),
                 )
         assertEquals("true", interpolatedValue)
     }
@@ -27,7 +27,7 @@ class StringInterpolationTest {
             StringInterpolator()
                 .interpolate(
                     "{{ 'true' if first == second else 'false' }}",
-                    mapOf("first" to 1, "second" to 2)
+                    mapOf("first" to 1, "second" to 2),
                 )
         assertEquals("false", interpolatedValue)
     }
@@ -38,7 +38,7 @@ class StringInterpolationTest {
             StringInterpolator()
                 .interpolate(
                     "{{protocol}}://login.salesforce.com/auth",
-                    mapOf("protocol" to "https")
+                    mapOf("protocol" to "https"),
                 )
         assertEquals("https://login.salesforce.com/auth", interpolatedValue)
     }
@@ -49,7 +49,7 @@ class StringInterpolationTest {
             StringInterpolator()
                 .interpolate(
                     "https://{{ 'sandbox' if isSandbox else 'login'}}.salesforce.com/auth",
-                    mapOf("isSandbox" to true)
+                    mapOf("isSandbox" to true),
                 )
         assertEquals("https://sandbox.salesforce.com/auth", interpolatedValue)
     }
@@ -60,7 +60,7 @@ class StringInterpolationTest {
             StringInterpolator()
                 .interpolate(
                     "https://{{ 'sandbox' if isSandbox else 'login'}}.salesforce.com/auth",
-                    mapOf("isSandbox" to false)
+                    mapOf("isSandbox" to false),
                 )
         assertEquals("https://login.salesforce.com/auth", interpolatedValue)
     }
@@ -76,7 +76,7 @@ class StringInterpolationTest {
             StringInterpolator()
                 .interpolate(
                     """{{ response.get("modificationMetadata").get("readOnlyValue") }}""",
-                    mapOf("response" to objectNode)
+                    mapOf("response" to objectNode),
                 )
         assertEquals("false", interpolatedValue)
     }

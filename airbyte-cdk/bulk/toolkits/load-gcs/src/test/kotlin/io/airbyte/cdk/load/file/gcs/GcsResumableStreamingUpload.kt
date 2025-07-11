@@ -24,7 +24,6 @@ import kotlinx.coroutines.withContext
  *
  * Unlike the current GcsStreamingUpload which creates separate blobs per part and then composes
  * them together, this implementation:
- *
  * 1. Streams each part directly to GCS as it arrives (assuming parts arrive in order)
  * 2. Uses Google Cloud Storage's built-in resumable upload API
  * 3. Creates only a single blob in the bucket
@@ -44,7 +43,7 @@ class GcsResumableStreamingUpload(
     private val key: String,
     private val config: GcsClientConfiguration,
     metadata: Map<String, String>,
-    chunkSizeBytes: Int = 1 * 1024 * 1024 // 8MB default chunk size
+    chunkSizeBytes: Int = 1 * 1024 * 1024, // 8MB default chunk size
 ) : StreamingUpload<GcsBlob> {
 
     private val log = KotlinLogging.logger {}

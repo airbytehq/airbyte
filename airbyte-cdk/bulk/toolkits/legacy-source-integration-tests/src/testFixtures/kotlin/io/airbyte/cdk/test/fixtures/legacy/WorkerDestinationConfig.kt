@@ -24,25 +24,17 @@ import java.util.*
     "destinationConnectionConfiguration",
     "catalog",
     "connectionId",
-    "state"
+    "state",
 )
 class WorkerDestinationConfig : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("destinationId")
     @set:JsonProperty("destinationId")
     @JsonProperty("destinationId")
     var destinationId: UUID? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
@@ -51,38 +43,23 @@ class WorkerDestinationConfig : Serializable {
     @JsonProperty("destinationConnectionConfiguration")
     @JsonPropertyDescription("Integration specific blob. Must be a valid JSON string.")
     var destinationConnectionConfiguration: JsonNode? = null
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("catalog")
     @set:JsonProperty("catalog")
     @JsonProperty("catalog")
     var catalog: ConfiguredAirbyteCatalog? = null
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("connectionId")
     @set:JsonProperty("connectionId")
     @JsonProperty("connectionId")
     var connectionId: UUID? = null
+
     /**
      * State
      *

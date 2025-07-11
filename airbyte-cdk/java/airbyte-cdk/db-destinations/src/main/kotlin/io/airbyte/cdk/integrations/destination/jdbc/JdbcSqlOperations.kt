@@ -55,7 +55,7 @@ abstract class JdbcSqlOperations : SqlOperations {
     override fun createTableIfNotExists(
         database: JdbcDatabase,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ) {
         try {
             database.execute(createTableQuery(database, schemaName, tableName))
@@ -70,7 +70,7 @@ abstract class JdbcSqlOperations : SqlOperations {
     override fun createTableQuery(
         database: JdbcDatabase?,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): String? {
         return if (isDestinationV2) {
             createTableQueryV2(schemaName, tableName)
@@ -86,7 +86,7 @@ abstract class JdbcSqlOperations : SqlOperations {
      */
     protected open fun postCreateTableQueries(
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): List<String> {
         return listOf()
     }
@@ -100,12 +100,13 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         
-        """.trimIndent(),
+        """
+                .trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_ID,
             JavaBaseConstants.COLUMN_NAME_DATA,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
         )
     }
 
@@ -124,7 +125,8 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s BIGINT
         );
         
-        """.trimIndent(),
+        """
+                .trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
@@ -143,7 +145,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         tmpFile: File?,
         records: List<PartialAirbyteMessage>,
         syncId: Long,
-        generationId: Long
+        generationId: Long,
     ) {
         PrintWriter(tmpFile, StandardCharsets.UTF_8).use { writer ->
             CSVPrinter(writer, CSVFormat.DEFAULT).use { csvPrinter ->
@@ -173,7 +175,7 @@ abstract class JdbcSqlOperations : SqlOperations {
                             extractedAt,
                             null,
                             airbyteMeta,
-                            generationId
+                            generationId,
                         )
                     } else {
                         csvPrinter.printRecord(uuid, jsonData, extractedAt)
@@ -195,14 +197,14 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase?,
         schemaName: String?,
         sourceTableName: String?,
-        destinationTableName: String?
+        destinationTableName: String?,
     ): String? {
         return String.format(
             "INSERT INTO %s.%s SELECT * FROM %s.%s;\n",
             schemaName,
             destinationTableName,
             schemaName,
-            sourceTableName
+            sourceTableName,
         )
     }
 
@@ -221,7 +223,7 @@ abstract class JdbcSqlOperations : SqlOperations {
     override fun dropTableIfExists(
         database: JdbcDatabase,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ) {
         try {
             database.execute(dropTableIfExistsQuery(schemaName, tableName))
@@ -248,7 +250,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         schemaName: String?,
         tableName: String?,
         syncId: Long,
-        generationId: Long
+        generationId: Long,
     ) {
         insertRecordsInternalV2(database, records, schemaName, tableName, syncId, generationId)
     }

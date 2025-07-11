@@ -39,7 +39,7 @@ import org.junit.jupiter.params.provider.MethodSource
 class AbstractStreamOperationTest {
     class TestStreamOperation(
         storageOperation: StorageOperation<Stream<PartialAirbyteMessage>>,
-        destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>
+        destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>,
     ) :
         AbstractStreamOperation<MinimumDestinationState.Impl, Stream<PartialAirbyteMessage>>(
             storageOperation,
@@ -48,7 +48,7 @@ class AbstractStreamOperationTest {
         override fun writeRecordsImpl(
             streamConfig: StreamConfig,
             suffix: String,
-            stream: Stream<PartialAirbyteMessage>
+            stream: Stream<PartialAirbyteMessage>,
         ) {
             // noop
         }
@@ -70,7 +70,7 @@ class AbstractStreamOperationTest {
                 columns,
                 generationId = 21,
                 minimumGenerationId = 21,
-                syncId = 0
+                syncId = 0,
             )
 
         @Test
@@ -97,23 +97,19 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -148,24 +144,20 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    EXPECTED_SUFFIX,
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), EXPECTED_SUFFIX)
                 storageOperation.overwriteFinalTable(streamConfig, EXPECTED_SUFFIX)
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -197,23 +189,19 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -245,24 +233,20 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    EXPECTED_SUFFIX,
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), EXPECTED_SUFFIX)
                 storageOperation.overwriteFinalTable(streamConfig, EXPECTED_SUFFIX)
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -287,7 +271,7 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.INCOMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.INCOMPLETE),
             )
 
             verifySequence {
@@ -298,7 +282,7 @@ class AbstractStreamOperationTest {
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -330,7 +314,7 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
@@ -342,7 +326,7 @@ class AbstractStreamOperationTest {
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -350,7 +334,7 @@ class AbstractStreamOperationTest {
          * 1. A previous truncate refresh attempt created a non-empty temp raw table, then failed.
          * 2. Our current attempt is successful, but we emitted no new records
          * 3. We should still run T+D for this table, because we need to T+D the previous attempt's
-         * records.
+         *    records.
          */
         @Test
         fun existingNonEmptyTempRawTableNoNewRecords() {
@@ -385,7 +369,7 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
@@ -405,7 +389,7 @@ class AbstractStreamOperationTest {
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -440,17 +424,13 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(initialState, initialState.destinationState)
@@ -481,17 +461,13 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(initialState, initialState.destinationState)
@@ -540,16 +516,12 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    maxProcessedTimestamp,
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, maxProcessedTimestamp, "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(initialState, initialState.destinationState)
@@ -582,17 +554,13 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(initialState, initialState.destinationState)
@@ -628,22 +596,18 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfigParam,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
-                storageOperation.typeAndDedupe(
-                    streamConfigParam,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfigParam, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -675,22 +639,18 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(
                 initialState,
                 initialState.initialRawTableStatus,
-                initialState.destinationState
+                initialState.destinationState,
             )
         }
 
@@ -720,16 +680,12 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(initialState, initialState.initialRawTableStatus)
@@ -774,17 +730,13 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 if (shouldRunTD) {
-                    storageOperation.typeAndDedupe(
-                        streamConfig,
-                        timestampFilter,
-                        "",
-                    )
+                    storageOperation.typeAndDedupe(streamConfig, timestampFilter, "")
                 }
             }
             confirmVerified(storageOperation)
@@ -817,16 +769,12 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
-                storageOperation.typeAndDedupe(
-                    streamConfig,
-                    Optional.empty(),
-                    "",
-                )
+                storageOperation.typeAndDedupe(streamConfig, Optional.empty(), "")
             }
             confirmVerified(storageOperation)
             checkUnnecessaryStub(initialState, initialState.initialRawTableStatus)
@@ -838,7 +786,7 @@ class AbstractStreamOperationTest {
         )
         fun existingNonEmptyFinalTableNoNewRecords(
             streamConfig: StreamConfig,
-            hasUnprocessedRecords: Boolean
+            hasUnprocessedRecords: Boolean,
         ) {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
@@ -870,7 +818,7 @@ class AbstractStreamOperationTest {
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE),
             )
 
             verifySequence {
@@ -905,11 +853,8 @@ class AbstractStreamOperationTest {
                 pk1 to AirbyteProtocolType.INTEGER,
                 pk2 to AirbyteProtocolType.STRING,
                 cursor to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-                ColumnId(
-                    "username",
-                    "username_original_name",
-                    "username_canonical_name",
-                ) to AirbyteProtocolType.STRING,
+                ColumnId("username", "username_original_name", "username_canonical_name") to
+                    AirbyteProtocolType.STRING,
             )
 
         const val EXPECTED_SUFFIX = "_airbyte_tmp"
@@ -925,7 +870,7 @@ class AbstractStreamOperationTest {
                 columns,
                 generationId = 21,
                 minimumGenerationId = 0,
-                syncId = 0
+                syncId = 0,
             )
         private val dedupStreamConfig =
             StreamConfig(
@@ -936,7 +881,7 @@ class AbstractStreamOperationTest {
                 columns,
                 generationId = 21,
                 minimumGenerationId = 0,
-                syncId = 0
+                syncId = 0,
             )
         private val streamConfigs = arrayOf(appendStreamConfig, dedupStreamConfig)
 
@@ -960,11 +905,7 @@ class AbstractStreamOperationTest {
 
         // ValueSource and CsvSource don't support null, so we have to write an entire method.
         @JvmStatic
-        fun generationIds(): Stream<Arguments> =
-            Stream.of(
-                Arguments.of(null),
-                Arguments.of(21L),
-            )
+        fun generationIds(): Stream<Arguments> = Stream.of(Arguments.of(null), Arguments.of(21L))
 
         /**
          * The five arguments are:
@@ -982,13 +923,13 @@ class AbstractStreamOperationTest {
                     InitialRawTableStatus(
                         rawTableExists = false,
                         hasUnprocessedRecords = false,
-                        maxProcessedTimestamp = Optional.empty()
+                        maxProcessedTimestamp = Optional.empty(),
                     ),
                     // The raw table exists, but is empty
                     InitialRawTableStatus(
                         rawTableExists = true,
                         hasUnprocessedRecords = false,
-                        maxProcessedTimestamp = Optional.empty()
+                        maxProcessedTimestamp = Optional.empty(),
                     ),
                     // The raw table exists and contains records, but they're all processed and old
                     InitialRawTableStatus(
@@ -1015,7 +956,7 @@ class AbstractStreamOperationTest {
                         rawTableExists = true,
                         hasUnprocessedRecords = true,
                         maxProcessedTimestamp = Optional.of(Instant.parse("2024-01-01T12:34:56Z")),
-                    )
+                    ),
                 )
             return streamConfigs
                 .flatMap { streamConfig ->

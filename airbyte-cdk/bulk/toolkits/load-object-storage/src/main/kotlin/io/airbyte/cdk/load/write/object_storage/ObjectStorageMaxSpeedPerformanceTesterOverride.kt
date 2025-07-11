@@ -48,8 +48,9 @@ import kotlinx.coroutines.withContext
 interface ObjectStorageMaxSpeedPerformanceTesterOverrideConfig {
     enum class Approach {
         ONE_OBJECT_PER_WORKER,
-        DISTRIBUTED_PARTS
+        DISTRIBUTED_PARTS,
     }
+
     val approach: Approach
     val completeAtEnd: Boolean
 }
@@ -59,7 +60,7 @@ class ObjectStorageMaxSpeedPerformanceTesterOverride(
     private val catalog: DestinationCatalog,
     private val objectLoader: ObjectLoader,
     private val pathFactory: PathFactory,
-    private val config: ObjectStorageMaxSpeedPerformanceTesterOverrideConfig
+    private val config: ObjectStorageMaxSpeedPerformanceTesterOverrideConfig,
 ) : WriteOpOverride {
     private val log = KotlinLogging.logger {}
 

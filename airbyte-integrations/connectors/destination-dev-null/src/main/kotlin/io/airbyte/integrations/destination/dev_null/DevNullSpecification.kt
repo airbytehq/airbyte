@@ -31,10 +31,12 @@ sealed class DevNullSpecification : ConfigurationSpecification() {
  * This doesn't quite conform with the old spec:
  * - Some fields that make more sense as integral need to be Double to yield a "number" type
  * - Due to https://github.com/mbknor/mbknor-jackson-jsonSchema/issues/184, this causes
+ *
  * ```
  *    `@JsonSchemaExamples` to break. Instead, we inject a raw JSON blob to the schema.
  * ```
  * - Similarly, there are some cases where [JsonSchemaTitle] / [JsonClassDescription]
+ *
  * ```
  *    don't work as expected. In these cases, we also inject raw JSON.
  * ```
@@ -57,13 +59,13 @@ class DevNullSpecificationOss : DevNullSpecification() {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "test_destination_type"
+    property = "test_destination_type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = LoggingDestination::class, name = "LOGGING"),
     JsonSubTypes.Type(value = SilentDestination::class, name = "SILENT"),
     JsonSubTypes.Type(value = ThrottledDestination::class, name = "THROTTLED"),
-    JsonSubTypes.Type(value = FailingDestination::class, name = "FAILING")
+    JsonSubTypes.Type(value = FailingDestination::class, name = "FAILING"),
 )
 sealed class TestDestinationOSS(
     @JsonProperty("test_destination_type") open val testDestinationType: Type
@@ -72,7 +74,7 @@ sealed class TestDestinationOSS(
         LOGGING("LOGGING"),
         SILENT("SILENT"),
         THROTTLED("THROTTLED"),
-        FAILING("FAILING")
+        FAILING("FAILING"),
     }
 }
 
@@ -81,18 +83,18 @@ data class LoggingDestination(
     @JsonProperty("test_destination_type") override val testDestinationType: Type = Type.LOGGING,
     @JsonPropertyDescription("Configurate how the messages are logged.")
     @JsonProperty("logging_config")
-    val loggingConfig: LoggingConfig = FirstNEntriesConfig()
+    val loggingConfig: LoggingConfig = FirstNEntriesConfig(),
 ) : TestDestinationOSS(testDestinationType)
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "logging_type"
+    property = "logging_type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = FirstNEntriesConfig::class, name = "FirstN"),
     JsonSubTypes.Type(value = EveryNthEntryConfig::class, name = "EveryNth"),
-    JsonSubTypes.Type(value = RandomSamplingConfig::class, name = "RandomSampling")
+    JsonSubTypes.Type(value = RandomSamplingConfig::class, name = "RandomSampling"),
 )
 @JsonSchemaInject(json = """{"title":"Logging Configuration"}""")
 sealed class LoggingConfig(
@@ -101,7 +103,7 @@ sealed class LoggingConfig(
     enum class Type(@get:JsonValue val typeName: String) {
         FIRST_N("FirstN"),
         EVERY_NTH("EveryNth"),
-        RANDOM_SAMPLING("RandomSampling")
+        RANDOM_SAMPLING("RandomSampling"),
     }
 }
 
@@ -117,7 +119,7 @@ data class FirstNEntriesConfig(
     @JsonSchemaInject(json = """{"examples":[100]}""")
     @Max(1000)
     @Min(1)
-    val maxEntryCount: Double = 100.0
+    val maxEntryCount: Double = 100.0,
 ) : LoggingConfig(loggingType)
 
 @JsonSchemaTitle("Every N-th Entry")
@@ -143,7 +145,7 @@ data class EveryNthEntryConfig(
     @JsonSchemaInject(json = """{"examples":[100]}""")
     @Max(1000)
     @Min(1)
-    val maxEntryCount: Double
+    val maxEntryCount: Double,
 ) : LoggingConfig(loggingType)
 
 @JsonSchemaTitle("Random Sampling")
@@ -175,7 +177,7 @@ data class RandomSamplingConfig(
     @JsonSchemaInject(json = """{"examples":[100]}""")
     @Max(1000)
     @Min(1)
-    val maxEntryCount: Double = 100.0
+    val maxEntryCount: Double = 100.0,
 ) : LoggingConfig(loggingType)
 
 @JsonSchemaTitle("Silent")
@@ -188,7 +190,7 @@ data class ThrottledDestination(
     @JsonProperty("test_destination_type") override val testDestinationType: Type = Type.THROTTLED,
     @JsonPropertyDescription("The number of milliseconds to wait between each record.")
     @JsonProperty("millis_per_record")
-    val millisPerRecord: Long
+    val millisPerRecord: Long,
 ) : TestDestinationOSS(testDestinationType)
 
 @JsonSchemaTitle("Failing")
@@ -196,7 +198,7 @@ data class FailingDestination(
     @JsonProperty("test_destination_type") override val testDestinationType: Type = Type.FAILING,
     @JsonPropertyDescription("Number of messages after which to fail.")
     @JsonProperty("num_messages")
-    val numMessages: Int
+    val numMessages: Int,
 ) : TestDestinationOSS(testDestinationType)
 
 /** The cloud variant is more restricted: it only allows for a single destination type. */
@@ -213,16 +215,14 @@ class DevNullSpecificationCloud : DevNullSpecification() {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "test_destination_type"
+    property = "test_destination_type",
 )
-@JsonSubTypes(
-    JsonSubTypes.Type(value = SilentDestinationCloud::class, name = "SILENT"),
-)
+@JsonSubTypes(JsonSubTypes.Type(value = SilentDestinationCloud::class, name = "SILENT"))
 sealed class TestDestinationCloud(
     @JsonProperty("test_destination_type") open val testDestinationType: Type
 ) : TestDestination() {
     enum class Type(val typeName: String) {
-        SILENT("SILENT"),
+        SILENT("SILENT")
     }
 }
 

@@ -23,6 +23,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.utility.DockerImageName
 
 private val LOGGER: KLogger = KotlinLogging.logger {}
+
 /**
  * ContainerFactory is the companion to [TestDatabase] and provides it with suitable testcontainer
  * instances.
@@ -32,7 +33,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     private data class ContainerKey<C : GenericContainer<*>>(
         val clazz: Class<out ContainerFactory<*>>,
         val imageName: DockerImageName,
-        val methods: List<String>
+        val methods: List<String>,
     )
 
     private class ContainerOrException(
@@ -66,7 +67,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun getTestContainerLogMdcBuilder(
         imageName: DockerImageName,
-        containerModifiers: List<NamedContainerModifier<C>>
+        containerModifiers: List<NamedContainerModifier<C>>,
     ): MdcScope.Builder {
         return MdcScope.Builder()
             .setLogPrefix(
@@ -89,7 +90,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     fun shared(imageName: String, vararg methods: String): C {
         return shared(
             imageName,
-            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
+            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) },
         )
     }
 
@@ -100,13 +101,13 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     @JvmOverloads
     fun shared(
         imageName: String,
-        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
+        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList(),
     ): C {
         val containerKey =
             ContainerKey<C>(
                 javaClass,
                 DockerImageName.parse(imageName),
-                namedContainerModifiers.map { it.name() }
+                namedContainerModifiers.map { it.name() },
             )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
@@ -120,7 +121,8 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 }
             }
         // Instead, the container creation (if applicable) is deferred to here.
-        @Suppress("UNCHECKED_CAST") return containerOrError!!.container() as C
+        @Suppress("UNCHECKED_CAST")
+        return containerOrError!!.container() as C
     }
 
     /**
@@ -131,7 +133,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     fun exclusive(imageName: String, vararg methods: String): C {
         return exclusive(
             imageName,
-            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
+            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) },
         )
     }
 
@@ -142,7 +144,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     @JvmOverloads
     fun exclusive(
         imageName: String,
-        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
+        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList(),
     ): C {
         return createAndStartContainer(DockerImageName.parse(imageName), namedContainerModifiers)
     }
@@ -155,7 +157,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     class NamedContainerModifierImpl<C : GenericContainer<*>>(
         val name: String,
-        val method: Consumer<C>
+        val method: Consumer<C>,
     ) : NamedContainerModifier<C> {
         override fun name(): String {
             return name
@@ -186,12 +188,12 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun createAndStartContainer(
         imageName: DockerImageName,
-        namedContainerModifiers: List<NamedContainerModifier<C>>
+        namedContainerModifiers: List<NamedContainerModifier<C>>,
     ): C {
         LOGGER.info(
             "Creating new container based on {} with {}.",
             imageName,
-            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c.name() }
+            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c.name() },
         )
         val container = createNewContainer(imageName)
         @Suppress("unchecked_cast")
@@ -214,7 +216,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 "Calling {} in {} on new container based on {}.",
                 resolvedNamedContainerModifier.name(),
                 javaClass.name,
-                imageName
+                imageName,
             )
             resolvedNamedContainerModifier.modifier().accept(container)
         }

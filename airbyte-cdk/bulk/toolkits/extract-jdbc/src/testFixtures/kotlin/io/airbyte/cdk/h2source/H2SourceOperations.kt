@@ -95,7 +95,7 @@ class H2SourceOperations :
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         recordData.putNull(H2GlobalCursor.id)
         recordData.putNull(CommonMetaField.CDC_UPDATED_AT.id)
@@ -105,7 +105,7 @@ class H2SourceOperations :
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
             JDBCType.BIT,
-            JDBCType.BOOLEAN, -> BooleanFieldType
+            JDBCType.BOOLEAN -> BooleanFieldType
             JDBCType.TINYINT -> ByteFieldType
             JDBCType.SMALLINT -> ShortFieldType
             JDBCType.INTEGER -> IntFieldType
@@ -114,13 +114,13 @@ class H2SourceOperations :
             JDBCType.DOUBLE -> DoubleFieldType
             JDBCType.REAL,
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL, -> BigDecimalFieldType
+            JDBCType.DECIMAL -> BigDecimalFieldType
             JDBCType.CHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR, -> StringFieldType
+            JDBCType.LONGVARCHAR -> StringFieldType
             JDBCType.NCHAR,
             JDBCType.NVARCHAR,
-            JDBCType.LONGNVARCHAR, -> NStringFieldType
+            JDBCType.LONGNVARCHAR -> NStringFieldType
             JDBCType.DATE -> LocalDateFieldType
             JDBCType.TIME -> LocalTimeFieldType
             JDBCType.TIMESTAMP -> LocalDateTimeFieldType
@@ -129,7 +129,7 @@ class H2SourceOperations :
             JDBCType.BLOB -> BinaryStreamFieldType
             JDBCType.BINARY,
             JDBCType.VARBINARY,
-            JDBCType.LONGVARBINARY, -> BytesFieldType
+            JDBCType.LONGVARBINARY -> BytesFieldType
             JDBCType.CLOB -> ClobFieldType
             JDBCType.NCLOB -> NClobFieldType
             JDBCType.DATALINK -> UrlFieldType
@@ -143,7 +143,7 @@ class H2SourceOperations :
             JDBCType.REF,
             JDBCType.ROWID,
             JDBCType.REF_CURSOR,
-            null, -> PokemonFieldType
+            null -> PokemonFieldType
         }
 
     override fun generate(ast: SelectQuerySpec): SelectQuery =

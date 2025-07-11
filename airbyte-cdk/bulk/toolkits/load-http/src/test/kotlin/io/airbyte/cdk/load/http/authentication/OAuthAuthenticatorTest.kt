@@ -36,7 +36,7 @@ class OAuthAuthenticatorTest {
                 A_CLIENT_ID,
                 A_CLIENT_SECRET,
                 A_REFRESH_TOKEN,
-                httpClient
+                httpClient,
             )
     }
 

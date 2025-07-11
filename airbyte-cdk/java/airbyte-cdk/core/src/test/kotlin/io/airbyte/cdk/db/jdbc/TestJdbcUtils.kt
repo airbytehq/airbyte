@@ -34,6 +34,7 @@ import org.testcontainers.utility.MountableFile
 internal class TestJdbcUtils {
     private var dbName: String = "dummy"
     private lateinit var dataSource: DataSource
+
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
@@ -54,8 +55,8 @@ internal class TestJdbcUtils {
                     DatabaseDriver.POSTGRESQL.urlFormatString,
                     config[JdbcUtils.HOST_KEY].asText(),
                     config[JdbcUtils.PORT_KEY].asInt(),
-                    config[JdbcUtils.DATABASE_KEY].asText()
-                )
+                    config[JdbcUtils.DATABASE_KEY].asText(),
+                ),
             )
 
         val defaultJdbcDatabase: JdbcDatabase = DefaultJdbcDatabase(dataSource)
@@ -88,7 +89,7 @@ internal class TestJdbcUtils {
     private fun <T> getConfigWithSsl(
         psqlDb: PostgreSQLContainer<*>?,
         dbName: String?,
-        sslValue: T
+        sslValue: T,
     ): JsonNode {
         return Jsons.jsonNode(
             ImmutableMap.builder<Any, Any>()
@@ -228,7 +229,7 @@ internal class TestJdbcUtils {
                             .put("client_certificate", "test_client_cert")
                             .put("client_key", "test_client_key")
                             .put("client_key_password", "test_pass")
-                            .build()
+                            .build(),
                     )
                     .build()
             )
@@ -248,7 +249,7 @@ internal class TestJdbcUtils {
                     .put("password", PSQL_DB.password)
                     .put(
                         "ssl_mode",
-                        ImmutableMap.builder<Any, Any>().put("mode", "disable").build()
+                        ImmutableMap.builder<Any, Any>().put("mode", "disable").build(),
                     )
                     .build()
             )
@@ -302,7 +303,7 @@ internal class TestJdbcUtils {
         "'30', 30",
         "'999000000000', 999000000000",
         "'999E+9', 999000000000",
-        "'1.79E+3', 1790"
+        "'1.79E+3', 1790",
     )
     @Throws(SQLException::class)
     fun testSetStatementSpecialValues(colValue: String, value: Long) {
@@ -317,7 +318,7 @@ internal class TestJdbcUtils {
 
             assertExpectedOutputValues(
                 connection,
-                (Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode).put("bigint", value)
+                (Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode).put("bigint", value),
             )
             assertExpectedOutputTypes(connection)
         }
@@ -330,7 +331,7 @@ internal class TestJdbcUtils {
             Lists.newArrayList(
                 Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
                 Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
-                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash"))
+                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")),
             )
 
         private lateinit var PSQL_DB: PostgreSQLContainer<Nothing>

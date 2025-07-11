@@ -10,6 +10,7 @@ import java.sql.PreparedStatement
 class AirbyteValueToStatement {
     companion object {
         private val toSqlType = AirbyteTypeToMssqlType()
+
         fun PreparedStatement.setAsNullValue(idx: Int, type: AirbyteType) {
             val sqlType = toSqlType.convert(type)
             setNull(idx, sqlType.sqlType)

@@ -122,7 +122,7 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     NoWhere,
                     OrderBy(id),
-                    Limit(10L)
+                    Limit(10L),
                 )
             )
         partition
@@ -192,7 +192,7 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     NoWhere,
                     OrderBy(id),
-                    Limit(10L)
+                    Limit(10L),
                 )
             )
         partition
@@ -207,7 +207,7 @@ class DefaultJdbcPartitionFactoryTest {
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                     NoWhere,
-                    OrderBy(id)
+                    OrderBy(id),
                 )
             )
         // Check state generation
@@ -241,10 +241,7 @@ class DefaultJdbcPartitionFactoryTest {
         val stream = stream(withPK = false, withCursor = false)
         val factory = sharedState().factory()
         val result = factory.create(stream.bootstrap(opaqueStateValue(pk = 22)))
-        factory.assertFailures(
-            InvalidPrimaryKey(stream.id, listOf(id.id)),
-            ResetStream(stream.id),
-        )
+        factory.assertFailures(InvalidPrimaryKey(stream.id, listOf(id.id)), ResetStream(stream.id))
         Assertions.assertTrue(result is DefaultJdbcUnsplittableSnapshotPartition)
         val partition = result as DefaultJdbcUnsplittableSnapshotPartition
         // Check partition properties
@@ -256,10 +253,7 @@ class DefaultJdbcPartitionFactoryTest {
         val stream = stream(withCursor = false)
         val factory = sharedState().factory()
         val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorValue)))
-        factory.assertFailures(
-            InvalidCursor(stream.id, ts.id),
-            ResetStream(stream.id),
-        )
+        factory.assertFailures(InvalidCursor(stream.id, ts.id), ResetStream(stream.id))
         Assertions.assertTrue(result is DefaultJdbcSplittableSnapshotPartition)
         val partition = result as DefaultJdbcSplittableSnapshotPartition
         // Check partition properties
@@ -287,7 +281,7 @@ class DefaultJdbcPartitionFactoryTest {
             SelectQuerySpec(
                 SelectColumns(id, ts, msg),
                 From(stream.name, stream.namespace),
-                Where(Greater(id, IntCodec.encode(22)))
+                Where(Greater(id, IntCodec.encode(22))),
             )
         )
         partition
@@ -298,7 +292,7 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id),
-                    Limit(10L)
+                    Limit(10L),
                 )
             )
         partition
@@ -356,7 +350,7 @@ class DefaultJdbcPartitionFactoryTest {
                     From(stream.name, stream.namespace),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id),
-                    Limit(10L)
+                    Limit(10L),
                 )
             )
         partition
@@ -371,7 +365,7 @@ class DefaultJdbcPartitionFactoryTest {
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                     Where(Greater(id, IntCodec.encode(22))),
-                    OrderBy(id)
+                    OrderBy(id),
                 )
             )
         // Check state generation
@@ -419,8 +413,8 @@ class DefaultJdbcPartitionFactoryTest {
                 Where(
                     And(
                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorValue)),
-                        LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound))
-                    ),
+                        LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
+                    )
                 ),
             )
         )
@@ -433,11 +427,11 @@ class DefaultJdbcPartitionFactoryTest {
                     Where(
                         And(
                             GreaterOrEqual(ts, LocalDateCodec.encode(cursorValue)),
-                            LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound))
-                        ),
+                            LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
+                        )
                     ),
                     OrderBy(ts),
-                    Limit(10L)
+                    Limit(10L),
                 )
             )
         partition
@@ -454,10 +448,10 @@ class DefaultJdbcPartitionFactoryTest {
                     Where(
                         And(
                             GreaterOrEqual(ts, LocalDateCodec.encode(cursorValue)),
-                            LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound))
-                        ),
+                            LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
+                        )
                     ),
-                    OrderBy(ts)
+                    OrderBy(ts),
                 )
             )
         // Check state generation

@@ -3,10 +3,8 @@ package io.airbyte.integrations.sourceTesting
 
 abstract class SqlDialect : QueryDialect {
 
-    override fun buildDropTableQuery(
-        namespace: String,
-        tableName: String,
-    ): String = "DROP TABLE ${getFullyQualifiedName(namespace, tableName)}"
+    override fun buildDropTableQuery(namespace: String, tableName: String): String =
+        "DROP TABLE ${getFullyQualifiedName(namespace, tableName)}"
 
     override fun buildInsertQuery(
         tableDefinition: TableDefinition,
@@ -18,10 +16,7 @@ abstract class SqlDialect : QueryDialect {
         return "INSERT INTO ${getFullyQualifiedName(tableDefinition)} ($columns) VALUES ($values)"
     }
 
-    override fun buildDeleteQuery(
-        tableDefinition: TableDefinition,
-        condition: String?,
-    ): String {
+    override fun buildDeleteQuery(tableDefinition: TableDefinition, condition: String?): String {
         val whereClause = condition?.let { "WHERE $it" } ?: ""
         return "DELETE FROM ${getFullyQualifiedName(tableDefinition)} $whereClause"
     }

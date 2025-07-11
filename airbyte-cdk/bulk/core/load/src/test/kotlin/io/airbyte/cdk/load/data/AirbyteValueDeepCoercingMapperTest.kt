@@ -53,7 +53,8 @@ class AirbyteValueDeepCoercingMapperTest {
                       "object_schemaless": {"foo": 42},
                       "object_empty": {"foo": 42}
                     }
-                """.trimIndent()
+                """
+                            .trimIndent()
                     )
                     .toAirbyteValue(),
                 ObjectType(
@@ -112,7 +113,7 @@ class AirbyteValueDeepCoercingMapperTest {
                             "object_empty" to ObjectValue(linkedMapOf("foo" to IntegerValue(42))),
                         )
                     ),
-                    mappedValue
+                    mappedValue,
                 )
             },
             { assertEquals(emptyList<Meta.Change>(), changes) },
@@ -121,21 +122,14 @@ class AirbyteValueDeepCoercingMapperTest {
 
     @Test
     fun testCoerceDate() {
-        listOf(
-                "2021-1-1",
-                "2021-01-01",
-                "2021/01/02",
-                "2021.01.03",
-                "2021 Jan 04",
-                "2021-1-1 BC",
-            )
+        listOf("2021-1-1", "2021-01-01", "2021/01/02", "2021.01.03", "2021 Jan 04", "2021-1-1 BC")
             .map { it to LocalDate.parse(it, DATE_TIME_FORMATTER) }
             .forEach { (input, localDate) ->
                 val (value, changes) = mapper.map(StringValue(input), DateType)
                 assertAll(
                     "Failed for input $input",
                     { assertEquals(DateValue(localDate), value) },
-                    { assertEquals(emptyList<Meta.Change>(), changes) }
+                    { assertEquals(emptyList<Meta.Change>(), changes) },
                 )
             }
     }
@@ -232,7 +226,7 @@ class AirbyteValueDeepCoercingMapperTest {
             assertAll(
                 "Failed for input $input",
                 { assertEquals(TimestampWithTimezoneValue(offsetDateTime), value) },
-                { assertEquals(emptyList<Meta.Change>(), changes) }
+                { assertEquals(emptyList<Meta.Change>(), changes) },
             )
         }
     }
@@ -247,10 +241,10 @@ class AirbyteValueDeepCoercingMapperTest {
                 {
                     assertEquals(
                         TimestampWithoutTimezoneValue(offsetDateTime.toLocalDateTime()),
-                        value
+                        value,
                     )
                 },
-                { assertEquals(emptyList<Meta.Change>(), changes) }
+                { assertEquals(emptyList<Meta.Change>(), changes) },
             )
         }
     }
@@ -274,7 +268,7 @@ class AirbyteValueDeepCoercingMapperTest {
             assertAll(
                 "Failed for input $input",
                 { assertEquals(TimeWithTimezoneValue(offsetTime), value) },
-                { assertEquals(emptyList<Meta.Change>(), changes) }
+                { assertEquals(emptyList<Meta.Change>(), changes) },
             )
         }
     }
@@ -287,7 +281,7 @@ class AirbyteValueDeepCoercingMapperTest {
             assertAll(
                 "Failed for input $input",
                 { assertEquals(TimeWithoutTimezoneValue(offsetTime.toLocalTime()), value) },
-                { assertEquals(emptyList<Meta.Change>(), changes) }
+                { assertEquals(emptyList<Meta.Change>(), changes) },
             )
         }
     }
@@ -305,7 +299,8 @@ class AirbyteValueDeepCoercingMapperTest {
                         },
                         "sub_array": ["invalid"]
                     }
-                """.trimIndent()
+                """
+                            .trimIndent()
                     )
                     .toAirbyteValue(),
                 ObjectType(
@@ -316,7 +311,7 @@ class AirbyteValueDeepCoercingMapperTest {
                                     linkedMapOf("timestamptz" to f(TimestampTypeWithTimezone))
                                 )
                             ),
-                        "sub_array" to f(ArrayType(f(IntegerType)))
+                        "sub_array" to f(ArrayType(f(IntegerType))),
                     )
                 ),
             )
@@ -332,10 +327,10 @@ class AirbyteValueDeepCoercingMapperTest {
                                         "timestamptz" to StringValue("invalid"),
                                     )
                                 ),
-                            "sub_array" to ArrayValue(listOf(StringValue("invalid")))
+                            "sub_array" to ArrayValue(listOf(StringValue("invalid"))),
                         )
                     ),
-                    mappedValue
+                    mappedValue,
                 )
             },
             { assertEquals(emptyList<Meta.Change>(), changes) },
@@ -366,7 +361,8 @@ class AirbyteValueDeepCoercingMapperTest {
                         },
                         "sub_array": ["invalid"]
                     }
-                """.trimIndent()
+                """
+                            .trimIndent()
                     )
                     .toAirbyteValue(),
                 ObjectType(
@@ -377,7 +373,7 @@ class AirbyteValueDeepCoercingMapperTest {
                                     linkedMapOf("timestamptz" to f(TimestampTypeWithTimezone))
                                 )
                             ),
-                        "sub_array" to f(ArrayType(f(IntegerType)))
+                        "sub_array" to f(ArrayType(f(IntegerType))),
                     )
                 ),
             )
@@ -388,10 +384,10 @@ class AirbyteValueDeepCoercingMapperTest {
                     ObjectValue(
                         linkedMapOf(
                             "sub_object" to ObjectValue(linkedMapOf("timestamptz" to NullValue)),
-                            "sub_array" to ArrayValue(listOf(NullValue))
+                            "sub_array" to ArrayValue(listOf(NullValue)),
                         )
                     ),
-                    mappedValue
+                    mappedValue,
                 )
             },
             {
@@ -400,15 +396,15 @@ class AirbyteValueDeepCoercingMapperTest {
                         Meta.Change(
                             "sub_object.timestamptz",
                             AirbyteRecordMessageMetaChange.Change.NULLED,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
                         ),
                         Meta.Change(
                             "sub_array.[0]",
                             AirbyteRecordMessageMetaChange.Change.NULLED,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+                        ),
                     ),
-                    changes
+                    changes,
                 )
             },
         )

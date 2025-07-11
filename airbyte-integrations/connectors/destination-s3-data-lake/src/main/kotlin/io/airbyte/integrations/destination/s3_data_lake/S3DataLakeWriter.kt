@@ -25,7 +25,7 @@ class S3DataLakeWriter(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
-    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : DestinationWriter {
     override suspend fun setup() {
         super.setup()

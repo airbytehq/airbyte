@@ -9,11 +9,11 @@ package io.airbyte.cdk.load.message
  * stages for bookkeeping, which CDK interface devs can assign to processing stages as they see fit.
  * The only significant values are
  * - [BatchState.PERSISTED] Records will be considered recoverably persisted and checkpoints will be
- * acked to the orchestrator.
+ *   acked to the orchestrator.
  * - [BatchState.COMPLETE] All per-batch processing is done. (Post-processing may still occur during
- * close-of-stream). Records are considered PERSISTED (ie, will be acked if not already). If all
- * records are COMPLETE, and end-of-stream has been read, the stream will be considered complete and
- * will be closed.
+ *   close-of-stream). Records are considered PERSISTED (ie, will be acked if not already). If all
+ *   records are COMPLETE, and end-of-stream has been read, the stream will be considered complete
+ *   and will be closed.
  * - All other values are for bookkeeping convenience only.
  */
 enum class BatchState {

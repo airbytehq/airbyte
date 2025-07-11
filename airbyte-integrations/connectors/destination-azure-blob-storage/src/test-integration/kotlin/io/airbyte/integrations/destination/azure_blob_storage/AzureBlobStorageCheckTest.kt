@@ -25,7 +25,7 @@ class AzureBlobStorageCheckTest :
             mapOf(
                 CheckTestConfig(
                     AzureBlobStorageTestUtil.getInvalidConfig(CSVFormatSpecification()),
-                    name = "Bad hostname"
-                ) to "Server failed to authenticate the request".toPattern(),
+                    name = "Bad hostname",
+                ) to "Server failed to authenticate the request".toPattern()
             ),
     )

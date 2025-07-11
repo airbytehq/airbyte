@@ -68,9 +68,11 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
     /** Docker image used for the Teradata destination container. */
     override val imageName: String
         get() = "airbyte/destination-teradata:dev"
+
     /** SQL generator specific to Teradata. */
     override val sqlGenerator: SqlGenerator
         get() = TeradataSqlGenerator()
+
     /** JDBC-compatible operations for Teradata source data handling. */
     override val sourceOperations: JdbcCompatibleSourceOperations<*>
         get() = TeradataSourceOperations()
@@ -92,6 +94,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             .joinToString("")
             .lowercase(Locale.getDefault())
     }
+
     /**
      * Provides a JDBC DataSource for Teradata using the test configuration.
      *
@@ -112,6 +115,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             Duration.ofSeconds(10),
         )
     }
+
     /**
      * Cleans up all resources related to a specific stream and namespace in the Teradata
      * environment.
@@ -126,19 +130,10 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             namespace = getDefaultSchema(config!!)
         }
         val rawTableName =
-            nameTransformer.convertStreamName(
-                concatenateRawTableName(
-                    namespace,
-                    streamName,
-                ),
-            )
+            nameTransformer.convertStreamName(concatenateRawTableName(namespace, streamName))
         if (isTableExists(database, rawSchema, rawTableName)) {
             database!!.execute(
-                java.lang.String.format(
-                    "DROP TABLE %s.%s;",
-                    rawSchema,
-                    rawTableName,
-                ),
+                java.lang.String.format("DROP TABLE %s.%s;", rawSchema, rawTableName)
             )
         }
         if (isSchemaExists(database, namespace)) {
@@ -174,9 +169,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         val noOfRecords = 50
@@ -199,8 +194,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
      * 1. User runs a normal incremental sync
      * 2. User initiates a truncate refresh, but it fails.
      * 3. User cancels the truncate refresh, and initiates a normal incremental sync.
+     *
      * @TestInstance(TestInstance.Lifecycle.PER_CLASS) * In particular, we must retain all records
-     * from both the first sync, _and_ the truncate sync's temporary raw table.
+     *   from both the first sync, _and_ the truncate sync's temporary raw table.
      */
     @Test
     @Throws(Exception::class)
@@ -221,9 +217,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         // Normal sync
@@ -250,9 +246,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
         // Interrupted truncate sync
         assertThrows<Exception> {
@@ -284,9 +280,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         // Third sync
@@ -296,10 +292,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             readRecords("dat/sync2_expectedrecords_raw.jsonl").let { baseRecords ->
                 val sync2Records =
                     baseRecords.subList(expectedRawRecords1.size, baseRecords.size).onEach {
-                        (it as ObjectNode).put(
-                            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
-                            44,
-                        )
+                        (it as ObjectNode).put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, 44)
                     }
                 expectedRawRecords1 + sync2Records
             }
@@ -357,9 +350,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(namespace1)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         val namespace2 = streamNamespace + "_2"
@@ -381,9 +374,9 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(namespace2)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         val messages1 = readMessages("dat/sync1_messages.jsonl", namespace1, streamName)
@@ -447,11 +440,12 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
             )
         }
     }
+
     /** Sends STREAM_STATUS trace messages to the destination for all streams in the catalog. */
     private fun pushStatusMessages(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         destination: AirbyteDestination,
-        streamStatus: AirbyteStreamStatus
+        streamStatus: AirbyteStreamStatus,
     ) {
         catalog.streams.forEach {
             destination.accept(
@@ -466,14 +460,15 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withNamespace(it.stream.namespace)
-                                            .withName(it.stream.name),
+                                            .withName(it.stream.name)
                                     )
-                                    .withStatus(streamStatus),
-                            ),
-                    ),
+                                    .withStatus(streamStatus)
+                            )
+                    )
             )
         }
     }
+
     /** Pushes a list of Airbyte messages to the destination. */
     protected fun pushMessages(messages: List<AirbyteMessage>, destination: AirbyteDestination) {
         messages.forEach(
@@ -483,22 +478,24 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                         convertProtocolObject(
                             message,
                             io.airbyte.protocol.models.AirbyteMessage::class.java,
-                        )!!,
+                        )!!
                     )
                 }
-            },
+            }
         )
     }
+
     /** Converts protocol object V1 to V0 type using JSON serialization/deserialization. */
     private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0? {
         return Jsons.`object`(Jsons.jsonNode(v1), klass)
     }
+
     /** Reads a list of Airbyte messages from a JSONL file and attaches stream metadata. */
     @Throws(IOException::class)
     protected fun readMessages(
         filename: String,
         streamNamespace: String?,
-        streamName: String?
+        streamName: String?,
     ): List<AirbyteMessage> {
         return BaseTypingDedupingTest.readRecords(filename)
             .map { record: JsonNode -> Jsons.convertValue(record, AirbyteMessage::class.java) }
@@ -535,34 +532,35 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                     }
                     outputFuture.complete(destinationMessages)
                     null
-                },
+                }
             )
         return outputFuture
     }
+
     /** Utility to repeat a list N times into a flat list. */
     protected fun <T> repeatList(n: Int, list: List<T>): List<T> {
         return Collections.nCopies(n, list).flatMap { obj: List<T> -> obj }
     }
+
     /** Checks whether a given table exists in the schema. */
     protected fun isTableExists(
         database: JdbcDatabase?,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): Boolean {
         return (database?.queryInt(
-            "SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' ",
-        )
-            ?: 0) > 0
+            "SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' "
+        ) ?: 0) > 0
     }
+
     /** Checks whether a schema exists in the Teradata database. */
     protected fun isSchemaExists(database: JdbcDatabase?, schemaName: String?): Boolean {
         return (database?.queryInt(
             String.format(
                 "SELECT COUNT(1) FROM DBC.DatabasesV WHERE DatabaseName = '%s'",
                 schemaName,
-            ),
-        )
-            ?: 0) > 0 // If the result is greater than 0, return true, else false
+            )
+        ) ?: 0) > 0 // If the result is greater than 0, return true, else false
     }
 
     /** Creates a schema/database if it does not already exist. */
@@ -572,7 +570,7 @@ abstract class AbstractTeradataTypingDedupingTest : JdbcTypingDedupingTest() {
                 String.format(
                     "CREATE DATABASE \"%s\" AS PERMANENT = 120e6, SPOOL = 120e6;",
                     schemaName,
-                ),
+                )
             )
         }
     }

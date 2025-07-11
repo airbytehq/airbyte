@@ -31,12 +31,12 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                             linkedMapOf(
                                 "id" to FieldType(type = IntegerType, nullable = true),
                                 "name" to FieldType(type = StringType, nullable = true),
-                            ),
+                            )
                     ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val stream2 =
             DestinationStream(
@@ -49,12 +49,12 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                             linkedMapOf(
                                 "id" to FieldType(type = IntegerType, nullable = true),
                                 "name" to FieldType(type = StringType, nullable = true),
-                            ),
+                            )
                     ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
     }
 

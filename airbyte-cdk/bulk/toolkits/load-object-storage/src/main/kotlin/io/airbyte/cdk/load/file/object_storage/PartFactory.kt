@@ -13,10 +13,7 @@ import org.apache.mina.util.ConcurrentHashSet
  *
  * Not thread-safe. It is expected that the parts are generated in order.
  */
-class PartFactory(
-    val key: String,
-    val fileNumber: Long,
-) {
+class PartFactory(val key: String, val fileNumber: Long) {
     var totalSize: Long = 0
     private var nextIndex: Int = 0
     private var finalProduced = false
@@ -39,7 +36,7 @@ class PartFactory(
             fileNumber = fileNumber,
             partIndex = nextIndex,
             bytes = bytes,
-            isFinal = isFinal
+            isFinal = isFinal,
         )
     }
 }

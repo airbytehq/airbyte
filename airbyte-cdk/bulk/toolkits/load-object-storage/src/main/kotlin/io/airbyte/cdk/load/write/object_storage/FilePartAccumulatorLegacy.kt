@@ -25,14 +25,14 @@ import java.nio.file.Path
 
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
-    justification = "state is guaranteed to be non-null by Kotlin's type system"
+    justification = "state is guaranteed to be non-null by Kotlin's type system",
 )
 class FilePartAccumulatorLegacy(
     private val pathFactory: ObjectStoragePathFactory,
     private val stream: DestinationStream,
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    private val loadStrategy: ObjectLoader
+    private val loadStrategy: ObjectLoader,
 ) {
     val log = KotlinLogging.logger {}
     val partitioner =
@@ -43,11 +43,7 @@ class FilePartAccumulatorLegacy(
             Path.of(pathFactory.getFinalDirectory(stream), "${file.fileMessage.fileRelativePath}")
                 .toString()
 
-        val partFactory =
-            PartFactory(
-                key = key,
-                fileNumber = index,
-            )
+        val partFactory = PartFactory(key = key, fileNumber = index)
 
         val localFile = File(file.fileMessage.fileUrl)
         val fileInputStream = localFile.inputStream()
@@ -101,10 +97,8 @@ class FilePartAccumulatorFactory(
     private val pathFactory: ObjectStoragePathFactory,
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    private val loadStrategy: ObjectLoader
+    private val loadStrategy: ObjectLoader,
 ) {
-    fun make(
-        stream: DestinationStream,
-    ): FilePartAccumulatorLegacy =
+    fun make(stream: DestinationStream): FilePartAccumulatorLegacy =
         FilePartAccumulatorLegacy(pathFactory, stream, outputQueue, loadStrategy)
 }

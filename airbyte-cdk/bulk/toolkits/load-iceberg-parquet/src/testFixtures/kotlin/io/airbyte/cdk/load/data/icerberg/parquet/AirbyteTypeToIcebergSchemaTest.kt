@@ -24,7 +24,7 @@ class AirbyteTypeToIcebergSchemaTest {
                 linkedMapOf(
                     "id" to FieldType(IntegerType, false),
                     "name" to FieldType(StringType, true),
-                ),
+                )
             )
         val result = converter.convert(objectType, stringifyObjects = false) as Types.StructType
 
@@ -48,7 +48,7 @@ class AirbyteTypeToIcebergSchemaTest {
                 linkedMapOf(
                     "id" to FieldType(IntegerType, false),
                     "name" to FieldType(StringType, true),
-                ),
+                )
             )
         val result = converter.convert(objectType, stringifyObjects = true)
 
@@ -84,7 +84,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles BooleanType`() {
         assertEquals(
             Types.BooleanType.get(),
-            converter.convert(BooleanType, stringifyObjects = false)
+            converter.convert(BooleanType, stringifyObjects = false),
         )
     }
 
@@ -102,7 +102,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles NumberType`() {
         assertEquals(
             Types.DoubleType.get(),
-            converter.convert(NumberType, stringifyObjects = false)
+            converter.convert(NumberType, stringifyObjects = false),
         )
     }
 
@@ -124,7 +124,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles StringType`() {
         assertEquals(
             Types.StringType.get(),
-            converter.convert(StringType, stringifyObjects = false)
+            converter.convert(StringType, stringifyObjects = false),
         )
     }
 
@@ -132,7 +132,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimeTypeWithTimezone`() {
         assertEquals(
             Types.TimeType.get(),
-            converter.convert(TimeTypeWithTimezone, stringifyObjects = false)
+            converter.convert(TimeTypeWithTimezone, stringifyObjects = false),
         )
     }
 
@@ -140,7 +140,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimeTypeWithoutTimezone`() {
         assertEquals(
             Types.TimeType.get(),
-            converter.convert(TimeTypeWithoutTimezone, stringifyObjects = false)
+            converter.convert(TimeTypeWithoutTimezone, stringifyObjects = false),
         )
     }
 
@@ -148,7 +148,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimestampTypeWithTimezone`() {
         assertEquals(
             Types.TimestampType.withZone(),
-            converter.convert(TimestampTypeWithTimezone, stringifyObjects = false)
+            converter.convert(TimestampTypeWithTimezone, stringifyObjects = false),
         )
     }
 
@@ -156,7 +156,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles TimestampTypeWithoutTimezone`() {
         assertEquals(
             Types.TimestampType.withoutZone(),
-            converter.convert(TimestampTypeWithoutTimezone, stringifyObjects = false)
+            converter.convert(TimestampTypeWithoutTimezone, stringifyObjects = false),
         )
     }
 
@@ -182,7 +182,7 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `convert handles UnknownType`() {
         assertEquals(
             Types.StringType.get(),
-            converter.convert(UnknownType(Jsons.emptyObject()), stringifyObjects = false)
+            converter.convert(UnknownType(Jsons.emptyObject()), stringifyObjects = false),
         )
     }
 
@@ -193,7 +193,7 @@ class AirbyteTypeToIcebergSchemaTest {
                 linkedMapOf(
                     "age" to FieldType(IntegerType, false),
                     "email" to FieldType(StringType, true),
-                ),
+                )
             )
         val schema = objectType.toIcebergSchema(mutableListOf(mutableListOf("age")))
 

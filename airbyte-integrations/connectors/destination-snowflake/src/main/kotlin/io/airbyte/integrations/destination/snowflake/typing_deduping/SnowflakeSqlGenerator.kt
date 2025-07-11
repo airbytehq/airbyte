@@ -30,14 +30,14 @@ import java.util.*
 
 class SnowflakeSqlGenerator(
     private val retentionPeriodDays: Int,
-    private val useMergeForUpserts: Boolean = false
+    private val useMergeForUpserts: Boolean = false,
 ) : SqlGenerator {
     private val cdcDeletedAtColumn = buildColumnId("_ab_cdc_deleted_at")
 
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         return StreamId(
             escapeSqlIdentifier(namespace).uppercase(Locale.getDefault()),
@@ -45,7 +45,7 @@ class SnowflakeSqlGenerator(
             escapeSqlIdentifier(rawNamespaceOverride),
             escapeSqlIdentifier(concatenateRawTableName(namespace, name)),
             namespace,
-            name
+            name,
         )
     }
 
@@ -88,7 +88,8 @@ class SnowflakeSqlGenerator(
     override fun createSchema(schema: String): Sql {
         return of(
             """CREATE SCHEMA IF NOT EXISTS "$schema"
-            |DEFAULT_DDL_COLLATION='utf8';""".trimMargin()
+            |DEFAULT_DDL_COLLATION='utf8';"""
+                .trimMargin()
         )
     }
 
@@ -108,7 +109,8 @@ class SnowflakeSqlGenerator(
             |  "_AIRBYTE_GENERATION_ID" INTEGER
             |  $columnDeclarations
             |) data_retention_time_in_days = $retentionPeriodDays;
-        """.trimMargin()
+        """
+                .trimMargin()
 
         return of(createTableSql)
     }
@@ -117,7 +119,7 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
 
         if (stream.postImportAction == ImportType.DEDUPE) {
@@ -126,14 +128,14 @@ class SnowflakeSqlGenerator(
             if (useMergeForUpserts) {
                 return transactionally(
                     upsertRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting),
-                    checkpointRawTable(stream.id)
+                    checkpointRawTable(stream.id),
                 )
             }
             return insertRecordsDedupe(
                 stream,
                 finalSuffix,
                 minRawTimestamp,
-                useExpensiveSaferCasting
+                useExpensiveSaferCasting,
             )
         }
         return insertRecordsNoDedupe(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
@@ -143,7 +145,7 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val insertNewRecords =
             insertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
@@ -158,7 +160,7 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        safeCast: Boolean
+        safeCast: Boolean,
     ): String {
         val targetTable = "TARGET_TABLE"
         val sourceTable = "DEDUPED_RECORDS"
@@ -172,7 +174,8 @@ class SnowflakeSqlGenerator(
                     """
                     |  ($targetTable.$it=$sourceTable.$it
                     |    OR ($targetTable.$it IS NULL AND $sourceTable.$it IS NULL))
-                    |""".trimMargin()
+                    |"""
+                        .trimMargin()
                 }
         // First, compare the cursors.
         // Then, break ties with extracted_at. (also explicitly check for both source_table and
@@ -190,7 +193,8 @@ class SnowflakeSqlGenerator(
                         |  OR ($targetTable.$it IS NULL AND $sourceTable.$it IS NULL AND $targetAbExtractedAt < $sourceTable.$abExtractedAt)
                         |  OR ($targetTable.$it IS NULL AND $sourceTable.$it IS NOT NULL)
                         |)
-                    """.trimMargin()
+                    """
+                        .trimMargin()
                 }
                 .orElse("$targetAbExtractedAt < $sourceTable.$abExtractedAt")
         val whenMatchedCdcDeleteCondition =
@@ -206,7 +210,7 @@ class SnowflakeSqlGenerator(
                 listOf(
                     JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.uppercase().quoted(),
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.uppercase().quoted(),
-                    JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase().quoted()
+                    JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase().quoted(),
                 )
         val abMetaColumn = JavaBaseConstants.COLUMN_NAME_AB_META.uppercase().quoted()
 
@@ -228,7 +232,8 @@ class SnowflakeSqlGenerator(
             |${stream.finalTableColumnsWithoutMeta(srcTableQualifier = "$sourceTable.", upperCaseAb = true) { "$sourceTable.${it.quoted()}" }.replaceIndent("  ")},
             |  $sourceTable.$abMetaColumn
             |)
-        """.trimMargin()
+        """
+                .trimMargin()
         return upsertSql
     }
 
@@ -236,7 +241,7 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val insertNewRecords =
             insertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
@@ -247,7 +252,7 @@ class SnowflakeSqlGenerator(
     private fun extractAndCast(
         column: ColumnId,
         airbyteType: AirbyteType,
-        useTryCast: Boolean
+        useTryCast: Boolean,
     ): String {
         return cast(
             "${JavaBaseConstants.COLUMN_NAME_DATA.quoted()}:${escapeJsonIdentifier(column.originalName).quoted()}",
@@ -278,7 +283,8 @@ class SnowflakeSqlGenerator(
                 |  THEN NULL 
                 |  ELSE $sqlExpression 
                 |END
-            """.trimMargin()
+            """
+                .trimMargin()
         } else {
             return when (val dialectType = toDialectType(airbyteType)) {
                 "TIMESTAMP_TZ" ->
@@ -301,7 +307,8 @@ class SnowflakeSqlGenerator(
                         |    THEN TO_TIMESTAMP_TZ(($sqlExpression)::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
                         |  ELSE $castMethod(($sqlExpression)::TEXT AS TIMESTAMP_TZ)
                         |END
-                    """.trimMargin()
+                    """
+                        .trimMargin()
                 "VARIANT" -> sqlExpression
                 "OBJECT" ->
                     """
@@ -310,7 +317,8 @@ class SnowflakeSqlGenerator(
                         |    THEN NULL 
                         |  ELSE $sqlExpression 
                         |END
-                    """.trimMargin()
+                    """
+                        .trimMargin()
                 "ARRAY" ->
                     """
                         |CASE 
@@ -318,7 +326,8 @@ class SnowflakeSqlGenerator(
                         |    THEN NULL 
                         |  ELSE $sqlExpression 
                         |END
-                    """.trimMargin()
+                    """
+                        .trimMargin()
                 "TEXT" -> "(($sqlExpression)::text)"
                 else -> "$castMethod(($sqlExpression)::text as $dialectType)"
             }
@@ -330,7 +339,7 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useTryCast: Boolean
+        useTryCast: Boolean,
     ): String {
         val selectRecordsFromRawTable =
             selectTypedRecordsFromRawTable(stream, minRawTimestamp, useTryCast)
@@ -341,7 +350,8 @@ class SnowflakeSqlGenerator(
             |  "_AIRBYTE_META"
             |)
             |$selectRecordsFromRawTable;
-            |""".trimMargin()
+            |"""
+            .trimMargin()
     }
 
     private fun StreamConfig.projectionColumnsFromRawTable(safeCast: Boolean): String {
@@ -380,7 +390,8 @@ class SnowflakeSqlGenerator(
                 |    THEN OBJECT_CONSTRUCT('field', '${escapeSingleQuotedString(col.key.originalName)}', 'change', 'NULLED', 'reason', 'DESTINATION_TYPECAST_ERROR')
                 |  ELSE NULL
                 |END
-            """.trimMargin()
+            """
+                .trimMargin()
         }
         return this.columns.map(caseStatement).joinToString(", \n")
     }
@@ -388,7 +399,7 @@ class SnowflakeSqlGenerator(
     private fun StreamConfig.finalTableColumnsWithoutMeta(
         srcTableQualifier: String = "",
         upperCaseAb: Boolean = false,
-        abColumnTransform: (String) -> String
+        abColumnTransform: (String) -> String,
     ): String {
         val columns =
             this.columns.keys.map { "$srcTableQualifier${it.name.quoted()}" } +
@@ -421,7 +432,8 @@ class SnowflakeSqlGenerator(
             |    )
             |  )
             |)
-            |""".trimMargin()
+            |"""
+                .trimMargin()
 
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
         val abMetaColumn =
@@ -430,7 +442,8 @@ class SnowflakeSqlGenerator(
             |  THEN OBJECT_INSERT("_airbyte_meta", 'changes', "_airbyte_cast_errors", true) 
             |  ELSE OBJECT_CONSTRUCT('changes', "_airbyte_cast_errors") 
             |END AS "_AIRBYTE_META"
-        """.trimMargin()
+        """
+                .trimMargin()
 
         if (stream.postImportAction != ImportType.DEDUPE) {
             return """
@@ -447,7 +460,8 @@ class SnowflakeSqlGenerator(
                 |${stream.finalTableColumnsWithoutMeta { "${it.quoted()} as ${it.uppercase().quoted()}" }.replaceIndent("  ")},
                 |${abMetaColumn.replaceIndent("  ")}
                 |FROM intermediate_data
-            """.trimMargin()
+            """
+                .trimMargin()
         } else {
             // Additional filtering based on CDC deletes and remove duplicates by cursor
             var cdcConditionalOrIncludeStatement = ""
@@ -455,7 +469,8 @@ class SnowflakeSqlGenerator(
                 cdcConditionalOrIncludeStatement =
                     """
                     |OR ("_airbyte_loaded_at" IS NOT NULL AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE'))
-                    |""".trimMargin()
+                    |"""
+                        .trimMargin()
             }
 
             val pkList = stream.primaryKey.joinToString { it.name(QUOTE) }
@@ -488,7 +503,8 @@ class SnowflakeSqlGenerator(
                 |FROM 
                 |  new_records
                 |WHERE row_number = 1
-            """.trimMargin()
+            """
+                .trimMargin()
         }
     }
 
@@ -497,7 +513,7 @@ class SnowflakeSqlGenerator(
         id: StreamId,
         finalSuffix: String,
         primaryKey: List<ColumnId>,
-        cursor: Optional<ColumnId>
+        cursor: Optional<ColumnId>,
     ): String {
         val pkList = primaryKey.joinToString { it.name(QUOTE) }
         val quotedFinalTable = id.quotedFinalTableId(finalSuffix)
@@ -520,7 +536,8 @@ class SnowflakeSqlGenerator(
         |    )
         |    WHERE row_number != 1
         |  );
-        |""".trimMargin()
+        |"""
+            .trimMargin()
     }
 
     private fun cdcDeletes(stream: StreamConfig, finalSuffix: String): String {
@@ -533,7 +550,8 @@ class SnowflakeSqlGenerator(
         return """
             | DELETE FROM ${stream.id.finalTableId(QUOTE, finalSuffix.uppercase(Locale.getDefault()))} 
             | WHERE _AB_CDC_DELETED_AT IS NOT NULL;
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     @VisibleForTesting
@@ -542,20 +560,21 @@ class SnowflakeSqlGenerator(
             |UPDATE ${id.rawTableId(QUOTE)} 
             |SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP() 
             |WHERE "_airbyte_loaded_at" IS NULL
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
         return transactionally(
             "DROP TABLE IF EXISTS ${stream.finalTableId(QUOTE)};",
-            "ALTER TABLE ${stream.finalTableId(QUOTE, finalSuffix.uppercase(Locale.getDefault()))} RENAME TO ${stream.finalTableId(QUOTE)};"
+            "ALTER TABLE ${stream.finalTableId(QUOTE, finalSuffix.uppercase(Locale.getDefault()))} RENAME TO ${stream.finalTableId(QUOTE)};",
         )
     }
 
     override fun prepareTablesForSoftReset(stream: StreamConfig): Sql {
         return concat(
             createTable(stream, SOFT_RESET_SUFFIX.uppercase(Locale.getDefault()), true),
-            clearLoadedAt(stream.id)
+            clearLoadedAt(stream.id),
         )
     }
 
@@ -587,7 +606,8 @@ class SnowflakeSqlGenerator(
                 |  CAST(NULL AS INTEGER) AS "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}",
                 |  FROM $namespace.$tableName
                 |);
-                |""".trimMargin(),
+                |"""
+                .trimMargin()
         )
     }
 
@@ -604,7 +624,7 @@ class SnowflakeSqlGenerator(
                 "CURRENT_TIMESTAMP",
                 "CURRENT_USER",
                 "LOCALTIME",
-                "LOCALTIMESTAMP"
+                "LOCALTIMESTAMP",
             )
 
         private fun airbyteExtractedAtUtcForced(fieldName: String): String {
@@ -618,7 +638,8 @@ class SnowflakeSqlGenerator(
                 |    CONVERT_TIMEZONE('UTC', $fieldName)
                 |  )
                 |)
-            """.trimMargin()
+            """
+                .trimMargin()
         }
 
         private fun String.quoted(): String {

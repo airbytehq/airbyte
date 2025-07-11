@@ -304,10 +304,7 @@ class JsonCodecTest {
     @Test
     fun testArrayEncoder() {
         ArrayEncoder(IntCodec).run {
-            Assertions.assertEquals(
-                Jsons.arrayNode().add(1).add(2).add(3),
-                encode(listOf(1, 2, 3)),
-            )
+            Assertions.assertEquals(Jsons.arrayNode().add(1).add(2).add(3), encode(listOf(1, 2, 3)))
         }
         ArrayEncoder(ArrayEncoder(IntCodec)).run {
             Assertions.assertEquals(
@@ -322,12 +319,7 @@ class JsonCodecTest {
     @Test
     fun testArrayDecoder() {
         ArrayDecoder(IntCodec).run {
-            Assertions.assertEquals(
-                listOf(1, 2, 3),
-                decode(
-                    Jsons.arrayNode().add(1).add(2).add(3),
-                ),
-            )
+            Assertions.assertEquals(listOf(1, 2, 3), decode(Jsons.arrayNode().add(1).add(2).add(3)))
         }
         ArrayDecoder(ArrayDecoder(IntCodec)).run {
             Assertions.assertEquals(
@@ -335,7 +327,7 @@ class JsonCodecTest {
                 decode(
                     Jsons.arrayNode()
                         .add(Jsons.arrayNode().add(1).add(2))
-                        .add(Jsons.arrayNode().add(3)),
+                        .add(Jsons.arrayNode().add(3))
                 ),
             )
             Assertions.assertThrows(IllegalArgumentException::class.java) {

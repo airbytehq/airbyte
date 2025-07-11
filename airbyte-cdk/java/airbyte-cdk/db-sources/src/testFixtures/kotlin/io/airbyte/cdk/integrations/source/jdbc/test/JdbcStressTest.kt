@@ -37,7 +37,7 @@ private val LOGGER = KotlinLogging.logger {}
 @SuppressFBWarnings(
     value = ["MS_SHOULD_BE_FINAL"],
     justification =
-        "The static variables are updated in sub classes for convenience, and cannot be final."
+        "The static variables are updated in sub classes for convenience, and cannot be final.",
 )
 abstract class JdbcStressTest {
     private var bitSet: BitSet? = null
@@ -99,7 +99,7 @@ abstract class JdbcStressTest {
                         jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
                     else null,
                     driverClass,
-                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText()
+                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 )
             )
 
@@ -110,7 +110,7 @@ abstract class JdbcStressTest {
                     .execute(
                         createTableQuery(
                             "id_and_name",
-                            String.format("id %s, name VARCHAR(200)", COL_ID_TYPE)
+                            String.format("id %s, name VARCHAR(200)", COL_ID_TYPE),
                         )
                     )
             }
@@ -179,7 +179,7 @@ abstract class JdbcStressTest {
         Assertions.assertEquals(
             expectedRoundedRecordsCount,
             bitSet!!.cardinality().toLong(),
-            "testing: $testName"
+            "testing: $testName",
         )
     }
 
@@ -206,7 +206,7 @@ abstract class JdbcStressTest {
                                     COL_ID,
                                     expectedRecordNumber,
                                     COL_NAME,
-                                    "picard-$recordNumber"
+                                    "picard-$recordNumber",
                                 )
                             )
                         )
@@ -220,7 +220,7 @@ abstract class JdbcStressTest {
         }
         return String.format(
             "INSERT INTO id_and_name (id, name) VALUES %s",
-            Strings.join(inserts, ", ")
+            Strings.join(inserts, ", "),
         )
     }
 
@@ -261,7 +261,7 @@ abstract class JdbcStressTest {
                             CatalogHelpers.createAirbyteStream(
                                     streamName,
                                     Field.of(COL_ID, JsonSchemaType.NUMBER),
-                                    Field.of(COL_NAME, JsonSchemaType.STRING)
+                                    Field.of(COL_NAME, JsonSchemaType.STRING),
                                 )
                                 .withSupportedSyncModes(
                                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)

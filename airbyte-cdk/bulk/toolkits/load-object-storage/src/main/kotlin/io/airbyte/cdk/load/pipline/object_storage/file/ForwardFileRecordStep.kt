@@ -27,9 +27,5 @@ class ForwardFileRecordStep<T>(
     override val numWorkers: Int = 1
 
     override fun taskForPartition(partition: Int) =
-        ForwardFileRecordTask(
-            inputQueue,
-            outputQueue,
-            partition,
-        )
+        ForwardFileRecordTask(inputQueue, outputQueue, partition)
 }

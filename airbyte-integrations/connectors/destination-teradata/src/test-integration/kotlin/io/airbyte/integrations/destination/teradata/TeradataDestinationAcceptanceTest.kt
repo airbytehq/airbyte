@@ -65,15 +65,9 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
     @Throws(Exception::class)
     fun initEnvironment() {
 
-        var configJson =
-            Jsons.clone(
-                staticConfig,
-            )
+        var configJson = Jsons.clone(staticConfig)
         this.configJson = configJson
-        val teradataHttpClient =
-            getTeradataHttpClient(
-                configJson,
-            )
+        val teradataHttpClient = getTeradataHttpClient(configJson)
         val name = configJson["env_name"].asText()
         val token = configJson["env_token"].asText()
         val getRequest = GetEnvironmentRequest(name)
@@ -91,10 +85,7 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                     configJson["env_password"].asText(),
                 )
             response = teradataHttpClient.createEnvironment(request, token).get()
-            LOGGER.info(
-                "Environemnt {} is created successfully ",
-                configJson["env_name"].asText(),
-            )
+            LOGGER.info("Environemnt {} is created successfully ", configJson["env_name"].asText())
         } else if (response.state == EnvironmentResponse.State.STOPPED) {
             val request = EnvironmentRequest(name, OperationRequest("start"))
             teradataHttpClient.startEnvironment(request, token)
@@ -115,27 +106,14 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
     }
 
     @AfterAll
-    @Throws(
-        ExecutionException::class,
-        InterruptedException::class,
-        Exception::class,
-    )
+    @Throws(ExecutionException::class, InterruptedException::class, Exception::class)
     fun cleanupEnvironment() {
         try {
-            val teradataHttpClient =
-                getTeradataHttpClient(
-                    configJson,
-                )
+            val teradataHttpClient = getTeradataHttpClient(configJson)
             val token = configJson["env_token"].asText()
-            val request =
-                DeleteEnvironmentRequest(
-                    configJson["env_name"].asText(),
-                )
+            val request = DeleteEnvironmentRequest(configJson["env_name"].asText())
             teradataHttpClient.deleteEnvironment(request, token)
-            LOGGER.info(
-                "Environemnt {} is deleted successfully ",
-                configJson["env_name"].asText(),
-            )
+            LOGGER.info("Environemnt {} is deleted successfully ", configJson["env_name"].asText())
         } catch (be: BaseException) {
             LOGGER.error(
                 "Environemnt " +
@@ -162,7 +140,7 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         return retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namespace)
     }
@@ -178,12 +156,10 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                         schemaName,
                         tableName,
                         JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-                    ),
+                    )
                 )
             },
-            { rs: ResultSet ->
-                Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA))
-            },
+            { rs: ResultSet -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)) },
         )
     }
 
@@ -239,16 +215,12 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
             TeradataConstants.DRIVER_CLASS,
             jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
             getConnectionProperties(config),
-            Duration.ofSeconds(10)
+            Duration.ofSeconds(10),
         )
     }
 
     private fun getConnectionProperties(config: JsonNode): Map<String, String> {
-        val customProperties =
-            JdbcUtils.parseJdbcParameters(
-                config,
-                JdbcUtils.JDBC_URL_PARAMS_KEY,
-            )
+        val customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY)
         val defaultProperties = getDefaultConnectionProperties(config)
         assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties)
         return MoreMaps.merge(customProperties, defaultProperties)
@@ -260,12 +232,12 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
 
     private fun assertCustomParametersDontOverwriteDefaultParameters(
         customParameters: Map<String, String>,
-        defaultParameters: Map<String, String>
+        defaultParameters: Map<String, String>,
     ) {
         for (key in defaultParameters.keys) {
             require(
                 !(customParameters.containsKey(key) &&
-                    customParameters[key] != defaultParameters[key]),
+                    customParameters[key] != defaultParameters[key])
             ) {
                 "Cannot overwrite default JDBC parameter $key"
             }
@@ -282,9 +254,7 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
 
     companion object {
         private val LOGGER: Logger =
-            LoggerFactory.getLogger(
-                TeradataDestinationAcceptanceTest::class.java,
-            )
+            LoggerFactory.getLogger(TeradataDestinationAcceptanceTest::class.java)
         private val SCHEMA_NAME = Strings.addRandomSuffix("acc_test", "_", 5)
 
         private const val CREATE_DATABASE =

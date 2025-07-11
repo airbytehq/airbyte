@@ -33,7 +33,7 @@ import java.io.IOException
 class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Project ID")
     @get:JsonPropertyDescription(
-        """The GCP project ID for the project containing the target BigQuery dataset. Read more <a href="https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects">here</a>.""",
+        """The GCP project ID for the project containing the target BigQuery dataset. Read more <a href="https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects">here</a>."""
     )
     @get:JsonProperty("project_id")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 0}""")
@@ -41,7 +41,7 @@ class BigquerySpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Dataset Location")
     @get:JsonPropertyDescription(
-        """The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href="https://cloud.google.com/bigquery/docs/locations">here</a>.""",
+        """The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href="https://cloud.google.com/bigquery/docs/locations">here</a>."""
     )
     @get:JsonProperty("dataset_location")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 1}""")
@@ -49,7 +49,7 @@ class BigquerySpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Default Dataset ID")
     @get:JsonPropertyDescription(
-        """The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href="https://cloud.google.com/bigquery/docs/datasets#create-dataset">here</a>.""",
+        """The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href="https://cloud.google.com/bigquery/docs/datasets#create-dataset">here</a>."""
     )
     @get:JsonProperty("dataset_id")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 2}""")
@@ -66,31 +66,27 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonDeserialize(using = RawJsonDeserializer::class)
     @get:JsonSchemaTitle("Service Account Key JSON (Required for cloud, optional for open-source)")
     @get:JsonPropertyDescription(
-        """The contents of the JSON service account key. Check out the <a href="https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.""",
+        """The contents of the JSON service account key. Check out the <a href="https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty."""
     )
     @get:JsonProperty("credentials_json")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 4, "airbyte_secret": true, "always_show": true}""",
+            """{"group": "connection", "order": 4, "airbyte_secret": true, "always_show": true}"""
     )
     val credentialsJson: String? = null
 
     @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
-        """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
+        """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes."""
     )
     // default hard delete for backwards compatibility
     @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
-    @get:JsonSchemaInject(
-        json = """{"group": "sync_behavior", "order": 5, "always_show": true}""",
-    )
+    @get:JsonSchemaInject(json = """{"group": "sync_behavior", "order": 5, "always_show": true}""")
     val cdcDeletionMode: CdcDeletionMode? = null
 
-    @get:JsonSchemaTitle(
-        """Legacy raw tables""",
-    )
+    @get:JsonSchemaTitle("""Legacy raw tables""")
     @get:JsonPropertyDescription(
-        """Write the legacy "raw tables" format, to enable backwards compatibility with older versions of this connector.""",
+        """Write the legacy "raw tables" format, to enable backwards compatibility with older versions of this connector."""
     )
     // for compatibility with existing actor configs, we keep the old property name.
     @get:JsonProperty("disable_type_dedupe")
@@ -99,7 +95,7 @@ class BigquerySpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Airbyte Internal Table Dataset Name")
     @get:JsonPropertyDescription(
-        """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal".""",
+        """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal"."""
     )
     // for backwards compatibility, the JSON property is still called raw_data_dataset.
     @get:JsonProperty("raw_data_dataset")
@@ -125,20 +121,20 @@ sealed class LoadingMethodSpecification(@JsonProperty("method") val method: Load
 
 @JsonSchemaTitle("Batched Standard Inserts")
 @JsonSchemaDescription(
-    "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically.",
+    "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically."
 )
 class BatchedStandardInsertSpecification :
     LoadingMethodSpecification(LoadingMethod.BATCHED_STANDARD_INSERT)
 
 @JsonSchemaTitle("GCS Staging")
 @JsonSchemaDescription(
-    "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
+    "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery."
 )
 class GcsStagingSpecification :
     GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
     @get:JsonSchemaTitle("GCS Tmp Files Post-Processing")
     @get:JsonPropertyDescription(
-        """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly.""",
+        """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly."""
     )
     // yes, this is mixed underscore+hyphen.
     @get:JsonProperty("keep_files_in_gcs-bucket", defaultValue = "Delete all tmp files from GCS")
@@ -206,7 +202,7 @@ enum class GcsFilePostProcessing(@get:JsonValue val postProcesing: String) {
 
 enum class TransformationPriority(@get:JsonValue val transformationPriority: String) {
     INTERACTIVE("interactive"),
-    BATCH("batch")
+    BATCH("batch"),
 }
 
 enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {

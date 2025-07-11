@@ -41,7 +41,7 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                         ObjectType(
                             linkedMapOf(
                                 "street" to FieldType(StringType, true),
-                                "city" to FieldType(StringType, true)
+                                "city" to FieldType(StringType, true),
                             )
                         ),
                     "combined_denormalized" to
@@ -52,7 +52,7 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                     "time" to TimeTypeWithTimezone,
                     "time_without_timezone" to TimeTypeWithoutTimezone,
                     "timestamp" to TimestampTypeWithTimezone,
-                    "timestamp_without_timezone" to TimestampTypeWithoutTimezone
+                    "timestamp_without_timezone" to TimestampTypeWithoutTimezone,
                 )
                 .map { it.key to FieldType(it.value, nullable = true) }
                 .let { linkedMapOf(*it.toTypedArray()) }
@@ -159,7 +159,8 @@ class AirbyteSchemaTypeToJsonSchemaTest {
           },
           "additionalProperties": true
         }
-    """.trimIndent()
+    """
+            .trimIndent()
 
     @Test
     fun testToJsonSchema() {

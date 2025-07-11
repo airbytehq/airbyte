@@ -144,12 +144,7 @@ class DlqPipelineFactoryFactory {
         @Named("dlqRecordFormatterStep") formatterStep: ObjectLoaderPartFormatterStep,
         @Named("recordPartLoaderStep") loaderStep: ObjectLoaderPartLoaderStep<T>,
         @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
-    ): List<LoadPipelineStep> =
-        listOf(
-            formatterStep,
-            loaderStep,
-            completerStep,
-        )
+    ): List<LoadPipelineStep> = listOf(formatterStep, loaderStep, completerStep)
 
     @Singleton
     @Requires(bean = ObjectStorageConfig::class, beanProperty = "type", value = "None")

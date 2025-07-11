@@ -16,7 +16,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 class AirbyteOkHttpClient(
     private val client: OkHttpClient,
-    private val retryPolicy: RetryPolicy<okhttp3.Response>
+    private val retryPolicy: RetryPolicy<okhttp3.Response>,
 ) : HttpClient {
 
     override fun send(request: Request): Response {

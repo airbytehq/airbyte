@@ -27,7 +27,7 @@ class DefaultDestStateLifecycleManager
 @VisibleForTesting
 internal constructor(
     singleStateManager: DestStateLifecycleManager,
-    streamStateManager: DestStateLifecycleManager
+    streamStateManager: DestStateLifecycleManager,
 ) : DestStateLifecycleManager {
     private var stateType: AirbyteStateMessage.AirbyteStateType? = null
 
@@ -53,7 +53,7 @@ internal constructor(
     override fun addState(message: AirbyteMessage) {
         Preconditions.checkArgument(
             message.type == AirbyteMessage.Type.STATE,
-            "Messages passed to State Manager must be of type STATE."
+            "Messages passed to State Manager must be of type STATE.",
         )
         Preconditions.checkArgument(isStateTypeCompatible(stateType, message.state.type))
 
@@ -125,13 +125,15 @@ internal constructor(
          *
          * @param previousStateType
          * - state type previously recorded by the state manager
+         *
          * @param newStateType
          * - state message of a newly added message
+         *
          * @return true if compatible, otherwise false
          */
         private fun isStateTypeCompatible(
             previousStateType: AirbyteStateMessage.AirbyteStateType?,
-            newStateType: AirbyteStateMessage.AirbyteStateType?
+            newStateType: AirbyteStateMessage.AirbyteStateType?,
         ): Boolean {
             return previousStateType == null ||
                 previousStateType == AirbyteStateMessage.AirbyteStateType.LEGACY &&

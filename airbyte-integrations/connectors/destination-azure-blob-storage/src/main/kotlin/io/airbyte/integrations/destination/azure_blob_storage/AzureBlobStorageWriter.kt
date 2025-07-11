@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AzureBlobStorageWriter(
-    private val streamLoaderFactory: ObjectStorageStreamLoaderFactory<AzureBlob, *>,
+    private val streamLoaderFactory: ObjectStorageStreamLoaderFactory<AzureBlob, *>
 ) : DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return streamLoaderFactory.create(stream)

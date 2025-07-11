@@ -86,7 +86,7 @@ constructor(
                     sqlGenerator = sqlGenerator,
                     destinationHandler = snowflakeDestinationHandler,
                     retentionPeriodDays,
-                    snowflakeStagingClient
+                    snowflakeStagingClient,
                 )
             val streamId =
                 sqlGenerator.buildStreamId(outputSchema, finalTableName, rawTableSchemaName)
@@ -99,7 +99,7 @@ constructor(
                     columns = linkedMapOf(),
                     generationId = 0,
                     minimumGenerationId = 0,
-                    syncId = 0
+                    syncId = 0,
                 )
             // None of the fields in destination initial status matter
             // for a dummy sync with type-dedupe disabled. We only look at these
@@ -113,13 +113,13 @@ constructor(
                         InitialRawTableStatus(
                             rawTableExists = false,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.empty()
+                            maxProcessedTimestamp = Optional.empty(),
                         ),
                     initialTempRawTableStatus =
                         InitialRawTableStatus(
                             rawTableExists = false,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.empty()
+                            maxProcessedTimestamp = Optional.empty(),
                         ),
                     isSchemaMismatch = true,
                     isFinalTableEmpty = true,
@@ -137,21 +137,21 @@ constructor(
                     initialStatus,
                     FileUploadFormat.CSV,
                     destinationColumns,
-                    disableTypeDedupe = true
+                    disableTypeDedupe = true,
                 )
             // Dummy message
-            val data = """
+            val data =
+                """
                 {"testKey": "testValue"}
-            """.trimIndent()
+            """
+                    .trimIndent()
             val message =
                 PartialAirbyteMessage()
                     .withSerialized(data)
                     .withRecord(
                         PartialAirbyteRecordMessage()
                             .withEmittedAt(System.currentTimeMillis())
-                            .withMeta(
-                                AirbyteRecordMessageMeta(),
-                            ),
+                            .withMeta(AirbyteRecordMessageMeta())
                     )
             streamOperation.writeRecords(streamConfig, listOf(message).stream())
             streamOperation.finalizeTable(
@@ -161,9 +161,7 @@ constructor(
             // clean up the raw table, this is intentionally not part of actual sync code
             // because we avoid dropping original tables directly.
             snowflakeDestinationHandler.execute(
-                Sql.of(
-                    "DROP TABLE IF EXISTS \"${streamId.rawNamespace}\".\"${streamId.rawName}\";",
-                ),
+                Sql.of("DROP TABLE IF EXISTS \"${streamId.rawNamespace}\".\"${streamId.rawName}\";")
             )
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: Exception) {
@@ -191,15 +189,12 @@ constructor(
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer {
         AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config)
 
         val defaultNamespace = config["schema"].asText()
-        val retentionPeriodDays =
-            getRetentionPeriodDays(
-                config[RETENTION_PERIOD_DAYS],
-            )
+        val retentionPeriodDays = getRetentionPeriodDays(config[RETENTION_PERIOD_DAYS])
         val useMergeForUpsert =
             config.has(USE_MERGE_FOR_UPSERT) && config[USE_MERGE_FOR_UPSERT].asBoolean(false)
         val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays, useMergeForUpsert)
@@ -219,12 +214,7 @@ constructor(
             config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
         val migrations: List<Migration<SnowflakeState>> =
             listOf(
-                SnowflakeDV2Migration(
-                    nameTransformer,
-                    database,
-                    databaseName,
-                    sqlGenerator,
-                ),
+                SnowflakeDV2Migration(nameTransformer, database, databaseName, sqlGenerator),
                 SnowflakeAbMetaAndGenIdMigration(database),
             )
 
@@ -235,7 +225,7 @@ constructor(
                 sqlGenerator = sqlGenerator,
                 destinationHandler = snowflakeDestinationHandler,
                 retentionPeriodDays,
-                snowflakeStagingClient
+                snowflakeStagingClient,
             )
 
         val syncOperation: SyncOperation =
@@ -249,11 +239,11 @@ constructor(
                         initialStatus,
                         FileUploadFormat.CSV,
                         destinationColumns,
-                        disableTD
+                        disableTD,
                     )
                 },
                 migrations,
-                disableTypeDedupe
+                disableTypeDedupe,
             )
 
         return AsyncStreamConsumer(
@@ -269,19 +259,20 @@ constructor(
             airbyteMessageDeserializer =
                 AirbyteMessageDeserializer(
                     SnowflakeLargeRecordTruncator(parsedCatalog, defaultNamespace)
-                )
+                ),
         )
     }
 
     private class SnowflakeLargeRecordTruncator(
         private val parsedCatalog: ParsedCatalog,
-        private val defaultNamespace: String
+        private val defaultNamespace: String,
     ) : StreamAwareDataTransformer {
         val maxRowSize = 16 * 1_024 * 1_024
+
         override fun transform(
             streamDescriptor: StreamDescriptor?,
             data: JsonNode?,
-            meta: AirbyteRecordMessageMeta?
+            meta: AirbyteRecordMessageMeta?,
         ): Pair<JsonNode?, AirbyteRecordMessageMeta?> {
             if (data == null) {
                 return Pair(null, meta)
@@ -351,7 +342,7 @@ constructor(
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         throw UnsupportedOperationException("DV2 destination cannot be called by getConsumer")
     }
@@ -405,19 +396,9 @@ fun main(args: Array<String>) {
         }
         true
     }
-    AirbyteExceptionHandler.addThrowableForDeinterpolation(
-        SnowflakeSQLException::class.java,
-    )
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(SnowflakeSQLException::class.java)
     AdaptiveDestinationRunner.baseOnEnv()
-        .withOssDestination {
-            SnowflakeDestination(
-                OssCloudEnvVarConsts.AIRBYTE_OSS,
-            )
-        }
-        .withCloudDestination {
-            SnowflakeDestination(
-                OssCloudEnvVarConsts.AIRBYTE_CLOUD,
-            )
-        }
+        .withOssDestination { SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS) }
+        .withCloudDestination { SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_CLOUD) }
         .run(args)
 }

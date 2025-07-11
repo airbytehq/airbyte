@@ -12,7 +12,7 @@ interface AirbyteValueMapper {
     fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<Meta.Change> = emptyList()
+        changes: List<Meta.Change> = emptyList(),
     ): Pair<AirbyteValue, List<Meta.Change>>
 }
 
@@ -21,7 +21,7 @@ class AirbyteValueNoopMapper : AirbyteValueMapper {
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<Meta.Change>
+        changes: List<Meta.Change>,
     ): Pair<AirbyteValue, List<Meta.Change>> = value to changes
 }
 
@@ -39,7 +39,7 @@ open class AirbyteValueIdentityMapper(
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<Meta.Change>
+        changes: List<Meta.Change>,
     ): Pair<AirbyteValue, List<Meta.Change>> =
         mapInner(value, schema, Context(changes = changes.toMutableSet())).let {
             it.first to it.second.changes.toList()
@@ -48,7 +48,7 @@ open class AirbyteValueIdentityMapper(
     fun nulledOut(
         schema: AirbyteType,
         context: Context,
-        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
+        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR,
     ): Pair<AirbyteValue, Context> {
         context.changes.add(Meta.Change(context.path.joinToString("."), Change.NULLED, reason))
         return mapInner(NullValue, schema, context)
@@ -93,7 +93,7 @@ open class AirbyteValueIdentityMapper(
     open fun mapObject(
         value: AirbyteValue,
         schema: ObjectType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> {
         val shouldRecurse = recurseIntoObjects || context.path.isEmpty()
         if (value !is ObjectValue || !shouldRecurse) {
@@ -105,7 +105,7 @@ open class AirbyteValueIdentityMapper(
                 mapInner(
                         value.values[name] ?: NullValue,
                         field.type,
-                        context.copy(path = context.path + name, nullable = field.nullable)
+                        context.copy(path = context.path + name, nullable = field.nullable),
                     )
                     .first
         }
@@ -115,19 +115,19 @@ open class AirbyteValueIdentityMapper(
     open fun mapObjectWithoutSchema(
         value: AirbyteValue,
         schema: ObjectTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapObjectWithEmptySchema(
         value: AirbyteValue,
         schema: ObjectTypeWithEmptySchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapArray(
         value: AirbyteValue,
         schema: ArrayType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> {
         if (value !is ArrayValue || !recurseIntoArrays) {
             return value to context
@@ -139,8 +139,8 @@ open class AirbyteValueIdentityMapper(
                         schema.items.type,
                         context.copy(
                             path = context.path + "[$index]",
-                            nullable = schema.items.nullable
-                        )
+                            nullable = schema.items.nullable,
+                        ),
                     )
                     .first
             }
@@ -150,13 +150,13 @@ open class AirbyteValueIdentityMapper(
     open fun mapArrayWithoutSchema(
         value: AirbyteValue,
         schema: ArrayTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> {
         if (!recurseIntoUnions) {
             return value to context
@@ -217,22 +217,22 @@ open class AirbyteValueIdentityMapper(
 
     open fun mapTimeWithTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapTimeWithoutTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapTimestampWithTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapTimestampWithoutTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapNull(context: Context): Pair<AirbyteValue, Context> = NullValue to context

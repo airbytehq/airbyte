@@ -22,7 +22,7 @@ import kotlinx.coroutines.runBlocking
  * consumes record one by one, this Adapter flattens a list of [DestinationRecordRaw].
  */
 class FlattenQueueAdapter<K : WithStream>(
-    private val queue: PartitionedQueue<PipelineEvent<K, DestinationRecordRaw>>,
+    private val queue: PartitionedQueue<PipelineEvent<K, DestinationRecordRaw>>
 ) : PartitionedQueue<PipelineEvent<K, DlqStepOutput>> {
     override val partitions = queue.partitions
 
@@ -88,6 +88,5 @@ class FlattenQueueAdapter<K : WithStream>(
                     )
                 }
             }
-        }
-            ?: emptyList()
+        } ?: emptyList()
 }

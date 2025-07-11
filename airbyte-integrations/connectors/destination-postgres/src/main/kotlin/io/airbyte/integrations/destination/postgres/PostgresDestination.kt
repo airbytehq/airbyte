@@ -65,7 +65,8 @@ class PostgresDestination :
                                END
                                ${'$'}func${'$'};
                                
-                               """.trimIndent()
+                               """
+                    .trimIndent()
             )
     }
 
@@ -73,11 +74,7 @@ class PostgresDestination :
         val additionalParameters: MutableMap<String, String> = HashMap()
         if (
             !config.has(PostgresSslConnectionUtils.PARAM_SSL) ||
-                config
-                    .get(
-                        PostgresSslConnectionUtils.PARAM_SSL,
-                    )
-                    .asBoolean()
+                config.get(PostgresSslConnectionUtils.PARAM_SSL).asBoolean()
         ) {
             if (config.has(PostgresSslConnectionUtils.PARAM_SSL_MODE)) {
                 if (
@@ -91,10 +88,8 @@ class PostgresDestination :
                 } else {
                     additionalParameters.putAll(
                         obtainConnectionOptions(
-                            config.get(
-                                PostgresSslConnectionUtils.PARAM_SSL_MODE,
-                            ),
-                        ),
+                            config.get(PostgresSslConnectionUtils.PARAM_SSL_MODE)
+                        )
                     )
                 }
             } else {
@@ -120,7 +115,7 @@ class PostgresDestination :
                 "jdbc:postgresql://%s:%s/%s?",
                 config[JdbcUtils.HOST_KEY].asText(),
                 config[JdbcUtils.PORT_KEY].asText(),
-                encodedDatabase
+                encodedDatabase,
             )
 
         val configBuilder =
@@ -136,7 +131,7 @@ class PostgresDestination :
         if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
             configBuilder.put(
                 JdbcUtils.JDBC_URL_PARAMS_KEY,
-                config[JdbcUtils.JDBC_URL_PARAMS_KEY].asText()
+                config[JdbcUtils.JDBC_URL_PARAMS_KEY].asText(),
             )
         }
 
@@ -150,6 +145,7 @@ class PostgresDestination :
             hasUnconstrainedNumber(config),
         )
     }
+
     override fun getSqlOperations(config: JsonNode): PostgresSqlOperations {
         return PostgresSqlOperations(hasDropCascadeMode(config))
     }
@@ -172,7 +168,7 @@ class PostgresDestination :
         config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
-        rawTableSchema: String
+        rawTableSchema: String,
     ): JdbcDestinationHandler<PostgresState> {
         return PostgresDestinationHandler(
             databaseName,
@@ -186,7 +182,7 @@ class PostgresDestination :
         database: JdbcDatabase,
         databaseName: String,
         sqlGenerator: SqlGenerator,
-        destinationHandler: DestinationHandler<PostgresState>
+        destinationHandler: DestinationHandler<PostgresState>,
     ): List<Migration<PostgresState>> {
         return java.util.List.of<Migration<PostgresState>>(
             PostgresRawTableAirbyteMetaMigration(database, databaseName),
@@ -196,7 +192,7 @@ class PostgresDestination :
 
     override fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
-        defaultNamespace: String?
+        defaultNamespace: String?,
     ): StreamAwareDataTransformer {
         return PostgresDataTransformer()
     }
@@ -217,7 +213,7 @@ class PostgresDestination :
             return SshWrappedDestination(
                 PostgresDestination(),
                 JdbcUtils.HOST_LIST_KEY,
-                JdbcUtils.PORT_LIST_KEY
+                JdbcUtils.PORT_LIST_KEY,
             )
         }
 

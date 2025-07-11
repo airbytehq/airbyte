@@ -16,6 +16,7 @@ object Exceptions {
      *
      * @param callable
      * - function that throws a checked exception.
+     *
      * @param <T> - return type of the function.
      * @return object that the function returns. </T>
      */
@@ -43,7 +44,7 @@ object Exceptions {
 
     private fun castCheckedToRuntime(
         voidCallable: Procedure,
-        exceptionFactory: Function<Exception, java.lang.RuntimeException>
+        exceptionFactory: Function<Exception, java.lang.RuntimeException>,
     ) {
         try {
             voidCallable.call()

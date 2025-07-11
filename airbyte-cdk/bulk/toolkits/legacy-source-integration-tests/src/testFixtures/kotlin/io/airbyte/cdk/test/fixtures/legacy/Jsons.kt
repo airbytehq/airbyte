@@ -305,7 +305,7 @@ object Jsons {
     private fun replaceNested(
         json: JsonNode,
         keys: List<String>,
-        typedReplacement: BiConsumer<ObjectNode, String>
+        typedReplacement: BiConsumer<ObjectNode, String>,
     ) {
         Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key")
         val nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size - 1))
@@ -415,7 +415,7 @@ object Jsons {
                 } else {
                     return@toMap prefix
                 }
-            },
+            }
         )
     }
 

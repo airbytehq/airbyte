@@ -23,7 +23,7 @@ class UpdateBatchStateTask(
     private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager,
-    private val launcher: DestinationTaskLauncher
+    private val launcher: DestinationTaskLauncher,
 ) : Task {
     private val log = KotlinLogging.logger {}
 
@@ -38,10 +38,7 @@ class UpdateBatchStateTask(
                         log.debug {
                             "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
                         }
-                        manager.incrementCheckpointCounts(
-                            message.state,
-                            message.checkpointCounts,
-                        )
+                        manager.incrementCheckpointCounts(message.state, message.checkpointCounts)
                         message.state
                     }
                     is BatchEndOfStream -> {

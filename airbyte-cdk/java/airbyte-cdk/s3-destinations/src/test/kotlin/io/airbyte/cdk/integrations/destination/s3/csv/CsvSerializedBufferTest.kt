@@ -41,7 +41,7 @@ class CsvSerializedBufferTest {
                     "column2" to "string value",
                     "another field" to true,
                     "nested_column" to mapOf("array_column" to listOf(1, 2, 3)),
-                ),
+                )
             )
         private const val STREAM = "stream1"
         private val streamPair = AirbyteStreamNameNamespacePair(STREAM, null)
@@ -148,8 +148,8 @@ class CsvSerializedBufferTest {
                     mapOf(
                         "format_type" to FileUploadFormat.CSV,
                         "flattening" to Flattening.ROOT_LEVEL.value,
-                    ),
-                ),
+                    )
+                )
             ),
             expectedData + expectedData,
         )
@@ -163,16 +163,13 @@ class CsvSerializedBufferTest {
         minExpectedByte: Long,
         maxExpectedByte: Long,
         config: UploadCsvFormatConfig?,
-        expectedData: String
+        expectedData: String,
     ) {
         val outputFile = buffer.file
         val defaultNamespace = ""
 
-        (CsvSerializedBuffer.createFunction(config, { buffer })
-                .apply(
-                    streamPair,
-                    catalog,
-                ) as CsvSerializedBuffer)
+        (CsvSerializedBuffer.createFunction(config, { buffer }).apply(streamPair, catalog)
+                as CsvSerializedBuffer)
             .use { writer ->
                 writer.withCsvFormat(csvFormat)
                 writer.withCompression(withCompression)
@@ -195,12 +192,9 @@ class CsvSerializedBufferTest {
                 val actualData: String
                 if (config == null) {
                     actualData =
-                        String(
-                                inputStream.readAllBytes(),
-                                StandardCharsets.UTF_8,
-                            )
+                        String(inputStream.readAllBytes(), StandardCharsets.UTF_8)
                             .substring(
-                                UUID.randomUUID().toString().length + 1,
+                                UUID.randomUUID().toString().length + 1
                             ) // remove the last part of the string with random timestamp
                             .substring(0, expectedData.length)
                 } else {
@@ -215,7 +209,7 @@ class CsvSerializedBufferTest {
                                 .substring(
                                     UUID.randomUUID().toString().length + 1
                                 ) // remove timestamp
-                                .replace("\\A[0-9]+,".toRegex(), ""),
+                                .replace("\\A[0-9]+,".toRegex(), "")
                         )
                     }
                     actualData = tmpData.toString()

@@ -62,7 +62,7 @@ class BigqueryInternalTableDatasetCleaner(private val configString: String) : De
                         if (
                             IntegrationTest.isNamespaceOld(
                                 tableName,
-                                retentionDays = RETENTION_DAYS
+                                retentionDays = RETENTION_DAYS,
                             )
                         ) {
                             launch {
@@ -102,7 +102,7 @@ class BigqueryDatasetCleaner(private val configString: String) : DestinationClea
                             dataset != null &&
                                 IntegrationTest.isNamespaceOld(
                                     dataset.datasetId.dataset,
-                                    retentionDays = RETENTION_DAYS
+                                    retentionDays = RETENTION_DAYS,
                                 )
                         ) {
                             launch {

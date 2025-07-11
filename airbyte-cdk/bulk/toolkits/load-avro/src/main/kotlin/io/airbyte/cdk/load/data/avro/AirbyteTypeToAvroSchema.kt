@@ -101,10 +101,7 @@ class AirbyteTypeToAvroSchema {
         }
     }
 
-    private fun maybeMakeNullable(
-        airbyteSchema: FieldType,
-        avroSchema: Schema,
-    ): Schema =
+    private fun maybeMakeNullable(airbyteSchema: FieldType, avroSchema: Schema): Schema =
         if (airbyteSchema.nullable && avroSchema.type != Schema.Type.UNION) {
             if (avroSchema.type == Schema.Type.NULL) {
                 avroSchema

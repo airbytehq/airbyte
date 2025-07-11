@@ -137,7 +137,7 @@ internal class BaseDeltaTaskWriterTest {
             io,
             targetFileSize,
             schema,
-            primaryKeyIds
+            primaryKeyIds,
         ) {
         override fun close() {}
 

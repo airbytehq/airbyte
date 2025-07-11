@@ -11,7 +11,7 @@ class PostgresGenerationHandler : JdbcGenerationHandler {
     override fun getGenerationIdInTable(
         database: JdbcDatabase,
         namespace: String,
-        name: String
+        name: String,
     ): Long? {
         val selectTableResultSet =
             database
@@ -27,10 +27,11 @@ class PostgresGenerationHandler : JdbcGenerationHandler {
             |               AND c.relname=?
             |               AND a.attname=?
             |               LIMIT 1
-        """.trimMargin(),
+        """
+                        .trimMargin(),
                     namespace,
                     name,
-                    "_airbyte_generation_id"
+                    "_airbyte_generation_id",
                 )
                 .use { it.toList() }
         if (selectTableResultSet.isEmpty()) {

@@ -66,14 +66,7 @@ class RouteEventTaskTest {
     fun setup() {
         every { fileLoader.partSizeBytes } returns partSizeBytes.toLong()
 
-        task =
-            RouteEventTask(
-                catalog,
-                inputQueue,
-                fileQueue,
-                recordQueue,
-                partition,
-            )
+        task = RouteEventTask(catalog, inputQueue, fileQueue, recordQueue, partition)
     }
 
     @Test
@@ -97,10 +90,7 @@ class RouteEventTaskTest {
             task.handleEvent(input)
 
             val expectedContext =
-                PipelineContext(
-                    mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
-                    record,
-                )
+                PipelineContext(mapOf(CheckpointId("1") to CheckpointValue(2, 2)), record)
 
             val expected =
                 PipelineMessage(
@@ -108,7 +98,7 @@ class RouteEventTaskTest {
                     key = key,
                     value = Fixtures.record(),
                     postProcessingCallback = releaseMemCallback,
-                    context = expectedContext
+                    context = expectedContext,
                 )
 
             coVerify { fileQueue.publish(expected, partition) }
@@ -135,12 +125,7 @@ class RouteEventTaskTest {
         val record = Fixtures.record()
         val checkpoints = mapOf(CheckpointId("1") to CheckpointValue(2, 2))
 
-        val input =
-            PipelineMessage(
-                checkpointCounts = checkpoints,
-                key = key,
-                value = record,
-            )
+        val input = PipelineMessage(checkpointCounts = checkpoints, key = key, value = record)
         every { catalog.getStream(key.stream) } returns stream
 
         task.handleEvent(input)
@@ -196,7 +181,7 @@ class RouteEventTaskTest {
                 syncId = 3,
                 schema = schema,
                 includeFiles = includeFiles,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
 
         fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =

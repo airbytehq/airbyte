@@ -205,7 +205,7 @@ class MockBasicFunctionalityIntegrationTest :
                         // Obviously doesn't match reality (we only have one InputRecord).
                         // But the destination isn't responsible for enforcing this, so it's fine.
                         sourceRecordCount = 42,
-                    )
+                    ),
                 ),
             )
 

@@ -25,7 +25,7 @@ class ObjectLoaderPartPartitionerTest<K : WithStream, T> {
                         fileNumber = index * 10L,
                         partIndex = index,
                         bytes = null,
-                        isFinal = false
+                        isFinal = false,
                     )
                     .let { ObjectLoaderPartFormatter.FormattedPart(it) }
             }

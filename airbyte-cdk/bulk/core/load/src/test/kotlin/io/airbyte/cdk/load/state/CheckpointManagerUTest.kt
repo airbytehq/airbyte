@@ -38,7 +38,7 @@ class CheckpointManagerUTest {
             generationId = 10L,
             minimumGenerationId = 10L,
             syncId = 101L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     private val stream2 =
@@ -50,7 +50,7 @@ class CheckpointManagerUTest {
             generationId = 10L,
             minimumGenerationId = 10L,
             syncId = 101L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     @BeforeEach
@@ -68,7 +68,7 @@ class CheckpointManagerUTest {
     private fun makeKey(index: Int, id: String? = null) =
         CheckpointKey(
             checkpointIndex = CheckpointIndex(index),
-            checkpointId = CheckpointId(id ?: index.toString())
+            checkpointId = CheckpointId(id ?: index.toString()),
         )
 
     @Test
@@ -97,12 +97,12 @@ class CheckpointManagerUTest {
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(1, "one"),
-            mockk(relaxed = true)
+            mockk(relaxed = true),
         )
         checkpointManager.addStreamCheckpoint(
             stream1.mappedDescriptor,
             makeKey(2, "two"),
-            mockk(relaxed = true)
+            mockk(relaxed = true),
         )
 
         coEvery { streamManager1.areRecordsPersistedForCheckpoint(CheckpointId("one")) } returns
@@ -121,16 +121,8 @@ class CheckpointManagerUTest {
         val message1 = mockMessage()
         val message2 = mockMessage()
 
-        checkpointManager.addStreamCheckpoint(
-            stream1.mappedDescriptor,
-            makeKey(1, "one"),
-            message1,
-        )
-        checkpointManager.addStreamCheckpoint(
-            stream1.mappedDescriptor,
-            makeKey(2, "two"),
-            message2,
-        )
+        checkpointManager.addStreamCheckpoint(stream1.mappedDescriptor, makeKey(1, "one"), message1)
+        checkpointManager.addStreamCheckpoint(stream1.mappedDescriptor, makeKey(2, "two"), message2)
 
         coEvery { streamManager1.areRecordsPersistedForCheckpoint(CheckpointId("one")) } returns
             true
@@ -151,16 +143,8 @@ class CheckpointManagerUTest {
         val message1 = mockMessage()
         val message2 = mockMessage()
 
-        checkpointManager.addStreamCheckpoint(
-            stream1.mappedDescriptor,
-            makeKey(2, "two"),
-            message2,
-        )
-        checkpointManager.addStreamCheckpoint(
-            stream1.mappedDescriptor,
-            makeKey(1, "one"),
-            message1,
-        )
+        checkpointManager.addStreamCheckpoint(stream1.mappedDescriptor, makeKey(2, "two"), message2)
+        checkpointManager.addStreamCheckpoint(stream1.mappedDescriptor, makeKey(1, "one"), message1)
 
         coEvery { streamManager1.areRecordsPersistedForCheckpoint(CheckpointId("one")) } returns
             true

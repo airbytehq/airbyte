@@ -6,10 +6,7 @@ package io.airbyte.cdk.read
  *
  * This is a bit more gentle than doubling and halving.
  */
-data class LimitState(
-    val predecessor: Long,
-    val current: Long,
-) {
+data class LimitState(val predecessor: Long, val current: Long) {
     /** Grow the LIMIT value. */
     val up: LimitState
         get() =

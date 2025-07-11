@@ -8,9 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.commons.json.Jsons
 
-class NoFlatteningSheetGenerator(
-    private val useV2FieldNames: Boolean = false,
-) : BaseSheetGenerator(useV2FieldNames), CsvSheetGenerator {
+class NoFlatteningSheetGenerator(private val useV2FieldNames: Boolean = false) :
+    BaseSheetGenerator(useV2FieldNames), CsvSheetGenerator {
     override fun getHeaderRow(): List<String> {
         if (useV2FieldNames) {
             return listOf(

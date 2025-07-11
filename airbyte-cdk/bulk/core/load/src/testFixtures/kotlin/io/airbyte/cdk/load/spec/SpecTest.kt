@@ -58,10 +58,7 @@ abstract class SpecTest(
         testSpec("expected-spec-cloud.json", FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
     }
 
-    private fun testSpec(
-        expectedSpecFilename: String,
-        vararg featureFlags: FeatureFlag,
-    ) {
+    private fun testSpec(expectedSpecFilename: String, vararg featureFlags: FeatureFlag) {
         val expectedSpecPath = testResourcesPath.resolve(expectedSpecFilename)
 
         if (!Files.exists(expectedSpecPath)) {
@@ -73,7 +70,7 @@ abstract class SpecTest(
             destinationProcessFactory.createDestinationProcess(
                 "spec",
                 featureFlags = featureFlags,
-                micronautProperties = micronautProperties
+                micronautProperties = micronautProperties,
             )
         runBlocking { process.run() }
         val messages = process.readMessages()
@@ -82,7 +79,7 @@ abstract class SpecTest(
         Assertions.assertEquals(
             specMessages.size,
             1,
-            "Expected to receive exactly one connection status message, but got ${specMessages.size}: $specMessages"
+            "Expected to receive exactly one connection status message, but got ${specMessages.size}: $specMessages",
         )
 
         val spec = specMessages.first().spec
@@ -105,15 +102,15 @@ abstract class SpecTest(
             {
                 Assertions.assertTrue(
                     diff.isEmpty(),
-                    "Detected semantic diff in JSON:\n" + diff.prependIndent("\t\t")
+                    "Detected semantic diff in JSON:\n" + diff.prependIndent("\t\t"),
                 )
             },
             {
                 Assertions.assertTrue(
                     expectedSpec == actualSpecPrettyPrint,
-                    "File contents did not equal generated spec, see git diff for details"
+                    "File contents did not equal generated spec, see git diff for details",
                 )
-            }
+            },
         )
     }
 }

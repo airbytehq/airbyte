@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 
 class RedshiftRawTableAirbyteMetaMigration(
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
 ) : Migration<RedshiftState> {
     private val logger: Logger =
         LoggerFactory.getLogger(RedshiftRawTableAirbyteMetaMigration::class.java)
@@ -29,7 +29,7 @@ class RedshiftRawTableAirbyteMetaMigration(
     override fun migrateIfNecessary(
         destinationHandler: DestinationHandler<RedshiftState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<RedshiftState>
+        state: DestinationInitialStatus<RedshiftState>,
     ): Migration.MigrationResult<RedshiftState> {
         if (!state.initialRawTableStatus.rawTableExists) {
             // The raw table doesn't exist. No migration necessary. Update the state.
@@ -38,7 +38,7 @@ class RedshiftRawTableAirbyteMetaMigration(
             )
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                false
+                false,
             )
         }
 
@@ -47,7 +47,7 @@ class RedshiftRawTableAirbyteMetaMigration(
                     database,
                     databaseName,
                     stream.id.rawNamespace,
-                    stream.id.rawName
+                    stream.id.rawName,
                 )
                 // The table should exist because we checked for it above
                 .get()
@@ -56,7 +56,7 @@ class RedshiftRawTableAirbyteMetaMigration(
             // the state.
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                false
+                false,
             )
         }
 
@@ -73,7 +73,7 @@ class RedshiftRawTableAirbyteMetaMigration(
         // data i.e. `errors` instead of `changes` as is since this column is controlled by us.
         return Migration.MigrationResult(
             state.destinationState.copy(needsSoftReset = false, isAirbyteMetaPresentInRaw = true),
-            false
+            false,
         )
     }
 

@@ -21,12 +21,14 @@ interface Destination : Integration {
      *
      * @param config
      * - integration-specific configuration object as json. e.g. { "username": "airbyte",
-     * "password": "super secure" }
+     *   "password": "super secure" }
+     *
      * @param catalog
      * - schema of the incoming messages.
+     *
      * @return Consumer that accepts message. The [AirbyteMessageConsumer.accept] will be called n
-     * times where n is the number of messages. [AirbyteMessageConsumer.close] will always be called
-     * once regardless of success or failure.
+     *   times where n is the number of messages. [AirbyteMessageConsumer.close] will always be
+     *   called once regardless of success or failure.
      * @throws Exception
      * - any exception.
      */
@@ -34,7 +36,7 @@ interface Destination : Integration {
     fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer?
 
     /**
@@ -46,14 +48,14 @@ interface Destination : Integration {
      * @param catalog catalog
      * @param outputRecordCollector outputRecordCollector
      * @return AirbyteMessageConsumer wrapped in SerializedAirbyteMessageConsumer to maintain legacy
-     * behavior.
+     *   behavior.
      * @throws Exception exception
      */
     @Throws(Exception::class)
     fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer? {
         return ShimToSerializedAirbyteMessageConsumer(
             getConsumer(config, catalog, outputRecordCollector)
@@ -80,7 +82,7 @@ interface Destination : Integration {
          *
          * @param message JSON representation of an [AirbyteMessage].
          * @throws Exception if an invalid state message is provided or the consumer is unable to
-         * accept the provided message.
+         *   accept the provided message.
          */
         @Throws(Exception::class)
         override fun accept(message: String, sizeInBytes: Int) {
@@ -115,7 +117,7 @@ interface Destination : Integration {
              * @param consumer An [AirbyteMessageConsumer] that can handle the provided message.
              * @param inputString JSON representation of an [AirbyteMessage].
              * @throws Exception if an invalid state message is provided or the consumer is unable
-             * to accept the provided message.
+             *   to accept the provided message.
              */
             @VisibleForTesting
             @Throws(Exception::class)

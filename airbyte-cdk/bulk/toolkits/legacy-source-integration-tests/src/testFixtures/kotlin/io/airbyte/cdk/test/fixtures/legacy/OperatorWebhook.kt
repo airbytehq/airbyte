@@ -16,18 +16,9 @@ import java.util.*
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder("executionUrl", "executionBody", "webhookConfigId")
 class OperatorWebhook : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("executionUrl")
     @set:JsonProperty("executionUrl")
     @JsonProperty("executionUrl")

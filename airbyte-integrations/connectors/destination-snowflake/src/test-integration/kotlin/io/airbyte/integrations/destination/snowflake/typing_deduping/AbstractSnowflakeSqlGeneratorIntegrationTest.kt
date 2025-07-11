@@ -46,7 +46,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
     override fun buildStreamId(
         namespace: String,
         finalTableName: String,
-        rawTableName: String
+        rawTableName: String,
     ): StreamId {
         return StreamId(
             namespace.uppercase(Locale.getDefault()),
@@ -54,7 +54,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             namespace.uppercase(Locale.getDefault()),
             rawTableName,
             namespace,
-            finalTableName
+            finalTableName,
         )
     }
 
@@ -71,7 +71,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             StringSubstitutor(
                     java.util.Map.of(
                         "raw_table_id",
-                        streamId.rawTableId(SnowflakeSqlGenerator.QUOTE)
+                        streamId.rawTableId(SnowflakeSqlGenerator.QUOTE),
                     )
                 )
                 .replace(
@@ -85,7 +85,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
               "_airbyte_generation_id" INTEGER
             )
             
-            """.trimIndent()
+            """
+                        .trimIndent()
                 )
         )
     }
@@ -94,7 +95,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
     override fun dumpRawTableRecords(streamId: StreamId): List<JsonNode> {
         return SnowflakeTestUtils.dumpRawTable(
             database,
-            streamId.rawTableId(SnowflakeSqlGenerator.QUOTE)
+            streamId.rawTableId(SnowflakeSqlGenerator.QUOTE),
         )
     }
 
@@ -105,7 +106,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             database,
             databaseName,
             streamId.finalNamespace,
-            streamId.finalName + suffix!!.uppercase(Locale.getDefault())
+            streamId.finalName + suffix!!.uppercase(Locale.getDefault()),
         )
     }
 
@@ -123,7 +124,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
         streamId: StreamId,
         suffix: String?,
         records: List<JsonNode>,
-        generationId: Long
+        generationId: Long,
     ) {
         val columnNames =
             if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES
@@ -149,17 +150,17 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                         "final_table_id",
                         streamId.finalTableId(
                             SnowflakeSqlGenerator.QUOTE,
-                            suffix!!.uppercase(Locale.getDefault())
+                            suffix!!.uppercase(Locale.getDefault()),
                         ),
                         "cdc_deleted_at_name",
                         cdcDeletedAtName,
                         "cdc_deleted_at_extract",
                         cdcDeletedAtExtract,
                         "records",
-                        recordsText
+                        recordsText,
                     ),
                     "#{",
-                    "}"
+                    "}",
                 )
                 .replace( // Similar to insertRawTableRecords, some of these columns are declared as
                     // string and wrapped in
@@ -211,7 +212,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             FROM VALUES
               #{records}
             
-            """.trimIndent()
+            """
+                        .trimIndent()
                 )
         )
     }
@@ -245,10 +247,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                         "raw_table_id",
                         streamId.rawTableId(SnowflakeSqlGenerator.QUOTE),
                         "records_text",
-                        recordsText
+                        recordsText,
                     ), // Use different delimiters because we're using dollar quotes in the query.
                     "#{",
-                    "}"
+                    "}",
                 )
                 .replace( // Snowflake doesn't let you directly insert a parse_json expression, so
                     // we have to use a subquery.
@@ -271,7 +273,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             FROM VALUES
               #{records_text};
             
-            """.trimIndent()
+            """
+                        .trimIndent()
                 )
         )
     }
@@ -294,7 +297,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                     java.lang.String.format(
                         "SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";",
                         "USERS_FINAL",
-                        namespace.uppercase()
+                        namespace.uppercase(),
                     )
                 )
                 .stream()
@@ -311,10 +314,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
           AND table_name = ?
         ORDER BY ordinal_position;
         
-        """.trimIndent(),
+        """
+                        .trimIndent(),
                     databaseName!!,
                     namespace.uppercase(),
-                    "USERS_FINAL"
+                    "USERS_FINAL",
                 )
                 .stream()
                 .collect(
@@ -326,11 +330,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 return@toMap String.format(
                                     "NUMBER(%s, %s)",
                                     record["NUMERIC_PRECISION"].asText(),
-                                    record["NUMERIC_SCALE"].asText()
+                                    record["NUMERIC_SCALE"].asText(),
                                 )
                             }
                             type
-                        }
+                        },
                     )
                 )
         Assertions.assertAll(
@@ -338,7 +342,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                 Assertions.assertEquals(
                     Optional.of("TABLE"),
                     tableKind,
-                    "Table should be permanent, not transient"
+                    "Table should be permanent, not transient",
                 )
             },
             Executable {
@@ -364,9 +368,9 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                         .put("DATE", "DATE")
                         .put("UNKNOWN", "VARIANT")
                         .build(),
-                    columns
+                    columns,
                 )
-            }
+            },
         )
     }
 
@@ -382,13 +386,14 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
               %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
             ) data_retention_time_in_days = 0;
         
-        """.trimIndent(),
+        """
+                    .trimIndent(),
                 v1RawTable.rawNamespace,
                 v1RawTable.rawNamespace,
                 v1RawTable.rawName,
                 JavaBaseConstants.COLUMN_NAME_AB_ID,
                 JavaBaseConstants.COLUMN_NAME_DATA,
-                JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
             )
         )
     }
@@ -416,10 +421,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                         "v1_raw_table_id",
                         java.lang.String.join(".", streamId.rawNamespace, streamId.rawName),
                         "records",
-                        recordsText
+                        recordsText,
                     ), // Use different delimiters because we're using dollar quotes in the query.
                     "#{",
-                    "}"
+                    "}",
                 )
                 .replace(
                     """
@@ -427,7 +432,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             SELECT column1, PARSE_JSON(column2), column3 FROM VALUES
               #{records};
             
-            """.trimIndent()
+            """
+                        .trimIndent()
                 )
         database.execute(insert)
     }
@@ -438,7 +444,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             Stream.of(
                     JavaBaseConstants.COLUMN_NAME_AB_ID,
                     SnowflakeTestUtils.timestampToString(JavaBaseConstants.COLUMN_NAME_EMITTED_AT),
-                    JavaBaseConstants.COLUMN_NAME_DATA
+                    JavaBaseConstants.COLUMN_NAME_DATA,
                 )
                 .collect(Collectors.joining(","))
         return database.bufferedResultSetQuery<JsonNode>(
@@ -454,19 +460,20 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                     java.lang.String.join(
                                         ".",
                                         streamId.rawNamespace,
-                                        streamId.rawName
-                                    )
+                                        streamId.rawName,
+                                    ),
                                 )
                             )
                             .replace(
                                 """
             SELECT ${'$'}{columns} FROM ${'$'}{table} ORDER BY _airbyte_emitted_at ASC
             
-            """.trimIndent()
+            """
+                                    .trimIndent()
                             )
                     )
             },
-            { queryContext: ResultSet? -> SnowflakeSourceOperations().rowToJson(queryContext!!) }
+            { queryContext: ResultSet? -> SnowflakeSourceOperations().rowToJson(queryContext!!) },
         )
     }
 
@@ -479,12 +486,12 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                         { record: JsonNode ->
                             record[JavaBaseConstants.COLUMN_NAME_AB_RAW_ID].asText()
                         },
-                        Function.identity()
+                        Function.identity(),
                     )
                 )
         Assertions.assertAll(
             Executable { Assertions.assertEquals(5, v1RawRecords.size) },
-            Executable { Assertions.assertEquals(5, v2RawRecords.size) }
+            Executable { Assertions.assertEquals(5, v2RawRecords.size) },
         )
         v1RawRecords.forEach { v1Record: JsonNode ->
             val v1id =
@@ -494,7 +501,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                 Executable {
                     Assertions.assertEquals(
                         v1id,
-                        v2RecordMap[v1id]!![JavaBaseConstants.COLUMN_NAME_AB_RAW_ID].asText()
+                        v2RecordMap[v1id]!![JavaBaseConstants.COLUMN_NAME_AB_RAW_ID].asText(),
                     )
                 },
                 Executable {
@@ -502,17 +509,16 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                         v1Record[
                                 JavaBaseConstants.COLUMN_NAME_EMITTED_AT.uppercase(
                                     Locale.getDefault()
-                                )
-                            ]
+                                )]
                             .asText(),
-                        v2RecordMap[v1id]!![JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT].asText()
+                        v2RecordMap[v1id]!![JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT].asText(),
                     )
                 },
                 Executable {
                     Assertions.assertNull(
                         v2RecordMap[v1id]!![JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT]
                     )
-                }
+                },
             )
             var originalData =
                 v1Record[JavaBaseConstants.COLUMN_NAME_DATA.uppercase(Locale.getDefault())]
@@ -527,7 +533,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             // diffRawTableRecords makes some assumptions about the structure of the blob.
             DIFFER.diffFinalTableRecords(
                 java.util.List.of(originalData),
-                java.util.List.of(migratedData)
+                java.util.List.of(migratedData),
             )
         }
     }
@@ -563,9 +569,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
               }
             }
             
-            """.trimIndent()
+            """
+                        .trimIndent()
                 )
-            )
+            ),
         )
 
         val createTable: Sql = generator.createTable(incrementalDedupStream, "", false)
@@ -636,7 +643,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                            .trimIndent()
                     ),
                     Jsons.deserialize(
                         """
@@ -650,7 +658,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                            .trimIndent()
                     ), // and 2 records that got successfully loaded.
                     Jsons.deserialize(
                         """
@@ -665,7 +674,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                            .trimIndent()
                     ),
                     Jsons.deserialize(
                         """
@@ -680,9 +690,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                    )
-                )
+                          """
+                            .trimIndent()
+                    ),
+                ),
         )
         this.insertFinalTableRecords(
             false,
@@ -700,7 +711,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             "string": "Charlie00"
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -713,10 +725,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             "string": "Dave00"
                           }
                           
-                          """.trimIndent()
-                )
+                          """
+                        .trimIndent()
+                ),
             ),
-            0
+            0,
         )
         // Gather initial state at the start of our updated sync
         val initialState =
@@ -738,7 +751,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -752,7 +766,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -766,7 +781,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -780,9 +796,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -790,7 +807,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalDedupStream,
             initialState.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -806,7 +823,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -819,7 +837,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Bob01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -832,7 +851,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Charlie01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -845,10 +865,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Dave01"
                               }
                               
-                              """.trimIndent()
-                )
+                              """
+                        .trimIndent()
+                ),
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
     }
 
@@ -872,9 +893,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 )
-            )
+            ),
         )
         // Gather initial state at the start of our updated sync
         val initialState =
@@ -897,7 +919,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -911,9 +934,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -921,7 +945,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalDedupStream,
             initialState.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -937,10 +961,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice02"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 )
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
     }
 
@@ -964,7 +989,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -978,9 +1004,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         // Gather initial state at the start of our first() new sync
@@ -1003,7 +1030,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1017,9 +1045,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1027,7 +1056,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalDedupStream,
             initialState.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -1043,7 +1072,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1056,10 +1086,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Bob01"
                               }
                               
-                              """.trimIndent()
-                )
+                              """
+                        .trimIndent()
+                ),
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
 
         // Gather initial state at the start of our second new sync
@@ -1082,7 +1113,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1096,9 +1128,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1106,7 +1139,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalDedupStream,
             initialState2.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -1122,7 +1155,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice02"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1135,10 +1169,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Bob02"
                               }
                               
-                              """.trimIndent()
-                )
+                              """
+                        .trimIndent()
+                ),
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
     }
 
@@ -1163,7 +1198,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                            .trimIndent()
                     ),
                     Jsons.deserialize(
                         """
@@ -1177,7 +1213,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                            .trimIndent()
                     ), // and 2 records that got successfully loaded with local TZ.
                     Jsons.deserialize(
                         """
@@ -1192,7 +1229,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                            .trimIndent()
                     ),
                     Jsons.deserialize(
                         """
@@ -1207,9 +1245,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                    )
-                )
+                          """
+                            .trimIndent()
+                    ),
+                ),
         )
         this.insertFinalTableRecords(
             false,
@@ -1227,7 +1266,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             "string": "Charlie00"
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1240,10 +1280,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             "string": "Dave00"
                           }
                           
-                          """.trimIndent()
-                )
+                          """
+                        .trimIndent()
+                ),
             ),
-            0
+            0,
         )
         // Gather initial state at the start of our updated sync
         val initialState =
@@ -1265,7 +1306,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1279,7 +1321,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1293,7 +1336,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1307,9 +1351,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1317,7 +1362,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalAppendStream,
             initialState.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -1333,7 +1378,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice00"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1346,7 +1392,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1360,7 +1407,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Bob00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1373,7 +1421,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Bob01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ), // note local TZ here. This record was loaded by an older version of the
                 // connector.
                 Jsons.deserialize(
@@ -1388,7 +1437,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Charlie00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1401,7 +1451,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Charlie01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ), // note local TZ here. This record was loaded by an older version of the
                 // connector.
                 Jsons.deserialize(
@@ -1416,7 +1467,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Dave00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1429,10 +1481,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Dave01"
                               }
                               
-                              """.trimIndent()
-                )
+                              """
+                        .trimIndent()
+                ),
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
     }
 
@@ -1456,9 +1509,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 )
-            )
+            ),
         )
         // Gather initial state at the start of our updated sync
         val initialState =
@@ -1481,7 +1535,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1495,9 +1550,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1505,7 +1561,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalAppendStream,
             initialState.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -1522,7 +1578,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Alice00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1536,7 +1593,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Alice01"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1549,10 +1607,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice02"
                               }
                               
-                              """.trimIndent()
-                )
+                              """
+                        .trimIndent()
+                ),
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
     }
 
@@ -1576,7 +1635,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1590,9 +1650,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         // Gather initial state at the start of our first() new sync
@@ -1615,7 +1676,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1629,9 +1691,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1639,7 +1702,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalAppendStream,
             initialState.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -1656,7 +1719,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Alice00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1669,7 +1733,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice01"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1683,7 +1748,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Bob00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1696,10 +1762,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Bob01"
                               }
                               
-                              """.trimIndent()
-                )
+                              """
+                        .trimIndent()
+                ),
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
 
         // Gather initial state at the start of our second new sync
@@ -1722,7 +1789,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1736,9 +1804,10 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                             }
                           }
                           
-                          """.trimIndent()
-                )
-            )
+                          """
+                        .trimIndent()
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1746,7 +1815,7 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
             this.destinationHandler,
             this.incrementalAppendStream,
             initialState2.initialRawTableStatus.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -1763,7 +1832,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Alice00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1777,7 +1847,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Alice01"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1790,7 +1861,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Alice02"
                               }
                               
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1804,7 +1876,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Bob00"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1818,7 +1891,8 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "ID2": 100,
                                 "STRING": "Bob01"
                               }
-                              """.trimIndent()
+                              """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -1831,10 +1905,11 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
                                 "STRING": "Bob02"
                               }
                               
-                              """.trimIndent()
-                )
+                              """
+                        .trimIndent()
+                ),
             ),
-            this.dumpFinalTableRecords(this.streamId, "")
+            this.dumpFinalTableRecords(this.streamId, ""),
         )
     }
 

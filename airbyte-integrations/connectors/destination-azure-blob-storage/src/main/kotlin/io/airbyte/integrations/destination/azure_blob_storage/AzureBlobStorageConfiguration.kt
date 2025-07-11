@@ -71,7 +71,9 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
 @Singleton
 class AzureBlobStorageConfigurationFactory(private val destinationCatalog: DestinationCatalog) :
     DestinationConfigurationFactory<
-        AzureBlobStorageSpecification, AzureBlobStorageConfiguration<*>> {
+        AzureBlobStorageSpecification,
+        AzureBlobStorageConfiguration<*>,
+    > {
     override fun makeWithoutExceptionHandling(
         pojo: AzureBlobStorageSpecification
     ): AzureBlobStorageConfiguration<*> {
@@ -89,7 +91,7 @@ class AzureBlobStorageConfigurationFactory(private val destinationCatalog: Desti
                     FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
                 } else {
                     DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
-                }
+                },
         )
     }
 }

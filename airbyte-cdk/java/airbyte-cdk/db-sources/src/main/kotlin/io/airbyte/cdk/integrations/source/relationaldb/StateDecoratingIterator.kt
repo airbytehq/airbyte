@@ -24,7 +24,7 @@ class StateDecoratingIterator(
     private val cursorField: String,
     private val initialCursor: String,
     private val cursorType: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive,
-    stateEmissionFrequency: Int
+    stateEmissionFrequency: Int,
 ) : AbstractIterator<AirbyteMessage>(), MutableIterator<AirbyteMessage> {
     private var currentMaxCursor: String?
     private var currentMaxCursorRecordCount = 0L
@@ -33,17 +33,15 @@ class StateDecoratingIterator(
     /**
      * These parameters are for intermediate state message emission. We can emit an intermediate
      * state when the following two conditions are met.
-     *
      * 1. The records are sorted by the cursor field. This is true when `stateEmissionFrequency` >
      * 0. This logic is guaranteed in `AbstractJdbcSource#queryTableIncremental`, in which an "ORDER
-     * BY" clause is appended to the SQL query if `stateEmissionFrequency` > 0.
-     *
+     *    BY" clause is appended to the SQL query if `stateEmissionFrequency` > 0.
      * 2. There is a cursor value that is ready for emission. A cursor value is "ready" if there is
-     * no more record with the same value. We cannot emit a cursor at will, because there may be
-     * multiple records with the same cursor value. If we emit a cursor ignoring this condition,
-     * should the sync fail right after the emission, the next sync may skip some records with the
-     * same cursor value due to "WHERE cursor_field > cursor" in
-     * `AbstractJdbcSource#queryTableIncremental`.
+     *    no more record with the same value. We cannot emit a cursor at will, because there may be
+     *    multiple records with the same cursor value. If we emit a cursor ignoring this condition,
+     *    should the sync fail right after the emission, the next sync may skip some records with
+     *    the same cursor value due to "WHERE cursor_field > cursor" in
+     *    `AbstractJdbcSource#queryTableIncremental`.
      *
      * The `intermediateStateMessage` is set to the latest state message that is ready for emission.
      * For every `stateEmissionFrequency` messages, `emitIntermediateState` is set to true and the
@@ -64,11 +62,11 @@ class StateDecoratingIterator(
      * @param cursorField Path to the comparator field used to track the records read so far
      * @param initialCursor name of the initial cursor column
      * @param cursorType ENUM type of primitive values that can be used as a cursor for
-     * checkpointing
+     *   checkpointing
      * @param stateEmissionFrequency If larger than 0, the records are sorted by the cursor field,
-     * and intermediate states will be emitted for every `stateEmissionFrequency` records. The order
-     * of the records is guaranteed in `AbstractJdbcSource#queryTableIncremental`, in which an
-     * "ORDER BY" clause is appended to the SQL query if `stateEmissionFrequency` > 0.
+     *   and intermediate states will be emitted for every `stateEmissionFrequency` records. The
+     *   order of the records is guaranteed in `AbstractJdbcSource#queryTableIncremental`, in which
+     *   an "ORDER BY" clause is appended to the SQL query if `stateEmissionFrequency` > 0.
      */
     init {
         this.currentMaxCursor = initialCursor
@@ -178,7 +176,7 @@ class StateDecoratingIterator(
          * stateEmissionFrequency number of records since the last emission
          *
          * @return AirbyteStateMessage if one exists, otherwise Optional indicating state was not
-         * ready to be emitted
+         *   ready to be emitted
          */
         get() {
             val message: AirbyteMessage? = intermediateStateMessage

@@ -21,9 +21,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
 @Factory
-class GcsClientFactory(
-    private val gcsClientConfigurationProvider: GcsClientConfigurationProvider,
-) {
+class GcsClientFactory(private val gcsClientConfigurationProvider: GcsClientConfigurationProvider) {
 
     @Singleton
     @Secondary
@@ -54,11 +52,11 @@ class GcsClientFactory(
                                         S3BucketConfiguration(
                                             s3BucketName = config.gcsBucketName,
                                             s3BucketRegion = config.region,
-                                            s3Endpoint = GOOGLE_STORAGE_ENDPOINT
+                                            s3Endpoint = GOOGLE_STORAGE_ENDPOINT,
                                         )
                                 },
                                 assumeRoleCredentials = null,
-                                null
+                                null,
                             )
                             .make(),
                     config = config,

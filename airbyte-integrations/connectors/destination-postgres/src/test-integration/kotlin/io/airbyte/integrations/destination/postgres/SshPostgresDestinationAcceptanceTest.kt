@@ -54,7 +54,7 @@ abstract class SshPostgresDestinationAcceptanceTest : AbstractPostgresDestinatio
         return SshTunnel.sshWrap<List<JsonNode>>(
             config,
             JdbcUtils.HOST_LIST_KEY,
-            JdbcUtils.PORT_LIST_KEY
+            JdbcUtils.PORT_LIST_KEY,
         ) { mangledConfig: JsonNode ->
             getDatabaseFromConfig(mangledConfig).query<List<JsonNode>> { ctx: DSLContext ->
                 ctx.execute("set time zone 'UTC';")
@@ -63,7 +63,7 @@ abstract class SshPostgresDestinationAcceptanceTest : AbstractPostgresDestinatio
                             "SELECT * FROM %s.%s ORDER BY %s ASC;",
                             schemaName,
                             tableName,
-                            JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+                            JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
                         )
                     )
                     .stream()
@@ -78,7 +78,7 @@ abstract class SshPostgresDestinationAcceptanceTest : AbstractPostgresDestinatio
         testdb =
             PostgresTestDatabase.`in`(
                 PostgresTestDatabase.BaseImage.POSTGRES_13,
-                PostgresTestDatabase.ContainerModifier.NETWORK
+                PostgresTestDatabase.ContainerModifier.NETWORK,
             )
         bastion = SshBastionContainer()
         bastion!!.initAndStartBastion(testdb!!.container.network!!)
@@ -105,9 +105,9 @@ abstract class SshPostgresDestinationAcceptanceTest : AbstractPostgresDestinatio
                         DatabaseDriver.POSTGRESQL.urlFormatString,
                         config.get(JdbcUtils.HOST_KEY).asText(),
                         config.get(JdbcUtils.PORT_KEY).asInt(),
-                        config.get(JdbcUtils.DATABASE_KEY).asText()
+                        config.get(JdbcUtils.DATABASE_KEY).asText(),
                     ),
-                    SQLDialect.POSTGRES
+                    SQLDialect.POSTGRES,
                 )
             )
         }

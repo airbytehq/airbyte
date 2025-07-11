@@ -35,7 +35,7 @@ object AutoCloseableIterators {
     @JvmStatic
     fun <T> fromIterator(
         iterator: Iterator<T>,
-        airbyteStream: AirbyteStreamNameNamespacePair?
+        airbyteStream: AirbyteStreamNameNamespacePair?,
     ): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(iterator, VoidCallable.NOOP, airbyteStream)
     }
@@ -53,7 +53,7 @@ object AutoCloseableIterators {
     fun <T> fromIterator(
         iterator: Iterator<T>,
         onClose: VoidCallable,
-        airbyteStream: AirbyteStreamNameNamespacePair?
+        airbyteStream: AirbyteStreamNameNamespacePair?,
     ): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(iterator, onClose, airbyteStream)
     }
@@ -69,7 +69,7 @@ object AutoCloseableIterators {
     @JvmStatic
     fun <T> fromStream(
         stream: Stream<T>,
-        airbyteStream: AirbyteStreamNameNamespacePair?
+        airbyteStream: AirbyteStreamNameNamespacePair?,
     ): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(stream.iterator(), { stream.close() }, airbyteStream)
     }
@@ -89,14 +89,14 @@ object AutoCloseableIterators {
      * will be exposed as an iterator.
      *
      * @param iteratorSupplier supplier that provides a autocloseable iterator that will be invoked
-     * lazily
+     *   lazily
      * @param <T> type
      * @return autocloseable iterator </T>
      */
     @JvmStatic
     fun <T> lazyIterator(
         iteratorSupplier: Supplier<AutoCloseableIterator<T>>,
-        airbyteStream: AirbyteStreamNameNamespacePair?
+        airbyteStream: AirbyteStreamNameNamespacePair?,
     ): AutoCloseableIterator<T> {
         return LazyAutoCloseableIterator(iteratorSupplier, airbyteStream)
     }
@@ -112,7 +112,7 @@ object AutoCloseableIterators {
     @JvmStatic
     fun <T> appendOnClose(
         autoCloseableIterator: AutoCloseableIterator<T>,
-        voidCallable: VoidCallable
+        voidCallable: VoidCallable,
     ): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(
             autoCloseableIterator,
@@ -120,7 +120,7 @@ object AutoCloseableIterators {
                 autoCloseableIterator.close()
                 voidCallable.call()
             },
-            null
+            null,
         )
     }
 
@@ -135,7 +135,7 @@ object AutoCloseableIterators {
     fun <T> appendOnClose(
         autoCloseableIterator: AutoCloseableIterator<T>,
         voidCallable: VoidCallable,
-        airbyteStream: AirbyteStreamNameNamespacePair?
+        airbyteStream: AirbyteStreamNameNamespacePair?,
     ): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(
             autoCloseableIterator,
@@ -143,7 +143,7 @@ object AutoCloseableIterators {
                 autoCloseableIterator.close()
                 voidCallable.call()
             },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -159,7 +159,7 @@ object AutoCloseableIterators {
     @JvmStatic
     fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
-        function: Function<in F, out T>
+        function: Function<in F, out T>,
     ): AutoCloseableIterator<T> {
         val transformed = Iterators.transform(fromIterator) { function.apply(it) }
         return DefaultAutoCloseableIterator(transformed, fromIterator::close, null)
@@ -178,12 +178,12 @@ object AutoCloseableIterators {
     fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
         airbyteStream: AirbyteStreamNameNamespacePair?,
-        function: Function<in F, out T>
+        function: Function<in F, out T>,
     ): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(
             Iterators.transform(fromIterator) { t: F -> function.apply(t) },
             { fromIterator.close() },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -192,22 +192,22 @@ object AutoCloseableIterators {
      * Resource behavior of the input [AutoCloseableIterator].
      *
      * @param iteratorCreator function that takes in a autocloseable iterator and uses it to create
-     * a vanilla iterator
+     *   a vanilla iterator
      * @param autoCloseableIterator input autocloseable iterator
      * @param <T> type
      * @return autocloseable iterator that still has the close functionality of the original input
-     * iterator but is transformed by the iterator output by the iteratorCreator </T>
+     *   iterator but is transformed by the iterator output by the iteratorCreator </T>
      */
     @JvmStatic
     fun <T> transform(
         iteratorCreator: Function<AutoCloseableIterator<T>, Iterator<T>>,
         autoCloseableIterator: AutoCloseableIterator<T>,
-        airbyteStream: AirbyteStreamNameNamespacePair?
+        airbyteStream: AirbyteStreamNameNamespacePair?,
     ): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(
             iteratorCreator.apply(autoCloseableIterator),
             { autoCloseableIterator.close() },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -215,12 +215,12 @@ object AutoCloseableIterators {
     fun <T, F> transformIterator(
         iteratorCreator: Function<AutoCloseableIterator<T>, Iterator<F>>,
         autoCloseableIterator: AutoCloseableIterator<T>,
-        airbyteStream: AirbyteStreamNameNamespacePair?
+        airbyteStream: AirbyteStreamNameNamespacePair?,
     ): AutoCloseableIterator<F> {
         return DefaultAutoCloseableIterator(
             iteratorCreator.apply(autoCloseableIterator),
             { autoCloseableIterator.close() },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -228,7 +228,7 @@ object AutoCloseableIterators {
     @JvmStatic
     fun <T> concatWithEagerClose(
         airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?,
-        vararg iterators: AutoCloseableIterator<T>
+        vararg iterators: AutoCloseableIterator<T>,
     ): CompositeIterator<T> {
         return concatWithEagerClose(java.util.List.of(*iterators), airbyteStreamStatusConsumer)
     }
@@ -244,14 +244,14 @@ object AutoCloseableIterators {
      *
      * @param iterators The list of iterators to be used in a serial fashion.
      * @param airbyteStreamStatusConsumer The stream status consumer used to report stream status
-     * during iteration.
-     * @return A [CompositeIterator].
+     *   during iteration.
      * @param <T> The type of data contained in each iterator. </T>
+     * @return A [CompositeIterator].
      */
     @JvmStatic
     fun <T> concatWithEagerClose(
         iterators: List<AutoCloseableIterator<T>>,
-        airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?
+        airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?,
     ): CompositeIterator<T> {
         return CompositeIterator(iterators, airbyteStreamStatusConsumer)
     }

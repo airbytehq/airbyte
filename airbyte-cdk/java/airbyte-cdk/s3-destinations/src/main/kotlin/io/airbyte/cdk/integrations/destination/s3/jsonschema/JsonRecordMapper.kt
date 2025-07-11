@@ -37,22 +37,40 @@ abstract class JsonRecordMapper<R> {
     }
 
     abstract fun mapNull(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapBoolean(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapInteger(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapNumber(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapString(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapBinaryData(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapDate(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapDateTimeWithTimezone(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapDateTimeWithoutTimezone(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapTimeWithTimezone(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapTimeWithoutTimezone(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapArrayWithoutItems(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapArrayWithItem(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapArrayWithItems(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapObjectWithoutProperties(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapObjectWithProperties(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapUnion(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapCombined(record: JsonNode?, schema: ObjectNode): R
+
     abstract fun mapUnknown(record: JsonNode?, schema: ObjectNode): R
 }

@@ -34,10 +34,7 @@ class DlqRecordBuilderTest {
                 airbyteRawId = UUID.randomUUID(),
             )
         val record =
-            initialRecord.toDlqRecord(
-                mapOf("new" to "content"),
-                keepOriginalFields = false,
-            )
+            initialRecord.toDlqRecord(mapOf("new" to "content"), keepOriginalFields = false)
 
         val newFieldAccessor = AirbyteValueProxy.FieldAccessor(1, "new", StringType)
 
@@ -57,11 +54,7 @@ class DlqRecordBuilderTest {
                 checkpointId = CheckpointId("myCheckPoint"),
                 airbyteRawId = UUID.randomUUID(),
             )
-        val record =
-            initialRecord.toDlqRecord(
-                mapOf("new" to "content"),
-                keepOriginalFields = true,
-            )
+        val record = initialRecord.toDlqRecord(mapOf("new" to "content"), keepOriginalFields = true)
 
         val newFieldAccessor = AirbyteValueProxy.FieldAccessor(1, "new", StringType)
 

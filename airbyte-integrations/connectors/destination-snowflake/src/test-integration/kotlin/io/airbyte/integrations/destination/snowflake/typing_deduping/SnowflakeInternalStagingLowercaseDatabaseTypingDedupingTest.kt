@@ -26,7 +26,7 @@ class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest :
         val config = super.generateConfig()
         (config as ObjectNode).put(
             JdbcUtils.DATABASE_KEY,
-            config.get(JdbcUtils.DATABASE_KEY).asText().lowercase(Locale.getDefault())
+            config.get(JdbcUtils.DATABASE_KEY).asText().lowercase(Locale.getDefault()),
         )
         return config
     }

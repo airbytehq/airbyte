@@ -12,11 +12,8 @@ import kotlinx.coroutines.channels.Channel
  * A channel designed for use with a fixed amount of producers. Close will be called on the
  * underlying channel, when there are no remaining registered producers.
  */
-class MultiProducerChannel<T>(
-    producerCount: Long,
-    channel: Channel<T>,
-    private val name: String,
-) : ChannelMessageQueue<T>(channel = channel) {
+class MultiProducerChannel<T>(producerCount: Long, channel: Channel<T>, private val name: String) :
+    ChannelMessageQueue<T>(channel = channel) {
     private val log = KotlinLogging.logger {}
     private val initializedProducerCount = producerCount
     private val producerCount = AtomicLong(producerCount)

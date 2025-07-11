@@ -47,7 +47,7 @@ internal class TestHarnessUtilsTest {
                 SHUTDOWN_TIME_DURATION,
                 CHECK_HEARTBEAT_DURATION,
                 SHUTDOWN_TIME_DURATION,
-                forceShutdown
+                forceShutdown,
             )
         }
 
@@ -139,12 +139,16 @@ internal class TestHarnessUtilsTest {
          *
          * @param process
          * - process to monitor.
+         *
          * @param heartbeatMonitor
          * - tracks if the heart is still beating for the given process.
+         *
          * @param gracefulShutdownDuration
          * - grace period to give the process to die after its heart stops beating.
+         *
          * @param checkHeartbeatDuration
          * - frequency with which the heartbeat of the process is checked.
+         *
          * @param forcedShutdownDuration
          * - amount of time to wait if a process needs to be destroyed forcibly.
          */
@@ -154,7 +158,7 @@ internal class TestHarnessUtilsTest {
             gracefulShutdownDuration: Duration,
             checkHeartbeatDuration: Duration,
             forcedShutdownDuration: Duration,
-            forceShutdown: BiConsumer<Process, Duration>
+            forceShutdown: BiConsumer<Process, Duration>,
         ) {
             while (process.isAlive && heartbeatMonitor.isBeating) {
                 try {

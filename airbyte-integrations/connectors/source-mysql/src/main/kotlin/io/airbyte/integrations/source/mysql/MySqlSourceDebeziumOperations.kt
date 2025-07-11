@@ -137,10 +137,7 @@ class MySqlSourceDebeziumOperations(
                         }
                     @Suppress("UNCHECKED_CAST")
                     resultRow[field.id] =
-                        FieldValueEncoder(
-                            codec.decode(data[field.id]),
-                            codec as JsonCodec<Any>,
-                        )
+                        FieldValueEncoder(codec.decode(data[field.id]), codec as JsonCodec<Any>)
                 }
             }
         }
@@ -150,10 +147,7 @@ class MySqlSourceDebeziumOperations(
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
         val transactionTimestampJsonNode: JsonNode =
             OffsetDateTimeCodec.encode(transactionOffsetDateTime)
-        data.set<JsonNode>(
-            CommonMetaField.CDC_UPDATED_AT.id,
-            transactionTimestampJsonNode,
-        )
+        data.set<JsonNode>(CommonMetaField.CDC_UPDATED_AT.id, transactionTimestampJsonNode)
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec)
 
@@ -165,21 +159,21 @@ class MySqlSourceDebeziumOperations(
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
-                (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>
+                (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>,
             )
 
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
         val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
-            TextCodec.encode(position.fileName)
+            TextCodec.encode(position.fileName),
         )
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
             FieldValueEncoder(position.fileName, TextCodec)
 
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
-            LongCodec.encode(position.position)
+            LongCodec.encode(position.position),
         )
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(position.position, LongCodec)
@@ -187,7 +181,7 @@ class MySqlSourceDebeziumOperations(
         // Set the _ab_cdc_cursor meta-field value.
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_CURSOR.id,
-            LongCodec.encode(position.cursorValue)
+            LongCodec.encode(position.cursorValue),
         )
         resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
             FieldValueEncoder(position.cursorValue, LongCodec)
@@ -202,9 +196,7 @@ class MySqlSourceDebeziumOperations(
     override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
         value.source["table"]?.asText()
 
-    override fun deserializeState(
-        opaqueStateValue: OpaqueStateValue,
-    ): DebeziumWarmStartState {
+    override fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState {
         val debeziumState: UnvalidatedDeserializedState =
             try {
                 deserializeStateUnvalidated(opaqueStateValue)
@@ -292,7 +284,7 @@ class MySqlSourceDebeziumOperations(
     enum class CdcStateValidateResult {
         VALID,
         INVALID_ABORT,
-        INVALID_RESET
+        INVALID_RESET,
     }
 
     override fun position(offset: DebeziumOffset): MySqlSourceCdcPosition =
@@ -351,7 +343,7 @@ class MySqlSourceDebeziumOperations(
 
     private fun parseBinaryLogStatus(
         stmt: Statement,
-        query: String
+        query: String,
     ): Pair<MySqlSourceCdcPosition, String?> {
         stmt.executeQuery(query).use { rs: ResultSet ->
             if (!rs.next()) throw ConfigErrorException("No results for query: {{$query}}")
@@ -360,14 +352,12 @@ class MySqlSourceDebeziumOperations(
             val gtids = Field("Executed_Gtid_Set", StringFieldType)
             val mySqlSourceCdcPosition =
                 MySqlSourceCdcPosition(
-                    fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
-                            ?: throw ConfigErrorException(
-                                "No value for ${file.id} in: {{$query}}",
-                            ),
-                    position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
-                            ?: throw ConfigErrorException(
-                                "No value for ${pos.id} in: {{$query}}",
-                            ),
+                    fileName =
+                        rs.getString(file.id)?.takeUnless { rs.wasNull() }
+                            ?: throw ConfigErrorException("No value for ${file.id} in: {{$query}}"),
+                    position =
+                        rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
+                            ?: throw ConfigErrorException("No value for ${pos.id} in: {{$query}}"),
                 )
             if (rs.metaData.columnCount <= 4) {
                 // This value exists only in MySQL 5.6.5 or later.
@@ -423,7 +413,7 @@ class MySqlSourceDebeziumOperations(
 
     override fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue {
         val stateNode: ObjectNode = Jsons.objectNode()
         // Serialize offset.
@@ -500,7 +490,7 @@ class MySqlSourceDebeziumOperations(
                 .withSchemaHistory()
                 .withConverters(
                     MySqlSourceCdcBooleanConverter::class,
-                    MySqlSourceCdcTemporalConverter::class
+                    MySqlSourceCdcTemporalConverter::class,
                 )
 
         cdcIncrementalConfiguration.serverTimezone

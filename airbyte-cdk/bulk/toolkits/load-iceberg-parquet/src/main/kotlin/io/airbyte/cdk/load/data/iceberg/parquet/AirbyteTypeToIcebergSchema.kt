@@ -43,13 +43,13 @@ class AirbyteTypeToIcebergSchema {
                                     NestedField.optional(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects)
+                                        convert(field.type, stringifyObjects),
                                     )
                                 } else {
                                     NestedField.required(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects)
+                                        convert(field.type, stringifyObjects),
                                     )
                                 }
                             }
@@ -84,7 +84,7 @@ class AirbyteTypeToIcebergSchema {
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first(), stringifyObjects)
+                        convert(airbyteSchema.options.first(), stringifyObjects),
                     )
                 }
                 // We stringify nontrivial unions
@@ -109,14 +109,7 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
         val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
         val icebergType =
             icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
-        fields.add(
-            NestedField.of(
-                id,
-                isOptional,
-                name,
-                icebergType,
-            ),
-        )
+        fields.add(NestedField.of(id, isOptional, name, icebergType))
         // Identifier fields must be primitive types, and cannot be float/double.
         if (
             isPrimaryKey &&

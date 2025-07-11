@@ -25,11 +25,11 @@ object SnowflakeTestUtils {
                 timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
                 quote(JavaBaseConstants.COLUMN_NAME_DATA),
                 quote(JavaBaseConstants.COLUMN_NAME_AB_META),
-                quote(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+                quote(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID),
             ),
             database,
             tableIdentifier, // Raw tables still have lowercase names
-            false
+            false,
         )
     }
 
@@ -38,7 +38,7 @@ object SnowflakeTestUtils {
         database: JdbcDatabase,
         databaseName: String,
         schema: String,
-        table: String
+        table: String,
     ): List<JsonNode> {
         // We have to discover the column names, because if we just SELECT * then snowflake will
         // upcase all
@@ -54,10 +54,11 @@ object SnowflakeTestUtils {
           AND table_name = ?
         ORDER BY ordinal_position;
         
-        """.trimIndent(),
+        """
+                        .trimIndent(),
                     unescapeIdentifier(databaseName).uppercase(Locale.getDefault()),
                     unescapeIdentifier(schema).uppercase(Locale.getDefault()),
-                    unescapeIdentifier(table).uppercase(Locale.getDefault())
+                    unescapeIdentifier(table).uppercase(Locale.getDefault()),
                 )
                 .stream()
                 .map { column: JsonNode ->
@@ -91,7 +92,7 @@ object SnowflakeTestUtils {
         columns: List<String>,
         database: JdbcDatabase,
         tableIdentifier: String?,
-        upcaseExtractedAt: Boolean
+        upcaseExtractedAt: Boolean,
     ): List<JsonNode> {
         return database.bufferedResultSetQuery(
             { connection: Connection ->
@@ -104,18 +105,19 @@ object SnowflakeTestUtils {
                                     "table" to tableIdentifier,
                                     "extracted_at" to
                                         if (upcaseExtractedAt) "_AIRBYTE_EXTRACTED_AT"
-                                        else "\"_airbyte_extracted_at\""
+                                        else "\"_airbyte_extracted_at\"",
                                 )
                             )
                             .replace(
                                 """
             SELECT ${'$'}{columns} FROM ${'$'}{table} ORDER BY ${'$'}{extracted_at} ASC
             
-            """.trimIndent()
+            """
+                                    .trimIndent()
                             )
                     )
             },
-            { queryResult: ResultSet -> SnowflakeSourceOperations().rowToJson(queryResult) }
+            { queryResult: ResultSet -> SnowflakeSourceOperations().rowToJson(queryResult) },
         )
     }
 

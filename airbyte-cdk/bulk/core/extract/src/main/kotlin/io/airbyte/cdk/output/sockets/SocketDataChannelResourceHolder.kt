@@ -27,6 +27,7 @@ class SocketDataChannelResourceHolder(
 ) {
 
     val sockets: List<SocketDataChannel>
+
     init {
         sockets = List(socketPaths.size) { socketFactory.makeSocket(socketPaths[it]) }
         runBlocking { sockets.forEach { socket -> socket.initialize() } }

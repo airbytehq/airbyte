@@ -132,7 +132,7 @@ fun Map<String, EnrichedAirbyteValue>.toIcebergRecord(icebergSchema: Schema): Ge
         if (value != null) {
             record.setField(
                 field.name(),
-                airbyteValueToIcebergRecord.convert(value.abValue, field.type())
+                airbyteValueToIcebergRecord.convert(value.abValue, field.type()),
             )
         }
     }

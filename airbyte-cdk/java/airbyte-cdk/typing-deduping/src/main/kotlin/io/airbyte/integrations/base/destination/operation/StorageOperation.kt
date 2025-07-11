@@ -20,7 +20,7 @@ interface StorageOperation<Data> {
      * conjunction with [overwriteStage].
      *
      * @param replace If true, then replace existing resources with empty e.g. tables. If false,
-     * then leave existing resources untouched.
+     *   then leave existing resources untouched.
      */
     fun prepareStage(streamId: StreamId, suffix: String, replace: Boolean = false)
 
@@ -71,11 +71,10 @@ interface StorageOperation<Data> {
      */
     fun overwriteFinalTable(streamConfig: StreamConfig, tmpTableSuffix: String)
 
-    /**
-     */
+    /**  */
     fun typeAndDedupe(
         streamConfig: StreamConfig,
         maxProcessedTimestamp: Optional<Instant>,
-        finalTableSuffix: String
+        finalTableSuffix: String,
     )
 }

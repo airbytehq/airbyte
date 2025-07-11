@@ -26,10 +26,7 @@ class FlushThresholdTest {
     @Test
     internal fun testBaseThreshold() {
         val isClosing = AtomicBoolean(false)
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         val detect =
             DetectStreamToFlush(
                 bufferDequeue,
@@ -43,10 +40,7 @@ class FlushThresholdTest {
     @Test
     internal fun testClosingThreshold() {
         val isClosing = AtomicBoolean(true)
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         val detect =
             DetectStreamToFlush(
                 bufferDequeue,
@@ -60,10 +54,7 @@ class FlushThresholdTest {
     @Test
     internal fun testEagerFlushThresholdBelowThreshold() {
         val isClosing = AtomicBoolean(false)
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         Mockito.`when`(bufferDequeue.totalGlobalQueueSizeBytes).thenReturn(8L)
         Mockito.`when`(bufferDequeue.maxQueueSizeBytes).thenReturn(10L)
         val detect =
@@ -79,10 +70,7 @@ class FlushThresholdTest {
     @Test
     internal fun testEagerFlushThresholdAboveThreshold() {
         val isClosing = AtomicBoolean(false)
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         Mockito.`when`(bufferDequeue.totalGlobalQueueSizeBytes).thenReturn(9L)
         Mockito.`when`(bufferDequeue.maxQueueSizeBytes).thenReturn(10L)
         val detect =

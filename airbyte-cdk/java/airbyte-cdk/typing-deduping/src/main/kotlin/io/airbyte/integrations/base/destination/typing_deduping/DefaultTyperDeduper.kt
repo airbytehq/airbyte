@@ -26,13 +26,13 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.apache.commons.lang3.tuple.Pair
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to call
  * `new CatalogParser(new FooSqlGenerator()).parseCatalog()`, but should otherwise avoid interacting
  * directly with these classes.
  *
  * In a typical sync, destinations should call the methods:
- *
  * 1. [.prepareFinalTables] once at the start of the sync
  * 1. [.typeAndDedupe] as needed throughout the sync
  * 1. [.commitFinalTables] once at the end of the sync
@@ -46,7 +46,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     private val parsedCatalog: ParsedCatalog,
     private val v1V2Migrator: DestinationV1V2Migrator,
     private val v2TableMigrator: V2TableMigrator,
-    private val migrations: List<Migration<DestinationState>>
+    private val migrations: List<Migration<DestinationState>>,
 ) : TyperDeduper {
 
     private lateinit var overwriteStreamsWithTmpTable: MutableSet<StreamId>
@@ -59,7 +59,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             FutureUtils.countOfTypeAndDedupeThreads,
             BasicThreadFactory.Builder()
                 .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
-                .build()
+                .build(),
         )
     private lateinit var destinationInitialStatuses:
         List<DestinationInitialStatus<DestinationState>>
@@ -69,14 +69,14 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         destinationHandler: DestinationHandler<DestinationState>,
         parsedCatalog: ParsedCatalog,
         v1V2Migrator: DestinationV1V2Migrator,
-        migrations: List<Migration<DestinationState>>
+        migrations: List<Migration<DestinationState>>,
     ) : this(
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
         v1V2Migrator,
         NoopV2TableMigrator(),
-        migrations
+        migrations,
     )
 
     @Throws(Exception::class)
@@ -93,7 +93,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             destinationHandler,
             v1V2Migrator,
             v2TableMigrator,
-            parsedCatalog
+            parsedCatalog,
         )
 
         destinationInitialStatuses =
@@ -101,7 +101,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 executorService,
                 destinationHandler,
                 migrations,
-                destinationHandler.gatherInitialState(parsedCatalog.streams)
+                destinationHandler.gatherInitialState(parsedCatalog.streams),
             )
 
         // Commit our destination states immediately.
@@ -130,7 +130,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 .join()
         getResultsOrLogAndThrowFirst(
             "The following exceptions were thrown attempting to prepare tables:\n",
-            prepareTablesFutureResult
+            prepareTablesFutureResult,
         )
 
         // If we get here, then we've executed all soft resets. Force the soft reset flag to false.
@@ -176,7 +176,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                                         sqlGenerator.createTable(
                                             stream,
                                             TMP_OVERWRITE_TABLE_SUFFIX,
-                                            true
+                                            true,
                                         )
                                     )
                                 }
@@ -200,7 +200,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                             TyperDeduperUtil.executeSoftReset(
                                 sqlGenerator,
                                 destinationHandler,
-                                stream
+                                stream,
                             )
                         }
                     } else {
@@ -227,7 +227,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                             true,
                             initialState.initialRawTableStatus.hasUnprocessedRecords ||
                                 initialState.initialTempRawTableStatus.hasUnprocessedRecords,
-                            if (ts == Instant.MAX) Optional.empty() else Optional.of(ts)
+                            if (ts == Instant.MAX) Optional.empty() else Optional.of(ts),
                         )
 
                     streamsWithSuccessfulSetup.add(
@@ -241,7 +241,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     throw RuntimeException(e)
                 }
             },
-            this.executorService
+            this.executorService,
         )
     }
 
@@ -288,7 +288,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         destinationHandler,
                         streamConfig,
                         initialRawTableStatus.maxProcessedTimestamp,
-                        getFinalTableSuffix(streamConfig.id)
+                        getFinalTableSuffix(streamConfig.id),
                     )
                     return@supplyAsync Optional.empty<Exception>()
                 } catch (e: Exception) {
@@ -298,7 +298,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     return@supplyAsync Optional.of<Exception>(e)
                 }
             },
-            this.executorService
+            this.executorService,
         )
     }
 
@@ -338,7 +338,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         CompletableFuture.allOf(*typeAndDedupeTasks.toTypedArray()).join()
         FutureUtils.reduceExceptions(
             typeAndDedupeTasks,
-            "The Following Exceptions were thrown while typing and deduping tables:\n"
+            "The Following Exceptions were thrown while typing and deduping tables:\n",
         )
     }
 
@@ -375,7 +375,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         CompletableFuture.allOf(*tableCommitTasks.toTypedArray()).join()
         FutureUtils.reduceExceptions(
             tableCommitTasks,
-            "The Following Exceptions were thrown while committing final tables:\n"
+            "The Following Exceptions were thrown while committing final tables:\n",
         )
     }
 
@@ -403,7 +403,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 }
                 return@supplyAsync Optional.empty<Exception>()
             },
-            this.executorService
+            this.executorService,
         )
     }
 

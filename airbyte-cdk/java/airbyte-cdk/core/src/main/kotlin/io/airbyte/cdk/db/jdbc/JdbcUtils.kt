@@ -60,7 +60,7 @@ object JdbcUtils {
             JDBCType.DECIMAL,
             JDBCType.NVARCHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR
+            JDBCType.LONGVARCHAR,
         )
     @JvmStatic val defaultSourceOperations: JdbcSourceOperations = JdbcSourceOperations()
 
@@ -77,7 +77,7 @@ object JdbcUtils {
     fun parseJdbcParameters(
         config: JsonNode,
         jdbcUrlParamsKey: String?,
-        delimiter: String = "&"
+        delimiter: String = "&",
     ): Map<String, String> {
         return if (config.has(jdbcUrlParamsKey)) {
             parseJdbcParameters(config[jdbcUrlParamsKey].asText(), delimiter)
@@ -90,7 +90,7 @@ object JdbcUtils {
     @JvmOverloads
     fun parseJdbcParameters(
         jdbcPropertiesString: String,
-        delimiter: String = "&"
+        delimiter: String = "&",
     ): Map<String, String> {
         val parameters: MutableMap<String, String> = HashMap()
         if (!jdbcPropertiesString.isBlank()) {
@@ -120,7 +120,7 @@ object JdbcUtils {
      *
      * @param config A configuration used to check Jdbc connection
      * @return true: if ssl has not been set and ssl mode not equals disabled or it has been set
-     * with true, false: in all other cases
+     *   with true, false: in all other cases
      */
     @JvmStatic
     fun useSsl(config: JsonNode): Boolean {

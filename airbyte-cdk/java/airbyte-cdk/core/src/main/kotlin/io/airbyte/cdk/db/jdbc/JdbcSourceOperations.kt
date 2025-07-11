@@ -14,6 +14,7 @@ import java.time.OffsetTime
 import java.time.format.DateTimeParseException
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Implementation of source operations with standard JDBC types. */
 open class JdbcSourceOperations :
     AbstractJdbcCompatibleSourceOperations<JDBCType>(), SourceOperations<ResultSet, JDBCType> {
@@ -65,7 +66,7 @@ open class JdbcSourceOperations :
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         cursorFieldType: JDBCType?,
-        value: String?
+        value: String?,
     ) {
         when (cursorFieldType) {
             JDBCType.TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value)
@@ -104,7 +105,7 @@ open class JdbcSourceOperations :
     protected open fun setTimestampWithTimezone(
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
-        value: String?
+        value: String?,
     ) {
         try {
             preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value))
@@ -117,7 +118,7 @@ open class JdbcSourceOperations :
     protected fun setTimeWithTimezone(
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
-        value: String?
+        value: String?,
     ) {
         try {
             preparedStatement.setObject(parameterIndex, OffsetTime.parse(value))

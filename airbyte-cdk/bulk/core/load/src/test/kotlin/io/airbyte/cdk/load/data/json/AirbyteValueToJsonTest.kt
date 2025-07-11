@@ -46,7 +46,7 @@ class AirbyteValueToJsonTest {
                         ObjectValue(
                             linkedMapOf(
                                 "street" to StringValue("123 Main St"),
-                                "city" to StringValue("San Francisco")
+                                "city" to StringValue("San Francisco"),
                             )
                         ),
                 )

@@ -63,7 +63,7 @@ class BigQueryBulkLoader(
         } catch (e: Exception) {
             throw RuntimeException(
                 "Failed to load CSV data from $gcsUri to table ${tableId.dataset}.${tableId.table}",
-                e
+                e,
             )
         }
 

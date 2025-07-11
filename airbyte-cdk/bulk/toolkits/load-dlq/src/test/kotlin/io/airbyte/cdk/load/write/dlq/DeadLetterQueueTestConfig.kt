@@ -36,7 +36,7 @@ class DeadLetterQueueTestLoader : DlqLoader<DeadLetterQueueTestAggregator> {
 
     override fun accept(
         record: DestinationRecordRaw,
-        state: DeadLetterQueueTestAggregator
+        state: DeadLetterQueueTestAggregator,
     ): DlqLoader.DlqLoadResult {
         TODO("Not yet implemented")
     }
@@ -47,20 +47,20 @@ class DeadLetterQueueTestLoader : DlqLoader<DeadLetterQueueTestAggregator> {
 @Singleton
 class DeadLetterQueueTestConfigurationFactory :
     DestinationConfigurationFactory<
-        DeadLetterQueueTestSpecification, DeadLetterQueueTestConfiguration> {
+        DeadLetterQueueTestSpecification,
+        DeadLetterQueueTestConfiguration,
+    > {
     override fun makeWithoutExceptionHandling(
         pojo: DeadLetterQueueTestSpecification
     ): DeadLetterQueueTestConfiguration =
         DeadLetterQueueTestConfiguration(
-            objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig(),
+            objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig()
         )
 }
 
-data class DeadLetterQueueTestConfiguration(
-    override val objectStorageConfig: ObjectStorageConfig,
-) : DestinationConfiguration(), ObjectStorageConfigProvider
+data class DeadLetterQueueTestConfiguration(override val objectStorageConfig: ObjectStorageConfig) :
+    DestinationConfiguration(), ObjectStorageConfigProvider
 
 @Singleton
-fun loadPipeline(
-    dlqPipelineFactory: DlqPipelineFactory,
-): LoadPipeline = dlqPipelineFactory.createPipeline(DeadLetterQueueTestLoader())
+fun loadPipeline(dlqPipelineFactory: DlqPipelineFactory): LoadPipeline =
+    dlqPipelineFactory.createPipeline(DeadLetterQueueTestLoader())

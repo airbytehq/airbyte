@@ -14,7 +14,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     override fun migrateIfNecessary(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ) {
         LOGGER.info {
             "Assessing whether migration is necessary for stream ${streamConfig.id.finalName}"
@@ -67,7 +67,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     fun migrate(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ) {
         val namespacedTableName = convertToV1RawName(streamConfig)
         try {
@@ -75,7 +75,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
                 sqlGenerator.migrateFromV1toV2(
                     streamConfig.id,
                     namespacedTableName.namespace,
-                    namespacedTableName.tableName
+                    namespacedTableName.tableName,
                 )
             )
         } catch (e: Exception) {
@@ -95,7 +95,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     ): Boolean {
         return schemaMatchesExpectation(
             existingV2AirbyteRawTable,
-            JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+            JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS,
         )
     }
 
@@ -125,7 +125,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
                 ))
         ) {
             throw UnexpectedSchemaException(
-                "Destination V2 Raw Table does not match expected Schema",
+                "Destination V2 Raw Table does not match expected Schema"
             )
         }
     }
@@ -194,7 +194,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      */
     abstract fun schemaMatchesExpectation(
         existingTable: DialectTableDefinition,
-        columns: Collection<String>
+        columns: Collection<String>,
     ): Boolean
 
     /**
@@ -207,7 +207,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     @Throws(Exception::class)
     abstract fun getTableIfExists(
         namespace: String?,
-        tableName: String?
+        tableName: String?,
     ): Optional<DialectTableDefinition>
 
     /**

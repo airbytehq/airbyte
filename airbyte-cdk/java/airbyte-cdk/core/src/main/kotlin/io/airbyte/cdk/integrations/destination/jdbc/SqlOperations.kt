@@ -10,13 +10,12 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 /**
  * SQL queries required for successfully syncing to a destination connector. These operations
  * include the ability to:
- *
  * * Write - insert records from source connector
  * * Create - overloaded function but primarily to create tables if they don't exist (e.g. tmp
- * tables to "stage" records before finalizing to final table
+ *   tables to "stage" records before finalizing to final table
  * * Drop - removes a table from the schema
  * * Insert - move data from one table to another table - usually used for inserting data from tmp
- * to final table (aka airbyte_raw)
+ *   to final table (aka airbyte_raw)
  */
 interface SqlOperations {
     /**

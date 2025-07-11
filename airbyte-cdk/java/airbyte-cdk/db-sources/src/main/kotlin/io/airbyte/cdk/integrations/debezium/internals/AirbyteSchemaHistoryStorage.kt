@@ -22,6 +22,7 @@ import java.util.zip.GZIPOutputStream
 import org.apache.commons.io.FileUtils
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * The purpose of this class is : to , 1. Read the contents of the file [.path] which contains the
  * schema history at the end of the sync so that it can be saved in state for future syncs. Check
@@ -30,7 +31,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 class AirbyteSchemaHistoryStorage(
     private val path: Path,
-    private val compressSchemaHistoryForState: Boolean
+    private val compressSchemaHistoryForState: Boolean,
 ) {
     private val reader: DocumentReader = DocumentReader.defaultReader()
     private val writer: DocumentWriter = DocumentWriter.defaultWriter()
@@ -129,7 +130,7 @@ class AirbyteSchemaHistoryStorage(
         } catch (e: IOException) {
             throw IllegalStateException(
                 "Unable to check or create history file at " + path + ": " + e.message,
-                e
+                e,
             )
         }
     }
@@ -208,7 +209,7 @@ class AirbyteSchemaHistoryStorage(
         // changes. If we don't do this, we can't fetch records for the table.
         props.setProperty(
             "schema.history.internal",
-            "io.debezium.storage.file.history.FileSchemaHistory"
+            "io.debezium.storage.file.history.FileSchemaHistory",
         )
         props.setProperty("schema.history.internal.file.filename", path.toString())
         props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true")
@@ -227,7 +228,7 @@ class AirbyteSchemaHistoryStorage(
         @JvmStatic
         fun initializeDBHistory(
             schemaHistory: SchemaHistory<Optional<JsonNode>>?,
-            compressSchemaHistoryForState: Boolean
+            compressSchemaHistoryForState: Boolean,
         ): AirbyteSchemaHistoryStorage {
             val dbHistoryWorkingDir: Path
             try {

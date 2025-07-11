@@ -62,6 +62,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         JdbcBufferedConsumerFactory.DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
         namingResolver,
     )
+
     protected open val configSchemaKey: String = "schema"
 
     /**
@@ -86,7 +87,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 val v2RawSchema =
                     namingResolver.getIdentifier(
                         getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
-                            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
+                            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
                     )
                 attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false)
                 destinationSpecificTableOperations(database)
@@ -106,7 +107,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     """
     Could not connect with provided configuration. 
     ${e.message}
-    """.trimIndent(),
+    """
+                        .trimIndent()
                 )
         } finally {
             try {
@@ -169,12 +171,12 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     private fun assertCustomParametersDontOverwriteDefaultParameters(
         customParameters: Map<String, String>,
-        defaultParameters: Map<String, String>
+        defaultParameters: Map<String, String>,
     ) {
         for (key in defaultParameters.keys) {
             require(
                 !(customParameters.containsKey(key) &&
-                    customParameters[key] != defaultParameters[key]),
+                    customParameters[key] != defaultParameters[key])
             ) {
                 "Cannot overwrite default JDBC parameter $key"
             }
@@ -195,12 +197,12 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
-        rawTableSchema: String
+        rawTableSchema: String,
     ): JdbcDestinationHandler<DestinationState>
 
     protected open fun getV1V2Migrator(
         database: JdbcDatabase,
-        databaseName: String
+        databaseName: String,
     ): DestinationV1V2Migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
 
     /**
@@ -212,7 +214,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         databaseName: String,
         sqlGenerator: SqlGenerator,
-        destinationHandler: DestinationHandler<DestinationState>
+        destinationHandler: DestinationHandler<DestinationState>,
     ): List<Migration<DestinationState>>
 
     /**
@@ -228,7 +230,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     protected open fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
-        defaultNamespace: String?
+        defaultNamespace: String?,
     ): StreamAwareDataTransformer {
         return IdentityDataTransformer()
     }
@@ -236,7 +238,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         throw NotImplementedException("Should use the getSerializedMessageConsumer instead")
     }
@@ -245,7 +247,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer? {
         val database = getDatabase(getDataSource(config))
         val defaultNamespace = config[configSchemaKey].asText()
@@ -260,10 +262,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     private fun isTypeDedupeDisabled(config: JsonNode): Boolean {
         return shouldAlwaysDisableTypeDedupe() ||
-            (config.has(DISABLE_TYPE_DEDUPE) &&
-                config[DISABLE_TYPE_DEDUPE].asBoolean(
-                    false,
-                ))
+            (config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false))
     }
 
     private fun getV2MessageConsumer(
@@ -271,7 +270,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         catalog: ConfiguredAirbyteCatalog?,
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
-        defaultNamespace: String
+        defaultNamespace: String,
     ): SerializedAirbyteMessageConsumer {
         val sqlGenerator = getSqlGenerator(config)
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
@@ -280,12 +279,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 .map { override: String -> CatalogParser(sqlGenerator, defaultNamespace, override) }
                 .orElse(CatalogParser(sqlGenerator, defaultNamespace))
                 .parseCatalog(catalog!!)
-        val typerDeduper: TyperDeduper =
-            buildTyperDeduper(
-                config,
-                database,
-                parsedCatalog,
-            )
+        val typerDeduper: TyperDeduper = buildTyperDeduper(config, database, parsedCatalog)
 
         return JdbcBufferedConsumerFactory.createAsync(
             outputRecordCollector,
@@ -369,7 +363,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             outputSchema: String,
             database: JdbcDatabase,
             namingResolver: NamingConventionTransformer,
-            sqlOps: SqlOperations
+            sqlOps: SqlOperations,
         ) {
             attemptTableOperations(outputSchema, database, namingResolver, sqlOps, false)
         }
@@ -382,15 +376,19 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
          *
          * @param outputSchema
          * - schema to tests against.
+         *
          * @param database
          * - database to tests against.
+         *
          * @param namingResolver
          * - naming resolver.
+         *
          * @param sqlOps
          * - SqlOperations object
+         *
          * @param attemptInsert
          * - set true if need to make attempt to insert dummy records to newly created table. Set
-         * false to skip insert step.
+         *   false to skip insert step.
          */
         @JvmStatic
         @Throws(Exception::class)
@@ -399,7 +397,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             database: JdbcDatabase,
             namingResolver: NamingConventionTransformer,
             sqlOps: SqlOperations,
-            attemptInsert: Boolean
+            attemptInsert: Boolean,
         ) {
             // verify we have write permissions on the target schema by creating a table with a
             // random name,
@@ -419,7 +417,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 val outputTableName =
                     namingResolver.getIdentifier(
                         "_airbyte_connection_test_" +
-                            UUID.randomUUID().toString().replace("-".toRegex(), ""),
+                            UUID.randomUUID().toString().replace("-".toRegex(), "")
                     )
                 sqlOps.createSchemaIfNotExists(database, outputSchema)
                 sqlOps.createTableIfNotExists(database, outputSchema, outputTableName)
@@ -455,7 +453,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
              * Generates a dummy AirbyteRecordMessage with random values.
              *
              * @return AirbyteRecordMessage object with dummy values that may be used to test insert
-             * permission.
+             *   permission.
              */
             get() {
                 val dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }")

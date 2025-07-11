@@ -26,7 +26,7 @@ class PostgresDestinationSSLFullCertificateAcceptanceTest :
                 ImmutableMap.builder<Any?, Any?>()
                     .put(
                         "mode",
-                        "verify-ca"
+                        "verify-ca",
                     ) // verify-full will not work since the spawned container is only allowed for
                     // 127.0.0.1/32 CIDRs
                     .put("ca_certificate", testDb!!.certificates.caCertificate)
@@ -44,7 +44,7 @@ class PostgresDestinationSSLFullCertificateAcceptanceTest :
         testDb =
             PostgresTestDatabase.`in`(
                 PostgresTestDatabase.BaseImage.POSTGRES_12,
-                PostgresTestDatabase.ContainerModifier.CERT
+                PostgresTestDatabase.ContainerModifier.CERT,
             )
     }
 

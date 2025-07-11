@@ -59,7 +59,7 @@ object SSLCertificateUtils {
         keyStore: KeyStore,
         keyStorePassword: String,
         filesystem: FileSystem,
-        directory: String
+        directory: String,
     ): URI {
         val pathToStore: Path = filesystem.getPath(directory)
         val pathToFile =
@@ -81,7 +81,7 @@ object SSLCertificateUtils {
         cert: Certificate,
         keyStorePassword: String,
         filesystem: FileSystem,
-        directory: String
+        directory: String,
     ): URI {
         val keyStore = KeyStore.getInstance(PKCS_12)
         keyStore.load(null)
@@ -93,7 +93,7 @@ object SSLCertificateUtils {
         certString: String,
         keyStorePassword: String,
         filesystem: FileSystem,
-        directory: String
+        directory: String,
     ): URI {
         return keyStoreFromCertificate(
             fromPEMString(certString),
@@ -108,14 +108,14 @@ object SSLCertificateUtils {
             fromPEMString(certString),
             keyStorePassword,
             FileSystems.getDefault(),
-            ""
+            "",
         )
     }
 
     fun keyStoreFromCertificate(
         certString: String,
         keyStorePassword: String,
-        directory: String
+        directory: String,
     ): URI {
         return keyStoreFromCertificate(
             certString,
@@ -130,7 +130,7 @@ object SSLCertificateUtils {
         key: PrivateKey,
         keyStorePassword: String,
         filesystem: FileSystem,
-        directory: String
+        directory: String,
     ): URI {
         val keyStore = KeyStore.getInstance(PKCS_12)
         keyStore.load(null)
@@ -219,7 +219,7 @@ object SSLCertificateUtils {
         keyString: String,
         keyStorePassword: String,
         filesystem: FileSystem,
-        directory: String
+        directory: String,
     ): URI {
         // Convert RSA key (PKCS#1) to PKCS#8 key
         // Note: java.security doesn't have a built-in support of PKCS#1 format. Hence we need a
@@ -258,7 +258,7 @@ object SSLCertificateUtils {
         certString: String,
         keyString: String,
         keyStorePassword: String,
-        directory: String
+        directory: String,
     ): URI {
         return keyStoreFromClientCertificate(
             certString,
@@ -274,7 +274,7 @@ object SSLCertificateUtils {
             val factory = CertificateFactory.getInstance(X509)
             val trustedCa =
                 factory.generateCertificate(
-                    ByteArrayInputStream(caCertificate.toByteArray(StandardCharsets.UTF_8)),
+                    ByteArrayInputStream(caCertificate.toByteArray(StandardCharsets.UTF_8))
                 )
             val trustStore = KeyStore.getInstance(PKCS_12)
             trustStore.load(null, null)

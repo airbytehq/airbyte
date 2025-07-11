@@ -14,12 +14,12 @@ class HttpRequester(
         return client.send(
             Request(
                 method = method,
-                url = url
+                url = url,
                 // TODO eventually support the following
                 //        val headers: Map<String, String> = mapOf(),
                 //        val query: Map<String, List<String>> = mapOf(),
                 //        val body: ByteArray? = null,
-                )
+            )
         )
     }
 }

@@ -15,11 +15,7 @@ import org.junit.jupiter.api.assertThrows
 class DataChannelBeanFactoryTest {
     @Test
     fun `pipeline input queue is initialized with numInputPartitions partitions`() {
-        val queue =
-            DataChannelBeanFactory()
-                .pipelineInputQueue(
-                    numInputPartitions = 2,
-                )
+        val queue = DataChannelBeanFactory().pipelineInputQueue(numInputPartitions = 2)
 
         assertEquals(2, queue.partitions)
     }
@@ -34,7 +30,7 @@ class DataChannelBeanFactoryTest {
                     loadStrategy = loadStrategy,
                     isFileTransfer = false,
                     dataChannelMedium = DataChannelMedium.STDIO,
-                    dataChannelSocketPaths = mockk(relaxed = true)
+                    dataChannelSocketPaths = mockk(relaxed = true),
                 )
 
         assertEquals(2, numInputPartitions)
@@ -50,7 +46,7 @@ class DataChannelBeanFactoryTest {
                     loadStrategy = loadStrategy,
                     isFileTransfer = true,
                     dataChannelMedium = DataChannelMedium.STDIO,
-                    dataChannelSocketPaths = mockk(relaxed = true)
+                    dataChannelSocketPaths = mockk(relaxed = true),
                 )
 
         assertEquals(1, numInputPartitions)
@@ -66,7 +62,7 @@ class DataChannelBeanFactoryTest {
                     loadStrategy = loadStrategy,
                     isFileTransfer = false,
                     dataChannelMedium = DataChannelMedium.SOCKET,
-                    dataChannelSocketPaths = (0 until 3).map { "socket.$it" }
+                    dataChannelSocketPaths = (0 until 3).map { "socket.$it" },
                 )
         assertEquals(3, numInputPartitions)
     }
@@ -87,7 +83,7 @@ class DataChannelBeanFactoryTest {
             DataChannelBeanFactory()
                 .numDataChannels(
                     dataChannelMedium = DataChannelMedium.STDIO,
-                    numInputPartitions = 3
+                    numInputPartitions = 3,
                 )
         assertEquals(1, numDataChannels)
     }

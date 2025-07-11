@@ -136,7 +136,7 @@ class AzureBlobStreamingUploadTest {
                     // We can't easily check the entire Base64 ID but can check it has 3 items
                     assertEquals(3, blockList.size)
                 },
-                true
+                true,
             )
         }
         verify(exactly = 1) {
@@ -241,7 +241,7 @@ class AzureBlobStreamingUploadTest {
         suffixString.forEach { c ->
             assertTrue(
                 (c in 'A'..'Z') || (c in '0'..'9'),
-                "Suffix character '$c' must be uppercase alphanumeric."
+                "Suffix character '$c' must be uppercase alphanumeric.",
             )
         }
     }

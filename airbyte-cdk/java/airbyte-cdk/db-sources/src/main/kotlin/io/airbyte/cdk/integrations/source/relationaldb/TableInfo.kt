@@ -9,5 +9,5 @@ data class TableInfo<T>(
     val name: String,
     val fields: List<T>,
     val primaryKeys: List<String> = emptyList(),
-    val cursorFields: List<String>
+    val cursorFields: List<String>,
 )

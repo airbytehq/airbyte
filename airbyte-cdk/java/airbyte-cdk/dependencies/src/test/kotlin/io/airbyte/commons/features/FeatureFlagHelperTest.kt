@@ -26,7 +26,7 @@ internal class FeatureFlagHelperTest {
                 featureFlags,
                 { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
                 UUID.randomUUID(),
-                null
+                null,
             )
         )
     }
@@ -40,7 +40,7 @@ internal class FeatureFlagHelperTest {
                 featureFlags,
                 { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
                 null,
-                null
+                null,
             )
         )
     }
@@ -54,7 +54,7 @@ internal class FeatureFlagHelperTest {
                 featureFlags,
                 { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
                 UUID.randomUUID(),
-                null
+                null,
             )
         )
     }
@@ -68,7 +68,7 @@ internal class FeatureFlagHelperTest {
                 featureFlags,
                 { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
                 UUID.randomUUID(),
-                null
+                null,
             )
         )
     }
@@ -85,7 +85,7 @@ internal class FeatureFlagHelperTest {
                 featureFlags,
                 { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
                 workspaceId,
-                null
+                null,
             )
         )
     }
@@ -103,7 +103,7 @@ internal class FeatureFlagHelperTest {
                 featureFlags,
                 { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
                 workspaceId,
-                null
+                null,
             )
         )
     }

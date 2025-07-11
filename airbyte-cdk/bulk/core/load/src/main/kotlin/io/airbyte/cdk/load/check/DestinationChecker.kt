@@ -27,7 +27,6 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * A check operation that is run before the destination is used.
- *
  * * Implementors must provide a [check] method that validates the configuration.
  * * Implementors may provide a [cleanup] method that is run after the check is complete.
  * * [check] should throw an exception if the configuration is invalid.
@@ -46,10 +45,11 @@ interface DestinationChecker<C : DestinationConfiguration> {
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     fun check(config: C)
+
     fun cleanup(config: C) {}
 }
 
@@ -75,11 +75,7 @@ class DestinationCheckerSync<C : DestinationConfiguration>(
             launch { writeOperation.execute() }
 
             pipe.println(
-                InputRecord(
-                        mockStream,
-                        """{"test": 42}""",
-                        System.currentTimeMillis(),
-                    )
+                InputRecord(mockStream, """{"test": 42}""", System.currentTimeMillis())
                     .asProtocolMessage()
                     .serializeToString()
             )

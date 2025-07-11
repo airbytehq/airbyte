@@ -66,7 +66,7 @@ class DefaultJdbcUnsplittableSnapshotWithCursorPartition(
         get() =
             DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                cursorCheckpoint = streamState.cursorUpperBound!!
+                cursorCheckpoint = streamState.cursorUpperBound!!,
             )
 
     override val cursorUpperBoundQuery: SelectQuery
@@ -131,7 +131,7 @@ sealed class DefaultJdbcSplittablePartition(
                     And(
                         zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
-                        } + listOf(lastLeaf),
+                        } + listOf(lastLeaf)
                     )
                 }
             val zippedUpperBound: List<Pair<Field, JsonNode>> =
@@ -147,7 +147,7 @@ sealed class DefaultJdbcSplittablePartition(
                     And(
                         zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
-                        } + listOf(lastLeaf),
+                        } + listOf(lastLeaf)
                     )
                 }
             return Where(And(Or(lowerBoundDisj), Or(upperBoundDisj)))
@@ -223,7 +223,7 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
         streamState,
         primaryKey,
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
 
     override val completeState: OpaqueStateValue
@@ -232,7 +232,7 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
                 null ->
                     DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
                         cursor,
-                        cursorUpperBound
+                        cursorUpperBound,
                     )
                 else ->
                     DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -269,7 +269,7 @@ class DefaultJdbcCursorIncrementalPartition(
         streamState,
         listOf(cursor),
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
 
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)

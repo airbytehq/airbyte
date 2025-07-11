@@ -58,7 +58,7 @@ class PostgresDestinationTest {
                 JdbcUtils.SSL_KEY,
                 true,
                 "ssl_mode",
-                ImmutableMap.of<String, String>("mode", "require")
+                ImmutableMap.of<String, String>("mode", "require"),
             )
         )
     }
@@ -73,7 +73,7 @@ class PostgresDestinationTest {
                 JdbcUtils.USERNAME_KEY,
                 "user",
                 JdbcUtils.DATABASE_KEY,
-                "db/foo"
+                "db/foo",
             )
         )
     }
@@ -90,7 +90,7 @@ class PostgresDestinationTest {
                 JdbcUtils.DATABASE_KEY,
                 "db",
                 JdbcUtils.JDBC_URL_PARAMS_KEY,
-                extraParam
+                extraParam,
             )
         )
     }
@@ -107,7 +107,7 @@ class PostgresDestinationTest {
                 JdbcUtils.DATABASE_KEY,
                 "db",
                 JdbcUtils.SSL_KEY,
-                false
+                false,
             )
         )
     }
@@ -128,7 +128,7 @@ class PostgresDestinationTest {
         val jdbcConfig = PostgresDestination().toJdbcConfig(buildConfigEscapingNeeded())
         Assertions.assertEquals(
             EXPECTED_JDBC_ESCAPED_URL,
-            jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText()
+            jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         )
     }
 
@@ -254,7 +254,7 @@ class PostgresDestinationTest {
             destination.getSerializedMessageConsumer(
                 config,
                 CATALOG,
-                Destination::defaultOutputRecordCollector
+                Destination::defaultOutputRecordCollector,
             )
         val expectedRecords = getNRecords(10)
 
@@ -292,11 +292,11 @@ class PostgresDestinationTest {
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withNamespace(SCHEMA_NAME)
-                                            .withName(STREAM_NAME),
+                                            .withName(STREAM_NAME)
                                     )
                                     .withStatus(
                                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                                    ),
+                                    )
                             )
                     )
             )
@@ -314,7 +314,7 @@ class PostgresDestinationTest {
                             "SELECT * FROM airbyte_internal.public_raw__stream_id_and_name;"
                         )
                 },
-                { queryResult: ResultSet -> defaultSourceOperations.rowToJson(queryResult) }
+                { queryResult: ResultSet -> defaultSourceOperations.rowToJson(queryResult) },
             )
 
         Assertions.assertEquals(
@@ -327,7 +327,7 @@ class PostgresDestinationTest {
                 .stream()
                 .map<String> { o: JsonNode -> o["_airbyte_data"].asText() }
                 .map<JsonNode>(Jsons::deserialize)
-                .collect(Collectors.toList<JsonNode>())
+                .collect(Collectors.toList<JsonNode>()),
         )
     }
 
@@ -386,8 +386,8 @@ class PostgresDestinationTest {
                 DatabaseDriver.POSTGRESQL.urlFormatString,
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()
-            )
+                config.get(JdbcUtils.DATABASE_KEY).asText(),
+            ),
         )
     }
 
@@ -411,7 +411,7 @@ class PostgresDestinationTest {
                                 STREAM_NAME,
                                 SCHEMA_NAME,
                                 Field.of("id", JsonSchemaType.NUMBER),
-                                Field.of("name", JsonSchemaType.STRING)
+                                Field.of("name", JsonSchemaType.STRING),
                             )
                             .withGenerationId(43)
                             .withSyncId(42)

@@ -49,7 +49,7 @@ class CdcPartitionReader<T : Comparable<T>>(
     val startingOffset: DebeziumOffset,
     val startingSchemaHistory: DebeziumSchemaHistory?,
     val isInputStateSynthetic: Boolean,
-    val feedBootstrap: GlobalFeedBootstrap
+    val feedBootstrap: GlobalFeedBootstrap,
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
@@ -68,11 +68,13 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') // TEMP
+
     private fun generatePartitionId(length: Int): String =
         (1..length).map { charPool.random() }.joinToString("")
 
     protected var partitionId: String = generatePartitionId(4)
     private lateinit var acceptors: Map<StreamIdentifier, (NativeRecordPayload) -> Unit>
+
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
@@ -88,6 +90,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                     it.key to
                         object : AcquiredResource {
                             override val resource: Resource.Acquired? = it.value
+
                             override fun close() {
                                 resource?.close()
                             }
@@ -119,7 +122,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                     .get()
                     .filter { it.value.resource != null }
                     .map { it.key to it.value.resource!! }
-                    .toMap()
+                    .toMap(),
             )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -200,13 +203,12 @@ class CdcPartitionReader<T : Comparable<T>>(
             when (feedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 
-    inner class EventConsumer(
-        private val coroutineContext: CoroutineContext,
-    ) : Consumer<ChangeEvent<String?, String?>> {
+    inner class EventConsumer(private val coroutineContext: CoroutineContext) :
+        Consumer<ChangeEvent<String?, String?>> {
 
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
             val event = DebeziumEvent(changeEvent)
@@ -248,15 +250,14 @@ class CdcPartitionReader<T : Comparable<T>>(
             val streamId = findStreamIdByRecord(event.key, event.value)
             val stream: Stream =
                 feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId }
-                    as? Stream
-                    ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
+                    as? Stream ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
             val deserializedRecord: DeserializedRecord =
                 readerOps.deserializeRecord(event.key, event.value, stream)
                     ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
             // Emit the record at the end of the happy path.
             outputMessageRouter.recordAcceptors[streamId]?.invoke(
                 deserializedRecord.data,
-                deserializedRecord.changes
+                deserializedRecord.changes,
             )
                 ?: run {
                     log.warn {
@@ -269,7 +270,7 @@ class CdcPartitionReader<T : Comparable<T>>(
 
         private fun findStreamIdByRecord(
             key: DebeziumRecordKey,
-            value: DebeziumRecordValue
+            value: DebeziumRecordValue,
         ): StreamIdentifier? {
             val name: String = readerOps.findStreamName(key, value) ?: return null
             val namespace: String? = readerOps.findStreamNamespace(key, value)

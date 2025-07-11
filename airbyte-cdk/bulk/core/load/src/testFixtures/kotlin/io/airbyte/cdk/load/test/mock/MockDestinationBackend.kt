@@ -31,7 +31,7 @@ object MockDestinationBackend {
         filename: String,
         primaryKey: List<List<String>>,
         cursor: List<String>,
-        vararg records: OutputRecord
+        vararg records: OutputRecord,
     ) {
         fun getField(path: List<String>, record: OutputRecord): AirbyteValue? {
             var currentValue: ObjectValue = record.data
@@ -134,7 +134,7 @@ object MockDestinationBackend {
 object MockDestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         return MockDestinationBackend.readFile(
             getFilename(stream.mappedDescriptor.namespace, stream.mappedDescriptor.name)
@@ -143,7 +143,7 @@ object MockDestinationDataDumper : DestinationDataDumper {
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         // Not needed since the test is disabled for file transfer
         throw NotImplementedError()
@@ -151,6 +151,7 @@ object MockDestinationDataDumper : DestinationDataDumper {
 
     fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
         getFilename(stream.namespace, stream.name, staging)
+
     fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
         if (staging) {
             "(${namespace},${name},staging)"

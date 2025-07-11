@@ -41,11 +41,7 @@ class ObjectStoragePathFactoryUTest {
     @Test
     fun `test matcher with suffix`() {
         coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
-            ObjectStoragePathConfiguration(
-                "prefix",
-                "path/",
-                "ambiguous_filename",
-            )
+            ObjectStoragePathConfiguration("prefix", "path/", "ambiguous_filename")
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
 
         val matcher = factory.getPathMatcher(stream, "(-\\d+)?")
@@ -98,7 +94,7 @@ class ObjectStoragePathFactoryUTest {
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream/any_filename",
-            factory.getPathToFile(streamWithNullNamespace, 0L)
+            factory.getPathToFile(streamWithNullNamespace, 0L),
         )
 
         val matcher = factory.getPathMatcher(streamWithNullNamespace, "(-foo)?")
@@ -108,11 +104,7 @@ class ObjectStoragePathFactoryUTest {
     @Test
     fun `test stream name contains legal regex`() {
         coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
-            ObjectStoragePathConfiguration(
-                "prefix",
-                "\${STREAM_NAME}/",
-                "any_filename",
-            )
+            ObjectStoragePathConfiguration("prefix", "\${STREAM_NAME}/", "any_filename")
         val streamWithLegalRegex = mockk<DestinationStream>()
         coEvery { streamWithLegalRegex.mappedDescriptor } returns
             DestinationStream.Descriptor("test", "stream+1")
@@ -120,7 +112,7 @@ class ObjectStoragePathFactoryUTest {
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream+1/any_filename",
-            factory.getPathToFile(streamWithLegalRegex, 0L)
+            factory.getPathToFile(streamWithLegalRegex, 0L),
         )
         val matcher = factory.getPathMatcher(streamWithLegalRegex, "(-foo)?")
         assertNotNull(matcher.match("prefix/stream+1/any_filename"))
@@ -138,11 +130,7 @@ class ObjectStoragePathFactoryUTest {
         expectedPartNumber: Long,
     ) {
         coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
-            ObjectStoragePathConfiguration(
-                bucketPathTemplate,
-                filePathTemplate,
-                fileNameTemplate,
-            )
+            ObjectStoragePathConfiguration(bucketPathTemplate, filePathTemplate, fileNameTemplate)
         val stream = mockk<DestinationStream>()
         coEvery { stream.mappedDescriptor } returns DestinationStream.Descriptor(namespace, name)
         coEvery { stream.syncId } returns 15

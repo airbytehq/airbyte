@@ -19,8 +19,8 @@ import kotlin.math.max
  * @param finalName the name of the final table
  * @param rawNamespace the namespace where the raw table will be created (typically "airbyte")
  * @param rawName the name of the raw table (typically namespace_name, but may be different if there
- * are collisions). There is no rawNamespace because we assume that we're writing raw tables to the
- * airbyte namespace.
+ *   are collisions). There is no rawNamespace because we assume that we're writing raw tables to
+ *   the airbyte namespace.
  */
 data class StreamId(
     val finalNamespace: String,
@@ -70,7 +70,6 @@ data class StreamId(
          * "public__ab_ab___ab_abab_users".
          *
          * This logic is intended to solve two problems:
-         *
          * * The raw table name should be unambiguously parsable into the namespace/name.
          * * It must be impossible for two different streams to generate the same raw table name.
          *

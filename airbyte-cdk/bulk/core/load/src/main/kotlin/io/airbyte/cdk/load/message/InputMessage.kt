@@ -39,6 +39,7 @@ import java.io.OutputStream
 
 sealed interface InputMessage {
     fun asProtocolMessage(): AirbyteMessage
+
     fun asProtobuf(): AirbyteMessageProtobuf =
         AirbyteMessageProtobuf.newBuilder()
             .setAirbyteProtocolMessage(asProtocolMessage().serializeToString())
@@ -46,7 +47,7 @@ sealed interface InputMessage {
 
     fun writeProtocolMessage(
         dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
-        outputStream: OutputStream
+        outputStream: OutputStream,
     ) {
         when (dataChannelFormat) {
             DataChannelFormat.JSONL ->
@@ -91,7 +92,7 @@ data class InputRecord(
         serialized = data,
         fileReference,
         checkpointId,
-        unknownFieldNames
+        unknownFieldNames,
     )
 
     override fun asProtobuf(): AirbyteMessageProtobuf {
@@ -131,8 +132,7 @@ data class InputRecord(
                         AirbyteValueProtobuf.newBuilder()
                             .setJson(ByteString.copyFrom(it.toJson().serializeToJsonBytes()))
                             .build()
-                    }
-                        ?: toProtobuf(NullValue, field.type)
+                    } ?: toProtobuf(NullValue, field.type)
                 } else {
                     toProtobuf(data.values[field.name] ?: NullValue, field.type)
                 }
@@ -168,20 +168,13 @@ data class InputRecord(
             )
 }
 
-data class InputFile(
-    val file: DestinationFile,
-) : InputMessage {
+data class InputFile(val file: DestinationFile) : InputMessage {
     constructor(
         stream: DestinationStream,
         emittedAtMs: Long,
         fileMessage: DestinationFile.AirbyteRecordMessageFile,
-    ) : this(
-        DestinationFile(
-            stream,
-            emittedAtMs,
-            fileMessage,
-        )
-    )
+    ) : this(DestinationFile(stream, emittedAtMs, fileMessage))
+
     override fun asProtocolMessage(): AirbyteMessage = file.asProtocolMessage()
 }
 
@@ -200,7 +193,7 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
             Checkpoint(
                 unmappedNamespace = unmappedNamespace,
                 unmappedName = unmappedName,
-                state = blob.deserializeToNode()
+                state = blob.deserializeToNode(),
             ),
             Stats(sourceRecordCount),
             destinationRecordCount?.let { Stats(it) },
@@ -209,6 +202,7 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
             checkpointKey,
         )
     )
+
     override fun asProtocolMessage(): AirbyteMessage = checkpoint.asProtocolMessage()
 }
 

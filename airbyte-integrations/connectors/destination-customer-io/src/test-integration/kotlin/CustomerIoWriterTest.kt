@@ -34,14 +34,14 @@ import org.junit.jupiter.api.assertAll
 class CustomerIoDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         TODO("Not yet implemented")
     }
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         TODO("Not yet implemented")
     }
@@ -78,16 +78,16 @@ class CustomerIoWriterTest() :
                 linkedMapOf(
                     "person_email" to FieldType(StringType, nullable = false),
                     "event_name" to FieldType(StringType, nullable = false),
-                    "an_attribute" to FieldType(StringType, nullable = false)
+                    "an_attribute" to FieldType(StringType, nullable = false),
                 ),
                 true,
-                required = listOf("person_email", "event_name")
+                required = listOf("person_email", "event_name"),
             ),
             generationId = 0,
             minimumGenerationId = 0,
             syncId = 42,
             destinationObjectName = "person_event",
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     private val personIdentifyStream: DestinationStream =
@@ -98,16 +98,16 @@ class CustomerIoWriterTest() :
             ObjectType(
                 linkedMapOf(
                     "person_email" to FieldType(StringType, nullable = false),
-                    "an_attribute" to FieldType(StringType, nullable = false)
+                    "an_attribute" to FieldType(StringType, nullable = false),
                 ),
                 true,
-                required = listOf("person_email")
+                required = listOf("person_email"),
             ),
             generationId = 0,
             minimumGenerationId = 0,
             syncId = 42,
             destinationObjectName = "person_identify",
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     fun personEventRecord(email: String) =
@@ -155,7 +155,7 @@ class CustomerIoWriterTest() :
                 assertEquals(
                     2,
                     stateMessages.size,
-                    "Expected to receive one state message per stream (with 2 streams), got ${stateMessages.size} ($stateMessages)"
+                    "Expected to receive one state message per stream (with 2 streams), got ${stateMessages.size} ($stateMessages)",
                 )
             },
             {
@@ -183,11 +183,11 @@ class CustomerIoWriterTest() :
                                                             .NULLED,
                                                     reason =
                                                         AirbyteRecordMessageMetaChange.Reason
-                                                            .SOURCE_FIELD_SIZE_LIMITATION
+                                                            .SOURCE_FIELD_SIZE_LIMITATION,
                                                 )
                                             ),
-                                        syncId = 42
-                                    )
+                                        syncId = 42,
+                                    ),
                             )
                         ),
                         personEventStream,

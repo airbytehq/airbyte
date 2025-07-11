@@ -18,21 +18,21 @@ import org.junit.jupiter.api.Disabled
 class ClickhouseCheckTest :
     CheckIntegrationTest<ClickhouseSpecification>(
         successConfigFilenames =
-            listOf(
-                CheckTestConfig(Files.readString(getConfigPath("valid_connection.json"))),
-            ),
+            listOf(CheckTestConfig(Files.readString(getConfigPath("valid_connection.json")))),
         failConfigFilenamesAndFailureReasons =
             mapOf(
                 CheckTestConfig(
                     Files.readString(getConfigPath("non_valid_credentials_connection.json")),
                     name = "Non valid username and password",
                 ) to
-                    "Authentication failed: password is incorrect, or there is no user with such name".toPattern(),
+                    "Authentication failed: password is incorrect, or there is no user with such name"
+                        .toPattern(),
                 CheckTestConfig(
                     Files.readString(getConfigPath("non_valid_connection_host.json")),
                     name = "Non valid username and password",
                 ) to
-                    "Could not connect with provided configuration. Error: Failed to connect".toPattern(),
+                    "Could not connect with provided configuration. Error: Failed to connect"
+                        .toPattern(),
             ),
         configUpdater = ClickhouseConfigUpdater(),
     ) {

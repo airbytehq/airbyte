@@ -101,12 +101,13 @@ internal class JsonSchemaValidatorTest {
                                    }
                                  }
                                  
-                                 """.trimIndent()
+                                 """
+                .trimIndent()
         val schemaFile =
             IOs.writeFile(
                     Files.createTempDirectory("test"),
                     "WellKnownTypes.json",
-                    referencableSchemas
+                    referencableSchemas,
                 )
                 .toFile()
         val jsonSchemaValidator =
@@ -126,7 +127,8 @@ internal class JsonSchemaValidatorTest {
                             }
                           }
                           
-                          """.trimIndent()
+                          """
+                        .trimIndent()
                 ),
                 Jsons.deserialize(
                     """
@@ -135,8 +137,9 @@ internal class JsonSchemaValidatorTest {
                             "prop2": "false"
                           }
                           
-                          """.trimIndent()
-                )
+                          """
+                        .trimIndent()
+                ),
             )
 
         Assertions.assertEquals(setOf("$.prop2: string found, boolean expected"), validationResult)

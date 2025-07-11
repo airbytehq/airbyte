@@ -10,12 +10,12 @@ open class S3DestinationConfigFactory {
     open fun getS3DestinationConfig(
         config: JsonNode,
         @Nonnull storageProvider: StorageProvider,
-        environment: Map<String, String>
+        environment: Map<String, String>,
     ): S3DestinationConfig {
         return S3DestinationConfig.Companion.getS3DestinationConfig(
             config = config,
             storageProvider = storageProvider,
-            environment = environment
+            environment = environment,
         )
     }
 }

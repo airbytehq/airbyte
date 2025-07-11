@@ -42,7 +42,7 @@ class MySQLDestination :
     AbstractJdbcDestination<MinimumDestinationState>(
         DRIVER_CLASS,
         MySQLNameTransformer(),
-        MySQLSqlOperations()
+        MySQLSqlOperations(),
     ),
     Destination {
     override val configSchemaKey: String
@@ -61,7 +61,7 @@ class MySQLDestination :
                 database,
                 namingResolver,
                 mySQLSqlOperations,
-                false
+                false,
             )
 
             mySQLSqlOperations.verifyLocalFileEnabled(database)
@@ -71,7 +71,7 @@ class MySQLDestination :
                 throw RuntimeException(
                     String.format(
                         "Your MySQL version %s is not compatible with Airbyte",
-                        compatibility.version
+                        compatibility.version,
                     )
                 )
             }
@@ -92,7 +92,8 @@ class MySQLDestination :
                     """
                     Could not connect with provided configuration. 
                     ${e.message}
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
         } finally {
             try {
@@ -116,7 +117,7 @@ class MySQLDestination :
             String.format(
                 "jdbc:mysql://%s:%s",
                 config[JdbcUtils.HOST_KEY].asText(),
-                config[JdbcUtils.PORT_KEY].asText()
+                config[JdbcUtils.PORT_KEY].asText(),
             )
 
         val configBuilder =
@@ -141,7 +142,7 @@ class MySQLDestination :
     override fun getDestinationHandler(
         databaseName: String,
         database: JdbcDatabase,
-        rawTableSchema: String
+        rawTableSchema: String,
     ): JdbcDestinationHandler<MinimumDestinationState> {
         return MysqlDestinationHandler(database, rawTableSchema)
     }
@@ -150,21 +151,21 @@ class MySQLDestination :
         database: JdbcDatabase,
         databaseName: String,
         sqlGenerator: SqlGenerator,
-        destinationHandler: DestinationHandler<MinimumDestinationState>
+        destinationHandler: DestinationHandler<MinimumDestinationState>,
     ): List<Migration<MinimumDestinationState>> {
         return emptyList()
     }
 
     override fun getV1V2Migrator(
         database: JdbcDatabase,
-        databaseName: String
+        databaseName: String,
     ): DestinationV1V2Migrator {
         return MysqlV1V2Migrator(database)
     }
 
     override fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
-        defaultNamespace: String?
+        defaultNamespace: String?,
     ): StreamAwareDataTransformer {
         return PropertyNameSimplifyingDataTransformer()
     }
@@ -189,7 +190,7 @@ class MySQLDestination :
                     "zeroDateTimeBehavior",
                     "convertToNull",
                     "allowLoadLocalInfile",
-                    "true"
+                    "true",
                 )
 
         @JvmField
@@ -201,16 +202,16 @@ class MySQLDestination :
                     "requireSSL",
                     "true",
                     "verifyServerCertificate",
-                    "false"
+                    "false",
                 ),
-                DEFAULT_JDBC_PARAMETERS
+                DEFAULT_JDBC_PARAMETERS,
             )
 
         fun sshWrappedDestination(): Destination {
             return SshWrappedDestination(
                 MySQLDestination(),
                 JdbcUtils.HOST_LIST_KEY,
-                JdbcUtils.PORT_LIST_KEY
+                JdbcUtils.PORT_LIST_KEY,
             )
         }
 

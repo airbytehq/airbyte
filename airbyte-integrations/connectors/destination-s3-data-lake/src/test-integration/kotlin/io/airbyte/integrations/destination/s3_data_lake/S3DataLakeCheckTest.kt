@@ -11,10 +11,7 @@ import java.nio.file.Files
 
 class S3DataLakeCheckTest :
     CheckIntegrationTest<S3DataLakeSpecification>(
-        successConfigFilenames =
-            listOf(
-                CheckTestConfig(Files.readString(GLUE_CONFIG_PATH)),
-            ),
+        successConfigFilenames = listOf(CheckTestConfig(Files.readString(GLUE_CONFIG_PATH))),
         // TODO we maybe should add some configs that are expected to fail `check`
         failConfigFilenamesAndFailureReasons = mapOf(),
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,

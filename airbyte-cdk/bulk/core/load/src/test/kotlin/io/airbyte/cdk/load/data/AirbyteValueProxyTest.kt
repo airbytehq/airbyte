@@ -34,7 +34,8 @@ class AirbyteValueProxyTest {
             "arrayField": [1, 2, 3],
             "unionFieldStringOrInt": "union string"
         }
-    """.trimIndent()
+    """
+            .trimIndent()
     val testJsonNull =
         """
         {
@@ -51,7 +52,8 @@ class AirbyteValueProxyTest {
             "arrayField": null,
             "unionFieldStringOrInt": null
         }
-    """.trimIndent()
+    """
+            .trimIndent()
     val testJsonEmpty = "{}"
 
     companion object {
@@ -73,12 +75,12 @@ class AirbyteValueProxyTest {
                     "objectField" to
                         FieldType(
                             ObjectType(linkedMapOf("key" to FieldType(StringType, true))),
-                            nullable = true
+                            nullable = true,
                         ),
                     "arrayField" to
                         FieldType(ArrayType(FieldType(IntegerType, true)), nullable = true),
                     "unionFieldStringOrInt" to
-                        FieldType(UnionType.of(StringType, IntegerType), nullable = true)
+                        FieldType(UnionType.of(StringType, IntegerType), nullable = true),
                 )
             )
     }
@@ -93,7 +95,7 @@ class AirbyteValueProxyTest {
             syncId = 1,
             includeFiles = false,
             schema = ALL_TYPES_SCHEMA,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     private fun ifNull(value: JsonNode?): JsonNode? {

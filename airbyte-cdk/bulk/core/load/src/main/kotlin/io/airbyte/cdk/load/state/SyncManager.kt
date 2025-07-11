@@ -20,17 +20,17 @@ data object DestinationSuccess : DestinationResult
 
 data class DestinationFailure(
     val cause: Exception,
-    val streamResults: Map<DestinationStream.Descriptor, StreamResult>
+    val streamResults: Map<DestinationStream.Descriptor, StreamResult>,
 ) : DestinationResult
 
 @Singleton
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
-    justification = "exception is guaranteed to be non-null by Kotlin's type system"
+    justification = "exception is guaranteed to be non-null by Kotlin's type system",
 )
 class SyncManager(
     val catalog: DestinationCatalog,
-    @Named("requireCheckpointIdOnRecordAndKeyOnState") requireCheckpointIndexOnState: Boolean
+    @Named("requireCheckpointIdOnRecordAndKeyOnState") requireCheckpointIndexOnState: Boolean,
 ) {
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager> =
         ConcurrentHashMap(
@@ -54,7 +54,7 @@ class SyncManager(
 
     fun registerStartedStreamLoader(
         streamDescriptor: DestinationStream.Descriptor,
-        streamLoaderResult: Result<StreamLoader>
+        streamLoaderResult: Result<StreamLoader>,
     ) {
         streamLoaders
             .getOrPut(streamDescriptor) { CompletableDeferred() }

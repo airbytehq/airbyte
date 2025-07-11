@@ -100,10 +100,7 @@ class RedshiftS3StagingStorageOperationTest {
         // If we transfer the records, we should end up with 2 records in the real raw table.
         storageOperation.transferFromTempStage(streamId, TMP_TABLE_SUFFIX)
         assertEquals(
-            listOf(
-                """{"record_number":1}""",
-                """{"record_number":2}""",
-            ),
+            listOf("""{"record_number":1}""", """{"record_number":2}"""),
             dumpRawRecords("")
                 .sortedBy {
                     Jsons.deserialize(it["_airbyte_data"].asText())["record_number"].asLong()
@@ -157,10 +154,7 @@ class RedshiftS3StagingStorageOperationTest {
         // fail
         val configError =
             assertThrows<ConfigErrorException> {
-                storageOperation.overwriteStage(
-                    streamId,
-                    TMP_TABLE_SUFFIX,
-                )
+                storageOperation.overwriteStage(streamId, TMP_TABLE_SUFFIX)
             }
         assertEquals(
             "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
@@ -204,9 +198,9 @@ class RedshiftS3StagingStorageOperationTest {
                             .withAdditionalProperty(
                                 JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY,
                                 SYNC_ID,
-                            ),
+                            )
                     )
-                    .withData(Jsons.deserialize(serializedData)),
+                    .withData(Jsons.deserialize(serializedData))
             )
     }
 
@@ -218,7 +212,7 @@ class RedshiftS3StagingStorageOperationTest {
         val writeBuffer =
             StagingSerializedBufferFactory.initializeBuffer(
                 FileUploadFormat.CSV,
-                JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION
+                JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION,
             )
 
         writeBuffer.use {
@@ -227,7 +221,7 @@ class RedshiftS3StagingStorageOperationTest {
                     record.serialized!!,
                     Jsons.serialize(record.record!!.meta),
                     GENERATION_ID,
-                    record.record!!.emittedAt
+                    record.record!!.emittedAt,
                 )
             }
             it.flush()

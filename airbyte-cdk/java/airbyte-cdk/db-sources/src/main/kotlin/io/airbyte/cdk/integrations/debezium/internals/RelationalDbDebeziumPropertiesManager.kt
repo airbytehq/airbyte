@@ -19,7 +19,7 @@ class RelationalDbDebeziumPropertiesManager(
     properties: Properties,
     config: JsonNode,
     catalog: ConfiguredAirbyteCatalog,
-    completedStreamNames: List<String>
+    completedStreamNames: List<String>,
 ) : DebeziumPropertiesManager(properties, config, catalog, completedStreamNames) {
     override fun getConnectionConfiguration(config: JsonNode): Properties {
         val properties = Properties()
@@ -44,7 +44,7 @@ class RelationalDbDebeziumPropertiesManager(
     override fun getIncludeConfiguration(
         catalog: ConfiguredAirbyteCatalog,
         config: JsonNode?,
-        streamNames: List<String>
+        streamNames: List<String>,
     ): Properties {
         val properties = Properties()
 
@@ -59,7 +59,7 @@ class RelationalDbDebeziumPropertiesManager(
     companion object {
         fun getTableIncludelist(
             catalog: ConfiguredAirbyteCatalog,
-            completedStreamNames: List<String>
+            completedStreamNames: List<String>,
         ): String {
             // Turn "stream": {
             // "namespace": "schema1"
@@ -83,7 +83,7 @@ class RelationalDbDebeziumPropertiesManager(
 
         fun getColumnIncludeList(
             catalog: ConfiguredAirbyteCatalog,
-            completedStreamNames: List<String>
+            completedStreamNames: List<String>,
         ): String {
             // Turn "stream": {
             // "namespace": "schema1"

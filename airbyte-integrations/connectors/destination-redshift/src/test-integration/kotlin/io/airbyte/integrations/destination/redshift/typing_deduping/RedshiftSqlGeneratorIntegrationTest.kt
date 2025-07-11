@@ -72,7 +72,7 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
             node: ObjectNode,
             columnName: String?,
             resultSet: ResultSet,
-            index: Int
+            index: Int,
         ) {
             val offsetTime =
                 resultSet.getTimestamp(index).toInstant().atOffset(ZoneOffset.UTC).toOffsetTime()
@@ -84,7 +84,7 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
             node: ObjectNode,
             columnName: String?,
             resultSet: ResultSet,
-            index: Int
+            index: Int,
         ) {
             putJavaSQLTime(node, columnName, resultSet, index)
         }
@@ -94,7 +94,7 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
             node: ObjectNode,
             columnName: String?,
             resultSet: ResultSet,
-            index: Int
+            index: Int,
         ) {
             // The superclass implementation tries to fetch a OffsetDateTime, which fails.
             try {
@@ -113,12 +113,12 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
             node: ObjectNode,
             columnName: String?,
             resultSet: ResultSet,
-            index: Int
+            index: Int,
         ) {
             try {
                 node.put(
                     columnName,
-                    convertToTimestamp(getObject(resultSet, index, LocalDateTime::class.java))
+                    convertToTimestamp(getObject(resultSet, index, LocalDateTime::class.java)),
                 )
             } catch (e: Exception) {
                 val localDateTime = resultSet.getTimestamp(index).toLocalDateTime()
@@ -152,7 +152,7 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
         return DSL.function(
             "JSON_PARSE",
             String::class.java,
-            DSL.`val`(escapeStringLiteral(valueAsString))
+            DSL.`val`(escapeStringLiteral(valueAsString)),
         )
     }
 
@@ -186,7 +186,7 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
                         .from(
                             DSL.quotedName(
                                 incrementalAppendStream.id.finalNamespace,
-                                incrementalAppendStream.id.finalName
+                                incrementalAppendStream.id.finalName,
                             )
                         )
                 )
@@ -221,7 +221,7 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
                         .from(
                             DSL.quotedName(
                                 incrementalAppendStream.id.finalNamespace,
-                                incrementalAppendStream.id.finalName
+                                incrementalAppendStream.id.finalName,
                             )
                         )
                 )

@@ -82,7 +82,7 @@ class JdbcMetadataQuerier(
                                 schema = rs.getString("TABLE_SCHEM"),
                                 name = rs.getString("TABLE_NAME"),
                                 type = rs.getString("TABLE_TYPE") ?: "",
-                            ),
+                            )
                         )
                     }
                 }
@@ -190,7 +190,7 @@ class JdbcMetadataQuerier(
                             rs.getInt("DATA_TYPE"),
                             swallow { rs.getString("REMARKS").takeUnless { rs.wasNull() } },
                             swallow { rs.getInt("BASE_TYPE").takeUnless { rs.wasNull() } },
-                        ),
+                        )
                     )
                 }
             }
@@ -200,9 +200,7 @@ class JdbcMetadataQuerier(
         }
     }
 
-    override fun fields(
-        streamID: StreamIdentifier,
-    ): List<Field> {
+    override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
     }
@@ -228,10 +226,7 @@ class JdbcMetadataQuerier(
     /**
      * Generates SQL query used to discover [ColumnMetadata] and to verify table access permissions.
      */
-    fun selectLimit0(
-        table: TableName,
-        columnIDs: List<String>,
-    ): String {
+    fun selectLimit0(table: TableName, columnIDs: List<String>): String {
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
@@ -241,10 +236,7 @@ class JdbcMetadataQuerier(
         return selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
-    private fun queryColumnMetadata(
-        conn: Connection,
-        sql: String,
-    ): List<ColumnMetadata>? {
+    private fun queryColumnMetadata(conn: Connection, sql: String): List<ColumnMetadata>? {
         log.info { "Querying $sql for catalog discovery." }
         conn.createStatement().use { stmt: Statement ->
             try {
@@ -284,9 +276,7 @@ class JdbcMetadataQuerier(
 
     val memoizedPrimaryKeys = mutableMapOf<TableName, List<List<String>>>()
 
-    override fun primaryKey(
-        streamID: StreamIdentifier,
-    ): List<List<String>> {
+    override fun primaryKey(streamID: StreamIdentifier): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         val memoized: List<List<String>>? = memoizedPrimaryKeys[table]
         if (memoized != null) return memoized
@@ -301,7 +291,7 @@ class JdbcMetadataQuerier(
                             name = rs.getString("PK_NAME") ?: "",
                             ordinal = rs.getInt("KEY_SEQ"),
                             columnName = rs.getString("COLUMN_NAME"),
-                        ),
+                        )
                     )
                 }
             }
@@ -315,11 +305,7 @@ class JdbcMetadataQuerier(
         return pk
     }
 
-    data class PrimaryKeyRow(
-        val name: String,
-        val ordinal: Int,
-        val columnName: String,
-    )
+    data class PrimaryKeyRow(val name: String, val ordinal: Int, val columnName: String)
 
     override fun extraChecks() {
         checkQueries.executeAll(conn)

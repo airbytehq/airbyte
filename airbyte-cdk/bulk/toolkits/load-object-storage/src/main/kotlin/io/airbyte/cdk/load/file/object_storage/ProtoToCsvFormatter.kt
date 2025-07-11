@@ -58,6 +58,7 @@ class ProtoToCsvFormatter(
         printer.flush()
         outputStream.flush()
     }
+
     override fun close() {
         printer.close()
         outputStream.close()

@@ -16,7 +16,7 @@ import java.math.BigInteger
  */
 class IcebergNullOutOfRangeIntegers(
     minValue: BigInteger = Long.MIN_VALUE.toBigInteger(),
-    maxValue: BigInteger = Long.MAX_VALUE.toBigInteger()
+    maxValue: BigInteger = Long.MAX_VALUE.toBigInteger(),
 ) :
     AirbyteValueIdentityMapper(
         recurseIntoObjects = false,

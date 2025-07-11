@@ -63,7 +63,7 @@ object MongoUtils {
             BsonType.INT32,
             BsonType.TIMESTAMP,
             BsonType.INT64,
-            BsonType.DECIMAL128
+            BsonType.DECIMAL128,
         )
 
     private const val MISSING_TYPE = "missing"
@@ -137,7 +137,7 @@ object MongoUtils {
     private fun formatDocument(
         document: Document,
         objectNode: ObjectNode,
-        columnNames: List<String>
+        columnNames: List<String>,
     ) {
         val bsonDocument = toBsonDocument(document)
         try {
@@ -153,7 +153,7 @@ object MongoUtils {
     private fun readDocument(
         reader: BsonReader,
         jsonNodes: ObjectNode,
-        columnNames: List<String>
+        columnNames: List<String>,
     ): ObjectNode {
         reader.readStartDocument()
         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
@@ -166,8 +166,8 @@ object MongoUtils {
                     readDocument(
                         reader,
                         Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode,
-                        columnNames
-                    )
+                        columnNames,
+                    ),
                 )
             } else if (BsonType.ARRAY == fieldType) {
                 jsonNodes.set<JsonNode>(fieldName, readArray(reader, columnNames, fieldName))
@@ -193,7 +193,7 @@ object MongoUtils {
     fun transformToStringIfMarked(
         jsonNodes: ObjectNode,
         columnNames: List<String>,
-        fieldName: String
+        fieldName: String,
     ) {
         if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
             val data = jsonNodes[fieldName]
@@ -201,7 +201,7 @@ object MongoUtils {
                 jsonNodes.remove(fieldName)
                 jsonNodes.put(
                     fieldName + AIRBYTE_SUFFIX,
-                    if (data.isTextual) data.asText() else data.toString()
+                    if (data.isTextual) data.asText() else data.toString(),
                 )
             } else {
                 LOGGER.debug {
@@ -214,7 +214,7 @@ object MongoUtils {
     private fun readArray(
         reader: BsonReader,
         columnNames: List<String>,
-        fieldName: String
+        fieldName: String,
     ): JsonNode {
         reader.readStartArray()
         val elements = Lists.newArrayList<Any>()
@@ -227,7 +227,7 @@ object MongoUtils {
                     readDocument(
                         reader,
                         Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode,
-                        columnNames
+                        columnNames,
                     )
                 )
             } else if (BsonType.ARRAY == arrayFieldType) {
@@ -240,7 +240,7 @@ object MongoUtils {
                         Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode,
                         columnNames,
                         fieldName,
-                        arrayFieldType
+                        arrayFieldType,
                     )
                 elements.add(element[fieldName])
             }
@@ -254,7 +254,7 @@ object MongoUtils {
         o: ObjectNode,
         columnNames: List<String>,
         fieldName: String,
-        fieldType: BsonType
+        fieldType: BsonType,
     ): ObjectNode {
         when (fieldType) {
             BsonType.BOOLEAN -> o.put(fieldName, reader.readBoolean())
@@ -317,7 +317,7 @@ object MongoUtils {
     private fun setSubFields(
         collection: MongoCollection<Document>,
         parentNode: TreeNode<CommonField<BsonType>>?,
-        pathToField: String
+        pathToField: String,
     ) {
         val nestedKeys = getFieldsName(collection, pathToField)
         nestedKeys!!.forEach(
@@ -339,7 +339,7 @@ object MongoUtils {
 
     private fun getFieldsName(
         collection: MongoCollection<Document>,
-        fieldName: String
+        fieldName: String,
     ): List<String>? {
         val output =
             collection.aggregate(
@@ -347,14 +347,14 @@ object MongoUtils {
                     Document("\$limit", DISCOVER_LIMIT),
                     Document(
                         "\$project",
-                        Document("arrayofkeyvalue", Document("\$objectToArray", "$$fieldName"))
+                        Document("arrayofkeyvalue", Document("\$objectToArray", "$$fieldName")),
                     ),
                     Document("\$unwind", "\$arrayofkeyvalue"),
                     Document(
                         "\$group",
                         Document(ID, null)
-                            .append("allkeys", Document("\$addToSet", "\$arrayofkeyvalue.k"))
-                    )
+                            .append("allkeys", Document("\$addToSet", "\$arrayofkeyvalue.k")),
+                    ),
                 )
             )
         return if (output.cursor().hasNext()) {
@@ -373,13 +373,13 @@ object MongoUtils {
                     Document("\$limit", DISCOVER_LIMIT),
                     Document(
                         "\$project",
-                        Document(ID, 0).append("fieldType", Document("\$type", fieldName))
+                        Document(ID, 0).append("fieldType", Document("\$type", fieldName)),
                     ),
                     Document(
                         "\$group",
                         Document(ID, Document("fieldType", "\$fieldType"))
-                            .append("count", Document("\$sum", 1))
-                    )
+                            .append("count", Document("\$sum", 1)),
+                    ),
                 )
             )
         val listOfTypes = ArrayList<String>()
@@ -442,7 +442,7 @@ object MongoUtils {
                         Jsr310CodecProvider(),
                         JsonObjectCodecProvider(),
                         BsonCodecProvider(),
-                        DBRefCodecProvider()
+                        DBRefCodecProvider(),
                     )
                 )
 
@@ -470,7 +470,7 @@ object MongoUtils {
         o: ObjectNode,
         reader: BsonReader,
         fieldName: String,
-        columnNames: List<String>
+        columnNames: List<String>,
     ) {
         val code = reader.readJavaScriptWithScope()
         val scope =

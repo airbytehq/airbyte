@@ -43,7 +43,7 @@ private val logger = KotlinLogging.logger {}
 object BigqueryRawTableDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
@@ -81,7 +81,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw NotImplementedError("Bigquery doesn't support file transfer")
     }
@@ -90,7 +90,7 @@ object BigqueryRawTableDataDumper : DestinationDataDumper {
 object BigqueryFinalTableDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = BigqueryConfigurationFactory().make(spec as BigquerySpecification)
         val bigquery = BigqueryBeansFactory().getBigqueryClient(config)
@@ -157,7 +157,7 @@ object BigqueryFinalTableDataDumper : DestinationDataDumper {
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw NotImplementedError("Bigquery doesn't support file transfer")
     }
@@ -176,10 +176,7 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
             )
         }
 
-    return OutputRecord.Meta(
-        changes = changes,
-        syncId = metaJson["sync_id"].longValue(),
-    )
+    return OutputRecord.Meta(changes = changes, syncId = metaJson["sync_id"].longValue())
 }
 
 fun <T> FieldValue.mapNotNull(f: (FieldValue) -> T): T? {

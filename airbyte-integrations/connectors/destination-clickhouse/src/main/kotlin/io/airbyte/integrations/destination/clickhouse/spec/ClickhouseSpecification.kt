@@ -124,7 +124,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {
     HTTP("http"),
-    HTTPS("https")
+    HTTPS("https"),
 }
 
 @Singleton

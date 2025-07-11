@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 
 /**
  * A discover operation that is run before the destination is used.
- *
  * * Implementors must provide a [discover] method that returns the catalog.
  * * Implementors may provide a [cleanup] method that is run after the discover is complete.
  * * [discover] should throw an exception if the configuration is invalid.
@@ -20,5 +19,6 @@ import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
  */
 interface DestinationDiscoverer<C : DestinationConfiguration> {
     fun discover(config: C): DestinationDiscoverCatalog
+
     fun cleanup(config: C) {}
 }

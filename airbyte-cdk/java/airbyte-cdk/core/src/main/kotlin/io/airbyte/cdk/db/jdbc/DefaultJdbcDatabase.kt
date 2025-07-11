@@ -16,6 +16,7 @@ import java.util.stream.Stream
 import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Database object for interacting with a JDBC connection. Can be used for any JDBC compliant db.
  */
@@ -23,7 +24,7 @@ open class DefaultJdbcDatabase
 @JvmOverloads
 constructor(
     protected val dataSource: DataSource,
-    sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
+    sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations,
 ) : JdbcDatabase(sourceOperations) {
     @Throws(SQLException::class)
     override fun execute(query: CheckedConsumer<Connection, SQLException>) {
@@ -33,7 +34,7 @@ constructor(
     @Throws(SQLException::class)
     override fun <T> bufferedResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>,
     ): List<T> {
         dataSource.connection.use { connection ->
             toUnsafeStream<T>(query.apply(connection), recordTransform).use { results ->
@@ -46,7 +47,7 @@ constructor(
     @Throws(SQLException::class)
     override fun <T> unsafeResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>,
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
@@ -103,8 +104,8 @@ constructor(
      *
      * @param statementCreator create a [PreparedStatement] from a [Connection].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
-     * from recordTransform.
+     *   just pass the [ResultSet] through. it is a stateful object will not be accessible if
+     *   returned from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a stream.
      * @throws SQLException SQL related exceptions. </T>
@@ -113,13 +114,13 @@ constructor(
     @Throws(SQLException::class)
     override fun <T> unsafeQuery(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>,
     ): Stream<T> {
         val connection = dataSource.connection
         try {
             return JdbcDatabase.Companion.toUnsafeStream<T>(
                     statementCreator.apply(connection).executeQuery(),
-                    recordTransform
+                    recordTransform,
                 )
                 .onClose(
                     Runnable {

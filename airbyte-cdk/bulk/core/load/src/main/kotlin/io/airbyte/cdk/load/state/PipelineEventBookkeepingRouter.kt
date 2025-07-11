@@ -44,10 +44,12 @@ import org.apache.mina.util.ConcurrentHashSet
  * - sockets receive checkpointId on the record, stdio infers from state message order
  * - speed will receive complete/incomplete on all sockets (no need to publish)
  * - because they are flows, sockets don't need memory management; the buffer can serve as the
+ *
  * ```
  *    backpressure scheme (note: the exception to this is for file transfer, which forwards the
  *    record after handling the file; and of course obviously for state)
  * ```
+ *
  * These differences might diverge/converge as we tune (ie, because of lock contention with multiple
  * sockets, or because the socket pattern ends up working for stdio as well). For now, since the
  * main difference is what is done with the pipeline events, we'll consolidate bookkeeping into a
@@ -65,7 +67,7 @@ class PipelineEventBookkeepingRouter(
     private val batchStateUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     @Named("numDataChannels") private val numDataChannels: Int,
     @Named("markEndOfStreamAtEndOfSync") private val markEndOfStreamAtEndOfSync: Boolean,
-    private val namespaceMapper: NamespaceMapper
+    private val namespaceMapper: NamespaceMapper,
 ) : CloseableCoroutine {
     private val log = KotlinLogging.logger {}
     private val clientCount = AtomicInteger(numDataChannels)
@@ -78,7 +80,7 @@ class PipelineEventBookkeepingRouter(
     suspend fun handleStreamMessage(
         message: DestinationStreamAffinedMessage,
         postProcessingCallback: suspend () -> Unit = {},
-        unopenedStreams: MutableSet<DestinationStream.Descriptor>
+        unopenedStreams: MutableSet<DestinationStream.Descriptor>,
     ): PipelineInputEvent {
         val stream = message.stream
         if (unopenedStreams.remove(stream.mappedDescriptor)) {
@@ -106,7 +108,7 @@ class PipelineEventBookkeepingRouter(
                     mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.mappedDescriptor),
                     record,
-                    postProcessingCallback
+                    postProcessingCallback,
                 )
             }
             is DestinationRecordStreamComplete -> {
@@ -152,7 +154,7 @@ class PipelineEventBookkeepingRouter(
                         StreamCheckpointWrapped(
                             manager.stream.mappedDescriptor,
                             checkpointKey,
-                            messageWithCount
+                            messageWithCount,
                         )
                     )
                 )
@@ -182,7 +184,7 @@ class PipelineEventBookkeepingRouter(
                                 )
                         syncManager.setGlobalReadCountForCheckpoint(
                             checkpoint.checkpointKey!!.checkpointId,
-                            sourceCounts
+                            sourceCounts,
                         )
                         Pair(checkpoint.checkpointKey!!, sourceCounts)
                     }
@@ -199,7 +201,7 @@ class PipelineEventBookkeepingRouter(
     // If the key is not on the record, assume we're expected to generate it.
     private fun getKeyAndCounts(
         checkpoint: CheckpointMessage,
-        manager: StreamManager
+        manager: StreamManager,
     ): Pair<CheckpointKey, Long> {
         // If the key is not on the record, assume we're expected to generate it.
         // (Assume its presence will be appropriately enforced.)
@@ -215,7 +217,7 @@ class PipelineEventBookkeepingRouter(
                     )
             manager.setReadCountForCheckpointFromState(
                 checkpoint.checkpointKey!!.checkpointId,
-                sourceCounts
+                sourceCounts,
             )
             Pair(checkpoint.checkpointKey!!, sourceCounts)
         }
@@ -236,7 +238,7 @@ class PipelineEventBookkeepingRouter(
                             it.mappedDescriptor,
                             "bookkeepingRouter",
                             0,
-                            manager.readCount()
+                            manager.readCount(),
                         )
                     )
                 }

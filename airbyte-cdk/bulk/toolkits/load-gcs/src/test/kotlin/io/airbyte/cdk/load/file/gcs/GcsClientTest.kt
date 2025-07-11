@@ -34,7 +34,7 @@ class GcsClientTest {
             bucketName,
             bucketPath,
             GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
-            region.region
+            region.region,
         )
     private val gcsClient = GcsNativeClient(storage, config)
 
@@ -258,7 +258,7 @@ class GcsClientTest {
                 bucketName,
                 "",
                 GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
-                region.region
+                region.region,
             )
         val gcsClient = GcsNativeClient(storage, config)
         val key = "test-file"
@@ -278,7 +278,7 @@ class GcsClientTest {
                 bucketName,
                 "path",
                 GcsHmacKeyConfiguration("test-access-key", "test-secret-key"),
-                region.region
+                region.region,
             )
         val gcsClient = GcsNativeClient(storage, config)
         val key = "/test-file"

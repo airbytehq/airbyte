@@ -87,7 +87,7 @@ class AsyncStreamConsumerTest {
                             Field.of("id", JsonSchemaType.NUMBER),
                             Field.of("name", JsonSchemaType.STRING),
                         ),
-                    ),
+                    )
                 )
 
         private val PAYLOAD: JsonNode =
@@ -97,7 +97,7 @@ class AsyncStreamConsumerTest {
                     "id" to 1,
                     "make" to "Mazda",
                     "nested_column" to mapOf("array_column" to listOf(1, 2, 3)),
-                ),
+                )
             )
 
         private val STATE_MESSAGE1: AirbyteMessage =
@@ -108,11 +108,9 @@ class AsyncStreamConsumerTest {
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
                             AirbyteStreamState()
-                                .withStreamDescriptor(
-                                    STREAM1_DESC,
-                                )
-                                .withStreamState(Jsons.jsonNode(1)),
-                        ),
+                                .withStreamDescriptor(STREAM1_DESC)
+                                .withStreamState(Jsons.jsonNode(1))
+                        )
                 )
         private val STATE_MESSAGE2: AirbyteMessage =
             AirbyteMessage()
@@ -122,11 +120,9 @@ class AsyncStreamConsumerTest {
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
                             AirbyteStreamState()
-                                .withStreamDescriptor(
-                                    STREAM1_DESC,
-                                )
-                                .withStreamState(Jsons.jsonNode(2)),
-                        ),
+                                .withStreamDescriptor(STREAM1_DESC)
+                                .withStreamState(Jsons.jsonNode(2))
+                        )
                 )
 
         private val STREAM1_SUCCESS_MESSAGE =
@@ -141,13 +137,13 @@ class AsyncStreamConsumerTest {
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withName(STREAM_NAME)
-                                            .withNamespace(SCHEMA_NAME),
+                                            .withNamespace(SCHEMA_NAME)
                                     )
                                     .withStatus(
                                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                                    ),
-                            ),
-                    ),
+                                    )
+                            )
+                    )
             )
         private val STREAM2_SUCCESS_MESSAGE =
             Jsons.serialize(
@@ -161,13 +157,13 @@ class AsyncStreamConsumerTest {
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withName(STREAM_NAME2)
-                                            .withNamespace(SCHEMA_NAME),
+                                            .withNamespace(SCHEMA_NAME)
                                     )
                                     .withStatus(
                                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                                    ),
-                            ),
-                    ),
+                                    )
+                            )
+                    )
             )
         private val STREAM2_FAILURE_MESSAGE =
             Jsons.serialize(
@@ -181,14 +177,14 @@ class AsyncStreamConsumerTest {
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withName(STREAM_NAME2)
-                                            .withNamespace(SCHEMA_NAME),
+                                            .withNamespace(SCHEMA_NAME)
                                     )
                                     .withStatus(
                                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
                                             .INCOMPLETE
-                                    ),
-                            ),
-                    ),
+                                    )
+                            )
+                    )
             )
         private val STREAM3_SUCCESS_MESSAGE =
             Jsons.serialize(
@@ -202,13 +198,13 @@ class AsyncStreamConsumerTest {
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             // Note: no namespace.
-                                            .withName(STREAM_NAME3),
+                                            .withName(STREAM_NAME3)
                                     )
                                     .withStatus(
                                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                                    ),
-                            ),
-                    ),
+                                    )
+                            )
+                    )
             )
     }
 
@@ -225,10 +221,7 @@ class AsyncStreamConsumerTest {
     @Suppress("UNCHECKED_CAST")
     @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
     internal fun setup() {
-        onStart =
-            Mockito.mock(
-                OnStartFunction::class.java,
-            )
+        onStart = Mockito.mock(OnStartFunction::class.java)
         onClose = Mockito.mock(OnCloseFunction::class.java)
         flushFunction = Mockito.mock(DestinationFlushFunction::class.java)
         outputRecordCollector = Mockito.mock(Consumer::class.java) as Consumer<AirbyteMessage>
@@ -267,8 +260,8 @@ class AsyncStreamConsumerTest {
                         AirbyteLogMessage()
                             .withLevel(AirbyteLogMessage.Level.INFO)
                             .withMessage("foo")
-                            .withStackTrace("bar"),
-                    ),
+                            .withStackTrace("bar")
+                    )
             )
 
         consumer.start()
@@ -300,14 +293,12 @@ class AsyncStreamConsumerTest {
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
                             AirbyteStreamState()
-                                .withStreamDescriptor(
-                                    STREAM1_DESC,
-                                )
-                                .withStreamState(Jsons.jsonNode(1)),
+                                .withStreamDescriptor(STREAM1_DESC)
+                                .withStreamState(Jsons.jsonNode(1))
                         )
                         .withDestinationStats(
-                            AirbyteStateStats().withRecordCount(expectedRecords.size.toDouble()),
-                        ),
+                            AirbyteStateStats().withRecordCount(expectedRecords.size.toDouble())
+                        )
                 )
 
         Mockito.verify(outputRecordCollector).accept(stateMessageWithDestinationStatsUpdated)
@@ -339,18 +330,13 @@ class AsyncStreamConsumerTest {
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
                             AirbyteStreamState()
-                                .withStreamDescriptor(
-                                    STREAM1_DESC,
-                                )
-                                .withStreamState(Jsons.jsonNode(2)),
+                                .withStreamDescriptor(STREAM1_DESC)
+                                .withStreamState(Jsons.jsonNode(2))
                         )
-                        .withDestinationStats(AirbyteStateStats().withRecordCount(0.0)),
+                        .withDestinationStats(AirbyteStateStats().withRecordCount(0.0))
                 )
 
-        Mockito.verify(
-                outputRecordCollector,
-                Mockito.times(1),
-            )
+        Mockito.verify(outputRecordCollector, Mockito.times(1))
             .accept(stateMessageWithDestinationStatsUpdated)
     }
 
@@ -416,10 +402,8 @@ class AsyncStreamConsumerTest {
                                             .withStream(STREAM_NAME)
                                             .withNamespace(SCHEMA_NAME)
                                             .withEmittedAt(Instant.now().toEpochMilli())
-                                            .withData(
-                                                Jsons.jsonNode(recordCount.getAndIncrement()),
-                                            ),
-                                    ),
+                                            .withData(Jsons.jsonNode(recordCount.getAndIncrement()))
+                                    )
                             ),
                             RECORD_SIZE_20_BYTES,
                         )
@@ -449,25 +433,17 @@ class AsyncStreamConsumerTest {
                     AirbyteRecordMessage()
                         .withStream(STREAM_NAME)
                         .withNamespace(SCHEMA_NAME)
-                        .withData(PAYLOAD),
+                        .withData(PAYLOAD)
                 )
         val serializedAirbyteMessage = Jsons.serialize(airbyteMessage)
         val airbyteRecordString = Jsons.serialize(PAYLOAD)
-        val partial =
-            airbyteMessageDeserializer.deserializeAirbyteMessage(
-                serializedAirbyteMessage,
-            )
+        val partial = airbyteMessageDeserializer.deserializeAirbyteMessage(serializedAirbyteMessage)
         assertEquals(airbyteRecordString, partial.serialized)
     }
 
     @Test
     internal fun deserializeAirbyteMessageWithBigDecimalAirbyteRecord() {
-        val payload =
-            Jsons.jsonNode(
-                mapOf(
-                    "foo" to BigDecimal("1234567890.1234567890"),
-                ),
-            )
+        val payload = Jsons.jsonNode(mapOf("foo" to BigDecimal("1234567890.1234567890")))
         val airbyteMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
@@ -475,14 +451,11 @@ class AsyncStreamConsumerTest {
                     AirbyteRecordMessage()
                         .withStream(STREAM_NAME)
                         .withNamespace(SCHEMA_NAME)
-                        .withData(payload),
+                        .withData(payload)
                 )
         val serializedAirbyteMessage = Jsons.serialize(airbyteMessage)
         val airbyteRecordString = Jsons.serialize(payload)
-        val partial =
-            airbyteMessageDeserializer.deserializeAirbyteMessage(
-                serializedAirbyteMessage,
-            )
+        val partial = airbyteMessageDeserializer.deserializeAirbyteMessage(serializedAirbyteMessage)
         assertEquals(airbyteRecordString, partial.serialized)
     }
 
@@ -496,23 +469,17 @@ class AsyncStreamConsumerTest {
                     AirbyteRecordMessage()
                         .withStream(STREAM_NAME)
                         .withNamespace(SCHEMA_NAME)
-                        .withData(Jsons.jsonNode(emptyMap)),
+                        .withData(Jsons.jsonNode(emptyMap))
                 )
         val serializedAirbyteMessage = Jsons.serialize(airbyteMessage)
-        val partial =
-            airbyteMessageDeserializer.deserializeAirbyteMessage(
-                serializedAirbyteMessage,
-            )
+        val partial = airbyteMessageDeserializer.deserializeAirbyteMessage(serializedAirbyteMessage)
         assertEquals(emptyMap.toString(), partial.serialized)
     }
 
     @Test
     internal fun deserializeAirbyteMessageWithAirbyteState() {
         val serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1)
-        val partial =
-            airbyteMessageDeserializer.deserializeAirbyteMessage(
-                serializedAirbyteMessage,
-            )
+        val partial = airbyteMessageDeserializer.deserializeAirbyteMessage(serializedAirbyteMessage)
         assertEquals(serializedAirbyteMessage, partial.serialized)
     }
 
@@ -608,19 +575,12 @@ class AsyncStreamConsumerTest {
                             .withStream(STREAM_NAME)
                             .withNamespace(SCHEMA_NAME)
                             .withEmittedAt(Instant.now().toEpochMilli())
-                            .withData(Jsons.deserialize("")),
+                            .withData(Jsons.deserialize(""))
                     )
             consumer.start()
             consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES)
-            assertThrows(
-                IOException::class.java,
-            ) {
-                consumer.accept(
-                    Jsons.serialize(
-                        m,
-                    ),
-                    RECORD_SIZE_20_BYTES,
-                )
+            assertThrows(IOException::class.java) {
+                consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES)
             }
         }
 
@@ -631,11 +591,7 @@ class AsyncStreamConsumerTest {
             Mockito.`when`(flushFailure.exception).thenReturn(IOException("test exception"))
 
             consumer.start()
-            assertThrows(
-                IOException::class.java,
-            ) {
-                consumer.close()
-            }
+            assertThrows(IOException::class.java) { consumer.close() }
         }
     }
 
@@ -646,14 +602,11 @@ class AsyncStreamConsumerTest {
         records.forEach(
             Consumer { m: AirbyteMessage ->
                 try {
-                    consumer!!.accept(
-                        Jsons.serialize(m),
-                        RECORD_SIZE_20_BYTES,
-                    )
+                    consumer!!.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES)
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
-            },
+            }
         )
     }
 
@@ -668,7 +621,7 @@ class AsyncStreamConsumerTest {
                     mapOf(
                         "id" to RandomStringUtils.randomAlphabetic(7),
                         "name" to "human " + String.format("%8d", i),
-                    ),
+                    )
                 )
             val sizeInBytes = RecordSizeEstimator.getStringByteSize(payload)
             bytesCounter += sizeInBytes
@@ -679,7 +632,7 @@ class AsyncStreamConsumerTest {
                         AirbyteRecordMessage()
                             .withStream(STREAM_NAME)
                             .withNamespace(SCHEMA_NAME)
-                            .withData(payload),
+                            .withData(payload)
                     )
             if (bytesCounter > targetSizeInBytes) {
                 break
@@ -723,13 +676,9 @@ class AsyncStreamConsumerTest {
                         PartialAirbyteRecordMessage()
                             .withStream(m.record.stream)
                             .withNamespace(m.record.namespace)
-                            .withData(m.record.data),
+                            .withData(m.record.data)
                     )
-                    .withSerialized(
-                        Jsons.serialize(
-                            m.record.data,
-                        ),
-                    )
+                    .withSerialized(Jsons.serialize(m.record.data))
             }
         assertEquals(expRecords, actualRecords)
     }
@@ -767,7 +716,7 @@ class AsyncStreamConsumerTest {
         // Ensure that the offending data has been scrubbed from the error message
         assertFalse(
             throwable.message!!.contains(offender),
-            "message should not contain the offender. Was ${throwable.message}"
+            "message should not contain the offender. Was ${throwable.message}",
         )
     }
 }

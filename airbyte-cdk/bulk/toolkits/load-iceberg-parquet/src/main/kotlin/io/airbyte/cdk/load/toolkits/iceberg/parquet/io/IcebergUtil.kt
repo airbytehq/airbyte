@@ -63,7 +63,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
         if (!generationIdRegex.matches(generationId)) {
             throw InvalidFormatException(
-                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'",
+                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'"
             )
         }
     }
@@ -75,11 +75,12 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     fun constructGenerationIdSuffix(generationId: Long): String {
         if (generationId < 0) {
             throw IllegalArgumentException(
-                "GenerationId must be non-negative. Provided: $generationId",
+                "GenerationId must be non-negative. Provided: $generationId"
             )
         }
         return "ab-generation-id-${generationId}-e"
     }
+
     /**
      * Builds an Iceberg [Catalog].
      *
@@ -121,9 +122,9 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
      * does not already exist. If the [Table] already exists, it is loaded from the [Catalog].
      *
      * @param streamDescriptor The [DestinationStream.Descriptor] that contains the Airbyte stream's
-     * namespace and name.
+     *   namespace and name.
      * @param catalog The Iceberg [Catalog] that contains the [Table] or should contain it once
-     * created.
+     *   created.
      * @param schema The Iceberg [Schema] associated with the [Table].
      * @param properties The [Table] configuration properties derived from the [Catalog].
      * @return The Iceberg [Table], created if it does not yet exist.
@@ -132,7 +133,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
         schema: Schema,
-        properties: Map<String, String>
+        properties: Map<String, String>,
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
@@ -155,7 +156,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
      * writer to determine how to write the data to the underlying Iceberg files.
      *
      * @param record The Airbyte [EnrichedDestinationRecordAirbyteValue] record to be converted for
-     * writing by Iceberg.
+     *   writing by Iceberg.
      * @param stream The Airbyte [DestinationStream] that contains information about the stream.
      * @param tableSchema The Iceberg [Table] [Schema].
      * @return An Iceberg [Record] representation of the [EnrichedDestinationRecordAirbyteValue].
@@ -180,7 +181,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                         // Meta.Change object.
                         ChangedValue(
                             StringValue(element.serializeToString()),
-                            changeDescription = null
+                            changeDescription = null,
                         )
 
                     // Null out numeric values that exceed int64/float64
@@ -195,7 +196,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
 
         return RecordWrapper(
             delegate = record.allTypedFields.toIcebergRecord(tableSchema),
-            operation = getOperation(record = record, importType = stream.importType)
+            operation = getOperation(record = record, importType = stream.importType),
         )
     }
 
@@ -208,7 +209,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         } else {
             ChangedValue(
                 NullValue,
-                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION),
             )
         }
     }
@@ -225,7 +226,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         } else {
             ChangedValue(
                 NullValue,
-                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION),
             )
         }
     }
@@ -288,7 +289,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
             val coercedArray = AirbyteValueCoercer.coerceArray(currentValue)
             if (coercedArray == null) {
                 changes.add(
-                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR)
                 )
                 return NullValue
             }
@@ -303,7 +304,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
             val coercedValue = AirbyteValueCoercer.coerce(currentValue, currentType)
             if (coercedValue == null) {
                 changes.add(
-                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR)
                 )
                 return NullValue
             }

@@ -13,9 +13,7 @@ import jakarta.inject.Singleton
 import kotlin.random.Random
 
 /** Wraps the configured operation in logic that acks all state so far every N records */
-abstract class DevNullDirectLoader(
-    private val config: DevNullConfiguration,
-) : DirectLoader {
+abstract class DevNullDirectLoader(private val config: DevNullConfiguration) : DirectLoader {
     private var recordCount: Long = 0L
 
     abstract fun acceptInner(record: DestinationRecordRaw)
@@ -45,7 +43,7 @@ class DevNullDirectLoaderFactory(private val config: DevNullConfiguration) :
 
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
-        part: Int
+        part: Int,
     ): DevNullDirectLoader {
         return when (config.type) {
             is Logging -> {
@@ -117,7 +115,7 @@ class ThrottledDirectLoader(config: DevNullConfiguration, private val millisPerR
 class FailingDirectLoader(
     config: DevNullConfiguration,
     private val stream: DestinationStream.Descriptor,
-    private val numMessages: Int
+    private val numMessages: Int,
 ) : DevNullDirectLoader(config) {
     private val log = KotlinLogging.logger {}
 

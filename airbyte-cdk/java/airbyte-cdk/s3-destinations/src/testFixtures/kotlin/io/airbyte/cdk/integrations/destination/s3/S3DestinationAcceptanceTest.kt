@@ -40,6 +40,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * When adding a new S3 destination acceptance test, extend this class and do the following:
  * * Implement [.getFormatConfig] that returns a [UploadFormatConfig]
@@ -56,7 +57,7 @@ protected constructor(
     supportsChangeCapture: Boolean = false,
     expectNumericTimestamps: Boolean = false,
     expectSchemalessObjectsCoercedToStrings: Boolean = false,
-    expectUnionsPromotedToDisjointRecords: Boolean = false
+    expectUnionsPromotedToDisjointRecords: Boolean = false,
 ) :
     DestinationAcceptanceTest(
         verifyIndividualStateAndCounts = true,
@@ -64,7 +65,7 @@ protected constructor(
         supportsChangeCapture = supportsChangeCapture,
         expectNumericTimestamps = expectNumericTimestamps,
         expectSchemalessObjectsCoercedToStrings = expectSchemalessObjectsCoercedToStrings,
-        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
+        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords,
     ) {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
@@ -100,7 +101,7 @@ protected constructor(
     /** Helper method to retrieve all synced objects inside the configured bucket path. */
     protected fun getAllSyncedObjects(
         streamName: String,
-        namespace: String
+        namespace: String,
     ): List<S3ObjectSummary> {
         val namespaceStr = s3nameTransformer.getNamespace(namespace)
         val streamNameStr = s3nameTransformer.getIdentifier(streamName)
@@ -156,7 +157,7 @@ protected constructor(
             S3DestinationConfig.getS3DestinationConfig(
                 configJson,
                 storageProvider(),
-                getConnectorEnv()
+                getConnectorEnv(),
             )
         LOGGER.info {
             "${"Test full path: {}/{}"} ${s3DestinationConfig.bucketName} ${s3DestinationConfig.bucketPath}"
@@ -185,7 +186,7 @@ protected constructor(
             }
             val result =
                 s3Client!!.deleteObjects(
-                    DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete),
+                    DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete)
                 )
             LOGGER.info { "${"Deleted {} file(s)."} ${result.deletedObjects.size}" }
         }
@@ -214,7 +215,7 @@ protected constructor(
         destinationSyncMode: DestinationSyncMode,
         syncId: Long?,
         minimumGenerationId: Long?,
-        generationId: Long?
+        generationId: Long?,
     ): Pair<ConfiguredAirbyteCatalog, AirbyteCatalog> {
         val catalog =
             Jsons.deserialize(
@@ -223,7 +224,7 @@ protected constructor(
                         getProtocolVersion()
                     )
                 ),
-                AirbyteCatalog::class.java
+                AirbyteCatalog::class.java,
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         configuredCatalog.streams.forEach {
@@ -238,7 +239,7 @@ protected constructor(
 
     private fun getFirstSyncMessagesFixture1(
         configuredCatalog: ConfiguredAirbyteCatalog,
-        streamStatus: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+        streamStatus: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus,
     ): List<AirbyteMessage> {
         val descriptor = StreamDescriptor().withName(configuredCatalog.streams[0].stream.name)
         return listOf(
@@ -256,9 +257,9 @@ protected constructor(
                                     .put("date", "2020-03-31T00:00:00Z")
                                     .put("HKD", 10.1)
                                     .put("NZD", 700.1)
-                                    .build(),
-                            ),
-                        ),
+                                    .build()
+                            )
+                        )
                 ),
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
@@ -278,7 +279,7 @@ protected constructor(
                             AirbyteStreamStatusTraceMessage()
                                 .withStreamDescriptor(descriptor)
                                 .withStatus(streamStatus)
-                        ),
+                        )
                 ),
         )
     }
@@ -286,8 +287,8 @@ protected constructor(
     private fun getSyncMessagesFixture2(): List<AirbyteMessage> {
         return MoreResources.readResource(
                 DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                    getProtocolVersion(),
-                ),
+                    getProtocolVersion()
+                )
             )
             .trim()
             .lines()
@@ -316,9 +317,9 @@ protected constructor(
                                 AirbyteStream()
                                     .withNamespace(namespace)
                                     .withName(streamName)
-                                    .withJsonSchema(streamSchema),
-                            ),
-                    ),
+                                    .withJsonSchema(streamSchema)
+                            )
+                    )
                 )
         val recordMessage =
             AirbyteMessage()
@@ -328,9 +329,7 @@ protected constructor(
                         .withStream(catalog.streams[0].stream.name)
                         .withNamespace(catalog.streams[0].stream.namespace)
                         .withEmittedAt(Instant.now().toEpochMilli())
-                        .withData(
-                            JsonNodeFactory.instance.objectNode(),
-                        )
+                        .withData(JsonNodeFactory.instance.objectNode())
                 )
         val streamCompleteMessage =
             AirbyteMessage()
@@ -351,7 +350,7 @@ protected constructor(
             config,
             listOf(recordMessage, streamCompleteMessage),
             catalog,
-            false
+            false,
         )
     }
 
@@ -363,7 +362,7 @@ protected constructor(
     fun testOverwriteSyncPreRefreshAndPostSupport() {
         assumeTrue(
             implementsOverwrite(),
-            "Destination's spec.json does not support overwrite sync mode."
+            "Destination's spec.json does not support overwrite sync mode.",
         )
 
         // Run sync with OLD version connector
@@ -398,7 +397,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair2.second,
             secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
     }
 
@@ -413,7 +412,7 @@ protected constructor(
     fun testSwitchingModesSyncWithPreviousData() {
         assumeTrue(
             implementsOverwrite(),
-            "Destination's spec.json does not support overwrite sync mode."
+            "Destination's spec.json does not support overwrite sync mode.",
         )
 
         // Run sync with some messages and send incomplete status.
@@ -446,7 +445,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair3.second,
             firstSyncMessages + secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
     }
 
@@ -455,7 +454,7 @@ protected constructor(
     fun testOverwriteSyncSubsequentGenerations() {
         assumeTrue(
             implementsOverwrite(),
-            "Destination's spec.json does not support overwrite sync mode."
+            "Destination's spec.json does not support overwrite sync mode.",
         )
 
         // Run sync with some messages
@@ -482,7 +481,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair2.second,
             secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
     }
 
@@ -494,7 +493,7 @@ protected constructor(
     open fun testOverwriteSyncFailedResumedGeneration() {
         assumeTrue(
             implementsOverwrite(),
-            "Destination's spec.json does not support overwrite sync mode."
+            "Destination's spec.json does not support overwrite sync mode.",
         )
         val config = getConfig()
 
@@ -504,11 +503,13 @@ protected constructor(
         val firstSyncMessages: List<AirbyteMessage> =
             getFirstSyncMessagesFixture1(
                 catalogPair.first,
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
             )
         assertThrows<TestHarnessException>(
             "Should not succeed the sync when Trace message is INCOMPLETE"
-        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false) }
+        ) {
+            runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        }
 
         // Run second sync with the same messages from the previous failed sync.
         val secondSyncMessages = getSyncMessagesFixture2()
@@ -519,7 +520,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair.second,
             firstSyncMessages + secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
     }
 
@@ -528,7 +529,7 @@ protected constructor(
     open fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
         assumeTrue(
             implementsOverwrite(),
-            "Destination's spec.json does not support overwrite sync mode."
+            "Destination's spec.json does not support overwrite sync mode.",
         )
         val config = getConfig()
 
@@ -538,11 +539,13 @@ protected constructor(
         val firstSyncMessages: List<AirbyteMessage> =
             getFirstSyncMessagesFixture1(
                 catalogPair.first,
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
             )
         assertThrows<TestHarnessException>(
             "Should not succeed the sync when Trace message is INCOMPLETE"
-        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false) }
+        ) {
+            runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        }
 
         // Run second failed attempt of same generation
         val catalogPair2 =
@@ -550,19 +553,21 @@ protected constructor(
         val secondSyncMessages =
             getFirstSyncMessagesFixture1(
                 catalogPair2.first,
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
             )
 
         assertThrows<TestHarnessException>(
             "Should not succeed the sync when Trace message is INCOMPLETE"
-        ) { runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false) }
+        ) {
+            runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false)
+        }
 
         // Verify our delayed delete logic creates no data downtime.
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair.second,
             firstSyncMessages + secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
 
         // Run a successful sync with incremented generationId, This should nuke all old generation
@@ -575,7 +580,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair.second,
             thirdSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
     }
 
@@ -589,7 +594,7 @@ protected constructor(
     open fun testOverwriteSyncWithGenerationId() {
         assumeTrue(
             implementsOverwrite(),
-            "Destination's spec.json does not support overwrite sync mode."
+            "Destination's spec.json does not support overwrite sync mode.",
         )
 
         val config = getConfig()
@@ -600,7 +605,7 @@ protected constructor(
         val firstSyncMessages: List<AirbyteMessage> =
             getFirstSyncMessagesFixture1(
                 catalogPair.first,
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
             )
         runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
 
@@ -616,7 +621,7 @@ protected constructor(
                         getProtocolVersion()
                     )
                 ),
-                AirbyteCatalog::class.java
+                AirbyteCatalog::class.java,
             )
         dummyCatalog.streams[0].name = dummyCatalogStream
         val configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(dummyCatalog)
@@ -644,7 +649,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair.second,
             firstSyncMessages + secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
         // verify that other streams in the same location were not affected. If something fails
         // here,
@@ -662,7 +667,7 @@ protected constructor(
     fun testIncrementalSyncWithGenerationId() {
         assumeTrue(
             implementsAppend(),
-            "Destination's spec.json does not include '\"supportsIncremental\" ; true'"
+            "Destination's spec.json does not include '\"supportsIncremental\" ; true'",
         )
 
         val catalogPair =
@@ -686,7 +691,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair.second,
             firstSyncMessages + secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
     }
 
@@ -698,7 +703,7 @@ protected constructor(
     fun testAppendSyncPreRefreshAndPostSupport() {
         assumeTrue(
             implementsOverwrite(),
-            "Destination's spec.json does not support overwrite sync mode."
+            "Destination's spec.json does not support overwrite sync mode.",
         )
 
         // Run sync with some messages
@@ -734,7 +739,7 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair2.second,
             firstSyncMessages + secondSyncMessages,
-            defaultSchema
+            defaultSchema,
         )
     }
 
@@ -755,8 +760,8 @@ protected constructor(
                             .withSyncId(0)
                             .withStream(
                                 AirbyteStream().withName(streamName).withJsonSchema(streamSchema)
-                            ),
-                    ),
+                            )
+                    )
                 )
 
         val recordMessage =
@@ -777,7 +782,7 @@ protected constructor(
                                 modified = 123456L,
                                 sourceFileUrl =
                                     "//sftp-testing-for-file-transfer/sftp-folder/simpsons_locations.csv",
-                            )
+                            ),
                         )
                 )
         val streamCompleteMessage =
@@ -807,7 +812,7 @@ protected constructor(
         } catch (e: TestHarnessException) {
             assertContains(
                 e.outputMessages!![0].trace.error.internalMessage,
-                "java.io.FileNotFoundException: /staging/files/fakeFile (No such file or directory)"
+                "java.io.FileNotFoundException: /staging/files/fakeFile (No such file or directory)",
             )
         }
     }

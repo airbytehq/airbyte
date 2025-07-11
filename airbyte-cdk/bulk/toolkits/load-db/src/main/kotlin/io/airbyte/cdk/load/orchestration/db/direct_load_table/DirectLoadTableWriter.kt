@@ -19,8 +19,8 @@ import io.airbyte.cdk.load.write.StreamStateStore
 
 /**
  * @param directLoadTableTempTableNameMigration Iff you are implementing a destination which
- * previously existed, and used the T+D style of temporary tables (i.e. suffixing the final table
- * with `_airbyte_tmp`), you MUST provide this object.
+ *   previously existed, and used the T+D style of temporary tables (i.e. suffixing the final table
+ *   with `_airbyte_tmp`), you MUST provide this object.
  */
 class DirectLoadTableWriter(
     private val internalNamespace: String,
@@ -33,6 +33,7 @@ class DirectLoadTableWriter(
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
+
     override suspend fun setup() {
         val namespaces =
             names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }.toSet()

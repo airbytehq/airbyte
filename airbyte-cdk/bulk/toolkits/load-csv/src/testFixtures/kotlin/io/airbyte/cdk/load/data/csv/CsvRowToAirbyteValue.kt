@@ -36,7 +36,7 @@ class CsvRowToAirbyteValue {
                         }
                     }
                 key to airbyteValue
-            },
+            }
         )
     }
 }

@@ -31,7 +31,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
                     "flattening",
                     Flattening.ROOT_LEVEL.value,
                     "compression",
-                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression"))
+                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression")),
                 )
             )
 
@@ -40,7 +40,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
 
@@ -98,7 +98,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
 
         private fun getJsonNode(
             input: Map<String, String>,
-            fieldTypes: Map<String, String>
+            fieldTypes: Map<String, String>,
         ): JsonNode {
             val json: ObjectNode = MAPPER.createObjectNode()
 

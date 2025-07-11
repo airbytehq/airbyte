@@ -31,23 +31,28 @@ class DefaultSyncOperationTest {
     private data class MockState(
         val needsSoftReset: Boolean,
         val softResetMigrationCompleted: Boolean,
-        val nonSoftResetMigrationCompleted: Boolean
+        val nonSoftResetMigrationCompleted: Boolean,
     ) : MinimumDestinationState {
         override fun needsSoftReset(): Boolean = needsSoftReset
 
         override fun <T : MinimumDestinationState> withSoftReset(needsSoftReset: Boolean): T {
-            @Suppress("UNCHECKED_CAST") return copy(needsSoftReset = needsSoftReset) as T
+            @Suppress("UNCHECKED_CAST")
+            return copy(needsSoftReset = needsSoftReset) as T
         }
     }
+
     private class TestStreamOperation(destinationState: MockState) : StreamOperation<MockState> {
         // Simulate a StreamOperation implementation that triggers a soft reset upon initialization.
         override val updatedDestinationState: MockState = destinationState.withSoftReset(false)
+
         override fun writeRecords(
             streamConfig: StreamConfig,
-            stream: Stream<PartialAirbyteMessage>
+            stream: Stream<PartialAirbyteMessage>,
         ) {}
+
         override fun finalizeTable(streamConfig: StreamConfig, syncSummary: StreamSyncSummary) {}
     }
+
     private val streamOperations: MutableMap<StreamConfig, StreamOperation<MockState>> =
         mutableMapOf()
     private val streamOperationFactory: StreamOperationFactory<MockState> =
@@ -112,8 +117,8 @@ class DefaultSyncOperationTest {
                             needsSoftReset = true,
                             softResetMigrationCompleted = true,
                             nonSoftResetMigrationCompleted = true,
-                        ),
-                ),
+                        )
+                )
             )
             destinationHandler.createNamespaces(
                 setOf(appendStreamConfig.id.rawNamespace, appendStreamConfig.id.finalNamespace)
@@ -126,8 +131,8 @@ class DefaultSyncOperationTest {
                             needsSoftReset = false,
                             softResetMigrationCompleted = true,
                             nonSoftResetMigrationCompleted = true,
-                        ),
-                ),
+                        )
+                )
             )
         }
         confirmVerified(destinationHandler)
@@ -147,7 +152,7 @@ class DefaultSyncOperationTest {
             streamOperations.values.onEach {
                 it.finalizeTable(
                     appendStreamConfig,
-                    StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                    StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE),
                 )
             }
         }
@@ -207,8 +212,8 @@ class DefaultSyncOperationTest {
                             needsSoftReset = true,
                             softResetMigrationCompleted = true,
                             nonSoftResetMigrationCompleted = true,
-                        ),
-                ),
+                        )
+                )
             )
             destinationHandler.createNamespaces(
                 setOf(appendStreamConfig.id.rawNamespace, appendStreamConfig.id.finalNamespace)
@@ -221,8 +226,8 @@ class DefaultSyncOperationTest {
                             needsSoftReset = false,
                             softResetMigrationCompleted = true,
                             nonSoftResetMigrationCompleted = true,
-                        ),
-                ),
+                        )
+                )
             )
         }
         confirmVerified(destinationHandler)
@@ -236,11 +241,11 @@ class DefaultSyncOperationTest {
                 override fun migrateIfNecessary(
                     destinationHandler: DestinationHandler<MockState>,
                     stream: StreamConfig,
-                    state: DestinationInitialStatus<MockState>
+                    state: DestinationInitialStatus<MockState>,
                 ): Migration.MigrationResult<MockState> {
                     if (!state.destinationState.softResetMigrationCompleted) {
                         destinationHandler.execute(
-                            Sql.of("MIGRATE WITH SOFT_RESET ${stream.id.rawTableId("")}"),
+                            Sql.of("MIGRATE WITH SOFT_RESET ${stream.id.rawTableId("")}")
                         )
                         return Migration.MigrationResult(
                             state.destinationState.copy(
@@ -250,10 +255,7 @@ class DefaultSyncOperationTest {
                             true,
                         )
                     } else {
-                        return Migration.MigrationResult(
-                            state.destinationState,
-                            false,
-                        )
+                        return Migration.MigrationResult(state.destinationState, false)
                     }
                 }
             }
@@ -264,11 +266,11 @@ class DefaultSyncOperationTest {
                 override fun migrateIfNecessary(
                     destinationHandler: DestinationHandler<MockState>,
                     stream: StreamConfig,
-                    state: DestinationInitialStatus<MockState>
+                    state: DestinationInitialStatus<MockState>,
                 ): Migration.MigrationResult<MockState> {
                     if (!state.destinationState.nonSoftResetMigrationCompleted) {
                         destinationHandler.execute(
-                            Sql.of("MIGRATE WITHOUT SOFT_RESET ${stream.id.rawTableId("")}"),
+                            Sql.of("MIGRATE WITHOUT SOFT_RESET ${stream.id.rawTableId("")}")
                         )
                     }
                     return Migration.MigrationResult(
@@ -284,11 +286,9 @@ class DefaultSyncOperationTest {
                 override fun migrateIfNecessary(
                     destinationHandler: DestinationHandler<MockState>,
                     stream: StreamConfig,
-                    state: DestinationInitialStatus<MockState>
+                    state: DestinationInitialStatus<MockState>,
                 ): Migration.MigrationResult<MockState> {
-                    destinationHandler.execute(
-                        Sql.of("BAD MIGRATE ${stream.id.rawTableId("")}"),
-                    )
+                    destinationHandler.execute(Sql.of("BAD MIGRATE ${stream.id.rawTableId("")}"))
                     return Migration.MigrationResult(
                         state.destinationState.copy(needsSoftReset = false),
                         false,
@@ -304,7 +304,7 @@ class DefaultSyncOperationTest {
                     "airbyte_internal",
                     "append_stream",
                     "append_ns",
-                    "append_stream"
+                    "append_stream",
                 ),
                 ImportType.APPEND,
                 listOf(),

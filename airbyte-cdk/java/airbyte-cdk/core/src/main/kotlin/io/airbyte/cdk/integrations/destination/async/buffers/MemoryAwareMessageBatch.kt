@@ -40,10 +40,7 @@ class MemoryAwareMessageBatch(
         outputRecordCollector: Consumer<AirbyteMessage>,
     ) {
         stateIdToCount.forEach { (stateId: Long, count: Long) ->
-            stateManager.decrement(
-                stateId,
-                count,
-            )
+            stateManager.decrement(stateId, count)
         }
         stateManager.flushStates(outputRecordCollector)
     }

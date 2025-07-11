@@ -12,7 +12,7 @@ import io.airbyte.integrations.destination.clickhouse.write.transform.RecordMung
 
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
-    justification = "suspend and fb's non-null analysis don't play well"
+    justification = "suspend and fb's non-null analysis don't play well",
 )
 class ClickhouseDirectLoader(
     @VisibleForTesting val munger: RecordMunger,

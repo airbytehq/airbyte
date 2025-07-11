@@ -33,13 +33,13 @@ class TimeStringToInteger : AirbyteValueIdentityMapper() {
 
     override fun mapTimeWithTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         IntegerValue(toMicrosOfDayWithTimezone((value as TimeWithTimezoneValue).value)) to context
 
     override fun mapTimeWithoutTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         IntegerValue(toMicrosOfDayWithoutTimezone((value as TimeWithoutTimezoneValue).value)) to
             context
@@ -56,13 +56,14 @@ class TimeStringToInteger : AirbyteValueIdentityMapper() {
 
     override fun mapTimestampWithTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         IntegerValue(toEpochMicrosWithTimezone((value as TimestampWithTimezoneValue).value)) to
             context
+
     override fun mapTimestampWithoutTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         IntegerValue(
             toEpochMicrosWithoutTimezone((value as TimestampWithoutTimezoneValue).value)

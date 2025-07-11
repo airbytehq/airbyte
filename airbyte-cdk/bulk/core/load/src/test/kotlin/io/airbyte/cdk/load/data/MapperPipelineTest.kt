@@ -20,7 +20,7 @@ class MapperPipelineTest {
         override fun mapObjectWithoutSchema(
             value: AirbyteValue,
             schema: ObjectTypeWithoutSchema,
-            context: Context
+            context: Context,
         ): Pair<AirbyteValue, Context> {
             if ((value as ObjectValue).values.size == 1) {
                 throw IllegalStateException("Arbitrarily reject 1")
@@ -36,7 +36,7 @@ class MapperPipelineTest {
     class TurnIntegersIntoStrings : AirbyteValueIdentityMapper() {
         override fun mapInteger(
             value: AirbyteValue,
-            context: Context
+            context: Context,
         ): Pair<AirbyteValue, Context> {
             if ((value as IntegerValue).value.toLong() == 2L) {
                 throw IllegalStateException("Arbitrarily reject 2")
@@ -52,7 +52,7 @@ class MapperPipelineTest {
             listOf(
                 TurnIntegerTypesIntoStrings() to TurnIntegersIntoStrings(),
                 TurnSchemalessObjectTypesIntoIntegers() to TurnSchemalessObjectsIntoIntegers(),
-            )
+            ),
         )
 
     @Test
@@ -71,7 +71,7 @@ class MapperPipelineTest {
         Assertions.assertEquals(
             expectedSchema,
             pipeline.finalSchema,
-            "final schema matches expected transformed schema"
+            "final schema matches expected transformed schema",
         )
     }
 
@@ -82,7 +82,7 @@ class MapperPipelineTest {
                 .with(
                     ObjectValue(linkedMapOf("a" to IntegerValue(1), "b" to IntegerValue(2))),
                     ObjectTypeWithoutSchema,
-                    IntegerValue(2)
+                    IntegerValue(2),
                 )
                 .with(IntegerValue(1), IntegerType, StringValue("1"))
                 .withRecord()
@@ -105,7 +105,7 @@ class MapperPipelineTest {
                     ObjectValue(linkedMapOf("a" to IntegerValue(1))),
                     ObjectTypeWithoutSchema,
                     NullValue,
-                    nullable = true
+                    nullable = true,
                 ) // fail: reject size==1
                 .with(IntegerValue(1), IntegerType, StringValue("1"))
                 .withRecord()

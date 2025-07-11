@@ -26,20 +26,13 @@ class StreamPriorityTest {
 
     @Test
     internal fun testOrderByPrioritySize() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         val flusher = Mockito.mock(DestinationFlushFunction::class.java)
         val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
-        Mockito.`when`(
-                bufferDequeue.getQueueSizeBytes(DESC1),
-            )
+        Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1))
             .thenReturn(Optional.of(1L))
             .thenReturn(Optional.of(0L))
-        Mockito.`when`(
-                bufferDequeue.getQueueSizeBytes(DESC2),
-            )
+        Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC2))
             .thenReturn(Optional.of(0L))
             .thenReturn(Optional.of(1L))
         val detect =
@@ -51,19 +44,12 @@ class StreamPriorityTest {
 
     @Test
     internal fun testOrderByPrioritySecondarySortByTime() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         val flusher = Mockito.mock(DestinationFlushFunction::class.java)
         val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
-        Mockito.`when`(
-                bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()),
-            )
+        Mockito.`when`(bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()))
             .thenReturn(Optional.of(0L))
-        Mockito.`when`(
-                bufferDequeue.getTimeOfLastRecord(DESC1),
-            )
+        Mockito.`when`(bufferDequeue.getTimeOfLastRecord(DESC1))
             .thenReturn(Optional.of(FIVE_MIN_AGO))
             .thenReturn(Optional.of(NOW))
         Mockito.`when`(bufferDequeue.getTimeOfLastRecord(DESC2))
@@ -77,36 +63,23 @@ class StreamPriorityTest {
 
     @Test
     internal fun testOrderByPriorityTertiarySortByName() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         val flusher = Mockito.mock(DestinationFlushFunction::class.java)
         val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
-        Mockito.`when`(
-                bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()),
-            )
+        Mockito.`when`(bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()))
             .thenReturn(Optional.of(0L))
-        Mockito.`when`(
-                bufferDequeue.getTimeOfLastRecord(org.mockito.kotlin.any()),
-            )
+        Mockito.`when`(bufferDequeue.getTimeOfLastRecord(org.mockito.kotlin.any()))
             .thenReturn(Optional.of(NOW))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         val descs = listOf(Jsons.clone(DESC1), Jsons.clone(DESC2))
         Assertions.assertEquals(
-            listOf(
-                descs[0],
-                descs[1],
-            ),
+            listOf(descs[0], descs[1]),
             detect.orderStreamsByPriority(HashSet(descs)),
         )
         descs[0].name = "test3"
         Assertions.assertEquals(
-            listOf(
-                descs[1],
-                descs[0],
-            ),
+            listOf(descs[1], descs[0]),
             detect.orderStreamsByPriority(HashSet(descs)),
         )
     }

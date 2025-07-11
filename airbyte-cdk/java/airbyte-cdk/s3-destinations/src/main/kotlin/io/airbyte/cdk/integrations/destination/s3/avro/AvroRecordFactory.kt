@@ -24,7 +24,7 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 class AvroRecordFactory(
     private val schema: Schema?,
     private val converter: JsonAvroConverter?,
-    private val recordPreprocessor: ((JsonNode) -> JsonNode?) = { it }
+    private val recordPreprocessor: ((JsonNode) -> JsonNode?) = { it },
 ) {
 
     companion object {
@@ -33,11 +33,7 @@ class AvroRecordFactory(
 
         fun createV1JsonToAvroConverter(): JsonAvroConverter {
             return JsonAvroConverter.builder()
-                .setNameTransformer { name: String ->
-                    NAME_TRANSFORMER.getIdentifier(
-                        name,
-                    )
-                }
+                .setNameTransformer { name: String -> NAME_TRANSFORMER.getIdentifier(name) }
                 .setJsonAdditionalPropsFieldNames(JSON_EXTRA_PROPS_FIELDS)
                 .setAvroAdditionalPropsFieldName(AVRO_EXTRA_PROPS_FIELD)
                 .build()
@@ -45,11 +41,7 @@ class AvroRecordFactory(
 
         fun createV2JsonToAvroConverter(): JsonAvroConverter {
             return JsonAvroConverter.builder()
-                .setNameTransformer { name: String ->
-                    NAME_TRANSFORMER.getIdentifier(
-                        name,
-                    )
-                }
+                .setNameTransformer { name: String -> NAME_TRANSFORMER.getIdentifier(name) }
                 .setFieldConversionFailureListener(AvroFieldConversionFailureListener())
                 .build()
         }
@@ -69,7 +61,7 @@ class AvroRecordFactory(
         id: UUID,
         generationId: Long,
         syncId: Long,
-        recordMessage: AirbyteRecordMessage
+        recordMessage: AirbyteRecordMessage,
     ): GenericData.Record {
         val jsonRecord = MAPPER.createObjectNode()
         jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, id.toString())

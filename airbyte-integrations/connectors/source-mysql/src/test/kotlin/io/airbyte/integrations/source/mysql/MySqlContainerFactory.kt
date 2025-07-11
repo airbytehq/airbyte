@@ -50,19 +50,13 @@ object MySqlContainerFactory {
         }
     }
 
-    fun exclusive(
-        imageName: String,
-        vararg modifiers: MySqlContainerModifier,
-    ): MySQLContainer<*> {
+    fun exclusive(imageName: String, vararg modifiers: MySqlContainerModifier): MySQLContainer<*> {
         val dockerImageName =
             DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
         return TestContainerFactory.exclusive(dockerImageName, *modifiers)
     }
 
-    fun shared(
-        imageName: String,
-        vararg modifiers: MySqlContainerModifier,
-    ): MySQLContainer<*> {
+    fun shared(imageName: String, vararg modifiers: MySqlContainerModifier): MySQLContainer<*> {
         val dockerImageName =
             DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
         return TestContainerFactory.shared(dockerImageName, *modifiers)

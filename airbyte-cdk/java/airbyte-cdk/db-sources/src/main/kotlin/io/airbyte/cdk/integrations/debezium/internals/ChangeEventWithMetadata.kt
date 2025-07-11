@@ -17,6 +17,7 @@ class ChangeEventWithMetadata(private val event: ChangeEvent<String?, String?>) 
                 .key()
                 ?.let { Jsons.deserialize(it) }
                 .also { it ?: LOGGER.warn { "Event key is null $event" } }
+
     val eventValueAsJson: JsonNode?
         get() =
             event

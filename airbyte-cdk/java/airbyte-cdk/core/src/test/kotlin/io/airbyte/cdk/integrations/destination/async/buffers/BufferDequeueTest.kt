@@ -24,9 +24,7 @@ class BufferDequeueTest {
     private val RECORD_MSG_20_BYTES: PartialAirbyteMessage =
         PartialAirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                PartialAirbyteRecordMessage().withStream(STREAM_NAME),
-            )
+            .withRecord(PartialAirbyteRecordMessage().withStream(STREAM_NAME))
 
     @Nested
     internal inner class Take {
@@ -36,22 +34,10 @@ class BufferDequeueTest {
             val enqueue = bufferManager.bufferEnqueue
             val dequeue = bufferManager.bufferDequeue
 
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
 
             // total size of records is 80, so we expect 50 to get us 2 records (prefer to
             // under-pull records
@@ -76,18 +62,9 @@ class BufferDequeueTest {
             val enqueue = bufferManager.bufferEnqueue
             val dequeue = bufferManager.bufferDequeue
 
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
 
             try {
                 dequeue.take(STREAM_DESC, 60).use { take ->
@@ -104,14 +81,8 @@ class BufferDequeueTest {
             val enqueue = bufferManager.bufferEnqueue
             val dequeue = bufferManager.bufferDequeue
 
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
-            enqueue.addRecord(
-                RECORD_MSG_20_BYTES,
-                RECORD_SIZE_20_BYTES,
-            )
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
+            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES)
 
             try {
                 dequeue.take(STREAM_DESC, Long.MAX_VALUE).use { take ->
@@ -135,10 +106,7 @@ class BufferDequeueTest {
         val secondStream = StreamDescriptor().withName("stream_2")
         val recordFromSecondStream = Jsons.clone(RECORD_MSG_20_BYTES)
         recordFromSecondStream.record?.withStream(secondStream.name)
-        enqueue.addRecord(
-            recordFromSecondStream,
-            RECORD_SIZE_20_BYTES,
-        )
+        enqueue.addRecord(recordFromSecondStream, RECORD_SIZE_20_BYTES)
 
         Assertions.assertEquals(60, dequeue.totalGlobalQueueSizeBytes)
 
@@ -152,7 +120,7 @@ class BufferDequeueTest {
         val lastThreeSec = Instant.now().minus(3, ChronoUnit.SECONDS)
         Assertions.assertTrue(lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(STREAM_DESC).get()))
         Assertions.assertTrue(
-            lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(secondStream).get()),
+            lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(secondStream).get())
         )
     }
 
@@ -217,10 +185,7 @@ class BufferDequeueTest {
                 GlobalMemoryManager.BLOCK_SIZE_BYTES,
                 memoryManager.getCurrentMemoryBytes(),
             )
-            Assertions.assertEquals(
-                0,
-                bufferManager.buffers[STREAM_DESC]!!.maxMemoryUsage,
-            )
+            Assertions.assertEquals(0, bufferManager.buffers[STREAM_DESC]!!.maxMemoryUsage)
         }
     }
 }

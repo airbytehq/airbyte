@@ -59,7 +59,7 @@ class MysqlSqlGeneratorIntegrationTest :
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
     ) {
         reformatMetaColumnTimestamps(records)
         super.insertFinalTableRecords(includeCdcDeletedAt, streamId, suffix, records)
@@ -83,7 +83,7 @@ class MysqlSqlGeneratorIntegrationTest :
                 .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMP(6).nullable(false))
                 .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMP(6))
                 .column(COLUMN_NAME_AB_META, structType.nullable(true))
-                .getSQL(ParamType.INLINED),
+                .getSQL(ParamType.INLINED)
         )
     }
 
@@ -98,7 +98,7 @@ class MysqlSqlGeneratorIntegrationTest :
                 ) // similar to createRawTable - this data type is timestmap, not varchar
                 .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMP(6).nullable(false))
                 .column(COLUMN_NAME_DATA, structType.nullable(false))
-                .getSQL(ParamType.INLINED),
+                .getSQL(ParamType.INLINED)
         )
     }
 

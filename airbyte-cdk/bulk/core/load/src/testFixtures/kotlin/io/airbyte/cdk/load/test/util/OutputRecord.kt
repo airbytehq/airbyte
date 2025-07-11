@@ -29,10 +29,7 @@ data class OutputRecord(
      * Much like [io.airbyte.cdk.message.DestinationRecord.Meta], but includes the [syncId] field
      * that we write to the destination.
      */
-    data class Meta(
-        val changes: List<Change> = listOf(),
-        val syncId: Long? = null,
-    )
+    data class Meta(val changes: List<Change> = listOf(), val syncId: Long? = null)
 
     /** Utility constructor with easier types to write by hand */
     constructor(
@@ -42,14 +39,7 @@ data class OutputRecord(
         generationId: Long?,
         data: Map<String, Any?>,
         airbyteMeta: Meta?,
-    ) : this(
-        rawId,
-        extractedAt,
-        loadedAt,
-        generationId,
-        ObjectValue.from(data),
-        airbyteMeta,
-    )
+    ) : this(rawId, extractedAt, loadedAt, generationId, ObjectValue.from(data), airbyteMeta)
 
     constructor(
         rawId: String,

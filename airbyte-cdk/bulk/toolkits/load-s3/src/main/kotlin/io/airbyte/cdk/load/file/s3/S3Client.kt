@@ -152,7 +152,7 @@ class S3KotlinClient(
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<S3Object> {
         val request = CreateMultipartUploadRequest {
             this.bucket = bucketConfig.s3BucketName
@@ -204,13 +204,13 @@ class S3ClientFactory(
                     .createFromAssumeRole(
                         arnRole.awsArnRoleConfiguration,
                         assumeRoleCredentials,
-                        bucketConfig.s3BucketConfiguration
+                        bucketConfig.s3BucketConfiguration,
                     )
             } else {
                 S3LegacyJavaClientFactory()
                     .createFromAccessKey(
                         keyConfig.awsAccessKeyConfiguration,
-                        bucketConfig.s3BucketConfiguration
+                        bucketConfig.s3BucketConfiguration,
                     )
             }
         }
@@ -237,7 +237,7 @@ class S3ClientFactory(
                 }
                 StsAssumeRoleCredentialsProvider(
                     bootstrapCredentialsProvider = creds,
-                    assumeRoleParameters = assumeRoleParams
+                    assumeRoleParameters = assumeRoleParams,
                 )
             } else {
                 DefaultChainCredentialsProvider()
@@ -259,9 +259,6 @@ class S3ClientFactory(
                 httpClient(CrtHttpEngine)
             }
 
-        return S3KotlinClient(
-            s3SdkClient,
-            bucketConfig.s3BucketConfiguration,
-        )
+        return S3KotlinClient(s3SdkClient, bucketConfig.s3BucketConfiguration)
     }
 }

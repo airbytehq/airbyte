@@ -19,7 +19,9 @@ import io.airbyte.cdk.load.message.StreamKey
 interface DlqLoader<S> : AutoCloseable {
 
     sealed interface DlqLoadResult
+
     data object Incomplete : DlqLoadResult
+
     data class Complete(val rejectedRecords: List<DestinationRecordRaw>? = null) : DlqLoadResult
 
     /** Called when starting a batch. */
@@ -32,8 +34,8 @@ interface DlqLoader<S> : AutoCloseable {
      *
      * Returns
      * - [Complete] if data was loaded completely. [accept] may return rejected records for the dead
-     * letter queue. Note that the CDK will only checkpoint when the all the records for a given
-     * AirbyteState are either loaded in the destination or written to the dead letter queue.
+     *   letter queue. Note that the CDK will only checkpoint when the all the records for a given
+     *   AirbyteState are either loaded in the destination or written to the dead letter queue.
      * - [Incomplete] if the record was staged.
      */
     fun accept(record: DestinationRecordRaw, state: S): DlqLoadResult

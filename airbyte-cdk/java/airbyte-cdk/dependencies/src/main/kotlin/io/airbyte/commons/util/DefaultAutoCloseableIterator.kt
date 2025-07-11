@@ -18,7 +18,7 @@ import java.util.*
 internal class DefaultAutoCloseableIterator<T>(
     iterator: Iterator<T>,
     onClose: VoidCallable,
-    airbyteStream: AirbyteStreamNameNamespacePair?
+    airbyteStream: AirbyteStreamNameNamespacePair?,
 ) : AbstractIterator<T>(), AutoCloseableIterator<T> {
     override val airbyteStream: Optional<AirbyteStreamNameNamespacePair>
     private val iterator: Iterator<T>

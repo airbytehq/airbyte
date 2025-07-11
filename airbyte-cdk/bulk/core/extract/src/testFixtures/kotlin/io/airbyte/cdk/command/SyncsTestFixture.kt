@@ -48,10 +48,7 @@ data object SyncsTestFixture {
             ConnectorSpecification::class.java,
         )
 
-    fun testCheck(
-        configPojo: ConfigurationSpecification,
-        expectedFailure: String? = null,
-    ) {
+    fun testCheck(configPojo: ConfigurationSpecification, expectedFailure: String? = null) {
         val checkOutput: BufferingOutputConsumer = CliRunner.source("check", configPojo).run()
         Assertions.assertEquals(1, checkOutput.statuses().size, checkOutput.statuses().toString())
         if (expectedFailure == null) {
@@ -69,26 +66,17 @@ data object SyncsTestFixture {
         }
     }
 
-    fun testDiscover(
-        configPojo: ConfigurationSpecification,
-        expectedCatalog: AirbyteCatalog,
-    ) {
+    fun testDiscover(configPojo: ConfigurationSpecification, expectedCatalog: AirbyteCatalog) {
         val discoverOutput: BufferingOutputConsumer = CliRunner.source("discover", configPojo).run()
         Assertions.assertEquals(listOf(expectedCatalog), discoverOutput.catalogs())
     }
 
-    fun testDiscover(
-        configPojo: ConfigurationSpecification,
-        expectedCatalogResource: String,
-    ) {
+    fun testDiscover(configPojo: ConfigurationSpecification, expectedCatalogResource: String) {
         testDiscover(configPojo, catalogFromResource(expectedCatalogResource))
     }
 
     fun catalogFromResource(catalogResource: String): AirbyteCatalog =
-        Jsons.readValue(
-            ResourceUtils.readResource(catalogResource),
-            AirbyteCatalog::class.java,
-        )
+        Jsons.readValue(ResourceUtils.readResource(catalogResource), AirbyteCatalog::class.java)
 
     fun <T : ConfigurationSpecification> testReads(
         configPojo: T,

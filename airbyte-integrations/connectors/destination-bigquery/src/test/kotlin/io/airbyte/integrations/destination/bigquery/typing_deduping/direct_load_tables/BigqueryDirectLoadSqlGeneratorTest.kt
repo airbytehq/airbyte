@@ -40,12 +40,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                     syncId = 12,
                     namespaceMapper = NamespaceMapper(NamespaceDefinitionType.SOURCE),
                 ),
-                ColumnNameMapping(
-                    mapOf(
-                        "foo" to "mapped_foo",
-                        "bar" to "mapped_bar",
-                    )
-                )
+                ColumnNameMapping(mapOf("foo" to "mapped_foo", "bar" to "mapped_bar")),
             )
         assertEquals(listOf("_airbyte_extracted_at"), clusteringColumns)
     }
@@ -57,10 +52,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                 DestinationStream(
                     "unused",
                     "unused",
-                    Dedupe(
-                        primaryKey = listOf(listOf("foo")),
-                        cursor = listOf("bar"),
-                    ),
+                    Dedupe(primaryKey = listOf(listOf("foo")), cursor = listOf("bar")),
                     ObjectType(
                         linkedMapOf(
                             "foo" to FieldType(IntegerType, nullable = true),
@@ -72,12 +64,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                     syncId = 12,
                     namespaceMapper = NamespaceMapper(NamespaceDefinitionType.SOURCE),
                 ),
-                ColumnNameMapping(
-                    mapOf(
-                        "foo" to "mapped_foo",
-                        "bar" to "mapped_bar",
-                    )
-                )
+                ColumnNameMapping(mapOf("foo" to "mapped_foo", "bar" to "mapped_bar")),
             )
         assertEquals(listOf("mapped_foo", "_airbyte_extracted_at"), clusteringColumns)
     }
@@ -90,10 +77,7 @@ class BigqueryDirectLoadSqlGeneratorTest {
                     DestinationStream(
                         "ns",
                         "n",
-                        Dedupe(
-                            primaryKey = listOf(listOf("foo")),
-                            cursor = listOf("bar"),
-                        ),
+                        Dedupe(primaryKey = listOf(listOf("foo")), cursor = listOf("bar")),
                         ObjectType(
                             linkedMapOf(
                                 "foo" to FieldType(ObjectTypeWithoutSchema, nullable = true),
@@ -105,18 +89,13 @@ class BigqueryDirectLoadSqlGeneratorTest {
                         syncId = 12,
                         namespaceMapper = NamespaceMapper(NamespaceDefinitionType.SOURCE),
                     ),
-                    ColumnNameMapping(
-                        mapOf(
-                            "foo" to "mapped_foo",
-                            "bar" to "mapped_bar",
-                        )
-                    )
+                    ColumnNameMapping(mapOf("foo" to "mapped_foo", "bar" to "mapped_bar")),
                 )
             }
         // note: we used unmapped column names in the exception message
         assertEquals(
             "Stream ns.n: Primary key contains non-clusterable JSON-typed column [foo]",
-            e.message
+            e.message,
         )
     }
 }

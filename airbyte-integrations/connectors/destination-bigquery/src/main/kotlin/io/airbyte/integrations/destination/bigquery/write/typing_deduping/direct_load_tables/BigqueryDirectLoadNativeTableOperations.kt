@@ -95,8 +95,8 @@ class BigqueryDirectLoadNativeTableOperations(
         val result =
             bigquery.query(
                 QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
-                ),
+                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1"
+                )
             )
         val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
         return if (value.isNull) {
@@ -113,7 +113,7 @@ class BigqueryDirectLoadNativeTableOperations(
     private fun shouldRecreateTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
-        existingTable: TableDefinition
+        existingTable: TableDefinition,
     ): Boolean {
         var tableClusteringMatches = false
         var tablePartitioningMatches = false
@@ -210,7 +210,8 @@ class BigqueryDirectLoadNativeTableOperations(
                   END
                   AS $newType
                 )
-                """.trimIndent()
+                """
+                .trimIndent()
         } else if (newType == StandardSQLTypeName.JSON) {
             return "TO_JSON($columnName)"
         } else {
@@ -263,18 +264,14 @@ class BigqueryDirectLoadNativeTableOperations(
                 SELECT
                 $valueList
                 FROM $originalTableId
-                """.trimIndent(),
+                """
+                    .trimIndent()
             )
 
         logger.info {
             "Stream ${stream.mappedDescriptor.toPrettyString()} using temporary table ${tempTableName.toPrettyString()} to recreate table ${tableName.toPrettyString()}."
         }
-        sqlOperations.createTable(
-            stream,
-            tempTableName,
-            columnNameMapping,
-            replace = true,
-        )
+        sqlOperations.createTable(stream, tempTableName, columnNameMapping, replace = true)
         databaseHandler.execute(insertToTempTable)
         sqlOperations.overwriteTable(tempTableName, tableName)
     }
@@ -385,10 +382,11 @@ class BigqueryDirectLoadNativeTableOperations(
                 ALTER TABLE $tableId
                   RENAME COLUMN `$realColumnName` TO $backupColumnName,
                   RENAME COLUMN `$tempColumnName` TO $realColumnName
-                """.trimIndent(),
+                """
+                    .trimIndent()
             )
             databaseHandler.executeWithRetries(
-                """ALTER TABLE $tableId DROP COLUMN $backupColumnName""",
+                """ALTER TABLE $tableId DROP COLUMN $backupColumnName"""
             )
         }
     }

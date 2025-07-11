@@ -50,7 +50,7 @@ class ObjectLoaderPartLoaderTest<T> {
         fileNumber: Int,
         index: Int,
         isFinal: Boolean = false,
-        empty: Boolean = false
+        empty: Boolean = false,
     ): ObjectLoaderPartFormatter.FormattedPart =
         ObjectLoaderPartFormatter.FormattedPart(
             Part(
@@ -62,7 +62,7 @@ class ObjectLoaderPartLoaderTest<T> {
                 } else {
                     ByteArray(0)
                 },
-                isFinal
+                isFinal,
             )
         )
 
@@ -70,7 +70,7 @@ class ObjectLoaderPartLoaderTest<T> {
         output:
             BatchAccumulatorResult<
                 ObjectLoaderPartLoader.State<MockRemoteObject>,
-                ObjectLoaderPartLoader.PartResult<MockRemoteObject>
+                ObjectLoaderPartLoader.PartResult<MockRemoteObject>,
             >
     ): ObjectLoaderPartLoader.State<MockRemoteObject> =
         when (output) {
@@ -97,7 +97,7 @@ class ObjectLoaderPartLoaderTest<T> {
         val file1State1 =
             acc.start(
                 ObjectKey(streamDescriptor, firstPartFile1.part.key),
-                firstPartFile1.part.partIndex
+                firstPartFile1.part.partIndex,
             )
         val file1State2 = getNextState(acc.accept(firstPartFile1, file1State1))
         coVerify(exactly = 1) { client.startStreamingUpload(firstPartFile1.part.key, metadata) }
@@ -117,7 +117,7 @@ class ObjectLoaderPartLoaderTest<T> {
         val file2State1 =
             acc.start(
                 ObjectKey(streamDescriptor, firstPartFile2.part.key),
-                firstPartFile2.part.partIndex
+                firstPartFile2.part.partIndex,
             )
         val file2State2 = getNextState(acc.accept(firstPartFile2, file2State1))
         coVerify(exactly = 1) { client.startStreamingUpload(firstPartFile2.part.key, metadata) }
@@ -153,7 +153,7 @@ class ObjectLoaderPartLoaderTest<T> {
         coVerify {
             uploads[1].uploadPart(
                 nonEmptyPenultimatePartFile2.part.bytes!!,
-                nonEmptyPenultimatePartFile2.part.partIndex
+                nonEmptyPenultimatePartFile2.part.partIndex,
             )
         }
         coVerify(exactly = 0) { uploads[1].complete() }

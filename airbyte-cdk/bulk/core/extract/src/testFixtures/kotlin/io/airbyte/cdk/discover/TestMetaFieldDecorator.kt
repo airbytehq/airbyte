@@ -32,12 +32,12 @@ class TestMetaFieldDecorator : MetaFieldDecorator {
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         recordData.putNull(CommonMetaField.CDC_DELETED_AT.id)
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
-            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp)
+            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
         )
         recordData.set<JsonNode>(
             GlobalCursor.id,
@@ -45,7 +45,7 @@ class TestMetaFieldDecorator : MetaFieldDecorator {
                 CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp)
             } else {
                 CdcStringMetaFieldType.jsonEncoder.encode(globalStateValue.toString())
-            }
+            },
         )
     }
 }

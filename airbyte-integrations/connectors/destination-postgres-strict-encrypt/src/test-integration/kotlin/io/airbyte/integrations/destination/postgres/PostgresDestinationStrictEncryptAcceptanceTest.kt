@@ -29,7 +29,7 @@ class PostgresDestinationStrictEncryptAcceptanceTest : AbstractPostgresDestinati
                 ImmutableMap.builder<Any?, Any?>()
                     .put(
                         "mode",
-                        "verify-ca"
+                        "verify-ca",
                     ) // verify-full will not work since the spawned container is only allowed for
                     // 127.0.0.1/32 CIDRs
                     .put("ca_certificate", testDb!!.certificates.caCertificate)
@@ -47,7 +47,7 @@ class PostgresDestinationStrictEncryptAcceptanceTest : AbstractPostgresDestinati
         testDb =
             PostgresTestDatabase.`in`(
                 PostgresTestDatabase.BaseImage.POSTGRES_12,
-                PostgresTestDatabase.ContainerModifier.CERT
+                PostgresTestDatabase.ContainerModifier.CERT,
             )
     }
 
@@ -69,7 +69,7 @@ class PostgresDestinationStrictEncryptAcceptanceTest : AbstractPostgresDestinati
                     "tunnel_method",
                     ImmutableMap.builder<Any, Any>()
                         .put("tunnel_method", SshTunnel.TunnelMethod.NO_TUNNEL.toString())
-                        .build()
+                        .build(),
                 )
                 .with("ssl_mode", ImmutableMap.builder<Any, Any>().put("mode", "prefer").build())
                 .build()
@@ -92,7 +92,7 @@ class PostgresDestinationStrictEncryptAcceptanceTest : AbstractPostgresDestinati
                     "tunnel_method",
                     ImmutableMap.builder<Any, Any>()
                         .put("tunnel_method", SshTunnel.TunnelMethod.NO_TUNNEL.toString())
-                        .build()
+                        .build(),
                 )
                 .with("ssl_mode", ImmutableMap.builder<Any, Any>().put("mode", "require").build())
                 .build()

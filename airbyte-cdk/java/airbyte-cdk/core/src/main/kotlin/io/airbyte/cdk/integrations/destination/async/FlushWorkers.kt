@@ -129,29 +129,22 @@ constructor(
         logger.info { workerInfo.toString() }
     }
 
-    private fun flush(
-        desc: StreamDescriptor,
-        flushWorkerId: UUID,
-    ) {
+    private fun flush(desc: StreamDescriptor, flushWorkerId: UUID) {
         workerPool.submit {
             logger.info {
                 "Flush Worker (${humanReadableFlushWorkerId(
-                        flushWorkerId,
+                        flushWorkerId
                     )}) -- Worker picked up work."
             }
             try {
                 logger.info {
                     "Flush Worker (${humanReadableFlushWorkerId(
-                            flushWorkerId,
+                            flushWorkerId
                         )}) -- Attempting to read from queue namespace: ${desc.namespace}, stream: ${desc.name}."
                 }
 
                 bufferDequeue.take(desc, flusher.optimalBatchSizeBytes).use { batch ->
-                    runningFlushWorkers.registerBatchSize(
-                        desc,
-                        flushWorkerId,
-                        batch.sizeInBytes,
-                    )
+                    runningFlushWorkers.registerBatchSize(desc, flushWorkerId, batch.sizeInBytes)
                     val stateIdToCount =
                         batch.data
                             .map(StreamAwareQueue.MessageWithMeta::stateId)
@@ -160,9 +153,9 @@ constructor(
                             .mapValues { it.value.toLong() }
                     logger.info {
                         "Flush Worker (${humanReadableFlushWorkerId(
-                                flushWorkerId,
+                                flushWorkerId
                             )}) -- Batch contains: ${batch.data.size} records, ${AirbyteFileUtils.byteCountToDisplaySize(
-                                batch.sizeInBytes,
+                                batch.sizeInBytes
                             )} bytes."
                     }
 
@@ -171,15 +164,15 @@ constructor(
                 }
                 logger.info {
                     "Flush Worker (${humanReadableFlushWorkerId(
-                            flushWorkerId,
+                            flushWorkerId
                         )}) -- Worker finished flushing. Current queue size: ${bufferDequeue.getQueueSizeInRecords(
-                            desc,
+                            desc
                         ).orElseThrow()}"
                 }
             } catch (e: Exception) {
                 logger.error(e) {
                     "Flush Worker (${humanReadableFlushWorkerId(
-                            flushWorkerId,
+                            flushWorkerId
                         )}) -- flush worker error: "
                 }
                 flushFailure.propagateException(e)
@@ -208,11 +201,7 @@ constructor(
             }
 
             val workerInfo =
-                StringBuilder()
-                    .append(
-                        "REMAINING_BUFFERS_INFO",
-                    )
-                    .append(System.lineSeparator())
+                StringBuilder().append("REMAINING_BUFFERS_INFO").append(System.lineSeparator())
             streamDescriptorToRemainingRecords.entries
                 .filter { entry: Map.Entry<StreamDescriptor, Long> -> entry.value > 0 }
                 .forEach { entry: Map.Entry<StreamDescriptor, Long> ->
@@ -222,7 +211,7 @@ constructor(
                             entry.key.namespace,
                             entry.key.name,
                             entry.value,
-                        ),
+                        )
                     )
                 }
             logger.info { workerInfo.toString() }

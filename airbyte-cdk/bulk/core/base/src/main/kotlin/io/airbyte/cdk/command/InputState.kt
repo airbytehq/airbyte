@@ -16,9 +16,7 @@ data class GlobalInputState(
     val nonGlobalStreams: Map<StreamIdentifier, OpaqueStateValue>,
 ) : InputState
 
-data class StreamInputState(
-    val streams: Map<StreamIdentifier, OpaqueStateValue>,
-) : InputState
+data class StreamInputState(val streams: Map<StreamIdentifier, OpaqueStateValue>) : InputState
 
 /** State values are opaque for the CDK, the schema is owned by the connector. */
 typealias OpaqueStateValue = JsonNode

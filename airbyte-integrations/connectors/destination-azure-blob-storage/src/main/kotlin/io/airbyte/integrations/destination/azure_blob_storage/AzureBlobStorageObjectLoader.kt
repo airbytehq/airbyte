@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class AzureBlobStorageObjectLoader(
     @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
-    config: AzureBlobStorageConfiguration<*>
+    config: AzureBlobStorageConfiguration<*>,
 ) : ObjectLoader {
     override val numPartWorkers: Int =
         if (isLegacyFileTransfer) {

@@ -23,9 +23,7 @@ import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
-    val partition: P,
-) : PartitionReader {
+sealed class JdbcPartitionReader<P : JdbcPartition<*>>(val partition: P) : PartitionReader {
 
     lateinit var outputMessageRouter: OutputMessageRouter
     lateinit var outputRoute: ((NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit)
@@ -71,7 +69,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                     .get()
                     .filter { it.value.resource != null }
                     .map { it.key to it.value.resource!! }
-                    .toMap()
+                    .toMap(),
             )
         outputRoute = outputMessageRouter.recordAcceptors[stream.id]!!
 
@@ -118,9 +116,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
-class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
-    partition: P,
-) : JdbcPartitionReader<P>(partition) {
+class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(partition: P) :
+    JdbcPartitionReader<P>(partition) {
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
@@ -138,7 +135,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                 parameters =
                     SelectQuerier.Parameters(
                         reuseResultObject = true,
-                        fetchSize = streamState.fetchSize
+                        fetchSize = streamState.fetchSize,
                     ),
             )
             .use { result: SelectQuerier.Result ->
@@ -161,7 +158,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 }
@@ -170,9 +167,8 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
  * JDBC implementation of [PartitionReader] which reads as much as possible of the [partition], in
  * order, before timing out.
  */
-class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
-    partition: P,
-) : JdbcPartitionReader<P>(partition) {
+class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(partition: P) :
+    JdbcPartitionReader<P>(partition) {
 
     val incumbentLimit = AtomicLong()
     val numRecords = AtomicLong()
@@ -220,7 +216,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                 when (streamState.streamFeedBootstrap.dataChannelMedium) {
                     SOCKET -> partitionId
                     STDIO -> null
-                }
+                },
             )
         }
         // The run method ended because of either the LIMIT or the timeout.
@@ -244,7 +240,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 }

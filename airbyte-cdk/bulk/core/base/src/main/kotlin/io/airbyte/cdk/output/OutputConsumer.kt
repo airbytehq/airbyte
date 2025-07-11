@@ -30,8 +30,8 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
      * The constant emittedAt timestamp we use for record timestamps.
      *
      * TODO: use the correct emittedAt time for each record. Ryan: not changing this now as it could
-     * have performance implications for sources given the delicate serialization logic in place
-     * here.
+     *   have performance implications for sources given the delicate serialization logic in place
+     *   here.
      */
     val recordEmittedAt: Instant = Instant.ofEpochMilli(clock.millis())
 
@@ -56,7 +56,7 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
         accept(
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                .withConnectionStatus(status),
+                .withConnectionStatus(status)
         )
     }
 
@@ -77,9 +77,7 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
 
     fun accept(estimate: AirbyteEstimateTraceMessage) {
         accept(
-            AirbyteTraceMessage()
-                .withType(AirbyteTraceMessage.Type.ESTIMATE)
-                .withEstimate(estimate),
+            AirbyteTraceMessage().withType(AirbyteTraceMessage.Type.ESTIMATE).withEstimate(estimate)
         )
     }
 
@@ -87,7 +85,7 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
         accept(
             AirbyteTraceMessage()
                 .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                .withStreamStatus(streamStatus),
+                .withStreamStatus(streamStatus)
         )
     }
 
@@ -95,7 +93,7 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
         accept(
             AirbyteTraceMessage()
                 .withType(AirbyteTraceMessage.Type.ANALYTICS)
-                .withAnalytics(analytics),
+                .withAnalytics(analytics)
         )
     }
 

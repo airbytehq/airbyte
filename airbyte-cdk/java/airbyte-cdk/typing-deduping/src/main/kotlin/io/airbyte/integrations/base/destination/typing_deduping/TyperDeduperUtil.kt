@@ -25,7 +25,7 @@ object TyperDeduperUtil {
         executorService: ExecutorService,
         destinationHandler: DestinationHandler<DestinationState>,
         migrations: List<Migration<DestinationState>>,
-        initialStates: List<DestinationInitialStatus<DestinationState>>
+        initialStates: List<DestinationInitialStatus<DestinationState>>,
     ): List<DestinationInitialStatus<DestinationState>> {
         // TODO: Either the migrations run the soft reset and create v2 tables or the actual
         // prepare tables.
@@ -53,7 +53,7 @@ object TyperDeduperUtil {
                 CompletableFutures.allOf(futures.values.toList()).toCompletableFuture().join()
             getResultsOrLogAndThrowFirst(
                 "The following exceptions were thrown attempting to run migrations:\n",
-                migrationResultFutures
+                migrationResultFutures,
             )
             val migrationResults: Map<StreamId, Migration.MigrationResult<DestinationState>> =
                 futures.mapValues { it.value.toCompletableFuture().join() }
@@ -119,7 +119,7 @@ object TyperDeduperUtil {
         destinationHandler: DestinationHandler<DestinationState>,
         v1V2Migrator: DestinationV1V2Migrator,
         v2TableMigrator: V2TableMigrator,
-        parsedCatalog: ParsedCatalog
+        parsedCatalog: ParsedCatalog,
     ) {
         val futures =
             parsedCatalog.streams.map {
@@ -128,12 +128,12 @@ object TyperDeduperUtil {
                         v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, it)
                         v2TableMigrator.migrateIfNecessary(it)
                     },
-                    executorService
+                    executorService,
                 )
             }
         getResultsOrLogAndThrowFirst(
             "The following exceptions were thrown attempting to run migrations:\n",
-            CompletableFutures.allOf(futures.toList()).toCompletableFuture().join()
+            CompletableFutures.allOf(futures.toList()).toCompletableFuture().join(),
         )
     }
 
@@ -145,7 +145,7 @@ object TyperDeduperUtil {
     fun <DestinationState> prepareSchemas(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<DestinationState>,
-        parsedCatalog: ParsedCatalog
+        parsedCatalog: ParsedCatalog,
     ) {
         val rawSchema = parsedCatalog.streams.map { it.id.rawNamespace }
         val finalSchema = parsedCatalog.streams.map { it.id.finalNamespace }
@@ -158,7 +158,7 @@ object TyperDeduperUtil {
         executorService: ExecutorService,
         destinationHandler: DestinationHandler<DestinationState>,
         migration: Migration<DestinationState>,
-        initialStatus: DestinationInitialStatus<DestinationState>
+        initialStatus: DestinationInitialStatus<DestinationState>,
     ): CompletionStage<Migration.MigrationResult<DestinationState>> {
         return CompletableFuture.supplyAsync(
             {
@@ -174,7 +174,7 @@ object TyperDeduperUtil {
                     migration.migrateIfNecessary(
                         destinationHandler,
                         initialStatus.streamConfig,
-                        initialStatus
+                        initialStatus,
                     )
                 val updatedNeedsSoftReset =
                     softReset || migrationResult.updatedDestinationState.needsSoftReset()
@@ -183,7 +183,7 @@ object TyperDeduperUtil {
                         migrationResult.updatedDestinationState.withSoftReset(updatedNeedsSoftReset)
                 )
             },
-            executorService
+            executorService,
         )
     }
 
@@ -206,14 +206,14 @@ object TyperDeduperUtil {
         destinationHandler: DestinationHandler<*>,
         streamConfig: StreamConfig?,
         minExtractedAt: Optional<Instant>,
-        suffix: String
+        suffix: String,
     ) {
         try {
             LOGGER.info(
                 "Attempting typing and deduping for {}.{} with suffix {}",
                 streamConfig!!.id.originalNamespace,
                 streamConfig.id.originalName,
-                suffix
+                suffix,
             )
             val unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false)
             destinationHandler.execute(unsafeSql)
@@ -225,7 +225,7 @@ object TyperDeduperUtil {
                     streamConfig!!.id.originalNamespace,
                     streamConfig.id.originalName,
                     suffix,
-                    e
+                    e,
                 )
                 val saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true)
                 destinationHandler.execute(saferSql)
@@ -235,7 +235,7 @@ object TyperDeduperUtil {
                     streamConfig!!.id.originalNamespace,
                     streamConfig.id.originalName,
                     suffix,
-                    e
+                    e,
                 )
                 throw e
             }
@@ -256,12 +256,12 @@ object TyperDeduperUtil {
     fun executeSoftReset(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ) {
         LOGGER.info(
             "Attempting soft reset for stream {} {}",
             streamConfig.id.originalNamespace,
-            streamConfig.id.originalName
+            streamConfig.id.originalName,
         )
         destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig))
         executeTypeAndDedupe(
@@ -269,7 +269,7 @@ object TyperDeduperUtil {
             destinationHandler,
             streamConfig,
             Optional.empty(),
-            SOFT_RESET_SUFFIX
+            SOFT_RESET_SUFFIX,
         )
         destinationHandler.execute(
             sqlGenerator.overwriteFinalTable(streamConfig.id, SOFT_RESET_SUFFIX)

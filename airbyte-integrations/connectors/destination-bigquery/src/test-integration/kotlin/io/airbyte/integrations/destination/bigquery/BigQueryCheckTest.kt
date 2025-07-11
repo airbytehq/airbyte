@@ -13,9 +13,7 @@ import org.junit.jupiter.api.Test
 class BigQueryCheckTest :
     CheckIntegrationTest<BigquerySpecification>(
         successConfigFilenames =
-            listOf(
-                CheckTestConfig(BigQueryDestinationTestUtils.standardInsertConfig),
-            ),
+            listOf(CheckTestConfig(BigQueryDestinationTestUtils.standardInsertConfig)),
         failConfigFilenamesAndFailureReasons =
             mapOf(
                 CheckTestConfig(
@@ -26,7 +24,7 @@ class BigQueryCheckTest :
                 ) to
                     Pattern.compile(
                         "Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake"
-                    ),
+                    )
                 // these tests somehow hang in CI.
                 // CheckTestConfig(
                 //     BigQueryDestinationTestUtils.createConfig(
@@ -48,7 +46,7 @@ class BigQueryCheckTest :
                 //     ),
                 //     name = "gcs bad copy permission",
                 // ) to Pattern.compile("Permission bigquery.tables.updateData denied on table"),
-                ),
+            ),
         additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
     @Test

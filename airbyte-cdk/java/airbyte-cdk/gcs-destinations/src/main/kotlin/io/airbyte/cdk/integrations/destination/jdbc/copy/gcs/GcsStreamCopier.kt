@@ -44,7 +44,7 @@ abstract class GcsStreamCopier(
     protected val db: JdbcDatabase,
     protected val gcsConfig: GcsConfig,
     private val nameTransformer: StandardNameTransformer,
-    private val sqlOperations: SqlOperations
+    private val sqlOperations: SqlOperations,
 ) : StreamCopier {
     @get:VisibleForTesting
     val tmpTableName: String = @Suppress("deprecation") nameTransformer.getTmpTableName(streamName)
@@ -52,7 +52,7 @@ abstract class GcsStreamCopier(
     protected var filenameGenerator: StagingFilenameGenerator =
         StagingFilenameGenerator(
             streamName,
-            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong(),
         )
     private val channels = HashMap<String, WriteChannel>()
     private val csvPrinters = HashMap<String, CSVPrinter>()
@@ -62,7 +62,7 @@ abstract class GcsStreamCopier(
             "/",
             stagingFolder,
             schemaName,
-            filenameGenerator.stagingFilename
+            filenameGenerator.stagingFilename,
         )
     }
 
@@ -93,7 +93,7 @@ abstract class GcsStreamCopier(
             csvPrinters[fileName]!!.printRecord(
                 id,
                 Jsons.serialize(recordMessage!!.data),
-                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
+                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt)),
             )
         }
     }
@@ -126,7 +126,7 @@ abstract class GcsStreamCopier(
                 getFullGcsPath(gcsConfig.bucketName, gcsStagingFile),
                 schemaName,
                 tmpTableName,
-                gcsConfig
+                gcsConfig,
             )
         }
         LOGGER.info {
@@ -200,7 +200,7 @@ abstract class GcsStreamCopier(
         gcsFileLocation: String?,
         schema: String?,
         tableName: String?,
-        gcsConfig: GcsConfig?
+        gcsConfig: GcsConfig?,
     )
 
     companion object {
@@ -216,6 +216,7 @@ abstract class GcsStreamCopier(
         // QUERY_TIMEOUT when
         // the records from the file are copied to the staging table.
         const val MAX_PARTS_PER_FILE: Int = 1000
+
         private fun getFullGcsPath(bucketName: String?, stagingFile: String): String {
             // this is intentionally gcs:/ not gcs:// since the join adds the additional slash
             return java.lang.String.join("/", "gcs:/", bucketName, stagingFile)

@@ -18,7 +18,7 @@ class S3V2CheckTest :
             listOf(
                 CheckTestConfig(
                     S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
-                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
                 CheckTestConfig(
                     S3V2TestUtils.getConfig(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
@@ -35,7 +35,7 @@ class S3V2CheckTest :
                 CheckTestConfig(
                     S3V2TestUtils.getConfig(S3V2TestUtils.ENDPOINT_EMPTY_URL_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
-                )
+                ),
             ),
         failConfigFilenamesAndFailureReasons = emptyMap(),
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,

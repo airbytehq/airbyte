@@ -11,7 +11,7 @@ class RedshiftGenerationHandler(private val databaseName: String) : JdbcGenerati
     override fun getGenerationIdInTable(
         database: JdbcDatabase,
         namespace: String,
-        name: String
+        name: String,
     ): Long? {
         // for now, just use 0. this means we will always use a temp final table.
         // platform has a workaround for this, so it's OK.

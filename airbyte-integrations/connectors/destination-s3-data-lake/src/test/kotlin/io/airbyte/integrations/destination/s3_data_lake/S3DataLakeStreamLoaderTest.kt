@@ -69,7 +69,7 @@ internal class S3DataLakeStreamLoaderTest {
                         linkedMapOf(
                             "id" to FieldType(IntegerType, nullable = true),
                             "name" to FieldType(StringType, nullable = true),
-                        ),
+                        )
                     ),
                 generationId = 1,
                 minimumGenerationId = 1,
@@ -181,7 +181,7 @@ internal class S3DataLakeStreamLoaderTest {
                         linkedMapOf(
                             "id" to FieldType(IntegerType, nullable = true),
                             "name" to FieldType(StringType, nullable = true),
-                        ),
+                        )
                     ),
                 generationId = 1,
                 minimumGenerationId = 1,
@@ -191,10 +191,7 @@ internal class S3DataLakeStreamLoaderTest {
                 namespaceMapper =
                     NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
             )
-        val icebergSchema =
-            Schema(
-                Types.NestedField.of(2, true, "name", Types.StringType.get()),
-            )
+        val icebergSchema = Schema(Types.NestedField.of(2, true, "name", Types.StringType.get()))
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -219,19 +216,10 @@ internal class S3DataLakeStreamLoaderTest {
         val table: Table = mockk { every { schema() } returns icebergSchema }
         val updateSchema: UpdateSchema = mockk()
         every { table.updateSchema().allowIncompatibleChanges() } returns updateSchema
-        every {
-            updateSchema.updateColumn(
-                any<String>(),
-                any<PrimitiveType>(),
-            )
-        } returns updateSchema
-        every {
-            updateSchema.addColumn(
-                any<String>(),
-                any<String>(),
-                any<PrimitiveType>(),
-            )
-        } returns updateSchema
+        every { updateSchema.updateColumn(any<String>(), any<PrimitiveType>()) } returns
+            updateSchema
+        every { updateSchema.addColumn(any<String>(), any<String>(), any<PrimitiveType>()) } returns
+            updateSchema
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { updateSchema.apply() } returns icebergSchema
@@ -299,7 +287,7 @@ internal class S3DataLakeStreamLoaderTest {
                         linkedMapOf(
                             "id" to FieldType(IntegerType, nullable = false),
                             "name" to FieldType(StringType, nullable = true),
-                        ),
+                        )
                     ),
                 generationId = 1,
                 minimumGenerationId = 1,
@@ -373,19 +361,10 @@ internal class S3DataLakeStreamLoaderTest {
         val table: Table = mockk { every { schema() } returns icebergSchema }
         val updateSchema: UpdateSchema = mockk()
         every { table.updateSchema().allowIncompatibleChanges() } returns updateSchema
-        every {
-            updateSchema.updateColumn(
-                any<String>(),
-                any<PrimitiveType>(),
-            )
-        } returns updateSchema
-        every {
-            updateSchema.addColumn(
-                any<String>(),
-                any<String>(),
-                any<PrimitiveType>(),
-            )
-        } returns updateSchema
+        every { updateSchema.updateColumn(any<String>(), any<PrimitiveType>()) } returns
+            updateSchema
+        every { updateSchema.addColumn(any<String>(), any<String>(), any<PrimitiveType>()) } returns
+            updateSchema
         every { updateSchema.requireColumn("id") } returns updateSchema
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
         every { updateSchema.commit() } just runs
@@ -450,7 +429,7 @@ internal class S3DataLakeStreamLoaderTest {
                         linkedMapOf(
                             "id" to FieldType(IntegerType, nullable = false),
                             "name" to FieldType(StringType, nullable = true),
-                        ),
+                        )
                     ),
                 generationId = 1,
                 minimumGenerationId = 0,
@@ -483,9 +462,6 @@ internal class S3DataLakeStreamLoaderTest {
                 streamStateStore = streamStateStore,
             )
 
-        assertEquals(
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
-            streamLoader.columnTypeChangeBehavior,
-        )
+        assertEquals(ColumnTypeChangeBehavior.SAFE_SUPERTYPE, streamLoader.columnTypeChangeBehavior)
     }
 }

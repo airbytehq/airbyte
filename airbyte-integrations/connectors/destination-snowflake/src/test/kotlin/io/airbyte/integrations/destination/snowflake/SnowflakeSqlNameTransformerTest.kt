@@ -25,7 +25,7 @@ internal class SnowflakeSqlNameTransformerTest {
                 "spécial_character",
                 "special_character",
                 "99namespace",
-                "_99namespace"
+                "_99namespace",
             )
     }
 }

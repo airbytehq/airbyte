@@ -14,12 +14,11 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(env = [Environment.CLI])
 @Replaces(CatalogValidationFailureHandler::class)
-class DelegatingCatalogValidationFailureHandler(
-    val outputConsumer: OutputConsumer,
-) : CatalogValidationFailureHandler {
+class DelegatingCatalogValidationFailureHandler(val outputConsumer: OutputConsumer) :
+    CatalogValidationFailureHandler {
     override fun accept(f: CatalogValidationFailure) {
         outputConsumer.accept(
-            AirbyteLogMessage().withLevel(AirbyteLogMessage.Level.WARN).withMessage(f.toString()),
+            AirbyteLogMessage().withLevel(AirbyteLogMessage.Level.WARN).withMessage(f.toString())
         )
     }
 }

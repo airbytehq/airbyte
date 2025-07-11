@@ -42,9 +42,7 @@ import kotlin.use
  * Snowflake uses a standard three-level namespace: catalog.schema.table where catalog is the
  * database name, schema is the schema name.
  */
-class SnowflakeSourceMetadataQuerier(
-    val base: JdbcMetadataQuerier,
-) : MetadataQuerier by base {
+class SnowflakeSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
 
     fun TableName.namespace(): String? =
@@ -120,9 +118,7 @@ class SnowflakeSourceMetadataQuerier(
         return tableName to metadata
     }
 
-    override fun fields(
-        streamID: StreamIdentifier,
-    ): List<Field> {
+    override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return columnMetadata(table).map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
     }
@@ -148,10 +144,7 @@ class SnowflakeSourceMetadataQuerier(
     /**
      * Generates SQL query used to discover [ColumnMetadata] and to verify table access permissions.
      */
-    fun selectLimit0(
-        table: TableName,
-        columnIDs: List<String>,
-    ): String {
+    fun selectLimit0(table: TableName, columnIDs: List<String>): String {
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
@@ -161,10 +154,7 @@ class SnowflakeSourceMetadataQuerier(
         return base.selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
-    private fun queryColumnMetadata(
-        conn: Connection,
-        sql: String,
-    ): List<ColumnMetadata>? {
+    private fun queryColumnMetadata(conn: Connection, sql: String): List<ColumnMetadata>? {
         log.info { "Querying $sql for catalog discovery." }
         conn.createStatement().use { stmt: Statement ->
             try {
@@ -217,9 +207,7 @@ class SnowflakeSourceMetadataQuerier(
             .map(StreamIdentifier::from)
     }
 
-    fun findTableName(
-        streamID: StreamIdentifier,
-    ): TableName? =
+    fun findTableName(streamID: StreamIdentifier): TableName? =
         memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
 
     val memoizedTableNames: List<TableName> by lazy {
@@ -296,9 +284,7 @@ class SnowflakeSourceMetadataQuerier(
         }
     }
 
-    override fun primaryKey(
-        streamID: StreamIdentifier,
-    ): List<List<String>> {
+    override fun primaryKey(streamID: StreamIdentifier): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }

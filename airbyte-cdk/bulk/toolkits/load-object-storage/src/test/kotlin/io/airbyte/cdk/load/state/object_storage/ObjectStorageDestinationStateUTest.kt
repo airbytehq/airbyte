@@ -50,7 +50,7 @@ class ObjectStorageDestinationStateUTest {
                     MockObj("dog-1"),
                     MockObj("dog-3"),
                     MockObj("cat"),
-                    MockObj("turtle-1-100")
+                    MockObj("turtle-1-100"),
                 )
             )
         coEvery { client.list(any()) } answers
@@ -85,7 +85,7 @@ class ObjectStorageDestinationStateUTest {
                     MockObj("dog/file.1.jsonl"),
                     MockObj("dog/file.2.jsonl"),
                     MockObj("cat/file.1.jsonl"),
-                    MockObj("turtle-1/file.100.jsonl")
+                    MockObj("turtle-1/file.100.jsonl"),
                 )
             )
         coEvery { client.list(any()) } answers
@@ -99,7 +99,7 @@ class ObjectStorageDestinationStateUTest {
                 val suffix = secondArg<String>()
                 PathMatcher(
                     Regex("(dog|cat|turtle-1)/file\\.([0-9]+)\\.(jsonl)$suffix"),
-                    mapOf("part_number" to 2, "suffix" to 4)
+                    mapOf("part_number" to 2, "suffix" to 4),
                 )
             }
 
@@ -124,7 +124,7 @@ class ObjectStorageDestinationStateUTest {
                     MockObj("cat/2"),
                     MockObj("cat/3"),
                     MockObj("turtle-1/1"),
-                    MockObj("turtle-1/2")
+                    MockObj("turtle-1/2"),
                 )
             )
         coEvery { client.list(any()) } answers
@@ -139,7 +139,7 @@ class ObjectStorageDestinationStateUTest {
                 val suffix = secondArg<String>()
                 PathMatcher(
                     Regex("(${stream.mappedDescriptor.name})/([0-9]+)$suffix"),
-                    mapOf("suffix" to 3)
+                    mapOf("suffix" to 3),
                 )
             }
 
@@ -167,7 +167,7 @@ class ObjectStorageDestinationStateUTest {
         val catState = persister.load(catStream)
         assertEquals(
             setOf("cat/1", "cat/2"),
-            catState.getObjectsToDelete().map { it.second.key }.toSet()
+            catState.getObjectsToDelete().map { it.second.key }.toSet(),
         )
 
         val turtleStream = mockk<DestinationStream>(relaxed = true)

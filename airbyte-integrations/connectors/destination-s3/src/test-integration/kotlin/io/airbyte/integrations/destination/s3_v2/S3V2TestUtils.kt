@@ -40,6 +40,7 @@ object S3V2TestUtils {
 
     private const val ASSUME_ROLE_INTERNAL_CREDENTIALS_SECRET_PATH =
         "secrets/s3_dest_iam_role_credentials_for_assume_role_auth.json"
+
     init {
         val parsedAssumeRoleCreds =
             Jsons.readTree(Files.readString(Path.of(ASSUME_ROLE_INTERNAL_CREDENTIALS_SECRET_PATH)))
@@ -47,11 +48,7 @@ object S3V2TestUtils {
         val assumeRoleSecretKey = parsedAssumeRoleCreds["AWS_SECRET_ACCESS_KEY"].textValue()
         val assumeRoleExternalId = parsedAssumeRoleCreds["AWS_ASSUME_ROLE_EXTERNAL_ID"].textValue()
         assumeRoleCredentials =
-            AwsAssumeRoleCredentials(
-                assumeRoleAccessKey,
-                assumeRoleSecretKey,
-                assumeRoleExternalId,
-            )
+            AwsAssumeRoleCredentials(assumeRoleAccessKey, assumeRoleSecretKey, assumeRoleExternalId)
     }
 
     val PERFORMANCE_TEST_MICRONAUT_PROPERTIES =

@@ -31,7 +31,7 @@ data class IcebergCatalogConfiguration(
     @JsonPropertyDescription(
         "The specific configuration details of the chosen Iceberg catalog type."
     )
-    val catalogConfiguration: CatalogConfiguration
+    val catalogConfiguration: CatalogConfiguration,
 )
 
 /**
@@ -58,7 +58,7 @@ data class GlueCatalogConfiguration(
     @get:JsonPropertyDescription(
         """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
     )
-    val databaseName: String
+    val databaseName: String,
 ) : CatalogConfiguration, AWSArnRoleConfigurationProvider
 
 /**
@@ -81,7 +81,7 @@ data class NessieCatalogConfiguration(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String
+    val namespace: String,
 ) : CatalogConfiguration
 
 /**
@@ -101,7 +101,7 @@ data class RestCatalogConfiguration(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String
+    val namespace: String,
 ) : CatalogConfiguration
 
 /**

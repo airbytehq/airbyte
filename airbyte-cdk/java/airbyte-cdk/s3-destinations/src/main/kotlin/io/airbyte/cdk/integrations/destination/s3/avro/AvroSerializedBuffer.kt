@@ -76,16 +76,13 @@ class AvroSerializedBuffer(
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
-            Jsons.deserialize(
-                    recordString,
-                    AirbyteRecordMessage::class.java,
-                )
+            Jsons.deserialize(recordString, AirbyteRecordMessage::class.java)
                 .withEmittedAt(emittedAt),
-            generationId
+            generationId,
         )
     }
 
@@ -105,7 +102,7 @@ class AvroSerializedBuffer(
         fun createFunction(
             config: UploadAvroFormatConfig,
             createStorageFunction: Callable<BufferStorage>,
-            useV2FeatureSet: Boolean = false
+            useV2FeatureSet: Boolean = false,
         ): BufferCreateFunction {
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
@@ -116,10 +113,7 @@ class AvroSerializedBuffer(
                     catalog.streams
                         .filter { s: ConfiguredAirbyteStream ->
                             s.stream.name == stream.name &&
-                                StringUtils.equals(
-                                    s.stream.namespace,
-                                    stream.namespace,
-                                )
+                                StringUtils.equals(s.stream.namespace, stream.namespace)
                         }
                         .firstOrNull()
                         ?.stream
@@ -140,7 +134,7 @@ class AvroSerializedBuffer(
                             stream.namespace,
                             useV2FieldNames = useV2FeatureSet,
                             addStringToLogicalTypes = !useV2FeatureSet,
-                            appendExtraProps = !useV2FeatureSet
+                            appendExtraProps = !useV2FeatureSet,
                         )
 
                 // Build record processor

@@ -45,7 +45,7 @@ enum class S3BucketRegion(@get:JsonValue val region: String) {
     `us-gov-east-1`("us-gov-east-1"),
     `us-gov-west-1`("us-gov-west-1"),
     `us-west-1`("us-west-1"),
-    `us-west-2`("us-west-2")
+    `us-west-2`("us-west-2"),
 }
 
 /**
@@ -87,7 +87,7 @@ interface S3BucketSpecification {
 data class S3BucketConfiguration(
     val s3BucketName: String,
     val s3BucketRegion: String?,
-    val s3Endpoint: String?
+    val s3Endpoint: String?,
 )
 
 interface S3BucketConfigurationProvider {

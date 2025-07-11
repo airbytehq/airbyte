@@ -21,9 +21,7 @@ import java.time.Clock
 @Singleton
 @Requires(notEnv = [Environment.CLI])
 @Replaces(OutputConsumer::class)
-class BufferingOutputConsumer(
-    clock: Clock,
-) : StandardOutputConsumer(clock) {
+class BufferingOutputConsumer(clock: Clock) : StandardOutputConsumer(clock) {
 
     private val records = mutableListOf<AirbyteRecordMessage>()
     private val states = mutableListOf<AirbyteStateMessage>()

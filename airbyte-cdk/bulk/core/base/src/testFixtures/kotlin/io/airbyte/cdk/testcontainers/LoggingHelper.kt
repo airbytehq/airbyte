@@ -6,24 +6,17 @@ object LoggingHelper {
     const val PREPARE_COLOR_CHAR: String = "\u001b[m"
     const val RESET: String = "\u001B[0m"
 
-    fun applyColor(
-        color: Color,
-        msg: String,
-    ): String = PREPARE_COLOR_CHAR + color.code + msg + PREPARE_COLOR_CHAR + RESET
+    fun applyColor(color: Color, msg: String): String =
+        PREPARE_COLOR_CHAR + color.code + msg + PREPARE_COLOR_CHAR + RESET
 
-    fun logPrefixMdc(
-        logPrefix: String,
-        color: Color? = null,
-    ): Pair<String, String> =
+    fun logPrefixMdc(logPrefix: String, color: Color? = null): Pair<String, String> =
         LOG_SOURCE_MDC_KEY to
             when (color) {
                 null -> logPrefix
                 else -> applyColor(color, logPrefix)
             }
 
-    enum class Color(
-        val code: String,
-    ) {
+    enum class Color(val code: String) {
         BLACK("\u001b[30m"),
         RED("\u001b[31m"),
         GREEN("\u001b[32m"),

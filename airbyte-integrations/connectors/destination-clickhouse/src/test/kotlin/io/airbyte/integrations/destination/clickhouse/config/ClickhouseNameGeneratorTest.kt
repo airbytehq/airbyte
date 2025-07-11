@@ -15,7 +15,7 @@ class ClickhouseNameGeneratorTest {
         Assertions.assertEquals("user_123", "user-123".toClickHouseCompatibleName())
         Assertions.assertEquals(
             "________________________________",
-            ",./<>?'\";[]\\:{}|`~!@#\$%^&*()_+-=".toClickHouseCompatibleName()
+            ",./<>?'\";[]\\:{}|`~!@#\$%^&*()_+-=".toClickHouseCompatibleName(),
         )
         Assertions.assertEquals("a_b_c", "a.b.c".toClickHouseCompatibleName())
     }
@@ -45,7 +45,7 @@ class ClickhouseNameGeneratorTest {
         Assertions.assertEquals("valid_name", "valid_name".toClickHouseCompatibleName())
         Assertions.assertEquals(
             "another_valid_123",
-            "another_valid_123".toClickHouseCompatibleName()
+            "another_valid_123".toClickHouseCompatibleName(),
         )
     }
 }

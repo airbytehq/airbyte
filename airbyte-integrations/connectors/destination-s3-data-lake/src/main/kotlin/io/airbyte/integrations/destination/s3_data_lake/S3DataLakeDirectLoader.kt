@@ -34,7 +34,7 @@ class S3DataLakeDirectLoaderFactory(
 
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
-        part: Int
+        part: Int,
     ): S3DataLakeDirectLoader {
         log.info { "Creating direct loader for stream $streamDescriptor" }
 
@@ -45,7 +45,7 @@ class S3DataLakeDirectLoaderFactory(
                 table = state.table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
                 importType = stream.importType,
-                schema = state.schema
+                schema = state.schema,
             )
 
         return S3DataLakeDirectLoader(

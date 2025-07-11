@@ -42,7 +42,7 @@ interface LoadTypeSpecification {
                         sharedAccessSignature = lt.azureBlobStorageSharedAccessSignature,
                         accountKey = lt.azureBlobStorageAccountKey,
                         bulkLoadDataSource = lt.bulkLoadDataSource,
-                        validateValuesPreLoad = lt.validateValuesPreLoad
+                        validateValuesPreLoad = lt.validateValuesPreLoad,
                     )
                 }
                 is InsertLoadSpecification -> InsertLoadTypeConfiguration()
@@ -74,7 +74,7 @@ sealed class LoadType(@JsonSchemaTitle("Load Type") open val loadType: Type) {
     /** Enum of possible load operations in MSSQL: INSERT or BULK. */
     enum class Type(@get:JsonValue val loadTypeName: String) {
         INSERT("INSERT"),
-        BULK("BULK")
+        BULK("BULK"),
     }
 }
 
@@ -85,7 +85,7 @@ class InsertLoadSpecification(
     @JsonSchemaTitle("Load Type")
     @JsonProperty("load_type")
     @JsonSchemaInject(json = """{"order": 0}""")
-    override val loadType: Type = Type.INSERT,
+    override val loadType: Type = Type.INSERT
 ) : LoadType(loadType)
 
 /** Configuration for the BULK load mechanism, leveraging Azure Blob Storage. */
@@ -118,7 +118,8 @@ class BulkLoadSpecification(
     )
     @get:JsonProperty("azure_blob_storage_container_name")
     @JsonSchemaInject(
-        json = """{
+        json =
+            """{
             "order": 2,
             "always_show": true
         }"""
@@ -222,7 +223,7 @@ data class BulkLoadConfiguration(
     val sharedAccessSignature: String?,
     val accountKey: String?,
     val bulkLoadDataSource: String,
-    val validateValuesPreLoad: Boolean?
+    val validateValuesPreLoad: Boolean?,
 ) : LoadTypeConfiguration
 
 /**

@@ -36,7 +36,7 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
         // paths.
         return descriptor.copy(
             namespace = descriptor.namespace?.replace("ø", "o"),
-            name = descriptor.name.replace("é", "e")
+            name = descriptor.name.replace("é", "e"),
         )
     }
 

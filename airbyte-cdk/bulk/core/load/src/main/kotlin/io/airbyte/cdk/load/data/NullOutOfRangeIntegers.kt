@@ -13,7 +13,7 @@ import java.math.BigInteger
  */
 class NullOutOfRangeIntegers(
     private val minValue: BigInteger = Long.MIN_VALUE.toBigInteger(),
-    private val maxValue: BigInteger = Long.MAX_VALUE.toBigInteger()
+    private val maxValue: BigInteger = Long.MAX_VALUE.toBigInteger(),
 ) : AirbyteValueIdentityMapper() {
     override fun mapInteger(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> {
         value as IntegerValue
@@ -21,7 +21,7 @@ class NullOutOfRangeIntegers(
             return nulledOut(
                 IntegerType,
                 context,
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             )
         }
         return super.mapInteger(value, context)

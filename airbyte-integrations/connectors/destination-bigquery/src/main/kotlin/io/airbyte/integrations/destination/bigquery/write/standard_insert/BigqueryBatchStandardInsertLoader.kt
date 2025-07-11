@@ -184,6 +184,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             |   2. Make sure that the actual destination schema's location corresponds to the location provided in the connector's config.
             |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) to the "Destination Default" option.
             |More details:
-            |""".trimMargin()
+            |"""
+                .trimMargin()
     }
 }

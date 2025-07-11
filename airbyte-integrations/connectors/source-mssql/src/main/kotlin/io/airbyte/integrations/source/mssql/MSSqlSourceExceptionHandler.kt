@@ -25,8 +25,8 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
                     "(?i).*returned an incomplete response. The connection has been closed.*",
                 sampleInternalMessage =
                     "com.microsoft.sqlserver.jdbc.SQLServerException: SQL Server returned an incomplete response. The connection has been closed.",
-                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6623")
-            ),
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6623"),
+            )
         )
         add(
             ConnectorErrorProfile(
@@ -38,8 +38,8 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
                     "Encountered an error while reading from the database, will retry",
                 sampleInternalMessage =
                     "com.microsoft.sqlserver.jdbc.SQLServerException: SQL Server did not return a response. The connection has been closed.",
-                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/7757")
-            ),
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/7757"),
+            )
         )
         add(
             ConnectorErrorProfile(
@@ -49,8 +49,8 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
                 externalMessage = "The SQL Server connection was unexpectedly closed, will retry.",
                 sampleInternalMessage =
                     "com.microsoft.sqlserver.jdbc.SQLServerException: The connection is closed.",
-                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6438")
-            ),
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6438"),
+            )
         )
         add(
             // Error 1205
@@ -65,8 +65,8 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "com.microsoft.sqlserver.jdbc.SQLServerException: " +
                         "Transaction (Process ID 63) was deadlocked on lock resources with another process and has been chosen as the deadlock victim. Rerun the transaction.",
-                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6287")
-            ),
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6287"),
+            )
         )
         // This error occurs when Debezium encounters an exception.
         // We classify it as TRANSIENT since it may be resolved through automatic retries but can
@@ -84,8 +84,8 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
                 referenceLinks =
                     listOf(
                         "https://docs.oracle.com/javase/9/docs/api/java/lang/RuntimeException.html"
-                    )
-            ),
+                    ),
+            )
         )
     }
 }

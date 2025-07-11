@@ -27,7 +27,7 @@ class JdbcSelectQuerierTest {
             |
             """
                 .trimMargin()
-                .replace('\n', ' '),
+                .replace('\n', ' ')
         )
         h2.execute("INSERT INTO kv (k, v) VALUES (1, 'foo'), (2, 'bar'), (3, NULL);")
     }
@@ -77,10 +77,7 @@ class JdbcSelectQuerierTest {
         )
     }
 
-    private fun runTest(
-        q: SelectQuery,
-        vararg expectedJson: String,
-    ) {
+    private fun runTest(q: SelectQuery, vararg expectedJson: String) {
         val configPojo: H2SourceConfigurationSpecification =
             H2SourceConfigurationSpecification().apply {
                 port = h2.port

@@ -24,10 +24,7 @@ import org.jooq.DataType
 import org.jooq.SQLDialect
 import org.jooq.impl.DefaultDataType
 
-class MysqlDestinationHandler(
-    jdbcDatabase: JdbcDatabase,
-    rawTableDatabaseName: String,
-) :
+class MysqlDestinationHandler(jdbcDatabase: JdbcDatabase, rawTableDatabaseName: String) :
     JdbcDestinationHandler<MinimumDestinationState>(
         // Mysql doesn't have an actual schema concept.
         // Instead, we put each namespace into its own database.
@@ -38,6 +35,7 @@ class MysqlDestinationHandler(
     ) {
     override val stateTableUpdatedAtType: DataType<*> =
         DefaultDataType(SQLDialect.MYSQL, String::class.java, "datetime")
+
     override fun toJdbcTypeName(airbyteType: AirbyteType): String =
         // This is mostly identical to the postgres implementation, but swaps jsonb to json
         if (airbyteType is AirbyteProtocolType) {
@@ -62,7 +60,7 @@ class MysqlDestinationHandler(
 
     override fun toDestinationState(json: JsonNode): MinimumDestinationState =
         MinimumDestinationState.Impl(
-            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
+            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean()
         )
 
     // Mysql doesn't have schemas. Pass the namespace as the database name.

@@ -33,7 +33,7 @@ val log = KotlinLogging.logger {}
 
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
-    justification = "suspend and fb's non-null analysis don't play well"
+    justification = "suspend and fb's non-null analysis don't play well",
 )
 @Singleton
 class ClickhouseAirbyteClient(
@@ -54,16 +54,9 @@ class ClickhouseAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
-        execute(
-            sqlGenerator.createTable(
-                stream,
-                tableName,
-                columnNameMapping,
-                replace,
-            ),
-        )
+        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
     }
 
     override suspend fun dropTable(tableName: TableName) {
@@ -78,37 +71,26 @@ class ClickhouseAirbyteClient(
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
-        execute(
-            sqlGenerator.copyTable(
-                columnNameMapping,
-                sourceTableName,
-                targetTableName,
-            ),
-        )
+        execute(sqlGenerator.copyTable(columnNameMapping, sourceTableName, targetTableName))
     }
 
     override suspend fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(
-            sqlGenerator.upsertTable(
-                stream,
-                columnNameMapping,
-                sourceTableName,
-                targetTableName,
-            ),
+            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
         )
     }
 
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ) {
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
         val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
@@ -142,7 +124,7 @@ class ClickhouseAirbyteClient(
                 is Dedupe ->
                     sqlGenerator.extractPks(
                         (stream.importType as Dedupe).primaryKey,
-                        columnNameMapping
+                        columnNameMapping,
                     )
                 else -> listOf()
             }
@@ -156,12 +138,7 @@ class ClickhouseAirbyteClient(
             )
 
         if (columnChanges.hasApplicableAlterations()) {
-            execute(
-                sqlGenerator.alterTable(
-                    columnChanges,
-                    properTableName,
-                ),
-            )
+            execute(sqlGenerator.alterTable(columnChanges, properTableName))
         }
 
         if (columnChanges.hasDedupChange) {
@@ -170,21 +147,8 @@ class ClickhouseAirbyteClient(
             }
             val tempTableName = tempTableNameGenerator.generate(properTableName)
             execute(sqlGenerator.createNamespace(tempTableName.namespace))
-            execute(
-                sqlGenerator.createTable(
-                    stream,
-                    tempTableName,
-                    columnNameMapping,
-                    true,
-                ),
-            )
-            execute(
-                sqlGenerator.copyTable(
-                    columnNameMapping,
-                    properTableName,
-                    tempTableName,
-                ),
-            )
+            execute(sqlGenerator.createTable(stream, tempTableName, columnNameMapping, true))
+            execute(sqlGenerator.copyTable(columnNameMapping, properTableName, tempTableName))
             execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
             execute(sqlGenerator.dropTable(tempTableName))
         }
@@ -194,7 +158,7 @@ class ClickhouseAirbyteClient(
         tableColumns: List<ClickHouseColumn>,
         catalogColumns: Map<String, String>,
         clickhousePks: List<String>,
-        airbytePks: List<String>
+        airbytePks: List<String>,
     ): AlterationSummary {
 
         val modified = mutableMapOf<String, String>()
@@ -223,7 +187,7 @@ class ClickhouseAirbyteClient(
             added = added,
             modified = modified,
             deleted = deleted,
-            hasDedupChange = hasDedupChange
+            hasDedupChange = hasDedupChange,
         )
     }
 

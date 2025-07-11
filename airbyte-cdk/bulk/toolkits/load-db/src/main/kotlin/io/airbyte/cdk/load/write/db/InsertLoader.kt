@@ -32,13 +32,13 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * This means:
  * - The first time a record is seen for a stream, [InsertLoader.createAccumulator] is called,
  * - Then [InsertLoaderRequestBuilder.accept] is called, for that record and all subsequent records,
- * until it returns an [InsertLoaderRequestBuilder.Request]
+ *   until it returns an [InsertLoaderRequestBuilder.Request]
  * - After a request is returned, the accumulator is discarded, and a new one is created only if new
- * data is seen for that stream, at which point the process repeats.
+ *   data is seen for that stream, at which point the process repeats.
  * - If the framework sees end-of-stream or otherwise determines that work needs to be flushed, AND
- * if at least one record has been seen for that batch, [InsertLoaderRequestBuilder.finish] is
- * called, which must return an input. (After this, the accumulator is discarded and will be
- * recreated only if more data is seen for that stream.)
+ *   if at least one record has been seen for that batch, [InsertLoaderRequestBuilder.finish] is
+ *   called, which must return an input. (After this, the accumulator is discarded and will be
+ *   recreated only if more data is seen for that stream.)
  *
  * Each request will result in a call to [InsertLoaderRequest.submit]. The call will be made async
  * relative to the building of requests. The ordering of the calls depends on the partitioning
@@ -46,16 +46,15 @@ import io.airbyte.cdk.load.write.LoadStrategy
  *
  * The number of parallel running accumulators is determined by [InsertLoader.numRequestBuilders].
  * The partitioning strategy is determined by [InsertLoader.partitioningStrategy].
- *
  * - [InsertLoader.PartitioningStrategy.ByStream] means that all data for a given stream will be
- * sent to the same partition. All calls to accept for that stream will occur in order, and all
- * queries for that stream will be submitted in order.
+ *   sent to the same partition. All calls to accept for that stream will occur in order, and all
+ *   queries for that stream will be submitted in order.
  * - [InsertLoader.PartitioningStrategy.ByPrimaryKey] means that records will be split on the
- * primary key (if available) and sent to different partitions. All calls to accept/submit for the
- * same primary key will occur in order, but calls for different primary keys my occur in parallel.
- * In the absence of a primary key, this will fall back to random.
+ *   primary key (if available) and sent to different partitions. All calls to accept/submit for the
+ *   same primary key will occur in order, but calls for different primary keys my occur in
+ *   parallel. In the absence of a primary key, this will fall back to random.
  * - [InsertLoader.PartitioningStrategy.Random] means that all records for any key/stream will be
- * distributed randomly, and all queries will be executed in parallel.
+ *   distributed randomly, and all queries will be executed in parallel.
  *
  * The default partitioning strategy is [InsertLoader.PartitioningStrategy.ByStream].
  *
@@ -84,10 +83,13 @@ interface InsertLoaderRequest {
 
 interface InsertLoaderRequestBuilder<Q : InsertLoaderRequest> : AutoCloseable {
     sealed interface InsertAcceptResult<Q>
+
     class NoOutput<Q> : InsertAcceptResult<Q>
+
     data class Request<Q>(val request: Q) : InsertAcceptResult<Q>
 
     fun accept(record: DestinationRecordRaw, maxRequestSizeBytes: Long): InsertAcceptResult<Q>
+
     fun finish(): Request<Q>
 }
 
@@ -98,22 +100,26 @@ interface InsertLoader<Q : InsertLoaderRequest> : LoadStrategy {
     enum class PartitioningStrategy {
         ByStream,
         ByPrimaryKey,
-        Random
+        Random,
     }
 
     val numRequestBuilders: Int
         get() = 2
+
     val numRequestExecutors: Int
         get() = 2
+
     val estimatedByteSizePerRequest: Long
         get() = 10 * 1024 * 1024 // 10MB
+
     val maxMemoryRatioToUseForRequests: Double
         get() = 0.6
+
     val partitioningStrategy: PartitioningStrategy
         get() = PartitioningStrategy.ByStream
 
     fun createAccumulator(
         streamDescriptor: DestinationStream.Descriptor,
-        partition: Int
+        partition: Int,
     ): InsertLoaderRequestBuilder<Q>
 }

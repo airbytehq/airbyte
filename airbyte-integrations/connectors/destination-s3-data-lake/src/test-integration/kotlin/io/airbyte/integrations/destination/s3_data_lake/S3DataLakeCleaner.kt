@@ -13,7 +13,7 @@ object S3DataLakeCleaner : DestinationCleaner {
                 S3DataLakeTestUtil.getCatalog(
                     S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
                     S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
-                ),
+                )
             )
             .compose(
                 IcebergDestinationCleaner(
@@ -22,8 +22,8 @@ object S3DataLakeCleaner : DestinationCleaner {
                             S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH
                         ),
                         S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
-                    ),
-                ),
+                    )
+                )
             )
 
     override fun cleanup() {

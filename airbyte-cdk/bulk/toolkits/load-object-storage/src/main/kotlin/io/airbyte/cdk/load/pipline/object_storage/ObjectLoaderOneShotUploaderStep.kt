@@ -23,7 +23,7 @@ class ObjectLoaderOneShotUploaderStep<K : WithStream, T : RemoteObject<*>>(
         ObjectLoaderCompletedUploadPartitioner<StreamKey, DestinationRecordRaw, K, T>? =
         null,
     private val taskFactory: LoadPipelineStepTaskFactory,
-    override val numWorkers: Int
+    override val numWorkers: Int,
 ) : LoadPipelineStep {
     override fun taskForPartition(partition: Int): Task {
         return taskFactory.createFirstStep(
@@ -32,7 +32,7 @@ class ObjectLoaderOneShotUploaderStep<K : WithStream, T : RemoteObject<*>>(
             completedUploadQueue,
             partition,
             numWorkers,
-            null
+            null,
         )
     }
 }

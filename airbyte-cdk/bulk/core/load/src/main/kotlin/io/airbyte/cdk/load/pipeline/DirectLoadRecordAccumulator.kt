@@ -32,7 +32,7 @@ class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
 
     override suspend fun accept(
         input: DestinationRecordRaw,
-        state: S
+        state: S,
     ): BatchAccumulatorResult<S, DirectLoadAccResult> {
         state.accept(input).let {
             return when (it) {

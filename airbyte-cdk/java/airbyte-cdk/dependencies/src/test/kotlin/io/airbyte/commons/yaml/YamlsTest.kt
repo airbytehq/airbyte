@@ -21,12 +21,12 @@ internal class YamlsTest {
     fun testSerialize() {
         Assertions.assertEquals(
             "$LINE_BREAK${STR_ABC}num: 999\nnumLong: 888\n",
-            Yamls.serialize(ToClass(ABC, 999, 888L))
+            Yamls.serialize(ToClass(ABC, 999, 888L)),
         )
 
         Assertions.assertEquals(
             "${LINE_BREAK}test: \"abc\"\ntest2: \"def\"\n",
-            Yamls.serialize(ImmutableMap.of("test", ABC, "test2", "def"))
+            Yamls.serialize(ImmutableMap.of("test", ABC, "test2", "def")),
         )
     }
 
@@ -34,12 +34,12 @@ internal class YamlsTest {
     fun testSerializeWithoutQuotes() {
         Assertions.assertEquals(
             "${LINE_BREAK}str: abc\nnum: 999\nnumLong: 888\n",
-            Yamls.serializeWithoutQuotes(ToClass(ABC, 999, 888L))
+            Yamls.serializeWithoutQuotes(ToClass(ABC, 999, 888L)),
         )
 
         Assertions.assertEquals(
             "${LINE_BREAK}test: abc\ntest2: def\n",
-            Yamls.serializeWithoutQuotes(ImmutableMap.of("test", ABC, "test2", "def"))
+            Yamls.serializeWithoutQuotes(ImmutableMap.of("test", ABC, "test2", "def")),
         )
     }
 
@@ -47,12 +47,12 @@ internal class YamlsTest {
     fun testSerializeJsonNode() {
         Assertions.assertEquals(
             "$LINE_BREAK${STR_ABC}num: 999\nnumLong: 888\n",
-            Yamls.serialize(Jsons.jsonNode(ToClass(ABC, 999, 888L)))
+            Yamls.serialize(Jsons.jsonNode(ToClass(ABC, 999, 888L))),
         )
 
         Assertions.assertEquals(
             "${LINE_BREAK}test: \"abc\"\ntest2: \"def\"\n",
-            Yamls.serialize(Jsons.jsonNode(ImmutableMap.of("test", ABC, "test2", "def")))
+            Yamls.serialize(Jsons.jsonNode(ImmutableMap.of("test", ABC, "test2", "def"))),
         )
     }
 
@@ -62,8 +62,8 @@ internal class YamlsTest {
             ToClass(ABC, 999, 888L),
             Yamls.deserialize(
                 "$LINE_BREAK${STR_ABC}num: \"999\"\nnumLong: \"888\"\n",
-                ToClass::class.java
-            )
+                ToClass::class.java,
+            ),
         )
     }
 
@@ -71,12 +71,12 @@ internal class YamlsTest {
     fun testDeserializeToJsonNode() {
         Assertions.assertEquals(
             "{\"str\":\"abc\"}",
-            Yamls.deserialize(LINE_BREAK + STR_ABC).toString()
+            Yamls.deserialize(LINE_BREAK + STR_ABC).toString(),
         )
 
         Assertions.assertEquals(
             "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
-            Yamls.deserialize("$LINE_BREAK- str: \"abc\"\n- str: \"abc\"\n").toString()
+            Yamls.deserialize("$LINE_BREAK- str: \"abc\"\n- str: \"abc\"\n").toString(),
         )
     }
 
@@ -111,7 +111,7 @@ internal class YamlsTest {
                     classes,
                     MoreStreams.toStream(iterator)
                         .map { e: JsonNode -> Jsons.`object`(e, ToClass::class.java) }
-                        .toList()
+                        .toList(),
                 )
             }
         } catch (e: Exception) {

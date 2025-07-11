@@ -12,7 +12,7 @@ enum class ConfigSchema : AirbyteConfig {
     // workspace
     WORKSPACE_WEBHOOK_OPERATION_CONFIGS(
         "WebhookOperationConfigs.yaml",
-        WebhookOperationConfigs::class.java
+        WebhookOperationConfigs::class.java,
     ),
 
     // source
@@ -23,7 +23,7 @@ enum class ConfigSchema : AirbyteConfig {
             standardSourceDefinition: StandardSourceDefinition ->
             standardSourceDefinition.sourceDefinitionId.toString()
         },
-        "sourceDefinitionId"
+        "sourceDefinitionId",
     ),
     SOURCE_CONNECTION(
         "SourceConnection.yaml",
@@ -31,7 +31,7 @@ enum class ConfigSchema : AirbyteConfig {
         Function<SourceConnection, String> { sourceConnection: SourceConnection ->
             sourceConnection.sourceId.toString()
         },
-        "sourceId"
+        "sourceId",
     ),
 
     // destination
@@ -42,7 +42,7 @@ enum class ConfigSchema : AirbyteConfig {
             standardDestinationDefinition: StandardDestinationDefinition ->
             standardDestinationDefinition.destinationDefinitionId.toString()
         },
-        "destinationDefinitionId"
+        "destinationDefinitionId",
     ),
     DESTINATION_CONNECTION(
         "DestinationConnection.yaml",
@@ -50,7 +50,7 @@ enum class ConfigSchema : AirbyteConfig {
         Function<DestinationConnection, String> { destinationConnection: DestinationConnection ->
             destinationConnection.destinationId.toString()
         },
-        "destinationId"
+        "destinationId",
     ),
     STANDARD_SYNC_OPERATION(
         "StandardSyncOperation.yaml",
@@ -58,7 +58,7 @@ enum class ConfigSchema : AirbyteConfig {
         Function<StandardSyncOperation, String> { standardSyncOperation: StandardSyncOperation ->
             standardSyncOperation.operationId.toString()
         },
-        "operationId"
+        "operationId",
     ),
     SOURCE_OAUTH_PARAM(
         "SourceOAuthParameter.yaml",
@@ -66,7 +66,7 @@ enum class ConfigSchema : AirbyteConfig {
         Function<SourceOAuthParameter, String> { sourceOAuthParameter: SourceOAuthParameter ->
             sourceOAuthParameter.oauthParameterId.toString()
         },
-        "oauthParameterId"
+        "oauthParameterId",
     ),
     DESTINATION_OAUTH_PARAM(
         "DestinationOAuthParameter.yaml",
@@ -75,7 +75,7 @@ enum class ConfigSchema : AirbyteConfig {
             destinationOAuthParameter: DestinationOAuthParameter ->
             destinationOAuthParameter.oauthParameterId.toString()
         },
-        "oauthParameterId"
+        "oauthParameterId",
     ),
 
     // worker
@@ -91,7 +91,7 @@ enum class ConfigSchema : AirbyteConfig {
         schemaFilename: String,
         className: Class<*>,
         extractId: Function<*, String>,
-        idFieldName: String
+        idFieldName: String,
     ) {
         this.schemaFilename = schemaFilename
         this.className = className
@@ -112,12 +112,14 @@ enum class ConfigSchema : AirbyteConfig {
         get() = KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile()
 
     override fun <T> getClassName(): Class<T> {
-        @Suppress("unchecked_cast") return className as Class<T>
+        @Suppress("unchecked_cast")
+        return className as Class<T>
     }
 
     override fun <T> getId(config: T): String {
         if (getClassName<Any>().isInstance(config)) {
-            @Suppress("unchecked_cast") return (extractId as Function<T, String>).apply(config)
+            @Suppress("unchecked_cast")
+            return (extractId as Function<T, String>).apply(config)
         }
         throw RuntimeException(
             "Object: " + config + " is not instance of class " + getClassName<Any>().name

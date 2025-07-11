@@ -26,7 +26,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
             generationId = 42L,
             minimumGenerationId = 10L,
             syncId = 100L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     private val emittedAtMs = 1234567890L
@@ -77,7 +77,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
         assertTrue(generationIdField.abValue is IntegerValue)
         assertEquals(
             destinationStream.generationId,
-            (generationIdField.abValue as IntegerValue).value.toLong()
+            (generationIdField.abValue as IntegerValue).value.toLong(),
         )
         assertEquals(Meta.AirbyteMetaFields.GENERATION_ID.type, generationIdField.type)
     }
@@ -91,15 +91,15 @@ class EnrichedDestinationRecordAirbyteValueTest {
                         StringValue("value1"),
                         StringType,
                         "field1",
-                        airbyteMetaField = null
+                        airbyteMetaField = null,
                     ),
                 "field2" to
                     EnrichedAirbyteValue(
                         IntegerValue(42),
                         IntegerType,
                         "field2",
-                        airbyteMetaField = null
-                    )
+                        airbyteMetaField = null,
+                    ),
             )
 
         val record =
@@ -138,7 +138,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 StringValue("value1"),
                 StringType,
                 "field1",
-                airbyteMetaField = null
+                airbyteMetaField = null,
             )
         field1.truncate(StringValue("val"), Reason.DESTINATION_RECORD_SIZE_LIMITATION)
 
@@ -147,7 +147,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 IntegerValue(1000000),
                 IntegerType,
                 "field2",
-                airbyteMetaField = null
+                airbyteMetaField = null,
             )
         field2.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
 
@@ -161,7 +161,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                         Meta.Change(
                             "meta_field",
                             Change.NULLED,
-                            Reason.DESTINATION_SERIALIZATION_ERROR
+                            Reason.DESTINATION_SERIALIZATION_ERROR,
                         )
                     )
             )
@@ -194,7 +194,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
         assertEquals("NULLED", (metaFieldChange!!.values["change"] as StringValue).value)
         assertEquals(
             "DESTINATION_SERIALIZATION_ERROR",
-            (metaFieldChange.values["reason"] as StringValue).value
+            (metaFieldChange.values["reason"] as StringValue).value,
         )
 
         // Find field1 change
@@ -204,7 +204,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
         assertEquals("TRUNCATED", (field1Change!!.values["change"] as StringValue).value)
         assertEquals(
             "DESTINATION_RECORD_SIZE_LIMITATION",
-            (field1Change.values["reason"] as StringValue).value
+            (field1Change.values["reason"] as StringValue).value,
         )
 
         // Find field2 change
@@ -214,7 +214,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
         assertEquals("NULLED", (field2Change!!.values["change"] as StringValue).value)
         assertEquals(
             "DESTINATION_FIELD_SIZE_LIMITATION",
-            (field2Change.values["reason"] as StringValue).value
+            (field2Change.values["reason"] as StringValue).value,
         )
     }
 

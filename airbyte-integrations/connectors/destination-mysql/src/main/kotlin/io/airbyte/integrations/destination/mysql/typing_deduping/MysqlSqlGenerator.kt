@@ -57,7 +57,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         // Wrap everything in getIdentifier() calls to truncate long names.
         // I don't understand why the MysqlNameTransformer doesn't call getIdentifier
@@ -69,9 +69,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
             namingTransformer.getIdentifier(namingTransformer.convertStreamName(name)),
             namingTransformer.getIdentifier(namingTransformer.getNamespace(rawNamespaceOverride)),
             namingTransformer.getIdentifier(
-                namingTransformer.convertStreamName(
-                    concatenateRawTableName(namespace, name),
-                ),
+                namingTransformer.convertStreamName(concatenateRawTableName(namespace, name))
             ),
             namespace,
             name,
@@ -83,12 +81,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
             AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> SQLDataType.VARCHAR(1024)
             AirbyteProtocolType.TIME_WITH_TIMEZONE -> SQLDataType.VARCHAR(1024)
             AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE ->
-                DefaultDataType(
-                        null,
-                        LocalDateTime::class.java,
-                        "datetime",
-                    )
-                    .precision(6)
+                DefaultDataType(null, LocalDateTime::class.java, "datetime").precision(6)
             AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> SQLDataType.TIME(6)
             AirbyteProtocolType.STRING -> SQLDataType.CLOB
             else -> super.toDialectType(airbyteProtocolType)
@@ -97,7 +90,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): MutableList<Field<*>> {
         return columns.entries
             .stream()
@@ -129,7 +122,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                                             String::class.java,
                                             extractedValue,
                                         )
-                                        .ne("OBJECT"),
+                                        .ne("OBJECT")
                                 ),
                             DSL.`val`<Any?>(null as Any?),
                         )
@@ -146,7 +139,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                                             String::class.java,
                                             extractedValue,
                                         )
-                                        .ne("ARRAY"),
+                                        .ne("ARRAY")
                                 ),
                             DSL.`val`<Any?>(null as Any?),
                         )
@@ -189,7 +182,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     override fun castedField(
         field: Field<*>,
         type: AirbyteProtocolType,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Field<*> {
         return if (type == AirbyteProtocolType.BOOLEAN) {
             // for some reason, CAST('true' AS UNSIGNED) throws an error
@@ -222,17 +215,11 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
             val indexColumns: List<Field<*>> =
                 Stream.of(
                         stream.primaryKey.stream().map { pk ->
-                            getIndexColumnField(
-                                pk,
-                                stream.columns[pk]!!,
-                            )
+                            getIndexColumnField(pk, stream.columns[pk]!!)
                         }, // if cursor is present, then a stream containing its name
                         // but if no cursor, then empty stream
                         stream.cursor.stream().map { cursor ->
-                            getIndexColumnField(
-                                cursor,
-                                stream.columns[cursor]!!,
-                            )
+                            getIndexColumnField(cursor, stream.columns[cursor]!!)
                         },
                         Stream.of<Field<Any>>(
                             field(name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
@@ -246,38 +233,26 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                     .toList()
             statements.add(
                 Sql.of(
-                    dslContext
-                        .createIndex("dedup_idx")
-                        .on(
-                            table(finalTableName),
-                            indexColumns,
-                        )
-                        .sql,
-                ),
+                    dslContext.createIndex("dedup_idx").on(table(finalTableName), indexColumns).sql
+                )
             )
         }
         statements.add(
             Sql.of(
                 dslContext
                     .createIndex("extracted_at_idx")
-                    .on(
-                        finalTableName,
-                        name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
-                    )
-                    .sql,
-            ),
+                    .on(finalTableName, name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+                    .sql
+            )
         )
 
         statements.add(
             Sql.of(
                 dslContext
                     .createIndex("raw_id_idx")
-                    .on(
-                        finalTableName,
-                        name(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
-                    )
-                    .sql,
-            ),
+                    .on(finalTableName, name(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
+                    .sql
+            )
         )
 
         return Sql.concat(statements)
@@ -337,27 +312,19 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
 
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int> {
         val primaryKeyFields: List<Field<*>> =
             primaryKey
                 .stream()
-                .map { columnId: ColumnId ->
-                    field(
-                        quotedName(columnId.name),
-                    )
-                }
+                .map { columnId: ColumnId -> field(quotedName(columnId.name)) }
                 .collect(Collectors.toList<Field<*>>())
         val orderedFields: MutableList<SortField<Any>> = ArrayList()
         // mysql DESC implicitly sorts nulls last, so we don't need to specify it explicitly
         cursorField.ifPresent { columnId: ColumnId ->
-            orderedFields.add(
-                field(quotedName(columnId.name)).desc(),
-            )
+            orderedFields.add(field(quotedName(columnId.name)).desc())
         }
-        orderedFields.add(
-            field(quotedName(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)).desc(),
-        )
+        orderedFields.add(field(quotedName(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)).desc())
         return DSL.rowNumber()
             .over()
             .partitionBy(primaryKeyFields)
@@ -383,7 +350,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     override fun createV2RawTableFromV1Table(
         rawTableName: Name,
         namespace: String,
-        tableName: String
+        tableName: String,
     ) =
         dslContext
             .createTable(rawTableName)
@@ -399,7 +366,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                             .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
                         castNull(JSON_TYPE).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
                     )
-                    .from(table(name(namespace, tableName))),
+                    .from(table(name(namespace, tableName)))
             )
             .getSQL(ParamType.INLINED)
 
@@ -421,12 +388,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     }
 
     companion object {
-        val JSON_TYPE: DefaultDataType<Any> =
-            DefaultDataType(
-                null,
-                Any::class.java,
-                "json",
-            )
+        val JSON_TYPE: DefaultDataType<Any> = DefaultDataType(null, Any::class.java, "json")
 
         val TIMESTAMP_FORMATTER: DateTimeFormatter =
             DateTimeFormatterBuilder()
@@ -458,9 +420,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
         private fun jdbcTypeNameFromPostgresTypeName(mysqlType: String): String {
             return MYSQL_TYPE_NAME_TO_JDBC_TYPE.getOrDefault(
                 mysqlType.lowercase(Locale.getDefault()),
-                mysqlType.lowercase(
-                    Locale.getDefault(),
-                ),
+                mysqlType.lowercase(Locale.getDefault()),
             )
         }
     }

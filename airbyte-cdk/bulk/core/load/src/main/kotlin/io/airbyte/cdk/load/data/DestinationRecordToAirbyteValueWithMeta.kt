@@ -12,9 +12,9 @@ import java.util.*
 
 /**
  * @param flatten whether to promote user-defined fields to the root level. If this is set to
- * `false`, fields defined in `stream.schema` will be left inside an `_airbyte_data` field.
+ *   `false`, fields defined in `stream.schema` will be left inside an `_airbyte_data` field.
  * @param extractedAtAsTimestampWithTimezone whether to return the `_airbyte_extracted_at` field as
- * an [IntegerValue] or as a [TimestampWithTimezoneValue].
+ *   an [IntegerValue] or as a [TimestampWithTimezoneValue].
  */
 class DestinationRecordToAirbyteValueWithMeta(
     val stream: DestinationStream,
@@ -22,11 +22,7 @@ class DestinationRecordToAirbyteValueWithMeta(
     private val extractedAtAsTimestampWithTimezone: Boolean,
     private val airbyteRawId: UUID,
 ) {
-    fun convert(
-        data: AirbyteValue,
-        emittedAtMs: Long,
-        meta: Meta?,
-    ): ObjectValue {
+    fun convert(data: AirbyteValue, emittedAtMs: Long, meta: Meta?): ObjectValue {
         val properties =
             linkedMapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to StringValue(airbyteRawId.toString()),
@@ -43,12 +39,11 @@ class DestinationRecordToAirbyteValueWithMeta(
                                             linkedMapOf(
                                                 "field" to StringValue(it.field),
                                                 "change" to StringValue(it.change.name),
-                                                "reason" to StringValue(it.reason.name)
+                                                "reason" to StringValue(it.reason.name),
                                             )
                                         )
-                                    }
-                                        ?: emptyList()
-                                )
+                                    } ?: emptyList()
+                                ),
                         )
                     ),
                 Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(stream.generationId),
@@ -78,11 +73,7 @@ fun Pair<AirbyteValue, List<Meta.Change>>.withAirbyteMeta(
             extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
             airbyteRawId = airbyteRawId,
         )
-        .convert(
-            first,
-            emittedAtMs,
-            Meta(second),
-        )
+        .convert(first, emittedAtMs, Meta(second))
 
 fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
     stream: DestinationStream,
@@ -96,18 +87,14 @@ fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
             extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
             airbyteRawId = airbyteRawId,
         )
-        .convert(
-            data,
-            emittedAtMs,
-            meta,
-        )
+        .convert(data, emittedAtMs, meta)
 
 fun Meta.Change.toAirbyteValue(): ObjectValue =
     ObjectValue(
         linkedMapOf(
             "field" to StringValue(field),
             "change" to StringValue(change.name),
-            "reason" to StringValue(reason.name)
+            "reason" to StringValue(reason.name),
         )
     )
 

@@ -62,12 +62,7 @@ class ForwardFileRecordTaskTest {
     fun setup() {
         every { fileLoader.partSizeBytes } returns partSizeBytes.toLong()
 
-        task =
-            ForwardFileRecordTask(
-                inputQueue,
-                outputQueue,
-                partition,
-            )
+        task = ForwardFileRecordTask(inputQueue, outputQueue, partition)
     }
 
     @Test
@@ -102,14 +97,14 @@ class ForwardFileRecordTaskTest {
             val result =
                 ObjectLoaderUploadCompleter.UploadResult<String>(
                     state = BatchState.LOADED,
-                    remoteObject = null
+                    remoteObject = null,
                 )
             val input =
                 PipelineMessage(
                     checkpointCounts = mapOf(),
                     key = key,
                     value = result,
-                    context = context
+                    context = context,
                 )
             task.handleEvent(input)
 
@@ -128,23 +123,19 @@ class ForwardFileRecordTaskTest {
         val result =
             ObjectLoaderUploadCompleter.UploadResult(
                 state = BatchState.LOADED,
-                remoteObject = "uploaded thing"
+                remoteObject = "uploaded thing",
             )
         val input =
             PipelineMessage(
                 checkpointCounts = mapOf(),
                 key = key,
                 value = result,
-                context = context
+                context = context,
             )
         task.handleEvent(input)
 
         val expectedOutput =
-            PipelineMessage(
-                context.parentCheckpointCounts!!,
-                input.key,
-                context.parentRecord!!,
-            )
+            PipelineMessage(context.parentCheckpointCounts!!, input.key, context.parentRecord!!)
 
         coVerify(exactly = 1) { outputQueue.publish(expectedOutput, 0) }
     }
@@ -175,7 +166,7 @@ class ForwardFileRecordTaskTest {
                 syncId = 3,
                 schema = schema,
                 includeFiles = includeFiles,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
 
         fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =

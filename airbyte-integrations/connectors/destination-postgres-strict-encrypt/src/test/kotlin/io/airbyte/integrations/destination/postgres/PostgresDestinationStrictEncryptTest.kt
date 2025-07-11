@@ -16,7 +16,7 @@ internal class PostgresDestinationStrictEncryptTest {
         println(PostgresDestinationStrictEncrypt().spec().connectionSpecification)
         Assertions.assertEquals(
             deserialize(readResource("expected_spec.json"), ConnectorSpecification::class.java),
-            PostgresDestinationStrictEncrypt().spec()
+            PostgresDestinationStrictEncrypt().spec(),
         )
     }
 }

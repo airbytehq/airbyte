@@ -38,9 +38,7 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurati
 import jakarta.inject.Singleton
 
 @Singleton
-class ClickhouseSqlGenerator(
-    val clickhouseConfiguration: ClickhouseConfiguration,
-) {
+class ClickhouseSqlGenerator(val clickhouseConfiguration: ClickhouseConfiguration) {
 
     fun createNamespace(namespace: String): String {
         return "CREATE DATABASE IF NOT EXISTS `$namespace`;"
@@ -88,17 +86,18 @@ class ClickhouseSqlGenerator(
             } else {
                 pksAsString
             }})
-            """.trimIndent()
+            """
+            .trimIndent()
     }
 
     internal fun extractPks(
         primaryKey: List<List<String>>,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ): List<String> {
         return primaryKey.map { fieldPath ->
             if (fieldPath.size != 1) {
                 throw UnsupportedOperationException(
-                    "Only top-level primary keys are supported, got $fieldPath",
+                    "Only top-level primary keys are supported, got $fieldPath"
                 )
             }
             val fieldName = fieldPath.first()
@@ -114,7 +113,8 @@ class ClickhouseSqlGenerator(
         """
         EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}`
             AND `${targetTableName.namespace}`.`${targetTableName.name}`;
-        """.trimIndent()
+        """
+            .trimIndent()
 
     fun copyTable(
         columnNameMapping: ColumnNameMapping,
@@ -139,14 +139,15 @@ class ClickhouseSqlGenerator(
                 $COLUMN_NAME_AB_GENERATION_ID,
                 $columnNames
             FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            """.trimIndent()
+            """
+            .trimIndent()
     }
 
     fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ): String {
         val importType = stream.importType as Dedupe
         val pkEquivalent =
@@ -175,14 +176,15 @@ class ClickhouseSqlGenerator(
             val cursor = "`$cursorColumnName`"
             // Build a condition for "new_record is more recent than target_table":
             cursorComparison = // First, compare the cursors.
-            ("""
+                ("""
              (
                target_table.$cursor < new_record.$cursor
                OR (target_table.$cursor = new_record.$cursor AND target_table.$COLUMN_NAME_AB_EXTRACTED_AT < new_record.$COLUMN_NAME_AB_EXTRACTED_AT)
                OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table.$COLUMN_NAME_AB_EXTRACTED_AT < new_record.$COLUMN_NAME_AB_EXTRACTED_AT)
                OR (target_table.$cursor IS NULL AND new_record.$cursor IS NOT NULL)
              )
-             """.trimIndent())
+             """
+                    .trimIndent())
         } else {
             // If there's no cursor, then we just take the most-recently-emitted record
             cursorComparison =
@@ -236,7 +238,8 @@ class ClickhouseSqlGenerator(
                  new_record.$COLUMN_NAME_AB_EXTRACTED_AT,
                  new_record.$COLUMN_NAME_AB_GENERATION_ID
                );
-               """.trimIndent()
+               """
+            .trimIndent()
     }
 
     /**
@@ -271,7 +274,7 @@ class ClickhouseSqlGenerator(
                 "`$columnName` DESC NULLS LAST,"
             } else {
                 throw UnsupportedOperationException(
-                    "Only top-level cursors are supported, got ${importType.cursor}",
+                    "Only top-level cursors are supported, got ${importType.cursor}"
                 )
             }
 
@@ -293,24 +296,21 @@ class ClickhouseSqlGenerator(
                SELECT $columnList $COLUMN_NAME_AB_META, $COLUMN_NAME_AB_RAW_ID, $COLUMN_NAME_AB_EXTRACTED_AT, $COLUMN_NAME_AB_GENERATION_ID
                FROM numbered_rows
                WHERE row_number = 1
-               """.trimIndent()
+               """
+            .trimIndent()
     }
 
-    fun countTable(
-        tableName: TableName,
-        alias: String = "",
-    ): String =
+    fun countTable(tableName: TableName, alias: String = ""): String =
         """
         SELECT count(1) $alias FROM `${tableName.namespace}`.`${tableName.name}`;
-    """.trimMargin()
+    """
+            .trimMargin()
 
-    fun getGenerationId(
-        tableName: TableName,
-        alias: String = "",
-    ): String =
+    fun getGenerationId(tableName: TableName, alias: String = ""): String =
         """
         SELECT $COLUMN_NAME_AB_GENERATION_ID $alias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1;
-    """.trimIndent()
+    """
+            .trimIndent()
 
     private fun columnsAndTypes(
         stream: DestinationStream,

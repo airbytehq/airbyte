@@ -21,15 +21,9 @@ class TimeTriggerTest {
 
     @Test
     internal fun testTimeTrigger() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         val flusher = Mockito.mock(DestinationFlushFunction::class.java)
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
 
         val mockedNowProvider = Mockito.mock(Clock::class.java)
         Mockito.`when`(mockedNowProvider.millis()).thenReturn(NOW_MS)

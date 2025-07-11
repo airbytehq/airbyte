@@ -59,7 +59,7 @@ interface AzureBlobStorageClientSpecification {
             azureBlobStorageAccountName,
             azureBlobStorageContainerName,
             azureBlobStorageSharedAccessSignature,
-            azureBlobStorageAccountKey
+            azureBlobStorageAccountKey,
         )
     }
 }

@@ -16,8 +16,10 @@ class OkHttpResponse(private val response: OkhttpResponse) : Response {
 
     override val statusCode: Int
         get() = response.code
+
     override val headers: Map<String, List<String>>
         get() = response.headers.toMultimap()
+
     override val body: InputStream?
         get() = response.body?.byteStream()
 }

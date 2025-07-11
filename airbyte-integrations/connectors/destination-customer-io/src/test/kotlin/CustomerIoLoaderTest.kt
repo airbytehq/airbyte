@@ -65,7 +65,7 @@ class CustomerIoStateTest {
                 207,
                 """{"errors": [{"batch_index": 1, "reason": "a_reason", "field": "a_field", "message": "a_message"}]}"""
                     .toByteArray()
-                    .inputStream()
+                    .inputStream(),
             )
         state.accumulate(aRecord())
         state.accumulate(rejectedRecord)
@@ -79,7 +79,7 @@ class CustomerIoStateTest {
                     mapOf("reason" to "a_reason", "field" to "a_field", "message" to "a_message")
                 )
             ),
-            rejectedRecords
+            rejectedRecords,
         )
     }
 
@@ -115,7 +115,7 @@ class CustomerIoStateTest {
             stream = mockk(relaxed = true),
             rawData = rawData,
             serializedSizeBytes = "serialized".length.toLong(),
-            airbyteRawId = UUID.randomUUID()
+            airbyteRawId = UUID.randomUUID(),
         )
     }
 }

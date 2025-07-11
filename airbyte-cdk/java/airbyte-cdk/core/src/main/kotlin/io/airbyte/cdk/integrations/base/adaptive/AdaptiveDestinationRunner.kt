@@ -10,6 +10,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Supplier
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This class launches different variants of a destination connector based on where Airbyte is
  * deployed.
@@ -35,7 +36,7 @@ object AdaptiveDestinationRunner {
 
     class CloudDestinationBuilder<OT : Destination>(
         private val deploymentMode: String?,
-        private val ossDestinationSupplier: Supplier<OT>
+        private val ossDestinationSupplier: Supplier<OT>,
     ) {
         fun <CT : Destination> withCloudDestination(
             cloudDestinationSupplier: Supplier<CT>
@@ -47,7 +48,7 @@ object AdaptiveDestinationRunner {
     class Runner<OT : Destination, CT : Destination>(
         private val deploymentMode: String?,
         private val ossDestinationSupplier: Supplier<OT>,
-        private val cloudDestinationSupplier: Supplier<CT>
+        private val cloudDestinationSupplier: Supplier<CT>,
     ) {
         private val destination: Destination
             get() {

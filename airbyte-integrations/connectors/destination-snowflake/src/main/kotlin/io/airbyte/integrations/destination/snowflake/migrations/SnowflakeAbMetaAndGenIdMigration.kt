@@ -23,7 +23,7 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
     override fun migrateIfNecessary(
         destinationHandler: DestinationHandler<SnowflakeState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<SnowflakeState>
+        state: DestinationInitialStatus<SnowflakeState>,
     ): Migration.MigrationResult<SnowflakeState> {
         if (!state.initialRawTableStatus.rawTableExists) {
             // The raw table doesn't exist. No migration necessary. Update the state.
@@ -34,7 +34,7 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
             }
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                false
+                false,
             )
         }
 
@@ -61,7 +61,7 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
                                             0,
                                             dataType.get("nullable").asBoolean(),
                                         )
-                                },
+                                }
                             )
                         }
                 }
@@ -98,7 +98,8 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
                         ALTER TABLE "${stream.id.rawNamespace}"."${stream.id.rawName}" 
                         ADD COLUMN "${JavaBaseConstants.COLUMN_NAME_AB_META}" VARIANT, 
                             COLUMN "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" INTEGER;
-                            """.trimIndent()
+                            """
+                        .trimIndent()
                 database.execute(alterRawTableSql)
             }
         }
@@ -116,12 +117,13 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
                 """
                 ALTER TABLE "${stream.id.finalNamespace}"."${stream.id.finalName}" 
                 ADD COLUMN IF NOT EXISTS "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()}" INTEGER;
-            """.trimIndent()
+            """
+                    .trimIndent()
             database.execute(alterFinalTableSql)
             // Final table schema changed, fetch the initial status again
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                true
+                true,
             )
         } else if (!state.isFinalTablePresent) {
             log.info {
@@ -136,7 +138,7 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
         // Final table is untouched, so we don't need to fetch the initial status
         return Migration.MigrationResult(
             state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-            false
+            false,
         )
     }
 }

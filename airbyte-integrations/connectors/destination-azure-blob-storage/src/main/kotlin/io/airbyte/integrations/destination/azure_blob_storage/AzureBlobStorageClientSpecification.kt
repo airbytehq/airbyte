@@ -54,9 +54,6 @@ class AzureBlobStorageSpecification :
 @Singleton
 class AzureBlobStorageSpecificationExtension : DestinationSpecificationExtension {
     override val supportedSyncModes =
-        listOf(
-            DestinationSyncMode.OVERWRITE,
-            DestinationSyncMode.APPEND,
-        )
+        listOf(DestinationSyncMode.OVERWRITE, DestinationSyncMode.APPEND)
     override val supportsIncremental = true
 }

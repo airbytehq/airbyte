@@ -22,41 +22,25 @@ import java.util.*
     "operatorDbt",
     "operatorWebhook",
     "tombstone",
-    "workspaceId"
+    "workspaceId",
 )
 class StandardSyncOperation : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("operationId")
     @set:JsonProperty("operationId")
     @JsonProperty("operationId")
     var operationId: UUID? = null
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("name")
     @set:JsonProperty("name")
     @JsonProperty("name")
     var name: String? = null
+
     /**
      * OperatorType
      *
@@ -77,6 +61,7 @@ class StandardSyncOperation : Serializable {
     @JsonProperty("operatorType")
     @JsonPropertyDescription("Type of Operator")
     var operatorType: OperatorType? = null
+
     /**
      * OperatorNormalization
      *
@@ -97,6 +82,7 @@ class StandardSyncOperation : Serializable {
     @JsonProperty("operatorNormalization")
     @JsonPropertyDescription("Settings for a normalization operator")
     var operatorNormalization: OperatorNormalization? = null
+
     /**
      * OperatorDbt
      *
@@ -117,6 +103,7 @@ class StandardSyncOperation : Serializable {
     @JsonProperty("operatorDbt")
     @JsonPropertyDescription("Settings for a DBT operator")
     var operatorDbt: OperatorDbt? = null
+
     /**
      * OperatorWebhook
      *
@@ -137,6 +124,7 @@ class StandardSyncOperation : Serializable {
     @JsonProperty("operatorWebhook")
     @JsonPropertyDescription("Settings for a webhook operation")
     var operatorWebhook: OperatorWebhook? = null
+
     /**
      * if not set or false, the configuration is active. if true, then this configuration is
      * permanently off.
@@ -156,18 +144,10 @@ class StandardSyncOperation : Serializable {
         "if not set or false, the configuration is active. if true, then this configuration is permanently off."
     )
     var tombstone: Boolean? = null
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("workspaceId")
     @set:JsonProperty("workspaceId")
     @JsonProperty("workspaceId")

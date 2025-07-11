@@ -33,7 +33,7 @@ class DestinationSpecificationExtender(private val spec: DestinationSpecificatio
                             }
                         )
                     }
-                }
+                },
             )
         }
 
@@ -49,14 +49,14 @@ interface DestinationSpecificationExtension {
      * the same place. To do this, you should:
      * * add a [Group] to the [groups] list (e.g. `Group(id = "foo", title = "Foo")`
      * * inject `{"group": "foo"}` to the generated JSONSchema for the relevant spec options
-     * (`@JsonSchemaInject(json = """{"group": "foo"}""") val theOption: String`
+     *   (`@JsonSchemaInject(json = """{"group": "foo"}""") val theOption: String`
      * * note that this should be the id of the group, not the title.
      */
     data class Group(
         /** A computer-friendly ID for the group */
         val id: String,
         /** A human-readable name for the group */
-        val title: String
+        val title: String,
     )
 
     val supportedSyncModes: List<DestinationSyncMode>

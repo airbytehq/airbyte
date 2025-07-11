@@ -22,21 +22,15 @@ interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
     ): DeserializedRecord?
 
     /** Identifies the namespace of the stream that this event belongs to, if applicable. */
-    fun findStreamNamespace(
-        key: DebeziumRecordKey,
-        value: DebeziumRecordValue,
-    ): String?
+    fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String?
 
     /** Identifies the null of the stream that this event belongs to, if applicable. */
-    fun findStreamName(
-        key: DebeziumRecordKey,
-        value: DebeziumRecordValue,
-    ): String?
+    fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String?
 
     /** Maps a Debezium state to an [OpaqueStateValue]. */
     fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue
 
     /** Tries to extract the WAL position from a [DebeziumRecordValue]. */

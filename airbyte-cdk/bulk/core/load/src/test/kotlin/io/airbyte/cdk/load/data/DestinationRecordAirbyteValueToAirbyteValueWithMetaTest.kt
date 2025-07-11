@@ -25,10 +25,10 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
                 ObjectValue(
                     linkedMapOf(
                         "sync_id" to IntegerValue(syncId),
-                        "changes" to ArrayValue(emptyList())
+                        "changes" to ArrayValue(emptyList()),
                     )
                 ),
-            Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(generationId)
+            Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(generationId),
         )
 
     @Test
@@ -38,7 +38,7 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
                 linkedMapOf(
                     "name" to StringValue("John"),
                     "age" to IntegerValue(30),
-                    "is_cool" to BooleanValue(true)
+                    "is_cool" to BooleanValue(true),
                 )
             )
         val expected = LinkedHashMap(expectedMeta)
@@ -48,7 +48,7 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
             mockRecord.dataWithAirbyteMeta(
                 stream = stream,
                 flatten = false,
-                airbyteRawId = airbyteRawId
+                airbyteRawId = airbyteRawId,
             )
         val uuid = withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID) as StringValue
         Assertions.assertTrue(
@@ -66,7 +66,7 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
                 linkedMapOf(
                     "name" to StringValue("John"),
                     "age" to IntegerValue(30),
-                    "is_cool" to BooleanValue(true)
+                    "is_cool" to BooleanValue(true),
                 )
             )
         val expected = LinkedHashMap(expectedMeta)
@@ -76,7 +76,7 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
             mockRecord.dataWithAirbyteMeta(
                 stream = stream,
                 flatten = true,
-                airbyteRawId = airbyteRawId
+                airbyteRawId = airbyteRawId,
             )
         withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID)
         Assertions.assertEquals(expected, withMeta.values)

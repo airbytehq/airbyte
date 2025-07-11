@@ -41,7 +41,7 @@ internal class S3DataLakeTableCleanerTest {
             catalog = catalog,
             identifier = tableIdentifier,
             io = fileIo,
-            tableLocation = tableLocation
+            tableLocation = tableLocation,
         )
 
         verify(exactly = 1) { catalog.dropTable(tableIdentifier, true) }
@@ -62,7 +62,7 @@ internal class S3DataLakeTableCleanerTest {
             catalog = catalog,
             identifier = tableIdentifier,
             io = fileIo,
-            tableLocation = tableLocation
+            tableLocation = tableLocation,
         )
 
         verify(exactly = 1) { catalog.dropTable(tableIdentifier, true) }

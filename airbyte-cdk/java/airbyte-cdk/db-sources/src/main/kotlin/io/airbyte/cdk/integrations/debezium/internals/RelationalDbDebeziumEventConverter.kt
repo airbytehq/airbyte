@@ -11,7 +11,7 @@ import java.time.Instant
 
 class RelationalDbDebeziumEventConverter(
     private val cdcMetadataInjector: CdcMetadataInjector<*>,
-    private val emittedAt: Instant
+    private val emittedAt: Instant,
 ) : DebeziumEventConverter {
     override fun toAirbyteMessage(event: ChangeEventWithMetadata): AirbyteMessage {
         val debeziumEvent = event.eventValueAsJson
@@ -41,13 +41,13 @@ class RelationalDbDebeziumEventConverter(
                 baseNode,
                 source,
                 cdcMetadataInjector,
-                after?.isNull == true
+                after?.isNull == true,
             )
         return DebeziumEventConverter.Companion.buildAirbyteMessage(
             source,
             cdcMetadataInjector,
             emittedAt,
-            data
+            data,
         )
     }
 }

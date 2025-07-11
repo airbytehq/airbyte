@@ -33,24 +33,16 @@ class AvroSerializedBufferTest() {
     @Test
     @Disabled(
         "Flaky on CI, See run https://github.com/airbytehq/airbyte/actions/runs/7126781640/job/19405426141?pr=33201 " +
-            "org.opentest4j.AssertionFailedError: Expected size between 964 and 985, but actual size was 991 ==> expected: <true> but was: <false>",
+            "org.opentest4j.AssertionFailedError: Expected size between 964 and 985, but actual size was 991 ==> expected: <true> but was: <false>"
     )
-    @Throws(
-        Exception::class,
-    )
+    @Throws(Exception::class)
     internal fun testSnappyAvroWriter() {
         val config =
             UploadAvroFormatConfig(
-                Jsons.jsonNode(
-                    mapOf(
-                        "compression_codec" to mapOf("codec" to "snappy"),
-                    ),
-                ),
+                Jsons.jsonNode(mapOf("compression_codec" to mapOf("codec" to "snappy")))
             )
         runTest(
-            InMemoryBuffer(
-                AvroSerializedBuffer.DEFAULT_SUFFIX,
-            ),
+            InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX),
             964L,
             985L,
             config,
@@ -70,19 +62,11 @@ class AvroSerializedBufferTest() {
                                 "codec" to "zstandard",
                                 "compression_level" to 20,
                                 "include_checksum" to true,
-                            ),
-                    ),
-                ),
+                            )
+                    )
+                )
             )
-        runTest(
-            FileBuffer(
-                AvroSerializedBuffer.DEFAULT_SUFFIX,
-            ),
-            965L,
-            985L,
-            config,
-            expectedString,
-        )
+        runTest(FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 965L, 985L, config, expectedString)
     }
 
     @Test
@@ -90,19 +74,10 @@ class AvroSerializedBufferTest() {
     internal fun testUncompressedAvroWriter() {
         val config =
             UploadAvroFormatConfig(
-                Jsons.jsonNode(
-                    mapOf(
-                        "compression_codec" to
-                            mapOf(
-                                "codec" to "no compression",
-                            ),
-                    ),
-                ),
+                Jsons.jsonNode(mapOf("compression_codec" to mapOf("codec" to "no compression")))
             )
         runTest(
-            InMemoryBuffer(
-                AvroSerializedBuffer.DEFAULT_SUFFIX,
-            ),
+            InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX),
             1010L,
             1020L,
             config,
@@ -118,14 +93,11 @@ class AvroSerializedBufferTest() {
                     "column2" to "string value",
                     "another field" to true,
                     "nested_column" to mapOf("array_column" to listOf(1, 2, 3)),
-                ),
+                )
             )
         private const val STREAM: String = "stream1"
         private val streamPair: AirbyteStreamNameNamespacePair =
-            AirbyteStreamNameNamespacePair(
-                STREAM,
-                null,
-            )
+            AirbyteStreamNameNamespacePair(STREAM, null)
         private val message: AirbyteRecordMessage =
             AirbyteRecordMessage()
                 .withStream(STREAM)
@@ -139,11 +111,7 @@ class AvroSerializedBufferTest() {
                 Field.of("nested_column", JsonSchemaType.OBJECT),
             )
         private val catalog: ConfiguredAirbyteCatalog =
-            CatalogHelpers.createConfiguredAirbyteCatalog(
-                STREAM,
-                null,
-                FIELDS,
-            )
+            CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS)
 
         @BeforeAll
         @JvmStatic
@@ -165,14 +133,11 @@ class AvroSerializedBufferTest() {
             minExpectedByte: Long,
             maxExpectedByte: Long,
             config: UploadAvroFormatConfig,
-            expectedData: String
+            expectedData: String,
         ) {
             val outputFile: File = buffer.file
-            (AvroSerializedBuffer.createFunction(config, { buffer })
-                    .apply(
-                        streamPair,
-                        catalog,
-                    ) as AvroSerializedBuffer)
+            (AvroSerializedBuffer.createFunction(config, { buffer }).apply(streamPair, catalog)
+                    as AvroSerializedBuffer)
                 .use { writer ->
                     writer.accept(message)
                     writer.accept(message)

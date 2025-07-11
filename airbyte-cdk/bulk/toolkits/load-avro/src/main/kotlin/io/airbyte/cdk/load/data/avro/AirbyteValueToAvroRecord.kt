@@ -59,7 +59,7 @@ class AirbyteValueToAvroRecord {
                             val value = (airbyteValue as ObjectValue).values[name]
                             record.put(
                                 nameMangled,
-                                convert(value ?: NullValue, airbyteField.type, avroField.schema())
+                                convert(value ?: NullValue, airbyteField.type, avroField.schema()),
                             )
                         }
                     }
@@ -110,7 +110,7 @@ class AirbyteValueToAvroRecord {
         } catch (e: Exception) {
             throw RuntimeException(
                 "Failed to convert $airbyteSchema(${airbyteValue.javaClass.simpleName}) to $schema",
-                e
+                e,
             )
         }
     }

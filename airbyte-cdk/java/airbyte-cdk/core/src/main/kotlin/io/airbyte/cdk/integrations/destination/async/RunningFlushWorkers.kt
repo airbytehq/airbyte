@@ -25,21 +25,10 @@ class RunningFlushWorkers {
      * @param stream the stream that is being flushed
      * @param flushWorkerId flush worker id
      */
-    fun trackFlushWorker(
-        stream: StreamDescriptor,
-        flushWorkerId: UUID,
-    ) {
+    fun trackFlushWorker(stream: StreamDescriptor, flushWorkerId: UUID) {
         streamToFlushWorkerToBatchSize
-            .computeIfAbsent(
-                stream,
-            ) {
-                ConcurrentHashMap()
-            }
-            .computeIfAbsent(
-                flushWorkerId,
-            ) {
-                Optional.empty()
-            }
+            .computeIfAbsent(stream) { ConcurrentHashMap() }
+            .computeIfAbsent(flushWorkerId) { Optional.empty() }
     }
 
     /**
@@ -48,10 +37,7 @@ class RunningFlushWorkers {
      * @param stream the stream that was flushed
      * @param flushWorkerId flush worker id
      */
-    fun completeFlushWorker(
-        stream: StreamDescriptor,
-        flushWorkerId: UUID,
-    ) {
+    fun completeFlushWorker(stream: StreamDescriptor, flushWorkerId: UUID) {
         Preconditions.checkState(
             streamToFlushWorkerToBatchSize.containsKey(stream) &&
                 streamToFlushWorkerToBatchSize[stream]!!.containsKey(flushWorkerId),
@@ -70,11 +56,7 @@ class RunningFlushWorkers {
      * @param stream stream
      * @param batchSize batch size
      */
-    fun registerBatchSize(
-        stream: StreamDescriptor,
-        flushWorkerId: UUID,
-        batchSize: Long,
-    ) {
+    fun registerBatchSize(stream: StreamDescriptor, flushWorkerId: UUID, batchSize: Long) {
         Preconditions.checkState(
             (streamToFlushWorkerToBatchSize.containsKey(stream) &&
                 streamToFlushWorkerToBatchSize[stream]!!.containsKey(flushWorkerId)),
@@ -92,7 +74,7 @@ class RunningFlushWorkers {
      */
     fun getSizesOfRunningWorkerBatches(stream: StreamDescriptor): List<Optional<Long>> {
         return ArrayList(
-            streamToFlushWorkerToBatchSize.getOrDefault(stream, ConcurrentHashMap()).values,
+            streamToFlushWorkerToBatchSize.getOrDefault(stream, ConcurrentHashMap()).values
         )
     }
 }

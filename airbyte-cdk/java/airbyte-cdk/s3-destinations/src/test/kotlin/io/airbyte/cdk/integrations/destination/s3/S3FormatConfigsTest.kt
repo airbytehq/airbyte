@@ -27,9 +27,9 @@ class S3FormatConfigsTest {
                             "flattening",
                             Flattening.ROOT_LEVEL.value,
                             "compression",
-                            jsonNode(Map.of("compression_type", "No Compression"))
+                            jsonNode(Map.of("compression_type", "No Compression")),
                         )
-                    )
+                    ),
                 )
             )
 

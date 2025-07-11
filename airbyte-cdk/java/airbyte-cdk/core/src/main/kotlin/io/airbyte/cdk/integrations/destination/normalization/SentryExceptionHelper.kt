@@ -7,6 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This is copied out of platform
  * (https://github.com/airbytehq/airbyte-platform/blob/main/airbyte-persistence/job-persistence/src/main/java/io/airbyte/persistence/job/errorreporter/SentryExceptionHelper.java#L257)
@@ -45,7 +46,7 @@ object SentryExceptionHelper {
                             String.format(
                                 "%s %s",
                                 stacktraceLines[i + 1].trim { it <= ' ' },
-                                stacktraceLines[i + 2].trim { it <= ' ' }
+                                stacktraceLines[i + 2].trim { it <= ' ' },
                             )
                         errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                             "DbtDatabaseSQLCompilationError"
@@ -56,14 +57,14 @@ object SentryExceptionHelper {
                             Arrays.copyOfRange<String>(
                                 stacktraceLines,
                                 i + 1,
-                                stacktraceLines.size
+                                stacktraceLines.size,
                             )) {
                             if (followingLine.trim { it <= ' ' }.startsWith("context:")) {
                                 errorMessageAndType[ErrorMapKeys.ERROR_MAP_MESSAGE_KEY] =
                                     String.format(
                                         "%s\n%s",
                                         stacktraceLines[i + 1].trim { it <= ' ' },
-                                        followingLine.trim { it <= ' ' }
+                                        followingLine.trim { it <= ' ' },
                                     )
                                 errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                                     "DbtDatabaseInvalidInputError"
@@ -76,7 +77,7 @@ object SentryExceptionHelper {
                             String.format(
                                 "%s\n%s",
                                 stacktraceLines[i + 1].trim { it <= ' ' },
-                                stacktraceLines[i + 2].trim { it <= ' ' }
+                                stacktraceLines[i + 2].trim { it <= ' ' },
                             )
                         errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                             "DbtDatabaseSyntaxError"
@@ -102,7 +103,7 @@ object SentryExceptionHelper {
                             String.format(
                                 "%s %s",
                                 stacktraceLines[i + 1].trim { it <= ' ' },
-                                stacktraceLines[i + 2].trim { it <= ' ' }
+                                stacktraceLines[i + 2].trim { it <= ' ' },
                             )
                         errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                             "DbtCompilationAmbiguousRelationError"
@@ -122,7 +123,7 @@ object SentryExceptionHelper {
                                 String.format(
                                     "%s",
                                     stacktraceLines[stacktraceLines.indexOf(followingLine) + 1]
-                                        .trim { it <= ' ' }
+                                        .trim { it <= ' ' },
                                 )
                             errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                                 "DbtRuntimeDatabaseError"
@@ -164,6 +165,6 @@ object SentryExceptionHelper {
     /** Keys to known error types. */
     enum class ErrorMapKeys {
         ERROR_MAP_MESSAGE_KEY,
-        ERROR_MAP_TYPE_KEY
+        ERROR_MAP_TYPE_KEY,
     }
 }

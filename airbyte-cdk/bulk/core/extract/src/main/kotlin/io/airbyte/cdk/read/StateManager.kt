@@ -55,8 +55,10 @@ class StateManager(
     fun scoped(feed: Feed): StateManagerScopedToFeed =
         when (feed) {
             is Global -> global ?: throw IllegalArgumentException("unknown global key")
-            is Stream -> global?.streamStateManagers?.get(feed.id)
-                    ?: nonGlobal[feed.id] ?: throw IllegalArgumentException("unknown stream key")
+            is Stream ->
+                global?.streamStateManagers?.get(feed.id)
+                    ?: nonGlobal[feed.id]
+                    ?: throw IllegalArgumentException("unknown stream key")
         }
 
     interface StateManagerScopedToFeed {
@@ -70,12 +72,7 @@ class StateManager(
         fun current(): OpaqueStateValue?
 
         /** Updates the current state value in the [StateManager] for this [feed]. */
-        fun set(
-            state: OpaqueStateValue,
-            numRecords: Long,
-            partitionId: String?,
-            id: Int?,
-        )
+        fun set(state: OpaqueStateValue, numRecords: Long, partitionId: String?, id: Int?)
 
         /** Resets the current state value in the [StateManager] for this [feed] to zero. */
         fun reset()
@@ -109,15 +106,11 @@ private sealed class BaseStateManager<K : Feed>(
     // This is required by destinations in Socket mode
     private var pendingStateValues: MutableList<StateManager.StateForCheckpointWithPartitionId> =
         mutableListOf()
+
     @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
 
     @Synchronized
-    override fun set(
-        state: OpaqueStateValue,
-        numRecords: Long,
-        partitionId: String?,
-        id: Int?,
-    ) {
+    override fun set(state: OpaqueStateValue, numRecords: Long, partitionId: String?, id: Int?) {
         pendingStateValues.add(
             StateManager.StateForCheckpointWithPartitionId(state, partitionId, numRecords, id)
         )
@@ -198,13 +191,13 @@ private data class Fresh(
  * [StateForCheckpoint] implementation for when [StateManagerScopedToFeed.set] has NOT been called
  * since the last call to [BaseStateManager.takeForCheckpoint].
  */
-private data class Stale(
-    override val opaqueStateValue: OpaqueStateValue?,
-) : StateForCheckpoint {
+private data class Stale(override val opaqueStateValue: OpaqueStateValue?) : StateForCheckpoint {
     override val numRecords: Long
         get() = 0L
+
     override val id: Int
         get() = 0
+
     override val partitionId: String?
         get() = ""
 }
@@ -243,7 +236,7 @@ private class GlobalStateManager(
                             true -> Jsons.objectNode()
                             false -> streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
                         }
-                    ),
+                    )
             )
         }
         if (!shouldCheckpoint) {
@@ -260,15 +253,11 @@ private class GlobalStateManager(
     }
 }
 
-private class GlobalStreamStateManager(
-    stream: Stream,
-    initialState: OpaqueStateValue?,
-) : BaseStateManager<Stream>(stream, initialState)
+private class GlobalStreamStateManager(stream: Stream, initialState: OpaqueStateValue?) :
+    BaseStateManager<Stream>(stream, initialState)
 
-private class NonGlobalStreamStateManager(
-    stream: Stream,
-    initialState: OpaqueStateValue?,
-) : BaseStateManager<Stream>(stream, initialState) {
+private class NonGlobalStreamStateManager(stream: Stream, initialState: OpaqueStateValue?) :
+    BaseStateManager<Stream>(stream, initialState) {
     fun checkpoint(): List<AirbyteStateMessage>? {
         val streamStatesForCheckpoint: List<StateForCheckpoint> = takeForCheckpoint()
         if (

@@ -14,10 +14,10 @@ import org.testcontainers.containers.MySQLContainer
 /** Much like the destination-postgres PostgresTestDatabase, this was copied from source-mysql. */
 class MysqlTestDatabase(container: MySQLContainer<*>) :
     TestDatabase<MySQLContainer<*>, MysqlTestDatabase, MysqlTestDatabase.MySQLConfigBuilder>(
-        container,
+        container
     ) {
     enum class BaseImage(val reference: String) {
-        MYSQL_8("mysql:8.0"),
+        MYSQL_8("mysql:8.0")
     }
 
     enum class ContainerModifier(val methodName: String) {
@@ -26,7 +26,7 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
         ROOT_AND_SERVER_CERTIFICATES("withRootAndServerCertificates"),
         CLIENT_CERTITICATE("withClientCertificate"),
         NETWORK("withNetwork"),
-        CUSTOM_NAME("withCustomName")
+        CUSTOM_NAME("withCustomName"),
     }
 
     override fun inContainerBootstrapCmd(): Stream<Stream<String>> {
@@ -35,20 +35,12 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
         // does not
         // exist.
         return Stream.of(
-            Stream.of(
-                "sh",
-                "-c",
-                "ln -s -f /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock",
-            ),
+            Stream.of("sh", "-c", "ln -s -f /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock"),
             mysqlCmd(
                 Stream.of(
                     String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
                     String.format("CREATE DATABASE \\`%s\\`", databaseName),
-                    String.format(
-                        "CREATE USER '%s' IDENTIFIED BY '%s'",
-                        userName,
-                        password,
-                    ),
+                    String.format("CREATE USER '%s' IDENTIFIED BY '%s'", userName, password),
                     // Grant privileges also to the container's user, which is not root.
                     String.format(
                         "GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION",
@@ -57,8 +49,8 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
                     ),
                     "set global local_infile=true",
                     "REVOKE ALL PRIVILEGES, GRANT OPTION FROM $userName@'%'",
-                    "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO $userName@'%'"
-                ),
+                    "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO $userName@'%'",
+                )
             ),
         )
     }
@@ -68,7 +60,7 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
             Stream.of(
                 String.format("DROP USER '%s'", userName),
                 String.format("DROP DATABASE \\`%s\\`", databaseName),
-            ),
+            )
         )
     }
 

@@ -29,14 +29,14 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
     private val parsedCatalog: ParsedCatalog,
     private val v1V2Migrator: DestinationV1V2Migrator,
     private val v2TableMigrator: V2TableMigrator,
-    private val migrations: List<Migration<DestinationState>>
+    private val migrations: List<Migration<DestinationState>>,
 ) : TyperDeduper {
     private val executorService: ExecutorService =
         Executors.newFixedThreadPool(
             FutureUtils.countOfTypeAndDedupeThreads,
             BasicThreadFactory.Builder()
                 .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
-                .build()
+                .build(),
         )
 
     @Throws(Exception::class)
@@ -49,7 +49,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
             destinationHandler,
             v1V2Migrator,
             v2TableMigrator,
-            parsedCatalog
+            parsedCatalog,
         )
 
         val destinationInitialStatuses =
@@ -57,7 +57,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
                 executorService,
                 destinationHandler,
                 migrations,
-                destinationHandler.gatherInitialState(parsedCatalog.streams)
+                destinationHandler.gatherInitialState(parsedCatalog.streams),
             )
 
         // Commit the updated destination states.

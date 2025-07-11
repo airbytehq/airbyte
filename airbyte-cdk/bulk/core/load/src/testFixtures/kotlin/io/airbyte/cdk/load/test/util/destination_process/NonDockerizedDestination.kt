@@ -85,9 +85,7 @@ class NonDockerizedDestination(
                     // from PrintWriter(outputStream) ).
                     // Thanks, spotbugs.
                     destinationDataChannels = arrayOf(PipedOutputStream(destinationStdin))
-                    mapOf(
-                        EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.STDIO.toString(),
-                    )
+                    mapOf(EnvVarConstants.DATA_CHANNEL_MEDIUM to DataChannelMedium.STDIO.toString())
                 }
                 DataChannelMedium.SOCKET -> {
                     val socketWriters =
@@ -106,7 +104,7 @@ class NonDockerizedDestination(
                         EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS to
                             socketWriters.joinToString(",") { it.socketPath },
                         EnvVarConstants.NAMESPACE_MAPPER_CONFIG_PATH to
-                            namespaceMappingConfigPath.toString()
+                            namespaceMappingConfigPath.toString(),
                     )
                 }
             }
@@ -190,9 +188,8 @@ class NonDockerizedDestination(
     }
 }
 
-class NonDockerizedDestinationFactory(
-    private val additionalMicronautEnvs: List<String>,
-) : DestinationProcessFactory() {
+class NonDockerizedDestinationFactory(private val additionalMicronautEnvs: List<String>) :
+    DestinationProcessFactory() {
     /**
      * In `check` operations, we do some micronaut magic to redirect the input stream. This
      * conflicts with the test bean injection, so we expose an option to disable the bean override.
@@ -222,7 +219,7 @@ class NonDockerizedDestinationFactory(
             dataChannelMedium = dataChannelMedium,
             dataChannelFormat = dataChannelFormat,
             namespaceMappingConfig = namespaceMappingConfig,
-            *featureFlags
+            *featureFlags,
         )
     }
 }

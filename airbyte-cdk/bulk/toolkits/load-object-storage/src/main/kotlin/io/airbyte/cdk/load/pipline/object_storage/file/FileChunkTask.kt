@@ -68,10 +68,7 @@ class FileChunkTask<T>(
                 val stream = catalog.getStream(event.key.stream)
 
                 val filePath =
-                    Path.of(
-                            pathFactory.getFinalDirectory(stream),
-                            file.sourceFileRelativePath,
-                        )
+                    Path.of(pathFactory.getFinalDirectory(stream), file.sourceFileRelativePath)
                         .toString()
 
                 // We enrich the record with the file_path. Ideally the schema modification
@@ -82,12 +79,7 @@ class FileChunkTask<T>(
                 val fileInputStream = localFile.inputStream()
 
                 // iterate over the file and emit a part for each partSizeBytes read
-                val parts =
-                    FilePartIterator(
-                        fileInputStream,
-                        partSizeBytes,
-                        filePath,
-                    )
+                val parts = FilePartIterator(fileInputStream, partSizeBytes, filePath)
 
                 val fileSize = file.fileSizeBytes
                 // Why +1? We expect a final marker even if size % partSize == 0.

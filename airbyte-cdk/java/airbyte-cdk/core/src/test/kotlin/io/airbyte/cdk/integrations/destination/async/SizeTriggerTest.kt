@@ -33,14 +33,8 @@ class SizeTriggerTest {
 
     @Test
     internal fun testSizeTriggerOnEmptyQueue() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L))
         val detect =
@@ -50,14 +44,8 @@ class SizeTriggerTest {
 
     @Test
     internal fun testSizeTriggerRespectsThreshold() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L))
         val detect =
@@ -70,14 +58,8 @@ class SizeTriggerTest {
 
     @Test
     internal fun testSizeTriggerRespectsRunningWorkersEstimate() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L))
         Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))

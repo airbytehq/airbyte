@@ -25,7 +25,7 @@ import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 abstract class ConfigurationSpecificationWithDlq(
     @get:JsonSchemaTitle("Object Storage Configuration")
     @get:JsonProperty("object_storage_config")
-    val objectStorageConfig: ObjectStorageSpec? = DisabledObjectStorageSpec(),
+    val objectStorageConfig: ObjectStorageSpec? = DisabledObjectStorageSpec()
 ) : ConfigurationSpecification()
 
 enum class ObjectStorageType(@get:JsonValue val type: String) {
@@ -36,11 +36,11 @@ enum class ObjectStorageType(@get:JsonValue val type: String) {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "storage_type"
+    property = "storage_type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = DisabledObjectStorageSpec::class, name = "None"),
-    JsonSubTypes.Type(value = S3ObjectStorageSpec::class, name = "S3")
+    JsonSubTypes.Type(value = S3ObjectStorageSpec::class, name = "S3"),
 )
 sealed interface ObjectStorageSpec {
     @get:JsonSchemaTitle("Object Storage Type")
@@ -98,9 +98,7 @@ class S3ObjectStorageSpec :
     val bucketPath: String = ""
 
     @get:JsonSchemaTitle("Output Format")
-    @get:JsonPropertyDescription(
-        "Format of the data output.",
-    )
+    @get:JsonPropertyDescription("Format of the data output.")
     @get:JsonSchemaInject(
         json =
             """{

@@ -99,7 +99,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
     /** Helper method to retrieve all synced objects inside the configured bucket path. */
     protected fun getAllSyncedObjects(
         streamName: String,
-        namespace: String
+        namespace: String,
     ): List<S3ObjectSummary> {
         val namespaceStr = nameTransformer.getNamespace(namespace)
         val streamNameStr = nameTransformer.getIdentifier(streamName)
@@ -108,7 +108,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                config.pathFormat!!
+                config.pathFormat!!,
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
@@ -122,7 +122,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
             "All objects: {}",
             objectSummaries.map { o: S3ObjectSummary ->
                 String.format("%s/%s", o.bucketName, o.key)
-            }
+            },
         )
         return objectSummaries
     }
@@ -143,7 +143,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5)
+                RandomStringUtils.randomAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("gcs_bucket_path", testBucketPath)
@@ -169,7 +169,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
             LOGGER.info(
                 "Tearing down test bucket path: {}/{}",
                 config!!.bucketName,
-                config!!.bucketPath
+                config!!.bucketPath,
             )
             // Google Cloud Storage doesn't accept request to delete multiple objects
             for (keyToDelete in keysToDelete) {
@@ -196,7 +196,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5)
+                RandomStringUtils.randomAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("gcs_bucket_path", testBucketPath)
@@ -204,7 +204,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
 
         Assertions.assertEquals(
             StandardCheckConnectionOutput.Status.FAILED,
-            runCheck(configJson).status
+            runCheck(configJson).status,
         )
     }
 
@@ -238,7 +238,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
                     .put("credential_type", "HMAC_KEY")
                     .put(
                         "hmac_key_access_id",
-                        baseJson["credential"]["hmac_key_access_id"].asText()
+                        baseJson["credential"]["hmac_key_access_id"].asText(),
                     )
                     .put("hmac_key_secret", "fake-secret")
                     .build()

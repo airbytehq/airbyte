@@ -27,7 +27,7 @@ interface IntegrationLauncher {
         catalogFilename: String?,
         catalogContents: String?,
         stateFilename: String?,
-        stateContents: String?
+        stateContents: String?,
     ): Process?
 
     fun read(
@@ -35,7 +35,7 @@ interface IntegrationLauncher {
         configFilename: String?,
         configContents: String?,
         catalogFilename: String?,
-        catalogContents: String?
+        catalogContents: String?,
     ): Process? {
         return read(
             jobRoot,
@@ -44,7 +44,7 @@ interface IntegrationLauncher {
             catalogFilename,
             catalogContents,
             null,
-            null
+            null,
         )
     }
 
@@ -54,6 +54,6 @@ interface IntegrationLauncher {
         configContents: String,
         catalogFilename: String,
         catalogContents: String,
-        additionalEnvironmentVariables: Map<String, String>
+        additionalEnvironmentVariables: Map<String, String>,
     ): Process?
 }

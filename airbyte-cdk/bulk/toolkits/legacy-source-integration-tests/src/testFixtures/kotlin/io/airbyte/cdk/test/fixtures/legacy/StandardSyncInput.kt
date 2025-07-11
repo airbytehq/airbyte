@@ -35,7 +35,7 @@ import java.util.*
     "sourceResourceRequirements",
     "destinationResourceRequirements",
     "workspaceId",
-    "connectionId"
+    "connectionId",
 )
 class StandardSyncInput : Serializable {
     /**
@@ -64,6 +64,7 @@ class StandardSyncInput : Serializable {
     @set:JsonProperty("namespaceFormat")
     @JsonProperty("namespaceFormat")
     var namespaceFormat: String? = null
+
     /**
      * Prefix that will be prepended to the name of each stream when it is written to the
      * destination.
@@ -83,6 +84,7 @@ class StandardSyncInput : Serializable {
         "Prefix that will be prepended to the name of each stream when it is written to the destination."
     )
     var prefix: String? = null
+
     /**
      * Actor ID for the source used in the sync - this is used to update the actor configuration
      * when requested. (Required)
@@ -102,6 +104,7 @@ class StandardSyncInput : Serializable {
         "Actor ID for the source used in the sync - this is used to update the actor configuration when requested."
     )
     var sourceId: UUID? = null
+
     /**
      * Actor ID for the destination used in the sync - this is used to update the actor
      * configuration when requested. (Required)
@@ -121,6 +124,7 @@ class StandardSyncInput : Serializable {
         "Actor ID for the destination used in the sync - this is used to update the actor configuration when requested."
     )
     var destinationId: UUID? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
@@ -129,6 +133,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("sourceConfiguration")
     @JsonPropertyDescription("Integration specific blob. Must be a valid JSON string.")
     var sourceConfiguration: JsonNode? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
@@ -137,6 +142,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("destinationConfiguration")
     @JsonPropertyDescription("Integration specific blob. Must be a valid JSON string.")
     var destinationConfiguration: JsonNode? = null
+
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
@@ -147,6 +153,7 @@ class StandardSyncInput : Serializable {
         "Sequence of configurations of operations to apply as part of the sync"
     )
     var operationSequence: List<StandardSyncOperation>? = ArrayList()
+
     /**
      * The webhook operation configs belonging to this workspace. See webhookOperationConfigs in
      * StandardWorkspace.yaml.
@@ -166,6 +173,7 @@ class StandardSyncInput : Serializable {
         "The webhook operation configs belonging to this workspace. See webhookOperationConfigs in StandardWorkspace.yaml."
     )
     var webhookOperationConfigs: JsonNode? = null
+
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
@@ -174,6 +182,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("catalog")
     @JsonPropertyDescription("the configured airbyte catalog")
     var catalog: ConfiguredAirbyteCatalog? = null
+
     /**
      * State
      *
@@ -194,6 +203,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("state")
     @JsonPropertyDescription("information output by the connection.")
     var state: State? = null
+
     /**
      * ResourceRequirements
      *
@@ -214,6 +224,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("resourceRequirements")
     @JsonPropertyDescription("generic configuration for pod source requirements")
     var resourceRequirements: ResourceRequirements? = null
+
     /**
      * ResourceRequirements
      *
@@ -234,6 +245,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("sourceResourceRequirements")
     @JsonPropertyDescription("generic configuration for pod source requirements")
     var sourceResourceRequirements: ResourceRequirements? = null
+
     /**
      * ResourceRequirements
      *
@@ -254,6 +266,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("destinationResourceRequirements")
     @JsonPropertyDescription("generic configuration for pod source requirements")
     var destinationResourceRequirements: ResourceRequirements? = null
+
     /** The id of the workspace associated with this sync */
     /** The id of the workspace associated with this sync */
     /** The id of the workspace associated with this sync */
@@ -262,6 +275,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("workspaceId")
     @JsonPropertyDescription("The id of the workspace associated with this sync")
     var workspaceId: UUID? = null
+
     /** The id of the connection associated with this sync */
     /** The id of the connection associated with this sync */
     /** The id of the connection associated with this sync */

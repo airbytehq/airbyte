@@ -12,6 +12,4 @@ package io.airbyte.cdk.load.command
  * already a DestinationCatalog which represents the destination view of the AirbyteCatalog from a
  * destination POV.
  */
-data class DestinationDiscoverCatalog(
-    val operations: List<DestinationOperation>,
-)
+data class DestinationDiscoverCatalog(val operations: List<DestinationOperation>)

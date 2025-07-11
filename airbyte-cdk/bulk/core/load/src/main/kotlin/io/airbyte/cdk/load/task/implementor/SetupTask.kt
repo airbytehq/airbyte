@@ -25,9 +25,7 @@ class SetupTask(
 }
 
 @Singleton
-class SetupTaskFactory(
-    private val destination: DestinationWriter,
-) {
+class SetupTaskFactory(private val destination: DestinationWriter) {
     fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
         return SetupTask(destination, taskLauncher)
     }

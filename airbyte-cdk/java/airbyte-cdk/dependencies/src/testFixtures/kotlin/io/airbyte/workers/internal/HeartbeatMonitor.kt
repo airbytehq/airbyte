@@ -19,7 +19,7 @@ class HeartbeatMonitor
 @VisibleForTesting
 constructor(
     private val heartBeatFreshDuration: Duration?,
-    private val nowSupplier: Supplier<Instant>
+    private val nowSupplier: Supplier<Instant>,
 ) {
     private val lastBeat = AtomicReference<Instant>(null)
 
@@ -34,9 +34,8 @@ constructor(
 
     val isBeating: Boolean
         /**
-         *
          * @return true if the last heartbeat is still "fresh". i.e. time since last heartbeat is
-         * less than heartBeatFreshDuration. otherwise, false.
+         *   less than heartBeatFreshDuration. otherwise, false.
          */
         get() {
             val instantFetched = lastBeat.get()

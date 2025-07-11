@@ -39,6 +39,7 @@ class SnowflakeStagingClientIntegrationTest {
     private val datasource =
         SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
     private val database: JdbcDatabase = SnowflakeDatabaseUtils.getDatabase(datasource)
+
     // Intentionally not using actual columns, since the staging client should be agnostic of these
     // and only follow the order of data.
 
@@ -46,9 +47,11 @@ class SnowflakeStagingClientIntegrationTest {
     fun setUp() {
         namespace = Strings.addRandomSuffix("staging_client_test", "_", 5).uppercase()
         tablename = "integration_test_raw".uppercase()
-        val createSchemaQuery = """
+        val createSchemaQuery =
+            """
             CREATE SCHEMA "$namespace"
-        """.trimIndent()
+        """
+                .trimIndent()
         val createStagingTableQuery =
             """
             CREATE TABLE IF NOT EXISTS "$namespace"."$tablename" (
@@ -56,7 +59,8 @@ class SnowflakeStagingClientIntegrationTest {
                 "emitted_at"  TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
                 "data" VARIANT
             )
-        """.trimIndent()
+        """
+                .trimIndent()
         stageName = """"$namespace"."${Strings.addRandomSuffix("stage", "_", 5)}""""
         stagingClient = SnowflakeStagingClient(database)
         database.execute(createSchemaQuery)
@@ -92,7 +96,7 @@ class SnowflakeStagingClientIntegrationTest {
                     formattedString: String,
                     emittedAt: Long,
                     formattedAirbyteMetaString: String,
-                    generationId: Long
+                    generationId: Long,
                 ): List<Any> {
                     return listOf(id, Instant.ofEpochMilli(emittedAt), formattedString)
                 }
@@ -148,13 +152,13 @@ class SnowflakeStagingClientIntegrationTest {
                     formattedString: String,
                     emittedAt: Long,
                     formattedAirbyteMetaString: String,
-                    generationId: Long
+                    generationId: Long,
                 ): List<Any> {
                     return listOf(
                         id,
                         Instant.ofEpochMilli(emittedAt),
                         formattedString,
-                        "unknown_data_column"
+                        "unknown_data_column",
                     )
                 }
 
@@ -179,7 +183,7 @@ class SnowflakeStagingClientIntegrationTest {
                     stageName,
                     stagingPath,
                     listOf(fileName),
-                    streamId
+                    streamId,
                 )
             }
         }

@@ -28,7 +28,7 @@ class SocketInputFlow(
     private val inputFormatReader: DataChannelReader,
     private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
     private val memoryManager: ReservationManager,
-    private val logPerNRecords: Long = 100_000L
+    private val logPerNRecords: Long = 100_000L,
 ) : Flow<PipelineInputEvent> {
     private val log = KotlinLogging.logger {}
 
@@ -50,7 +50,7 @@ class SocketInputFlow(
                             val event =
                                 pipelineEventBookkeepingRouter.handleStreamMessage(
                                     message,
-                                    unopenedStreams = unopenedStreams
+                                    unopenedStreams = unopenedStreams,
                                 )
                             if (event is PipelineEndOfStream) {
                                 sawEndOfStream.add(event.stream)

@@ -13,7 +13,7 @@ import io.airbyte.protocol.models.v0.SyncMode
 object RelationalDbReadUtil {
     fun identifyStreamsToSnapshot(
         catalog: ConfiguredAirbyteCatalog,
-        alreadySyncedStreams: Set<AirbyteStreamNameNamespacePair>
+        alreadySyncedStreams: Set<AirbyteStreamNameNamespacePair>,
     ): List<ConfiguredAirbyteStream> {
         val allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog)
         val newlyAddedStreams: Set<AirbyteStreamNameNamespacePair> =
@@ -31,7 +31,7 @@ object RelationalDbReadUtil {
     @JvmStatic
     fun identifyStreamsForCursorBased(
         catalog: ConfiguredAirbyteCatalog,
-        streamsForInitialLoad: List<ConfiguredAirbyteStream>
+        streamsForInitialLoad: List<ConfiguredAirbyteStream>,
     ): List<ConfiguredAirbyteStream> {
         val initialLoadStreamsNamespacePairs =
             streamsForInitialLoad
@@ -55,7 +55,7 @@ object RelationalDbReadUtil {
     ): AirbyteStreamNameNamespacePair {
         return AirbyteStreamNameNamespacePair(
             v1NameNamespacePair.name,
-            v1NameNamespacePair.namespace
+            v1NameNamespacePair.namespace,
         )
     }
 }

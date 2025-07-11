@@ -30,15 +30,15 @@ class SnowflakeSqlGeneratorTest {
             Executable {
                 Assertions.assertEquals(
                     ColumnId("__FOO_", "\${foo}", "__FOO_"),
-                    generator.buildColumnId("\${foo}")
+                    generator.buildColumnId("\${foo}"),
                 )
             }, // But normally, we should leave those characters untouched.
             Executable {
                 Assertions.assertEquals(
                     ColumnId("{FO\$O}", "{fo\$o}", "{FO\$O}"),
-                    generator.buildColumnId("{fo\$o}")
+                    generator.buildColumnId("{fo\$o}"),
                 )
-            }
+            },
         )
     }
 
@@ -54,9 +54,9 @@ class SnowflakeSqlGeneratorTest {
                         "airbyte_internal",
                         "__foo__raw__stream___bar_",
                         "\${foo}",
-                        "\${bar}"
+                        "\${bar}",
                     ),
-                    generator.buildStreamId("\${foo}", "\${bar}", "airbyte_internal")
+                    generator.buildStreamId("\${foo}", "\${bar}", "airbyte_internal"),
                 )
             },
             Executable {
@@ -67,11 +67,11 @@ class SnowflakeSqlGeneratorTest {
                         "airbyte_internal",
                         "{fo\$o}_raw__stream_{ba\$r}",
                         "{fo\$o}",
-                        "{ba\$r}"
+                        "{ba\$r}",
                     ),
-                    generator.buildStreamId("{fo\$o}", "{ba\$r}", "airbyte_internal")
+                    generator.buildStreamId("{fo\$o}", "{ba\$r}", "airbyte_internal"),
                 )
-            }
+            },
         )
     }
 
@@ -92,7 +92,7 @@ class SnowflakeSqlGeneratorTest {
                 expectedColumns,
                 0,
                 0,
-                0
+                0,
             ),
             parser.toStreamConfig(
                 ConfiguredAirbyteStream()
@@ -116,11 +116,12 @@ class SnowflakeSqlGeneratorTest {
                       }
                     }
                     
-                    """.trimIndent()
+                    """
+                                        .trimIndent()
                                 )
                             )
                     )
-            )
+            ),
         )
     }
 

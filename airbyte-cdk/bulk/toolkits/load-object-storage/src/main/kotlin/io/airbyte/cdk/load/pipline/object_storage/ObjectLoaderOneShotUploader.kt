@@ -32,7 +32,7 @@ import kotlinx.coroutines.coroutineScope
  * - feeds incoming records to the formatter
  * - as the formatter produces parts, feeds them to the part loader (in async futures)
  * - when the final part is generated, or finish is called, awaits all part uploads, feeding the
- * load results to the completer until the completer completes
+ *   load results to the completer until the completer completes
  * - returns the completer result (which might be sent further downstream if bulk load is enabled)
  *
  * Ie, Accomplishes "Simplify the Object Storage Path" here:
@@ -50,7 +50,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
         ObjectLoaderOneShotUploader.State<O, T>,
         StreamKey,
         DestinationRecordRaw,
-        ObjectLoaderUploadCompleter.UploadResult<T>
+        ObjectLoaderUploadCompleter.UploadResult<T>,
     > {
 
     private val log = KotlinLogging.logger {}
@@ -117,7 +117,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
 
     private suspend fun uploadFinalAndFinish(
         finalPart: ObjectLoaderPartFormatter.FormattedPart,
-        state: State<O, T>
+        state: State<O, T>,
     ): FinalOutput<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> = coroutineScope {
         state.uploads += launchUpload(finalPart, state.partLoaderState)
 

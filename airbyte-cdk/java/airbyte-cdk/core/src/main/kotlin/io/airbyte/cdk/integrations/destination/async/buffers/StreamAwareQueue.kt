@@ -45,11 +45,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
         return memoryAwareQueue.size()
     }
 
-    fun offer(
-        message: PartialAirbyteMessage,
-        messageSizeInBytes: Long,
-        stateId: Long,
-    ): Boolean {
+    fun offer(message: PartialAirbyteMessage, messageSizeInBytes: Long, stateId: Long): Boolean {
         if (memoryAwareQueue.offer(MessageWithMeta(message, stateId), messageSizeInBytes)) {
             timeOfLastMessage.set(Instant.now())
             return true

@@ -87,9 +87,7 @@ class S3DataLakeSuperTypeFinderTest {
     fun testPrimitiveToNonPrimitiveThrows() {
         val intType = Types.IntegerType.get()
         val structType =
-            Types.StructType.of(
-                Types.NestedField.optional(1, "field", Types.StringType.get()),
-            )
+            Types.StructType.of(Types.NestedField.optional(1, "field", Types.StringType.get()))
 
         // Attempting to combine int (primitive) with struct (non-primitive) => error
         assertThatThrownBy { superTypeFinder.findSuperType(intType, structType, "column_name") }
@@ -102,9 +100,7 @@ class S3DataLakeSuperTypeFinderTest {
     @Test
     fun testNonPrimitiveToPrimitiveThrows() {
         val structType =
-            Types.StructType.of(
-                Types.NestedField.optional(1, "field", Types.StringType.get()),
-            )
+            Types.StructType.of(Types.NestedField.optional(1, "field", Types.StringType.get()))
         val intType = Types.IntegerType.get()
 
         assertThatThrownBy { superTypeFinder.findSuperType(structType, intType, "column_name") }
@@ -177,6 +173,7 @@ class S3DataLakeSuperTypeFinderTest {
         val nanoTimestamp =
             object : Type.PrimitiveType() {
                 override fun typeId() = TIMESTAMP_NANO
+
                 override fun isPrimitiveType() = true
             }
         val normalTimestamp = TimestampType.withoutZone()

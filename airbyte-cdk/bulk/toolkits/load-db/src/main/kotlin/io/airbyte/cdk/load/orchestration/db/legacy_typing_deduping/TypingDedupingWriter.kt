@@ -55,7 +55,7 @@ class TypingDedupingWriter(
                         finalTableOperations.softResetFinalTable(
                             stream,
                             tableNames,
-                            columnNameMapping
+                            columnNameMapping,
                         )
                     }
                 }

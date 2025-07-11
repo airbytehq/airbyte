@@ -31,10 +31,7 @@ class PersonEventBatchEntryAssemblerTest {
             assembler.assemble(
                 aRecord(
                     Jsons.objectNode()
-                        .put(
-                            "event_name",
-                            "an_event_name",
-                        )
+                        .put("event_name", "an_event_name")
                         .put("person_email", "person@email.com")
                         .put("an_attribute", 123)
                 )
@@ -54,9 +51,10 @@ class PersonEventBatchEntryAssemblerTest {
                     "an_attribute": 123
                   }
                 }
-            """.trimIndent()
+            """
+                    .trimIndent()
             ),
-            entry
+            entry,
         )
     }
 
@@ -81,7 +79,7 @@ class PersonEventBatchEntryAssemblerTest {
             stream = mockk(relaxed = true),
             rawData = rawData,
             serializedSizeBytes = "serialized".length.toLong(),
-            airbyteRawId = UUID.randomUUID()
+            airbyteRawId = UUID.randomUUID(),
         )
     }
 }

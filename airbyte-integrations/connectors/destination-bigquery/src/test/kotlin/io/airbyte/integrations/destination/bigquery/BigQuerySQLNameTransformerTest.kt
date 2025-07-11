@@ -29,7 +29,7 @@ internal class BigQuerySQLNameTransformerTest {
                 "*_namespace",
                 "n__namespace",
                 "_namespace",
-                "n_namespace"
+                "n_namespace",
             )
     }
 }

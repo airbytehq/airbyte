@@ -16,10 +16,7 @@ abstract class JdbcPartitionsCreator<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
->(
-    val partition: P,
-    val partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : PartitionsCreator {
+>(val partition: P, val partitionFactory: JdbcPartitionFactory<A, S, P>) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
 
     val streamState: S = partition.streamState
@@ -89,9 +86,7 @@ abstract class JdbcPartitionsCreator<
     }
 
     /** Collects a sample of rows in the unsplit partition. */
-    fun <T> collectSample(
-        recordMapper: (ObjectNode) -> T,
-    ): Sample<T> {
+    fun <T> collectSample(recordMapper: (ObjectNode) -> T): Sample<T> {
         val values = mutableListOf<T>()
         var previousWeight = 0L
         for (sampleRateInvPow2 in listOf(16, 8, 0)) {
@@ -132,10 +127,8 @@ class JdbcSequentialPartitionsCreator<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
->(
-    partition: P,
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
+>(partition: P, partitionFactory: JdbcPartitionFactory<A, S, P>) :
+    JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
 
     override suspend fun run(): List<PartitionReader> {
@@ -186,10 +179,8 @@ class JdbcConcurrentPartitionsCreator<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
->(
-    partition: P,
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
+>(partition: P, partitionFactory: JdbcPartitionFactory<A, S, P>) :
+    JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
 
     override suspend fun run(): List<PartitionReader> {

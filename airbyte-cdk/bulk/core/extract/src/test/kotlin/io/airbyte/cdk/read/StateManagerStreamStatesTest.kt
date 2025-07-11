@@ -84,10 +84,7 @@ class StateManagerStreamStatesTest {
     fun testBadSchema() {
         // test current state
         Assertions.assertEquals(listOf<Feed>(), stateManager.feeds)
-        Assertions.assertEquals(
-            listOf(StreamHasNoFields(streamID("EVENTS"))),
-            handler.get(),
-        )
+        Assertions.assertEquals(listOf(StreamHasNoFields(streamID("EVENTS"))), handler.get())
     }
 
     @Test
@@ -115,7 +112,7 @@ class StateManagerStreamStatesTest {
                 Jsons.readTree("{\"cursor_incremental\":\"initial_sync_ongoing\"}"),
                 123L,
                 null,
-                null
+                null,
             )
         // test checkpoint messages
         val checkpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
@@ -127,7 +124,8 @@ class StateManagerStreamStatesTest {
                     |"stream_state":{"cursor_incremental":"initial_sync_ongoing"}},
                     |"sourceStats":{"recordCount":123.0}
                     |}
-                """.trimMargin(),
+                """
+                        .trimMargin()
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
@@ -183,7 +181,8 @@ class StateManagerStreamStatesTest {
                     |"stream_state":{"cursor_incremental":"cursor_checkpoint"}},
                     |"sourceStats":{"recordCount":456.0}
                     |}
-                """.trimMargin(),
+                """
+                        .trimMargin()
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },

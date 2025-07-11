@@ -20,18 +20,14 @@ sealed interface AirbyteSchemaType {
     fun asJsonSchema(): JsonNode = Jsons.valueToTree(asJsonSchemaType().jsonSchemaTypeMap)
 }
 
-data class ArrayAirbyteSchemaType(
-    val item: AirbyteSchemaType,
-) : AirbyteSchemaType {
+data class ArrayAirbyteSchemaType(val item: AirbyteSchemaType) : AirbyteSchemaType {
     override fun asJsonSchemaType(): JsonSchemaType =
         JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
             .withItems(item.asJsonSchemaType())
             .build()
 }
 
-enum class LeafAirbyteSchemaType(
-    private val jsonSchemaType: JsonSchemaType,
-) : AirbyteSchemaType {
+enum class LeafAirbyteSchemaType(private val jsonSchemaType: JsonSchemaType) : AirbyteSchemaType {
     BOOLEAN(JsonSchemaType.BOOLEAN),
     STRING(JsonSchemaType.STRING),
     BINARY(JsonSchemaType.STRING_BASE_64),
@@ -43,8 +39,7 @@ enum class LeafAirbyteSchemaType(
     INTEGER(JsonSchemaType.INTEGER),
     NUMBER(JsonSchemaType.NUMBER),
     NULL(JsonSchemaType.NULL),
-    JSONB(JsonSchemaType.JSONB),
-    ;
+    JSONB(JsonSchemaType.JSONB);
 
     override fun asJsonSchemaType(): JsonSchemaType = jsonSchemaType
 }

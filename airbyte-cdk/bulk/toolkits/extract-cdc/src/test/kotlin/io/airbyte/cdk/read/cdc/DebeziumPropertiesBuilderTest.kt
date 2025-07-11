@@ -23,19 +23,11 @@ class DebeziumPropertiesBuilderTest {
     fun testWithDatabase() {
         val actual: Map<String, String> =
             DebeziumPropertiesBuilder()
-                .withDatabase(
-                    mapOf(
-                        "host" to "localhost",
-                        "port" to "12345",
-                    )
-                )
+                .withDatabase(mapOf("host" to "localhost", "port" to "12345"))
                 .buildMap()
         Assertions.assertEquals(
-            mapOf(
-                "database.host" to "localhost",
-                "database.port" to "12345",
-            ),
-            actual
+            mapOf("database.host" to "localhost", "database.port" to "12345"),
+            actual,
         )
     }
 
@@ -60,7 +52,7 @@ class DebeziumPropertiesBuilderTest {
                     "table2",
                     Field("id", IntFieldType),
                     Field("ts", OffsetDateTimeFieldType),
-                    Field("msg", StringFieldType)
+                    Field("msg", StringFieldType),
                 ),
             )
         val actual: Map<String, String> =
@@ -69,9 +61,9 @@ class DebeziumPropertiesBuilderTest {
             mapOf(
                 "table.include.list" to """\Qschema1.table1\E,\Qschema2.table2\E""",
                 "column.include.list" to
-                    """\Qschema1.table1\E\.(\Qk\E|\Qv\E),\Qschema2.table2\E\.(\Qid\E|\Qts\E|\Qmsg\E)"""
+                    """\Qschema1.table1\E\.(\Qk\E|\Qv\E),\Qschema2.table2\E\.(\Qid\E|\Qts\E|\Qmsg\E)""",
             ),
-            actual
+            actual,
         )
     }
 
@@ -80,11 +72,8 @@ class DebeziumPropertiesBuilderTest {
         val actual: Map<String, String> =
             DebeziumPropertiesBuilder().withDebeziumName("_.-#L33T!-._").buildMap()
         Assertions.assertEquals(
-            mapOf(
-                "name" to "_.-#L33T!-._",
-                "topic.prefix" to "_.-_L33T_-._",
-            ),
-            actual
+            mapOf("name" to "_.-#L33T!-._", "topic.prefix" to "_.-_L33T_-._"),
+            actual,
         )
     }
 
@@ -96,10 +85,8 @@ class DebeziumPropertiesBuilderTest {
         Assertions.assertEquals(0, b.withOffsetFile(validPath).buildMap().size)
         b.withOffset()
         Assertions.assertEquals(
-            mapOf(
-                "offset.storage" to "org.apache.kafka.connect.storage.FileOffsetBackingStore",
-            ),
-            b.buildMap()
+            mapOf("offset.storage" to "org.apache.kafka.connect.storage.FileOffsetBackingStore"),
+            b.buildMap(),
         )
         Assertions.assertTrue(b.expectsOffsetFile)
         b.withOffsetFile(validPath)
@@ -109,7 +96,7 @@ class DebeziumPropertiesBuilderTest {
                 "offset.storage" to "org.apache.kafka.connect.storage.FileOffsetBackingStore",
                 "offset.storage.file.filename" to ".",
             ),
-            b.buildMap()
+            b.buildMap(),
         )
     }
 
@@ -123,9 +110,9 @@ class DebeziumPropertiesBuilderTest {
         Assertions.assertEquals(
             mapOf(
                 "schema.history.internal" to "io.debezium.storage.file.history.FileSchemaHistory",
-                "schema.history.internal.store.only.captured.databases.ddl" to "true"
+                "schema.history.internal.store.only.captured.databases.ddl" to "true",
             ),
-            b.buildMap()
+            b.buildMap(),
         )
         Assertions.assertTrue(b.expectsSchemaHistoryFile)
         b.withSchemaHistoryFile(validPath)
@@ -135,7 +122,7 @@ class DebeziumPropertiesBuilderTest {
                 "schema.history.internal.store.only.captured.databases.ddl" to "true",
                 "schema.history.internal.file.filename" to ".",
             ),
-            b.buildMap()
+            b.buildMap(),
         )
     }
 }

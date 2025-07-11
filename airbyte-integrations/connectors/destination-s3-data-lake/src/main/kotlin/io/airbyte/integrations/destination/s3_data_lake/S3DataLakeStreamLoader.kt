@@ -46,7 +46,7 @@ class S3DataLakeStreamLoader(
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-        "something about the `table` lateinit var is confusing spotbugs"
+        "something about the `table` lateinit var is confusing spotbugs",
     )
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
@@ -57,7 +57,7 @@ class S3DataLakeStreamLoader(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
                 schema = incomingSchema,
-                properties = properties
+                properties = properties,
             )
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
@@ -82,11 +82,7 @@ class S3DataLakeStreamLoader(
             }
         }
 
-        val state =
-            S3DataLakeStreamState(
-                table = table,
-                schema = targetSchema,
-            )
+        val state = S3DataLakeStreamState(table = table, schema = targetSchema)
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
@@ -117,7 +113,7 @@ class S3DataLakeStreamLoader(
                 icebergTableCleaner.deleteGenerationId(
                     table,
                     stagingBranchName,
-                    generationIdsToDelete
+                    generationIdsToDelete,
                 )
                 //  Doing it again to push the deletes from the staging to main branch
                 logger.info {

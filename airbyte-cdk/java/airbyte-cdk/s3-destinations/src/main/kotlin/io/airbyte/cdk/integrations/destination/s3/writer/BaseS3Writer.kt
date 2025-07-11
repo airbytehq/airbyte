@@ -21,9 +21,9 @@ import java.util.*
 import org.apache.commons.lang3.StringUtils
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * The base implementation takes care of the following:
- *
  * * Create shared instance variables.
  * * Create the bucket and prepare the bucket path.
  * * Log and close the write.
@@ -32,14 +32,13 @@ abstract class BaseS3Writer
 protected constructor(
     protected val config: S3DestinationConfig,
     protected val s3Client: AmazonS3,
-    configuredStream: ConfiguredAirbyteStream
+    configuredStream: ConfiguredAirbyteStream,
 ) : DestinationFileWriter {
     protected val stream: AirbyteStream = configuredStream.stream
     protected val syncMode: DestinationSyncMode = configuredStream.destinationSyncMode
     val outputPrefix: String = S3OutputPathHelper.getOutputPrefix(config.bucketPath, stream)
 
     /**
-     *
      * * 1. Create bucket if necessary.
      * * 2. Under OVERWRITE mode, delete all objects with the output prefix.
      */
@@ -121,9 +120,10 @@ protected constructor(
         /**
          * @param parameterObject
          * - an object which holds all necessary parameters required for default filename creation.
+         *
          * @return A string in the format
-         * "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For example,
-         * "2021_12_09_1639077474000_customSuffix.csv"
+         *   "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For example,
+         *   "2021_12_09_1639077474000_customSuffix.csv"
          */
         private fun getDefaultOutputFilename(
             parameterObject: S3FilenameTemplateParameterObject
@@ -136,7 +136,7 @@ protected constructor(
                 formatter.format(parameterObject.timestamp),
                 parameterObject.timestamp!!.time,
                 parameterObject.customSuffix ?: DEFAULT_SUFFIX,
-                parameterObject.fileUploadFormat!!.fileExtension
+                parameterObject.fileUploadFormat!!.fileExtension,
             )
         }
 

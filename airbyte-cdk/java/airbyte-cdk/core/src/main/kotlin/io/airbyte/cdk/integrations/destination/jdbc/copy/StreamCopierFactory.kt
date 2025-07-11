@@ -16,7 +16,7 @@ interface StreamCopierFactory<T> {
         configuredStream: ConfiguredAirbyteStream?,
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
-        sqlOperations: SqlOperations?
+        sqlOperations: SqlOperations?,
     ): StreamCopier
 
     companion object {
@@ -24,7 +24,7 @@ interface StreamCopierFactory<T> {
         fun getSchema(
             namespace: String?,
             configuredSchema: String,
-            nameTransformer: StandardNameTransformer
+            nameTransformer: StandardNameTransformer,
         ): String {
             return if (namespace != null) {
                 nameTransformer.convertStreamName(namespace)

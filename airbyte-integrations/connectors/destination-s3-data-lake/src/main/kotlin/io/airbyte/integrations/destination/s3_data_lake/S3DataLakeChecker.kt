@@ -25,6 +25,7 @@ class S3DataLakeChecker(
     override fun check(config: S3DataLakeConfiguration) {
         catalogValidation(config)
     }
+
     private fun catalogValidation(config: S3DataLakeConfiguration) {
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
@@ -49,7 +50,7 @@ class S3DataLakeChecker(
             catalog,
             tableIdGenerator.toTableIdentifier(testTableIdentifier),
             table.io(),
-            table.location()
+            table.location(),
         )
     }
 }

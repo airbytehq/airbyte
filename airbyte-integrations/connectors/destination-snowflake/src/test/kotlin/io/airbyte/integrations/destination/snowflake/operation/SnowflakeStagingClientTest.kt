@@ -185,7 +185,7 @@ class SnowflakeStagingClientTest {
         )
         fun verifyKnownExceptionConvertedToConfigException(
             isCaptured: Boolean,
-            executable: Executable
+            executable: Executable,
         ) {
             if (isCaptured) {
                 assertThrows(ConfigErrorException::class.java, executable)
@@ -221,9 +221,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     false,
                     Executable {
-                        mockStagingClientExecuteThrowsException(
-                                UNKNOWN_EXCEPTION_MESSAGE,
-                            )
+                        mockStagingClientExecuteThrowsException(UNKNOWN_EXCEPTION_MESSAGE)
                             .createStageIfNotExists(mockStageName)
                     },
                 ),
@@ -231,7 +229,7 @@ class SnowflakeStagingClientTest {
                     true,
                     Executable {
                         mockStagingClientExecuteThrowsException(
-                                IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG,
+                                IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG
                             )
                             .createStageIfNotExists(mockStageName)
                     },
@@ -241,19 +239,17 @@ class SnowflakeStagingClientTest {
                     Executable {
                         mockStagingClientExecuteThrowsException(PERMISSION_EXCEPTION_PARTIAL_MSG)
                             .createStageIfNotExists(mockStageName)
-                    }
+                    },
                 ),
                 Arguments.of(
                     false,
                     Executable {
-                        mockStagingClientQueryJsonsThrowsException(
-                                UNKNOWN_EXCEPTION_MESSAGE,
-                            )
+                        mockStagingClientQueryJsonsThrowsException(UNKNOWN_EXCEPTION_MESSAGE)
                             .copyIntoTableFromStage(
                                 mockStageName,
                                 mockStagingPath,
                                 listOf(mockFileName),
-                                streamId
+                                streamId,
                             )
                     },
                 ),
@@ -261,36 +257,32 @@ class SnowflakeStagingClientTest {
                     true,
                     Executable {
                         mockStagingClientQueryJsonsThrowsException(
-                                IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG,
+                                IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG
                             )
                             .copyIntoTableFromStage(
                                 mockStageName,
                                 mockStagingPath,
                                 listOf(mockFileName),
-                                streamId
+                                streamId,
                             )
                     },
                 ),
                 Arguments.of(
                     true,
                     Executable {
-                        mockStagingClientQueryJsonsThrowsException(
-                                PERMISSION_EXCEPTION_PARTIAL_MSG,
-                            )
+                        mockStagingClientQueryJsonsThrowsException(PERMISSION_EXCEPTION_PARTIAL_MSG)
                             .copyIntoTableFromStage(
                                 mockStageName,
                                 mockStagingPath,
                                 listOf(mockFileName),
-                                streamId
+                                streamId,
                             )
                     },
                 ),
                 Arguments.of(
                     false,
                     Executable {
-                        mockStagingClientExecuteThrowsException(
-                                UNKNOWN_EXCEPTION_MESSAGE,
-                            )
+                        mockStagingClientExecuteThrowsException(UNKNOWN_EXCEPTION_MESSAGE)
                             .dropStageIfExists(mockStageName)
                     },
                 ),
@@ -298,7 +290,7 @@ class SnowflakeStagingClientTest {
                     true,
                     Executable {
                         mockStagingClientExecuteThrowsException(
-                                IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG,
+                                IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG
                             )
                             .dropStageIfExists(mockStageName)
                     },
@@ -306,9 +298,7 @@ class SnowflakeStagingClientTest {
                 Arguments.of(
                     true,
                     Executable {
-                        mockStagingClientExecuteThrowsException(
-                                PERMISSION_EXCEPTION_PARTIAL_MSG,
-                            )
+                        mockStagingClientExecuteThrowsException(PERMISSION_EXCEPTION_PARTIAL_MSG)
                             .dropStageIfExists(mockStageName)
                     },
                 ),

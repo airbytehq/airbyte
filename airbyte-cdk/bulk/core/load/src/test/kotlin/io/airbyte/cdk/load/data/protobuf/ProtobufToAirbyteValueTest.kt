@@ -171,7 +171,7 @@ internal class ProtobufToAirbyteValueTest {
             createStream(
                 fieldName = fieldName,
                 fieldType =
-                    ObjectType(properties = linkedMapOf("name" to FieldType(StringType, false)))
+                    ObjectType(properties = linkedMapOf("name" to FieldType(StringType, false))),
             )
         val protobuf =
             AirbyteMessageProtobuf.newBuilder()
@@ -195,7 +195,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is ObjectValue)
         assertEquals(
             "testObject",
-            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value
+            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value,
         )
     }
 
@@ -204,10 +204,7 @@ internal class ProtobufToAirbyteValueTest {
         val fieldName = "testArray"
         val expectedValue = "{\"name\":\"testObject\"}"
         val stream =
-            createStream(
-                fieldName = fieldName,
-                fieldType = ArrayType(FieldType(StringType, false)),
-            )
+            createStream(fieldName = fieldName, fieldType = ArrayType(FieldType(StringType, false)))
         val protobuf =
             AirbyteMessageProtobuf.newBuilder()
                 .setRecord(
@@ -230,7 +227,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is ObjectValue)
         assertEquals(
             "testObject",
-            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value
+            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value,
         )
     }
 
@@ -238,11 +235,7 @@ internal class ProtobufToAirbyteValueTest {
     fun testArrayWithoutSchema() {
         val fieldName = "testArrayWithoutSchema"
         val expectedValue = "{\"name\":\"testObject\"}"
-        val stream =
-            createStream(
-                fieldName = fieldName,
-                fieldType = ArrayTypeWithoutSchema,
-            )
+        val stream = createStream(fieldName = fieldName, fieldType = ArrayTypeWithoutSchema)
         val protobuf =
             AirbyteMessageProtobuf.newBuilder()
                 .setRecord(
@@ -265,7 +258,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is ObjectValue)
         assertEquals(
             "testObject",
-            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value
+            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value,
         )
     }
 
@@ -274,10 +267,7 @@ internal class ProtobufToAirbyteValueTest {
         val fieldName = "testUnion"
         val expectedValue = "{\"name\":\"testObject\"}"
         val stream =
-            createStream(
-                fieldName = fieldName,
-                fieldType = UnionType(setOf(StringType), false),
-            )
+            createStream(fieldName = fieldName, fieldType = UnionType(setOf(StringType), false))
         val protobuf =
             AirbyteMessageProtobuf.newBuilder()
                 .setRecord(
@@ -300,7 +290,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is ObjectValue)
         assertEquals(
             "testObject",
-            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value
+            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value,
         )
     }
 
@@ -308,11 +298,7 @@ internal class ProtobufToAirbyteValueTest {
     fun testObjectWithEmptySchema() {
         val fieldName = "testObjectWithEmptySchema"
         val expectedValue = "{\"name\":\"testObject\"}"
-        val stream =
-            createStream(
-                fieldName = fieldName,
-                fieldType = ObjectTypeWithEmptySchema,
-            )
+        val stream = createStream(fieldName = fieldName, fieldType = ObjectTypeWithEmptySchema)
         val protobuf =
             AirbyteMessageProtobuf.newBuilder()
                 .setRecord(
@@ -335,7 +321,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is ObjectValue)
         assertEquals(
             "testObject",
-            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value
+            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value,
         )
     }
 
@@ -343,11 +329,7 @@ internal class ProtobufToAirbyteValueTest {
     fun testObjectWithoutSchema() {
         val fieldName = "testObjectWithoutSchema"
         val expectedValue = "{\"name\":\"testObject\"}"
-        val stream =
-            createStream(
-                fieldName = fieldName,
-                fieldType = ObjectTypeWithoutSchema,
-            )
+        val stream = createStream(fieldName = fieldName, fieldType = ObjectTypeWithoutSchema)
         val protobuf =
             AirbyteMessageProtobuf.newBuilder()
                 .setRecord(
@@ -370,7 +352,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is ObjectValue)
         assertEquals(
             "testObject",
-            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value
+            ((value.values[fieldName] as ObjectValue).values["name"] as StringValue).value,
         )
     }
 
@@ -429,7 +411,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is TimeWithTimezoneValue)
         assertEquals(
             OffsetTime.parse(expectedValue),
-            (value.values[fieldName] as TimeWithTimezoneValue).value
+            (value.values[fieldName] as TimeWithTimezoneValue).value,
         )
     }
 
@@ -460,7 +442,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is TimeWithoutTimezoneValue)
         assertEquals(
             LocalTime.parse(expectedValue),
-            (value.values[fieldName] as TimeWithoutTimezoneValue).value
+            (value.values[fieldName] as TimeWithoutTimezoneValue).value,
         )
     }
 
@@ -491,7 +473,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is TimestampWithTimezoneValue)
         assertEquals(
             OffsetDateTime.parse(expectedValue),
-            (value.values[fieldName] as TimestampWithTimezoneValue).value
+            (value.values[fieldName] as TimestampWithTimezoneValue).value,
         )
     }
 
@@ -522,7 +504,7 @@ internal class ProtobufToAirbyteValueTest {
         assertTrue((value as ObjectValue).values[fieldName] is TimestampWithoutTimezoneValue)
         assertEquals(
             LocalDateTime.parse(expectedValue),
-            (value.values[fieldName] as TimestampWithoutTimezoneValue).value
+            (value.values[fieldName] as TimestampWithoutTimezoneValue).value,
         )
     }
 

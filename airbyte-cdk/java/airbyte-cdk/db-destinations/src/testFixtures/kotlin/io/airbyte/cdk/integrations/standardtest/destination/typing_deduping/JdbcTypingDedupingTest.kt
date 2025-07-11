@@ -97,7 +97,7 @@ abstract class JdbcTypingDedupingTest(dialect: SQLDialect = SQLDialect.DEFAULT) 
                 concatenateRawTableName(
                     streamNamespace,
                     Names.toAlphanumericAndUnderscore(streamName),
-                ),
+                )
             )
         val schema = rawSchema
         return database!!.queryJsons(dslContext.selectFrom(name(schema, tableName)).sql)
@@ -106,7 +106,7 @@ abstract class JdbcTypingDedupingTest(dialect: SQLDialect = SQLDialect.DEFAULT) 
     @Throws(Exception::class)
     override fun dumpFinalTableRecords(
         streamNamespace: String?,
-        streamName: String
+        streamName: String,
     ): List<JsonNode> {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
@@ -131,15 +131,12 @@ abstract class JdbcTypingDedupingTest(dialect: SQLDialect = SQLDialect.DEFAULT) 
                     name(
                         rawSchema,
                         nameTransformer.convertStreamName(
-                            concatenateRawTableName(
-                                streamNamespace,
-                                streamName,
-                            ),
+                            concatenateRawTableName(streamNamespace, streamName)
                         ),
-                    ),
+                    )
                 )
                 .cascade()
-                .sql,
+                .sql
         )
         database!!.execute(dslContext.dropSchemaIfExists(name(streamNamespace)).cascade().sql)
     }

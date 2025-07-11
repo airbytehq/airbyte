@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.fold
 class OpenStreamTask(
     private val destinationWriter: DestinationWriter,
     private val syncManager: SyncManager,
-    private val openStreamQueue: MessageQueue<DestinationStream>
+    private val openStreamQueue: MessageQueue<DestinationStream>,
 ) : Task {
     override val terminalCondition: TerminalCondition = SelfTerminating
 

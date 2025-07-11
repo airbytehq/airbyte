@@ -37,7 +37,7 @@ class GlobalStateManagerTest {
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                     .withGlobal(globalState),
-                catalog
+                catalog,
             )
         Assertions.assertNotNull(stateManager.cdcStateManager)
         Assertions.assertEquals(cdcState, stateManager.cdcStateManager.cdcState)
@@ -74,7 +74,7 @@ class GlobalStateManagerTest {
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME3)
                                     .withNamespace(StateTestConstants.NAMESPACE)
-                            )
+                            ),
                     )
                 )
 
@@ -96,7 +96,7 @@ class GlobalStateManagerTest {
                                 .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
-                                .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                .withStreamNamespace(StateTestConstants.NAMESPACE),
                         )
                         .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
@@ -122,7 +122,7 @@ class GlobalStateManagerTest {
                                 .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
-                                .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                .withStreamNamespace(StateTestConstants.NAMESPACE),
                         )
                         .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
@@ -178,7 +178,7 @@ class GlobalStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                )
+                                ),
                         )
                         .sortedWith(
                             Comparator.comparing { o: AirbyteStreamState ->
@@ -196,7 +196,7 @@ class GlobalStateManagerTest {
             stateManager.updateAndEmit(
                 StateTestConstants.NAME_NAMESPACE_PAIR1,
                 "a",
-                expectedRecordCount
+                expectedRecordCount,
             )
         Assertions.assertEquals(expected, actualFirstEmission)
     }
@@ -229,7 +229,7 @@ class GlobalStateManagerTest {
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME3)
                                     .withNamespace(StateTestConstants.NAMESPACE)
-                            )
+                            ),
                     )
                 )
 
@@ -249,7 +249,7 @@ class GlobalStateManagerTest {
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                     .withGlobal(globalState),
-                catalog
+                catalog,
             )
         stateManager.cdcStateManager.cdcState = cdcState
 
@@ -271,7 +271,7 @@ class GlobalStateManagerTest {
                                 .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
-                                .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                .withStreamNamespace(StateTestConstants.NAMESPACE),
                         )
                         .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
@@ -327,7 +327,7 @@ class GlobalStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                )
+                                ),
                         )
                         .sortedWith(
                             Comparator.comparing { o: AirbyteStreamState ->
@@ -355,7 +355,7 @@ class GlobalStateManagerTest {
         Assertions.assertNotNull(airbyteStateMessage)
         Assertions.assertEquals(
             AirbyteStateMessage.AirbyteStateType.GLOBAL,
-            airbyteStateMessage.type
+            airbyteStateMessage.type,
         )
         Assertions.assertEquals(0, airbyteStateMessage.global.streamStates.size)
     }
@@ -382,7 +382,7 @@ class GlobalStateManagerTest {
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
                     .withData(Jsons.jsonNode(dbState)),
-                catalog
+                catalog,
             )
         Assertions.assertNotNull(stateManager.cdcStateManager)
         Assertions.assertEquals(1, stateManager.cdcStateManager.initialStreamsSynced!!.size)

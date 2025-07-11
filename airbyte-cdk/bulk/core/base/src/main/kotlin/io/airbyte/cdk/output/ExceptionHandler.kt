@@ -57,7 +57,7 @@ class ExceptionHandler(val classifiers: List<ExceptionClassifier>) {
             errorTraceMessage,
             AirbyteConnectionStatus()
                 .withMessage(connectionStatusMessage)
-                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withStatus(AirbyteConnectionStatus.Status.FAILED),
         )
     }
 

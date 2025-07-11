@@ -37,7 +37,7 @@ class ObjectStoragePathFactoryTest {
             val dateTime =
                 LocalDateTime.parse(
                     "2020-01-02T03:04:05.6789",
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME,
                 )
             val epochMilli =
                 dateTime.toInstant(ZoneId.of("UTC").rules.getOffset(dateTime)).toEpochMilli()
@@ -103,13 +103,7 @@ class ObjectStoragePathFactoryTest {
     }
 
     @Nested
-    @MicronautTest(
-        environments =
-            [
-                "ObjectStoragePathFactoryTest",
-                "MockDestinationCatalog",
-            ],
-    )
+    @MicronautTest(environments = ["ObjectStoragePathFactoryTest", "MockDestinationCatalog"])
     @Property(name = "object-storage-path-factory-test.use-staging", value = "false")
     inner class ObjectStoragePathFactoryTestWithoutStaging {
         @Test
@@ -121,31 +115,19 @@ class ObjectStoragePathFactoryTest {
             val syncId = stream1.syncId
             val prefixOnly = "prefix/$syncId/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
             val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
-            Assertions.assertEquals(
-                prefixOnly,
-                pathFactory.getFinalDirectory(stream1),
-            )
-            Assertions.assertEquals(
-                "$prefixOnly$fileName",
-                pathFactory.getPathToFile(stream1, 173),
-            )
+            Assertions.assertEquals(prefixOnly, pathFactory.getFinalDirectory(stream1))
+            Assertions.assertEquals("$prefixOnly$fileName", pathFactory.getPathToFile(stream1, 173))
         }
     }
 
     @Nested
-    @MicronautTest(
-        environments =
-            [
-                "ObjectStoragePathFactoryTest",
-                "MockDestinationCatalog",
-            ],
-    )
+    @MicronautTest(environments = ["ObjectStoragePathFactoryTest", "MockDestinationCatalog"])
     @Property(name = "object-storage-path-factory-test.path-without-slash", value = "true")
     inner class ObjectStoragePathFactoryTestNoTrailingPathSlash {
         @Test
         fun testPathDoesNotHaveTrailingSlash(
             pathFactory: ObjectStoragePathFactory,
-            timeProvider: TimeProvider
+            timeProvider: TimeProvider,
         ) {
             val syncTime = timeProvider.syncTimeMillis()
             val wallTime = timeProvider.currentTimeMillis()
@@ -153,14 +135,8 @@ class ObjectStoragePathFactoryTest {
             val (namespace, name) = stream1.mappedDescriptor
             val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/${syncTime}_"
             val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
-            Assertions.assertEquals(
-                prefixOnly,
-                pathFactory.getFinalDirectory(stream1),
-            )
-            Assertions.assertEquals(
-                "$prefixOnly$fileName",
-                pathFactory.getPathToFile(stream1, 173),
-            )
+            Assertions.assertEquals(prefixOnly, pathFactory.getFinalDirectory(stream1))
+            Assertions.assertEquals("$prefixOnly$fileName", pathFactory.getPathToFile(stream1, 173))
         }
     }
 }

@@ -13,7 +13,7 @@ object AirbyteMessageUtils {
     fun createRecordMessage(
         tableName: String?,
         record: JsonNode?,
-        timeExtracted: Instant
+        timeExtracted: Instant,
     ): AirbyteMessage {
         return AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
@@ -93,14 +93,14 @@ object AirbyteMessageUtils {
         name: String?,
         namespace: String?,
         byteEst: Long,
-        rowEst: Long
+        rowEst: Long,
     ): AirbyteMessage {
         return createEstimateMessage(
             AirbyteEstimateTraceMessage.Type.STREAM,
             name,
             namespace,
             byteEst,
-            rowEst
+            rowEst,
         )
     }
 
@@ -110,7 +110,7 @@ object AirbyteMessageUtils {
             null,
             null,
             byteEst,
-            rowEst
+            rowEst,
         )
     }
 
@@ -119,7 +119,7 @@ object AirbyteMessageUtils {
         name: String?,
         namespace: String?,
         byteEst: Long,
-        rowEst: Long
+        rowEst: Long,
     ): AirbyteMessage {
         val est =
             AirbyteEstimateTraceMessage()
@@ -151,7 +151,7 @@ object AirbyteMessageUtils {
     fun createErrorTraceMessage(
         message: String?,
         emittedAt: Double?,
-        failureType: AirbyteErrorTraceMessage.FailureType? = null
+        failureType: AirbyteErrorTraceMessage.FailureType? = null,
     ): AirbyteTraceMessage {
         val msg =
             AirbyteTraceMessage()

@@ -23,7 +23,7 @@ internal class CompletableFuturesTest {
                 returnSuccessWithDelay(3, 500),
                 returnSuccessWithDelay(4, 100),
                 returnFailureWithDelay("Fail 5", 2000),
-                returnFailureWithDelay("Fail 6", 300)
+                returnFailureWithDelay("Fail 6", 300),
             )
 
         val allOfResult = CompletableFutures.allOf(futures).toCompletableFuture()
@@ -35,8 +35,8 @@ internal class CompletableFuturesTest {
                 Either.right(1),
                 Either.right(2),
                 Either.right(3),
-                Either.right<Any, Int>(4)
-            )
+                Either.right<Any, Int>(4),
+            ),
         )
         // Extract wrapped CompletionException messages.
         val failureMessages =
@@ -73,10 +73,7 @@ internal class CompletableFuturesTest {
                 result
                     .filter { obj: Either<out Exception, Int> -> obj.isLeft() }
                     .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
-            Assertions.assertEquals(
-                listOf(errorMessage),
-                failureMessages,
-            )
+            Assertions.assertEquals(listOf(errorMessage), failureMessages)
         } catch (t: Throwable) {
             fail(t)
         }

@@ -21,14 +21,8 @@ object BigQueryDestinationTestUtils {
     const val GCS_STAGING_CONFIG = "secrets/credentials-1s1t-gcs.json"
 
     val standardInsertRawOverrideConfig =
-        createConfig(
-            configFile = STANDARD_INSERT_CONFIG,
-            rawDatasetId = RAW_DATASET_OVERRIDE,
-        )
-    val standardInsertConfig =
-        createConfig(
-            configFile = STANDARD_INSERT_CONFIG,
-        )
+        createConfig(configFile = STANDARD_INSERT_CONFIG, rawDatasetId = RAW_DATASET_OVERRIDE)
+    val standardInsertConfig = createConfig(configFile = STANDARD_INSERT_CONFIG)
 
     /**
      * Parse the config file and replace dataset with rawNamespace and stagingPath randomly

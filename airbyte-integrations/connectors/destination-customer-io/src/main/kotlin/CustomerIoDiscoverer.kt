@@ -23,14 +23,11 @@ class CustomerIoDiscoverer() : DestinationDiscoverer<CustomerIoConfiguration> {
                     "person_identify",
                     Dedupe(emptyList(), emptyList()),
                     ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "person_email" to FieldType(StringType, false),
-                            ),
+                        properties = linkedMapOf("person_email" to FieldType(StringType, false)),
                         additionalProperties = true,
                         required = listOf("person_email"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList<List<String>>(),
                 ),
                 DestinationOperation(
                     "person_event",
@@ -46,8 +43,8 @@ class CustomerIoDiscoverer() : DestinationDiscoverer<CustomerIoConfiguration> {
                         additionalProperties = true,
                         required = listOf("person_email", "event_name"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
-                )
+                    matchingKeys = emptyList<List<String>>(),
+                ),
             )
         )
     }

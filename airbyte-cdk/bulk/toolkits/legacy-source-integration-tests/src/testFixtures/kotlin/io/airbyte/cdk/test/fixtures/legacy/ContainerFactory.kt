@@ -20,6 +20,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.utility.DockerImageName
 
 private val LOGGER: KLogger = KotlinLogging.logger {}
+
 /**
  * ContainerFactory is the companion to [TestDatabase] and provides it with suitable testcontainer
  * instances.
@@ -29,7 +30,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     private data class ContainerKey<C : GenericContainer<*>>(
         val clazz: Class<out ContainerFactory<*>>,
         val imageName: DockerImageName,
-        val methods: List<String>
+        val methods: List<String>,
     )
 
     private class ContainerOrException(
@@ -63,7 +64,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun getTestContainerLogMdcBuilder(
         imageName: DockerImageName,
-        containerModifiers: List<Pair<Consumer<C>, String>>
+        containerModifiers: List<Pair<Consumer<C>, String>>,
     ): MdcScope.Builder {
         return MdcScope.Builder()
             .setLogPrefix(
@@ -96,13 +97,13 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     @JvmOverloads
     fun shared(
         imageName: String,
-        containerModifiersWithNames: List<Pair<Consumer<C>, String>> = ArrayList()
+        containerModifiersWithNames: List<Pair<Consumer<C>, String>> = ArrayList(),
     ): C {
         val containerKey =
             ContainerKey<C>(
                 javaClass,
                 DockerImageName.parse(imageName),
-                containerModifiersWithNames.map { it.second }
+                containerModifiersWithNames.map { it.second },
             )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
@@ -116,7 +117,8 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 }
             }
         // Instead, the container creation (if applicable) is deferred to here.
-        @Suppress("UNCHECKED_CAST") return containerOrError!!.container() as C
+        @Suppress("UNCHECKED_CAST")
+        return containerOrError!!.container() as C
     }
 
     /**
@@ -144,11 +146,11 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     // Yeah, this is a bad name. We need something different because of type erasure :(
     fun exclusiveInternal(
         imageName: String,
-        containerModifiersWithNames: List<Pair<Consumer<C>, String>>
+        containerModifiersWithNames: List<Pair<Consumer<C>, String>>,
     ): C {
         return createAndStartContainer(
             DockerImageName.parse(imageName),
-            containerModifiersWithNames
+            containerModifiersWithNames,
         )
     }
 
@@ -158,7 +160,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     class NamedContainerModifierImpl<C : GenericContainer<*>>(
         val name: String,
-        override val modifier: Consumer<C>
+        override val modifier: Consumer<C>,
     ) : NamedContainerModifier<C> {}
 
     private fun resolveModifierByName(methodName: String): Consumer<C> {
@@ -181,12 +183,12 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun createAndStartContainer(
         imageName: DockerImageName,
-        containerModifiersWithNames: List<Pair<Consumer<C>, String>>
+        containerModifiersWithNames: List<Pair<Consumer<C>, String>>,
     ): C {
         LOGGER.info(
             "Creating new container based on {} with {}.",
             imageName,
-            containerModifiersWithNames.map { it.second }
+            containerModifiersWithNames.map { it.second },
         )
         val container = createNewContainer(imageName)
         @Suppress("unchecked_cast")
@@ -209,7 +211,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 "Calling {} in {} on new container based on {}.",
                 resolvedNamedContainerModifier.second,
                 javaClass.name,
-                imageName
+                imageName,
             )
             resolvedNamedContainerModifier.first.accept(container)
         }

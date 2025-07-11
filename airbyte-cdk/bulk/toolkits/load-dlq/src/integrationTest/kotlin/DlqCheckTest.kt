@@ -19,9 +19,10 @@ class DlqCheckTest :
                         "storage_type":"None"
                     }
                 }
-            """.trimIndent(),
+            """
+                            .trimIndent(),
                     name = "No Object Storage Config",
-                ),
+                )
                 // TODO, this should become an automated tests, however, the existing tooling is
                 // hardcoded to only pull credentials for a connector, not cdk/toolkits.
                 //        CheckTestConfig(
@@ -42,7 +43,7 @@ class DlqCheckTest :
                 //            """.trimIndent(),
                 //            name = "S3 Object Storage Config",
                 //        ),
-                ),
+            ),
         failConfigFilenamesAndFailureReasons =
             mapOf(
                 CheckTestConfig(
@@ -59,9 +60,10 @@ class DlqCheckTest :
                         "s3_bucket_region":"us-west-1"
                     }
                 }
-            """.trimIndent(),
+            """
+                            .trimIndent(),
                     name = "S3 Object Storage Config without Credentials",
-                ) to "Could not connect with provided configuration".toPattern(),
+                ) to "Could not connect with provided configuration".toPattern()
             ),
         additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV, "aws"),
     ) {}

@@ -14,7 +14,7 @@ object ErrorMessage {
         stateCode: String?,
         errorCode: Int,
         message: String?,
-        exception: Exception
+        exception: Exception,
     ): String {
         return if (Objects.isNull(message)) {
             configMessage(stateCode, 0, exception.message)

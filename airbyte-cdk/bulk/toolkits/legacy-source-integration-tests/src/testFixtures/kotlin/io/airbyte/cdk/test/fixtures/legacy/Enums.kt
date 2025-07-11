@@ -40,7 +40,7 @@ class Enums {
             }
 
             return Optional.ofNullable<T>(
-                NORMALIZED_ENUMS.getValue(enumClass)[normalizeName(value)] as T?,
+                NORMALIZED_ENUMS.getValue(enumClass)[normalizeName(value)] as T?
             )
         }
 
@@ -60,7 +60,7 @@ class Enums {
 
         inline fun <T1 : Enum<T1>, reified T2 : Enum<T2>> convertListTo(
             ies: List<T1>,
-            oe: Class<T2>
+            oe: Class<T2>,
         ): List<T2?> {
             return ies.map { convertTo(it, oe) }
         }

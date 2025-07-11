@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test
 
 class RedshiftSuperLimitationTransformerTest {
     private var transformer: RedshiftSuperLimitationTransformer? = null
+
     @BeforeEach
     fun setup() {
         val column1 = redshiftSqlGenerator.buildColumnId("column1")
@@ -48,7 +49,7 @@ class RedshiftSuperLimitationTransformerTest {
                 "test_schema",
                 "users_raw",
                 "test_schema",
-                "users_final"
+                "users_final",
             )
         val streamConfig =
             StreamConfig(
@@ -59,7 +60,7 @@ class RedshiftSuperLimitationTransformerTest {
                 columns,
                 0,
                 0,
-                0
+                0,
             )
         val parsedCatalog = ParsedCatalog(listOf(streamConfig))
         transformer = RedshiftSuperLimitationTransformer(parsedCatalog, "test_schema")
@@ -85,7 +86,7 @@ class RedshiftSuperLimitationTransformerTest {
         Assertions.assertEquals(jacksonDeserializationSize, transformationInfo.originalBytes)
         Assertions.assertEquals(
             jacksonDeserializeSizeAfterTransform,
-            transformationInfo.originalBytes - transformationInfo.removedBytes
+            transformationInfo.originalBytes - transformationInfo.removedBytes,
         )
         println(transformationInfo.meta)
         println(serialize(jsonNode))
@@ -119,7 +120,7 @@ class RedshiftSuperLimitationTransformerTest {
             transformer!!.transform(
                 StreamDescriptor().withNamespace("test_schema").withName("users_final"),
                 jsonNode<Map<String, String>>(testData),
-                upstreamMeta
+                upstreamMeta,
             )
         Assertions.assertTrue(
             serialize(transformed.first!!).toByteArray(StandardCharsets.UTF_8).size <
@@ -130,11 +131,11 @@ class RedshiftSuperLimitationTransformerTest {
         Assertions.assertEquals("$.column3", transformed.second!!.changes.first().field)
         Assertions.assertEquals(
             AirbyteRecordMessageMetaChange.Change.NULLED,
-            transformed.second!!.changes.first().change
+            transformed.second!!.changes.first().change,
         )
         Assertions.assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            transformed.second!!.changes.first().reason
+            transformed.second!!.changes.first().reason,
         )
         // Assert that upstream changes are preserved (appended last)
         Assertions.assertEquals("upstream_field", transformed.second!!.changes.last().field)
@@ -162,7 +163,7 @@ class RedshiftSuperLimitationTransformerTest {
             transformer!!.transform(
                 StreamDescriptor().withNamespace("test_schema").withName("users_final"),
                 jsonNode<Map<String, String>>(testData),
-                upstreamMeta
+                upstreamMeta,
             )
         // Verify PKs are preserved.
         Assertions.assertNotNull(transformed.first!!["column1"])
@@ -177,11 +178,11 @@ class RedshiftSuperLimitationTransformerTest {
         Assertions.assertEquals("all", transformed.second!!.changes.first().field)
         Assertions.assertEquals(
             AirbyteRecordMessageMetaChange.Change.NULLED,
-            transformed.second!!.changes.first().change
+            transformed.second!!.changes.first().change,
         )
         Assertions.assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_RECORD_SIZE_LIMITATION,
-            transformed.second!!.changes.first().reason
+            transformed.second!!.changes.first().reason,
         )
         // Assert that upstream changes are preserved (appended last)
         Assertions.assertEquals("upstream_field", transformed.second!!.changes.last().field)
@@ -210,13 +211,13 @@ class RedshiftSuperLimitationTransformerTest {
                 transformer!!.transform(
                     StreamDescriptor().withNamespace("test_schema").withName("users_final"),
                     jsonNode<Map<String, String>>(testData),
-                    upstreamMeta
+                    upstreamMeta,
                 )
             }
 
         Assertions.assertEquals(
             "Record exceeds size limit, cannot transform without PrimaryKeys in DEDUPE sync",
-            ex.message
+            ex.message,
         )
     }
 

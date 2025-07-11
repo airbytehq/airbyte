@@ -10,6 +10,7 @@ data class AlterationSummary(
     val deleted: Set<String>,
     val hasDedupChange: Boolean,
 )
+
 /**
  * This indicates if any changes were made to the table, excluding PK changes It indicates that we
  * need to run an alter statement.

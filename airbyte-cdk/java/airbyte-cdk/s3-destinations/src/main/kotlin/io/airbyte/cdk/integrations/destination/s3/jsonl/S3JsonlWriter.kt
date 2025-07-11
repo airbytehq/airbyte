@@ -32,7 +32,7 @@ class S3JsonlWriter(
     config: S3DestinationConfig,
     s3Client: AmazonS3,
     configuredStream: ConfiguredAirbyteStream,
-    uploadTimestamp: Timestamp?
+    uploadTimestamp: Timestamp?,
 ) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val uploadManager: StreamTransferManager
     private val outputStream: MultiPartOutputStream

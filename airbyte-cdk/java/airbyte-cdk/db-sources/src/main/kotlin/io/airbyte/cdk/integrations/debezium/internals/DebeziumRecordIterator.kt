@@ -23,6 +23,7 @@ import java.util.function.Supplier
 import org.apache.kafka.connect.source.SourceRecord
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * The record iterator is the consumer (in the producer / consumer relationship with debezium)
  * responsible for 1. making sure every record produced by the record publisher is processed 2.
@@ -40,11 +41,12 @@ class DebeziumRecordIterator<T>(
     private val publisherStatusSupplier: Supplier<Boolean>,
     private val debeziumShutdownProcedure: DebeziumShutdownProcedure<ChangeEvent<String?, String?>>,
     private val firstRecordWaitTime: Duration,
-    private val config: JsonNode
+    private val config: JsonNode,
 ) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
     private val subsequentRecordWaitTime: Duration = firstRecordWaitTime.dividedBy(2)
+
     init {
         LOGGER.info { "Starting CDC Process" }
     }
@@ -126,7 +128,7 @@ class DebeziumRecordIterator<T>(
                     requestClose(
                         "Closing the Debezium engine after no records received within ${waitTime.seconds} seconds timeout. Status: receivedFirstRecord=$receivedFirstRecord, " +
                             "hasSnapshotFinished=$hasSnapshotFinished, noRecordsAttempts=$maxInstanceOfNoRecordsFound",
-                        DebeziumCloseReason.TIMEOUT
+                        DebeziumCloseReason.TIMEOUT,
                     )
                 }
 
@@ -165,14 +167,14 @@ class DebeziumRecordIterator<T>(
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
                     requestClose(
                         "Closing: Heartbeat indicates sync is done by reaching the target position",
-                        DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION
+                        DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION,
                     )
                 } else if (
                     heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging()
                 ) {
                     requestClose(
                         "Closing: Heartbeat indicates sync is not progressing",
-                        DebeziumCloseReason.HEARTBEAT_NOT_PROGRESSING
+                        DebeziumCloseReason.HEARTBEAT_NOT_PROGRESSING,
                     )
                 }
 
@@ -205,7 +207,7 @@ class DebeziumRecordIterator<T>(
             if (targetPosition.reachedTargetPosition(changeEventWithMetadata)) {
                 requestClose(
                     "Closing: Change event reached target position",
-                    DebeziumCloseReason.CHANGE_EVENT_REACHED_TARGET_POSITION
+                    DebeziumCloseReason.CHANGE_EVENT_REACHED_TARGET_POSITION,
                 )
             }
             this.tsLastHeartbeat = null
@@ -228,7 +230,7 @@ class DebeziumRecordIterator<T>(
                 event =
                     debeziumShutdownProcedure.recordsRemainingAfterShutdown.poll(
                         100,
-                        TimeUnit.MILLISECONDS
+                        TimeUnit.MILLISECONDS,
                     )
             } catch (e: InterruptedException) {
                 throw RuntimeException(e)
@@ -338,13 +340,14 @@ class DebeziumRecordIterator<T>(
         ITERATOR_CLOSE,
         HEARTBEAT_REACHED_TARGET_POSITION,
         CHANGE_EVENT_REACHED_TARGET_POSITION,
-        HEARTBEAT_NOT_PROGRESSING
+        HEARTBEAT_NOT_PROGRESSING,
     }
 
     companion object {
         val pollLogMaxTimeInterval: Duration = Duration.ofSeconds(5)
         const val POLL_LOG_MAX_CALLS_INTERVAL = 1_000
         private val unhandledFoundTypeList: MutableList<String> = mutableListOf()
+
         /**
          * We are not interested in message events. According to debezium
          * [documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-create-events)
@@ -360,8 +363,7 @@ class DebeziumRecordIterator<T>(
                     LOGGER.debug { "event: $event" }
                 }
                 return handled
-            }
-                ?: return false
+            } ?: return false
         }
     }
 }

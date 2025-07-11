@@ -50,7 +50,7 @@ class CheckOperation<T : ConfigurationSpecification>(
         }
         log.info { "Config check completed successfully." }
         outputConsumer.accept(
-            AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED),
+            AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         )
     }
 

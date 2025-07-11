@@ -21,7 +21,8 @@ class DestinationUncleanExitException(
         """
         Connector process exited uncleanly: $exitCode
         Trace messages:
-        """.trimIndent()
+        """
+            .trimIndent()
         // explicit concat because otherwise trimIndent behaves badly
         + traceMessages
     ) {

@@ -57,10 +57,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
         """
                 .trimIndent()
                 .replace("\n", "")
-        assertEquals(
-            expectedHeader,
-            lines[0].trim(),
-        )
+        assertEquals(expectedHeader, lines[0].trim())
 
         val expectedRecord =
             """
@@ -85,10 +82,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
                 .trimIndent()
                 .replace("\n", "")
 
-        assertEquals(
-            expectedRecord,
-            lines[1].trim(),
-        )
+        assertEquals(expectedRecord, lines[1].trim())
         assertEquals("", lines[2].trim())
     }
 
@@ -120,10 +114,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
                 .trimIndent()
                 .replace("\n", "")
 
-        assertEquals(
-            expectedHeader,
-            lines[0].trim(),
-        )
+        assertEquals(expectedHeader, lines[0].trim())
 
         val expectedRecord =
             """
@@ -136,10 +127,7 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
                 .trimIndent()
                 .replace("\n", "")
 
-        assertEquals(
-            expectedRecord,
-            lines[1].trim(),
-        )
+        assertEquals(expectedRecord, lines[1].trim())
         assertEquals("", lines[2].trim())
     }
 
@@ -154,8 +142,8 @@ class ProtoToCsvFormattingTest : ProtoFixtures() {
         val ex = assertThrows(RuntimeException::class.java) { formatter.accept(nonProtoRecord) }
         assertTrue(
             ex.message!!.contains(
-                "ProtoToCsvFormatter only supports DestinationRecordProtobufSource",
-            ),
+                "ProtoToCsvFormatter only supports DestinationRecordProtobufSource"
+            )
         )
     }
 }

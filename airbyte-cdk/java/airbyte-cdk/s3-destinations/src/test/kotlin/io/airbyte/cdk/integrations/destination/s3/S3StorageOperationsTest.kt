@@ -46,45 +46,22 @@ class S3StorageOperationsTest {
         val nameTransformer: NamingConventionTransformer = S3NameTransformer()
         s3Client = Mockito.mock(AmazonS3::class.java)
 
-        val objectSummary1 =
-            Mockito.mock(
-                S3ObjectSummary::class.java,
-            )
-        val objectSummary2 =
-            Mockito.mock(
-                S3ObjectSummary::class.java,
-            )
-        val objectSummary3 =
-            Mockito.mock(
-                S3ObjectSummary::class.java,
-            )
+        val objectSummary1 = Mockito.mock(S3ObjectSummary::class.java)
+        val objectSummary2 = Mockito.mock(S3ObjectSummary::class.java)
+        val objectSummary3 = Mockito.mock(S3ObjectSummary::class.java)
         Mockito.`when`(objectSummary1.key).thenReturn(OBJECT_TO_DELETE)
         Mockito.`when`(objectSummary2.key)
             .thenReturn("$NAMESPACE/stream_name2/2022_04_04_123456789_0.csv.gz")
         Mockito.`when`(objectSummary3.key).thenReturn("other_files.txt")
 
-        val results =
-            Mockito.mock(
-                ObjectListing::class.java,
-            )
+        val results = Mockito.mock(ObjectListing::class.java)
         Mockito.`when`(results.isTruncated).thenReturn(false)
         Mockito.`when`(results.objectSummaries)
             .thenReturn(listOf(objectSummary1, objectSummary2, objectSummary3))
-        Mockito.`when`(
-                s3Client.listObjects(
-                    ArgumentMatchers.any(
-                        ListObjectsRequest::class.java,
-                    ),
-                ),
-            )
+        Mockito.`when`(s3Client.listObjects(ArgumentMatchers.any(ListObjectsRequest::class.java)))
             .thenReturn(results)
         Mockito.`when`(
-                s3Client.listObjects(
-                    eq(BUCKET_NAME),
-                    ArgumentMatchers.any(
-                        String::class.java,
-                    ),
-                ),
+                s3Client.listObjects(eq(BUCKET_NAME), ArgumentMatchers.any(String::class.java))
             )
             .thenReturn(results)
 
@@ -105,7 +82,7 @@ class S3StorageOperationsTest {
                     NAMESPACE,
                     STREAM_NAME,
                     S3DestinationConstants.DEFAULT_PATH_FORMAT,
-                ),
+                )
             )
         assertTrue(regexFormat.matcher(OBJECT_TO_DELETE).matches())
         assertTrue(
@@ -116,15 +93,13 @@ class S3StorageOperationsTest {
                         STREAM_NAME,
                         DateTime.now(),
                         S3DestinationConstants.DEFAULT_PATH_FORMAT,
-                    ),
+                    )
                 )
-                .matches(),
+                .matches()
         )
+        assertFalse(regexFormat.matcher("$NAMESPACE/$STREAM_NAME/some_random_file_0.doc").matches())
         assertFalse(
-            regexFormat.matcher("$NAMESPACE/$STREAM_NAME/some_random_file_0.doc").matches(),
-        )
-        assertFalse(
-            regexFormat.matcher("$NAMESPACE/stream_name2/2022_04_04_123456789_0.csv.gz").matches(),
+            regexFormat.matcher("$NAMESPACE/stream_name2/2022_04_04_123456789_0.csv.gz").matches()
         )
     }
 
@@ -142,9 +117,9 @@ class S3StorageOperationsTest {
                         STREAM_NAME,
                         DateTime.now(),
                         customFormat,
-                    ),
+                    )
                 )
-                .matches(),
+                .matches()
         )
     }
 
@@ -165,10 +140,7 @@ class S3StorageOperationsTest {
             FAKE_BUCKET_PATH,
             pathFormat,
         )
-        val deleteRequest =
-            ArgumentCaptor.forClass(
-                DeleteObjectsRequest::class.java,
-            )
+        val deleteRequest = ArgumentCaptor.forClass(DeleteObjectsRequest::class.java)
         Mockito.verify(s3Client).deleteObjects(deleteRequest.capture())
         assertEquals(1, deleteRequest.value.keys.size)
         assertEquals(OBJECT_TO_DELETE, deleteRequest.value.keys[0].key)
@@ -226,19 +198,16 @@ class S3StorageOperationsTest {
 
     @Test
     fun testGetFileName() {
-        val recordsData =
-            Mockito.mock(
-                SerializableBuffer::class.java,
-            )
+        val recordsData = Mockito.mock(SerializableBuffer::class.java)
         Mockito.`when`(recordsData.filename).thenReturn(".csv.gz")
         assertEquals(
             OBJECT_PREFIX + 0 + OBJECT_EXTENSION,
-            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData)
+            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData),
         )
         // 1 is skipped because it's already existing
         assertEquals(
             OBJECT_PREFIX + 2 + OBJECT_EXTENSION,
-            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData)
+            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData),
         )
     }
 }

@@ -33,7 +33,7 @@ class PostgresSqlGenerator(
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         // There is a mismatch between convention used in create table query in SqlOperations vs
         // this.
@@ -54,7 +54,7 @@ class PostgresSqlGenerator(
             namingTransformer.getNamespace(rawNamespaceOverride).lowercase(Locale.getDefault()),
             streamName,
             namespace,
-            name
+            name,
         )
     }
 
@@ -114,10 +114,10 @@ class PostgresSqlGenerator(
                                     },
                                     Stream.of<Name>(
                                         DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)
-                                    )
+                                    ),
                                 )
                                 .flatMap<Name>(Function.identity<Stream<Name>>())
-                                .toList()
+                                .toList(),
                         )
                         .sql
                 )
@@ -146,7 +146,7 @@ class PostgresSqlGenerator(
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): MutableList<Field<*>> {
         return columns.entries
             .stream()
@@ -160,7 +160,7 @@ class PostgresSqlGenerator(
     override fun castedField(
         field: Field<*>,
         type: AirbyteType,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Field<*> {
         if (type is Struct) {
             // If this field is a struct, verify that the raw data is an object.
@@ -168,10 +168,10 @@ class PostgresSqlGenerator(
                 DSL.case_()
                     .`when`(
                         field.isNull().or(jsonTypeof(field).ne("object")),
-                        DSL.`val`(null as Any?)
+                        DSL.`val`(null as Any?),
                     )
                     .else_(field),
-                JSONB_TYPE
+                JSONB_TYPE,
             )
         } else if (type is Array) {
             // Do the same for arrays.
@@ -179,10 +179,10 @@ class PostgresSqlGenerator(
                 DSL.case_()
                     .`when`(
                         field.isNull().or(jsonTypeof(field).ne("array")),
-                        DSL.`val`(null as Any?)
+                        DSL.`val`(null as Any?),
                     )
                     .else_(field),
-                JSONB_TYPE
+                JSONB_TYPE,
             )
         } else if (type === AirbyteProtocolType.UNKNOWN) {
             return DSL.cast(field, JSONB_TYPE)
@@ -204,7 +204,7 @@ class PostgresSqlGenerator(
                 DSL.case_()
                     .`when`(
                         field.isNull().or(jsonTypeof(field).eq("null")),
-                        DSL.`val`(null as String?)
+                        DSL.`val`(null as String?),
                     )
                     .else_(DSL.cast(field, SQLDataType.VARCHAR))
             return if (useExpensiveSaferCasting) {
@@ -212,7 +212,7 @@ class PostgresSqlGenerator(
                     DSL.name("pg_temp", "airbyte_safe_cast"),
                     dialectType,
                     extractAsText,
-                    DSL.cast(DSL.`val`(null as Any?), dialectType)
+                    DSL.cast(DSL.`val`(null as Any?), dialectType),
                 )
             } else {
                 DSL.cast(extractAsText, dialectType)
@@ -223,7 +223,7 @@ class PostgresSqlGenerator(
     protected override fun castedField(
         field: Field<*>,
         type: AirbyteProtocolType,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Field<*> {
         return DSL.cast(field, toDialectType(type))
     }
@@ -243,7 +243,7 @@ class PostgresSqlGenerator(
         val rawTableChangesArray: Field<*> =
             DSL.field(
                 "ARRAY(SELECT jsonb_array_elements_text({0}#>'{changes}'))::jsonb[]",
-                DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META))
+                DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META)),
             )
 
         // Jooq is inferring and casting as int[] for empty fields array call. So explicitly casting
@@ -256,18 +256,18 @@ class PostgresSqlGenerator(
                     "ARRAY_REMOVE",
                     JSONB_TYPE,
                     DSL.array(dataFieldErrors).cast(JSONB_TYPE.arrayDataType),
-                    DSL.`val`(null as String?)
+                    DSL.`val`(null as String?),
                 )
         val syncId: Field<*> =
             DSL.field(
                 "{0}#>'{${JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY}}'",
-                DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META))
+                DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META)),
             )
         return jsonBuildObject(
                 DSL.`val`(AB_META_COLUMN_CHANGES_KEY),
                 DSL.field("ARRAY_CAT({0}, {1})", finalTableChangesArray, rawTableChangesArray),
                 DSL.`val`(JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY),
-                syncId
+                syncId,
             )
             .`as`(JavaBaseConstants.COLUMN_NAME_AB_META)
     }
@@ -279,7 +279,7 @@ class PostgresSqlGenerator(
             DSL.`val`(AB_META_CHANGES_CHANGE_KEY),
             DSL.`val`(AirbyteRecordMessageMetaChange.Change.NULLED),
             DSL.`val`(AB_META_CHANGES_REASON_KEY),
-            DSL.`val`(AirbyteRecordMessageMetaChange.Reason.DESTINATION_TYPECAST_ERROR)
+            DSL.`val`(AirbyteRecordMessageMetaChange.Reason.DESTINATION_TYPECAST_ERROR),
         )
     }
 
@@ -293,14 +293,14 @@ class PostgresSqlGenerator(
                     CASE_STATEMENT_SQL_TEMPLATE,
                     extract.isNotNull().and(jsonTypeof(extract).notIn("object", "null")),
                     nulledChangeObject(column.originalName),
-                    DSL.cast(DSL.`val`(null as Any?), JSONB_TYPE)
+                    DSL.cast(DSL.`val`(null as Any?), JSONB_TYPE),
                 )
             is Array ->
                 DSL.field(
                     CASE_STATEMENT_SQL_TEMPLATE,
                     extract.isNotNull().and(jsonTypeof(extract).notIn("array", "null")),
                     nulledChangeObject(column.originalName),
-                    DSL.cast(DSL.`val`(null as Any?), JSONB_TYPE)
+                    DSL.cast(DSL.`val`(null as Any?), JSONB_TYPE),
                 )
             AirbyteProtocolType.STRING,
             AirbyteProtocolType.UNKNOWN -> DSL.cast(DSL.`val`(null as Any?), JSONB_TYPE)
@@ -312,7 +312,7 @@ class PostgresSqlGenerator(
                         .and(jsonTypeof(extract).ne("null"))
                         .and(castedField(extract, type, true).isNull()),
                     nulledChangeObject(column.originalName),
-                    DSL.cast(DSL.`val`(null as Any?), JSONB_TYPE)
+                    DSL.cast(DSL.`val`(null as Any?), JSONB_TYPE),
                 )
         }
     }
@@ -357,7 +357,7 @@ class PostgresSqlGenerator(
         return DSL.field(
             "{0} -> {1}",
             DSL.name(JavaBaseConstants.COLUMN_NAME_DATA),
-            DSL.`val`(column.originalName)
+            DSL.`val`(column.originalName),
         )
     }
 

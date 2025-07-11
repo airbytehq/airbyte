@@ -51,20 +51,20 @@ interface DebeziumStateUtil {
      * state from the offset file storage.
      *
      * @param fileOffsetBackingStore The [FileOffsetBackingStore] that contains the offset state
-     * saved to disk.
+     *   saved to disk.
      * @param properties The Debezium configuration properties for the selected Debezium connector.
      * @return An [OffsetStorageReaderImpl] instance that can be used to load the offset state from
-     * the offset file storage.
+     *   the offset file storage.
      */
     fun getOffsetStorageReader(
         fileOffsetBackingStore: FileOffsetBackingStore?,
-        properties: Properties
+        properties: Properties,
     ): OffsetStorageReaderImpl? {
         return OffsetStorageReaderImpl(
             fileOffsetBackingStore,
             properties.getProperty(CONNECTOR_NAME_PROPERTY),
             keyConverter,
-            valueConverter
+            valueConverter,
         )
     }
 

@@ -151,7 +151,8 @@ class DatabricksDestinationHandler(
             |   AND table_schema IN ($paramHolder)
             |   AND table_name IN ($paramHolder)
             |ORDER BY table_schema, table_name, ordinal_position
-        """.trimMargin()
+        """
+                .trimMargin()
 
         val namespaces = streamIds.asSequence().map { it.finalNamespace }.toList().toTypedArray()
         val names = streamIds.asSequence().map { it.finalName }.toList().toTypedArray()
@@ -176,7 +177,7 @@ class DatabricksDestinationHandler(
                                             .asText()
                                             .equals("YES", ignoreCase = true),
                                     )
-                            },
+                            }
                         )
                     }
             }
@@ -184,7 +185,7 @@ class DatabricksDestinationHandler(
 
     private fun isSchemaMatch(
         streamConfig: StreamConfig,
-        tableDefinition: TableDefinition
+        tableDefinition: TableDefinition,
     ): Boolean {
         val isAbRawIdMatch =
             tableDefinition.columns.contains(COLUMN_NAME_AB_RAW_ID) &&
@@ -227,9 +228,9 @@ class DatabricksDestinationHandler(
         return !jdbcDatabase.queryBoolean(
             "SELECT EXISTS (SELECT 1 from $databaseName.${
                 id.finalTableId(
-                    DatabricksSqlGenerator.QUOTE,
+                    DatabricksSqlGenerator.QUOTE
                 )
-            });",
+            });"
         )
     }
 
@@ -257,12 +258,7 @@ class DatabricksDestinationHandler(
                 // Handle resultset call in the function which will be closed
                 // after the scope is exited
                 val resultSet =
-                    metadata.getTables(
-                        databaseName,
-                        id.rawNamespace,
-                        id.rawName + suffix,
-                        null,
-                    )
+                    metadata.getTables(databaseName, id.rawNamespace, id.rawName + suffix, null)
                 resultSet?.next() ?: false
             }
             .let {
@@ -280,12 +276,14 @@ class DatabricksDestinationHandler(
             |SELECT min(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
             |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
             |WHERE ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} IS NULL
-            |""".trimMargin()
+            |"""
+                .trimMargin()
         val maxExtractedAtQuery =
             """
             |SELECT max(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
             |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
-        """.trimMargin()
+        """
+                .trimMargin()
 
         findLastLoadedTs(minExtractedAtLoadedNotNullQuery)
             .map { it.minusSeconds(1) }

@@ -26,10 +26,7 @@ class DlqStateWithNewRecords : DlqTestState {
             .filter { it.hasAnEvenId() }
             .map {
                 it.toDlqRecord(
-                    mapOf(
-                        "error" to UUID.randomUUID(),
-                        "message" to "very custom error message",
-                    )
+                    mapOf("error" to UUID.randomUUID(), "message" to "very custom error message")
                 )
             }
             .ifEmpty { null }

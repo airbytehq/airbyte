@@ -112,7 +112,7 @@ abstract class ProtoFixtures {
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
                                 .DESTINATION_SERIALIZATION_ERROR
-                        ),
+                        )
                 )
                 .addChanges(
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
@@ -123,7 +123,7 @@ abstract class ProtoFixtures {
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
                                 .SOURCE_SERIALIZATION_ERROR
-                        ),
+                        )
                 )
                 .addChanges(
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
@@ -134,7 +134,7 @@ abstract class ProtoFixtures {
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
                                 .SOURCE_RECORD_SIZE_LIMITATION
-                        ),
+                        )
                 )
                 .build()
 
@@ -171,7 +171,7 @@ abstract class ProtoFixtures {
                         ),
                     "union_col" to FieldType(UnionType(setOf(StringType), false), false),
                     "unknown_col" to FieldType(UnknownType(Jsons.emptyObject()), false),
-                ),
+                )
             )
 
         stream = mockk {

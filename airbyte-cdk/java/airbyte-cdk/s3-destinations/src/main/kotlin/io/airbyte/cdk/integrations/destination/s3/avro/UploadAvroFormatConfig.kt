@@ -92,7 +92,7 @@ class UploadAvroFormatConfig : UploadFormatConfig {
             compressionCodecConfig: JsonNode,
             defaultLevel: Int,
             minLevel: Int,
-            maxLevel: Int
+            maxLevel: Int,
         ): Int {
             val levelConfig = compressionCodecConfig["compression_level"]
             if (levelConfig == null || levelConfig.isNull || !levelConfig.isIntegralNumber) {
@@ -104,7 +104,7 @@ class UploadAvroFormatConfig : UploadFormatConfig {
                     "Invalid compression level: %d, expected an integer in range [%d, %d]",
                     level,
                     minLevel,
-                    maxLevel
+                    maxLevel,
                 )
             }
             return level

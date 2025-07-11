@@ -62,7 +62,7 @@ class ClickhouseCheckerTest {
             client.insert(
                 "${config.database}.${checker.tableName}",
                 any<InputStream>(),
-                ClickHouseFormat.JSONEachRow
+                ClickHouseFormat.JSONEachRow,
             )
         }
     }

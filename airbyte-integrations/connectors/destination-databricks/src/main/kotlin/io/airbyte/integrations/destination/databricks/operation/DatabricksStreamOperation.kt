@@ -34,12 +34,12 @@ class DatabricksStreamOperation(
     AbstractStreamOperation<MinimumDestinationState.Impl, SerializableBuffer>(
         storageOperation,
         destinationInitialStatus,
-        disableTypeDedupe = disableTypeDedupe
+        disableTypeDedupe = disableTypeDedupe,
     ) {
     override fun writeRecordsImpl(
         streamConfig: StreamConfig,
         suffix: String,
-        stream: Stream<PartialAirbyteMessage>
+        stream: Stream<PartialAirbyteMessage>,
     ) {
         writeRecords(fileUploadFormat, streamConfig, suffix, stream, storageOperation)
     }
@@ -72,7 +72,7 @@ class DatabricksStreamOperation(
                 log.info {
                     "Buffer flush complete for stream ${streamConfig.id.originalName} (${
                         FileUtils.byteCountToDisplaySize(
-                            it.byteCount,
+                            it.byteCount
                         )
                     }) to staging"
                 }

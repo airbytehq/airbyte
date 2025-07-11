@@ -57,7 +57,8 @@ class SnowflakeStorageOperation(
         val swapQuery =
             """
             | ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName+suffix}" RENAME TO "${streamId.rawNamespace}"."${streamId.rawName}";
-        """.trimMargin()
+        """
+                .trimMargin()
         destinationHandler.execute(Sql.of(swapQuery))
     }
 
@@ -72,14 +73,16 @@ class SnowflakeStorageOperation(
                 """
             INSERT INTO "${streamId.rawNamespace}"."${streamId.rawName}" 
             SELECT * FROM "${streamId.rawNamespace}"."${streamId.rawName + suffix}"
-        """.trimIndent()
+        """
+                    .trimIndent()
             )
         )
         destinationHandler.execute(
             Sql.of(
                 """
             DROP TABLE "${streamId.rawNamespace}"."${streamId.rawName + suffix}"
-        """.trimIndent()
+        """
+                    .trimIndent()
             )
         )
     }
@@ -89,7 +92,8 @@ class SnowflakeStorageOperation(
             destinationHandler.query(
                 """
                 SELECT "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" FROM "${streamId.rawNamespace}"."${streamId.rawName + suffix}" LIMIT 1
-                """.trimIndent()
+                """
+                    .trimIndent()
             )
         if (results.isEmpty()) return null
         var generationIdNode: JsonNode? =
@@ -113,7 +117,8 @@ class SnowflakeStorageOperation(
         |   "${JavaBaseConstants.COLUMN_NAME_AB_META}" VARIANT DEFAULT NULL,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" INTEGER DEFAULT NULL
         |) data_retention_time_in_days = $retentionPeriodDays;
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     internal fun truncateTableQuery(streamId: StreamId, suffix: String): String {
@@ -123,7 +128,7 @@ class SnowflakeStorageOperation(
     override fun writeToStage(
         streamConfig: StreamConfig,
         suffix: String,
-        data: SerializableBuffer
+        data: SerializableBuffer,
     ) {
         val stageName = getStageName(streamConfig.id)
         val stagingPath = getStagingPath()
@@ -133,9 +138,10 @@ class SnowflakeStorageOperation(
             stagingPath,
             listOf(stagedFileName),
             streamConfig.id,
-            suffix
+            suffix,
         )
     }
+
     override fun cleanupStage(streamId: StreamId) {
         val stageName = getStageName(streamId)
         log.info { "Cleaning up stage $stageName" }
@@ -145,7 +151,8 @@ class SnowflakeStorageOperation(
     internal fun getStageName(streamId: StreamId): String {
         return """
             "${nameTransformer.convertStreamName(streamId.rawNamespace)}"."${ nameTransformer.convertStreamName(streamId.rawName)}"
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     private fun getStagingPath(): String {
@@ -158,7 +165,7 @@ class SnowflakeStorageOperation(
                 zonedDateTime.monthValue,
                 zonedDateTime.dayOfMonth,
                 zonedDateTime.hour,
-                connectionId
+                connectionId,
             )
         )
     }
@@ -190,14 +197,14 @@ class SnowflakeStorageOperation(
     override fun typeAndDedupe(
         streamConfig: StreamConfig,
         maxProcessedTimestamp: Optional<Instant>,
-        finalTableSuffix: String
+        finalTableSuffix: String,
     ) {
         TyperDeduperUtil.executeTypeAndDedupe(
             sqlGenerator = sqlGenerator,
             destinationHandler = destinationHandler,
             streamConfig,
             maxProcessedTimestamp,
-            finalTableSuffix
+            finalTableSuffix,
         )
     }
 }

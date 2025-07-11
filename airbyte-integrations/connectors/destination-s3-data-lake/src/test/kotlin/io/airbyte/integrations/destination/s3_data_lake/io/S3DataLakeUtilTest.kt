@@ -77,7 +77,7 @@ internal class S3DataLakeUtilTest {
             mapOf(
                 ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
                 URI to "http://localhost:19120/api/v1",
-                WAREHOUSE_LOCATION to "s3://test/"
+                WAREHOUSE_LOCATION to "s3://test/",
             )
         val catalog = icebergUtil.createCatalog(catalogName = catalogName, properties = properties)
         assertNotNull(catalog)
@@ -112,7 +112,7 @@ internal class S3DataLakeUtilTest {
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
-                properties = properties
+                properties = properties,
             )
         assertNotNull(table)
         verify(exactly = 1) {
@@ -149,7 +149,7 @@ internal class S3DataLakeUtilTest {
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
-                properties = properties
+                properties = properties,
             )
         assertNotNull(table)
         verify(exactly = 0) {
@@ -177,7 +177,7 @@ internal class S3DataLakeUtilTest {
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
-                properties = properties
+                properties = properties,
             )
         assertNotNull(table)
         verify(exactly = 0) {
@@ -220,15 +220,15 @@ internal class S3DataLakeUtilTest {
                                 IntegerValue(42L),
                                 IntegerType,
                                 "id",
-                                airbyteMetaField = null
+                                airbyteMetaField = null,
                             ),
                         "name" to
                             EnrichedAirbyteValue(
                                 StringValue("John Doe"),
                                 StringType,
                                 "name",
-                                airbyteMetaField = null
-                            )
+                                airbyteMetaField = null,
+                            ),
                     ),
                 undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
@@ -245,7 +245,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.toRecord(
                 record = airbyteRecord,
                 tableSchema = schema,
-                stream = airbyteStream
+                stream = airbyteStream,
             )
         assertNotNull(icebergRecord)
         assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
@@ -284,14 +284,14 @@ internal class S3DataLakeUtilTest {
                                 IntegerValue(42L),
                                 IntegerType,
                                 "id",
-                                airbyteMetaField = null
+                                airbyteMetaField = null,
                             ),
                         "name" to
                             EnrichedAirbyteValue(
                                 StringValue("John Doe"),
                                 StringType,
                                 "name",
-                                airbyteMetaField = null
+                                airbyteMetaField = null,
                             ),
                         AIRBYTE_CDC_DELETE_COLUMN to
                             EnrichedAirbyteValue(
@@ -316,7 +316,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.toRecord(
                 record = airbyteRecord,
                 tableSchema = schema,
-                stream = airbyteStream
+                stream = airbyteStream,
             )
         assertNotNull(icebergRecord)
         assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
@@ -353,14 +353,14 @@ internal class S3DataLakeUtilTest {
                                 IntegerValue(42L),
                                 IntegerType,
                                 "id",
-                                airbyteMetaField = null
+                                airbyteMetaField = null,
                             ),
                         "name" to
                             EnrichedAirbyteValue(
                                 StringValue("John Doe"),
                                 StringType,
                                 "name",
-                                airbyteMetaField = null
+                                airbyteMetaField = null,
                             ),
                     ),
                 undeclaredFields = linkedMapOf(),
@@ -378,7 +378,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.toRecord(
                 record = airbyteRecord,
                 tableSchema = schema,
-                stream = airbyteStream
+                stream = airbyteStream,
             )
         assertNotNull(icebergRecord)
         assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
@@ -450,7 +450,7 @@ internal class S3DataLakeUtilTest {
             }
         assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
-            exception.message
+            exception.message,
         )
     }
 
@@ -463,7 +463,7 @@ internal class S3DataLakeUtilTest {
             }
         assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
-            exception.message
+            exception.message,
         )
     }
 
@@ -486,7 +486,7 @@ internal class S3DataLakeUtilTest {
             }
         assertEquals(
             "GenerationId must be non-negative. Provided: ${stream.generationId}",
-            exception.message
+            exception.message,
         )
     }
 

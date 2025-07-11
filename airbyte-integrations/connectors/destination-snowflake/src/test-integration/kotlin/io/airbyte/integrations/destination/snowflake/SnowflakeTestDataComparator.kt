@@ -51,13 +51,13 @@ class SnowflakeTestDataComparator : AdvancedTestDataComparator() {
 
     override fun compareDateTimeValues(
         airbyteMessageValue: String,
-        destinationValue: String
+        destinationValue: String,
     ): Boolean {
         val destinationDate = parseLocalDate(destinationValue)
         val expectedDate =
             LocalDate.parse(
                 airbyteMessageValue,
-                DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT)
+                DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT),
             )
         return expectedDate == destinationDate
     }
@@ -73,9 +73,9 @@ class SnowflakeTestDataComparator : AdvancedTestDataComparator() {
         return ZonedDateTime.of(
             LocalDateTime.parse(
                 destinationValue,
-                DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)
+                DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT),
             ),
-            ZoneOffset.UTC
+            ZoneOffset.UTC,
         )
     }
 

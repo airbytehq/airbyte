@@ -21,7 +21,7 @@ import org.testcontainers.utility.DockerImageName
 
 class CdcPartitionReaderMySQLTest :
     AbstractCdcPartitionReaderTest<CdcPartitionReaderMySQLTest.Position, MySQLContainer<*>>(
-        namespace = "test",
+        namespace = "test"
     ) {
 
     data class Position(val file: String, val pos: Long) : Comparable<Position> {
@@ -39,6 +39,7 @@ class CdcPartitionReaderMySQLTest :
 
     companion object {
         const val DOCKER_IMAGE_NAME = "mysql:8.0"
+
         init {
             TestContainerFactory.register(DOCKER_IMAGE_NAME, ::MySQLContainer)
         }

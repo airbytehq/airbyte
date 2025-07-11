@@ -28,17 +28,7 @@ import jakarta.inject.Singleton
 
 /** [ConfigurationSpecification] implementation for a fake source. */
 @JsonSchemaTitle("Test Source Spec")
-@JsonPropertyOrder(
-    value =
-        [
-            "host",
-            "port",
-            "database",
-            "schemas",
-            "tunnel_method",
-            "cursor",
-        ],
-)
+@JsonPropertyOrder(value = ["host", "port", "database", "schemas", "tunnel_method", "cursor"])
 @Singleton
 @Secondary
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
@@ -85,7 +75,7 @@ class FakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("SSH Tunnel Method")
     @JsonPropertyDescription(
         "Whether to initiate an SSH tunnel before connecting to the database," +
-            " and if so, which kind of authentication to use.",
+            " and if so, which kind of authentication to use."
     )
     @JsonSchemaInject(json = """{"order":5}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
@@ -124,10 +114,7 @@ class FakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
 
     @JsonAnySetter
-    fun setAdditionalProperty(
-        name: String,
-        value: Any,
-    ) {
+    fun setAdditionalProperty(name: String, value: Any) {
         additionalPropertiesMap[name] = value
     }
 }

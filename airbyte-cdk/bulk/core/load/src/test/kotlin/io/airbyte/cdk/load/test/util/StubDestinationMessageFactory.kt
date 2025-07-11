@@ -34,16 +34,12 @@ object StubDestinationMessageFactory {
                         )
                 ),
             serializedSizeBytes = 0L,
-            airbyteRawId = UUID.randomUUID()
+            airbyteRawId = UUID.randomUUID(),
         )
     }
 
     fun makeFile(stream: DestinationStream): DestinationFile {
-        return DestinationFile(
-            stream = stream,
-            emittedAtMs = 0,
-            fileMessage = nullFileMessage,
-        )
+        return DestinationFile(stream = stream, emittedAtMs = 0, fileMessage = nullFileMessage)
     }
 
     fun makeStreamComplete(stream: DestinationStream): DestinationRecordStreamComplete {
@@ -60,10 +56,10 @@ object StubDestinationMessageFactory {
                 CheckpointMessage.Checkpoint(
                     unmappedNamespace = stream.unmappedNamespace,
                     unmappedName = stream.unmappedName,
-                    state = JsonNodeFactory.instance.objectNode()
+                    state = JsonNodeFactory.instance.objectNode(),
                 ),
             sourceStats = CheckpointMessage.Stats(recordCount),
-            serializedSizeBytes = 0L
+            serializedSizeBytes = 0L,
         )
     }
 
@@ -74,7 +70,7 @@ object StubDestinationMessageFactory {
             checkpoints = emptyList(),
             additionalProperties = emptyMap(),
             originalTypeField = AirbyteStateMessage.AirbyteStateType.GLOBAL,
-            serializedSizeBytes = 0L
+            serializedSizeBytes = 0L,
         )
     }
 

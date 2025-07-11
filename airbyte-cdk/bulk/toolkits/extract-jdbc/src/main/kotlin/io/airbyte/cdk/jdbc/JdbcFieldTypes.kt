@@ -49,10 +49,7 @@ abstract class JdbcFieldType<R>(
     val jdbcGetter: JdbcGetter<out R>,
     override val jsonEncoder: JsonEncoder<R>,
 ) : FieldType, JdbcGetter<JsonNode> {
-    override fun get(
-        rs: ResultSet,
-        colIdx: Int,
-    ): JsonNode =
+    override fun get(rs: ResultSet, colIdx: Int): JsonNode =
         when (val decoded: R? = jdbcGetter.get(rs, colIdx)) {
             null -> NullCodec.encode(null)
             else -> jsonEncoder.encode(decoded)
@@ -77,11 +74,7 @@ abstract class LosslessJdbcFieldType<R, W>(
     JdbcFieldType<R>(airbyteSchemaType, jdbcGetter, jsonEncoder),
     LosslessFieldType,
     JdbcSetter<JsonNode> {
-    override fun set(
-        stmt: PreparedStatement,
-        paramIdx: Int,
-        value: JsonNode,
-    ) {
+    override fun set(stmt: PreparedStatement, paramIdx: Int, value: JsonNode) {
         jdbcSetter.set(stmt, paramIdx, jsonDecoder.decode(value))
     }
 }
@@ -97,15 +90,11 @@ abstract class SymmetricJdbcFieldType<T>(
         jdbcAccessor,
         jsonCodec,
         jsonCodec,
-        jdbcAccessor
+        jdbcAccessor,
     )
 
 data object BooleanFieldType :
-    SymmetricJdbcFieldType<Boolean>(
-        LeafAirbyteSchemaType.BOOLEAN,
-        BooleanAccessor,
-        BooleanCodec,
-    )
+    SymmetricJdbcFieldType<Boolean>(LeafAirbyteSchemaType.BOOLEAN, BooleanAccessor, BooleanCodec)
 
 data object BigDecimalFieldType :
     SymmetricJdbcFieldType<BigDecimal>(
@@ -115,18 +104,10 @@ data object BigDecimalFieldType :
     )
 
 data object DoubleFieldType :
-    SymmetricJdbcFieldType<Double>(
-        LeafAirbyteSchemaType.NUMBER,
-        DoubleAccessor,
-        DoubleCodec,
-    )
+    SymmetricJdbcFieldType<Double>(LeafAirbyteSchemaType.NUMBER, DoubleAccessor, DoubleCodec)
 
 data object FloatFieldType :
-    SymmetricJdbcFieldType<Float>(
-        LeafAirbyteSchemaType.NUMBER,
-        FloatAccessor,
-        FloatCodec,
-    )
+    SymmetricJdbcFieldType<Float>(LeafAirbyteSchemaType.NUMBER, FloatAccessor, FloatCodec)
 
 data object BigIntegerFieldType :
     SymmetricJdbcFieldType<BigDecimal>(
@@ -136,46 +117,22 @@ data object BigIntegerFieldType :
     )
 
 data object LongFieldType :
-    SymmetricJdbcFieldType<Long>(
-        LeafAirbyteSchemaType.INTEGER,
-        LongAccessor,
-        LongCodec,
-    )
+    SymmetricJdbcFieldType<Long>(LeafAirbyteSchemaType.INTEGER, LongAccessor, LongCodec)
 
 data object IntFieldType :
-    SymmetricJdbcFieldType<Int>(
-        LeafAirbyteSchemaType.INTEGER,
-        IntAccessor,
-        IntCodec,
-    )
+    SymmetricJdbcFieldType<Int>(LeafAirbyteSchemaType.INTEGER, IntAccessor, IntCodec)
 
 data object ShortFieldType :
-    SymmetricJdbcFieldType<Short>(
-        LeafAirbyteSchemaType.INTEGER,
-        ShortAccessor,
-        ShortCodec,
-    )
+    SymmetricJdbcFieldType<Short>(LeafAirbyteSchemaType.INTEGER, ShortAccessor, ShortCodec)
 
 data object ByteFieldType :
-    SymmetricJdbcFieldType<Byte>(
-        LeafAirbyteSchemaType.INTEGER,
-        ByteAccessor,
-        ByteCodec,
-    )
+    SymmetricJdbcFieldType<Byte>(LeafAirbyteSchemaType.INTEGER, ByteAccessor, ByteCodec)
 
 data object StringFieldType :
-    SymmetricJdbcFieldType<String>(
-        LeafAirbyteSchemaType.STRING,
-        StringAccessor,
-        TextCodec,
-    )
+    SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.STRING, StringAccessor, TextCodec)
 
 data object NStringFieldType :
-    SymmetricJdbcFieldType<String>(
-        LeafAirbyteSchemaType.STRING,
-        NStringAccessor,
-        TextCodec,
-    )
+    SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.STRING, NStringAccessor, TextCodec)
 
 data object CharacterStreamFieldType :
     SymmetricJdbcFieldType<String>(
@@ -192,39 +149,19 @@ data object NCharacterStreamFieldType :
     )
 
 data object ClobFieldType :
-    SymmetricJdbcFieldType<String>(
-        LeafAirbyteSchemaType.STRING,
-        ClobAccessor,
-        TextCodec,
-    )
+    SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.STRING, ClobAccessor, TextCodec)
 
 data object NClobFieldType :
-    SymmetricJdbcFieldType<String>(
-        LeafAirbyteSchemaType.STRING,
-        NClobAccessor,
-        TextCodec,
-    )
+    SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.STRING, NClobAccessor, TextCodec)
 
 data object XmlFieldType :
-    SymmetricJdbcFieldType<String>(
-        LeafAirbyteSchemaType.STRING,
-        XmlAccessor,
-        TextCodec,
-    )
+    SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.STRING, XmlAccessor, TextCodec)
 
 data object UrlFieldType :
-    SymmetricJdbcFieldType<URL>(
-        LeafAirbyteSchemaType.STRING,
-        UrlAccessor,
-        UrlCodec,
-    )
+    SymmetricJdbcFieldType<URL>(LeafAirbyteSchemaType.STRING, UrlAccessor, UrlCodec)
 
 data object BytesFieldType :
-    SymmetricJdbcFieldType<ByteBuffer>(
-        LeafAirbyteSchemaType.BINARY,
-        BytesAccessor,
-        BinaryCodec,
-    )
+    SymmetricJdbcFieldType<ByteBuffer>(LeafAirbyteSchemaType.BINARY, BytesAccessor, BinaryCodec)
 
 data object BinaryStreamFieldType :
     SymmetricJdbcFieldType<ByteBuffer>(
@@ -234,18 +171,10 @@ data object BinaryStreamFieldType :
     )
 
 data object JsonStringFieldType :
-    SymmetricJdbcFieldType<String>(
-        LeafAirbyteSchemaType.JSONB,
-        StringAccessor,
-        JsonStringCodec,
-    )
+    SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.JSONB, StringAccessor, JsonStringCodec)
 
 data object LocalDateFieldType :
-    SymmetricJdbcFieldType<LocalDate>(
-        LeafAirbyteSchemaType.DATE,
-        DateAccessor,
-        LocalDateCodec,
-    )
+    SymmetricJdbcFieldType<LocalDate>(LeafAirbyteSchemaType.DATE, DateAccessor, LocalDateCodec)
 
 data object LocalTimeFieldType :
     SymmetricJdbcFieldType<LocalTime>(
@@ -280,31 +209,18 @@ data object OffsetDateTimeFieldType :
     )
 
 data object PokemonFieldType :
-    JdbcFieldType<Any>(
-        LeafAirbyteSchemaType.STRING,
-        StringAccessor,
-        AnyEncoder,
-    )
+    JdbcFieldType<Any>(LeafAirbyteSchemaType.STRING, StringAccessor, AnyEncoder)
 
-data object NullFieldType :
-    JdbcFieldType<Any?>(
-        LeafAirbyteSchemaType.NULL,
-        AnyAccessor,
-        NullCodec,
-    )
+data object NullFieldType : JdbcFieldType<Any?>(LeafAirbyteSchemaType.NULL, AnyAccessor, NullCodec)
 
-data class ArrayFieldType<T>(
-    val elementFieldType: JdbcFieldType<T>,
-) :
+data class ArrayFieldType<T>(val elementFieldType: JdbcFieldType<T>) :
     JdbcFieldType<List<T>>(
         ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType),
         ArrayGetter(elementFieldType.jdbcGetter),
         ArrayEncoder(elementFieldType.jsonEncoder),
     )
 
-data class SapHanaArrayFieldType<T>(
-    val elementFieldType: JdbcFieldType<T>,
-) :
+data class SapHanaArrayFieldType<T>(val elementFieldType: JdbcFieldType<T>) :
     JdbcFieldType<List<T>>(
         ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType),
         SapHanaArrayGetter(elementFieldType),

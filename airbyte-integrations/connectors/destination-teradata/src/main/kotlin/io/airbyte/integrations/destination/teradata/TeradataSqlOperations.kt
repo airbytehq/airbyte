@@ -40,12 +40,10 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                 String.format(
                     "CREATE DATABASE \"%s\" AS PERMANENT = 120e6, SPOOL = 120e6;",
                     schemaName,
-                ),
+                )
             )
         } else {
-            LOGGER.warn(
-                "Database $schemaName already exists.",
-            )
+            LOGGER.warn("Database $schemaName already exists.")
         }
     }
 
@@ -59,7 +57,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
      * @param database The database object to query.
      * @param schemaName The name of the schema to check for existence.
      * @return `true` if the schema exists in the database, `false` otherwise. Returns `false` if
-     * the database or schema name is `null`.
+     *   the database or schema name is `null`.
      */
     @Throws(Exception::class)
     override fun isSchemaExists(database: JdbcDatabase?, schemaName: String?): Boolean {
@@ -67,9 +65,8 @@ class TeradataSqlOperations : JdbcSqlOperations() {
             String.format(
                 "SELECT COUNT(1) FROM DBC.DatabasesV WHERE DatabaseName = '%s'",
                 schemaName,
-            ),
-        )
-            ?: 0) > 0 // If the result is greater than 0, return true, else false
+            )
+        ) ?: 0) > 0 // If the result is greater than 0, return true, else false
     }
 
     /**
@@ -84,13 +81,11 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     override fun createTableIfNotExists(
         database: JdbcDatabase,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ) {
         val tabelCount = checkTableExists(database, schemaName, tableName)
         if (tabelCount == 0) {
-            database.execute(
-                createTableQuery(database, schemaName, tableName),
-            )
+            database.execute(createTableQuery(database, schemaName, tableName))
         }
     }
 
@@ -102,21 +97,20 @@ class TeradataSqlOperations : JdbcSqlOperations() {
      *
      * @param database The database instance where the table check is performed.
      * @param schemaName The name of the schema in which to check for the table. Can be `null` if no
-     * schema is used.
+     *   schema is used.
      * @param tableName The name of the table to check for. Must not be `null`.
-     *
      * @return A positive integer if the table exists, otherwise 0 if the table does not exist.
-     *
      * @throws SQLException If an SQL error occurs while checking for the table's existence.
      */
     @Throws(SQLException::class)
     private fun checkTableExists(
         database: JdbcDatabase?,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): Int? {
         val query =
-            """SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' """.trimIndent()
+            """SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' """
+                .trimIndent()
         return database?.queryInt(query)
     }
 
@@ -131,7 +125,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     override fun createTableQuery(
         database: JdbcDatabase?,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): String {
         return String.format(
             """
@@ -144,7 +138,8 @@ class TeradataSqlOperations : JdbcSqlOperations() {
           %s BIGINT
           ) UNIQUE PRIMARY INDEX (%s);
         
-        """.trimIndent(),
+        """
+                .trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
@@ -169,7 +164,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     override fun dropTableIfExists(
         database: JdbcDatabase,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ) {
         database.execute(dropTableQuery(schemaName, tableName))
     }
@@ -211,7 +206,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         database: JdbcDatabase,
         schemaName: String?,
         oldTableName: String?,
-        newTableName: String?
+        newTableName: String?,
     ) {
         database.execute(renameTableQuery(schemaName, oldTableName, newTableName))
     }
@@ -226,7 +221,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     private fun renameTableQuery(
         schemaName: String?,
         oldTableName: String?,
-        newTableName: String?
+        newTableName: String?,
     ): String {
         return String.format(
             "RENAME TABLE  %s.%s TO %s.%s;",
@@ -252,7 +247,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
         schemaName: String?,
         tableName: String?,
         syncId: Long,
-        generationId: Long
+        generationId: Long,
     ) {
         if (records.isEmpty()) {
             return
@@ -288,13 +283,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
                         var i = 0
                         stmt.setString(++i, uuid)
 
-                        stmt.setObject(
-                            ++i,
-                            JSONStruct(
-                                "JSON",
-                                arrayOf(jsonData),
-                            ),
-                        )
+                        stmt.setObject(++i, JSONStruct("JSON", arrayOf(jsonData)))
                         val emittedAt = record.record?.emittedAt
 
                         val extractedAt: Timestamp? =
@@ -345,7 +334,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     override fun truncateTableQuery(
         database: JdbcDatabase,
         schemaName: String,
-        tableName: String
+        tableName: String,
     ): String {
         return String.format("DELETE %s.%s ALL;\n", schemaName, tableName)
     }
@@ -369,9 +358,6 @@ class TeradataSqlOperations : JdbcSqlOperations() {
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(
-                TeradataSqlOperations::class.java,
-            )
+        private val LOGGER: Logger = LoggerFactory.getLogger(TeradataSqlOperations::class.java)
     }
 }

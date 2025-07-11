@@ -18,12 +18,12 @@ class Root : SchemaRecordBuilderType
 class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
     val inputSchema: ObjectType = ObjectType(properties = LinkedHashMap()),
     val expectedSchema: ObjectType = ObjectType(properties = LinkedHashMap()),
-    val parent: T? = null
+    val parent: T? = null,
 ) : SchemaRecordBuilderType {
     fun with(
         given: FieldType,
         expected: FieldType = given,
-        nameOverride: String? = null
+        nameOverride: String? = null,
     ): SchemaRecordBuilder<T> {
         val name = nameOverride ?: UUID.randomUUID().toString()
         inputSchema.properties[name] = given
@@ -42,7 +42,7 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
     fun withRecord(
         nullable: Boolean = false,
         nameOverride: String? = null,
-        expectedInstead: ObjectType? = null
+        expectedInstead: ObjectType? = null,
     ): SchemaRecordBuilder<SchemaRecordBuilder<T>> {
         val name = nameOverride ?: UUID.randomUUID().toString()
         val inputRecord = ObjectType(properties = LinkedHashMap())
@@ -52,14 +52,14 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
         return SchemaRecordBuilder(
             inputSchema = inputRecord,
             expectedSchema = expectedInstead ?: outputRecord,
-            parent = this
+            parent = this,
         )
     }
 
     fun withUnion(
         nullable: Boolean = false,
         nameOverride: String? = null,
-        expectedInstead: FieldType? = null
+        expectedInstead: FieldType? = null,
     ): SchemaTestUnionBuilder<T> {
         val name = nameOverride ?: UUID.randomUUID().toString()
         val inputOptions = mutableSetOf<AirbyteType>()
@@ -75,7 +75,7 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
             expectedInstead
                 ?: FieldType(
                     UnionType(expectedOptions!!, isLegacyUnion = false),
-                    nullable = nullable
+                    nullable = nullable,
                 )
         return SchemaTestUnionBuilder(this, inputOptions, expectedOptions)
     }
@@ -98,7 +98,7 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
 class SchemaTestUnionBuilder<T : SchemaRecordBuilderType>(
     private val parent: SchemaRecordBuilder<T>,
     private val options: MutableSet<AirbyteType>,
-    private val expectedOptions: MutableSet<AirbyteType>?
+    private val expectedOptions: MutableSet<AirbyteType>?,
 ) : SchemaRecordBuilderType {
     fun with(option: AirbyteType, expected: AirbyteType? = null): SchemaTestUnionBuilder<T> {
         options.add(option)
@@ -119,7 +119,7 @@ class SchemaTestUnionBuilder<T : SchemaRecordBuilderType>(
         return SchemaRecordBuilder(
             inputSchema = inputRecord,
             expectedSchema = outputRecord,
-            parent = this
+            parent = this,
         )
     }
 

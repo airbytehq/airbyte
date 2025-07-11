@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Stream
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a DB
  * source of both non-relational and relational type
@@ -73,7 +74,7 @@ protected constructor(driverClassName: String) :
                 .withMessage(
                     String.format(
                         ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                        e.message
+                        e.message,
                     )
                 )
         } finally {
@@ -90,8 +91,10 @@ protected constructor(driverClassName: String) :
             val fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, tableInfos)
             return DbSourceDiscoverUtil.convertTableInfosToAirbyteCatalog(
                 tableInfos,
-                fullyQualifiedTableNameToPrimaryKeys
-            ) { columnType: DataType -> this.getAirbyteType(columnType) }
+                fullyQualifiedTableNameToPrimaryKeys,
+            ) { columnType: DataType ->
+                this.getAirbyteType(columnType)
+            }
         } finally {
             close()
         }
@@ -103,11 +106,14 @@ protected constructor(driverClassName: String) :
      *
      * @param config
      * - integration-specific configuration object as json. e.g. { "username": "airbyte",
-     * "password": "super secure" }
+     *   "password": "super secure" }
+     *
      * @param catalog
      * - schema of the incoming messages.
+     *
      * @param state
      * - state of the incoming messages.
+     *
      * @return AirbyteMessageIterator with all the streams that are to be synced
      * @throws Exception
      */
@@ -115,14 +121,14 @@ protected constructor(driverClassName: String) :
     override fun read(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        state: JsonNode?
+        state: JsonNode?,
     ): AutoCloseableIterator<AirbyteMessage> {
         val supportedStateType = getSupportedStateType(config)
         val stateManager =
             StateManagerFactory.createStateManager(
                 supportedStateType,
                 StateGeneratorUtils.deserializeInitialState(state, supportedStateType),
-                catalog
+                catalog,
             )
         val emittedAt = Instant.now()
 
@@ -158,7 +164,7 @@ protected constructor(driverClassName: String) :
                 catalog,
                 fullyQualifiedTableNameToInfo,
                 stateManager,
-                emittedAt
+                emittedAt,
             )
         val iteratorList =
             Stream.of(incrementalIterators, fullRefreshIterators)
@@ -168,7 +174,7 @@ protected constructor(driverClassName: String) :
         return AutoCloseableIterators.appendOnClose(
             AutoCloseableIterators.concatWithEagerClose(
                 iteratorList,
-                AirbyteTraceMessageUtility::emitStreamStatusTrace
+                AirbyteTraceMessageUtility::emitStreamStatusTrace,
             )
         ) {
             LOGGER.info { "Closing database connection pool." }
@@ -183,14 +189,14 @@ protected constructor(driverClassName: String) :
         database: Database,
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
-        stateManager: StateManager
+        stateManager: StateManager,
     ) {}
 
     @Throws(SQLException::class)
     protected fun validateCursorFieldForIncrementalTables(
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
-        database: Database
+        database: Database,
     ) {
         val tablesWithInvalidCursor: MutableList<InvalidCursorInfoUtil.InvalidCursorInfo> =
             ArrayList()
@@ -226,7 +232,7 @@ protected constructor(driverClassName: String) :
                         fullyQualifiedTableName,
                         cursorField.get(),
                         cursorType.toString(),
-                        "Unsupported cursor type"
+                        "Unsupported cursor type",
                     )
                 )
                 continue
@@ -237,7 +243,7 @@ protected constructor(driverClassName: String) :
                     database,
                     stream.namespace,
                     stream.name,
-                    cursorField.get()
+                    cursorField.get(),
                 )
             ) {
                 tablesWithInvalidCursor.add(
@@ -245,7 +251,7 @@ protected constructor(driverClassName: String) :
                         fullyQualifiedTableName,
                         cursorField.get(),
                         cursorType.toString(),
-                        "Cursor column contains NULL value"
+                        "Cursor column contains NULL value",
                     )
                 )
             }
@@ -270,7 +276,7 @@ protected constructor(driverClassName: String) :
         database: Database,
         schema: String?,
         tableName: String?,
-        columnName: String?
+        columnName: String?,
     ): Boolean {
         /* no-op */
         return true
@@ -284,7 +290,7 @@ protected constructor(driverClassName: String) :
      */
     protected open fun estimateFullRefreshSyncSize(
         database: Database,
-        configuredAirbyteStream: ConfiguredAirbyteStream?
+        configuredAirbyteStream: ConfiguredAirbyteStream?,
     ) {
         /* no-op */
     }
@@ -324,7 +330,7 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
             database,
@@ -358,7 +364,7 @@ protected constructor(driverClassName: String) :
      *
      * @param database Source Database
      * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync
-     * mode
+     *   mode
      * @param tableNameToTable Mapping of table name to table
      * @param stateManager Manager used to track the state of data synced by the connector
      * @param emittedAt Time when data was emitted from the Source database
@@ -464,7 +470,7 @@ protected constructor(driverClassName: String) :
                         table,
                         emittedAt,
                         SyncMode.INCREMENTAL,
-                        Optional.of(cursorField)
+                        Optional.of(cursorField),
                     )
             }
 
@@ -480,11 +486,11 @@ protected constructor(driverClassName: String) :
                             autoCloseableIterator,
                             airbyteStream,
                             messageProducer,
-                            StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO)
+                            StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO),
                         )
                     },
                     airbyteMessageIterator,
-                    AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
+                    AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace),
                 )
         } else if (airbyteStream.syncMode == SyncMode.FULL_REFRESH) {
             estimateFullRefreshSyncSize(database, airbyteStream)
@@ -499,7 +505,7 @@ protected constructor(driverClassName: String) :
                     table,
                     emittedAt,
                     SyncMode.FULL_REFRESH,
-                    Optional.empty()
+                    Optional.empty(),
                 )
         } else if (airbyteStream.syncMode == null) {
             throw IllegalArgumentException(
@@ -510,7 +516,7 @@ protected constructor(driverClassName: String) :
                 String.format(
                     "%s does not support sync mode: %s.",
                     this.javaClass,
-                    airbyteStream.syncMode
+                    airbyteStream.syncMode,
                 )
             )
         }
@@ -518,7 +524,7 @@ protected constructor(driverClassName: String) :
         val recordCount = AtomicLong()
         return AutoCloseableIterators.transform<AirbyteMessage, AirbyteMessage>(
             iterator,
-            AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
+            AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace),
         ) { r: AirbyteMessage ->
             val count = recordCount.incrementAndGet()
             if (count % 10000 == 0L) {
@@ -556,7 +562,7 @@ protected constructor(driverClassName: String) :
 
         Preconditions.checkState(
             table.fields.any { f: CommonField<DataType> -> f.name == cursorField },
-            String.format("Could not find cursor field %s in table %s", cursorField, table.name)
+            String.format("Could not find cursor field %s in table %s", cursorField, table.name),
         )
 
         val queryIterator =
@@ -577,7 +583,7 @@ protected constructor(driverClassName: String) :
      *
      * @param database Source Database
      * @param airbyteStream name of an individual stream in which a stream represents a source (e.g.
-     * API endpoint or database table)
+     *   API endpoint or database table)
      * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync
      * @param stateManager tracking the state from previous sync; used for resumable full refresh.
      * @param namespace Namespace of the database (e.g. public)
@@ -597,7 +603,7 @@ protected constructor(driverClassName: String) :
         table: TableInfo<CommonField<DataType>>,
         emittedAt: Instant,
         syncMode: SyncMode,
-        cursorField: Optional<String>
+        cursorField: Optional<String>,
     ): AutoCloseableIterator<AirbyteMessage> {
         val queryStream =
             queryTableFullRefresh(
@@ -606,29 +612,32 @@ protected constructor(driverClassName: String) :
                 table.nameSpace,
                 table.name,
                 syncMode,
-                cursorField
+                cursorField,
             )
         return getMessageIterator(
             queryStream,
             airbyteStream.stream.name,
             namespace,
-            emittedAt.toEpochMilli()
+            emittedAt.toEpochMilli(),
         )
     }
 
     /**
      * @param database
      * - The database where from privileges for tables will be consumed
+     *
      * @param schema
      * - The schema where from privileges for tables will be consumed
+     *
      * @return Set with privileges for tables for current DB-session user The method is responsible
-     * for SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
-     * Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its owner).
+     *   for SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g.
+     *   in Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its
+     *   owner).
      */
     @Throws(SQLException::class)
     protected open fun <T> getPrivilegesTableForCurrentUser(
         database: JdbcDatabase?,
-        schema: String?
+        schema: String?,
     ): Set<T> {
         return emptySet()
     }
@@ -665,7 +674,7 @@ protected constructor(driverClassName: String) :
     @Throws(Exception::class)
     protected open fun logPreSyncDebugData(
         database: Database,
-        catalog: ConfiguredAirbyteCatalog?
+        catalog: ConfiguredAirbyteCatalog?,
     ) {}
 
     /**
@@ -714,8 +723,10 @@ protected constructor(driverClassName: String) :
      *
      * @param database
      * - source database
+     *
      * @param schema
      * - source schema
+     *
      * @return list of source tables
      * @throws Exception
      * - access to the database might lead to exceptions.
@@ -723,7 +734,7 @@ protected constructor(driverClassName: String) :
     @Throws(Exception::class)
     protected abstract fun discoverInternal(
         database: Database,
-        schema: String?
+        schema: String?,
     ): List<TableInfo<CommonField<DataType>>>
 
     /**
@@ -736,7 +747,7 @@ protected constructor(driverClassName: String) :
      */
     protected abstract fun discoverPrimaryKeys(
         database: Database,
-        tableInfos: List<TableInfo<CommonField<DataType>>>
+        tableInfos: List<TableInfo<CommonField<DataType>>>,
     ): Map<String, MutableList<String>>
 
     /**
@@ -744,16 +755,19 @@ protected constructor(driverClassName: String) :
      *
      * @param database
      * - source database
+     *
      * @param schema
      * - source schema
+     *
      * @param tableName
      * - source table name
+     *
      * @return table information
      */
     protected abstract fun discoverTable(
         database: Database,
         schema: String,
-        tableName: String
+        tableName: String,
     ): TableInfo<CommonField<DataType>>?
 
     protected abstract val quoteString: String?
@@ -774,7 +788,7 @@ protected constructor(driverClassName: String) :
         schemaName: String?,
         tableName: String,
         syncMode: SyncMode,
-        cursorField: Optional<String>
+        cursorField: Optional<String>,
     ): AutoCloseableIterator<AirbyteRecordData>
 
     /**
@@ -829,11 +843,11 @@ protected constructor(driverClassName: String) :
             recordIterator: AutoCloseableIterator<AirbyteRecordData>,
             streamName: String,
             namespace: String,
-            emittedAt: Long
+            emittedAt: Long,
         ): AutoCloseableIterator<AirbyteMessage> {
             return AutoCloseableIterators.transform(
                 recordIterator,
-                AirbyteStreamNameNamespacePair(streamName, namespace)
+                AirbyteStreamNameNamespacePair(streamName, namespace),
             ) { airbyteRecordData ->
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.RECORD)

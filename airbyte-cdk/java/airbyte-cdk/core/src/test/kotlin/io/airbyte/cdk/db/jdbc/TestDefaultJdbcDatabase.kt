@@ -66,7 +66,7 @@ internal class TestDefaultJdbcDatabase {
                 { connection: Connection ->
                     connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
                 },
-                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) },
             )
 
         Assertions.assertEquals(RECORDS_AS_JSON, actual)
@@ -80,7 +80,7 @@ internal class TestDefaultJdbcDatabase {
                 { connection: Connection ->
                     connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
                 },
-                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) },
             )
             .use { actual -> Assertions.assertEquals(RECORDS_AS_JSON, actual.toList()) }
     }
@@ -93,7 +93,7 @@ internal class TestDefaultJdbcDatabase {
                 { connection: Connection ->
                     connection.prepareStatement("SELECT * FROM id_and_name;")
                 },
-                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) },
             )
         Assertions.assertEquals(RECORDS_AS_JSON, actual)
     }
@@ -107,8 +107,8 @@ internal class TestDefaultJdbcDatabase {
                 DatabaseDriver.POSTGRESQL.urlFormatString,
                 config[JdbcUtils.HOST_KEY].asText(),
                 config[JdbcUtils.PORT_KEY].asInt(),
-                config[JdbcUtils.DATABASE_KEY].asText()
-            )
+                config[JdbcUtils.DATABASE_KEY].asText(),
+            ),
         )
     }
 
@@ -129,7 +129,7 @@ internal class TestDefaultJdbcDatabase {
             Lists.newArrayList(
                 Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
                 Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
-                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash"))
+                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")),
             )
 
         private lateinit var PSQL_DB: PostgreSQLContainer<Nothing>

@@ -66,6 +66,7 @@ class DefaultJdbcSharedState(
                 it.key to
                     object : JdbcPartitionReader.AcquiredResource {
                         override val resource: Resource.Acquired? = it.value
+
                         override fun close() {
                             resource?.close()
                         }

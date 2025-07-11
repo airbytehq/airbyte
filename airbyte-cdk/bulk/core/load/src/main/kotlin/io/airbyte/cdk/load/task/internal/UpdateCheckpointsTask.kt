@@ -23,7 +23,7 @@ import jakarta.inject.Singleton
 class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager,
-    private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
+    private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>,
 ) : Task {
     val log = KotlinLogging.logger {}
 
@@ -41,7 +41,7 @@ class UpdateCheckpointsTask(
                     checkpointManager.addStreamCheckpoint(
                         stream,
                         checkpointKey,
-                        it.replace(message)
+                        it.replace(message),
                     )
                 }
                 is GlobalCheckpointWrapped -> {

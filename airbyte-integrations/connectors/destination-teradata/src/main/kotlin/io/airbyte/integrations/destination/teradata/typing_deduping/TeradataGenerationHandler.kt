@@ -24,12 +24,12 @@ class TeradataGenerationHandler() : JdbcGenerationHandler {
      * @param namespace The namespace (schema) of the table.
      * @param name The name of the table.
      * @return A `Long?` representing the generation ID in the table, or `null` if no generation ID
-     * is found.
+     *   is found.
      */
     override fun getGenerationIdInTable(
         database: JdbcDatabase,
         namespace: String,
-        name: String
+        name: String,
     ): Long? {
         val result = isTableExists(database, namespace, name)
         if (result) {
@@ -68,18 +68,18 @@ class TeradataGenerationHandler() : JdbcGenerationHandler {
      *
      * @param jdbcDatabase The database instance where the table check is performed.
      * @param schemaName The name of the schema in which to check for the table. Can be `null` if no
-     * schema is used.
+     *   schema is used.
      * @param tableName The name of the table to check for. Must not be `null`.
-     *
      * @return true if the table exists, otherwise false if the table does not exist.
      */
     private fun isTableExists(
         jdbcDatabase: JdbcDatabase,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): Boolean {
         val countQuery =
-            """SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' """.trimIndent()
+            """SELECT count(1)  FROM DBC.TablesV WHERE TableName = '$tableName'  AND DataBaseName = '$schemaName' """
+                .trimIndent()
         return jdbcDatabase.queryInt(countQuery) >
             0 // If the result is greater than 0, return true, else false
     }

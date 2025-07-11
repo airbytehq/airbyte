@@ -79,12 +79,7 @@ constructor(
                 val newName = "${originalName}_$hash"
                 actualStreamConfig =
                     originalStreamConfig.copy(
-                        id =
-                            sqlGenerator.buildStreamId(
-                                originalNamespace,
-                                newName,
-                                rawNamespace,
-                            ),
+                        id = sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace)
                     )
             } else {
                 actualStreamConfig = originalStreamConfig
@@ -97,8 +92,8 @@ constructor(
                         actualStreamConfig.id.copy(
                             originalName = stream.stream.name,
                             originalNamespace = stream.stream.namespace,
-                        ),
-                ),
+                        )
+                )
             )
 
             // Populate some interesting strings into the exception handler string deinterpolator
@@ -196,7 +191,7 @@ constructor(
      */
     private fun resolveColumnCollisions(
         airbyteColumns: LinkedHashMap<String, AirbyteType>,
-        stream: ConfiguredAirbyteStream
+        stream: ConfiguredAirbyteStream,
     ): LinkedHashMap<ColumnId, AirbyteType> {
         val columns = LinkedHashMap<ColumnId, AirbyteType>()
         for ((key, value) in airbyteColumns) {
@@ -231,7 +226,7 @@ constructor(
                             superResolveColumnCollisions(
                                 originalColumnId,
                                 columns,
-                                originalColumnId.name.length
+                                originalColumnId.name.length,
                             )
                         break
                     }
@@ -246,11 +241,7 @@ constructor(
                 // But we need to keep the original name so that we can still fetch it out of the
                 // JSON records.
                 columnId =
-                    ColumnId(
-                        columnId.name,
-                        originalColumnId.originalName,
-                        columnId.canonicalName,
-                    )
+                    ColumnId(columnId.name, originalColumnId.originalName, columnId.canonicalName)
             }
 
             columns[columnId] = value
@@ -268,7 +259,7 @@ constructor(
     private fun superResolveColumnCollisions(
         columnId: ColumnId,
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        maximumColumnNameLength: Int
+        maximumColumnNameLength: Int,
     ): ColumnId {
         val originalColumnName = columnId.originalName
 
@@ -289,7 +280,7 @@ constructor(
         val suffix =
             originalColumnName.substring(
                 originalColumnName.length - affixLength,
-                originalColumnName.length
+                originalColumnName.length,
             )
         val length = originalColumnName.length - 2 * affixLength
         newColumnId = sqlGenerator.buildColumnId("$prefix$length$suffix")

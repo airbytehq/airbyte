@@ -31,10 +31,7 @@ class BigqueryDirectLoadSqlTableOperations(
         val job =
             bq.create(
                 JobInfo.of(
-                    CopyJobConfiguration.newBuilder(
-                            targetTableName.toTableId(),
-                            sourceTableId,
-                        )
+                    CopyJobConfiguration.newBuilder(targetTableName.toTableId(), sourceTableId)
                         // create the table if it doesn't yet exist
                         .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
                         // overwrite the table if it already exists

@@ -32,7 +32,7 @@ import java.util.*
     "resourceRequirements",
     "isSourceCustomConnector",
     "isDestinationCustomConnector",
-    "workspaceId"
+    "workspaceId",
 )
 class JobSyncConfig : Serializable {
     /**
@@ -60,6 +60,7 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("namespaceFormat")
     @JsonProperty("namespaceFormat")
     var namespaceFormat: String? = null
+
     /**
      * Prefix that will be prepended to the name of each stream when it is written to the
      * destination.
@@ -79,6 +80,7 @@ class JobSyncConfig : Serializable {
         "Prefix that will be prepended to the name of each stream when it is written to the destination."
     )
     var prefix: String? = null
+
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
@@ -87,6 +89,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("configuredAirbyteCatalog")
     @JsonPropertyDescription("the configured airbyte catalog")
     var configuredAirbyteCatalog: ConfiguredAirbyteCatalog? = null
+
     /** Image name of the source with tag. (Required) */
     /** Image name of the source with tag. (Required) */
     /** Image name of the source with tag. (Required) */
@@ -95,6 +98,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("sourceDockerImage")
     @JsonPropertyDescription("Image name of the source with tag.")
     var sourceDockerImage: String? = null
+
     /** Airbyte Protocol Version of the source */
     /** Airbyte Protocol Version of the source */
     /** Airbyte Protocol Version of the source */
@@ -103,6 +107,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("sourceProtocolVersion")
     @JsonPropertyDescription("Airbyte Protocol Version of the source")
     var sourceProtocolVersion: Version? = null
+
     /** Image name of the destination with tag. (Required) */
     /** Image name of the destination with tag. (Required) */
     /** Image name of the destination with tag. (Required) */
@@ -111,6 +116,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("destinationDockerImage")
     @JsonPropertyDescription("Image name of the destination with tag.")
     var destinationDockerImage: String? = null
+
     /** Airbyte Protocol Version of the destination */
     /** Airbyte Protocol Version of the destination */
     /** Airbyte Protocol Version of the destination */
@@ -119,6 +125,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("destinationProtocolVersion")
     @JsonPropertyDescription("Airbyte Protocol Version of the destination")
     var destinationProtocolVersion: Version? = null
+
     /**
      * optional resource requirements to use in source container - this is used instead of
      * `resourceRequirements` for the source container
@@ -138,6 +145,7 @@ class JobSyncConfig : Serializable {
         "optional resource requirements to use in source container - this is used instead of `resourceRequirements` for the source container"
     )
     var sourceResourceRequirements: ResourceRequirements? = null
+
     /**
      * optional resource requirements to use in dest container - this is used instead of
      * `resourceRequirements` for the dest container
@@ -157,6 +165,7 @@ class JobSyncConfig : Serializable {
         "optional resource requirements to use in dest container - this is used instead of `resourceRequirements` for the dest container"
     )
     var destinationResourceRequirements: ResourceRequirements? = null
+
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
@@ -167,6 +176,7 @@ class JobSyncConfig : Serializable {
         "Sequence of configurations of operations to apply as part of the sync"
     )
     var operationSequence: List<StandardSyncOperation>? = ArrayList()
+
     /**
      * The webhook operation configs belonging to this workspace. Must conform to
      * WebhookOperationConfigs.yaml.
@@ -186,6 +196,7 @@ class JobSyncConfig : Serializable {
         "The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml."
     )
     var webhookOperationConfigs: JsonNode? = null
+
     /**
      * optional resource requirements to run sync workers - this is used for containers other than
      * the source/dest containers
@@ -205,6 +216,7 @@ class JobSyncConfig : Serializable {
         "optional resource requirements to run sync workers - this is used for containers other than the source/dest containers"
     )
     var resourceRequirements: ResourceRequirements? = null
+
     /** determine if the source running image is a custom connector. */
     /** determine if the source running image is a custom connector. */
     /** determine if the source running image is a custom connector. */
@@ -213,6 +225,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("isSourceCustomConnector")
     @JsonPropertyDescription("determine if the source running image is a custom connector.")
     var isSourceCustomConnector: Boolean? = null
+
     /** determine if the destination running image is a custom connector. */
     /** determine if the destination running image is a custom connector. */
     /** determine if the destination running image is a custom connector. */
@@ -221,6 +234,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("isDestinationCustomConnector")
     @JsonPropertyDescription("determine if the destination running image is a custom connector.")
     var isDestinationCustomConnector: Boolean? = null
+
     /** The id of the workspace associated with the sync */
     /** The id of the workspace associated with the sync */
     /** The id of the workspace associated with the sync */

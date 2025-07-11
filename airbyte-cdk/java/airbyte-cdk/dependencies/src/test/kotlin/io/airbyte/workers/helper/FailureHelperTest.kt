@@ -20,7 +20,7 @@ internal class FailureHelperTest {
             AirbyteMessageUtils.createErrorTraceMessage(
                 "trace message error",
                 123.0,
-                AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR
+                AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
             )
         val failureReason = FailureHelper.genericFailure(traceMessage, 12345, 1)
         Assertions.assertEquals(FailureReason.FailureType.CONFIG_ERROR, failureReason.failureType)
@@ -43,7 +43,7 @@ internal class FailureHelperTest {
                 t,
                 jobId,
                 attemptNumber,
-                FailureHelper.ConnectorCommand.CHECK
+                FailureHelper.ConnectorCommand.CHECK,
             )
 
         val metadata = failureReason.metadata.additionalProperties
@@ -62,7 +62,7 @@ internal class FailureHelperTest {
                 TRACE_MESSAGE,
                 jobId,
                 attemptNumber,
-                FailureHelper.ConnectorCommand.DISCOVER
+                FailureHelper.ConnectorCommand.DISCOVER,
             )
 
         val metadata = failureReason.metadata.additionalProperties
@@ -109,7 +109,7 @@ internal class FailureHelperTest {
         val failureReason = FailureHelper.destinationFailure(t, jobId, attemptNumber)
         Assertions.assertEquals(
             FailureReason.FailureOrigin.DESTINATION,
-            failureReason.failureOrigin
+            failureReason.failureOrigin,
         )
 
         val metadata = failureReason.metadata.additionalProperties
@@ -126,7 +126,7 @@ internal class FailureHelperTest {
         val failureReason = FailureHelper.destinationFailure(TRACE_MESSAGE, jobId, attemptNumber)
         Assertions.assertEquals(
             FailureReason.FailureOrigin.DESTINATION,
-            failureReason.failureOrigin
+            failureReason.failureOrigin,
         )
 
         val metadata = failureReason.metadata.additionalProperties
@@ -146,11 +146,11 @@ internal class FailureHelperTest {
                 t,
                 jobId,
                 attemptNumber,
-                FailureReason.FailureOrigin.DESTINATION
+                FailureReason.FailureOrigin.DESTINATION,
             )
         Assertions.assertEquals(
             FailureReason.FailureOrigin.DESTINATION,
-            failureReason.failureOrigin
+            failureReason.failureOrigin,
         )
 
         val metadata = failureReason.metadata.additionalProperties
@@ -225,7 +225,7 @@ internal class FailureHelperTest {
             AirbyteMessageUtils.createErrorTraceMessage(
                 "trace message error",
                 123.0,
-                AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR
+                AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
             )
     }
 }

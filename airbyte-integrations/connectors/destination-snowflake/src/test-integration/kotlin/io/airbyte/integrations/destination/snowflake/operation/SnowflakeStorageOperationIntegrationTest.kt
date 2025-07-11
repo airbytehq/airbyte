@@ -41,6 +41,7 @@ class SnowflakeStorageOperationIntegrationTest {
 
     private var streamId: StreamId = mock()
     private var streamConfig: StreamConfig = mock()
+
     @BeforeEach
     fun setup() {
         val randomString = Strings.addRandomSuffix("", "", 10)
@@ -67,7 +68,8 @@ class SnowflakeStorageOperationIntegrationTest {
         database.execute(
             """
             CREATE SCHEMA "${streamId.rawNamespace}"
-        """.trimIndent()
+        """
+                .trimIndent()
         )
     }
 
@@ -92,27 +94,27 @@ class SnowflakeStorageOperationIntegrationTest {
                             .withAdditionalProperty(
                                 JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY,
                                 SYNC_ID,
-                            ),
+                            )
                     )
-                    .withData(Jsons.deserialize(serializedData)),
+                    .withData(Jsons.deserialize(serializedData))
             )
     }
 
     private fun buffer(
         partialAirbyteMessage: PartialAirbyteMessage,
-        callback: (buffer: SerializableBuffer) -> Unit
+        callback: (buffer: SerializableBuffer) -> Unit,
     ) {
         val csvBuffer =
             StagingSerializedBufferFactory.initializeBuffer(
                 FileUploadFormat.CSV,
-                JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION
+                JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION,
             )
         csvBuffer.use {
             it.accept(
                 partialAirbyteMessage.serialized!!,
                 Jsons.serialize(partialAirbyteMessage.record!!.meta),
                 streamConfig.generationId,
-                partialAirbyteMessage.record!!.emittedAt
+                partialAirbyteMessage.record!!.emittedAt,
             )
             it.flush()
             callback(csvBuffer)
@@ -123,7 +125,8 @@ class SnowflakeStorageOperationIntegrationTest {
         val query =
             """
             SELECT * FROM ${streamId.rawTableId("\"", suffix)}
-        """.trimIndent()
+        """
+                .trimIndent()
         return database.queryJsons(query)
     }
 
@@ -136,13 +139,7 @@ class SnowflakeStorageOperationIntegrationTest {
             storageOperation.getStageGeneration(streamId, AbstractStreamOperation.TMP_TABLE_SUFFIX)
         )
         // Write one record to the real raw table
-        buffer(record(1)) {
-            storageOperation.writeToStage(
-                streamConfig,
-                "",
-                it,
-            )
-        }
+        buffer(record(1)) { storageOperation.writeToStage(streamConfig, "", it) }
         println(dumpRawRecords(""))
         assertEquals(
             listOf(Jsons.deserialize("""{"record_number":1}""")),
@@ -162,7 +159,7 @@ class SnowflakeStorageOperationIntegrationTest {
         )
         assertEquals(
             GENERATION_ID,
-            storageOperation.getStageGeneration(streamId, AbstractStreamOperation.TMP_TABLE_SUFFIX)
+            storageOperation.getStageGeneration(streamId, AbstractStreamOperation.TMP_TABLE_SUFFIX),
         )
         // If we transfer the records, we should end up with 2 records in the real raw table.
         storageOperation.transferFromTempStage(streamId, AbstractStreamOperation.TMP_TABLE_SUFFIX)
@@ -187,13 +184,7 @@ class SnowflakeStorageOperationIntegrationTest {
         // we should end up with a single raw record.
         storageOperation.prepareStage(streamId, "")
         storageOperation.prepareStage(streamId, AbstractStreamOperation.TMP_TABLE_SUFFIX)
-        buffer(record(3)) {
-            storageOperation.writeToStage(
-                streamConfig,
-                "",
-                it,
-            )
-        }
+        buffer(record(3)) { storageOperation.writeToStage(streamConfig, "", it) }
         buffer(record(4)) {
             storageOperation.writeToStage(
                 streamConfig,

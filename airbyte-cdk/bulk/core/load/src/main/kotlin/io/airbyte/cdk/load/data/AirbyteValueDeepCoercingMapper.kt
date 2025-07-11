@@ -11,8 +11,8 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 /**
  * A mapper which coerces ALL values against the schema. This mapper MUST NOT be called after any
  * mapper that returns non-native-JSON types (date, timestamp, etc.), or any mapper that causes the
- * values to become misaligned with the schema (e.g. [AirbyteSchemaNoopMapper] +
- * [SchemalessValuesToJsonString]).
+ * values to become misaligned with the schema (e.g.
+ * [AirbyteSchemaNoopMapper] + [SchemalessValuesToJsonString]).
  *
  * If this mapper is included in a [MapperPipeline], it SHOULD be preceded by a [MergeUnions]
  * mapper. Not including this mapper may result in strange behavior when coercing union types.
@@ -49,19 +49,19 @@ class AirbyteValueDeepCoercingMapper(
     override fun mapObjectWithEmptySchema(
         value: AirbyteValue,
         schema: ObjectTypeWithEmptySchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceObject(value), context)
 
     override fun mapObjectWithoutSchema(
         value: AirbyteValue,
         schema: ObjectTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceObject(value), context)
 
     override fun mapArray(
         value: AirbyteValue,
         schema: ArrayType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         // similar to mapObject, recurse if needed.
         // Realistically, the root node is _never_ an array, i.e. `context.path.isEmpty()` is
@@ -78,7 +78,7 @@ class AirbyteValueDeepCoercingMapper(
     override fun mapArrayWithoutSchema(
         value: AirbyteValue,
         schema: ArrayTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceArray(value), context)
 
     override fun mapBoolean(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
@@ -98,30 +98,30 @@ class AirbyteValueDeepCoercingMapper(
 
     override fun mapTimeWithTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceTimeTz(value), context)
 
     override fun mapTimeWithoutTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceTimeNtz(value), context)
 
     override fun mapTimestampWithTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         withContext(AirbyteValueCoercer.coerceTimestampTz(value), context)
 
     override fun mapTimestampWithoutTimezone(
         value: AirbyteValue,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         withContext(AirbyteValueCoercer.coerceTimestampNtz(value), context)
 
     override fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         if (!recurseIntoUnions) {
             value to context
@@ -131,8 +131,8 @@ class AirbyteValueDeepCoercingMapper(
             val option =
                 schema.options.find { matchesStrictly(value, it) }
                     ?: schema.options.find { matchesPermissively(value, it) }
-                        ?: throw IllegalArgumentException(
-                        "No matching union option in ${schema.options} for ${value::class.java.canonicalName}",
+                    ?: throw IllegalArgumentException(
+                        "No matching union option in ${schema.options} for ${value::class.java.canonicalName}"
                     )
             mapInner(value, option, context)
         }
@@ -172,7 +172,7 @@ class AirbyteValueDeepCoercingMapper(
                 Meta.Change(
                     context.path.joinToString("."),
                     Change.NULLED,
-                    Reason.DESTINATION_SERIALIZATION_ERROR
+                    Reason.DESTINATION_SERIALIZATION_ERROR,
                 )
             )
             NullValue to context

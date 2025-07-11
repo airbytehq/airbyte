@@ -66,6 +66,7 @@ class RecordDiffer(
         }
         return pks
     }
+
     private fun extractCursor(record: OutputRecord): AirbyteValue {
         return extract(record.data.values, cursor!!)
     }
@@ -91,7 +92,7 @@ class RecordDiffer(
                 { it: OutputRecord ->
                     (if (cursor == null) IntegerValue(0) else extractCursor(it))
                 },
-                valueComparator
+                valueComparator,
             )
             .thenComparing { it -> it.extractedAt }
 
@@ -104,7 +105,7 @@ class RecordDiffer(
     /** Returns a pretty-printed diff of the two lists, or null if they were identical */
     fun diffRecords(
         expectedRecords: List<OutputRecord>,
-        actualRecords: List<OutputRecord>
+        actualRecords: List<OutputRecord>,
     ): String? {
         val expectedRecordsSorted = expectedRecords.sortedWith(everythingComparator)
         val actualRecordsSorted = actualRecords.sortedWith(everythingComparator)
@@ -285,8 +286,7 @@ class RecordDiffer(
                 .map { (pk1Field, pk2Field) ->
                     getValueComparator(nullEqualsUnset).compare(pk1Field, pk2Field)
                 }
-                .firstOrNull { it != 0 }
-                ?: 0)
+                .firstOrNull { it != 0 } ?: 0)
         }
 
         private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {

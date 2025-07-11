@@ -18,7 +18,7 @@ import java.math.BigInteger
 
 class ProtoToJsonWriter(
     private val columns: Array<AirbyteValueProxy.FieldAccessor>,
-    private val flatten: Boolean
+    private val flatten: Boolean,
 ) {
 
     fun writeMeta(gen: JsonGenerator, record: DestinationRecordRaw, changes: List<Meta.Change>) =
@@ -62,7 +62,7 @@ class ProtoToJsonWriter(
     private fun writeValue(
         gen: JsonGenerator,
         field: AirbyteValueProxy.FieldAccessor,
-        proxy: AirbyteValueProxy
+        proxy: AirbyteValueProxy,
     ) =
         when (field.type) {
             is ArrayType,
@@ -79,26 +79,17 @@ class ProtoToJsonWriter(
             is TimeTypeWithTimezone ->
                 gen.writeStringOrNull(field, proxy.getTimeWithTimezone(field))
             is TimeTypeWithoutTimezone ->
-                gen.writeStringOrNull(
-                    field,
-                    proxy.getTimeWithoutTimezone(field),
-                )
+                gen.writeStringOrNull(field, proxy.getTimeWithoutTimezone(field))
             is TimestampTypeWithTimezone ->
-                gen.writeStringOrNull(
-                    field,
-                    proxy.getTimestampWithTimezone(field),
-                )
+                gen.writeStringOrNull(field, proxy.getTimestampWithTimezone(field))
             is TimestampTypeWithoutTimezone ->
-                gen.writeStringOrNull(
-                    field,
-                    proxy.getTimestampWithoutTimezone(field),
-                )
+                gen.writeStringOrNull(field, proxy.getTimestampWithoutTimezone(field))
             is UnknownType -> gen.writeNullField(field.name)
         }
 
     private fun JsonGenerator.writeTreeOrNull(
         field: AirbyteValueProxy.FieldAccessor,
-        node: com.fasterxml.jackson.databind.JsonNode?
+        node: com.fasterxml.jackson.databind.JsonNode?,
     ) {
         if (node == null) writeNullField(field.name)
         else {
@@ -109,21 +100,21 @@ class ProtoToJsonWriter(
 
     private fun JsonGenerator.writeBooleanOrNull(
         field: AirbyteValueProxy.FieldAccessor,
-        value: Boolean?
+        value: Boolean?,
     ) = value?.let { writeBooleanField(field.name, it) } ?: writeNullField(field.name)
 
     private fun JsonGenerator.writeNumberOrNull(
         field: AirbyteValueProxy.FieldAccessor,
-        value: BigDecimal?
+        value: BigDecimal?,
     ) = value?.let { writeNumberField(field.name, it) } ?: writeNullField(field.name)
 
     private fun JsonGenerator.writeNumberOrNull(
         field: AirbyteValueProxy.FieldAccessor,
-        value: BigInteger?
+        value: BigInteger?,
     ) = value?.let { writeNumberField(field.name, it) } ?: writeNullField(field.name)
 
     private fun JsonGenerator.writeStringOrNull(
         field: AirbyteValueProxy.FieldAccessor,
-        value: String?
+        value: String?,
     ) = value?.let { writeStringField(field.name, it) } ?: writeNullField(field.name)
 }

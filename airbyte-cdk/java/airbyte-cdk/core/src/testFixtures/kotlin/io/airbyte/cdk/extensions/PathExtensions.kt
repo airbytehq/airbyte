@@ -20,7 +20,7 @@ fun Path.grantAllPermissions(): Path {
             PosixFilePermission.OTHERS_READ,
             PosixFilePermission.OTHERS_WRITE,
             PosixFilePermission.OTHERS_EXECUTE,
-        ),
+        )
     )
     return this
 }

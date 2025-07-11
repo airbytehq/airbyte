@@ -31,7 +31,7 @@ class ExceptionHandlerTest {
     fun testClassified() {
         Assertions.assertEquals(
             TransientError("foo"),
-            handler.classify(TransientErrorException("foo"))
+            handler.classify(TransientErrorException("foo")),
         )
         Assertions.assertEquals(ConfigError("foo"), handler.classify(RuntimeException("foo")))
     }

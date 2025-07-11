@@ -20,6 +20,7 @@ import java.util.*
 import java.util.stream.Stream
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
  * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
@@ -45,7 +46,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         AirbyteProtocolPredicate(),
         LOGGER,
         containerLogMdcBuilder,
-        Optional.empty<Class<out RuntimeException>>()
+        Optional.empty<Class<out RuntimeException>>(),
     )
 
     /**
@@ -58,7 +59,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         protocolPredicate: AirbyteProtocolPredicate,
         logger: KLogger,
         containerLogMdcBuilder: MdcScope.Builder,
-        messageSizeExceptionClass: Optional<Class<out RuntimeException>>
+        messageSizeExceptionClass: Optional<Class<out RuntimeException>>,
     ) {
         protocolValidator = protocolPredicate
         this.logger = logger
@@ -73,7 +74,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         logger: KLogger,
         containerLogMdcBuilder: MdcScope.Builder,
         messageSizeExceptionClass: Optional<Class<out RuntimeException>>,
-        maxMemory: Long
+        maxMemory: Long,
     ) {
         protocolValidator = protocolPredicate
         this.logger = logger
@@ -95,7 +96,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
                                     "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
                                     Instant.now(),
                                     humanReadableByteCountSI(maxMemory),
-                                    humanReadableByteCountSI(messageSize)
+                                    humanReadableByteCountSI(messageSize),
                                 )
                             throw exceptionClass
                                 .get()

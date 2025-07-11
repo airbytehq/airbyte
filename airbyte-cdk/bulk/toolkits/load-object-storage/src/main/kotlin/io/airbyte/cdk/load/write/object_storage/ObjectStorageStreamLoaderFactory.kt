@@ -24,17 +24,13 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
 ) {
     fun create(stream: DestinationStream): StreamLoader {
-        return ObjectStorageStreamLoader(
-            stream,
-            client,
-            destinationStateManager,
-        )
+        return ObjectStorageStreamLoader(stream, client, destinationStateManager)
     }
 }
 
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
-    justification = "Kotlin async continuation"
+    justification = "Kotlin async continuation",
 )
 class ObjectStorageStreamLoader<T : RemoteObject<*>>(
     override val stream: DestinationStream,

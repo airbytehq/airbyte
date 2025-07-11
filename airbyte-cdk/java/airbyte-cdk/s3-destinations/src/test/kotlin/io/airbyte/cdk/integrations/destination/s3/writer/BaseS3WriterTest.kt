@@ -20,7 +20,7 @@ internal class BaseS3WriterTest {
             "2016_08_17_1471461319000_0.csv",
             determineOutputFilename(
                 builder().s3Format(FileUploadFormat.CSV).timestamp(timestamp).build()
-            )
+            ),
         )
     }
 }

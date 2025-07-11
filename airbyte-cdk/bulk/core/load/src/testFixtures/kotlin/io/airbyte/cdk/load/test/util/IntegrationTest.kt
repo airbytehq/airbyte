@@ -75,7 +75,7 @@ abstract class IntegrationTest(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val micronautProperties: Map<Property, String> = emptyMap(),
     val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF
+    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -129,7 +129,8 @@ abstract class IntegrationTest(
                 Cleaners detected:
                   $destinationCleaner
                   ${cleanerSeen.get()}
-                """.trimIndent()
+                """
+                    .trimIndent()
             )
         }
     }
@@ -222,6 +223,7 @@ abstract class IntegrationTest(
          * If you set this to anything other than `COMPLETE`, you may run into a race condition.
          * It's recommended that you send an explicit state message in [messages], and run the sync
          * in a loop until it acks the state message, e.g.
+         *
          * ```
          * while (true) {
          *   val e = assertThrows<DestinationUncleanExitException> {
@@ -257,10 +259,8 @@ abstract class IntegrationTest(
                 micronautProperties = micronautProperties,
                 dataChannelMedium = dataChannelMedium,
                 dataChannelFormat = dataChannelFormat,
-                namespaceMappingConfig = namespaceMappingConfig
-                        ?: NamespaceMappingConfig(
-                            NamespaceDefinitionType.SOURCE,
-                        ),
+                namespaceMappingConfig =
+                    namespaceMappingConfig ?: NamespaceMappingConfig(NamespaceDefinitionType.SOURCE),
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -278,10 +278,7 @@ abstract class IntegrationTest(
                                     "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus."
                                 )
                         }
-                    destination.sendMessage(
-                        streamStatusMessage,
-                        broadcast = true,
-                    )
+                    destination.sendMessage(streamStatusMessage, broadcast = true)
                 }
             }
             destination.shutdown()

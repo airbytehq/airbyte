@@ -105,7 +105,7 @@ class TableCatalogFactory {
                         rawTableName = currentRawProcessedName,
                         finalTableName = currentFinalProcessedName,
                     ),
-                    columnNameMapping
+                    columnNameMapping,
                 )
         }
 

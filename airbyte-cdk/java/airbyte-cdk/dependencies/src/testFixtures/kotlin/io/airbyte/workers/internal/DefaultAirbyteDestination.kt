@@ -44,7 +44,7 @@ constructor(
         DefaultAirbyteStreamFactory(createContainerLogMdcBuilder()),
     private val messageWriterFactory: AirbyteMessageBufferedWriterFactory =
         DefaultAirbyteMessageBufferedWriterFactory(),
-    private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer()
+    private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer(),
 ) : AirbyteDestination {
     private val inputHasEnded = AtomicBoolean(false)
 
@@ -57,11 +57,11 @@ constructor(
         get() {
             Preconditions.checkState(
                 destinationProcess != null,
-                "Destination process is null, cannot retrieve exit value."
+                "Destination process is null, cannot retrieve exit value.",
             )
             Preconditions.checkState(
                 !destinationProcess!!.isAlive,
-                "Destination process is still alive, cannot retrieve exit value."
+                "Destination process is still alive, cannot retrieve exit value.",
             )
             return destinationProcess!!.exitValue()
         }
@@ -70,7 +70,7 @@ constructor(
     override fun start(
         destinationConfig: WorkerDestinationConfig,
         jobRoot: Path,
-        additionalEnvironmentVariables: Map<String, String>
+        additionalEnvironmentVariables: Map<String, String>,
     ) {
         Preconditions.checkState(destinationProcess == null)
 
@@ -82,14 +82,14 @@ constructor(
                 Jsons.serialize(destinationConfig.destinationConnectionConfiguration),
                 WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
                 protocolSerializer.serialize(destinationConfig.catalog),
-                additionalEnvironmentVariables
+                additionalEnvironmentVariables,
             )
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             destinationProcess!!.errorStream,
             { msg: String -> LOGGER.error(msg) },
             "airbyte-destination",
-            createContainerLogMdcBuilder()
+            createContainerLogMdcBuilder(),
         )
 
         writer =
@@ -103,7 +103,7 @@ constructor(
             List.of(
                 AirbyteMessage.Type.STATE,
                 AirbyteMessage.Type.TRACE,
-                AirbyteMessage.Type.CONTROL
+                AirbyteMessage.Type.CONTROL,
             )
         messageIterator =
             streamFactory
@@ -185,10 +185,11 @@ constructor(
             MdcScope.Builder()
                 .setLogPrefix("destination-${TestContext.CURRENT_TEST_NAME.get()}")
                 .setPrefixColor(LoggingHelper.Color.YELLOW_BACKGROUND)
+
         val IGNORED_EXIT_CODES: Set<Int> =
             setOf(
                 0, // Normal exit
-                143 // SIGTERM
+                143, // SIGTERM
             )
     }
 }

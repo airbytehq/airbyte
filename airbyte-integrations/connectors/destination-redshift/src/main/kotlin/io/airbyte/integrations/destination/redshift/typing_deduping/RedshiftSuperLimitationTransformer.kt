@@ -30,19 +30,19 @@ private val log = KotlinLogging.logger {}
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class RedshiftSuperLimitationTransformer(
     private val parsedCatalog: ParsedCatalog?,
-    private val defaultNamespace: String
+    private val defaultNamespace: String,
 ) : StreamAwareDataTransformer {
     private data class ScalarNodeModification(
         val size: Int,
         val removedSize: Int,
-        val shouldNull: Boolean
+        val shouldNull: Boolean,
     )
 
     data class TransformationInfo(
         val originalBytes: Int,
         val removedBytes: Int,
         val node: JsonNode?,
-        val meta: AirbyteRecordMessageMeta
+        val meta: AirbyteRecordMessageMeta,
     )
 
     /*
@@ -64,7 +64,7 @@ class RedshiftSuperLimitationTransformer(
     override fun transform(
         streamDescriptor: StreamDescriptor?,
         jsonNode: JsonNode?,
-        airbyteRecordMessageMeta: AirbyteRecordMessageMeta?
+        airbyteRecordMessageMeta: AirbyteRecordMessageMeta?,
     ): Pair<JsonNode?, AirbyteRecordMessageMeta?> {
         val startTime = System.currentTimeMillis()
         log.debug("Traversing the record to NULL fields for redshift size limitations")
@@ -94,7 +94,7 @@ class RedshiftSuperLimitationTransformer(
             log.warn(
                 "Record size before transformation {}, after transformation {} bytes exceeds 16MB limit",
                 originalBytes,
-                transformedBytes
+                transformedBytes,
             )
             val minimalNode = constructMinimalJsonWithPks(jsonNode, primaryKeys, cursorField)
             if (minimalNode.isEmpty && syncMode == ImportType.DEDUPE) {
@@ -131,7 +131,7 @@ class RedshiftSuperLimitationTransformer(
 
     private fun shouldTransformScalarNode(
         node: JsonNode?,
-        textNodePredicate: Predicate<String>
+        textNodePredicate: Predicate<String>,
     ): ScalarNodeModification {
         val bytes: Int
         if (node!!.isTextual) {
@@ -140,7 +140,7 @@ class RedshiftSuperLimitationTransformer(
                 return ScalarNodeModification(
                     originalBytes, // size before nulling
                     originalBytes - 4, // account 4 bytes for null string
-                    true
+                    true,
                 )
             }
             bytes = originalBytes
@@ -159,14 +159,14 @@ class RedshiftSuperLimitationTransformer(
         return ScalarNodeModification(
             bytes, // For all other types, just return bytes
             0,
-            false
+            false,
         )
     }
 
     @VisibleForTesting
     fun transformNodes(
         rootNode: JsonNode?,
-        textNodePredicate: Predicate<String>
+        textNodePredicate: Predicate<String>,
     ): TransformationInfo {
         // Walk the tree and transform Varchars that exceed the limit
         // We are intentionally not checking the whole size upfront to check if it exceeds 16MB
@@ -265,21 +265,21 @@ class RedshiftSuperLimitationTransformer(
             log.info(
                 "Original record size {} bytes, Modified record size {} bytes",
                 originalBytes,
-                (originalBytes - removedBytes)
+                (originalBytes - removedBytes),
             )
         }
         return TransformationInfo(
             originalBytes,
             removedBytes,
             rootNode,
-            AirbyteRecordMessageMeta().withChanges(changes)
+            AirbyteRecordMessageMeta().withChanges(changes),
         )
     }
 
     private fun constructMinimalJsonWithPks(
         rootNode: JsonNode?,
         primaryKeys: Set<String>,
-        cursorField: Optional<String>
+        cursorField: Optional<String>,
     ): JsonNode {
         val minimalNode = emptyObject() as ObjectNode
         // We only iterate for top-level fields in the root object, since we only support PKs and
@@ -306,7 +306,7 @@ class RedshiftSuperLimitationTransformer(
         } else {
             log.error(
                 "Encountered {} as top level JSON field, this is not supported",
-                rootNode.nodeType
+                rootNode.nodeType,
             )
             // This should have caught way before it reaches here. Just additional safety.
             throw RuntimeException(

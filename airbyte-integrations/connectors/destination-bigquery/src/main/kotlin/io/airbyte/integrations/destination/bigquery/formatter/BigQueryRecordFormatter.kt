@@ -177,7 +177,7 @@ class BigQueryRecordFormatter(
                 Field.of(Meta.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
                 Field.of(Meta.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
                 Field.of(Meta.COLUMN_NAME_AB_META, StandardSQLTypeName.STRING),
-                Field.of(Meta.COLUMN_NAME_AB_GENERATION_ID, StandardSQLTypeName.INT64)
+                Field.of(Meta.COLUMN_NAME_AB_GENERATION_ID, StandardSQLTypeName.INT64),
             )
 
         // This schema defines the CSV format used for the load job. It differs from SCHEMA_V2 by
@@ -206,6 +206,7 @@ class BigQueryRecordFormatter(
                     .setMode(Field.Mode.NULLABLE)
                     .build(),
             )
+
         fun getDirectLoadSchema(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,

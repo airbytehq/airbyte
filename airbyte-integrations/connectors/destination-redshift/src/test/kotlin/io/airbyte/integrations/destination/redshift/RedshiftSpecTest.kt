@@ -97,7 +97,7 @@ class RedshiftSpecTest {
                 writeFile(
                         Files.createTempDirectory(Path.of("/tmp"), "spec-test"),
                         "schema.json",
-                        spec
+                        spec,
                     )
                     .toFile()
             schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification")

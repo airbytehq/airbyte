@@ -55,7 +55,9 @@ data class MySqlSourceConfiguration(
         fun mysqlSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    MySqlSourceConfigurationSpecification, MySqlSourceConfiguration>,
+                    MySqlSourceConfigurationSpecification,
+                    MySqlSourceConfiguration,
+                >,
             supplier: ConfigurationSpecificationSupplier<MySqlSourceConfigurationSpecification>,
         ): MySqlSourceConfiguration = factory.make(supplier.get())
     }
@@ -68,7 +70,7 @@ data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
     val serverTimezone: String?,
-    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -83,7 +85,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
     constructor() : this(emptySet())
 
     override fun makeWithoutExceptionHandling(
-        pojo: MySqlSourceConfigurationSpecification,
+        pojo: MySqlSourceConfigurationSpecification
     ): MySqlSourceConfiguration {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port
@@ -239,7 +241,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
                     sslData.clientCertificate,
                     sslData.clientKey,
                     password,
-                    directory = ""
+                    directory = "",
                 )
             }
         extraJdbcProperties[CLIENT_KEY_STORE_URL] = clientCertKeyStoreUrl.toString()

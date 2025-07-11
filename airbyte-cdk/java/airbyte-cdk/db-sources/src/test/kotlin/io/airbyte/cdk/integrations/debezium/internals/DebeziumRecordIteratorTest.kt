@@ -64,7 +64,7 @@ class DebeziumRecordIteratorTest {
                     override fun destination(): String? {
                         return null
                     }
-                },
+                }
             )
 
         Assertions.assertEquals(lsn, 358824993496L)
@@ -116,7 +116,7 @@ class DebeziumRecordIteratorTest {
                 listOf(Duration.ofMinutes(59), "59.00 minutes"),
                 listOf(Duration.ofMinutes(60), "1.00 hours"),
                 listOf(Duration.ofMinutes(150), "2.50 hours"),
-                listOf(Duration.ofHours(5), "5.00 hours")
+                listOf(Duration.ofHours(5), "5.00 hours"),
             )
 
         testCases.forEach { testCase ->
@@ -166,7 +166,7 @@ class DebeziumRecordIteratorTest {
                         }
                     }
                 )
-            )
+            ),
         )
     }
 }

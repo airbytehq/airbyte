@@ -15,18 +15,9 @@ import java.io.Serializable
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder("status", "message")
 class StandardCheckConnectionOutput : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("status")
     @set:JsonProperty("status")
     @JsonProperty("status")

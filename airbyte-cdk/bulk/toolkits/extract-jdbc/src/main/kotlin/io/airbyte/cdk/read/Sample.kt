@@ -2,11 +2,7 @@
 package io.airbyte.cdk.read
 
 /** Convenience object for maintaining sampled data and its accompanying metadata. */
-data class Sample<T>(
-    val sampledValues: List<T>,
-    val kind: Kind,
-    val valueWeight: Long,
-) {
+data class Sample<T>(val sampledValues: List<T>, val kind: Kind, val valueWeight: Long) {
     fun <U> map(fn: (T) -> U): Sample<U> = Sample(sampledValues.map(fn), kind, valueWeight)
 
     enum class Kind {

@@ -42,7 +42,9 @@ interface DestinationProcess {
      * unless you're trying to send a poison pill.
      */
     suspend fun sendMessage(string: String)
+
     suspend fun sendMessage(message: InputMessage, broadcast: Boolean = false)
+
     suspend fun sendMessages(vararg messages: InputMessage) {
         messages.forEach { sendMessage(it) }
     }
@@ -99,13 +101,10 @@ abstract class DestinationProcessFactory {
                 "docker" -> {
                     val rawProperties: Map<String, Any?> =
                         YamlPropertySourceLoader()
-                            .read(
-                                "irrelevant",
-                                Files.readAllBytes(Path.of("metadata.yaml")),
-                            )
+                            .read("irrelevant", Files.readAllBytes(Path.of("metadata.yaml")))
                     DockerizedDestinationFactory(
                         rawProperties["data.dockerRepository"] as String,
-                        "dev"
+                        "dev",
                     )
                 }
                 else ->

@@ -24,7 +24,7 @@ class ConfiguredCatalogFactory {
     @Singleton
     @Requires(missingProperty = "${CONNECTOR_CATALOG_PREFIX}.resource")
     fun make(
-        @Value("\${${CONNECTOR_CATALOG_PREFIX}.json}") json: String?,
+        @Value("\${${CONNECTOR_CATALOG_PREFIX}.json}") json: String?
     ): ConfiguredAirbyteCatalog =
         ValidatedJsonUtils.parseOne(ConfiguredAirbyteCatalog::class.java, json ?: "{}").also {
             for (configuredStream in it.streams) {
@@ -45,6 +45,6 @@ class ConfiguredCatalogFactory {
     @Requires(notEnv = [Environment.CLI])
     @Requires(property = "${CONNECTOR_CATALOG_PREFIX}.resource")
     fun makeFromTestResource(
-        @Value("\${${CONNECTOR_CATALOG_PREFIX}.resource}") resource: String,
+        @Value("\${${CONNECTOR_CATALOG_PREFIX}.resource}") resource: String
     ): ConfiguredAirbyteCatalog = make(ResourceUtils.readResource(resource))
 }

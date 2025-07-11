@@ -16,11 +16,7 @@ class MetadataYamlPropertySource : MapPropertySource(METADATA_YAML, loadFromReso
         fun loadFromResource(): Map<String, Any?> {
             val resourceURL: URL = ResourceUtils.getResource(METADATA_YAML)
             val rawProperties: Map<String, Any?> =
-                YamlPropertySourceLoader()
-                    .read(
-                        METADATA_YAML,
-                        resourceURL.openStream(),
-                    )
+                YamlPropertySourceLoader().read(METADATA_YAML, resourceURL.openStream())
 
             return rawProperties.mapKeys { (key: String, _) ->
                 val stripped: String = key.removePrefix("data.")

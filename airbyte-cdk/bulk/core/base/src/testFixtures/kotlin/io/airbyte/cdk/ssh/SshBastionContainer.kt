@@ -17,10 +17,8 @@ import org.testcontainers.utility.DockerImageName
  */
 @Singleton
 @JvmInline
-value class SshBastionContainer
-private constructor(
-    val container: GenericContainer<*>,
-) : AutoCloseable {
+value class SshBastionContainer private constructor(val container: GenericContainer<*>) :
+    AutoCloseable {
     constructor(
         network: Network? = null,
         tunnelingToHostPort: Int? = null,
@@ -67,10 +65,7 @@ private constructor(
             }
         }
 
-        fun exclusive(
-            network: Network?,
-            tunnelingToHostPort: Int?,
-        ): GenericContainer<*> {
+        fun exclusive(network: Network?, tunnelingToHostPort: Int?): GenericContainer<*> {
             val imageName: DockerImageName = DockerImageName.parse("bastion-test")
             if (tunnelingToHostPort != null) {
                 Testcontainers.exposeHostPorts(tunnelingToHostPort)

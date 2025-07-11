@@ -61,28 +61,28 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
 
 fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
     return when (this) {
-        is LongCodec, -> longProtoEncoder
-        is IntCodec, -> intProtoEncoder
-        is TextCodec, -> textProtoEncoder
-        is BooleanCodec, -> booleanProtoEncoder
-        is OffsetDateTimeCodec, -> offsetDateTimeProtoEncoder
-        is FloatCodec, -> floatProtoEncoder
-        is NullCodec, -> nullProtoEncoder
-        is BinaryCodec, -> binaryProtoEncoder
-        is BigDecimalCodec, -> bigDecimalProtoEncoder
-        is BigDecimalIntegerCodec, ->
+        is LongCodec -> longProtoEncoder
+        is IntCodec -> intProtoEncoder
+        is TextCodec -> textProtoEncoder
+        is BooleanCodec -> booleanProtoEncoder
+        is OffsetDateTimeCodec -> offsetDateTimeProtoEncoder
+        is FloatCodec -> floatProtoEncoder
+        is NullCodec -> nullProtoEncoder
+        is BinaryCodec -> binaryProtoEncoder
+        is BigDecimalCodec -> bigDecimalProtoEncoder
+        is BigDecimalIntegerCodec ->
             bigDecimalProtoEncoder // TODO: check can convert to exact integer
-        is ShortCodec, -> shortProtoEncoder
-        is ByteCodec, -> byteProtoEncoder
-        is DoubleCodec, -> doubleProtoEncoder
-        is JsonBytesCodec, -> binaryProtoEncoder
-        is JsonStringCodec, -> textProtoEncoder
-        is UrlCodec, -> urlProtoEncoder
-        is LocalDateCodec, -> localDateProtoEncoder
-        is LocalTimeCodec, -> localTimeProtoEncoder
-        is LocalDateTimeCodec, -> localDateTimeProtoEncoder
-        is OffsetTimeCodec, -> offsetTimeProtoEncoder
-        is ArrayEncoder<*>, -> anyProtoEncoder
+        is ShortCodec -> shortProtoEncoder
+        is ByteCodec -> byteProtoEncoder
+        is DoubleCodec -> doubleProtoEncoder
+        is JsonBytesCodec -> binaryProtoEncoder
+        is JsonStringCodec -> textProtoEncoder
+        is UrlCodec -> urlProtoEncoder
+        is LocalDateCodec -> localDateProtoEncoder
+        is LocalTimeCodec -> localTimeProtoEncoder
+        is LocalDateTimeCodec -> localDateTimeProtoEncoder
+        is OffsetTimeCodec -> offsetTimeProtoEncoder
+        is ArrayEncoder<*> -> anyProtoEncoder
         else -> anyProtoEncoder
     }
 }
@@ -90,7 +90,7 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
 fun interface ProtoEncoder<T> {
     fun encode(
         builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: T
+        decoded: T,
     ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 }
 
@@ -103,14 +103,13 @@ fun interface ProtoEncoder<T> {
 private inline fun <T> generateProtoEncoder(
     crossinline setValue:
         (
-            AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-            T
+            AirbyteRecordMessage.AirbyteValueProtobuf.Builder, T,
         ) -> AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): ProtoEncoder<T> =
     object : ProtoEncoder<T> {
         override fun encode(
             builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-            decoded: T
+            decoded: T,
         ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder = setValue(builder, decoded)
     }
 
@@ -160,11 +159,12 @@ val floatProtoEncoder =
 
 val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
 val anyProtoEncoder = textProtoEncoder
+
 // typealias AnyProtoEncoder = TextProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
-    valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
+    valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
         // We use toSortedMap() to ensure that the order is consistent
@@ -177,10 +177,9 @@ fun NativeRecordPayload.toProtobuf(
                 entry.value.fieldValue?.let {
                     (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
                         valueBuilder.clear(),
-                        entry.value.fieldValue!!
+                        entry.value.fieldValue!!,
                     )
-                }
-                    ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
+                } ?: nullProtoEncoder.encode(valueBuilder.clear(), null),
             )
         }
     }

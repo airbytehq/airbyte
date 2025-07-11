@@ -52,7 +52,7 @@ data object ArrayTypeWithoutSchema : AirbyteType() {
 data class ObjectType(
     val properties: LinkedHashMap<String, FieldType>,
     val additionalProperties: Boolean = true,
-    val required: List<String> = emptyList<String>()
+    val required: List<String> = emptyList<String>(),
 ) : AirbyteType() {
     override fun asColumns(): LinkedHashMap<String, FieldType> {
         return properties
@@ -69,10 +69,7 @@ data object ObjectTypeWithoutSchema : AirbyteType() {
     override val isObject = true
 }
 
-data class UnionType(
-    val options: Set<AirbyteType>,
-    val isLegacyUnion: Boolean,
-) : AirbyteType() {
+data class UnionType(val options: Set<AirbyteType>, val isLegacyUnion: Boolean) : AirbyteType() {
     /**
      * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level
      * schema looks like this, we still want to be able to extract the object properties (i.e. treat

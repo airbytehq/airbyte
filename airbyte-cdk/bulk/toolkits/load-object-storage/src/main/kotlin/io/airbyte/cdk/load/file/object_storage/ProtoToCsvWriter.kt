@@ -37,7 +37,7 @@ class ProtoToCsvWriter(
     fun toCsvRow(
         record: DestinationRecordRaw,
         src: DestinationRecordProtobufSource,
-        changes: List<Meta.Change>
+        changes: List<Meta.Change>,
     ): Array<Any?> {
         rowBuf[idxRawId] = record.airbyteRawId.toString()
 
@@ -72,10 +72,7 @@ class ProtoToCsvWriter(
         return rowBuf
     }
 
-    private fun fetchValue(
-        proxy: AirbyteValueProxy,
-        field: AirbyteValueProxy.FieldAccessor,
-    ): Any {
+    private fun fetchValue(proxy: AirbyteValueProxy, field: AirbyteValueProxy.FieldAccessor): Any {
         return when (field.type) {
             is BooleanType -> proxy.getBoolean(field) ?: ""
             is IntegerType -> proxy.getInteger(field) ?: ""
@@ -131,10 +128,10 @@ class ProtoToCsvWriter(
             is StringType -> proxy.getString(field)?.let { "\"${escape(it)}\"" } ?: "null"
             is DateType -> proxy.getDate(field)?.let { "\"$it\"" } ?: "null"
             is TimeTypeWithTimezone -> proxy.getTimeWithTimezone(field)?.let { "\"$it\"" } ?: "null"
-            is TimeTypeWithoutTimezone -> proxy.getTimeWithoutTimezone(field)?.let { "\"$it\"" }
-                    ?: "null"
-            is TimestampTypeWithTimezone -> proxy.getTimestampWithTimezone(field)?.let { "\"$it\"" }
-                    ?: "null"
+            is TimeTypeWithoutTimezone ->
+                proxy.getTimeWithoutTimezone(field)?.let { "\"$it\"" } ?: "null"
+            is TimestampTypeWithTimezone ->
+                proxy.getTimestampWithTimezone(field)?.let { "\"$it\"" } ?: "null"
             is TimestampTypeWithoutTimezone ->
                 proxy.getTimestampWithoutTimezone(field)?.let { "\"$it\"" } ?: "null"
             is UnknownType -> "null"

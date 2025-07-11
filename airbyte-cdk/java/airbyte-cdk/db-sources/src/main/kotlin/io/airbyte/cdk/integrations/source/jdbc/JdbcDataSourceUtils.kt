@@ -21,13 +21,15 @@ object JdbcDataSourceUtils {
     @JvmStatic
     fun assertCustomParametersDontOverwriteDefaultParameters(
         customParameters: Map<String, String>,
-        defaultParameters: Map<String, String>
+        defaultParameters: Map<String, String>,
     ) {
         for (key in defaultParameters.keys) {
             require(
                 !(customParameters.containsKey(key) &&
                     customParameters[key] != defaultParameters[key])
-            ) { "Cannot overwrite default JDBC parameter $key" }
+            ) {
+                "Cannot overwrite default JDBC parameter $key"
+            }
         }
     }
 
@@ -53,10 +55,10 @@ object JdbcDataSourceUtils {
     /**
      * Retrieves default connection_properties from config
      *
-     * TODO: make this method abstract and add parity features to destination connectors
-     *
      * @param config A configuration used to check Jdbc connection
      * @return A mapping of the default connection properties
+     *
+     * TODO: make this method abstract and add parity features to destination connectors
      */
     @JvmStatic
     fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
@@ -64,7 +66,7 @@ object JdbcDataSourceUtils {
         return parseJdbcParameters(
             config,
             "connection_properties",
-            DEFAULT_JDBC_PARAMETERS_DELIMITER
+            DEFAULT_JDBC_PARAMETERS_DELIMITER,
         )
     }
 }

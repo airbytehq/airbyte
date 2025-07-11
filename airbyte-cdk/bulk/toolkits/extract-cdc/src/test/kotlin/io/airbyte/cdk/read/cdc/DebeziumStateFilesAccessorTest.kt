@@ -27,11 +27,11 @@ class DebeziumStateFilesAccessorTest {
             Assertions.assertNotNull(it.schemaFilePath)
             Assertions.assertEquals(
                 it.offsetFilePath.parent.toAbsolutePath(),
-                it.workingDir.toAbsolutePath()
+                it.workingDir.toAbsolutePath(),
             )
             Assertions.assertEquals(
                 it.schemaFilePath.parent.toAbsolutePath(),
-                it.workingDir.toAbsolutePath()
+                it.workingDir.toAbsolutePath(),
             )
         }
         Assertions.assertFalse(dir.exists())
@@ -44,11 +44,11 @@ class DebeziumStateFilesAccessorTest {
             Assertions.assertNotNull(it.schemaFilePath)
             Assertions.assertEquals(
                 it.offsetFilePath.parent.toAbsolutePath(),
-                it.workingDir.toAbsolutePath()
+                it.workingDir.toAbsolutePath(),
             )
             Assertions.assertEquals(
                 it.schemaFilePath.parent.toAbsolutePath(),
-                it.workingDir.toAbsolutePath()
+                it.workingDir.toAbsolutePath(),
             )
             Assertions.assertFalse(it.offsetFilePath.toFile().exists())
             Assertions.assertFalse(it.schemaFilePath.toFile().exists())
@@ -90,7 +90,7 @@ class DebeziumStateFilesAccessorTest {
                         "public",
                         "DROP TABLE foo",
                         TableChanges().drop(TableId("mydb", "public", "foo")),
-                        Instant.ofEpochSecond(1709185609)
+                        Instant.ofEpochSecond(1709185609),
                     ),
                     HistoryRecord(
                         mapOf(Pair("source", "wal")),
@@ -99,8 +99,8 @@ class DebeziumStateFilesAccessorTest {
                         "public",
                         "DROP TABLE bar",
                         TableChanges().drop(TableId("mydb", "public", "bar")),
-                        Instant.ofEpochSecond(1709185610)
-                    )
+                        Instant.ofEpochSecond(1709185610),
+                    ),
                 )
             )
         val fileContents: ByteArray

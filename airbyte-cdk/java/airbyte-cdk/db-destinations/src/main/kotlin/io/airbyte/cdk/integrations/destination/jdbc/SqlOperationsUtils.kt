@@ -22,7 +22,7 @@ object SqlOperationsUtils {
      * database-specific SQL syntax from this query.
      *
      * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
-     * data, emitted_at)
+     *   data, emitted_at)
      * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
      * @param jdbcDatabase jdbc database
      * @param records records to write
@@ -34,7 +34,7 @@ object SqlOperationsUtils {
         insertQueryComponent: String?,
         recordQueryComponent: String?,
         jdbcDatabase: JdbcDatabase,
-        records: List<PartialAirbyteMessage>
+        records: List<PartialAirbyteMessage>,
     ) {
         insertRawRecordsInSingleQuery(
             insertQueryComponent,
@@ -42,7 +42,7 @@ object SqlOperationsUtils {
             jdbcDatabase,
             records,
             { UUID.randomUUID() },
-            true
+            true,
         )
     }
 
@@ -53,7 +53,7 @@ object SqlOperationsUtils {
      * This version does not add a semicolon at the end of the INSERT statement.
      *
      * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
-     * data, emitted_at)
+     *   data, emitted_at)
      * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
      * @param jdbcDatabase jdbc database
      * @param records records to write
@@ -64,7 +64,7 @@ object SqlOperationsUtils {
         insertQueryComponent: String?,
         recordQueryComponent: String?,
         jdbcDatabase: JdbcDatabase,
-        records: List<PartialAirbyteMessage>
+        records: List<PartialAirbyteMessage>,
     ) {
         insertRawRecordsInSingleQuery(
             insertQueryComponent,
@@ -72,7 +72,7 @@ object SqlOperationsUtils {
             jdbcDatabase,
             records,
             { UUID.randomUUID() },
-            false
+            false,
         )
     }
 
@@ -84,7 +84,7 @@ object SqlOperationsUtils {
         jdbcDatabase: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         uuidSupplier: Supplier<UUID>,
-        sem: Boolean
+        sem: Boolean,
     ) {
         if (records.isEmpty()) {
             return
@@ -130,7 +130,7 @@ object SqlOperationsUtils {
                             // Extracted At
                             statement.setTimestamp(
                                 i,
-                                Timestamp.from(Instant.ofEpochMilli(message.record!!.emittedAt))
+                                Timestamp.from(Instant.ofEpochMilli(message.record!!.emittedAt)),
                             )
                             i++
 

@@ -25,9 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
 const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 
-abstract class BaseStdoutOutputConsumer(
-    clock: Clock,
-) : OutputConsumer(clock) {
+abstract class BaseStdoutOutputConsumer(clock: Clock) : OutputConsumer(clock) {
     protected open val buffer = ByteArrayOutputStream()
     protected val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     protected val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
@@ -78,7 +76,7 @@ abstract class BaseStdoutOutputConsumer(
 
     protected open fun getOrCreateRecordTemplate(
         stream: String,
-        namespace: String?
+        namespace: String?,
     ): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
@@ -126,7 +124,7 @@ class RecordTemplate(
             for (additionalProperty in additionalProperties) {
                 recordMessage.withAdditionalProperty(
                     additionalProperty.key,
-                    additionalProperty.value
+                    additionalProperty.value,
                 )
             }
             // Generate the corresponding dummy AirbyteMessage instance.
@@ -141,7 +139,7 @@ class RecordTemplate(
             // and return both parts in a RecordTemplate instance for this stream.
             return RecordTemplate(
                 prefix = (parts.first() + DATA_PREFIX).toByteArray(),
-                suffix = parts.last().toByteArray()
+                suffix = parts.last().toByteArray(),
             )
         }
 
@@ -183,10 +181,7 @@ class StdoutOutputConsumer(
      */
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
-) :
-    StandardOutputConsumer(
-        clock,
-    ) {
+) : StandardOutputConsumer(clock) {
     override fun withLockFlush() {
         if (buffer.size() > 0) {
             stdout.println(buffer.toString(Charsets.UTF_8))

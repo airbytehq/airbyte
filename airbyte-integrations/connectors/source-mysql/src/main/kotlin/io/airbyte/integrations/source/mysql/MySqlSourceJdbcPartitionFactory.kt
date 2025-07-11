@@ -47,12 +47,7 @@ class MySqlSourceJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: MySqlSourceOperations,
     val config: MySqlSourceConfiguration,
-) :
-    JdbcPartitionFactory<
-        DefaultJdbcSharedState,
-        DefaultJdbcStreamState,
-        MySqlSourceJdbcPartition,
-    > {
+) : JdbcPartitionFactory<DefaultJdbcSharedState, DefaultJdbcStreamState, MySqlSourceJdbcPartition> {
 
     private val log = KotlinLogging.logger {}
     private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
@@ -126,7 +121,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = null,
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             } else {
                 return MySqlSourceJdbcRfrSnapshotPartition(
@@ -134,7 +129,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = null,
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
         }
@@ -155,7 +150,7 @@ class MySqlSourceJdbcPartitionFactory(
             return MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                cursorChosenFromCatalog
+                cursorChosenFromCatalog,
             )
         }
         return MySqlSourceJdbcSnapshotWithCursorPartition(
@@ -171,12 +166,14 @@ class MySqlSourceJdbcPartitionFactory(
     /**
      * Flowchart:
      * 1. If the input state is null - using coldstart.
+     *
      * ```
      *    a. If it's global but without PK, use non-resumable  snapshot.
      *    b. If it's global with PK, use snapshot.
      *    c. If it's not global, use snapshot with cursor.
      * ```
      * 2. If the input state is not null -
+     *
      * ```
      *    a. If it's in global mode, JdbcPartitionFactory will not handle this. (TODO)
      *    b. If it's cursor based, it could be either in PK read phase (initial read) or
@@ -220,17 +217,14 @@ class MySqlSourceJdbcPartitionFactory(
             ) {
                 return null
             }
-            return MySqlSourceJdbcNonResumableSnapshotPartition(
-                selectQueryGenerator,
-                streamState,
-            )
+            return MySqlSourceJdbcNonResumableSnapshotPartition(selectQueryGenerator, streamState)
         }
 
         if (!isCursorBased) {
             val sv: MySqlSourceCdcInitialSnapshotStateValue =
                 Jsons.treeToValue(
                     opaqueStateValue,
-                    MySqlSourceCdcInitialSnapshotStateValue::class.java
+                    MySqlSourceCdcInitialSnapshotStateValue::class.java,
                 )
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
@@ -245,7 +239,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
 
@@ -270,7 +264,7 @@ class MySqlSourceJdbcPartitionFactory(
                         streamState,
                         pkChosenFromCatalog,
                         lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                        upperBound = listOf(upperBound)
+                        upperBound = listOf(upperBound),
                     )
                 }
                 return MySqlSourceJdbcCdcSnapshotPartition(
@@ -297,7 +291,7 @@ class MySqlSourceJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
 
@@ -425,7 +419,7 @@ class MySqlSourceJdbcPartitionFactory(
 
     override fun split(
         unsplitPartition: MySqlSourceJdbcPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<MySqlSourceJdbcPartition> {
 
         val stream: Stream = unsplitPartition.stream
@@ -453,14 +447,13 @@ class MySqlSourceJdbcPartitionFactory(
             is MySqlSourceJdbcCdcSnapshotPartition ->
                 unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
             else -> null
-        }
-            ?: listOf(unsplitPartition)
+        } ?: listOf(unsplitPartition)
     }
 
     private fun MySqlSourceJdbcSnapshotWithCursorPartition.split(
         num: Int,
         upperBound: Any?,
-        effectiveLowerBound: Any?
+        effectiveLowerBound: Any?,
     ): List<MySqlSourceJdbcResumablePartition>? {
         val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
         val lowerBound =
@@ -477,7 +470,7 @@ class MySqlSourceJdbcPartitionFactory(
                 u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
                 //                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
                 cursor,
-                cursorUpperBound
+                cursorUpperBound,
             )
         }
     }
@@ -485,7 +478,7 @@ class MySqlSourceJdbcPartitionFactory(
     private fun MySqlSourceJdbcRfrSnapshotPartition.split(
         num: Int,
         upperBound: Any?,
-        effectiveLowerBound: Any?
+        effectiveLowerBound: Any?,
     ): List<MySqlSourceJdbcResumablePartition>? {
         val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
         val lowerBound =
@@ -508,7 +501,7 @@ class MySqlSourceJdbcPartitionFactory(
     private fun MySqlSourceJdbcCdcSnapshotPartition.split(
         num: Int,
         upperBound: Any?,
-        effectiveLowerBound: Any?
+        effectiveLowerBound: Any?,
     ): List<MySqlSourceJdbcResumablePartition>? {
         val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
         val lowerBound =
@@ -542,7 +535,7 @@ class MySqlSourceJdbcPartitionFactory(
     private fun calculateBoundaries(
         num: Int,
         lowerBound: OffsetDateTime?,
-        upperBound: OffsetDateTime
+        upperBound: OffsetDateTime,
     ): Map<OffsetDateTime, OffsetDateTime?> {
         val queryPlan: MutableList<OffsetDateTime> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: OffsetDateTime.MIN
@@ -560,7 +553,7 @@ class MySqlSourceJdbcPartitionFactory(
     private fun calculateBoundaries(
         num: Int,
         lowerBound: Long?,
-        upperBound: Long
+        upperBound: Long,
     ): Map<Long, Long?> {
         val queryPlan: MutableList<Long> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: Long.MIN_VALUE
@@ -578,7 +571,7 @@ class MySqlSourceJdbcPartitionFactory(
     private fun calculateBoundaries(
         num: Int,
         lowerBound: Double?,
-        upperBound: Double
+        upperBound: Double,
     ): Map<Double, Double?> {
         val queryPlan: MutableList<Double> = mutableListOf()
         val effectiveLowerBound = lowerBound ?: Double.MIN_VALUE
@@ -594,7 +587,7 @@ class MySqlSourceJdbcPartitionFactory(
     private fun calculateBoundaries(
         num: Int,
         lowerBound: String?,
-        upperBound: String
+        upperBound: String,
     ): Map<String, String?> {
         val effectiveLowerBound = lowerBound ?: String()
         val queryPlan: List<String> =

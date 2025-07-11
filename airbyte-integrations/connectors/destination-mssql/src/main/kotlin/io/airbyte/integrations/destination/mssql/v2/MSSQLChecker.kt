@@ -50,7 +50,7 @@ class MSSQLChecker(
             generationId = 0L,
             minimumGenerationId = 0L,
             syncId = 0L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     override fun check(config: MSSQLConfiguration) {
@@ -79,7 +79,7 @@ class MSSQLChecker(
         connection: Connection,
         config: MSSQLConfiguration,
         dataSource: DataSource,
-        sqlBuilder: MSSQLQueryBuilder
+        sqlBuilder: MSSQLQueryBuilder,
     ) {
         val bulkLoadConfig =
             config.mssqlLoadTypeConfiguration.loadTypeConfiguration as BulkLoadConfiguration
@@ -93,7 +93,7 @@ class MSSQLChecker(
             MSSQLFormatFileCreator(
                 dataSource,
                 stream = testStream,
-                azureBlobClient = azureBlobClient
+                azureBlobClient = azureBlobClient,
             )
         val mssqlBulkLoadHandler =
             MSSQLBulkLoadHandler(
@@ -101,7 +101,7 @@ class MSSQLChecker(
                 config.schema,
                 testStream.mappedDescriptor.name,
                 bulkLoadConfig.bulkLoadDataSource,
-                sqlBuilder
+                sqlBuilder,
             )
 
         // Prepare test CSV data

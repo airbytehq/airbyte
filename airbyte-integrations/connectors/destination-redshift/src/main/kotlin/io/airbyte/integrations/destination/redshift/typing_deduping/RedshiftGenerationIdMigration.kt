@@ -22,7 +22,7 @@ class RedshiftGenerationIdMigration(
     override fun migrateIfNecessary(
         destinationHandler: DestinationHandler<RedshiftState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<RedshiftState>
+        state: DestinationInitialStatus<RedshiftState>,
     ): Migration.MigrationResult<RedshiftState> {
         if (state.destinationState.isGenerationIdPresent) {
             logger.info {
@@ -38,7 +38,7 @@ class RedshiftGenerationIdMigration(
             }
             return Migration.MigrationResult(
                 state.destinationState.copy(isGenerationIdPresent = true),
-                invalidateInitialState = false
+                invalidateInitialState = false,
             )
         }
 
@@ -49,7 +49,8 @@ class RedshiftGenerationIdMigration(
                 SHOW COLUMNS
                 FROM TABLE "$databaseName"."${stream.id.rawNamespace}"."${stream.id.rawName}"
                 LIKE '${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}'
-                """.trimIndent()
+                """
+                    .trimIndent()
             )
         if (rawTableDefinitionQueryResult.isNotEmpty()) {
             logger.info {
@@ -64,7 +65,8 @@ class RedshiftGenerationIdMigration(
                 """
                 ALTER TABLE "${stream.id.rawNamespace}"."${stream.id.rawName}" 
                 ADD COLUMN "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" BIGINT;
-                """.trimIndent()
+                """
+                    .trimIndent()
             database.execute(alterRawTableSql)
         }
 
@@ -78,7 +80,8 @@ class RedshiftGenerationIdMigration(
                 SHOW COLUMNS
                 FROM TABLE "$databaseName"."${stream.id.finalNamespace}"."${stream.id.finalName}"
                 LIKE '${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}'
-                """.trimIndent()
+                """
+                        .trimIndent()
                 )
             if (finalTableColumnQueryResult.isNotEmpty()) {
                 logger.info {
@@ -92,7 +95,8 @@ class RedshiftGenerationIdMigration(
                     """
                     ALTER TABLE "${stream.id.finalNamespace}"."${stream.id.finalName}" 
                     ADD COLUMN "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" BIGINT NULL;
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
             }
         } else {
@@ -103,7 +107,7 @@ class RedshiftGenerationIdMigration(
 
         return Migration.MigrationResult(
             state.destinationState.copy(isGenerationIdPresent = true),
-            invalidateInitialState = true
+            invalidateInitialState = true,
         )
     }
 }

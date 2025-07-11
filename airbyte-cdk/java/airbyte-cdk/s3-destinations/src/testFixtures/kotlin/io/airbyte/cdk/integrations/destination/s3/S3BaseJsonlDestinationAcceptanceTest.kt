@@ -23,7 +23,7 @@ abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
                 mapOf(
                     "format_type" to outputFormat,
                     "flattening" to Flattening.NO.value,
-                    "compression" to Jsons.jsonNode(mapOf("compression_type" to "No Compression"))
+                    "compression" to Jsons.jsonNode(mapOf("compression_type" to "No Compression")),
                 )
             )
 
@@ -32,7 +32,7 @@ abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()

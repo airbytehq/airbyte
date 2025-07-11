@@ -29,7 +29,7 @@ class StagingDatabaseCsvSheetGenerator
 @JvmOverloads
 constructor(
     private val destinationColumns: JavaBaseConstants.DestinationColumns =
-        JavaBaseConstants.DestinationColumns.LEGACY,
+        JavaBaseConstants.DestinationColumns.LEGACY
 ) : CsvSheetGenerator {
     override fun getHeaderRow(): List<String> {
         return destinationColumns.rawColumns
@@ -39,7 +39,7 @@ constructor(
         id: UUID,
         recordMessage: AirbyteRecordMessage,
         generationId: Long,
-        syncId: Long
+        syncId: Long,
     ): List<Any> {
         return getDataRow(
             id,
@@ -71,7 +71,7 @@ constructor(
                     Instant.ofEpochMilli(emittedAt),
                     "",
                     formattedString,
-                    formattedAirbyteMetaString
+                    formattedAirbyteMetaString,
                 )
             JavaBaseConstants.DestinationColumns.V2_WITHOUT_META ->
                 listOf(id, Instant.ofEpochMilli(emittedAt), "", formattedString)
@@ -82,7 +82,7 @@ constructor(
                     "",
                     formattedString,
                     formattedAirbyteMetaString,
-                    generationId
+                    generationId,
                 )
         }
     }

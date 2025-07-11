@@ -38,7 +38,7 @@ constructor(
     configuredStream: ConfiguredAirbyteStream,
     uploadTimestamp: Timestamp,
     converter: JsonAvroConverter?,
-    jsonSchema: JsonNode? = null
+    jsonSchema: JsonNode? = null,
 ) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val avroRecordFactory: AvroRecordFactory
     private val uploadManager: StreamTransferManager
@@ -60,7 +60,7 @@ constructor(
                         true,
                         false,
                         false,
-                        true
+                        true,
                     )
         LOGGER.info {
             "Avro schema for stream ${stream.name}: ${@Suppress("DEPRECATION")schema!!.toString(false)}"

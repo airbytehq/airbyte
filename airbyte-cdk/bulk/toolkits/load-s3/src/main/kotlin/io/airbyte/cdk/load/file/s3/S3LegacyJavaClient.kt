@@ -100,7 +100,7 @@ class S3LegacyJavaClient(val amazonS3: AmazonS3, val bucket: S3BucketConfigurati
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<S3Object> {
         val request =
             InitiateMultipartUploadRequest(bucket.s3BucketName, key)
@@ -113,7 +113,7 @@ class S3LegacyJavaClient(val amazonS3: AmazonS3, val bucket: S3BucketConfigurati
 class S3LegacyJavaStreamingUpload(
     private val amazonS3: AmazonS3,
     private val bucket: S3BucketConfiguration,
-    private val response: InitiateMultipartUploadResult
+    private val response: InitiateMultipartUploadResult,
 ) : StreamingUpload<S3Object> {
     private val log = KotlinLogging.logger {}
 
@@ -165,7 +165,7 @@ class S3LegacyJavaClientFactory {
     fun createFromAssumeRole(
         role: AWSArnRoleConfiguration,
         creds: AwsAssumeRoleCredentials,
-        bucket: S3BucketConfiguration
+        bucket: S3BucketConfiguration,
     ): S3LegacyJavaClient {
         val provider =
             STSAssumeRoleSessionCredentialsProvider.Builder(role.roleArn, AIRBYTE_STS_SESSION_NAME)
@@ -199,7 +199,7 @@ class S3LegacyJavaClientFactory {
 
     fun createFromAccessKey(
         keys: AWSAccessKeyConfiguration,
-        bucket: S3BucketConfiguration
+        bucket: S3BucketConfiguration,
     ): S3Client {
         val awsCreds: AWSCredentials = BasicAWSCredentials(keys.accessKeyId, keys.secretAccessKey)
         val provider = AWSStaticCredentialsProvider(awsCreds)
@@ -215,7 +215,7 @@ class S3LegacyJavaClientFactory {
                         .withEndpointConfiguration(
                             AwsClientBuilder.EndpointConfiguration(
                                 bucket.s3Endpoint,
-                                bucket.s3BucketRegion
+                                bucket.s3BucketRegion,
                             )
                         )
                         .withPathStyleAccessEnabled(true)

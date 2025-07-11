@@ -85,7 +85,7 @@ internal class S3DataLakeTableWriterFactoryTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
-                        cursor = primaryKeyIds.map { it.toString() }
+                        cursor = primaryKeyIds.map { it.toString() },
                     ),
                 tableSchema,
             )
@@ -144,7 +144,7 @@ internal class S3DataLakeTableWriterFactoryTest {
                 importType =
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
-                        cursor = primaryKeyIds.map { it.toString() }
+                        cursor = primaryKeyIds.map { it.toString() },
                     ),
                 tableSchema,
             )

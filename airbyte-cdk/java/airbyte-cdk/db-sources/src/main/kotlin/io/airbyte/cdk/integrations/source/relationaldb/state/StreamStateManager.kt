@@ -14,6 +14,7 @@ import java.util.*
 import java.util.function.Supplier
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Per-stream implementation of the [StateManager] interface.
  *
@@ -26,11 +27,11 @@ open class StreamStateManager
  *
  * @param airbyteStateMessages The initial state represented as a list of [AirbyteStateMessage]s.
  * @param catalog The [ConfiguredAirbyteCatalog] for the connector associated with this state
- * manager.
+ *   manager.
  */
 (
     private val rawAirbyteStateMessages: List<AirbyteStateMessage>,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
@@ -38,7 +39,7 @@ open class StreamStateManager
         StateGeneratorUtils.CURSOR_FUNCTION,
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
-        StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION
+        StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION,
     ) {
     override val cdcStateManager: CdcStateManager
         get() {

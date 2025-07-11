@@ -16,11 +16,7 @@ internal class CloseableShutdownHookTest {
         val notCloseable = "Not closeable"
 
         val thread =
-            CloseableShutdownHook.buildShutdownHookThread(
-                closeable,
-                autoCloseable,
-                notCloseable,
-            )
+            CloseableShutdownHook.buildShutdownHookThread(closeable, autoCloseable, notCloseable)
         thread.run()
 
         Mockito.verify(closeable, Mockito.times(1)).close()

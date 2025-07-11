@@ -12,8 +12,6 @@ import jakarta.inject.Singleton
  * Factored out for testability.
  */
 @Singleton
-class UploadIdGenerator(
-    private val uuidGenerator: UUIDGenerator,
-) {
+class UploadIdGenerator(private val uuidGenerator: UUIDGenerator) {
     fun generate() = uuidGenerator.v7().toString()
 }

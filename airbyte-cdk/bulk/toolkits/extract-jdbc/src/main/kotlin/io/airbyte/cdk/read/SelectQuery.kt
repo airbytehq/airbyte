@@ -9,13 +9,6 @@ import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
  * Input for [SelectQuerier] which contains a parameterize SQL query along with its parameter
  * bindings and a description of the columns of the result set.
  */
-data class SelectQuery(
-    val sql: String,
-    val columns: List<Field>,
-    val bindings: List<Binding>,
-) {
-    data class Binding(
-        val value: JsonNode,
-        val type: LosslessJdbcFieldType<*, *>,
-    )
+data class SelectQuery(val sql: String, val columns: List<Field>, val bindings: List<Binding>) {
+    data class Binding(val value: JsonNode, val type: LosslessJdbcFieldType<*, *>)
 }

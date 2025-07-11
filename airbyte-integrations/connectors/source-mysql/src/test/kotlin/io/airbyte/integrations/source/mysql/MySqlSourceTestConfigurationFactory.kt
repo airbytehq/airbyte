@@ -15,7 +15,7 @@ import java.time.Duration
 class MySqlSourceTestConfigurationFactory(val featureFlags: Set<FeatureFlag>) :
     SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: MySqlSourceConfigurationSpecification,
+        pojo: MySqlSourceConfigurationSpecification
     ): MySqlSourceConfiguration =
         MySqlSourceConfigurationFactory(featureFlags)
             .makeWithoutExceptionHandling(pojo)

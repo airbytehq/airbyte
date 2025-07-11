@@ -21,25 +21,17 @@ import java.util.*
     "discoverCatalogId",
     "spec",
     "connectorConfigurationUpdated",
-    "failureReason"
+    "failureReason",
 )
 class ConnectorJobOutput : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("outputType")
     @set:JsonProperty("outputType")
     @JsonProperty("outputType")
     var outputType: OutputType? = null
+
     /**
      * StandardCheckConnectionOutput
      *
@@ -60,6 +52,7 @@ class ConnectorJobOutput : Serializable {
     @JsonProperty("checkConnection")
     @JsonPropertyDescription("describes the result of a 'check connection' action.")
     var checkConnection: StandardCheckConnectionOutput? = null
+
     /** A UUID for the discovered catalog which is persisted by the job */
     /** A UUID for the discovered catalog which is persisted by the job */
     /** A UUID for the discovered catalog which is persisted by the job */
@@ -73,6 +66,7 @@ class ConnectorJobOutput : Serializable {
     @set:JsonProperty("spec")
     @JsonProperty("spec")
     var spec: ConnectorSpecification? = null
+
     /**
      * A boolean indicating whether the configuration was updated during the job, e.g. if an
      * AirbyteConfigControlMessage was received.
@@ -92,6 +86,7 @@ class ConnectorJobOutput : Serializable {
         "A boolean indicating whether the configuration was updated during the job, e.g. if an AirbyteConfigControlMessage was received."
     )
     var connectorConfigurationUpdated: Boolean? = false
+
     /** FailureSummary */
     /** FailureSummary */
     /** FailureSummary */

@@ -13,7 +13,7 @@ internal class MockSqlGenerator : SqlGenerator {
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         throw RuntimeException()
     }
@@ -34,7 +34,7 @@ internal class MockSqlGenerator : SqlGenerator {
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val timestampFilter =
             minRawTimestamp

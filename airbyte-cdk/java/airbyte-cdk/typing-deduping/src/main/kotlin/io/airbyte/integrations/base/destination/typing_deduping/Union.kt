@@ -6,12 +6,12 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
- * Represents a {type: [a, b, ...]} schema. This is theoretically equivalent to {oneOf: [{type: a},
- * {type: b}, ...]} but legacy normalization only handles the {type: [...]} schemas.
+ * Represents a {type: [a, b, ...]} schema. This is theoretically equivalent to {oneOf:
+ * [{type: a}, {type: b}, ...]} but legacy normalization only handles the {type: [...]} schemas.
  *
  * Eventually we should:
- *
  * 1. Announce a breaking change to handle both oneOf styles the same
  * 1. Test against some number of API sources to verify that they won't break badly
  * 1. Update [AirbyteType.fromJsonSchema] to parse both styles into SupportedOneOf

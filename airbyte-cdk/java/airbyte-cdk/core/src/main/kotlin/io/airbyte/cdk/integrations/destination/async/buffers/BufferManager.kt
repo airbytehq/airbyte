@@ -40,9 +40,9 @@ constructor(
 
     /**
      * @param maxMemory the amount of estimated memory we allow for all buffers. The
-     * GlobalMemoryManager will apply back pressure once this quota is filled. "Memory" can be
-     * released back once flushing finishes. This number should be large enough we don't block
-     * reading unnecessarily, but small enough we apply back pressure before OOMing.
+     *   GlobalMemoryManager will apply back pressure once this quota is filled. "Memory" can be
+     *   released back once flushing finishes. This number should be large enough we don't block
+     *   reading unnecessarily, but small enough we apply back pressure before OOMing.
      */
     init {
         logger.info {
@@ -78,7 +78,7 @@ constructor(
         val messages = mutableListOf<String>()
 
         messages.add(
-            "Global: max: ${ AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes)}, allocated: ${AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get())} (${memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024} MB), %% used: ${memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes}",
+            "Global: max: ${ AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes)}, allocated: ${AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get())} (${memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024} MB), %% used: ${memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes}"
         )
 
         for ((key, queue) in buffers) {

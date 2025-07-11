@@ -45,7 +45,8 @@ class DeclarativeDestinationFactoryTest {
                   type: BasicAccessAuthenticator
                   username: "{{ config.apiId }}"
                   password: "{{ config.apiToken }}"
-        """.trimIndent()
+        """
+                .trimIndent()
         )
         mockkConstructor(BasicAccessAuthenticator::class)
         val config = MockConfig(VALID_API_ID, VALID_API_TOKEN)
@@ -58,7 +59,7 @@ class DeclarativeDestinationFactoryTest {
             verify {
                 constructedWith<BasicAccessAuthenticator>(
                         EqMatcher(VALID_API_ID),
-                        EqMatcher(VALID_API_TOKEN)
+                        EqMatcher(VALID_API_TOKEN),
                     )
                     .intercept(any())
             }

@@ -67,7 +67,7 @@ abstract class SshMySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest
         env: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
             .stream()
@@ -104,7 +104,7 @@ abstract class SshMySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest
     override fun retrieveNormalizedRecords(
         env: TestDestinationEnv?,
         streamName: String?,
-        namespace: String?
+        namespace: String?,
     ): List<JsonNode> {
         val tableName = namingResolver.getIdentifier(streamName!!)
         val schema =
@@ -132,7 +132,7 @@ abstract class SshMySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest
                             "SELECT * FROM %s.%s ORDER BY %s ASC;",
                             schema,
                             tableName.lowercase(Locale.getDefault()),
-                            JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+                            JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
                         )
                     )
                 }!!
@@ -181,12 +181,12 @@ abstract class SshMySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest
     override fun testDataTypeTestWithNormalization(
         messagesFilename: String,
         catalogFilename: String,
-        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
+        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility,
     ) {
         super.testDataTypeTestWithNormalization(
             messagesFilename,
             catalogFilename,
-            testCompatibility
+            testCompatibility,
         )
     }
 
@@ -200,9 +200,9 @@ abstract class SshMySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest
                     String.format(
                         "jdbc:mysql://%s:%s",
                         config.get(JdbcUtils.HOST_KEY).asText(),
-                        config.get(JdbcUtils.PORT_KEY).asText()
+                        config.get(JdbcUtils.PORT_KEY).asText(),
                     ),
-                    SQLDialect.MYSQL
+                    SQLDialect.MYSQL,
                 )
             return Database(dslContext)
         }

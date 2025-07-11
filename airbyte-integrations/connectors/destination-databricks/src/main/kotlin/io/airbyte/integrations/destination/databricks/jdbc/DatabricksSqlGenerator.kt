@@ -77,10 +77,11 @@ class DatabricksSqlGenerator(
             }
         }
     }
+
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         // Databricks downcases all object names, so handle that here
         return StreamId(
@@ -123,7 +124,8 @@ class DatabricksSqlGenerator(
                     $AB_META STRING,
                     $AB_GENERATION BIGINT
                 )
-            """.trimIndent(),
+            """
+                .trimIndent()
         )
     }
 
@@ -143,7 +145,8 @@ class DatabricksSqlGenerator(
             | SET $AB_LOADED_AT = CURRENT_TIMESTAMP
             | WHERE $AB_LOADED_AT IS NULL
             | $extractedAtCondition
-            | """.trimMargin()
+            | """
+                .trimMargin()
         )
     }
 
@@ -162,7 +165,8 @@ class DatabricksSqlGenerator(
             CREATE ${if (force) "OR REPLACE" else ""} TABLE $unityCatalogName.`${stream.id.finalNamespace}`.`$finalTableIdentifier`(
                 $columnNameTypeMapping
             )
-        """.trimIndent(),
+        """
+                .trimIndent()
         )
     }
 
@@ -174,7 +178,7 @@ class DatabricksSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
 
         val addRecordsToFinalTable =
@@ -196,7 +200,7 @@ class DatabricksSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        safeCast: Boolean
+        safeCast: Boolean,
     ): Sql {
         val finalColumnNames =
             sequenceOf(
@@ -214,8 +218,9 @@ class DatabricksSqlGenerator(
                     transform = {
                         """
                     | (target_table.$it=deduped_records.$it OR (target_table.$it IS NULL AND deduped_records.$it IS NULL))
-                """.trimMargin()
-                    }
+                """
+                            .trimMargin()
+                    },
                 )
 
         val cursorCompareCondition =
@@ -227,7 +232,8 @@ class DatabricksSqlGenerator(
                 | OR (target_table.$it = deduped_records.$it AND target_table.$AB_EXTRACTED_AT < deduped_records.$AB_EXTRACTED_AT)
                 | OR (target_table.$it IS NULL AND deduped_records.$it IS NULL AND target_table.$AB_EXTRACTED_AT < deduped_records.$AB_EXTRACTED_AT)
                 | OR (target_table.$it IS NULL AND deduped_records.$it IS NOT NULL))
-            """.trimMargin()
+            """
+                        .trimMargin()
                 }
                 .orElse("target_table.$AB_EXTRACTED_AT < deduped_records.$AB_EXTRACTED_AT")
 
@@ -251,7 +257,8 @@ class DatabricksSqlGenerator(
             |$whenMatchedCdcDeleteCondition
             |WHEN MATCHED AND $cursorCompareCondition THEN UPDATE SET *
             |WHEN NOT MATCHED $whenNotMatchedCdcSkipCondition THEN INSERT * 
-        """.trimMargin()
+        """
+                .trimMargin()
         return Sql.of(upsertSql)
     }
 
@@ -259,7 +266,7 @@ class DatabricksSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        safeCast: Boolean
+        safeCast: Boolean,
     ): Sql {
 
         val finalColumnNames =
@@ -276,7 +283,8 @@ class DatabricksSqlGenerator(
                            |${finalColumnNames.replaceIndent("    ")},
                            |    $AB_META
                            |)
-                           |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, finalColumnNames, safeCast, false)}""".trimMargin()
+                           |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, finalColumnNames, safeCast, false)}"""
+                .trimMargin()
 
         return Sql.of(insertSql)
     }
@@ -301,7 +309,7 @@ class DatabricksSqlGenerator(
         minRawTimestamp: Optional<Instant>,
         finalColumnNames: String,
         safeCast: Boolean,
-        dedupe: Boolean
+        dedupe: Boolean,
     ): String {
 
         // JsonPath queried projection columns from raw Table.
@@ -320,12 +328,7 @@ class DatabricksSqlGenerator(
 
         // Condition to avoid resurrecting phantom data from out of order deletes/updates
         val excludeCdcDeletedCondition =
-            if (
-                dedupe &&
-                    stream.columns.containsKey(
-                        cdcDeletedColumn,
-                    )
-            )
+            if (dedupe && stream.columns.containsKey(cdcDeletedColumn))
                 " OR ($AB_LOADED_AT IS NOT NULL AND `$AB_DATA`:`$CDC_DELETED_COLUMN_NAME` IS NOT NULL)"
             else ""
 
@@ -336,7 +339,8 @@ class DatabricksSqlGenerator(
         val rawTableSelectionCondition =
             """
             ($AB_LOADED_AT is NULL$excludeCdcDeletedCondition)$extractedAtCondition
-        """.trimIndent()
+        """
+                .trimIndent()
 
         // Airbyte meta - casting errors struct
         val typeCastErrors =
@@ -356,7 +360,8 @@ class DatabricksSqlGenerator(
                     |   )
                     |   ELSE NULL
                     |END
-                    """.trimMargin()
+                    """
+                        .trimMargin()
                 },
             )
         val typeCastErrorsArray =
@@ -366,7 +371,8 @@ class DatabricksSqlGenerator(
             |${typeCastErrors.replaceIndent("       ")}
             |   )
             |)
-            """.trimMargin()
+            """
+                .trimMargin()
         val airbyteMetaField =
             """
             |to_json(
@@ -383,7 +389,8 @@ class DatabricksSqlGenerator(
             |       )
             |   )
             |)
-            """.trimMargin()
+            """
+                .trimMargin()
         val selectFromRawTable =
             """SELECT
             |${projectionColumns.replaceIndent("   ")},
@@ -392,7 +399,8 @@ class DatabricksSqlGenerator(
             |FROM
             |   $unityCatalogName.${stream.id.rawTableId(QUOTE)}
             |WHERE
-            |   $rawTableSelectionCondition""".trimMargin()
+            |   $rawTableSelectionCondition"""
+                .trimMargin()
 
         val selectCTENoDedupe =
             """WITH intermediate_data as (
@@ -402,7 +410,8 @@ class DatabricksSqlGenerator(
             |${finalColumnNames.replaceIndent("     ")},
             |${airbyteMetaField.replaceIndent("     ")} as $AB_META
             |FROM
-            |     intermediate_data""".trimMargin()
+            |     intermediate_data"""
+                .trimMargin()
         if (!dedupe) {
             return selectCTENoDedupe
         }
@@ -434,7 +443,8 @@ class DatabricksSqlGenerator(
             |   numbered_rows
             |WHERE
             |   row_number=1
-        """.trimMargin()
+        """
+                .trimMargin()
 
         return selectCTEDedupe
     }
@@ -447,7 +457,8 @@ class DatabricksSqlGenerator(
                 """
                 CREATE OR REPLACE TABLE $unityCatalogName.${stream.finalTableId(QUOTE)}
                 AS SELECT * FROM $unityCatalogName.${stream.finalTableId(QUOTE, finalSuffix)}
-            """.trimIndent(),
+            """
+                    .trimIndent()
             ),
             Sql.of("DROP TABLE $unityCatalogName.${stream.finalTableId(QUOTE, finalSuffix)}"),
         )
@@ -464,7 +475,8 @@ class DatabricksSqlGenerator(
             """
             UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
             SET $AB_LOADED_AT = NULL
-        """.trimIndent(),
+        """
+                .trimIndent()
         )
     }
 }
