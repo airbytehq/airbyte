@@ -13,27 +13,45 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurati
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
 import io.micronaut.context.annotation.Factory
+import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
+import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
+import io.airbyte.cdk.ssh.TunnelSession
+import io.airbyte.cdk.ssh.createTunnelSession
 import jakarta.inject.Singleton
+import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
 class ClickhouseBeanFactory {
-//    @Singleton
-//    fun sshClient(): SSHClient? {}
+    @Singleton
+    fun tunnel(config: ClickhouseConfiguration): TunnelSession? {
+        return when (val ssh = config.tunnelConfig) {
+            is SshKeyAuthTunnelMethod,
+            is SshPasswordAuthTunnelMethod -> {
+                val remote =
+                    SshdSocketAddress(config.hostname, config.port.toInt())
+                val sshConnectionOptions: SshConnectionOptions =
+                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                createTunnelSession(remote, ssh, sshConnectionOptions)
+            }
+
+            else -> null
+        }
+    }
 
     @Singleton
     fun clickhouseClient(
         config: ClickhouseConfiguration,
-//        client: SHHClient?,
+        tunnel: TunnelSession?,
     ): Client {
-//        if (client != null) {
-//            "${client.url}:${client.port}"
-//
-//        }
+        val endpoint = if (tunnel != null)
+            "${tunnel.address.hostName}:${tunnel.address.port}"
+        else
+            config.endpoint
 
         val builder =
             Client.Builder()
-                .addEndpoint(config.endpoint)
-                .addEndpoint(config.endpoint)
+                .addEndpoint(endpoint)
                 .setUsername(config.username)
                 .setPassword(config.password)
                 .compressClientRequest(true)
