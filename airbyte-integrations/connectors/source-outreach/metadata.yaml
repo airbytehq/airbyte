@@ -9,6 +9,9 @@ data:
       enabled: true
   releases:
     breakingChanges:
+      2.0.0:
+        upgradeDeadline: "2025-07-30"
+        message: "Change the data type from array to single integer to make data relationship easier."
       1.0.0:
         upgradeDeadline: "2024-06-30"
         message:
@@ -28,7 +31,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
-  dockerImageTag: 1.1.14
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-outreach
   githubIssueLabel: source-outreach
   icon: outreach.svg
