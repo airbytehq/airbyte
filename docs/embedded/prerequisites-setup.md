@@ -22,7 +22,7 @@ Clone the [sample app via Github](https://github.com/airbytehq/embedded-samplewe
 
 ```bash
 git clone <repository-url>
-cd sonar-demoapp/server
+cd embedded-sampleweb-reactjs/server
 ```
 
  Then, copy the .env.local.example to .env:
@@ -85,7 +85,7 @@ SONAR_S3_BUCKET_PREFIX=quinton-test
 Next, you need to create the S3 destination connector within your Airbyte Embedded instance. You can use the provided script within the sample app, which relies on the values in the .env file created above.
 
 ```bash
-sonar-demoapp/./setup-s3.sh
+./setup-s3.sh
 ```
 
 :::caution
