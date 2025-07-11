@@ -32,7 +32,7 @@ class MySqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
     @Property(
         name = "airbyte.connector.config.jdbc_url_params",
-        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
     )
     fun testParseJdbcParameters() {
         val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
@@ -83,7 +83,7 @@ class MySqlSourceConfigurationTest {
         Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
         Assertions.assertEquals(
             cdcCursor.invalidCdcCursorPositionBehavior,
-            InvalidCdcCursorPositionBehavior.RESET_SYNC
+            InvalidCdcCursorPositionBehavior.RESET_SYNC,
         )
 
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
@@ -107,10 +107,11 @@ class MySqlSourceConfigurationTest {
             // Here we verify that the caught exception has the expected message
             Assertions.assertEquals(
                 "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.",
-                e.message
+                e.message,
             )
         }
     }
+
     companion object {
 
         const val CONFIG_V1: String =

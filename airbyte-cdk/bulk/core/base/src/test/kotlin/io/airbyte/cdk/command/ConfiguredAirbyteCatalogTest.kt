@@ -45,8 +45,8 @@ class ConfiguredAirbyteCatalogTest {
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-                                    ),
+                                        listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                                    )
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
@@ -59,9 +59,9 @@ class ConfiguredAirbyteCatalogTest {
                                         Field.of("id", JsonSchemaType.NUMBER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
-                                    .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH)),
+                                    .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH))
                             ),
-                    ),
+                    )
                 )
         Assertions.assertEquals(
             Jsons.readTree(ResourceUtils.readResource(CATALOG_RESOURCE)),

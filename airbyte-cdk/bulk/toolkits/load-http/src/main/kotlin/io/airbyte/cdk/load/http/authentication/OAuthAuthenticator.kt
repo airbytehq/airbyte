@@ -25,7 +25,7 @@ class OAuthAuthenticator(
     private val clientSecret: String,
     private val refreshToken: String,
     private val httpClient: HttpClient =
-        AirbyteOkHttpClient(OkHttpClient.Builder().build(), RetryPolicy.ofDefaults())
+        AirbyteOkHttpClient(OkHttpClient.Builder().build(), RetryPolicy.ofDefaults()),
 ) : Interceptor {
     object Constants {
         const val CLIENT_ID_FIELD_NAME: String = "client_id"
@@ -81,7 +81,7 @@ class OAuthAuthenticator(
                     method = RequestMethod.POST,
                     url = endpoint,
                     headers = mapOf("Content-Type" to "application/x-www-form-urlencoded"),
-                    body = requestBody.toByteArray(Charsets.UTF_8)
+                    body = requestBody.toByteArray(Charsets.UTF_8),
                 )
             )
         if (response.statusCode !in 200..299) {

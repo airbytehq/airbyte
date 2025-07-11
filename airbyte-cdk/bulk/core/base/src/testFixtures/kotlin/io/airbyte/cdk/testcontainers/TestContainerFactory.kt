@@ -25,10 +25,7 @@ object TestContainerFactory {
         val constructor: (DockerImageName) -> C,
     ) {
         @Suppress("UNCHECKED_CAST")
-        fun createAndStart(
-            imageName: DockerImageName,
-            vararg modifiers: ContainerModifier<C>,
-        ): C {
+        fun createAndStart(imageName: DockerImageName, vararg modifiers: ContainerModifier<C>): C {
             val modifierNames: String = modifiers.map { it.name }.joinToString(" ")
             logger.info("Creating new container based on {} with {}.", imageName, modifierNames)
             val container: GenericContainer<*> = constructor(imageName)
@@ -39,7 +36,7 @@ object TestContainerFactory {
                             super.accept(frame)
                         }
                     }
-                },
+                }
             )
             val id: Int = counter.incrementAndGet()
             val logPrefix = "testcontainer #$id $imageName with $modifierNames"
@@ -100,10 +97,7 @@ object TestContainerFactory {
         specificFactories[testContainerImageName] = specificFactory
     }
 
-    fun <C : GenericContainer<*>> newModifier(
-        name: String,
-        fn: (C) -> Unit,
-    ): ContainerModifier<C> =
+    fun <C : GenericContainer<*>> newModifier(name: String, fn: (C) -> Unit): ContainerModifier<C> =
         object : ContainerModifier<C> {
             override val name: String = name
 

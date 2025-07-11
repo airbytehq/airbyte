@@ -69,10 +69,7 @@ class JdbcTestAssetCleaner(
             .streamNames(null)
             .filter { testAssetResourceNamer.millisFromName(it.namespace!!) != null }
             .filter { testAssetResourceNamer.millisFromName(it.name) != null }
-            .groupBy(
-                keySelector = { it.namespace!! },
-                valueTransform = { it.name },
-            )
+            .groupBy(keySelector = { it.namespace!! }, valueTransform = { it.name })
     }
 
     /** Finds all test namespaces in the database. Returns a list of namespace names. */

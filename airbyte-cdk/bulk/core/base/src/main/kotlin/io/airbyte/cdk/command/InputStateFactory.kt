@@ -29,9 +29,7 @@ class InputStateFactory {
 
     @Singleton
     @Requires(missingProperty = "${CONNECTOR_STATE_PREFIX}.resource")
-    fun make(
-        @Value("\${${CONNECTOR_STATE_PREFIX}.json}") json: String?,
-    ): InputState {
+    fun make(@Value("\${${CONNECTOR_STATE_PREFIX}.json}") json: String?): InputState {
         val list: List<AirbyteStateMessage> =
             ValidatedJsonUtils.parseList(AirbyteStateMessage::class.java, json ?: "[]")
                 // Discard states messages with unset type to allow {} as a valid input state.
@@ -78,7 +76,7 @@ class InputStateFactory {
     }
 
     private fun streamStates(
-        streamStates: List<AirbyteStreamState>?,
+        streamStates: List<AirbyteStreamState>?
     ): Map<StreamIdentifier, OpaqueStateValue> =
         (streamStates ?: listOf()).associate { msg: AirbyteStreamState ->
             val streamID: StreamIdentifier = StreamIdentifier.from(msg.streamDescriptor)
@@ -109,6 +107,6 @@ class InputStateFactory {
     @Requires(notEnv = [Environment.CLI])
     @Requires(property = "${CONNECTOR_STATE_PREFIX}.resource")
     fun makeFromTestResource(
-        @Value("\${${CONNECTOR_STATE_PREFIX}.resource}") resource: String,
+        @Value("\${${CONNECTOR_STATE_PREFIX}.resource}") resource: String
     ): InputState = make(ResourceUtils.readResource(resource))
 }

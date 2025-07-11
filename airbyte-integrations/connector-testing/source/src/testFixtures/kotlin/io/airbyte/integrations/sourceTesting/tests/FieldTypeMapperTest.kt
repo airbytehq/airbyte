@@ -89,7 +89,7 @@ abstract class FieldTypeMapperTest {
         log.info {
             "test case $streamName: discovered stream ${
                 Jsons.valueToTree<JsonNode>(
-                    actualStream,
+                    actualStream
                 )
             }"
         }

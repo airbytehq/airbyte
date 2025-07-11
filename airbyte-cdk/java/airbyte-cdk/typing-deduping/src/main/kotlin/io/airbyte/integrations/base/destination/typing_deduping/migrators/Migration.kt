@@ -36,15 +36,15 @@ interface Migration<DestinationState : MinimumDestinationState> {
     fun migrateIfNecessary(
         destinationHandler: DestinationHandler<DestinationState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<DestinationState>
+        state: DestinationInitialStatus<DestinationState>,
     ): MigrationResult<DestinationState>
 
     /**
      * @param invalidateInitialState If true, the migration modified the raw tables in a way that
-     * requires us to re-gather initial state.
+     *   requires us to re-gather initial state.
      */
     data class MigrationResult<DestinationState>(
         val updatedDestinationState: DestinationState,
-        val invalidateInitialState: Boolean
+        val invalidateInitialState: Boolean,
     )
 }

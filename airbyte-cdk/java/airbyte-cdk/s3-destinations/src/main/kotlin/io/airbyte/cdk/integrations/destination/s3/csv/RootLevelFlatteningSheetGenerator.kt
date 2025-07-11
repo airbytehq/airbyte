@@ -12,14 +12,11 @@ import java.util.LinkedList
 
 class RootLevelFlatteningSheetGenerator(
     jsonSchema: JsonNode,
-    private val useV2FieldNames: Boolean = false
+    private val useV2FieldNames: Boolean = false,
 ) : BaseSheetGenerator(useV2FieldNames), CsvSheetGenerator {
     /** Keep a header list to iterate the input json object with a defined order. */
     private val recordHeaders: List<String> =
-        MoreIterators.toList(
-                jsonSchema["properties"].fieldNames(),
-            )
-            .sorted()
+        MoreIterators.toList(jsonSchema["properties"].fieldNames()).sorted()
 
     override fun getHeaderRow(): List<String> {
         val headers =

@@ -66,7 +66,7 @@ class ClickhouseDirectLoadWriterWithoutJson :
 abstract class ClickhouseDirectLoadWriter(
     specFile: String,
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
-    stringifySchemalessObjects: Boolean
+    stringifySchemalessObjects: Boolean,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Utils.getConfigPath(specFile)),
@@ -128,7 +128,7 @@ class ClickhouseDataDumper(
 ) : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = configProvider(spec)
         val client = getClient(config)
@@ -138,7 +138,8 @@ class ClickhouseDataDumper(
         val output = mutableListOf<OutputRecord>()
 
         val cleanedNamespace =
-            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}".toClickHouseCompatibleName()
+            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}"
+                .toClickHouseCompatibleName()
         val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
 
         val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
@@ -175,7 +176,7 @@ class ClickhouseDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw UnsupportedOperationException("Clickhouse does not support file transfer.")
     }
@@ -185,7 +186,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
     private val clickhouseSpecification =
         ValidatedJsonUtils.parseOne(
             ClickhouseSpecificationOss::class.java,
-            Files.readString(Utils.getConfigPath("valid_connection.json"))
+            Files.readString(Utils.getConfigPath("valid_connection.json")),
         )
 
     private val config =
@@ -198,7 +199,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
                     "protocol" to "http",
                     "username" to ClickhouseContainerHelper.getUsername()!!,
                     "password" to ClickhouseContainerHelper.getPassword()!!,
-                )
+                ),
             )
 
     override fun cleanup() {
@@ -224,10 +225,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
 
 fun stringToMeta(metaAsString: String): OutputRecord.Meta {
     if (metaAsString.isEmpty()) {
-        return OutputRecord.Meta(
-            changes = emptyList(),
-            syncId = null,
-        )
+        return OutputRecord.Meta(changes = emptyList(), syncId = null)
     }
     val metaJson = Jsons.readTree(metaAsString)
 
@@ -242,10 +240,7 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
             )
         }
 
-    return OutputRecord.Meta(
-        changes = changes,
-        syncId = metaJson["sync_id"].longValue(),
-    )
+    return OutputRecord.Meta(changes = changes, syncId = metaJson["sync_id"].longValue())
 }
 
 object ClientProvider {

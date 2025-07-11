@@ -36,7 +36,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
         Executors.newFixedThreadPool(
             10,
             BasicThreadFactory.Builder().namingPattern("sync-operations-%d").build(),
-        )
+        ),
 ) : SyncOperation {
     companion object {
         // Use companion to be accessible during instantiation with init
@@ -44,6 +44,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
     }
 
     private val streamOpsMap: Map<StreamId, StreamOperation<DestinationState>>
+
     init {
         streamOpsMap = createPerStreamOpClients()
     }
@@ -58,7 +59,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
                 executorService,
                 destinationHandler,
                 migrations,
-                streamsInitialStates
+                streamsInitialStates,
             )
         destinationHandler.commitDestinationStates(
             postMigrationInitialStates.associate { it.streamConfig.id to it.destinationState }
@@ -78,7 +79,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
                         {
                             Pair(
                                 it.streamConfig.id,
-                                streamOperationFactory.createInstance(it, disableTypeDedupe)
+                                streamOperationFactory.createInstance(it, disableTypeDedupe),
                             )
                         },
                         executorService,
@@ -113,10 +114,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
                 record.also {
                     it.record!!
                         .meta!!
-                        .setAdditionalProperty(
-                            AIRBYTE_META_SYNC_ID_KEY,
-                            streamConfig.syncId,
-                        )
+                        .setAdditionalProperty(AIRBYTE_META_SYNC_ID_KEY, streamConfig.syncId)
                 }
             },
         )

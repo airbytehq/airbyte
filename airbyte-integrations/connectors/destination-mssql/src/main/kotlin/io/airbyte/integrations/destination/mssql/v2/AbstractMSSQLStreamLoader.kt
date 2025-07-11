@@ -18,7 +18,7 @@ import javax.sql.DataSource
 abstract class AbstractMSSQLStreamLoader(
     protected val dataSource: DataSource,
     override val stream: DestinationStream,
-    protected val sqlBuilder: MSSQLQueryBuilder
+    protected val sqlBuilder: MSSQLQueryBuilder,
 ) : StreamLoader {
 
     protected val log = KotlinLogging.logger {}

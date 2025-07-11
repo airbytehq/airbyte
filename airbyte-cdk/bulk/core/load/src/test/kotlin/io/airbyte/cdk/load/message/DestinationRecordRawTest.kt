@@ -32,8 +32,8 @@ class DestinationRecordRawTest {
                 "object_field" to
                     FieldType(
                         ObjectType(linkedMapOf("nested_field" to FieldType(StringType, true))),
-                        true
-                    )
+                        true,
+                    ),
             )
         )
 
@@ -46,7 +46,7 @@ class DestinationRecordRawTest {
             generationId = 42L,
             minimumGenerationId = 0L,
             syncId = 123L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     @Test
@@ -60,7 +60,8 @@ class DestinationRecordRawTest {
                 "undeclared_field1": "extra data",
                 "undeclared_field2": 123
             }
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val recordMessage =
             AirbyteRecordMessage()
@@ -114,7 +115,8 @@ class DestinationRecordRawTest {
                 "boolean_field": 1,
                 "number_field": "456.78"
             }
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val recordMessage =
             AirbyteRecordMessage()
@@ -168,7 +170,8 @@ class DestinationRecordRawTest {
                 "integer_field": "not a number",
                 "array_field": "not an array"
             }
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val recordMessage =
             AirbyteRecordMessage()
@@ -202,7 +205,7 @@ class DestinationRecordRawTest {
         assertTrue(integerField?.changes?.isNotEmpty() ?: false)
         assertEquals(
             AirbyteRecordMessageMetaChange.Change.NULLED,
-            integerField?.changes?.get(0)?.change
+            integerField?.changes?.get(0)?.change,
         )
 
         // Check invalid array is nullified with change recorded
@@ -255,11 +258,11 @@ class DestinationRecordRawTest {
         assertEquals("some_field", enrichedRecord.sourceMeta.changes[0].field)
         assertEquals(
             AirbyteRecordMessageMetaChange.Change.TRUNCATED,
-            enrichedRecord.sourceMeta.changes[0].change
+            enrichedRecord.sourceMeta.changes[0].change,
         )
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_RECORD_SIZE_LIMITATION,
-            enrichedRecord.sourceMeta.changes[0].reason
+            enrichedRecord.sourceMeta.changes[0].reason,
         )
     }
 
@@ -277,7 +280,7 @@ class DestinationRecordRawTest {
                 generationId = 42L,
                 minimumGenerationId = 0L,
                 syncId = 123L,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
 
         val jsonData = """{"field1": "value1", "field2": 123}"""
@@ -324,11 +327,11 @@ class DestinationRecordRawTest {
                                             ObjectType(
                                                 linkedMapOf("level2" to FieldType(StringType, true))
                                             ),
-                                            true
+                                            true,
                                         )
                                 )
                             ),
-                            true
+                            true,
                         ),
                     "array_of_objects" to
                         FieldType(
@@ -337,14 +340,14 @@ class DestinationRecordRawTest {
                                     ObjectType(
                                         linkedMapOf(
                                             "item_id" to FieldType(IntegerType, false),
-                                            "item_name" to FieldType(StringType, true)
+                                            "item_name" to FieldType(StringType, true),
                                         )
                                     ),
-                                    true
+                                    true,
                                 )
                             ),
-                            true
-                        )
+                            true,
+                        ),
                 )
             )
 
@@ -357,7 +360,7 @@ class DestinationRecordRawTest {
                 generationId = 42L,
                 minimumGenerationId = 0L,
                 syncId = 123L,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
 
         val jsonData =
@@ -373,7 +376,8 @@ class DestinationRecordRawTest {
                     {"item_id": 2, "item_name": "item 2"}
                 ]
             }
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val recordMessage =
             AirbyteRecordMessage()
@@ -419,7 +423,8 @@ class DestinationRecordRawTest {
                 "string_field": "test string",
                 "boolean_field": true
             }
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val recordMessage =
             AirbyteRecordMessage()

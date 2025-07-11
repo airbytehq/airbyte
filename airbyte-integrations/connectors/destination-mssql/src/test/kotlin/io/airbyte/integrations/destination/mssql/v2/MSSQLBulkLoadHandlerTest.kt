@@ -53,7 +53,7 @@ class MSSQLBulkLoadHandlerTest {
                 schemaName = "dbo",
                 mainTableName = "MyMainTable",
                 bulkUploadDataSource = "MyBlobDataSource",
-                mssqlQueryBuilder = mssqlQueryBuilder
+                mssqlQueryBuilder = mssqlQueryBuilder,
             )
     }
 
@@ -68,7 +68,7 @@ class MSSQLBulkLoadHandlerTest {
         // When
         bulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         // Then
@@ -143,7 +143,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         // Then
@@ -154,19 +154,19 @@ class MSSQLBulkLoadHandlerTest {
         // 1) The first statement should create temp table
         assertTrue(
             sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
-            "Expected a statement containing SELECT TOP 0 * INTO [##TempTable_"
+            "Expected a statement containing SELECT TOP 0 * INTO [##TempTable_",
         )
 
         // 2) The second statement should do the bulk insert into temp table
         assertTrue(
             sqlStatements.any { it.contains("BULK INSERT [##TempTable_") },
-            "Expected a statement containing BULK INSERT [##TempTable_"
+            "Expected a statement containing BULK INSERT [##TempTable_",
         )
 
         // 3) The third statement should be MERGE into the main table
         assertTrue(
             sqlStatements.any { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") },
-            "Expected a statement containing MERGE INTO [dbo].[MyMainTable] AS Target"
+            "Expected a statement containing MERGE INTO [dbo].[MyMainTable] AS Target",
         )
 
         // No rollback, commit should be called once
@@ -197,7 +197,7 @@ class MSSQLBulkLoadHandlerTest {
                 cursorColumns = cursorColumns,
                 nonPkColumns = nonPkColumns,
                 dataFilePath = dataFilePath,
-                formatFilePath = formatFilePath
+                formatFilePath = formatFilePath,
             )
         }
 
@@ -223,7 +223,7 @@ class MSSQLBulkLoadHandlerTest {
                 cursorColumns = cursorColumns,
                 nonPkColumns = nonPkColumns,
                 dataFilePath = dataFilePath,
-                formatFilePath = formatFilePath
+                formatFilePath = formatFilePath,
             )
         }
 
@@ -243,14 +243,14 @@ class MSSQLBulkLoadHandlerTest {
         bulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath,
-            rowsPerBatch = rowsPerBatch
+            rowsPerBatch = rowsPerBatch,
         )
 
         val sqlSlot = slot<String>()
         verify { connection.prepareStatement(capture(sqlSlot)) }
         assertTrue(
             sqlSlot.captured.contains("ROWS_PER_BATCH = 5000"),
-            "Expected ROWS_PER_BATCH clause"
+            "Expected ROWS_PER_BATCH clause",
         )
     }
 
@@ -262,14 +262,14 @@ class MSSQLBulkLoadHandlerTest {
         // Force a call via the public method
         bulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         val sqlSlot = slot<String>()
         verify { connection.prepareStatement(capture(sqlSlot)) }
         assertFalse(
             sqlSlot.captured.contains("ROWS_PER_BATCH"),
-            "Should not contain ROWS_PER_BATCH clause"
+            "Should not contain ROWS_PER_BATCH clause",
         )
     }
 
@@ -288,7 +288,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         val sqlSlot = mutableListOf<String>()
@@ -296,7 +296,7 @@ class MSSQLBulkLoadHandlerTest {
 
         assertTrue(
             sqlSlot.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
-            "Expected creation of temp table via SELECT TOP 0 * INTO"
+            "Expected creation of temp table via SELECT TOP 0 * INTO",
         )
     }
 
@@ -314,7 +314,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         val sqlSlot = mutableListOf<String>()
@@ -357,12 +357,12 @@ class MSSQLBulkLoadHandlerTest {
         val tempTableName = method.invoke(bulkLoadHandler) as String
         assertTrue(
             tempTableName.startsWith("##TempTable_"),
-            "Temp table name should start with ##TempTable_"
+            "Temp table name should start with ##TempTable_",
         )
         // Then check if it has a timestamp (regex etc.). We'll do a simple length check:
         assertTrue(
             tempTableName.length > "##TempTable_".length,
-            "Temp table name should contain a timestamp suffix"
+            "Temp table name should contain a timestamp suffix",
         )
     }
 
@@ -388,7 +388,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         // Then
@@ -401,13 +401,13 @@ class MSSQLBulkLoadHandlerTest {
         // Ensure CREATE TABLE statement is present:
         assertTrue(
             sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
-            "Expected the temp table creation statement (SELECT TOP 0 * INTO [##TempTable_...)"
+            "Expected the temp table creation statement (SELECT TOP 0 * INTO [##TempTable_...)",
         )
 
         // Ensure the bulk insert statement is present:
         assertTrue(
             sqlStatements.any { it.contains("BULK INSERT [##TempTable_") },
-            "Expected a BULK INSERT statement into the temp table"
+            "Expected a BULK INSERT statement into the temp table",
         )
 
         // **Ensure we have a CTE-based deduplication statement:**

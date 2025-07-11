@@ -65,7 +65,7 @@ class DatabricksStorageOperationIntegrationTest {
             DatabricksDestinationHandler(sqlGenerator, config.database, jdbcDatabase),
             DatabricksConnectorClientsFactory.createWorkspaceClient(
                 config.hostname,
-                config.authentication
+                config.authentication,
             ),
             config.database,
             purgeStagedFiles = true,
@@ -107,10 +107,7 @@ class DatabricksStorageOperationIntegrationTest {
         // If we transfer the records, we should end up with 2 records in the real raw table.
         storageOperation.transferFromTempStage(streamId, TMP_TABLE_SUFFIX)
         assertEquals(
-            listOf(
-                """{"record_number":1}""",
-                """{"record_number":2}""",
-            ),
+            listOf("""{"record_number":1}""", """{"record_number":2}"""),
             dumpRawRecords("")
                 .sortedBy {
                     Jsons.deserialize(it["_airbyte_data"].asText())["record_number"].asLong()
@@ -153,11 +150,7 @@ class DatabricksStorageOperationIntegrationTest {
     @Test
     fun testReplaceStage() {
         assertDoesNotThrow {
-            storageOperation.prepareStage(
-                streamId,
-                TMP_TABLE_SUFFIX,
-                replace = true,
-            )
+            storageOperation.prepareStage(streamId, TMP_TABLE_SUFFIX, replace = true)
         }
     }
 
@@ -183,9 +176,9 @@ class DatabricksStorageOperationIntegrationTest {
                             .withAdditionalProperty(
                                 JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY,
                                 SYNC_ID,
-                            ),
+                            )
                     )
-                    .withData(Jsons.deserialize(serializedData)),
+                    .withData(Jsons.deserialize(serializedData))
             )
     }
 
@@ -195,7 +188,7 @@ class DatabricksStorageOperationIntegrationTest {
             streamConfig,
             suffix,
             Arrays.stream(records),
-            storageOperation
+            storageOperation,
         )
     }
 

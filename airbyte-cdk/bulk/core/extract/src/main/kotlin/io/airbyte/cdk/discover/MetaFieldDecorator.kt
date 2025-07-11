@@ -52,6 +52,6 @@ interface MetaFieldDecorator {
         /** Current state of the [Global] feed, if applicable. */
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     )
 }

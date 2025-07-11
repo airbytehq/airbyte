@@ -38,7 +38,7 @@ private constructor(
     queueCapacity: Int,
     writeHeader: Boolean,
     csvSettings: CSVFormat,
-    csvSheetGenerator: CsvSheetGenerator
+    csvSheetGenerator: CsvSheetGenerator,
 ) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val csvSheetGenerator: CsvSheetGenerator
     private val uploadManager: StreamTransferManager
@@ -92,7 +92,7 @@ private constructor(
         private val config: S3DestinationConfig,
         private val s3Client: AmazonS3,
         private val configuredStream: ConfiguredAirbyteStream,
-        private val uploadTimestamp: Timestamp
+        private val uploadTimestamp: Timestamp,
     ) {
         private var uploadThreads = StreamTransferManagerFactory.DEFAULT_UPLOAD_THREADS
         private var queueCapacity = StreamTransferManagerFactory.DEFAULT_QUEUE_CAPACITY
@@ -133,7 +133,7 @@ private constructor(
                 _csvSheetGenerator =
                     CsvSheetGenerator.Factory.create(
                         configuredStream.stream.jsonSchema,
-                        formatConfig
+                        formatConfig,
                     )
             }
             return S3CsvWriter(
@@ -145,7 +145,7 @@ private constructor(
                 queueCapacity,
                 withHeader,
                 csvSettings,
-                _csvSheetGenerator
+                _csvSheetGenerator,
             )
         }
     }

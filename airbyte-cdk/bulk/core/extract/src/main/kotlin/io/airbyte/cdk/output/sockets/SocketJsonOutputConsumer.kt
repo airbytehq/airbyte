@@ -73,12 +73,7 @@ class SocketJsonOutputConsumer(
                 namespacedTemplates.getOrPut(namespace) { StreamToTemplateMap() }
             }
         return streamToTemplateMap.getOrPut(stream) {
-            RecordTemplate.create(
-                stream,
-                namespace,
-                recordEmittedAt,
-                additionalProperties,
-            )
+            RecordTemplate.create(stream, namespace, recordEmittedAt, additionalProperties)
         }
     }
 }

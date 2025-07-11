@@ -47,7 +47,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             "airbyte/source-zendesk-talk",
             "airbyte/source-zendesk-support-singer",
             "airbyte/source-quickbooks-singer",
-            "airbyte/source-jira"
+            "airbyte/source-jira",
         )
 
     /**
@@ -83,7 +83,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         Assertions.assertEquals(
             spec,
             runSpec(),
-            "Expected spec output by integration to be equal to spec provided by test runner"
+            "Expected spec output by integration to be equal to spec provided by test runner",
         )
     }
 
@@ -97,7 +97,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         Assertions.assertEquals(
             StandardCheckConnectionOutput.Status.SUCCEEDED,
             runCheck().status,
-            "Expected check connection operation to succeed"
+            "Expected check connection operation to succeed",
         )
     }
 
@@ -148,7 +148,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
         Assertions.assertFalse(
             filterRecords(allMessages).isEmpty(),
-            "Expected a full refresh sync to produce records"
+            "Expected a full refresh sync to produce records",
         )
         assertFullRefreshMessages(allMessages)
     }
@@ -188,17 +188,17 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         // again (as long as we use the worker, which we will not want to do long term).
         Assertions.assertFalse(
             recordMessagesFirstRun.isEmpty(),
-            "Expected first full refresh to produce records"
+            "Expected first full refresh to produce records",
         )
         Assertions.assertFalse(
             recordMessagesSecondRun.isEmpty(),
-            "Expected second full refresh to produce records"
+            "Expected second full refresh to produce records",
         )
 
         assertSameRecords(
             recordMessagesFirstRun,
             recordMessagesSecondRun,
-            "Expected two full refresh syncs to produce the same records."
+            "Expected two full refresh syncs to produce the same records.",
         )
     }
 
@@ -239,11 +239,11 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
         Assertions.assertFalse(
             recordMessages.isEmpty(),
-            "Expected the first incremental sync to produce records"
+            "Expected the first incremental sync to produce records",
         )
         Assertions.assertFalse(
             stateMessages.isEmpty(),
-            "Expected incremental sync to produce STATE messages"
+            "Expected incremental sync to produce STATE messages",
         )
 
         // TODO validate exact records
@@ -275,7 +275,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         val secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState))
         Assertions.assertTrue(
             secondSyncRecords.isEmpty(),
-            "Expected the second incremental sync to produce no records when given the first sync's output state."
+            "Expected the second incremental sync to produce no records when given the first sync's output state.",
         )
     }
 
@@ -308,16 +308,16 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             filterRecords(runRead(configuredCatalog, Jsons.jsonNode(HashMap<Any, Any>())))
         Assertions.assertFalse(
             fullRefreshRecords.isEmpty(),
-            "Expected a full refresh sync to produce records"
+            "Expected a full refresh sync to produce records",
         )
         Assertions.assertFalse(
             emptyStateRecords.isEmpty(),
-            "Expected state records to not be empty"
+            "Expected state records to not be empty",
         )
         assertSameRecords(
             fullRefreshRecords,
             emptyStateRecords,
-            "Expected a full refresh sync and incremental sync with no input state to produce identical records"
+            "Expected a full refresh sync and incremental sync with no input state to produce identical records",
         )
     }
 
@@ -385,7 +385,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     private fun assertSameRecords(
         expected: List<AirbyteRecordMessage>,
         actual: List<AirbyteRecordMessage>,
-        message: String
+        message: String,
     ) {
         val prunedExpected =
             expected

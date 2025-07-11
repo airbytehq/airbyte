@@ -25,14 +25,14 @@ private val log = KotlinLogging.logger {}
 class RedshiftDestinationHandler(
     databaseName: String,
     jdbcDatabase: JdbcDatabase,
-    rawNamespace: String
+    rawNamespace: String,
 ) :
     JdbcDestinationHandler<RedshiftState>(
         databaseName,
         jdbcDatabase,
         rawNamespace,
         SQLDialect.DEFAULT,
-        generationHandler = RedshiftGenerationHandler(databaseName)
+        generationHandler = RedshiftGenerationHandler(databaseName),
     ) {
     override fun createNamespaces(schemas: Set<String>) {
         // SHOW SCHEMAS will fail with a "schema ... does not exist" error
@@ -87,14 +87,14 @@ class RedshiftDestinationHandler(
 
     /**
      * @param forceCaseSensitiveIdentifier Whether to enable `forceCaseSensitiveIdentifier` on all
-     * transactions. This option is most useful for accessing fields within a `SUPER` value; for
-     * accessing schemas/tables/columns, quoting the identifier is sufficient to force
-     * case-sensitivity, so this option is not necessary.
+     *   transactions. This option is most useful for accessing fields within a `SUPER` value; for
+     *   accessing schemas/tables/columns, quoting the identifier is sufficient to force
+     *   case-sensitivity, so this option is not necessary.
      */
     fun execute(
         sql: Sql,
         logStatements: Boolean = true,
-        forceCaseSensitiveIdentifier: Boolean = true
+        forceCaseSensitiveIdentifier: Boolean = true,
     ) {
         val transactions = sql.transactions
         val queryId = UUID.randomUUID()
@@ -121,7 +121,7 @@ class RedshiftDestinationHandler(
                 if (modifiedStatements.size != 1) {
                     jdbcDatabase.executeWithinTransaction(
                         modifiedStatements,
-                        logStatements = logStatements
+                        logStatements = logStatements,
                     )
                 } else {
                     // Redshift doesn't allow some statements to run in a transaction at all,
@@ -139,7 +139,7 @@ class RedshiftDestinationHandler(
                 ) {
                     throw ConfigErrorException(
                         "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
-                        e
+                        e,
                     )
                 }
                 throw e

@@ -36,7 +36,7 @@ interface WriteOpOverride : Task
 class WriteOperation(
     private val taskLauncher: DestinationTaskLauncher,
     private val syncManager: SyncManager,
-    private val writeOpOverride: WriteOpOverride? = null
+    private val writeOpOverride: WriteOpOverride? = null,
 ) : Operation {
     val log = KotlinLogging.logger {}
 
@@ -77,9 +77,7 @@ class WriteOperation(
 class InputStreamProvider {
     @Singleton
     @Named("inputStream")
-    fun make(
-        @Value("\${${Operation.PROPERTY}}") operation: String,
-    ): InputStream =
+    fun make(@Value("\${${Operation.PROPERTY}}") operation: String): InputStream =
         if (operation == "check") {
             PipedInputStream()
         } else {

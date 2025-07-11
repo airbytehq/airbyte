@@ -26,7 +26,7 @@ internal class MdcScopeTest {
                         "new",
                         "will be added",
                         "testOverride",
-                        "will override"
+                        "will override",
                     )
                 )
         }

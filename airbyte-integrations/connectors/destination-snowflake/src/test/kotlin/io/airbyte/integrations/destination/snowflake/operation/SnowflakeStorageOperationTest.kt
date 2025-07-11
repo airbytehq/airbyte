@@ -90,7 +90,7 @@ class SnowflakeStorageOperationTest {
                 any(),
                 eq(listOf(mockTmpFileName)),
                 eq(streamId),
-                eq("")
+                eq(""),
             )
         verifyNoMoreInteractions(stagingClient)
     }

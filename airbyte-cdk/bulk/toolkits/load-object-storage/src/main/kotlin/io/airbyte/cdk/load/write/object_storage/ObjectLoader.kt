@@ -14,38 +14,37 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * in a file system or cloud storage provider whose client supports multipart uploads.
  *
  * Usage:
- *
  * - declare a bean implementing this interface and optionally override the default configuration
- * values
+ *   values
  * - declare the necessary beans to initialize an
- * [io.airbyte.cdk.load.file.object_storage.ObjectStorageClient]
+ *   [io.airbyte.cdk.load.file.object_storage.ObjectStorageClient]
  * - declare a bean of
- * [io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider] to configure
- * the path for each object (typically you would add this to your
- * [io.airbyte.cdk.load.command.DestinationConfiguration])
+ *   [io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider] to
+ *   configure the path for each object (typically you would add this to your
+ *   [io.airbyte.cdk.load.command.DestinationConfiguration])
  * - declare a bean of
- * [io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider] to control
- * the format in which the data is loaded
+ *   [io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider] to
+ *   control the format in which the data is loaded
  *
  * Configuration:
- *
  * - [numPartWorkers] is the number of threads (coroutines) devoted to formatting records into
- * uploadable parts. (This is typically CPU-bound).
+ *   uploadable parts. (This is typically CPU-bound).
  * - [numUploadWorkers] is the number of threads (coroutines) devoted to uploading parts to the
- * object storage. (This is typically Network IO-bound).
+ *   object storage. (This is typically Network IO-bound).
  * - [numUploadCompleters] in practice is simpler and more efficient to complete the uploads async
- * than to try to have the loaders coordinate to determine when all parts are done. This is the
- * number of workers devoted to that task. In practice there's very little to gain here. Two is a
- * good number.
+ *   than to try to have the loaders coordinate to determine when all parts are done. This is the
+ *   number of workers devoted to that task. In practice there's very little to gain here. Two is a
+ *   good number.
  * - [maxMemoryRatioReservedForParts] is proportion of the total heap reserved for parts in memory.
- * This is used to calculate the size of the work queue, which when full will cause the part workers
- * to suspend until the upload workers have processed some parts.
+ *   This is used to calculate the size of the work queue, which when full will cause the part
+ *   workers to suspend until the upload workers have processed some parts.
  * - [partSizeBytes] is the desired approximate part size in bytes. When this much part data has
- * been accumulated by a part worker, it will be forwarded to an upload worker and uploaded to the
- * destination. 10MB is a good default. Try up to 50 when tuning, but be aware of memory
- * requirements.
+ *   been accumulated by a part worker, it will be forwarded to an upload worker and uploaded to the
+ *   destination. 10MB is a good default. Try up to 50 when tuning, but be aware of memory
+ *   requirements.
  * - [objectSizeBytes] is the desired approximate file size in bytes. When this much part data has
- * been accumulated, the upload will be completed, and the file will become visible to the end user.
+ *   been accumulated, the upload will be completed, and the file will become visible to the end
+ *   user.
  *
  * Partitioning:
  *
@@ -74,14 +73,19 @@ import io.airbyte.cdk.load.write.LoadStrategy
 interface ObjectLoader : LoadStrategy {
     val numPartWorkers: Int
         get() = 2
+
     val numUploadWorkers: Int
         get() = 5
+
     val numUploadCompleters: Int
         get() = 1
+
     val maxMemoryRatioReservedForParts: Double
         get() = 0.2
+
     val partSizeBytes: Long
         get() = 10L * 1024 * 1024
+
     val objectSizeBytes: Long
         get() = 200L * 1024 * 1024
 

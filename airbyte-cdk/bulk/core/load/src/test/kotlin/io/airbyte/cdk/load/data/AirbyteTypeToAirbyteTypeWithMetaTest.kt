@@ -29,19 +29,19 @@ internal class AirbyteTypeToAirbyteTypeWithMetaTest {
                                                     "change" to
                                                         FieldType(StringType, nullable = false),
                                                     "reason" to
-                                                        FieldType(StringType, nullable = false)
+                                                        FieldType(StringType, nullable = false),
                                                 )
                                             ),
-                                            nullable = false
+                                            nullable = false,
                                         )
                                     ),
-                                    nullable = false
-                                )
+                                    nullable = false,
+                                ),
                         )
                     ),
-                    nullable = false
+                    nullable = false,
                 ),
-            Meta.COLUMN_NAME_AB_GENERATION_ID to FieldType(IntegerType, nullable = false)
+            Meta.COLUMN_NAME_AB_GENERATION_ID to FieldType(IntegerType, nullable = false),
         )
 
     @Test
@@ -51,7 +51,7 @@ internal class AirbyteTypeToAirbyteTypeWithMetaTest {
                 linkedMapOf(
                     "name" to FieldType(StringType, nullable = false),
                     "age" to FieldType(IntegerType, nullable = false),
-                    "is_cool" to FieldType(BooleanType, nullable = false)
+                    "is_cool" to FieldType(BooleanType, nullable = false),
                 )
             )
         val withMeta = schema.withAirbyteMeta(flatten = false)
@@ -67,7 +67,7 @@ internal class AirbyteTypeToAirbyteTypeWithMetaTest {
                 linkedMapOf(
                     "name" to FieldType(StringType, nullable = false),
                     "age" to FieldType(IntegerType, nullable = false),
-                    "is_cool" to FieldType(BooleanType, nullable = false)
+                    "is_cool" to FieldType(BooleanType, nullable = false),
                 )
             )
         val withMeta = schema.withAirbyteMeta(flatten = true)

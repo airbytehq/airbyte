@@ -38,11 +38,16 @@ interface SocketDataChannel {
     }
 
     suspend fun initialize()
+
     fun shutdown()
+
     val status: SocketStatus
     var isBound: Boolean
+
     fun bind()
+
     fun unbind()
+
     var outputStream: OutputStream?
     val isAvailable: Boolean
 }
@@ -52,11 +57,11 @@ interface SocketDataChannel {
  *
  * @param socketFilePath The path to the Unix domain socket file.
  * @param probePacket A packet used to probe the socket state. The type of the packet is determined
- * by the configured format (JSONL or Protobuf).
+ *   by the configured format (JSONL or Protobuf).
  */
 class UnixDomainSocketDataChannel(
     private val socketFilePath: String,
-    private val probePacket: ProbePacket
+    private val probePacket: ProbePacket,
 ) : SocketDataChannel {
 
     private var socketStatus = AtomicReference<SocketDataChannel.SocketStatus>(SOCKET_CLOSED)
@@ -69,6 +74,7 @@ class UnixDomainSocketDataChannel(
             if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
             return socketStatus.get()
         }
+
     override val isAvailable: Boolean
         @Synchronized
         get() {

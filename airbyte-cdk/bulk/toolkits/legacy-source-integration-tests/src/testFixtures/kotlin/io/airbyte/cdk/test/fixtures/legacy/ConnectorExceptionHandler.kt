@@ -15,7 +15,7 @@ private val LOGGER = KotlinLogging.logger {}
 
 enum class FailureType {
     CONFIG,
-    TRANSIENT
+    TRANSIENT,
 }
 
 data class ConnectorErrorProfile(
@@ -27,6 +27,7 @@ data class ConnectorErrorProfile(
     val referenceLinks: List<String> = emptyList(),
 ) {
     val regexPattern: Pattern = Pattern.compile(regexMatchingPattern, Pattern.CASE_INSENSITIVE)
+
     init {
         require(externalMessage.isNotBlank()) { "externalMessage must not be blank" }
         require(sampleInternalMessage.isNotBlank()) { "sampleInternalMessage must not be blank" }
@@ -57,7 +58,7 @@ open class ConnectorExceptionHandler {
     fun handleException(
         e: Throwable,
         cmd: Command,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ) {
         LOGGER.error(e) { "caught exception!" }
         val rootException: Throwable = getRootException(e)
@@ -70,8 +71,8 @@ open class ConnectorExceptionHandler {
                     .withConnectionStatus(
                         AirbyteConnectionStatus()
                             .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                            .withMessage(externalMessage),
-                    ),
+                            .withMessage(externalMessage)
+                    )
             )
         } else {
             if (checkErrorType(rootException, FailureType.CONFIG)) {

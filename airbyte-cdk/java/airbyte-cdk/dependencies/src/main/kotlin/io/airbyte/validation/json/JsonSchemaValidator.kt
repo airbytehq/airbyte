@@ -38,7 +38,7 @@ constructor(private val schemaLocation: SchemaLocation) {
         val schema = schemaToValidators[schemaName]
         Preconditions.checkNotNull(
             schema,
-            "$schemaName needs to be initialised before calling this method"
+            "$schemaName needs to be initialised before calling this method",
         )
 
         val validate = schema!!.validate(objectJson)
@@ -51,7 +51,7 @@ constructor(private val schemaLocation: SchemaLocation) {
         val schema = schemaToValidators[schemaName]
         Preconditions.checkNotNull(
             schema,
-            "$schemaName needs to be initialised before calling this method"
+            "$schemaName needs to be initialised before calling this method",
         )
 
         val validationMessages = schema!!.validate(objectNode)
@@ -62,7 +62,7 @@ constructor(private val schemaLocation: SchemaLocation) {
             String.format(
                 "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
                 validationMessages.joinToString(", "),
-                schemaName
+                schemaName,
             )
         )
     }
@@ -115,7 +115,7 @@ constructor(private val schemaLocation: SchemaLocation) {
             String.format(
                 "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
                 validationMessages.joinToString(", "),
-                schemaJson.toPrettyString()
+                schemaJson.toPrettyString(),
             )
         )
     }
@@ -131,7 +131,7 @@ constructor(private val schemaLocation: SchemaLocation) {
     // keep this internal as it returns a type specific to the wrapped library.
     private fun validateInternal(
         schemaJson: JsonNode,
-        objectJson: JsonNode
+        objectJson: JsonNode,
     ): Set<ValidationMessage> {
         Preconditions.checkNotNull(schemaJson)
         Preconditions.checkNotNull(objectJson)
@@ -173,7 +173,7 @@ constructor(private val schemaLocation: SchemaLocation) {
                 schemaLocation,
                 JsonNodePath(context.config.pathType),
                 schemaJson,
-                null
+                null,
             )
         return schema
     }
@@ -192,6 +192,7 @@ constructor(private val schemaLocation: SchemaLocation) {
          *
          * @param schemaFile
          * - the schema file
+         *
          * @return schema object processed from across all dependency files.
          */
         @JvmStatic
@@ -211,9 +212,11 @@ constructor(private val schemaLocation: SchemaLocation) {
          *
          * @param schemaFile
          * - the schema file
+         *
          * @param definitionStructName
          * - get the schema from a struct defined in the "definitions" section of a JsonSchema file
-         * (instead of the main object in that file).
+         *   (instead of the main object in that file).
+         *
          * @return schema object processed from across all dependency files.
          */
         fun getSchema(schemaFile: File?, definitionStructName: String?): JsonNode {
@@ -221,7 +224,7 @@ constructor(private val schemaLocation: SchemaLocation) {
                 val jsonContext = JsonContext(schemaFile)
                 return processor.process(
                     jsonContext,
-                    jsonContext.document["definitions"][definitionStructName]
+                    jsonContext.document["definitions"][definitionStructName],
                 )
             } catch (e: IOException) {
                 throw RuntimeException(e)

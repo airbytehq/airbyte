@@ -36,7 +36,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseConnectorTest(
     val testDbExecutor: TestDbExecutor,
-    private val testAssetResourceNamer: TestAssetResourceNamer
+    private val testAssetResourceNamer: TestAssetResourceNamer,
 ) {
 
     private val log = KotlinLogging.logger {}
@@ -134,7 +134,7 @@ abstract class BaseConnectorTest(
         for ((namespace, tableList) in tables) {
             for (table in tableList) {
                 testDbExecutor.executeUpdate(
-                    sqlDialect.buildDropTableQuery(namespace, table.tableName),
+                    sqlDialect.buildDropTableQuery(namespace, table.tableName)
                 )
             }
         }
@@ -143,23 +143,14 @@ abstract class BaseConnectorTest(
     fun performReadOperation(catalog: ConfiguredAirbyteCatalog): BufferingOutputConsumer =
         CliRunner.source("read", config, catalog).run()
 
-    fun getConfiguredStream(
-        table: TableDefinition,
-        syncMode: SyncMode,
-    ): ConfiguredAirbyteStream {
+    fun getConfiguredStream(table: TableDefinition, syncMode: SyncMode): ConfiguredAirbyteStream {
         val desc = StreamDescriptor().withName(table.tableName).withNamespace(table.namespace)
         val discoveredStream =
             DiscoveredStream(
                 id = StreamIdentifier.from(desc),
                 columns = table.columns.map { Field(it.name, it.jdbcType) },
                 primaryKeyColumnIDs =
-                    table.columns
-                        .filter { it.isPrimaryKey }
-                        .map {
-                            listOf(
-                                it.name,
-                            )
-                        },
+                    table.columns.filter { it.isPrimaryKey }.map { listOf(it.name) },
             )
         val sourceConfig: SourceConfiguration = configFactory.make(config)
         val stream: AirbyteStream = streamFactory.create(sourceConfig, discoveredStream)
@@ -168,9 +159,7 @@ abstract class BaseConnectorTest(
             .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
     }
 
-    fun getConfiguredCatalog(
-        syncMode: SyncMode,
-    ): ConfiguredAirbyteCatalog {
+    fun getConfiguredCatalog(syncMode: SyncMode): ConfiguredAirbyteCatalog {
         val configuredStreams =
             tables.values.flatMap { tableList ->
                 tableList.map { getConfiguredStream(it, syncMode) }

@@ -12,11 +12,8 @@ import java.net.Socket
  * socket-based testing, since MacOS Docker doesn't support sharing Unix domain sockets between the
  * host and the container.
  */
-class TCPSocketWriter(
-    private val host: String,
-    private val port: Int,
-    awaitFirstWrite: Boolean,
-) : OutputStream(), AutoCloseable {
+class TCPSocketWriter(private val host: String, private val port: Int, awaitFirstWrite: Boolean) :
+    OutputStream(), AutoCloseable {
     private val log = KotlinLogging.logger {}
 
     private val socket = Socket()

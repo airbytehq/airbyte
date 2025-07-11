@@ -91,15 +91,9 @@ open class AbstractDlqWriteTest(
                                     unmappedNamespace = stream.unmappedNamespace,
                                     state = """{"foo": "bar"}""".deserializeToNode(),
                                 ),
-                            sourceStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 9,
-                                ),
+                            sourceStats = CheckpointMessage.Stats(recordCount = 9),
                             destinationStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 5,
-                                    rejectedRecordCount = 4,
-                                ),
+                                CheckpointMessage.Stats(recordCount = 5, rejectedRecordCount = 4),
                             serializedSizeBytes = 0L,
                             checkpointKey = null,
                             totalRecords = 5L,
@@ -114,14 +108,8 @@ open class AbstractDlqWriteTest(
                                     unmappedNamespace = stream.unmappedNamespace,
                                     state = """{"foo": "bar"}""".deserializeToNode(),
                                 ),
-                            sourceStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 2,
-                                ),
-                            destinationStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = 2,
-                                ),
+                            sourceStats = CheckpointMessage.Stats(recordCount = 2),
+                            destinationStats = CheckpointMessage.Stats(recordCount = 2),
                             serializedSizeBytes = 0L,
                             checkpointKey = null,
                             totalRecords = 7L,
@@ -136,7 +124,7 @@ open class AbstractDlqWriteTest(
                     Jsons.readValue(Jsons.writeValueAsBytes(it), AirbyteMessage::class.java)
                 }
             assertEquals(expectedStateMessages, stateMessages)
-        },)
+        })
     }
 
     companion object {
@@ -163,13 +151,13 @@ open class AbstractDlqWriteTest(
 class NoBucketDlqWriteTest :
     AbstractDlqWriteTest(
         configContent = """{"object_storage_config":{"storage_type":"None"}}""",
-        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV)
+        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV),
     )
 
 class NoBucketConfigDlqWriteTest :
     AbstractDlqWriteTest(
         configContent = """{}""",
-        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV)
+        additionalMicronautEnvs = listOf(DLQ_INTEGRATION_TEST_ENV),
     )
 
 class MockBucketDlqFromRecordSampleTest :

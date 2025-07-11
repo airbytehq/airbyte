@@ -31,12 +31,7 @@ class MySqlSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectLimit0() {
         SelectQuerySpec(
-                SelectColumns(
-                    listOf(
-                        Field("k", IntFieldType),
-                        Field("v", StringFieldType),
-                    ),
-                ),
+                SelectColumns(listOf(Field("k", IntFieldType), Field("v", StringFieldType))),
                 From("TBL", "SC"),
                 limit = Limit(0),
             )
@@ -55,12 +50,7 @@ class MySqlSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectForNonResumableInitialSync() {
         SelectQuerySpec(
-                SelectColumns(
-                    listOf(
-                        Field("k", IntFieldType),
-                        Field("v", StringFieldType),
-                    ),
-                ),
+                SelectColumns(listOf(Field("k", IntFieldType), Field("v", StringFieldType))),
                 From("TBL", "SC"),
             )
             .assertSqlEquals("""SELECT `k`, `v` FROM `SC`.`TBL`""")
@@ -83,8 +73,8 @@ class MySqlSourceSelectQueryGeneratorTest {
                             And(listOf(Greater(k1, v1))),
                             And(listOf(Equal(k1, v1), Greater(k2, v2))),
                             And(listOf(Equal(k1, v1), Equal(k2, v2), Greater(k3, v3))),
-                        ),
-                    ),
+                        )
+                    )
                 ),
                 OrderBy(listOf(k1, k2, k3)),
                 Limit(1000),

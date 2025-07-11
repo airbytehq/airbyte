@@ -19,7 +19,7 @@ open class SourceStateIterator<T>(
     private val messageIterator: Iterator<T>,
     private val stream: ConfiguredAirbyteStream?,
     private val sourceStateMessageProducer: SourceStateMessageProducer<T>,
-    private val stateEmitFrequency: StateEmitFrequency
+    private val stateEmitFrequency: StateEmitFrequency,
 ) : AbstractIterator<AirbyteMessage>(), MutableIterator<AirbyteMessage> {
     private var hasEmittedFinalState = false
     private var recordCount = 0L
@@ -65,7 +65,7 @@ open class SourceStateIterator<T>(
                     val pair =
                         AirbyteStreamNameNamespacePair(
                             processedMessage.record.stream,
-                            processedMessage.record.namespace
+                            processedMessage.record.namespace,
                         )
                     streamRecordCount[pair] = streamRecordCount.getOrPut(pair) { 0 } + 1
                     recordCount++

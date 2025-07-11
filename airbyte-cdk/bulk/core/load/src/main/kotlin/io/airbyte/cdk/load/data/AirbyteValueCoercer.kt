@@ -28,7 +28,7 @@ object AirbyteValueCoercer {
     fun coerce(
         value: AirbyteValue,
         type: AirbyteType,
-        respectLegacyUnions: Boolean = false
+        respectLegacyUnions: Boolean = false,
     ): AirbyteValue? {
         // Don't modify nulls.
         if (value == NullValue) {
@@ -181,9 +181,8 @@ object AirbyteValueCoercer {
 
     fun coerceArray(value: AirbyteValue): ArrayValue? = requireType<ArrayValue>(value)
 
-    private inline fun <reified T : AirbyteValue> requireType(
-        value: AirbyteValue,
-    ): T? = requireType<T, T>(value) { it }
+    private inline fun <reified T : AirbyteValue> requireType(value: AirbyteValue): T? =
+        requireType<T, T>(value) { it }
 
     private inline fun <reified InputType : AirbyteValue, OutputType : AirbyteValue> requireType(
         value: AirbyteValue,

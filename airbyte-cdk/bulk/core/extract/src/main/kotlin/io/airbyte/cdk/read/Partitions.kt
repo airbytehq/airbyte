@@ -37,7 +37,6 @@ interface PartitionsCreatorFactorySupplier<T : PartitionsCreatorFactory> : Suppl
  * more partitions. Each partition is defined and read by a [PartitionReader] instance. These
  * execute concurrently, but are joined serially because the state checkpoints need to appear in
  * sequence.
- *
  * - zero partitions means that there is no more records to be read for this [Feed];
  * - one partition effectively means that the records will be read serially;
  * - many partitions therefore involves some concurrency within the [Feed].

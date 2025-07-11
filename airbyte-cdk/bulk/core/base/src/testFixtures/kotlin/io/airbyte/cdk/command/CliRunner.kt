@@ -45,7 +45,7 @@ data object CliRunner {
                     args,
                     additionalMicronautEnvs = emptyList(),
                     featureFlags.systemEnv,
-                    out.beanDefinition
+                    out.beanDefinition,
                 )
             }
         return CliRunnable(runnable, out.results)
@@ -79,12 +79,7 @@ data object CliRunner {
                     additionalMicronautEnvs = additionalMicronautEnvs,
                     featureFlags.systemEnv,
                     micronautProperties,
-                    *arrayOf(
-                            inputBeanDefinition,
-                            out.beanDefinition,
-                        )
-                        .filterNotNull()
-                        .toTypedArray()
+                    *arrayOf(inputBeanDefinition, out.beanDefinition).filterNotNull().toTypedArray(),
                 )
             }
         return CliRunnable(runnable, out.results)
@@ -118,7 +113,7 @@ data object CliRunner {
             inputStream,
             additionalMicronautEnvs,
             micronautProperties,
-            *featureFlags.toTypedArray()
+            *featureFlags.toTypedArray(),
         )
     }
 

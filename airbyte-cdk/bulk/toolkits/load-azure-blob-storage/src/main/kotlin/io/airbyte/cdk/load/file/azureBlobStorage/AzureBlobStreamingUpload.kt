@@ -19,7 +19,7 @@ private const val BLOB_ID_PREFIX = "block"
 class AzureBlobStreamingUpload(
     private val blockBlobClient: BlockBlobClient,
     private val config: AzureBlobStorageClientConfiguration,
-    private val metadata: Map<String, String>
+    private val metadata: Map<String, String>,
 ) : StreamingUpload<AzureBlob> {
 
     private val log = KotlinLogging.logger {}
@@ -39,13 +39,7 @@ class AzureBlobStreamingUpload(
 
         // The stageBlock call can be done asynchronously or blocking.
         // Here we use the blocking call in a coroutine context.
-        part.inputStream().use {
-            blockBlobClient.stageBlock(
-                blockId,
-                it,
-                part.size.toLong(),
-            )
-        }
+        part.inputStream().use { blockBlobClient.stageBlock(blockId, it, part.size.toLong()) }
 
         log.info { "Staged block #$index => $rawBlockId (encoded = $blockId)" }
 

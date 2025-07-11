@@ -29,7 +29,7 @@ class PostgresDataTransformer : StreamAwareDataTransformer {
     override fun transform(
         streamDescriptor: StreamDescriptor?,
         data: JsonNode?,
-        meta: AirbyteRecordMessageMeta?
+        meta: AirbyteRecordMessageMeta?,
     ): Pair<JsonNode?, AirbyteRecordMessageMeta?> {
         val metaChanges: MutableList<AirbyteRecordMessageMetaChange> = ArrayList()
         if (meta != null && meta.changes != null) {

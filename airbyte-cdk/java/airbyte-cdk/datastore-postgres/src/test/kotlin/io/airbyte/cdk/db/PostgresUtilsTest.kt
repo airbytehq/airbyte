@@ -49,8 +49,8 @@ internal class PostgresUtilsTest {
                     DatabaseDriver.POSTGRESQL.urlFormatString,
                     config[JdbcUtils.HOST_KEY].asText(),
                     config[JdbcUtils.PORT_KEY].asInt(),
-                    config[JdbcUtils.DATABASE_KEY].asText()
-                )
+                    config[JdbcUtils.DATABASE_KEY].asText(),
+                ),
             )
 
         val defaultJdbcDatabase: JdbcDatabase = DefaultJdbcDatabase(dataSource!!)

@@ -26,7 +26,7 @@ class UploadCsvFormatConfig(val flattening: Flattening, val compressionType: Com
             CompressionTypeHelper.parseCompressionType(
                 formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME]
             )
-        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
     )
 
     override val format: FileUploadFormat = FileUploadFormat.CSV

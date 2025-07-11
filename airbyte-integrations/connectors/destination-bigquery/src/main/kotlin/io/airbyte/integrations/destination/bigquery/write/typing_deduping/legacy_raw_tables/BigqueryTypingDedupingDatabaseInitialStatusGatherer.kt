@@ -20,11 +20,11 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
     DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus> {
     private fun getInitialRawTableState(
         rawTableName: TableName,
-        suffix: String
+        suffix: String,
     ): RawTableInitialStatus? {
         bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix))
-        // Table doesn't exist. There are no unprocessed records, and no timestamp.
-        ?: return null
+            // Table doesn't exist. There are no unprocessed records, and no timestamp.
+            ?: return null
 
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
         val unloadedRecordTimestamp =
@@ -34,7 +34,8 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
                             SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
                             FROM $rawTableIdQuoted
                             WHERE _airbyte_loaded_at IS NULL
-                            """.trimIndent()
+                            """
+                            .trimIndent()
                     )
                 )
                 .iterateAll()
@@ -57,7 +58,8 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
                         """
                     SELECT MAX(_airbyte_extracted_at)
                     FROM $rawTableIdQuoted
-                    """.trimIndent()
+                    """
+                            .trimIndent()
                     )
                 )
                 .iterateAll()
@@ -75,13 +77,13 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
             // this value.
             RawTableInitialStatus(
                 hasUnprocessedRecords = false,
-                maxProcessedTimestamp = loadedRecordTimestamp.timestampInstant
+                maxProcessedTimestamp = loadedRecordTimestamp.timestampInstant,
             )
         }
     }
 
     override suspend fun gatherInitialStatus(
-        streams: TableCatalog,
+        streams: TableCatalog
     ): Map<DestinationStream, TypingDedupingDatabaseInitialStatus> {
         return streams.mapValues { (stream, names) ->
             val (tableNames, _) = names
@@ -95,15 +97,8 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
                 )
             val rawTableState = getInitialRawTableState(tableNames.rawTableName!!, "")
             val tempRawTableState =
-                getInitialRawTableState(
-                    tableNames.rawTableName!!,
-                    TableNames.TMP_TABLE_SUFFIX,
-                )
-            TypingDedupingDatabaseInitialStatus(
-                finalTableStatus,
-                rawTableState,
-                tempRawTableState,
-            )
+                getInitialRawTableState(tableNames.rawTableName!!, TableNames.TMP_TABLE_SUFFIX)
+            TypingDedupingDatabaseInitialStatus(finalTableStatus, rawTableState, tempRawTableState)
         }
     }
 }

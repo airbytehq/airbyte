@@ -40,7 +40,7 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     fun check(objectStorageConfig: ObjectStorageConfig) {

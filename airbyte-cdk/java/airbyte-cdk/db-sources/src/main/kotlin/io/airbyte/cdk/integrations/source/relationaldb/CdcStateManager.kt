@@ -15,7 +15,7 @@ private val LOGGER = KotlinLogging.logger {}
 class CdcStateManager(
     private val initialState: CdcState?,
     initialStreamsSynced: Set<AirbyteStreamNameNamespacePair>?,
-    stateMessage: AirbyteStateMessage?
+    stateMessage: AirbyteStateMessage?,
 ) {
     val initialStreamsSynced: Set<AirbyteStreamNameNamespacePair>?
     val rawStateMessage: AirbyteStateMessage?

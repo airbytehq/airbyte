@@ -41,21 +41,24 @@ class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
     override fun mapObjectWithoutSchema(
         value: AirbyteValue,
         schema: ObjectTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
+
     override fun mapObjectWithEmptySchema(
         value: AirbyteValue,
         schema: ObjectTypeWithEmptySchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
+
     override fun mapArrayWithoutSchema(
         value: AirbyteValue,
         schema: ArrayTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
+
     override fun mapUnknown(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
 }

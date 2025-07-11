@@ -33,7 +33,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                         "https://github.com/airbytehq/airbyte/issues/27090",
                         "https://github.com/airbytehq/oncall/issues/1822",
                     ),
-            ),
+            )
         )
 
         add(
@@ -44,7 +44,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 externalMessage = DATABASE_READ_ERROR,
                 sampleInternalMessage =
                     "org.postgresql.util.PSQLException: An I/O error occured while sending to the backend.",
-            ),
+            )
         )
 
         add(
@@ -57,7 +57,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                     "ERROR: canceling statement due to conflict with recovery.\n" +
                         "org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6296"),
-            ),
+            )
         )
 
         add(
@@ -70,7 +70,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "java.lang.RuntimeException: org.postgresql.util.PSQLException: ERROR: permission denied for table xxx.",
                 referenceLinks = listOf("https://github.com/airbytehq/airbyte/issues/41614"),
-            ),
+            )
         )
 
         add(
@@ -82,7 +82,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "org.postgresql.util.PSQLException: ERROR: canceling statement due to statement timeout",
                 referenceLinks = listOf("https://github.com/airbytehq/airbyte/issues/41614"),
-            ),
+            )
         )
 
         add(
@@ -99,7 +99,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                         "https://github.com/airbytehq/airbyte/issues/41614",
                         "https://github.com/airbytehq/oncall/issues/5346",
                     ),
-            ),
+            )
         )
 
         add(
@@ -111,7 +111,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "java.util.concurrent.TimeoutException: Timed out after 15000 msec",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5381"),
-            ),
+            )
         )
 
         add(
@@ -130,7 +130,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                         "https://github.com/airbytehq/oncall/issues/5293",
                         "https://github.com/airbytehq/oncall/issues/5750",
                     ),
-            ),
+            )
         )
 
         add(
@@ -143,7 +143,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "org.postgresql.util.PSQLException: ERROR: cannot read from logical replication slot \"airbyte_slot\"",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5981"),
-            ),
+            )
         )
 
         add(
@@ -156,7 +156,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "org.postgresql.util.PSQLException: This connection has been closed.",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/7016"),
-            ),
+            )
         )
 
         add(
@@ -168,7 +168,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "java.net.SocketException: Connection or outbound has closed",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5871"),
-            ),
+            )
         )
 
         add(
@@ -180,7 +180,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "org.postgresql.util.PSQLException: ERROR: recovery is in progress",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6033"),
-            ),
+            )
         )
 
         add(
@@ -195,7 +195,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 sampleInternalMessage =
                     "org.postgresql.util.PSQLException: FATAL: terminating connection due to idle-in-transaction timeout",
                 referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5893"),
-            ),
+            )
         )
 
         add(
@@ -211,7 +211,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                         "java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: " +
                         "An exception occurred in the change event producer. This connector will be stopped.",
                 referenceLinks = listOf("https://github.com/airbytehq/airbyte/issues/41614"),
-            ),
+            )
         )
     }
 }

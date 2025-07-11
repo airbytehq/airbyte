@@ -36,7 +36,7 @@ data class FakeSourceConfiguration(
 class FakeSourceConfigurationFactory :
     SourceConfigurationFactory<FakeSourceConfigurationSpecification, FakeSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: FakeSourceConfigurationSpecification,
+        pojo: FakeSourceConfigurationSpecification
     ): FakeSourceConfiguration {
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
@@ -47,8 +47,8 @@ class FakeSourceConfigurationFactory :
             sshConnectionOptions = sshConnectionOptions,
             cursor = pojo.getCursorConfigurationValue() ?: UserDefinedCursor,
             maxConcurrency = 1,
-            checkpointTargetInterval = Duration.parse(pojo.timeout).takeIf { it.isPositive }
-                    ?: Duration.ofDays(100L),
+            checkpointTargetInterval =
+                Duration.parse(pojo.timeout).takeIf { it.isPositive } ?: Duration.ofDays(100L),
         )
     }
 }

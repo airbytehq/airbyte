@@ -35,7 +35,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             DatetimeMicrosHandler,
             DateHandler,
             TimeHandler,
-            TimestampHandler
+            TimestampHandler,
         )
 
     data object DatetimeMillisHandler : RelationalColumnCustomConverter.Handler {
@@ -67,7 +67,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -99,7 +99,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -128,7 +128,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -159,7 +159,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 
@@ -190,7 +190,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     } else {
                         NoConversion
                     }
-                }
+                },
             )
     }
 }

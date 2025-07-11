@@ -28,7 +28,7 @@ data class MySqlSourceCdcInitialSnapshotStateValue(
                 MySqlSourceCdcInitialSnapshotStateValue(
                     streamName = stream.name,
                     cursorField = listOf(),
-                    streamNamespace = stream.namespace
+                    streamNamespace = stream.namespace,
                 )
             )
 

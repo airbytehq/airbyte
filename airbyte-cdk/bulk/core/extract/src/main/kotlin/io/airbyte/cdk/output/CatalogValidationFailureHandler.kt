@@ -23,22 +23,14 @@ sealed interface CatalogValidationFailure {
     val streamID: StreamIdentifier
 }
 
-data class StreamNotFound(
-    override val streamID: StreamIdentifier,
-) : CatalogValidationFailure
+data class StreamNotFound(override val streamID: StreamIdentifier) : CatalogValidationFailure
 
-data class MultipleStreamsFound(
-    override val streamID: StreamIdentifier,
-) : CatalogValidationFailure
+data class MultipleStreamsFound(override val streamID: StreamIdentifier) : CatalogValidationFailure
 
-data class StreamHasNoFields(
-    override val streamID: StreamIdentifier,
-) : CatalogValidationFailure
+data class StreamHasNoFields(override val streamID: StreamIdentifier) : CatalogValidationFailure
 
-data class FieldNotFound(
-    override val streamID: StreamIdentifier,
-    val fieldName: String,
-) : CatalogValidationFailure
+data class FieldNotFound(override val streamID: StreamIdentifier, val fieldName: String) :
+    CatalogValidationFailure
 
 data class FieldTypeMismatch(
     override val streamID: StreamIdentifier,
@@ -52,18 +44,13 @@ data class InvalidPrimaryKey(
     val primaryKey: List<String>,
 ) : CatalogValidationFailure
 
-data class InvalidCursor(
-    override val streamID: StreamIdentifier,
-    val cursor: String,
-) : CatalogValidationFailure
+data class InvalidCursor(override val streamID: StreamIdentifier, val cursor: String) :
+    CatalogValidationFailure
 
-data class InvalidIncrementalSyncMode(
-    override val streamID: StreamIdentifier,
-) : CatalogValidationFailure
+data class InvalidIncrementalSyncMode(override val streamID: StreamIdentifier) :
+    CatalogValidationFailure
 
-data class ResetStream(
-    override val streamID: StreamIdentifier,
-) : CatalogValidationFailure
+data class ResetStream(override val streamID: StreamIdentifier) : CatalogValidationFailure
 
 private val log = KotlinLogging.logger {}
 

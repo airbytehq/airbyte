@@ -21,7 +21,7 @@ import java.util.*
 open class JdbcV1V2Migrator(
     protected val namingConventionTransformer: NamingConventionTransformer,
     protected val database: JdbcDatabase,
-    protected val databaseName: String?
+    protected val databaseName: String?,
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         val retrievedSchema =
@@ -47,7 +47,7 @@ open class JdbcV1V2Migrator(
 
     override fun schemaMatchesExpectation(
         existingTable: TableDefinition,
-        columns: Collection<String>
+        columns: Collection<String>,
     ): Boolean {
         return existingTable.columns.keys.containsAll(columns)
     }
@@ -55,13 +55,13 @@ open class JdbcV1V2Migrator(
     @Throws(Exception::class)
     override fun getTableIfExists(
         namespace: String?,
-        tableName: String?
+        tableName: String?,
     ): Optional<TableDefinition> {
         return JdbcDestinationHandler.Companion.findExistingTable(
             database,
             databaseName,
             namespace,
-            tableName
+            tableName,
         )
     }
 
@@ -70,7 +70,7 @@ open class JdbcV1V2Migrator(
         val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName)
         return NamespacedTableName(
             namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace),
-            tableName
+            tableName,
         )
     }
 }

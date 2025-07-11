@@ -29,10 +29,7 @@ class BufferEnqueue(
      * @param message to buffer
      * @param sizeInBytes
      */
-    fun addRecord(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Int,
-    ) {
+    fun addRecord(message: PartialAirbyteMessage, sizeInBytes: Int) {
         when (message.type) {
             AirbyteMessage.Type.RECORD -> {
                 handleRecord(message, sizeInBytes)
@@ -44,15 +41,10 @@ class BufferEnqueue(
         }
     }
 
-    private fun handleRecord(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Int,
-    ) {
+    private fun handleRecord(message: PartialAirbyteMessage, sizeInBytes: Int) {
         val streamDescriptor = extractStreamDescriptorFromRecord(message)
         val queue =
-            buffers.computeIfAbsent(
-                streamDescriptor,
-            ) {
+            buffers.computeIfAbsent(streamDescriptor) {
                 StreamAwareQueue(memoryManager.requestMemory())
             }
         val stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor)

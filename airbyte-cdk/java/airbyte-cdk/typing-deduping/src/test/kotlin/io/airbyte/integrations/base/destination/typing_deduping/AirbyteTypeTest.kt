@@ -66,7 +66,8 @@ class AirbyteTypeTest {
                        }
                      }
                      
-                     """.trimIndent()
+                     """
+                .trimIndent()
         )
         structSchema.add(
             """
@@ -120,7 +121,8 @@ class AirbyteTypeTest {
                        }
                      }
                      
-                     """.trimIndent()
+                     """
+                .trimIndent()
         )
         structSchema.add(
             """
@@ -174,7 +176,8 @@ class AirbyteTypeTest {
                        }
                      }
                      
-                     """.trimIndent()
+                     """
+                .trimIndent()
         )
 
         val propertiesMap = LinkedHashMap<String, AirbyteType>()
@@ -205,7 +208,8 @@ class AirbyteTypeTest {
                        "type": "object"
                      }
                      
-                     """.trimIndent()
+                     """
+                .trimIndent()
         )
         structSchema.add(
             """
@@ -213,7 +217,8 @@ class AirbyteTypeTest {
                        "type": ["object"]
                      }
                      
-                     """.trimIndent()
+                     """
+                .trimIndent()
         )
         structSchema.add(
             """
@@ -221,7 +226,8 @@ class AirbyteTypeTest {
                        "type": ["null", "object"]
                      }
                      
-                     """.trimIndent()
+                     """
+                .trimIndent()
         )
 
         val struct: AirbyteType = Struct(LinkedHashMap())
@@ -242,7 +248,8 @@ class AirbyteTypeTest {
                                   }
                                 }
                                 
-                                """.trimIndent()
+                                """
+                .trimIndent()
 
         val propertiesMap = LinkedHashMap<String, AirbyteType>()
         propertiesMap["key1"] = AirbyteProtocolType.BOOLEAN
@@ -265,7 +272,8 @@ class AirbyteTypeTest {
                       }
                     }
                     
-                    """.trimIndent()
+                    """
+                .trimIndent()
         )
         arraySchema.add(
             """
@@ -278,7 +286,8 @@ class AirbyteTypeTest {
                       }
                     }
                     
-                    """.trimIndent()
+                    """
+                .trimIndent()
         )
         arraySchema.add(
             """
@@ -291,7 +300,8 @@ class AirbyteTypeTest {
                       }
                     }
                     
-                    """.trimIndent()
+                    """
+                .trimIndent()
         )
 
         val array: AirbyteType = Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
@@ -309,7 +319,8 @@ class AirbyteTypeTest {
                       "type": "array"
                     }
                     
-                    """.trimIndent()
+                    """
+                .trimIndent()
         )
         arraySchema.add(
             """
@@ -317,7 +328,8 @@ class AirbyteTypeTest {
                       "type": ["array"]
                     }
                     
-                    """.trimIndent()
+                    """
+                .trimIndent()
         )
 
         arraySchema.add(
@@ -326,7 +338,8 @@ class AirbyteTypeTest {
                       "type": ["null", "array"]
                     }
                     
-                    """.trimIndent()
+                    """
+                .trimIndent()
         )
 
         val array: AirbyteType = Array(AirbyteProtocolType.UNKNOWN)
@@ -343,7 +356,8 @@ class AirbyteTypeTest {
                                             "oneOf": ["number", "string"]
                                           }
                                           
-                                          """.trimIndent()
+                                          """
+                .trimIndent()
 
         val options: MutableList<AirbyteType> = ArrayList()
         options.add(AirbyteProtocolType.NUMBER)
@@ -352,7 +366,7 @@ class AirbyteTypeTest {
         val unsupportedOneOf = UnsupportedOneOf(options)
         Assertions.assertEquals(
             unsupportedOneOf,
-            fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema))
+            fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema)),
         )
     }
 
@@ -364,7 +378,8 @@ class AirbyteTypeTest {
                                  "type": ["string", "number"]
                                }
                                
-                               """.trimIndent()
+                               """
+                .trimIndent()
 
         val options: MutableList<AirbyteType> = ArrayList()
         options.add(AirbyteProtocolType.STRING)
@@ -387,7 +402,8 @@ class AirbyteTypeTest {
                                                 "items": {"type": "string"}
                                               }
                                               
-                                              """.trimIndent()
+                                              """
+                    .trimIndent()
             )
 
         val parsed = fromJsonSchema(schema)
@@ -397,7 +413,7 @@ class AirbyteTypeTest {
                 List.of(
                     AirbyteProtocolType.STRING,
                     Struct(linkedMapOf("foo" to AirbyteProtocolType.STRING)),
-                    Array(AirbyteProtocolType.STRING)
+                    Array(AirbyteProtocolType.STRING),
                 )
             )
         Assertions.assertEquals(expected, parsed)
@@ -412,7 +428,8 @@ class AirbyteTypeTest {
                                                 "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
                                               }
                                               
-                                              """.trimIndent()
+                                              """
+                    .trimIndent()
             )
 
         val parsed = fromJsonSchema(schema)
@@ -422,7 +439,7 @@ class AirbyteTypeTest {
                 List.of(
                     AirbyteProtocolType.STRING,
                     Struct(LinkedHashMap()),
-                    Array(AirbyteProtocolType.UNKNOWN)
+                    Array(AirbyteProtocolType.UNKNOWN),
                 )
             )
         expected.toString()
@@ -437,10 +454,11 @@ class AirbyteTypeTest {
                                        "type": "foo"
                                      }
                                      
-                                     """.trimIndent()
+                                     """
+                .trimIndent()
         Assertions.assertEquals(
             AirbyteProtocolType.UNKNOWN,
-            fromJsonSchema(Jsons.deserialize(invalidTypeSchema))
+            fromJsonSchema(Jsons.deserialize(invalidTypeSchema)),
         )
     }
 
@@ -452,10 +470,11 @@ class AirbyteTypeTest {
                                        "type": true
                                      }
                                      
-                                     """.trimIndent()
+                                     """
+                .trimIndent()
         Assertions.assertEquals(
             AirbyteProtocolType.UNKNOWN,
-            fromJsonSchema(Jsons.deserialize(invalidTypeSchema))
+            fromJsonSchema(Jsons.deserialize(invalidTypeSchema)),
         )
     }
 
@@ -474,7 +493,7 @@ class AirbyteTypeTest {
         for (schema in invalidSchema) {
             Assertions.assertEquals(
                 AirbyteProtocolType.UNKNOWN,
-                fromJsonSchema(Jsons.deserialize(schema))
+                fromJsonSchema(Jsons.deserialize(schema)),
             )
         }
     }
@@ -498,19 +517,17 @@ class AirbyteTypeTest {
                 listOf(
                     AirbyteProtocolType.NUMBER,
                     AirbyteProtocolType.DATE,
-                    AirbyteProtocolType.BOOLEAN
+                    AirbyteProtocolType.BOOLEAN,
                 )
-            )
-        ] = AirbyteProtocolType.DATE
+            )] = AirbyteProtocolType.DATE
         unionToType[
             Union(
                 listOf(
                     AirbyteProtocolType.INTEGER,
                     AirbyteProtocolType.BOOLEAN,
-                    AirbyteProtocolType.NUMBER
+                    AirbyteProtocolType.NUMBER,
                 )
-            )
-        ] = AirbyteProtocolType.NUMBER
+            )] = AirbyteProtocolType.NUMBER
         unionToType[Union(listOf(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.INTEGER))] =
             AirbyteProtocolType.INTEGER
 
@@ -533,7 +550,7 @@ class AirbyteTypeTest {
                     ), // This is bad behavior, but it matches current behavior so we'll test it.
                     // Ideally, we would recognize that the sub-unions are also objects.
                     Union(List.of(Struct(LinkedHashMap()))),
-                    UnsupportedOneOf(List.of(Struct(LinkedHashMap())))
+                    UnsupportedOneOf(List.of(Struct(LinkedHashMap()))),
                 )
             )
 
@@ -545,7 +562,7 @@ class AirbyteTypeTest {
                     put("foo", AirbyteProtocolType.STRING)
                 }
             },
-            columns
+            columns,
         )
     }
 
@@ -570,7 +587,7 @@ class AirbyteTypeTest {
                         ArrayList()
                     ), // Similar to testAsColumns(), this is bad behavior.
                     Union(List.of(Struct(LinkedHashMap()))),
-                    UnsupportedOneOf(List.of(Struct(LinkedHashMap())))
+                    UnsupportedOneOf(List.of(Struct(LinkedHashMap()))),
                 )
             )
 

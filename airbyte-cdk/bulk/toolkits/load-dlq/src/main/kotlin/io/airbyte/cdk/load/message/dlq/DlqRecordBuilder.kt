@@ -38,7 +38,7 @@ fun DestinationRecordRaw.toDlqRecord(
     copy(
         rawData =
             if (keepOriginalFields) merge(this.rawData, data)
-            else DestinationRecordJsonSource(data.toAirbyteRecordMessage()),
+            else DestinationRecordJsonSource(data.toAirbyteRecordMessage())
     )
 
 private fun merge(raw: DestinationRecordSource, data: Map<String, Any>): DestinationRecordSource {

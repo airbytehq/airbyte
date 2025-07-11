@@ -67,7 +67,8 @@ object LIMITS {
  * Creates a generator for MSSQL CSV rows.
  *
  * @param validateValuesPreLoad Whether to validate string values before loading them into the csv
- * file.
+ *   file.
+ *
  * ```
  * This is optional and disabled by default as it's a computationally
  * expensive operation that can significantly impact performance.

@@ -64,16 +64,15 @@ fun ObjectStorageSpec?.toObjectStorageConfig(): ObjectStorageConfig =
                         prefix = bucketPath,
                         pathPattern = normalizePathFormat(pathFormat),
                         fileNamePattern = fileNameFormat,
-                    )
+                    ),
             )
     }
 
 /**
  * Normalize the path format to match how the internals of the object storage toolkit work.
- *
  * - pathPattern requires variables to be `${VAR}` (both $ and Uppercase)
  * - pathPattern doesn't guarantee it is only a path, to avoid path leaking into the filename, we
- * add a trailing '/'.
+ *   add a trailing '/'.
  */
 internal fun normalizePathFormat(format: String?): String? =
     format?.let {

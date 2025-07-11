@@ -98,12 +98,12 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                     val jsonSchemaTypeMap =
                         Jsons.deserialize(
                             airbyteStream!!.jsonSchema["properties"][testColumnName].toString(),
-                            MutableMap::class.java
+                            MutableMap::class.java,
                         ) as Map<String, Any>
                     Assertions.assertEquals(
                         testDataHolder.airbyteType.jsonSchemaTypeMap,
                         jsonSchemaTypeMap,
-                        "Expected column type for " + testDataHolder.nameWithTestPrefix
+                        "Expected column type for " + testDataHolder.nameWithTestPrefix,
                     )
                 }
             )
@@ -122,7 +122,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         class MissedRecords( // Stream that is missing any value
             var streamName:
                 String?, // Which are the values that has not being gathered from the source
-            var missedValues: List<String?>
+            var missedValues: List<String?>,
         )
 
         class UnexpectedRecord(val streamName: String, val unexpectedValue: String?)
@@ -228,7 +228,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
      * Creates all tables and insert data described in the registered data type tests.
      *
      * @throws Exception might raise exception if configuration goes wrong or tables creation/insert
-     * scripts failed.
+     *   scripts failed.
      */
     @Throws(Exception::class)
     protected open fun createTables() {
@@ -249,7 +249,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                 LOGGER.info(
                     "Inserted {} rows in Ttable {}",
                     test.insertSqlQueries.size,
-                    test.nameWithTestPrefix
+                    test.nameWithTestPrefix,
                 )
                 null
             }
@@ -275,7 +275,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                                         String.format("%s", test.nameWithTestPrefix),
                                         String.format("%s", nameSpace),
                                         Field.of(idColumnName, JsonSchemaType.INTEGER),
-                                        Field.of(testColumnName, test.airbyteType)
+                                        Field.of(testColumnName, test.airbyteType),
                                     )
                                     .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
@@ -284,7 +284,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                                     .withSupportedSyncModes(
                                         Lists.newArrayList(
                                             SyncMode.FULL_REFRESH,
-                                            SyncMode.INCREMENTAL
+                                            SyncMode.INCREMENTAL,
                                         )
                                     )
                             )
@@ -337,7 +337,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                             formatCollection(test.values),
                             formatCollection(test.expectedValues),
                             "",
-                            "Ok"
+                            "Ok",
                         )
                     )
                 }
@@ -370,7 +370,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                         "random_dummy_table",
                         nameSpace,
                         Field.of("id", JsonSchemaType.INTEGER),
-                        Field.of("test_column", JsonSchemaType.STRING)
+                        Field.of("test_column", JsonSchemaType.STRING),
                     )
                     .withSourceDefinedCursor(true)
                     .withSupportedSyncModes(

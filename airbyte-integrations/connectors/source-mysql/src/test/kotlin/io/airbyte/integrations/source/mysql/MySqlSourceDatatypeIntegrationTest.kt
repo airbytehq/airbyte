@@ -45,7 +45,7 @@ object MySqlSourceDatatypeTestOperations :
         MySqlSourceConfigurationSpecification,
         MySqlSourceConfiguration,
         MySqlSourceConfigurationFactory,
-        MySqlSourceDatatypeTestCase
+        MySqlSourceDatatypeTestCase,
     > {
 
     private val log = KotlinLogging.logger {}
@@ -92,92 +92,51 @@ object MySqlSourceDatatypeTestOperations :
         }
     }
 
-    val bitValues =
-        mapOf(
-            "b'1'" to "true",
-            "b'0'" to "false",
-        )
+    val bitValues = mapOf("b'1'" to "true", "b'0'" to "false")
 
-    val multiBitValues =
-        mapOf(
-            "b'10101010'" to """"qg=="""",
-        )
+    val multiBitValues = mapOf("b'10101010'" to """"qg=="""")
 
     val stringValues =
-        mapOf(
-            "'abcdef'" to """"abcdef"""",
-            "'ABCD'" to """"ABCD"""",
-            "'OXBEEF'" to """"OXBEEF"""",
-        )
+        mapOf("'abcdef'" to """"abcdef"""", "'ABCD'" to """"ABCD"""", "'OXBEEF'" to """"OXBEEF"""")
 
     val jsonValues = mapOf("""'{"col1": "v1"}'""" to """"{\"col1\": \"v1\"}"""")
 
-    val yearValues =
-        mapOf(
-            "1992" to """1992""",
-            "2002" to """2002""",
-            "70" to """1970""",
-        )
+    val yearValues = mapOf("1992" to """1992""", "2002" to """2002""", "70" to """1970""")
 
     val bigDecimalValues =
         mapOf(
             "10000000000000000000000000000000000000000.0001" to
-                "10000000000000000000000000000000000000000.0001",
+                "10000000000000000000000000000000000000000.0001"
         )
 
     val bigIntegerValues =
         mapOf(
             "10000000000000000000000000000000000000000" to
-                "10000000000000000000000000000000000000000",
+                "10000000000000000000000000000000000000000"
         )
 
-    val decimalValues =
-        mapOf(
-            "0.2" to """0.2""",
-        )
+    val decimalValues = mapOf("0.2" to """0.2""")
 
-    val floatValues =
-        mapOf(
-            "123.4567" to """123.4567""",
-        )
+    val floatValues = mapOf("123.4567" to """123.4567""")
 
-    val doubleValues =
-        mapOf(
-            "123.4567" to """123.45670318603516""",
-        )
+    val doubleValues = mapOf("123.4567" to """123.45670318603516""")
 
-    val zeroPrecisionDecimalValues =
-        mapOf(
-            "2" to """2""",
-        )
+    val zeroPrecisionDecimalValues = mapOf("2" to """2""")
 
-    val tinyintValues =
-        mapOf(
-            "10" to "10",
-            "4" to "4",
-            "2" to "2",
-        )
+    val tinyintValues = mapOf("10" to "10", "4" to "4", "2" to "2")
 
-    val intValues =
-        mapOf(
-            "10" to "10",
-            "100000000" to "100000000",
-            "200000000" to "200000000",
-        )
+    val intValues = mapOf("10" to "10", "100000000" to "100000000", "200000000" to "200000000")
 
     val dateValues =
         mapOf(
             "'2022-01-01'" to """"2022-01-01"""",
             "'0600-12-02'" to """"0600-12-02"""",
             "'1752-09-09'" to """"1752-09-09"""",
-            "NULL" to """"2020-03-30""""
+            "NULL" to """"2020-03-30"""",
         )
 
     val timeValues =
-        mapOf(
-            "'14:30:00'" to """"14:30:00.000000"""",
-            "NULL" to """"10:30:00.000000"""",
-        )
+        mapOf("'14:30:00'" to """"14:30:00.000000"""", "NULL" to """"10:30:00.000000"""")
 
     val dateTimeValues =
         mapOf(
@@ -195,25 +154,13 @@ object MySqlSourceDatatypeTestOperations :
             "NULL" to """"2020-03-30T10:30:00.000000Z"""",
         )
 
-    val booleanValues =
-        mapOf(
-            "TRUE" to "true",
-            "FALSE" to "false",
-            "NULL" to "null",
-        )
+    val booleanValues = mapOf("TRUE" to "true", "FALSE" to "false", "NULL" to "null")
 
-    val enumValues =
-        mapOf(
-            "'a'" to """"a"""",
-            "'b'" to """"b"""",
-            "'c'" to """"c"""",
-        )
+    val enumValues = mapOf("'a'" to """"a"""", "'b'" to """"b"""", "'c'" to """"c"""")
 
     // Encoded into base64
     val binaryValues =
-        mapOf(
-            "X'89504E470D0A1A0A0000000D49484452'" to """"iVBORw0KGgoAAAANSUhEUg=="""",
-        )
+        mapOf("X'89504E470D0A1A0A0000000D49484452'" to """"iVBORw0KGgoAAAANSUhEUg=="""")
 
     override val testCases: Map<String, MySqlSourceDatatypeTestCase> =
         listOf(
@@ -253,16 +200,12 @@ object MySqlSourceDatatypeTestOperations :
                     LeafAirbyteSchemaType.INTEGER,
                 ),
                 MySqlSourceDatatypeTestCase("FLOAT", floatValues, LeafAirbyteSchemaType.NUMBER),
-                MySqlSourceDatatypeTestCase(
-                    "FLOAT(34)",
-                    floatValues,
-                    LeafAirbyteSchemaType.NUMBER,
-                ),
+                MySqlSourceDatatypeTestCase("FLOAT(34)", floatValues, LeafAirbyteSchemaType.NUMBER),
                 MySqlSourceDatatypeTestCase(
                     "FLOAT(7,4)",
                     floatValues,
                     LeafAirbyteSchemaType.NUMBER,
-                    isGlobal = false // 123.4567 renders as 123.45670318603516 with CDC, which is OK
+                    isGlobal = false, // 123.4567 renders as 123.45670318603516 with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "FLOAT(53,8)",
@@ -352,21 +295,13 @@ object MySqlSourceDatatypeTestOperations :
                     binaryValues,
                     LeafAirbyteSchemaType.BINARY,
                 ),
-                MySqlSourceDatatypeTestCase(
-                    "BIT",
-                    bitValues,
-                    LeafAirbyteSchemaType.BOOLEAN,
-                ),
-                MySqlSourceDatatypeTestCase(
-                    "BIT(8)",
-                    multiBitValues,
-                    LeafAirbyteSchemaType.BINARY,
-                ),
+                MySqlSourceDatatypeTestCase("BIT", bitValues, LeafAirbyteSchemaType.BOOLEAN),
+                MySqlSourceDatatypeTestCase("BIT(8)", multiBitValues, LeafAirbyteSchemaType.BINARY),
                 MySqlSourceDatatypeTestCase(
                     "JSON",
                     jsonValues,
                     LeafAirbyteSchemaType.STRING, // TODO: fix this bug, should be JSONB
-                    isGlobal = false // different, more compact rendering with CDC, which is OK
+                    isGlobal = false, // different, more compact rendering with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "ENUM('a', 'b', 'c')",

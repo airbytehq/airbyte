@@ -38,7 +38,7 @@ internal class MSSQLCheckTest :
                 CheckTestConfig(
                     Files.readString(MSSQLTestConfigUtil.getConfigPath("check/valid.json")),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
-                    name = "Unencrypted is not supported in Cloud"
+                    name = "Unencrypted is not supported in Cloud",
                 ) to "Airbyte Cloud requires SSL encryption".toPattern(),
                 CheckTestConfig(
                     Files.readString(
@@ -47,7 +47,7 @@ internal class MSSQLCheckTest :
                     name = "Invalid database name",
                 ) to "Login failed for user 'sa'".toPattern(),
             ),
-        configUpdater = MSSQLConfigUpdater()
+        configUpdater = MSSQLConfigUpdater(),
     ) {
 
     companion object {

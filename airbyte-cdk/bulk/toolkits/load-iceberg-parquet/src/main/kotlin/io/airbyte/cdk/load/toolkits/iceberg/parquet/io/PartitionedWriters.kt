@@ -43,7 +43,7 @@ class PartitionedDeltaWriter(
         io,
         targetFileSize,
         schema,
-        identifierFieldIds
+        identifierFieldIds,
     ) {
 
     private val partitionKey = PartitionKey(spec, schema)
@@ -95,7 +95,7 @@ class PartitionedAppendWriter(
         appenderFactory,
         outputFileFactory,
         io,
-        targetFileSize
+        targetFileSize,
     ) {
     private val partitionKey = PartitionKey(spec, schema)
     private val wrapper = InternalRecordWrapper(schema.asStruct())

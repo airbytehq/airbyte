@@ -62,9 +62,7 @@ abstract class BigqueryWriteTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
     )
 
-abstract class BigqueryRawTablesWriteTest(
-    configContents: String,
-) :
+abstract class BigqueryRawTablesWriteTest(configContents: String) :
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryRawTableDataDumper,
@@ -124,7 +122,7 @@ class StandardInsertRawOverrideRawTables :
             configFile = STANDARD_INSERT_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
             disableTypingDeduping = true,
-        ),
+        )
     )
 
 class StandardInsertRawOverride :
@@ -145,7 +143,7 @@ class StandardInsertCdcSoftDeletes :
             configFile = STANDARD_INSERT_CONFIG,
             cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
         ),
-        CdcDeletionMode.SOFT_DELETE
+        CdcDeletionMode.SOFT_DELETE,
     ) {
     @Test
     override fun testDedup() {
@@ -159,7 +157,7 @@ class GcsRawOverrideRawTables :
             configFile = GCS_STAGING_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
             disableTypingDeduping = true,
-        ),
+        )
     )
 
 class GcsRawOverride :

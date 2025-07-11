@@ -28,7 +28,7 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
     /**
      * Returns a supertype for [existingType] and [incomingType] if one exists.
      * - If they are deeply equal (according to [IcebergTypesComparator.typesAreEqual]), returns the
-     * [existingType] as-is.
+     *   [existingType] as-is.
      * - Otherwise, attempts to combine them into a valid supertype.
      * - Throws [ConfigErrorException] if no valid supertype can be found.
      */
@@ -55,7 +55,7 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
             return combinePrimitives(
                 existingType.asPrimitiveType(),
                 incomingType.asPrimitiveType(),
-                columnName
+                columnName,
             )
         }
 
@@ -82,17 +82,16 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
     /**
      * Attempts to combine two [PrimitiveType]s into a valid supertype by using
      * [TypeUtil.isPromotionAllowed].
-     *
      * - If they have the same [TypeID], just returns the existing type (since they’re not deeply
-     * equal, but the top-level ID is the same. You may want to consider e.g. TIMESTAMP with/without
-     * UTC).
+     *   equal, but the top-level ID is the same. You may want to consider e.g. TIMESTAMP
+     *   with/without UTC).
      * - If they have different IDs, tries known promotions (INT->LONG, FLOAT->DOUBLE).
      * - If promotion is not allowed, throws [ConfigErrorException].
      */
     private fun combinePrimitives(
         existingType: PrimitiveType,
         incomingType: PrimitiveType,
-        columnName: String
+        columnName: String,
     ): Type {
         val existingTypeId = existingType.typeId()
         val incomingTypeId = incomingType.typeId()
@@ -129,7 +128,7 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
     private fun throwIllegalTypeCombination(
         existingType: Type,
         incomingType: Type,
-        columnName: String
+        columnName: String,
     ): Nothing =
         throw ConfigErrorException(
             "Schema evolution for column \"$columnName\" between $existingType and $incomingType is not allowed."

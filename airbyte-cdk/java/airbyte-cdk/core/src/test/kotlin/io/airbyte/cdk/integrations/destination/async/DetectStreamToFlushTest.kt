@@ -37,16 +37,10 @@ class DetectStreamToFlushTest {
 
     @Test
     internal fun testGetNextSkipsEmptyStreams() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L))
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
 
         val detect =
             DetectStreamToFlush(
@@ -54,30 +48,24 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
 
     @Test
     internal fun testGetNextPicksUpOnSizeTrigger() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L))
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
         val detect =
             DetectStreamToFlush(
                 bufferDequeue,
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
         // if above threshold, triggers
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
@@ -87,47 +75,29 @@ class DetectStreamToFlushTest {
 
     @Test
     internal fun testGetNextAccountsForAlreadyRunningWorkers() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L))
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
-        Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
-            .thenReturn(
-                listOf(
-                    Optional.of(SIZE_10MB),
-                ),
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
+        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))
+            .thenReturn(listOf(Optional.of(SIZE_10MB)))
         val detect =
             DetectStreamToFlush(
                 bufferDequeue,
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
 
     @Test
     internal fun testFileTransfer() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L))
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
 
         val detect =
             DetectStreamToFlush(
@@ -135,7 +105,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = true
+                flushOnEveryMessage = true,
             )
         Assertions.assertEquals(0, detect.computeQueueThreshold())
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
@@ -143,26 +113,14 @@ class DetectStreamToFlushTest {
 
     @Test
     internal fun testGetNextPicksUpOnTimeTrigger() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L))
         val mockedNowProvider = Mockito.mock(Clock::class.java)
 
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
-        Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
-            .thenReturn(
-                listOf(
-                    Optional.of(SIZE_10MB),
-                ),
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
+        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))
+            .thenReturn(listOf(Optional.of(SIZE_10MB)))
         val detect =
             DetectStreamToFlush(
                 bufferDequeue,
@@ -170,7 +128,7 @@ class DetectStreamToFlushTest {
                 AtomicBoolean(false),
                 flusher,
                 mockedNowProvider,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
 
         // initialize flush time

@@ -36,7 +36,7 @@ object RecordWaitTimeUtil {
                 String.format(
                     "initial_waiting_seconds must be between %d and %d seconds",
                     MIN_FIRST_RECORD_WAIT_TIME.seconds,
-                    MAX_FIRST_RECORD_WAIT_TIME.seconds
+                    MAX_FIRST_RECORD_WAIT_TIME.seconds,
                 )
             }
         }

@@ -16,9 +16,7 @@ sealed interface Feed {
 }
 
 /** Acts as a key for Airbyte STATE messages of type GLOBAL. */
-data class Global(
-    val streams: List<Stream>,
-) : Feed {
+data class Global(val streams: List<Stream>) : Feed {
     override val label: String
         get() = "global"
 }

@@ -101,13 +101,10 @@ class StateManagerFactory(
         )
     }
 
-    private fun forStream(
-        streams: List<Stream>,
-        inputState: StreamInputState? = null,
-    ) =
+    private fun forStream(streams: List<Stream>, inputState: StreamInputState? = null) =
         StateManager(
             initialStreamStates =
-                streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
+                streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) }
         )
 
     private fun toStream(
@@ -171,7 +168,7 @@ class StateManagerFactory(
                         id,
                         expectedAirbyteSchemaType,
                         actualAirbyteSchemaType,
-                    ),
+                    )
                 )
                 return null
             }
@@ -253,7 +250,7 @@ class StateManagerFactory(
             "number" ->
                 when (value("airbyte_type")) {
                     "integer",
-                    "big_integer", -> LeafAirbyteSchemaType.INTEGER
+                    "big_integer" -> LeafAirbyteSchemaType.INTEGER
                     else -> LeafAirbyteSchemaType.NUMBER
                 }
             "string" ->

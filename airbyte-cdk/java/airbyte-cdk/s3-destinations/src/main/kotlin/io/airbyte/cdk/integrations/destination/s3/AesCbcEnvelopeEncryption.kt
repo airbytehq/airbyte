@@ -16,11 +16,11 @@ import org.apache.commons.lang3.StringUtils
 @JvmRecord
 data class AesCbcEnvelopeEncryption(
     @field:Nonnull @param:Nonnull val key: ByteArray,
-    @field:Nonnull @param:Nonnull val keyType: KeyType
+    @field:Nonnull @param:Nonnull val keyType: KeyType,
 ) : EncryptionConfig {
     enum class KeyType {
         EPHEMERAL,
-        USER_PROVIDED
+        USER_PROVIDED,
     }
 
     override fun equals(other: Any?): Boolean {
@@ -56,7 +56,7 @@ data class AesCbcEnvelopeEncryption(
             } else {
                 AesCbcEnvelopeEncryption(
                     EncryptionConfig.Companion.BASE64_DECODER.decode(kek),
-                    KeyType.USER_PROVIDED
+                    KeyType.USER_PROVIDED,
                 )
             }
         }
@@ -70,7 +70,7 @@ data class AesCbcEnvelopeEncryption(
                 kekGenerator.init(AesCbcEnvelopeEncryptionBlobDecorator.AES_KEY_SIZE_BITS)
                 return AesCbcEnvelopeEncryption(
                     kekGenerator.generateKey().encoded,
-                    KeyType.EPHEMERAL
+                    KeyType.EPHEMERAL,
                 )
             } catch (e: NoSuchAlgorithmException) {
                 throw RuntimeException(e)

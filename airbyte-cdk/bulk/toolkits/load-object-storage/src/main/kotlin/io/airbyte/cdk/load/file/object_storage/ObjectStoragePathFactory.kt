@@ -22,15 +22,18 @@ import java.util.UUID
 
 interface PathFactory {
     fun getLongestStreamConstantPrefix(stream: DestinationStream): String
+
     fun getFinalDirectory(
         stream: DestinationStream,
-        substituteStreamAndNamespaceOnly: Boolean = false
+        substituteStreamAndNamespaceOnly: Boolean = false,
     ): String
+
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        extension: String? = null
+        extension: String? = null,
     ): String
+
     fun getPathMatcher(stream: DestinationStream, suffixPattern: String? = null): PathMatcher
 
     val finalPrefix: String
@@ -110,30 +113,29 @@ class ObjectStoragePathFactory(
 
     /**
      * Variable substitution is complex.
-     *
      * 1. There are two types: path variables and file name variables.
      * 2. Path variables use the ${NAME} syntax, while file name variables use the {name} syntax. (I
-     * have no idea why this is.)
+     *    have no idea why this is.)
      * 3. A variable is defined by a [Variable.pattern] and a [Variable.provider]
      * 4. [Variable.provider] is a function that takes a [VariableContext] and returns a string.
-     * It's used for substitution to get the actual path.
+     *    It's used for substitution to get the actual path.
      * 5. [Variable.pattern] is a regex pattern that can match any results of [Variable.provider].
      * 6. If [Variable.pattern] is null, [Variable.provider] is used to get the value. (Ie, we won't
-     * match against a pattern, but always against the realized value. In practice this is for
-     * stream name and namespace, because matching always performed at the stream level.)
+     *    match against a pattern, but always against the realized value. In practice this is for
+     *    stream name and namespace, because matching always performed at the stream level.)
      * 7. Matching should be considered deprecated. It is only required for configurations that do
-     * not enable staging, which populate destination state by collecting metadata from object
-     * headers. It is extremely brittle and can break against malformed paths or paths that do not
-     * include enough variables to avoid clashes. If you run into a client issue which requires a
-     * path change anyway (a breaking change for some workflows), consider advising them to enable
-     * staging.
+     *    not enable staging, which populate destination state by collecting metadata from object
+     *    headers. It is extremely brittle and can break against malformed paths or paths that do
+     *    not include enough variables to avoid clashes. If you run into a client issue which
+     *    requires a path change anyway (a breaking change for some workflows), consider advising
+     *    them to enable staging.
      */
     inner class VariableContext(
         val stream: DestinationStream,
         val syncTime: Instant = Instant.ofEpochMilli(timeProvider.syncTimeMillis()),
         val currentTimeProvider: TimeProvider = timeProvider,
         val extension: String? = null,
-        val partNumber: Long? = null
+        val partNumber: Long? = null,
     )
 
     interface Variable {
@@ -141,6 +143,7 @@ class ObjectStoragePathFactory(
         val provider: (VariableContext) -> String
 
         fun toMacro(): String
+
         fun maybeApply(source: String, context: VariableContext): String {
             val macro = toMacro()
             if (source.contains(macro)) {
@@ -181,13 +184,13 @@ class ObjectStoragePathFactory(
             PathVariable("MONTH", """\d{2}""") {
                 String.format(
                     "%02d",
-                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).monthValue
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).monthValue,
                 )
             },
             PathVariable("DAY", """\d{2}""") {
                 String.format(
                     "%02d",
-                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).dayOfMonth
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).dayOfMonth,
                 )
             },
             PathVariable("HOUR", """\d{2}""") {
@@ -205,11 +208,11 @@ class ObjectStoragePathFactory(
                     "%04d",
                     ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC"))
                         .toLocalTime()
-                        .toNanoOfDay() / 1_000_000 % 1_000
+                        .toNanoOfDay() / 1_000_000 % 1_000,
                 )
             },
             PathVariable("EPOCH", """\d+""") { it.syncTime.toEpochMilli().toString() },
-            PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
+            PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() },
         )
     }
 
@@ -241,12 +244,12 @@ class ObjectStoragePathFactory(
                         )
                 },
                 FileVariable("sync_id", """\d+""") { it.stream.syncId.toString() },
-                FileVariable("format_extension") { it.extension?.let { ext -> ".$ext" } ?: "" }
+                FileVariable("format_extension") { it.extension?.let { ext -> ".$ext" } ?: "" },
             )
 
         fun <T> from(
             config: T,
-            timeProvider: TimeProvider = DefaultTimeProvider()
+            timeProvider: TimeProvider = DefaultTimeProvider(),
         ): ObjectStoragePathFactory where
         T : ObjectStoragePathConfigurationProvider,
         T : ObjectStorageFormatConfigurationProvider,
@@ -258,7 +261,6 @@ class ObjectStoragePathFactory(
     /**
      * This is to maintain parity with legacy code. Whether the path pattern ends with "/" is
      * significant.
-     *
      * * path: "{STREAM_NAME}/foo/" + "{part_number}{format_extension}" => "my_stream/foo/1.json"
      * * path: "{STREAM_NAME}/foo" + "{part_number}{format_extension}" => "my_stream/foo1.json"
      */
@@ -273,7 +275,7 @@ class ObjectStoragePathFactory(
 
     override fun getFinalDirectory(
         stream: DestinationStream,
-        substituteStreamAndNamespaceOnly: Boolean
+        substituteStreamAndNamespaceOnly: Boolean,
     ): String {
         val path =
             getFormattedPath(
@@ -284,9 +286,7 @@ class ObjectStoragePathFactory(
         return resolveRetainingTerminalSlash(path)
     }
 
-    override fun getLongestStreamConstantPrefix(
-        stream: DestinationStream,
-    ): String {
+    override fun getLongestStreamConstantPrefix(stream: DestinationStream): String {
         return getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true).takeWhile {
             it != '$'
         }
@@ -295,7 +295,7 @@ class ObjectStoragePathFactory(
     override fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        extension: String?
+        extension: String?,
     ): String {
         val extensionResolved = extension ?: defaultExtension
         val path = getFinalDirectory(stream)
@@ -353,7 +353,7 @@ class ObjectStoragePathFactory(
         input: String,
         macroPattern: String,
         variableToPattern: Map<String, String>,
-        variableToIndex: MutableList<Pair<String, Int>>
+        variableToIndex: MutableList<Pair<String, Int>>,
     ): String {
         return Regex.escapeReplacement(input).replace(macroPattern.toRegex()) {
             val variable = it.groupValues[1]
@@ -385,14 +385,14 @@ class ObjectStoragePathFactory(
                 pathPattern,
                 """\\\$\{(\w+)}""",
                 pathVariableToPattern,
-                variableIndexTuples
+                variableIndexTuples,
             )
         val replacedForFile =
             buildPattern(
                 filePatternResolved,
                 """\{([\w\:]+)}""",
                 pathVariableToPattern,
-                variableIndexTuples
+                variableIndexTuples,
             )
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.

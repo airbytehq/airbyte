@@ -46,7 +46,7 @@ class ClickhouseAirbyteClientTest {
                 clickhouseSqlGenerator,
                 clickhouseFinalTableNameGenerator,
                 tempTableNameGenerator,
-                clickhouseConfiguration
+                clickhouseConfiguration,
             )
         )
 
@@ -74,7 +74,7 @@ class ClickhouseAirbyteClientTest {
 
     private fun getMockColumn(
         columnName: String,
-        columnType: ClickHouseDataType
+        columnType: ClickHouseDataType,
     ): ClickHouseColumn {
         val mColumn = mockk<ClickHouseColumn>()
 
@@ -89,7 +89,7 @@ class ClickhouseAirbyteClientTest {
         val tableColumns =
             listOf(
                 getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32)
+                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32),
             )
         val catalogColumns = mapOf(COL1 to STRING_TYPE, COL2 to INT_TYPE)
         val expected =
@@ -97,14 +97,14 @@ class ClickhouseAirbyteClientTest {
                 added = emptyMap(),
                 modified = emptyMap(),
                 deleted = emptySet(),
-                hasDedupChange = false
+                hasDedupChange = false,
             )
         val actual =
             clickhouseAirbyteClient.getChangedColumns(
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -126,7 +126,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -136,7 +136,7 @@ class ClickhouseAirbyteClientTest {
         val tableColumns =
             listOf(
                 getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32)
+                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32),
             )
         val catalogColumns = mapOf(COL1 to STRING_TYPE, COL2 to STRING_TYPE)
         val expected =
@@ -151,7 +151,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -173,7 +173,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected, actual)
 
@@ -192,7 +192,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns2,
                 catalogColumns2,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected2, actual2)
     }
@@ -213,7 +213,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf("col1"),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected, actual)
         actual =
@@ -221,7 +221,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf("col2")
+                listOf("col2"),
             )
         Assertions.assertEquals(expected, actual)
         actual =
@@ -229,7 +229,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf("col1"),
-                listOf("col2")
+                listOf("col2"),
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -239,7 +239,7 @@ class ClickhouseAirbyteClientTest {
         val tableColumns =
             listOf(
                 getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32)
+                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32),
             )
         val catalogColumns =
             mapOf(COL1 to STRING_TYPE, COL2 to STRING_TYPE, COL3 to STRING_TYPE, COL4 to FLOAT_TYPE)
@@ -255,14 +255,14 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected, actual)
 
         val tableColumns2 =
             listOf(
                 getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32)
+                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32),
             )
         val catalogColumns2 = mapOf(COL1 to STRING_TYPE, COL3 to STRING_TYPE)
         val expected2 =
@@ -277,14 +277,14 @@ class ClickhouseAirbyteClientTest {
                 tableColumns2,
                 catalogColumns2,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected2, actual2)
 
         val tableColumns3 =
             listOf(
                 getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32)
+                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32),
             )
         val catalogColumns3 = mapOf(COL1 to STRING_TYPE, COL2 to STRING_TYPE, COL3 to INT_TYPE)
         val expected3 =
@@ -299,7 +299,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns3,
                 catalogColumns3,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected3, actual3)
 
@@ -307,14 +307,14 @@ class ClickhouseAirbyteClientTest {
             listOf(
                 getMockColumn(columnName = "col1", columnType = ClickHouseDataType.String),
                 getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32),
-                getMockColumn(columnName = COL5, columnType = ClickHouseDataType.DateTime64)
+                getMockColumn(columnName = COL5, columnType = ClickHouseDataType.DateTime64),
             )
         val catalogColumns4 =
             mapOf(
                 COL1 to STRING_TYPE,
                 COL2 to STRING_TYPE,
                 COL3 to INT_TYPE,
-                COL5 to "DateTime64(3)"
+                COL5 to "DateTime64(3)",
             )
         val expected4 =
             AlterationSummary( // Added col2
@@ -328,7 +328,7 @@ class ClickhouseAirbyteClientTest {
                 tableColumns4,
                 catalogColumns4,
                 listOf(),
-                listOf()
+                listOf(),
             )
         Assertions.assertEquals(expected4, actual4)
     }
@@ -340,7 +340,7 @@ class ClickhouseAirbyteClientTest {
                 added = mapOf("new_col" to "String"),
                 modified = emptyMap(),
                 deleted = emptySet(),
-                hasDedupChange = false
+                hasDedupChange = false,
             )
 
         val mockTableName = mockk<TableName>(relaxed = true)
@@ -385,7 +385,7 @@ class ClickhouseAirbyteClientTest {
                 added = emptyMap(),
                 modified = emptyMap(),
                 deleted = emptySet(),
-                hasDedupChange = true
+                hasDedupChange = true,
             )
 
         val finalTableName = TableName("fin", "al")

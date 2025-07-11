@@ -39,14 +39,7 @@ class ResourceReservingPartitionedQueueTest {
     @Test
     fun `part queue clamps part size if too many workers`() {
         val reservationManager = ReservationManager(1000)
-        val queue =
-            ResourceReservingPartitionedQueue<Unit>(
-                reservationManager,
-                0.8,
-                3,
-                5,
-                100,
-            )
+        val queue = ResourceReservingPartitionedQueue<Unit>(reservationManager, 0.8, 3, 5, 100)
         val clampedSize = queue.clampedMessageSize
         Assertions.assertEquals(800 / 11, clampedSize)
     }
@@ -54,14 +47,7 @@ class ResourceReservingPartitionedQueueTest {
     @Test
     fun `part queue does not clamp part size if not too many workers`() {
         val reservationManager = ReservationManager(1000)
-        val queue =
-            ResourceReservingPartitionedQueue<Unit>(
-                reservationManager,
-                0.8,
-                1,
-                5,
-                100,
-            )
+        val queue = ResourceReservingPartitionedQueue<Unit>(reservationManager, 0.8, 1, 5, 100)
         val clampedSize = queue.clampedMessageSize
         Assertions.assertEquals(100, clampedSize)
     }
@@ -69,14 +55,7 @@ class ResourceReservingPartitionedQueueTest {
     @Test
     fun `queue capacity is derived from clamped size and available memory`() {
         val reservationManager = ReservationManager(1000)
-        val queue =
-            ResourceReservingPartitionedQueue<Unit>(
-                reservationManager,
-                0.75,
-                1,
-                3,
-                100,
-            )
+        val queue = ResourceReservingPartitionedQueue<Unit>(reservationManager, 0.75, 1, 3, 100)
         Assertions.assertEquals(100L, queue.clampedMessageSize)
         Assertions.assertEquals(3, queue.queuePartitionCapacity)
     }

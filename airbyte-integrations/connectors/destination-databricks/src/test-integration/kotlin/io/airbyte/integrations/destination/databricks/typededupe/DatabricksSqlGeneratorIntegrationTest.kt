@@ -45,6 +45,7 @@ class DatabricksSqlGeneratorIntegrationTest :
     companion object {
         private var jdbcDatabase: JdbcDatabase = mock()
         private var connectorConfig: DatabricksConnectorConfig = mock()
+
         @JvmStatic
         @BeforeAll
         @Timeout(value = 10, unit = TimeUnit.MINUTES)
@@ -61,6 +62,7 @@ class DatabricksSqlGeneratorIntegrationTest :
 
     override val sqlGenerator: SqlGenerator
         get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
+
     private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
     override val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
         get() =
@@ -69,6 +71,7 @@ class DatabricksSqlGeneratorIntegrationTest :
                 connectorConfig.database,
                 jdbcDatabase,
             )
+
     override val supportsSafeCast: Boolean
         get() = true
 
@@ -78,11 +81,7 @@ class DatabricksSqlGeneratorIntegrationTest :
 
     override fun createRawTable(streamId: StreamId) {
         destinationHandler.execute(
-            databricksSqlGenerator.createRawTable(
-                streamId,
-                suffix = "",
-                replace = false,
-            ),
+            databricksSqlGenerator.createRawTable(streamId, suffix = "", replace = false)
         )
     }
 
@@ -160,15 +159,14 @@ class DatabricksSqlGeneratorIntegrationTest :
     private fun insertRecords(
         columnNames: List<String>,
         tableIdentifier: String,
-        records: List<JsonNode>
+        records: List<JsonNode>,
     ) {
         val sqlValue = { value: JsonNode? ->
             value?.let {
                 if (value.isTextual) "'${value.asText()}'"
                 else if (value.isNumber) "$value"
                 else "\"${value.toString().replace("\\", "\\\\").replace("\"", "\\\"")}\""
-            }
-                ?: "NULL"
+            } ?: "NULL"
         }
         val columnStr = columnNames.joinToString { "`$it`" }
         val colNumberStr = IntRange(1, columnNames.size).joinToString { "`col$it`" }
@@ -195,7 +193,8 @@ class DatabricksSqlGeneratorIntegrationTest :
             | FROM 
             | VALUES
             |${values.replaceIndent("   ")}
-        """.trimMargin()
+        """
+                .trimMargin()
         println(insertRecordsSql)
         jdbcDatabase.execute(insertRecordsSql)
     }
@@ -221,7 +220,7 @@ class DatabricksSqlGeneratorIntegrationTest :
                 override fun copyToJsonField(
                     resultSet: ResultSet,
                     colIndex: Int,
-                    json: ObjectNode
+                    json: ObjectNode,
                 ) {
                     // TODO: This is a hack looking at columnName to determine
                     //  which complex types are mapped to String. derive it from airbyteType
@@ -250,14 +249,11 @@ class DatabricksSqlGeneratorIntegrationTest :
                         SELECT *
                         FROM ${connectorConfig.database}.$tableIdentifier 
                         ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
-                    """.trimIndent(),
+                    """
+                            .trimIndent()
                     )
             },
-            { resultSet: ResultSet ->
-                sourceOperations.rowToJson(
-                    resultSet,
-                )
-            },
+            { resultSet: ResultSet -> sourceOperations.rowToJson(resultSet) },
         )
     }
 
@@ -269,6 +265,7 @@ class DatabricksSqlGeneratorIntegrationTest :
     override fun testStateHandling() {
         super.testStateHandling()
     }
+
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     @Test
     @Disabled
@@ -362,7 +359,7 @@ class DatabricksSqlGeneratorIntegrationTest :
                 columns,
                 0,
                 0,
-                0
+                0,
             )
         val initialStates =
             destinationHandler.gatherInitialState(listOf(incrementalDedupStream, tmpStream))

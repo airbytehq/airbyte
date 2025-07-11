@@ -31,10 +31,7 @@ class AvroNameTransformerTest {
     internal fun testGetIdentifier() {
         RAW_TO_NORMALIZED_IDENTIFIERS.forEach { (raw: String?, normalized: String?) ->
             Assertions.assertEquals(normalized, INSTANCE.getIdentifier(raw))
-            Assertions.assertEquals(
-                normalized,
-                INSTANCE.convertStreamName(raw),
-            )
+            Assertions.assertEquals(normalized, INSTANCE.convertStreamName(raw))
         }
     }
 

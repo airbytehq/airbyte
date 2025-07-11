@@ -43,7 +43,7 @@ class ParquetSerializedBufferTest {
                     "nested_column" to mapOf("array_column" to listOf(1, 2, 3)),
                     "string_array_column" to listOf("test_string", null),
                     "datetime_with_timezone" to "2022-05-12T15:35:44.192950Z",
-                ),
+                )
             )
         private const val STREAM = "stream1"
         private val streamPair = AirbyteStreamNameNamespacePair(STREAM, null)
@@ -83,14 +83,11 @@ class ParquetSerializedBufferTest {
             S3DestinationConfig.getS3DestinationConfig(
                 Jsons.jsonNode(
                     mapOf(
-                        "format" to
-                            mapOf(
-                                "format_type" to "parquet",
-                            ),
+                        "format" to mapOf("format_type" to "parquet"),
                         "s3_bucket_name" to "test",
                         "s3_bucket_region" to "us-east-2",
-                    ),
-                ),
+                    )
+                )
             )
         runTest(225L, 245L, config, getExpectedString())
     }
@@ -103,25 +100,18 @@ class ParquetSerializedBufferTest {
                 Jsons.jsonNode(
                     mapOf(
                         "format" to
-                            mapOf(
-                                "format_type" to "parquet",
-                                "compression_codec" to "GZIP",
-                            ),
+                            mapOf("format_type" to "parquet", "compression_codec" to "GZIP"),
                         "s3_bucket_name" to "test",
                         "s3_bucket_region" to "us-east-2",
-                    ),
-                ),
+                    )
+                )
             )
         // TODO: Compressed parquet is the same size as uncompressed??
         runTest(225L, 245L, config, getExpectedString())
     }
 
     private fun resolveArchitecture(): String {
-        return System.getProperty("os.name")
-            .replace(
-                ' ',
-                '_',
-            ) +
+        return System.getProperty("os.name").replace(' ', '_') +
             "-" +
             System.getProperty("os.arch") +
             "-" +
@@ -225,15 +215,11 @@ class ParquetSerializedBufferTest {
             S3DestinationConfig.getS3DestinationConfig(
                 Jsons.jsonNode(
                     mapOf(
-                        "format" to
-                            mapOf(
-                                "format_type" to "parquet",
-                                "compression_codec" to "LZO",
-                            ),
+                        "format" to mapOf("format_type" to "parquet", "compression_codec" to "LZO"),
                         "s3_bucket_name" to "test",
                         "s3_bucket_region" to "us-east-2",
-                    ),
-                ),
+                    )
+                )
             )
         runTest(225L, 245L, config, getExpectedString())
     }
@@ -254,7 +240,7 @@ class ParquetSerializedBufferTest {
         minExpectedByte: Long,
         maxExpectedByte: Long,
         config: S3DestinationConfig,
-        expectedData: String
+        expectedData: String,
     ) {
         val tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet").toFile()
         try {

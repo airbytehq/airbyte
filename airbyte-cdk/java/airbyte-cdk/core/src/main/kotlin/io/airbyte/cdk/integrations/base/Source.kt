@@ -15,7 +15,8 @@ interface Source : Integration {
      *
      * @param config
      * - integration-specific configuration object as json. e.g. { "username": "airbyte",
-     * "password": "super secure" }
+     *   "password": "super secure" }
+     *
      * @return Description of the schema.
      * @throws Exception
      * - any exception.
@@ -27,14 +28,17 @@ interface Source : Integration {
      *
      * @param config
      * - integration-specific configuration object as json. e.g. { "username": "airbyte",
-     * "password": "super secure" }
+     *   "password": "super secure" }
+     *
      * @param catalog
      * - schema of the incoming messages.
+     *
      * @param state
      * - state of the incoming messages.
+     *
      * @return [AutoCloseableIterator] that produces message. The iterator will be consumed until no
-     * records remain or until an exception is thrown. [AutoCloseableIterator.close] will always be
-     * called once regardless of success or failure.
+     *   records remain or until an exception is thrown. [AutoCloseableIterator.close] will always
+     *   be called once regardless of success or failure.
      * @throws Exception
      * - any exception.
      */
@@ -42,7 +46,7 @@ interface Source : Integration {
     fun read(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        state: JsonNode?
+        state: JsonNode?,
     ): AutoCloseableIterator<AirbyteMessage>
 
     /**
@@ -51,13 +55,16 @@ interface Source : Integration {
      *
      * @param config
      * - integration-specific configuration object as json. e.g. { "username": "airbyte",
-     * "password": "super secure" }
+     *   "password": "super secure" }
+     *
      * @param catalog
      * - schema of the incoming messages.
+     *
      * @param state
      * - state of the incoming messages.
+     *
      * @return The collection of [AutoCloseableIterator] instances that produce messages for each
-     * configured "stream"
+     *   configured "stream"
      * @throws Exception
      * - any exception
      */
@@ -65,7 +72,7 @@ interface Source : Integration {
     fun readStreams(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        state: JsonNode?
+        state: JsonNode?,
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {
         return listOf(read(config, catalog, state))
     }

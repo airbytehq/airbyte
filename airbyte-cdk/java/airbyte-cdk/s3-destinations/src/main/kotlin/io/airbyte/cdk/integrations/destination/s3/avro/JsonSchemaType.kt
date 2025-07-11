@@ -18,16 +18,16 @@ enum class JsonSchemaType {
     DATE_V1("WellKnownTypes.json#/definitions/Date", Schema.Type.INT),
     TIMESTAMP_WITH_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimestampWithTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     TIMESTAMP_WITHOUT_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimestampWithoutTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     TIME_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithTimezone", Schema.Type.STRING),
     TIME_WITHOUT_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimeWithoutTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     OBJECT("object", Schema.Type.RECORD),
     ARRAY("array", Schema.Type.ARRAY),
@@ -66,7 +66,7 @@ enum class JsonSchemaType {
         @JvmOverloads
         fun fromJsonSchemaType(
             @Nonnull jsonSchemaType: String,
-            jsonSchemaAirbyteType: String? = null
+            jsonSchemaAirbyteType: String? = null,
         ): JsonSchemaType {
             var matchSchemaType: List<JsonSchemaType>? = null
             // Match by Type + airbyteType
@@ -93,7 +93,7 @@ enum class JsonSchemaType {
                 String.format(
                     "Unexpected jsonSchemaType - %s and jsonSchemaAirbyteType - %s",
                     jsonSchemaType,
-                    jsonSchemaAirbyteType
+                    jsonSchemaAirbyteType,
                 )
             }
             if (matchSchemaType.size > 1) {
@@ -102,7 +102,7 @@ enum class JsonSchemaType {
                         "Match with more than one json type! Matched types : %s, Inputs jsonSchemaType : %s, jsonSchemaAirbyteType : %s",
                         matchSchemaType,
                         jsonSchemaType,
-                        jsonSchemaAirbyteType
+                        jsonSchemaAirbyteType,
                     )
                 )
             } else {

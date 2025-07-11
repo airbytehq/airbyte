@@ -17,7 +17,7 @@ import java.io.OutputStream
 class ProtoToJsonFormatter(
     stream: DestinationStream,
     private val outputStream: OutputStream,
-    rootLevelFlattening: Boolean
+    rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
 
     private val fastWriter =
@@ -43,7 +43,7 @@ class ProtoToJsonFormatter(
                 fastWriter.writeMeta(
                     generator,
                     record,
-                    record.rawData.sourceMeta.changes + unknownColumnChanges
+                    record.rawData.sourceMeta.changes + unknownColumnChanges,
                 ) // _airbyte_* fields
                 fastWriter.writePayload(generator, source) // actual data
                 generator.writeEndObject()
@@ -51,7 +51,7 @@ class ProtoToJsonFormatter(
             }
             else -> {
                 throw RuntimeException(
-                    "ProtoToJsonFormatter only supports conversion of proto records to JSON",
+                    "ProtoToJsonFormatter only supports conversion of proto records to JSON"
                 )
             }
         }

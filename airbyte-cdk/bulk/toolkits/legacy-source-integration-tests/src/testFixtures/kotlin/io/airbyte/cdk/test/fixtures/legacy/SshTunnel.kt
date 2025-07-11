@@ -27,6 +27,7 @@ import org.apache.sshd.server.forward.AcceptAllForwardingFilter
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 private val LOGGER = KotlinLogging.logger {}
+
 // todo (cgardens) - this needs unit tests. it is currently tested transitively via source postgres
 // integration tests.
 /**
@@ -36,39 +37,51 @@ private val LOGGER = KotlinLogging.logger {}
 open class SshTunnel
 @JvmOverloads
 /**
- *
  * @param originalConfig
  * - the full config that was passed to the source.
+ *
  * @param hostKey
  * - a list of keys that point to the database host name. should be pointing to where in the config
- * remoteDatabaseHost is found.
+ *   remoteDatabaseHost is found.
+ *
  * @param portKey
  * - a list of keys that point to the database port. should be pointing to where in the config
- * remoteDatabasePort is found.
+ *   remoteDatabasePort is found.
+ *
  * @param endPointKey
  * - key that points to the endpoint URL (this is commonly used for REST-based services such as
- * Elastic and MongoDB)
+ *   Elastic and MongoDB)
+ *
  * @param remoteServiceUrl
  * - URL of the remote endpoint (this is commonly used for REST-based * services such as Elastic and
- * MongoDB)
+ *   MongoDB)
+ *
  * @param tunnelMethod
  * - the type of ssh method that should be used (includes not using SSH at all).
+ *
  * @param tunnelHost
  * - host name of the machine to which we will establish an ssh connection (e.g. hostname of the
- * bastion).
+ *   bastion).
+ *
  * @param tunnelPort
  * - port of the machine to which we will establish an ssh connection. (e.g. port of the bastion).
+ *
  * @param tunnelUser
  * - user that is allowed to access the tunnelHost.
+ *
  * @param sshKey
  * - the ssh key that will be used to make the ssh connection. can be null if we are using
- * tunnelUserPassword instead.
+ *   tunnelUserPassword instead.
+ *
  * @param tunnelUserPassword
  * - the password for the tunnelUser. can be null if we are using sshKey instead.
+ *
  * @param remoteServiceHost
  * - the actual host name of the remote service (as it is known to the tunnel host).
+ *
  * @param remoteServicePort
  * - the actual port of the remote service (as it is known to the tunnel host).
+ *
  * @param connectionOptions
  * - optional connection options for ssh client.
  */
@@ -86,19 +99,19 @@ constructor(
     tunnelUserPassword: String?,
     remoteServiceHost: String?,
     remoteServicePort: Int,
-    connectionOptions: Optional<SshConnectionOptions>? = Optional.empty()
+    connectionOptions: Optional<SshConnectionOptions>? = Optional.empty(),
 ) : AutoCloseable {
     enum class TunnelMethod {
         NO_TUNNEL,
         SSH_PASSWORD_AUTH,
-        SSH_KEY_AUTH
+        SSH_KEY_AUTH,
     }
 
     @JvmRecord
     data class SshConnectionOptions(
         val sessionHeartbeatInterval: Duration,
         val globalHeartbeatInterval: Duration,
-        val idleTimeout: Duration
+        val idleTimeout: Duration,
     )
 
     private val tunnelMethod: TunnelMethod
@@ -154,8 +167,8 @@ constructor(
                         e,
                         String.format(
                             "Provided value for remote service URL is not valid: %s",
-                            remoteServiceUrl
-                        )
+                            remoteServiceUrl,
+                        ),
                     )
                     throw RuntimeException("Failed to parse URL of remote service")
                 }
@@ -181,7 +194,7 @@ constructor(
                         createClient(
                             sshConnectionOptions.sessionHeartbeatInterval,
                             sshConnectionOptions.globalHeartbeatInterval,
-                            sshConnectionOptions.idleTimeout
+                            sshConnectionOptions.idleTimeout,
                         )
                     }
                     .orElseGet { this.createClient() }
@@ -200,7 +213,7 @@ constructor(
                     Jsons.replaceNestedString(
                         clone,
                         hostKey,
-                        SshdSocketAddress.LOCALHOST_ADDRESS.hostName
+                        SshdSocketAddress.LOCALHOST_ADDRESS.hostName,
                     )
                 }
                 if (portKey != null) {
@@ -215,13 +228,13 @@ constructor(
                                 tunnelLocalPort,
                                 remoteServicePath,
                                 null,
-                                null
+                                null,
                             )
                             .toURL()
                     Jsons.replaceNestedString(
                         clone,
                         listOf(endPointKey),
-                        tunnelEndPointURL.toString()
+                        tunnelEndPointURL.toString(),
                     )
                 }
                 return clone
@@ -252,8 +265,8 @@ constructor(
          * authentication.
          *
          * @return The [KeyPair] to add - may not be `null`
-         * @see [loadKeyPairs
-         * ](https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html.loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-)
+         * @see
+         *   [loadKeyPairs ](https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html.loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-)
          */
         get() {
             val validatedKey = validateKey()
@@ -288,14 +301,14 @@ constructor(
     private fun createClient(
         sessionHeartbeatInterval: Duration,
         globalHeartbeatInterval: Duration,
-        idleTimeout: Duration
+        idleTimeout: Duration,
     ): SshClient {
         LOGGER.info { "Creating SSH client with Heartbeat and Keepalive enabled" }
         val client = createClient()
         // Session level heartbeat using SSH_MSG_IGNORE every second.
         client.setSessionHeartbeat(
             SessionHeartbeatController.HeartbeatType.IGNORE,
-            sessionHeartbeatInterval
+            sessionHeartbeatInterval,
         )
         // idle-timeout zero indicates NoTimeout.
         CoreModuleProperties.IDLE_TIMEOUT[client] = idleTimeout
@@ -318,7 +331,7 @@ constructor(
                     .connect(
                         tunnelUser!!.trim { it <= ' ' },
                         tunnelHost!!.trim { it <= ' ' },
-                        tunnelPort
+                        tunnelPort,
                     )
                     .verify(TIMEOUT_MILLIS.toLong())
                     .session
@@ -335,10 +348,10 @@ constructor(
                     SshdSocketAddress(
                         InetSocketAddress.createUnresolved(
                             SshdSocketAddress.LOCALHOST_ADDRESS.hostName,
-                            0
+                            0,
                         )
                     ),
-                    SshdSocketAddress(remoteServiceHost, remoteServicePort)
+                    SshdSocketAddress(remoteServiceHost, remoteServicePort),
                 )
 
             // discover the port that the OS picked and remember it so that we can use it when we
@@ -433,7 +446,7 @@ constructor(
                 ),
                 Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
                 Jsons.getIntOrZero(config, portKey),
-                getSshConnectionOptions(config)
+                getSshConnectionOptions(config),
             )
         }
 
@@ -462,7 +475,7 @@ constructor(
                         SshConnectionOptions(
                             sessionHeartbeatInterval,
                             globalHeartbeatInterval,
-                            idleTimeout
+                            idleTimeout,
                         )
                     )
             } else {
@@ -497,7 +510,7 @@ constructor(
                 ),
                 null,
                 0,
-                getSshConnectionOptions(config)
+                getSshConnectionOptions(config),
             )
         }
 
@@ -507,7 +520,7 @@ constructor(
             config: JsonNode,
             hostKey: List<String>,
             portKey: List<String>,
-            wrapped: CheckedConsumer<JsonNode?, Exception?>
+            wrapped: CheckedConsumer<JsonNode?, Exception?>,
         ) {
             sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
@@ -520,7 +533,7 @@ constructor(
         fun sshWrap(
             config: JsonNode,
             endPointKey: String,
-            wrapped: CheckedConsumer<JsonNode?, Exception?>
+            wrapped: CheckedConsumer<JsonNode?, Exception?>,
         ) {
             sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
@@ -534,7 +547,7 @@ constructor(
             config: JsonNode,
             hostKey: List<String>,
             portKey: List<String>,
-            wrapped: CheckedFunction<JsonNode, T, Exception?>
+            wrapped: CheckedFunction<JsonNode, T, Exception?>,
         ): T {
             getInstance(config, hostKey, portKey).use { sshTunnel ->
                 return wrapped.apply(sshTunnel.configInTunnel)
@@ -546,7 +559,7 @@ constructor(
         fun <T> sshWrap(
             config: JsonNode,
             endPointKey: String,
-            wrapped: CheckedFunction<JsonNode, T, Exception?>
+            wrapped: CheckedFunction<JsonNode, T, Exception?>,
         ): T {
             getInstance(config, endPointKey).use { sshTunnel ->
                 return wrapped.apply(sshTunnel.configInTunnel)

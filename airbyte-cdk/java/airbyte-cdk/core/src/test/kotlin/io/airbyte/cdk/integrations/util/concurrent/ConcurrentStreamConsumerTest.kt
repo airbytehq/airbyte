@@ -99,7 +99,7 @@ internal class ConcurrentStreamConsumerTest {
             streams.add(
                 AutoCloseableIterators.fromIterator(
                     messages.iterator(),
-                    airbyteStreamNameNamespacePair
+                    airbyteStreamNameNamespacePair,
                 )
             )
         }

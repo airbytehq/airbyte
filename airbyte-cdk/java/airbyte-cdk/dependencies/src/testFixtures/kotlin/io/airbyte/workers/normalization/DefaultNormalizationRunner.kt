@@ -35,7 +35,7 @@ private val LOGGER = KotlinLogging.logger {}
 class DefaultNormalizationRunner(
     private val processFactory: ProcessFactory,
     private val normalizationImageName: String?,
-    private val normalizationIntegrationType: String?
+    private val normalizationIntegrationType: String?,
 ) : NormalizationRunner {
     private val streamFactory = NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER)
     private var airbyteMessagesByType: MutableMap<AirbyteMessage.Type, List<AirbyteMessage>> =
@@ -51,12 +51,12 @@ class DefaultNormalizationRunner(
         jobRoot: Path,
         config: JsonNode?,
         resourceRequirements: ResourceRequirements?,
-        dbtConfig: OperatorDbt
+        dbtConfig: OperatorDbt,
     ): Boolean {
         val files: Map<String?, String?> =
             ImmutableMap.of(
                 WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-                Jsons.serialize(config)
+                Jsons.serialize(config),
             )
         val gitRepoUrl = dbtConfig.gitRepoUrl
         if (Strings.isNullOrEmpty(gitRepoUrl)) {
@@ -76,7 +76,7 @@ class DefaultNormalizationRunner(
                 "--config",
                 WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
                 "--git-repo",
-                gitRepoUrl
+                gitRepoUrl,
             )
         } else {
             runProcess(
@@ -93,7 +93,7 @@ class DefaultNormalizationRunner(
                 "--git-repo",
                 gitRepoUrl,
                 "--git-branch",
-                gitRepoBranch
+                gitRepoBranch,
             )
         }
     }
@@ -105,14 +105,14 @@ class DefaultNormalizationRunner(
         jobRoot: Path,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        resourceRequirements: ResourceRequirements?
+        resourceRequirements: ResourceRequirements?,
     ): Boolean {
         val files: Map<String?, String?> =
             ImmutableMap.of(
                 WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
                 Jsons.serialize(config),
                 WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-                Jsons.serialize(catalog)
+                Jsons.serialize(catalog),
             )
 
         return runProcess(
@@ -127,7 +127,7 @@ class DefaultNormalizationRunner(
             "--config",
             WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
             "--catalog",
-            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME
+            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
         )
     }
 
@@ -138,7 +138,7 @@ class DefaultNormalizationRunner(
         jobRoot: Path,
         files: Map<String?, String?>,
         resourceRequirements: ResourceRequirements?,
-        vararg args: String
+        vararg args: String,
     ): Boolean {
         try {
             LOGGER.info("Running with normalization version: {}", normalizationImageName)
@@ -159,12 +159,12 @@ class DefaultNormalizationRunner(
                         Metadata.JOB_TYPE_KEY,
                         Metadata.SYNC_JOB,
                         Metadata.SYNC_STEP_KEY,
-                        Metadata.NORMALIZE_STEP
+                        Metadata.NORMALIZE_STEP,
                     ),
                     emptyMap(),
                     emptyMap(),
                     emptyMap(),
-                    *args
+                    *args,
                 )
             this.process = process
 
@@ -207,14 +207,14 @@ class DefaultNormalizationRunner(
 
                     airbyteMessagesByType.putIfAbsent(
                         AirbyteMessage.Type.TRACE,
-                        java.util.List.of(dbtTraceMessage)
+                        java.util.List.of(dbtTraceMessage),
                     )
                 }
             }
             LineGobbler.gobble(
                 process.errorStream,
                 { msg: String -> LOGGER.error(msg) },
-                CONTAINER_LOG_MDC_BUILDER
+                CONTAINER_LOG_MDC_BUILDER,
             )
 
             TestHarnessUtils.wait(process)

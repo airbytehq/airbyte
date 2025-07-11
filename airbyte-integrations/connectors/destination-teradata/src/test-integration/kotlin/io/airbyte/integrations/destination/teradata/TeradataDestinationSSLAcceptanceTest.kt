@@ -21,8 +21,6 @@ class TeradataDestinationSSLAcceptanceTest : TeradataDestinationAcceptanceTest()
 
     companion object {
         private val LOGGER: Logger =
-            LoggerFactory.getLogger(
-                TeradataDestinationSSLAcceptanceTest::class.java,
-            )
+            LoggerFactory.getLogger(TeradataDestinationSSLAcceptanceTest::class.java)
     }
 }

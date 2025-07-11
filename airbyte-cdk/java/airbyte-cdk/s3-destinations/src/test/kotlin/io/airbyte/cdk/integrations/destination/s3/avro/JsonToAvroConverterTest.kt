@@ -35,7 +35,8 @@ class JsonToAvroConverterTest {
                 """
                                               {"${'$'}ref": "WellKnownTypes.json#/definitions/Number"}"
                                               
-                                              """.trimIndent(),
+                                              """
+                    .trimIndent()
             )
 
         assertEquals(
@@ -51,7 +52,8 @@ class JsonToAvroConverterTest {
                 """
                                               {"${'$'}ref": "WellKnownTypes.json#/definitions/String"}"
                                               
-                                              """.trimIndent(),
+                                              """
+                    .trimIndent()
             )
         assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input1).isEmpty)
     }
@@ -110,13 +112,11 @@ class JsonToAvroConverterTest {
 
     @Suppress("DEPRECATION")
     @ParameterizedTest
-    @ArgumentsSource(
-        GetFieldTypeTestCaseProviderV0::class,
-    )
+    @ArgumentsSource(GetFieldTypeTestCaseProviderV0::class)
     internal fun testFieldTypeConversionV0(
         fieldName: String,
         jsonFieldSchema: JsonNode,
-        avroFieldType: JsonNode
+        avroFieldType: JsonNode,
     ) {
         assertEquals(
             avroFieldType,
@@ -128,20 +128,18 @@ class JsonToAvroConverterTest {
                         appendExtraProps = true,
                         addStringToLogicalTypes = true,
                     )
-                    .toString(),
+                    .toString()
             ),
             "Test for $fieldName failed",
         )
     }
 
     @ParameterizedTest
-    @ArgumentsSource(
-        GetFieldTypeTestCaseProviderV1::class,
-    )
+    @ArgumentsSource(GetFieldTypeTestCaseProviderV1::class)
     internal fun testFieldTypeConversionV1(
         fieldName: String,
         jsonFieldSchema: JsonNode,
-        avroFieldType: JsonNode?
+        avroFieldType: JsonNode?,
     ) {
         assertEquals(
             avroFieldType,
@@ -153,7 +151,7 @@ class JsonToAvroConverterTest {
                         appendExtraProps = true,
                         addStringToLogicalTypes = true,
                     )
-                    .toString(),
+                    .toString()
             ),
             "Test for $fieldName failed",
         )
@@ -213,9 +211,7 @@ class JsonToAvroConverterTest {
     /** This test verifies both the schema and object conversion. */
     @Suppress("DEPRECATION")
     @ParameterizedTest
-    @ArgumentsSource(
-        GetAvroSchemaTestCaseProviderV0::class,
-    )
+    @ArgumentsSource(GetAvroSchemaTestCaseProviderV0::class)
     @Throws(Exception::class)
     internal fun testJsonAvroConversionV0(
         schemaName: String,
@@ -224,7 +220,7 @@ class JsonToAvroConverterTest {
         jsonSchema: JsonNode,
         jsonObject: JsonNode?,
         avroSchema: JsonNode,
-        avroObject: JsonNode?
+        avroObject: JsonNode?,
     ) {
         val actualAvroSchema =
             SCHEMA_CONVERTER.getAvroSchema(
@@ -257,9 +253,7 @@ class JsonToAvroConverterTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(
-        GetAvroSchemaTestCaseProviderV1::class,
-    )
+    @ArgumentsSource(GetAvroSchemaTestCaseProviderV1::class)
     @Throws(Exception::class)
     internal fun testJsonAvroConversionV1(
         schemaName: String,
@@ -268,7 +262,7 @@ class JsonToAvroConverterTest {
         jsonSchema: JsonNode,
         jsonObject: JsonNode?,
         avroSchema: JsonNode,
-        avroObject: JsonNode?
+        avroObject: JsonNode?,
     ) {
         val actualAvroSchema =
             SCHEMA_CONVERTER.getAvroSchema(

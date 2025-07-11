@@ -41,16 +41,12 @@ T : ObjectStorageConfigProvider {
         return CompositeDlqChecker(createChecker(manifest.checker), dlqChecker)
     }
 
-    private fun createAuthenticator(
-        model: AuthenticatorModel,
-    ): Interceptor =
+    private fun createAuthenticator(model: AuthenticatorModel): Interceptor =
         when (model) {
             is BasicAccessAuthenticatorModel -> model.toInterceptor(createInterpolationContext())
         }
 
-    private fun createChecker(
-        model: CheckerModel,
-    ): HttpRequestChecker<T> =
+    private fun createChecker(model: CheckerModel): HttpRequestChecker<T> =
         when (model) {
             is HttpRequestCheckerModel -> HttpRequestChecker(model.requester.toRequester())
         }

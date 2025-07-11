@@ -37,12 +37,9 @@ private val log = KotlinLogging.logger {}
  */
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
-    justification = "suspend and fb's non-null analysis don't play well"
+    justification = "suspend and fb's non-null analysis don't play well",
 )
-class BinaryRowInsertBuffer(
-    val tableName: TableName,
-    private val clickhouseClient: Client,
-) {
+class BinaryRowInsertBuffer(val tableName: TableName, private val clickhouseClient: Client) {
     // Initialize the inner buffer
     private val schema = clickhouseClient.getTableSchema(tableName.name, tableName.namespace)
     @VisibleForTesting internal var inner = InputOutputBuffer()
@@ -63,7 +60,7 @@ class BinaryRowInsertBuffer(
                 .insert(
                     "`${tableName.namespace}`.`${tableName.name}`",
                     inner.toInputStream(),
-                    ClickHouseFormat.RowBinary
+                    ClickHouseFormat.RowBinary,
                 )
                 .await()
 
@@ -96,6 +93,7 @@ class BinaryRowInsertBuffer(
         /**
          * Get an input stream based on the contents of this output stream. Do not use the output
          * stream after calling this method.
+         *
          * @return an {@link InputStream}
          */
         fun toInputStream(): ByteArrayInputStream {

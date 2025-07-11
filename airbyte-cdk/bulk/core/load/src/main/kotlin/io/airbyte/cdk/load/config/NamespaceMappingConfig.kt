@@ -24,5 +24,5 @@ enum class NamespaceDefinitionType(@JsonValue val value: String) {
 data class NamespaceMappingConfig(
     val namespaceDefinitionType: NamespaceDefinitionType,
     val namespaceFormat: String? = null,
-    val streamPrefix: String? = null
+    val streamPrefix: String? = null,
 )

@@ -41,7 +41,7 @@ class AirbyteSourceRunner(
         additionalMicronautEnvs,
         systemEnv,
         micronautProperties = emptyMap(),
-        testBeanDefinitions
+        testBeanDefinitions,
     ) {
     companion object {
         @JvmStatic
@@ -68,7 +68,7 @@ class AirbyteDestinationRunner(
         additionalMicronautEnvs,
         systemEnv,
         micronautProperties,
-        testBeanDefinitions
+        testBeanDefinitions,
     ) {
     companion object {
         @JvmStatic
@@ -113,10 +113,10 @@ sealed class AirbyteConnectorRunner(
         val additionalPropertiesSource =
             MapPropertySource("additional_properties", micronautProperties)
         val ctx: ApplicationContext =
-        // note that we put the override envs last.
-        // This ensures that micronaut gives those environments precedence
-        // (because the last environment's application-XYZ.yaml wins).
-        ApplicationContext.builder(R::class.java, *envs, CONNECTOR_OVERRIDE_ENV)
+            // note that we put the override envs last.
+            // This ensures that micronaut gives those environments precedence
+            // (because the last environment's application-XYZ.yaml wins).
+            ApplicationContext.builder(R::class.java, *envs, CONNECTOR_OVERRIDE_ENV)
                 .propertySources(
                     *listOfNotNull(
                             airbytePropertySource,
@@ -124,7 +124,7 @@ sealed class AirbyteConnectorRunner(
                             MetadataYamlPropertySource(),
                             additionalPropertiesSource,
                         )
-                        .toTypedArray(),
+                        .toTypedArray()
                 )
                 .beanDefinitions(*testBeanDefinitions)
                 .start()
@@ -146,9 +146,7 @@ sealed class AirbyteConnectorRunner(
 }
 
 /** Encapsulates all picocli logic. Defines the grammar for the CLI. */
-class PicocliCommandLineFactory(
-    val runner: AirbyteConnectorRunner,
-) {
+class PicocliCommandLineFactory(val runner: AirbyteConnectorRunner) {
     inline fun <reified R : Runnable> build(factory: CommandLine.IFactory): CommandLine {
         val commandSpec: CommandLine.Model.CommandSpec =
             CommandLine.Model.CommandSpec.wrapWithoutInspection(R::class.java, factory)
@@ -174,10 +172,8 @@ class PicocliCommandLineFactory(
             )
             .description("Executes an Airbyte ${runner.connectorType} connector.")
 
-    fun command(
-        name: String,
-        description: String,
-    ): OptionSpec = OptionSpec.builder("--$name").description(description).arity("0").build()
+    fun command(name: String, description: String): OptionSpec =
+        OptionSpec.builder("--$name").description(description).arity("0").build()
 
     val spec: OptionSpec = command("spec", "outputs the json configuration specification")
     val check: OptionSpec = command("check", "checks the config can be used to connect")
@@ -201,10 +197,7 @@ class PicocliCommandLineFactory(
             }
             .build()
 
-    fun fileOption(
-        name: String,
-        vararg description: String,
-    ): OptionSpec =
+    fun fileOption(name: String, vararg description: String): OptionSpec =
         OptionSpec.builder("--$name")
             .description(*description)
             .type(Path::class.java)

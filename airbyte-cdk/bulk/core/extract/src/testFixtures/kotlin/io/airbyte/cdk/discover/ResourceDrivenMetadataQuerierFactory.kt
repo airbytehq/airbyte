@@ -20,7 +20,7 @@ import java.sql.SQLException
 @Requires(property = "metadata.resource")
 @Replaces(MetadataQuerier.Factory::class)
 class ResourceDrivenMetadataQuerierFactory(
-    @Value("\${metadata.resource}") resource: String? = null,
+    @Value("\${metadata.resource}") resource: String? = null
 ) : MetadataQuerier.Factory<SourceConfiguration> {
     val metadata: Map<StreamIdentifier, TestStreamMetadata?>
 
@@ -58,16 +58,12 @@ class ResourceDrivenMetadataQuerierFactory(
                 return metadata.keys.filter { it.namespace == streamNamespace }
             }
 
-            override fun fields(
-                streamID: StreamIdentifier,
-            ): List<Field> {
+            override fun fields(streamID: StreamIdentifier): List<Field> {
                 if (isClosed) throw IllegalStateException()
                 return metadata[streamID]?.fields ?: throw SQLException("query failed", "tbl")
             }
 
-            override fun primaryKey(
-                streamID: StreamIdentifier,
-            ): List<List<String>> {
+            override fun primaryKey(streamID: StreamIdentifier): List<List<String>> {
                 if (isClosed) throw IllegalStateException()
                 return metadata[streamID]?.primaryKeys ?: throw SQLException("query failed", "tbl")
             }
@@ -80,18 +76,8 @@ class ResourceDrivenMetadataQuerierFactory(
         }
 }
 
-data class TestStreamMetadata(
-    val fields: List<Field>,
-    val primaryKeys: List<List<String>>,
-)
+data class TestStreamMetadata(val fields: List<Field>, val primaryKeys: List<List<String>>)
 
-data class Level1(
-    val name: String,
-    val namespace: String?,
-    val metadata: Level2?,
-)
+data class Level1(val name: String, val namespace: String?, val metadata: Level2?)
 
-data class Level2(
-    val columns: Map<String, String>,
-    val primaryKeys: List<List<String>>,
-)
+data class Level2(val columns: Map<String, String>, val primaryKeys: List<List<String>>)

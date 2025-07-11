@@ -70,7 +70,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     protected open fun getRawTableFromMetadata(
         dbmetadata: DatabaseMetaData,
         id: StreamId,
-        suffix: String
+        suffix: String,
     ): ResultSet = dbmetadata.getTables(catalogName, id.rawNamespace, id.rawName + suffix, null)
 
     @Throws(Exception::class)
@@ -122,7 +122,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                             .sql
                     )
                 },
-                { record: ResultSet -> record.getTimestamp("min_timestamp") }
+                { record: ResultSet -> record.getTimestamp("min_timestamp") },
             )
             .use { timestampStream ->
                 // Filter for nonNull values in case the query returned NULL (i.e. no unloaded
@@ -148,7 +148,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                             .sql
                     )
                 },
-                { record: ResultSet -> record.getTimestamp("min_timestamp") }
+                { record: ResultSet -> record.getTimestamp("min_timestamp") },
             )
             .use { timestampStream ->
                 // Filter for nonNull values in case the query returned NULL (i.e. no raw records at
@@ -158,7 +158,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 return InitialRawTableStatus(
                     true,
                     false,
-                    minUnloadedTimestamp.map { obj: Timestamp -> obj.toInstant() }
+                    minUnloadedTimestamp.map { obj: Timestamp -> obj.toInstant() },
                 )
             }
     }
@@ -218,7 +218,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             jdbcDatabase.execute(
                 dslContext
                     .createTableIfNotExists(
-                        quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME),
+                        quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME)
                     )
                     .column(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME), SQLDataType.VARCHAR)
                     .column(
@@ -236,7 +236,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
                         stateTableUpdatedAtType,
                     )
-                    .getSQL(ParamType.INLINED),
+                    .getSQL(ParamType.INLINED)
             )
 
             // Fetch all records from it. We _could_ filter down to just our streams... but meh.
@@ -252,7 +252,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT)),
                         )
                         .from(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME))
-                        .sql,
+                        .sql
                 )
                 .map { recordJson: JsonNode ->
                     // Forcibly downcase all key names.
@@ -306,7 +306,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     private fun retrieveState(
         destinationStatesFuture:
             CompletableFuture<Map<AirbyteStreamNameNamespacePair, DestinationState>>,
-        streamConfig: StreamConfig?
+        streamConfig: StreamConfig?,
     ): CompletionStage<DestinationInitialStatus<DestinationState>> {
         return destinationStatesFuture.thenApply {
             destinationStates: Map<AirbyteStreamNameNamespacePair, DestinationState> ->
@@ -330,7 +330,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 val destinationState =
                     destinationStates.getOrDefault(
                         streamConfig.id.asPair(),
-                        toDestinationState(Jsons.emptyObject())
+                        toDestinationState(Jsons.emptyObject()),
                     )
                 return@thenApply DestinationInitialStatus<DestinationState>(
                     streamConfig,
@@ -338,7 +338,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     initialRawTableState,
                     getInitialRawTableState(
                         streamConfig.id,
-                        AbstractStreamOperation.TMP_TABLE_SUFFIX
+                        AbstractStreamOperation.TMP_TABLE_SUFFIX,
                     ),
                     isSchemaMismatch,
                     isFinalTableEmpty,
@@ -347,13 +347,13 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         generationHandler.getGenerationIdInTable(
                             jdbcDatabase,
                             streamConfig.id.rawNamespace,
-                            streamConfig.id.rawName
+                            streamConfig.id.rawName,
                         ),
                     finalTempTableGenerationId =
                         generationHandler.getGenerationIdInTable(
                             jdbcDatabase,
                             streamConfig.id.rawNamespace,
-                            streamConfig.id.rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX
+                            streamConfig.id.rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX,
                         ),
                 )
             } catch (e: Exception) {
@@ -396,7 +396,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
     open protected fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
-        existingTable: TableDefinition
+        existingTable: TableDefinition,
     ): Boolean {
         // Check that the columns match, with special handling for the metadata columns.
         if (
@@ -470,18 +470,18 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME), String::class.java),
                         field(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
-                            String::class.java
+                            String::class.java,
                         ),
                         field(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                            String::class.java
+                            String::class.java,
                         ), // This field is a timestamptz, but it's easier to just insert a string
                         // and assume the destination can cast it appropriately.
                         // Destination-specific timestamp syntax is weird and annoying.
                         field(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
-                            String::class.java
-                        )
+                            String::class.java,
+                        ),
                     )
             for ((streamId, value) in destinationStates) {
                 val stateJson = Jsons.serialize(value)
@@ -490,7 +490,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         streamId.originalName,
                         streamId.originalNamespace,
                         stateJson,
-                        OffsetDateTime.now().toString()
+                        OffsetDateTime.now().toString(),
                     )
             }
             val insertStates = insertStatesStep.getSQL(ParamType.INLINED)
@@ -529,7 +529,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             jdbcDatabase: JdbcDatabase,
             catalogName: String?,
             schemaName: String?,
-            tableName: String?
+            tableName: String?,
         ): Optional<TableDefinition> {
             val retrievedColumnDefns =
                 jdbcDatabase.executeMetadataQuery { dbMetadata: DatabaseMetaData ->
@@ -554,7 +554,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                                         columnName,
                                         typeName,
                                         columnSize,
-                                        fromIsNullableIsoString(isNullable)
+                                        fromIsNullableIsoString(isNullable),
                                     )
                             }
                         }

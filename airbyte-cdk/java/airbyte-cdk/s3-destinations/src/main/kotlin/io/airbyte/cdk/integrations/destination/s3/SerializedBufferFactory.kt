@@ -37,10 +37,11 @@ class SerializedBufferFactory {
          * store it.
          *
          * This factory determines which [UploadFormatConfig] to use depending on the user provided
+         *
          * @param config, The @param createStorageFunctionWithoutExtension is the constructor
-         * function to call when creating a new buffer where to store data. Note that we typically
-         * associate which format is being stored in the storage object thanks to its file
-         * extension.
+         *   function to call when creating a new buffer where to store data. Note that we typically
+         *   associate which format is being stored in the storage object thanks to its file
+         *   extension.
          */
         @JvmStatic
         fun getCreateFunction(
@@ -53,38 +54,32 @@ class SerializedBufferFactory {
             when (formatConfig.format) {
                 FileUploadFormat.AVRO -> {
                     val createStorageFunctionWithExtension = Callable {
-                        createStorageFunctionWithoutExtension.apply(
-                            formatConfig.fileExtension,
-                        )
+                        createStorageFunctionWithoutExtension.apply(formatConfig.fileExtension)
                     }
                     return AvroSerializedBuffer.createFunction(
                         formatConfig as UploadAvroFormatConfig,
                         createStorageFunctionWithExtension,
-                        useV2FieldNames
+                        useV2FieldNames,
                     )
                 }
                 FileUploadFormat.CSV -> {
                     val createStorageFunctionWithExtension = Callable {
-                        createStorageFunctionWithoutExtension.apply(
-                            formatConfig.fileExtension,
-                        )
+                        createStorageFunctionWithoutExtension.apply(formatConfig.fileExtension)
                     }
                     return CsvSerializedBuffer.createFunction(
                         formatConfig as UploadCsvFormatConfig,
                         createStorageFunctionWithExtension,
-                        useV2FieldNames
+                        useV2FieldNames,
                     )
                 }
                 FileUploadFormat.JSONL -> {
                     val createStorageFunctionWithExtension = Callable {
-                        createStorageFunctionWithoutExtension.apply(
-                            formatConfig.fileExtension,
-                        )
+                        createStorageFunctionWithoutExtension.apply(formatConfig.fileExtension)
                     }
                     return JsonLSerializedBuffer.createBufferFunction(
                         formatConfig as UploadJsonlFormatConfig,
                         createStorageFunctionWithExtension,
-                        useV2FieldNames
+                        useV2FieldNames,
                     )
                 }
                 FileUploadFormat.PARQUET -> {

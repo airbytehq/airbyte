@@ -22,7 +22,7 @@ class ConfigurationSpecificationSupplierTest {
     fun testSchema() {
         Assertions.assertEquals(
             FakeSourceConfigurationSpecification::class.java,
-            supplier.javaClass
+            supplier.javaClass,
         )
         val expected: String =
             ResourceUtils.readResource("fakesource/expected-schema.json")

@@ -25,14 +25,11 @@ class ClickhouseDirectLoaderFactory(
 
     override fun create(
         streamDescriptor: DestinationStream.Descriptor,
-        part: Int
+        part: Int,
     ): ClickhouseDirectLoader {
         val tableName = stateStore.get(streamDescriptor)!!.tableName
         val buffer = BinaryRowInsertBuffer(tableName, clickhouseClient)
 
-        return ClickhouseDirectLoader(
-            munger,
-            buffer,
-        )
+        return ClickhouseDirectLoader(munger, buffer)
     }
 }

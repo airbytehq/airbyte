@@ -18,10 +18,7 @@ import jakarta.inject.Singleton
  * The HashMap construction is deliberate for speed considerations.
  */
 @Singleton
-class RecordMunger(
-    private val catalogInfo: TableCatalog,
-    private val coercer: ClickhouseCoercer,
-) {
+class RecordMunger(private val catalogInfo: TableCatalog, private val coercer: ClickhouseCoercer) {
     fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
         val enriched =

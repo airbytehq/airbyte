@@ -24,7 +24,7 @@ protected constructor(
     protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory(),
     protected val environment: Map<String, String> = System.getenv(),
     private val memoryRatio: Double = 0.5,
-    private val nThreads: Int = 5
+    private val nThreads: Int = 5,
 ) : BaseConnector(), Destination {
     private val nameTransformer: NamingConventionTransformer = S3NameTransformer()
 
@@ -38,12 +38,12 @@ protected constructor(
             S3BaseChecks.testSingleUpload(
                 s3Client,
                 destinationConfig.bucketName,
-                destinationConfig.bucketPath!!
+                destinationConfig.bucketPath!!,
             )
             S3BaseChecks.testMultipartUpload(
                 s3Client,
                 destinationConfig.bucketName,
-                destinationConfig.bucketPath
+                destinationConfig.bucketPath,
             )
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
@@ -61,7 +61,7 @@ protected constructor(
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         throw UnsupportedOperationException("getConsumer is not supported in S3 async destinations")
     }
@@ -69,7 +69,7 @@ protected constructor(
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer? {
         val s3Config = configFactory.getS3DestinationConfig(config, storageProvider(), environment)
         return S3ConsumerFactory()
@@ -80,7 +80,7 @@ protected constructor(
                 catalog,
                 memoryRatio,
                 nThreads,
-                featureFlags
+                featureFlags,
             )
     }
 

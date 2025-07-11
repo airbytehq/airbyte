@@ -23,13 +23,13 @@ import jakarta.inject.Singleton
 @Requires(bean = InsertLoader::class)
 class InsertLoaderRequestBuilderAccumulator<Q : InsertLoaderRequest>(
     private val loaderFactory: InsertLoader<Q>,
-    @Named("insertLoaderClampedRequestSizeBytes") private val maxRequestSizeBytes: Long
+    @Named("insertLoaderClampedRequestSizeBytes") private val maxRequestSizeBytes: Long,
 ) :
     BatchAccumulator<
         InsertLoaderRequestBuilder<Q>,
         StreamKey,
         DestinationRecordRaw,
-        InsertLoaderRequestBuilderAccumulator.Result<Q>
+        InsertLoaderRequestBuilderAccumulator.Result<Q>,
     > {
 
     data class Result<Q>(val request: Q) : WithBatchState {
@@ -42,7 +42,7 @@ class InsertLoaderRequestBuilderAccumulator<Q : InsertLoaderRequest>(
 
     override suspend fun accept(
         input: DestinationRecordRaw,
-        state: InsertLoaderRequestBuilder<Q>
+        state: InsertLoaderRequestBuilder<Q>,
     ): BatchAccumulatorResult<InsertLoaderRequestBuilder<Q>, Result<Q>> {
         return when (val output = state.accept(input, maxRequestSizeBytes)) {
             is InsertLoaderRequestBuilder.NoOutput<Q> -> NoOutput(state)

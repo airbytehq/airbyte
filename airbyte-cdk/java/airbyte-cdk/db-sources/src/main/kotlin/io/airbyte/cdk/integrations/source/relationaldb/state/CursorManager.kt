@@ -13,11 +13,12 @@ import java.util.function.Function
 import java.util.function.Supplier
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Manages the map of streams to current cursor values for state management.
  *
  * @param <S> The type that represents the stream object which holds the current cursor information
- * in the state. </S>
+ *   in the state. </S>
  */
 class CursorManager<S : Any>(
     catalog: ConfiguredAirbyteCatalog,
@@ -26,7 +27,7 @@ class CursorManager<S : Any>(
     cursorFieldFunction: Function<S, List<String>>?,
     cursorRecordCountFunction: Function<S, Long>?,
     namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>,
-    onlyIncludeIncrementalStreams: Boolean
+    onlyIncludeIncrementalStreams: Boolean,
 ) {
     /**
      * Map of streams (name/namespace tuple) to the current cursor information stored in the state.
@@ -39,15 +40,15 @@ class CursorManager<S : Any>(
      *
      * @param catalog The connector's configured catalog.
      * @param streamSupplier A [Supplier] that provides the cursor manager with the collection of
-     * streams tracked by the connector's state.
+     *   streams tracked by the connector's state.
      * @param cursorFunction A [Function] that extracts the current cursor from a stream stored in
-     * the connector's state.
+     *   the connector's state.
      * @param cursorFieldFunction A [Function] that extracts the cursor field name from a stream
-     * stored in the connector's state.
+     *   stored in the connector's state.
      * @param cursorRecordCountFunction A [Function] that extracts the cursor record count for a
-     * stream stored in the connector's state.
+     *   stream stored in the connector's state.
      * @param namespacePairFunction A [Function] that generates a [AirbyteStreamNameNamespacePair]
-     * that identifies each stream in the connector's state.
+     *   that identifies each stream in the connector's state.
      */
     init {
         pairToCursorInfo =
@@ -58,7 +59,7 @@ class CursorManager<S : Any>(
                 cursorFieldFunction,
                 cursorRecordCountFunction,
                 namespacePairFunction,
-                onlyIncludeIncrementalStreams
+                onlyIncludeIncrementalStreams,
             )
     }
 
@@ -68,15 +69,15 @@ class CursorManager<S : Any>(
      *
      * @param catalog The connector's configured catalog.
      * @param streamSupplier A [Supplier] that provides the cursor manager with the collection of
-     * streams tracked by the connector's state.
+     *   streams tracked by the connector's state.
      * @param cursorFunction A [Function] that extracts the current cursor from a stream stored in
-     * the connector's state.
+     *   the connector's state.
      * @param cursorFieldFunction A [Function] that extracts the cursor field name from a stream
-     * stored in the connector's state.
+     *   stored in the connector's state.
      * @param cursorRecordCountFunction A [Function] that extracts the cursor record count for a
-     * stream stored in the connector's state.
+     *   stream stored in the connector's state.
      * @param namespacePairFunction A [Function] that generates a [AirbyteStreamNameNamespacePair]
-     * that identifies each stream in the connector's state.
+     *   that identifies each stream in the connector's state.
      * @return A map of streams to current cursor information for the stream.
      */
     @VisibleForTesting
@@ -87,7 +88,7 @@ class CursorManager<S : Any>(
         cursorFieldFunction: Function<S, List<String>>?,
         cursorRecordCountFunction: Function<S, Long>?,
         namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>,
-        onlyIncludeIncrementalStreams: Boolean
+        onlyIncludeIncrementalStreams: Boolean,
     ): Map<AirbyteStreamNameNamespacePair, CursorInfo> {
         val allStreamNames =
             catalog.streams
@@ -127,7 +128,7 @@ class CursorManager<S : Any>(
                     streamOptional,
                     cursorFunction,
                     cursorFieldFunction,
-                    cursorRecordCountFunction
+                    cursorRecordCountFunction,
                 )
         }
 
@@ -139,18 +140,18 @@ class CursorManager<S : Any>(
      * for the given stream.
      *
      * @param pair A [AirbyteStreamNameNamespacePair] that identifies a specific stream managed by
-     * the connector.
+     *   the connector.
      * @param stateOptional [Optional] containing the current state associated with the stream.
      * @param streamOptional [Optional] containing the [ConfiguredAirbyteStream] associated with the
-     * stream.
+     *   stream.
      * @param cursorFunction A [Function] that provides the current cursor from the state associated
-     * with the stream.
+     *   with the stream.
      * @param cursorFieldFunction A [Function] that provides the cursor field name for the cursor
-     * stored in the state associated with the stream.
+     *   stored in the state associated with the stream.
      * @param cursorRecordCountFunction A [Function] that extracts the cursor record count for a
-     * stream stored in the connector's state.
+     *   stream stored in the connector's state.
      * @return A [CursorInfo] object based on the data currently stored in the connector's state for
-     * the given stream.
+     *   the given stream.
      */
     internal fun createCursorInfoForStream(
         pair: AirbyteStreamNameNamespacePair?,
@@ -158,7 +159,7 @@ class CursorManager<S : Any>(
         streamOptional: Optional<ConfiguredAirbyteStream>,
         cursorFunction: Function<S, String>?,
         cursorFieldFunction: Function<S, List<String>>?,
-        cursorRecordCountFunction: Function<S, Long>?
+        cursorRecordCountFunction: Function<S, Long>?,
     ): CursorInfo {
         val originalCursorField =
             stateOptional
@@ -243,7 +244,7 @@ class CursorManager<S : Any>(
             originalCursorRecordCount,
             cursorField,
             cursor,
-            cursorRecordCount
+            cursorRecordCount,
         )
     }
 
@@ -253,7 +254,7 @@ class CursorManager<S : Any>(
      *
      * @param pair The [AirbyteStreamNameNamespacePair] which identifies a stream.
      * @return An [Optional] possibly containing the current [CursorInfo] associated with the
-     * provided stream name/namespace tuple.
+     *   provided stream name/namespace tuple.
      */
     fun getCursorInfo(pair: AirbyteStreamNameNamespacePair?): Optional<CursorInfo> {
         return Optional.ofNullable(pairToCursorInfo[pair])
@@ -265,7 +266,7 @@ class CursorManager<S : Any>(
      *
      * @param pair The [AirbyteStreamNameNamespacePair] which identifies a stream.
      * @return An [Optional] possibly containing the cursor field name associated with the cursor
-     * tracked in the state associated with the provided stream name/namespace tuple.
+     *   tracked in the state associated with the provided stream name/namespace tuple.
      */
     fun getCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String> {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursorField }
@@ -277,7 +278,7 @@ class CursorManager<S : Any>(
      *
      * @param pair The [AirbyteStreamNameNamespacePair] which identifies a stream.
      * @return An [Optional] possibly containing the cursor value tracked in the state associated
-     * with the provided stream name/namespace tuple.
+     *   with the provided stream name/namespace tuple.
      */
     fun getCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String> {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursor }

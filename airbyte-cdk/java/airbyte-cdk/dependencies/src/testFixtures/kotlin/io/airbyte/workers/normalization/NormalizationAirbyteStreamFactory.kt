@@ -16,6 +16,7 @@ import java.io.BufferedReader
 import java.util.stream.Stream
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
  * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
@@ -28,7 +29,7 @@ private val LOGGER = KotlinLogging.logger {}
 class NormalizationAirbyteStreamFactory
 internal constructor(
     private val logger: KLogger,
-    private val containerLogMdcBuilder: MdcScope.Builder
+    private val containerLogMdcBuilder: MdcScope.Builder,
 ) : AirbyteStreamFactory {
     val dbtErrors: MutableList<String> = ArrayList()
 

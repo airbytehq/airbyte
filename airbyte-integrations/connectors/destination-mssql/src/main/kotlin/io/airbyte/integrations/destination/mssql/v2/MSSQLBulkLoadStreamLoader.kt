@@ -71,10 +71,10 @@ sealed interface MSSQLStreamState {
 
 data class MSSQLBulkLoaderStreamState(
     override val dataSource: DataSource,
-    val formatFilePath: String
+    val formatFilePath: String,
 ) : MSSQLStreamState
 
 data class MSSQLDirectLoaderStreamState(
     override val dataSource: DataSource,
-    val sqlBuilder: MSSQLQueryBuilder
+    val sqlBuilder: MSSQLQueryBuilder,
 ) : MSSQLStreamState

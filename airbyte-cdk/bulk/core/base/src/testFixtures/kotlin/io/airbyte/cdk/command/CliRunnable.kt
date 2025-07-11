@@ -8,10 +8,7 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
 
 /** Convenience object for return values in [CliRunner]. */
-data class CliRunnable(
-    val runnable: Runnable,
-    val results: BufferingOutputConsumer,
-) {
+data class CliRunnable(val runnable: Runnable, val results: BufferingOutputConsumer) {
 
     /** Decorates the [BufferingOutputConsumer] with a callback, which should return quickly. */
     fun withCallback(nonBlockingFn: (AirbyteMessage) -> Unit): CliRunnable {

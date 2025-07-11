@@ -26,7 +26,7 @@ class SnowflakeInternalStagingCaseInsensitiveTypingDedupingTest :
                 record.fields().forEachRemaining { entry: Map.Entry<String, JsonNode> ->
                     mutatedRecord.set<JsonNode>(
                         entry.key.lowercase(Locale.getDefault()),
-                        entry.value
+                        entry.value,
                     )
                 }
                 mutatedRecord

@@ -33,19 +33,14 @@ import org.slf4j.LoggerFactory
  * By default, junit only output logs to the console, and nothing makes it into log4j logs. This
  * class fixes that by using the interceptor facility to print progress and timing information. This
  * allows us to have junit loglines in our test logs. This is instanciated via
- * [Java's
- * ServiceLoader](https://docs.oracle.com/javase%2F9%2Fdocs%2Fapi%2F%2F/java/util/ServiceLoader.html)
+ * [Java's ServiceLoader](https://docs.oracle.com/javase%2F9%2Fdocs%2Fapi%2F%2F/java/util/ServiceLoader.html)
  * The declaration can be found in
  * resources/META-INF/services/org.junit.jupiter.api.extension.Extension
  */
 class LoggingInvocationInterceptor : InvocationInterceptor {
     private class LoggingInvocationInterceptorHandler : InvocationHandler {
         @Throws(Throwable::class)
-        override fun invoke(
-            proxy: Any,
-            method: Method,
-            args: Array<Any>,
-        ): Any? {
+        override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
             val methodName = method.name
             val invocationContextClass: Class<*> =
                 when (methodName) {
@@ -125,11 +120,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 var t1: Throwable
                 if (timeoutTask.wasTriggered) {
                     val formattedDuration =
-                        DurationFormatUtils.formatDurationWords(
-                            elapsedMs,
-                            true,
-                            true,
-                        )
+                        DurationFormatUtils.formatDurationWords(elapsedMs, true, true)
                     val msg =
                         "Execution was cancelled after $formattedDuration. " +
                             "If a test should be given more time to complete, use the @Timeout " +
@@ -147,7 +138,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                         if (
                             !belowCurrentCall &&
                                 stackString.contains(
-                                    LoggingInvocationInterceptor::class.java.canonicalName,
+                                    LoggingInvocationInterceptor::class.java.canonicalName
                                 )
                         ) {
                             belowCurrentCall = true
@@ -173,15 +164,13 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             }
         }
 
-        private class TimeoutInteruptor(
-            private val parentThread: Thread,
-        ) : TimerTask() {
+        private class TimeoutInteruptor(private val parentThread: Thread) : TimerTask() {
             @Volatile var wasTriggered: Boolean = false
 
             override fun run() {
                 LOGGER.info(
                     "interrupting running task on ${parentThread.name}. " +
-                        "Current Stacktrace is ${parentThread.stackTrace.asList()}",
+                        "Current Stacktrace is ${parentThread.stackTrace.asList()}"
                 )
                 wasTriggered = true
                 parentThread.interrupt()
@@ -248,14 +237,14 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     if (timeoutAnnotation != null) {
                         timeout =
                             Duration.ofMillis(
-                                timeoutAnnotation.unit.toMillis(timeoutAnnotation.value),
+                                timeoutAnnotation.unit.toMillis(timeoutAnnotation.value)
                             )
                     }
                 }
                 if (timeout == null) {
                     timeout =
                         parseDuration(
-                            System.getProperty(JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME),
+                            System.getProperty(JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME)
                         )
                 }
                 return timeout
@@ -352,12 +341,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
         invocation: InvocationInterceptor.Invocation<T?>?,
         invocationContext: ReflectiveInvocationContext<Constructor<T?>?>?,
         extensionContext: ExtensionContext?,
-    ): T? =
-        proxy!!.interceptTestClassConstructor(
-            invocation,
-            invocationContext,
-            extensionContext,
-        )
+    ): T? = proxy!!.interceptTestClassConstructor(invocation, invocationContext, extensionContext)
 
     companion object {
         private val LOGGER: Logger =

@@ -42,7 +42,7 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
             PostgresSqlGenerator(
                 PostgresSQLNameTransformer(),
                 cascadeDrop = false,
-                unconstrainedNumber = false
+                unconstrainedNumber = false,
             )
 
     override val destinationHandler: DestinationHandler<PostgresState>
@@ -77,7 +77,7 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
             PostgresSqlGenerator(
                 PostgresSQLNameTransformer(),
                 cascadeDrop = true,
-                unconstrainedNumber = false
+                unconstrainedNumber = false,
             )
         // Create a table, then create a view referencing it
         destinationHandler.execute(generator.createTable(incrementalAppendStream, "", false))
@@ -90,7 +90,7 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
                         .from(
                             DSL.quotedName(
                                 incrementalAppendStream.id.finalNamespace,
-                                incrementalAppendStream.id.finalName
+                                incrementalAppendStream.id.finalName,
                             )
                         )
                 )
@@ -123,7 +123,7 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
             PostgresSqlGenerator(
                 PostgresSQLNameTransformer(),
                 cascadeDrop = false,
-                unconstrainedNumber = false
+                unconstrainedNumber = false,
             )
 
         // Create a table in the test namespace with a default name.
@@ -140,7 +140,7 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
                         .from(
                             DSL.quotedName(
                                 incrementalAppendStream.id.finalNamespace,
-                                incrementalAppendStream.id.finalName
+                                incrementalAppendStream.id.finalName,
                             )
                         )
                 )
@@ -193,9 +193,10 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
                             "number": 10325.876543219876543
                           }
                         }
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
-            )
+            ),
         )
 
         executeTypeAndDedupe(
@@ -203,7 +204,7 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
             destinationHandler,
             incrementalDedupStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         DIFFER.diffFinalTableRecords(
@@ -219,7 +220,8 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
                           "updated_at": "2023-01-01T01:00:00.000000Z",
                           "number": 10325.876543219876543
                         }
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
             ),
             dumpFinalTableRecords(streamId, ""),

@@ -21,14 +21,14 @@ private val logger = KotlinLogging.logger {}
 
 class PostgresGenerationIdMigration(
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
 ) : Migration<PostgresState> {
     // TODO: This class is almost similar to RedshiftAirbyteMetaMigration except the JSONB type.
     // try to unify later.
     override fun migrateIfNecessary(
         destinationHandler: DestinationHandler<PostgresState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<PostgresState>
+        state: DestinationInitialStatus<PostgresState>,
     ): Migration.MigrationResult<PostgresState> {
         var needsStateRefresh = false
         if (state.initialRawTableStatus.rawTableExists) {
@@ -38,7 +38,7 @@ class PostgresGenerationIdMigration(
                         database,
                         databaseName,
                         stream.id.rawNamespace,
-                        stream.id.rawName
+                        stream.id.rawName,
                     )
                     .get()
 
@@ -58,7 +58,7 @@ class PostgresGenerationIdMigration(
                         DSL.alterTable(DSL.name(stream.id.rawNamespace, stream.id.rawName))
                             .addColumn(
                                 DSL.name(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID),
-                                SQLDataType.BIGINT.nullable(true)
+                                SQLDataType.BIGINT.nullable(true),
                             )
                             .getSQL(ParamType.INLINED)
                     )
@@ -71,7 +71,7 @@ class PostgresGenerationIdMigration(
                 database,
                 databaseName,
                 stream.id.finalNamespace,
-                stream.id.finalName
+                stream.id.finalName,
             )
         if (maybeExistingFinalTable.isEmpty) {
             logger.info(
@@ -79,7 +79,7 @@ class PostgresGenerationIdMigration(
             )
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteGenerationIdPresent = true),
-                needsStateRefresh
+                needsStateRefresh,
             )
         }
         val existingFinalTable = maybeExistingFinalTable.get()
@@ -100,7 +100,7 @@ class PostgresGenerationIdMigration(
                     DSL.alterTable(DSL.name(stream.id.finalNamespace, stream.id.finalName))
                         .addColumn(
                             DSL.name(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID),
-                            SQLDataType.BIGINT.nullable(true)
+                            SQLDataType.BIGINT.nullable(true),
                         )
                         .getSQL(ParamType.INLINED)
                 )
@@ -112,9 +112,9 @@ class PostgresGenerationIdMigration(
         return Migration.MigrationResult(
             state.destinationState.copy(
                 needsSoftReset = false,
-                isAirbyteGenerationIdPresent = true
+                isAirbyteGenerationIdPresent = true,
             ),
-            needsStateRefresh
+            needsStateRefresh,
         )
     }
 }

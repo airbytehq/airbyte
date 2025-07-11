@@ -17,7 +17,7 @@ class UnionTypeToDisjointRecordTest {
                 linkedMapOf(
                     "type" to FieldType(StringType, nullable = false),
                     "string" to FieldType(StringType, nullable = true),
-                    "integer" to FieldType(IntegerType, nullable = true)
+                    "integer" to FieldType(IntegerType, nullable = true),
                 )
             )
         val (inputSchema, expectedOutput) =

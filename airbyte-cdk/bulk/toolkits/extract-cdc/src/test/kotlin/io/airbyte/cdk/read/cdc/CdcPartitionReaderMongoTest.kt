@@ -29,9 +29,7 @@ import org.junit.jupiter.api.Disabled
 
 @Disabled
 class CdcPartitionReaderMongoTest :
-    AbstractCdcPartitionReaderTest<BsonTimestamp, MongoDbReplicaSet>(
-        namespace = "test",
-    ) {
+    AbstractCdcPartitionReaderTest<BsonTimestamp, MongoDbReplicaSet>(namespace = "test") {
 
     override fun createContainer(): MongoDbReplicaSet {
         return MongoDbReplicaSet.replicaSet().memberCount(1).build().also {
@@ -127,7 +125,7 @@ class CdcPartitionReaderMongoTest :
                     "collection.include.list",
                     DebeziumPropertiesBuilder.joinIncludeList(
                         listOf(Pattern.quote("${stream.namespace!!}.${stream.name}"))
-                    )
+                    ),
                 )
                 .with("database.include.list", stream.namespace!!)
                 .withOffset()
@@ -162,7 +160,7 @@ class CdcPartitionReaderMongoTest :
         override fun deserializeRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue,
-            stream: Stream
+            stream: Stream,
         ): DeserializedRecord {
             val id: Int = key.element("id").asInt()
             val record: Record =
@@ -187,10 +185,7 @@ class CdcPartitionReaderMongoTest :
                         Insert(id, v)
                     }
                 }
-            return DeserializedRecord(
-                data = Jsons.valueToTree(record),
-                changes = emptyMap(),
-            )
+            return DeserializedRecord(data = Jsons.valueToTree(record), changes = emptyMap())
         }
     }
 }

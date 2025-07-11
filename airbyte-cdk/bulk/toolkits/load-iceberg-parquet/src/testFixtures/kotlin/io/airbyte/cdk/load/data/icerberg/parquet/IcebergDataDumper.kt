@@ -78,7 +78,7 @@ class IcebergDataDumper(
 
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val catalog = getCatalog(spec)
         val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
@@ -97,7 +97,7 @@ class IcebergDataDumper(
                         loadedAt = null,
                         generationId = record.getField(Meta.COLUMN_NAME_AB_GENERATION_ID) as Long,
                         data = toAirbyteValue(record, isRoot = true),
-                        airbyteMeta = getMetaData(record)
+                        airbyteMeta = getMetaData(record),
                     )
                 )
             }
@@ -112,7 +112,7 @@ class IcebergDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw NotImplementedError("Iceberg doesn't support universal file transfer")
     }

@@ -18,7 +18,7 @@ private val LOGGER = KotlinLogging.logger {}
 
 class CursorStateMessageProducer(
     private val stateManager: StateManager?,
-    private val initialCursor: Optional<String>
+    private val initialCursor: Optional<String>,
 ) : SourceStateMessageProducer<AirbyteMessage> {
     private var currentMaxCursor: Optional<String>
 
@@ -57,7 +57,7 @@ class CursorStateMessageProducer(
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun processRecordMessage(
         stream: ConfiguredAirbyteStream?,
-        message: AirbyteMessage
+        message: AirbyteMessage,
     ): AirbyteMessage {
         val cursorField = getCursorField(stream!!)
         if (message.record.data.hasNonNull(cursorField)) {
@@ -107,7 +107,7 @@ class CursorStateMessageProducer(
             stateManager!!.updateAndEmit(
                 pair,
                 currentMaxCursor.orElse(null),
-                currentCursorRecordCount.toLong()
+                currentCursorRecordCount.toLong(),
             )
         val cursorInfo = stateManager.getCursorInfo(pair)
 

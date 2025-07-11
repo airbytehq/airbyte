@@ -87,7 +87,7 @@ object SnowflakeDatabaseUtils {
                         config[JdbcUtils.HOST_KEY].asText(),
                         credentials["client_id"].asText(),
                         credentials["client_secret"].asText(),
-                        credentials["refresh_token"].asText()
+                        credentials["refresh_token"].asText(),
                     )
             } catch (e: IOException) {
                 throw RuntimeException(e)
@@ -107,7 +107,7 @@ object SnowflakeDatabaseUtils {
                 getRefreshTokenTask(dataSource),
                 PAUSE_BETWEEN_TOKEN_REFRESH_MIN.toLong(),
                 PAUSE_BETWEEN_TOKEN_REFRESH_MIN.toLong(),
-                TimeUnit.MINUTES
+                TimeUnit.MINUTES,
             )
         } else if (credentials != null && credentials.has(JdbcUtils.PASSWORD_KEY)) {
             LOGGER.debug("User/password login mode is used")
@@ -177,7 +177,7 @@ object SnowflakeDatabaseUtils {
         hostName: String,
         clientId: String,
         clientSecret: String,
-        refreshCode: String
+        refreshCode: String,
     ): String {
         val refreshTokenUri = String.format(REFRESH_TOKEN_URL, hostName)
         val requestBody: MutableMap<String, String> = HashMap()
@@ -207,7 +207,7 @@ object SnowflakeDatabaseUtils {
                     .header("Accept", "application/json")
                     .header(
                         "Authorization",
-                        "Basic " + String(authorization, StandardCharsets.UTF_8)
+                        "Basic " + String(authorization, StandardCharsets.UTF_8),
                     )
                     .build()
 
@@ -241,7 +241,7 @@ object SnowflakeDatabaseUtils {
                         props.getProperty(JdbcUtils.HOST_KEY),
                         props.getProperty("client_id"),
                         props.getProperty("client_secret"),
-                        props.getProperty("refresh_token")
+                        props.getProperty("refresh_token"),
                     )
                 props.setProperty("token", token)
                 dataSource.dataSourceProperties = props
@@ -258,7 +258,7 @@ object SnowflakeDatabaseUtils {
             return Optional.of(
                 ConfigErrorException(
                     "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",
-                    e
+                    e,
                 )
             )
         }
@@ -271,8 +271,9 @@ object SnowflakeDatabaseUtils {
                https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses and this page
                for documentation on Snowflake network policies: https://docs.snowflake.com/en/user-guide/network-policies
           
-          """.trimIndent(),
-                    e
+          """
+                        .trimIndent(),
+                    e,
                 )
             )
         }

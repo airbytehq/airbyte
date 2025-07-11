@@ -57,7 +57,7 @@ class InputConsumerTaskUTest {
             inputFlow,
             recordQueueForPipeline,
             partitioner,
-            pipelineEventBookkeepingRouter
+            pipelineEventBookkeepingRouter,
         )
 
     @BeforeEach
@@ -87,9 +87,9 @@ class InputConsumerTaskUTest {
                                 stream = dstream,
                                 message = mockk(relaxed = true),
                                 serializedSizeBytes = 0L,
-                                airbyteRawId = UUID.randomUUID()
-                            )
-                        )
+                                airbyteRawId = UUID.randomUUID(),
+                            ),
+                        ),
                     )
                 )
                 val job = launch { inputConsumerTask.execute() }

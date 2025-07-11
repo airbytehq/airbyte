@@ -52,7 +52,7 @@ class FeedReader(
             dataChannelFormat,
             dataChannelMedium,
             bufferByteSizeThresholdForFlush,
-            clock
+            clock,
         )
 
     /** Reads records from this [feed]. */
@@ -121,8 +121,8 @@ class FeedReader(
     ) {
         while (true) {
             val status: PartitionsCreator.TryAcquireResourcesStatus =
-            // Resource acquisition always executes serially.
-            root.resourceAcquisitionMutex.withLock { partitionsCreator.tryAcquireResources() }
+                // Resource acquisition always executes serially.
+                root.resourceAcquisitionMutex.withLock { partitionsCreator.tryAcquireResources() }
             if (status == PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
@@ -200,8 +200,8 @@ class FeedReader(
     ) {
         while (true) {
             val status: PartitionReader.TryAcquireResourcesStatus =
-            // Resource acquisition always executes serially.
-            root.resourceAcquisitionMutex.withLock { partitionReader.tryAcquireResources() }
+                // Resource acquisition always executes serially.
+                root.resourceAcquisitionMutex.withLock { partitionReader.tryAcquireResources() }
             if (status == PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
@@ -256,7 +256,7 @@ class FeedReader(
     }
 
     private suspend fun awaitAllPartitionReaders(
-        scheduled: Map<Long, Deferred<Result<PartitionReadCheckpoint>>>,
+        scheduled: Map<Long, Deferred<Result<PartitionReadCheckpoint>>>
     ) {
         fun label(partitionReaderID: Long): String =
             "partition $partitionReaderID / ${scheduled.size} for '${feed.label}'"
@@ -311,8 +311,9 @@ class FeedReader(
                             label(pendingPartitionReaderID)
                     }
                     val (
-                        opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?
-                    ) =
+                        opaqueStateValue: OpaqueStateValue,
+                        numRecords: Long,
+                        partitionId: String?) =
                         pendingResult.getOrThrow()
                     root.stateManager
                         .scoped(feed)
@@ -324,7 +325,7 @@ class FeedReader(
                                 // State messages in SOCKET mode have an incrementing integer ID.
                                 DataChannelMedium.SOCKET -> stateId.getAndIncrement()
                                 DataChannelMedium.STDIO -> null
-                            }
+                            },
                         )
                     log.info {
                         "updated state of '${feed.label}', moved it $numRecords record(s) forward"

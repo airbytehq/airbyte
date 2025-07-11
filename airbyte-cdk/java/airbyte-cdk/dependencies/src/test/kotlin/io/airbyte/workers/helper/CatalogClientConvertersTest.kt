@@ -19,7 +19,7 @@ internal class CatalogClientConvertersTest {
     fun testConvertToClientAPI() {
         Assertions.assertEquals(
             EXPECTED_CLIENT_CATALOG,
-            CatalogClientConverters.toAirbyteCatalogClientApi(BASIC_MODEL_CATALOG)
+            CatalogClientConverters.toAirbyteCatalogClientApi(BASIC_MODEL_CATALOG),
         )
     }
 
@@ -27,7 +27,7 @@ internal class CatalogClientConvertersTest {
     fun testConvertToProtocol() {
         Assertions.assertEquals(
             BASIC_MODEL_CATALOG,
-            CatalogClientConverters.toAirbyteProtocol(EXPECTED_CLIENT_CATALOG)
+            CatalogClientConverters.toAirbyteProtocol(EXPECTED_CLIENT_CATALOG),
         )
     }
 
@@ -48,7 +48,7 @@ internal class CatalogClientConvertersTest {
                 .withSupportedSyncModes(
                     List.of(
                         io.airbyte.protocol.models.SyncMode.FULL_REFRESH,
-                        io.airbyte.protocol.models.SyncMode.INCREMENTAL
+                        io.airbyte.protocol.models.SyncMode.INCREMENTAL,
                     )
                 )
 

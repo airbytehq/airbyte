@@ -43,7 +43,7 @@ class FlattenQueueAdapterTest {
 
         override suspend fun publish(
             value: PipelineEvent<StreamKey, DestinationRecordRaw>,
-            partition: Int
+            partition: Int,
         ) {
             published.add(value)
         }
@@ -69,12 +69,7 @@ class FlattenQueueAdapterTest {
     @Test
     fun `flattening lists preserve the total count while counting rejected records`() {
         val state = BatchState.COMPLETE
-        val records =
-            listOf(
-                record(1),
-                record(2),
-                record(3),
-            )
+        val records = listOf(record(1), record(2), record(3))
         val input = DlqStepOutput(state, records)
         val checkpointId = CheckpointId("checkpoint-id")
         val checkpointValue = CheckpointValue(records = 12, serializedBytes = 123)
@@ -90,7 +85,7 @@ class FlattenQueueAdapterTest {
                     postProcessingCallback = null,
                     context = pipelineContext,
                 ),
-                0
+                0,
             )
         }
 
@@ -113,11 +108,7 @@ class FlattenQueueAdapterTest {
         // Verifying the aggregate counts remain the same
         // However, we're substracting the rejected records from the total records count
         val expectedCheckpointValue =
-            CheckpointValue(
-                records = 9,
-                serializedBytes = 123,
-                rejectedRecords = 3,
-            )
+            CheckpointValue(records = 9, serializedBytes = 123, rejectedRecords = 3)
         assertEquals(mapOf(checkpointId to expectedCheckpointValue), actualCounts)
 
         // All keys and context should be equal

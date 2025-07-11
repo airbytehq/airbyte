@@ -55,7 +55,7 @@ class S3CsvFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
@@ -82,7 +82,7 @@ class S3CsvFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
@@ -90,28 +90,34 @@ class S3CsvFormatConfigTest {
     fun testGzipCompressionConfig() {
         // without gzip compression config
         val configWithoutGzipCompression =
-            ConfigTestUtils.getBaseConfig(deserialize("""{
+            ConfigTestUtils.getBaseConfig(
+                deserialize(
+                    """{
   "format_type": "CSV"
-}"""))
+}"""
+                )
+            )
         val s3ConfigWithoutGzipCompression = getS3DestinationConfig(configWithoutGzipCompression!!)
         Assertions.assertEquals(
             S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
             (s3ConfigWithoutGzipCompression.formatConfig as UploadCsvFormatConfig?)!!
-                .compressionType
+                .compressionType,
         )
 
         // with gzip compression config
         val configWithGzipCompression =
             ConfigTestUtils.getBaseConfig(
-                deserialize("""{
+                deserialize(
+                    """{
   "format_type": "CSV",
   "gzip_compression": false
-}""")
+}"""
+                )
             )
         val gcsConfigWithGzipCompression = getS3DestinationConfig(configWithGzipCompression!!)
         Assertions.assertEquals(
             CompressionType.GZIP,
-            (gcsConfigWithGzipCompression.formatConfig as UploadCsvFormatConfig?)!!.compressionType
+            (gcsConfigWithGzipCompression.formatConfig as UploadCsvFormatConfig?)!!.compressionType,
         )
     }
 }

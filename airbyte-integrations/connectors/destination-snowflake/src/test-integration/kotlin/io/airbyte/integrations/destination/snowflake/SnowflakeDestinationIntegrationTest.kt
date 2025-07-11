@@ -45,7 +45,7 @@ internal class SnowflakeDestinationIntegrationTest {
         Assertions.assertEquals(
             "Could not connect with provided configuration. Encountered Error with Snowflake Configuration: " +
                 "Current role does not have permissions on the target schema please verify your privileges",
-            check.message
+            check.message,
         )
     }
 

@@ -201,10 +201,7 @@ class MySqlSourceCursorBasedIntegrationTest {
                 )
             val stream: AirbyteStream =
                 MySqlSourceOperations()
-                    .create(
-                        MySqlSourceConfigurationFactory().make(config),
-                        discoveredStream,
-                    )
+                    .create(MySqlSourceConfigurationFactory().make(config), discoveredStream)
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
@@ -236,6 +233,7 @@ class MySqlSourceCursorBasedIntegrationTest {
         }
 
         lateinit var viewName: String
+
         fun provisionView(targetConnectionFactory: JdbcConnectionFactory) {
             viewName = "$tableName-view"
             targetConnectionFactory.get().use { connection: Connection ->
@@ -246,6 +244,7 @@ class MySqlSourceCursorBasedIntegrationTest {
             }
         }
     }
+
     val V1_STATE: String =
         """  
       {

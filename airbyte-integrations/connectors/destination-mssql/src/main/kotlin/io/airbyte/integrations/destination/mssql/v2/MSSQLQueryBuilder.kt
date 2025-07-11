@@ -130,11 +130,13 @@ const val CREATE_TABLE_QUERY =
         END
     """
 
-const val CREATE_INDEX_QUERY = """
+const val CREATE_INDEX_QUERY =
+    """
         CREATE ? INDEX ? ON [?].[?] (?)
     """
 
-const val DROP_TABLE_QUERY = """
+const val DROP_TABLE_QUERY =
+    """
         DROP TABLE [?].[?];
     """
 
@@ -159,12 +161,14 @@ const val MERGE_INTO_QUERY =
         ;
     """
 
-const val ALTER_TABLE_ADD = """
+const val ALTER_TABLE_ADD =
+    """
         ALTER TABLE [?].[?]
         ADD [?] ? NULL;
     """
 
-const val ALTER_TABLE_DROP = """
+const val ALTER_TABLE_DROP =
+    """
         ALTER TABLE [?].[?]
         DROP COLUMN [?];
     """
@@ -188,20 +192,19 @@ const val DELETE_WHERE_COL_LESS_THAN =
         WHERE [?] < ?
     """
 
-const val SELECT_FROM = """
+const val SELECT_FROM =
+    """
         SELECT *
         FROM [?].[?]
     """
 
-const val COUNT_FROM = """
+const val COUNT_FROM =
+    """
         SELECT COUNT(*)
         FROM [?].[?]
     """
 
-class MSSQLQueryBuilder(
-    defaultSchema: String,
-    private val stream: DestinationStream,
-) {
+class MSSQLQueryBuilder(defaultSchema: String, private val stream: DestinationStream) {
     companion object {
 
         const val SQL_ERROR_OBJECT_EXISTS = 2714
@@ -220,7 +223,9 @@ class MSSQLQueryBuilder(
     }
 
     data class NamedField(val name: String, val type: FieldType)
+
     data class NamedValue(val name: String, val value: AirbyteValue)
+
     data class NamedSqlField(val name: String, val type: MssqlType)
 
     val outputSchema: String = stream.mappedDescriptor.namespace ?: defaultSchema
@@ -288,7 +293,7 @@ class MSSQLQueryBuilder(
                                 outputSchema,
                                 tableName,
                                 it.key,
-                                it.value.sqlString
+                                it.value.sqlString,
                             )
                         )
                     }
@@ -298,7 +303,7 @@ class MSSQLQueryBuilder(
                                 outputSchema,
                                 tableName,
                                 it.key,
-                                it.value.sqlString
+                                it.value.sqlString,
                             )
                         )
                     }
@@ -344,7 +349,7 @@ class MSSQLQueryBuilder(
     fun populateStatement(
         statement: PreparedStatement,
         plainRecord: DestinationRecordRaw,
-        schema: List<NamedField>
+        schema: List<NamedField>,
     ) {
         val enrichedRecord = plainRecord.asEnrichedDestinationRecordAirbyteValue()
         val populatedFields = enrichedRecord.allTypedFields
@@ -372,7 +377,7 @@ class MSSQLQueryBuilder(
                 DateType ->
                     statement.setDate(
                         statementIndex,
-                        Date.valueOf((value.abValue as DateValue).value)
+                        Date.valueOf((value.abValue as DateValue).value),
                     )
                 IntegerType ->
                     LIMITS.validateInteger(value)?.let {
@@ -387,22 +392,22 @@ class MSSQLQueryBuilder(
                 TimeTypeWithTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.abValue as TimeWithTimezoneValue).value
+                        (value.abValue as TimeWithTimezoneValue).value,
                     )
                 TimeTypeWithoutTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.abValue as TimeWithoutTimezoneValue).value
+                        (value.abValue as TimeWithoutTimezoneValue).value,
                     )
                 TimestampTypeWithTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.abValue as TimestampWithTimezoneValue).value
+                        (value.abValue as TimestampWithTimezoneValue).value,
                     )
                 TimestampTypeWithoutTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.abValue as TimestampWithoutTimezoneValue).value
+                        (value.abValue as TimestampWithoutTimezoneValue).value,
                     )
 
                 // Serialize complex types to string
@@ -422,7 +427,7 @@ class MSSQLQueryBuilder(
         airbyteMetaStatementIndex?.let { statementIndex ->
             statement.setString(
                 statementIndex,
-                enrichedRecord.airbyteMeta.abValue.serializeToString()
+                enrichedRecord.airbyteMeta.abValue.serializeToString(),
             )
         }
     }
@@ -458,7 +463,7 @@ class MSSQLQueryBuilder(
     private fun createIndex(
         fqTableName: String,
         columns: List<String>,
-        clustered: Boolean = false
+        clustered: Boolean = false,
     ): String {
         val name = "[${fqTableName.replace('.', '_')}_${shortHash(columns.hashCode())}]"
         val indexType = if (clustered) "CLUSTERED" else ""
@@ -467,7 +472,7 @@ class MSSQLQueryBuilder(
             name,
             outputSchema,
             tableName,
-            columns.joinToString(", ") { "[$it]" }
+            columns.joinToString(", ") { "[$it]" },
         )
     }
 
@@ -506,14 +511,11 @@ class MSSQLQueryBuilder(
 
     private fun airbyteTypeToSqlSchema(
         schema: List<NamedField>,
-        separator: String = DEFAULT_SEPARATOR
+        separator: String = DEFAULT_SEPARATOR,
     ): String {
         return schema.joinToString(separator = separator) {
             val mssqlType =
-                toMssqlType.convert(
-                    it.type.type,
-                    isIndexed = indexedColumns.contains(it.name),
-                )
+                toMssqlType.convert(it.type.type, isIndexed = indexedColumns.contains(it.name))
             "[${it.name}] ${mssqlType.sqlString} NULL"
         }
     }

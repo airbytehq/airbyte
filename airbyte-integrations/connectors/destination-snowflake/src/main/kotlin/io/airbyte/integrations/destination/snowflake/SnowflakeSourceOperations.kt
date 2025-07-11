@@ -49,7 +49,7 @@ class SnowflakeSourceOperations : JdbcSourceOperations() {
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
-        index: Int
+        index: Int,
     ) {
         val timestampAsString = resultSet.getString(index)
         val timestampWithOffset =
@@ -62,7 +62,7 @@ class SnowflakeSourceOperations : JdbcSourceOperations() {
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
-        index: Int
+        index: Int,
     ) {
         // for backward compatibility
         val instant = resultSet.getTimestamp(index).toInstant()

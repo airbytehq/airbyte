@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.task.Task
 
 interface LoadPipelineStep {
     val numWorkers: Int
+
     fun taskForPartition(partition: Int): Task
 }
 
@@ -15,9 +16,7 @@ interface LoadPipelineStep {
  * Used internally by the pipeline to assemble a launcher for any loader's pipeline. CDK devs can
  * use this to implement new flavors of interface. Connector devs should generally avoid using this.
  */
-abstract class LoadPipeline(
-    private val steps: List<LoadPipelineStep>,
-) {
+abstract class LoadPipeline(private val steps: List<LoadPipelineStep>) {
     suspend fun start(launcher: suspend (Task) -> Unit) {
         steps.forEach { step -> repeat(step.numWorkers) { launcher(step.taskForPartition(it)) } }
     }

@@ -54,35 +54,35 @@ class SnowflakeDestinationHandler(
                 override fun getGenerationIdInTable(
                     database: JdbcDatabase,
                     namespace: String,
-                    name: String
+                    name: String,
                 ): Long? {
                     throw NotImplementedError()
                 }
-            }
+            },
     ) {
     // Postgres is close enough to Snowflake SQL for our purposes.
     // We don't quote the database name in any queries, so just upcase it.
     private val databaseName = databaseName.uppercase(Locale.getDefault())
+
     private data class SnowflakeTableInfo(
         val schemaName: String,
         val tableName: String,
-        val rowCount: Int
+        val rowCount: Int,
     ) {}
+
     private fun queryTable(schemaName: String, tableName: String): List<SnowflakeTableInfo> {
         val showTablesQuery =
             """
                     SHOW TABLES LIKE '$tableName' IN "$databaseName"."$schemaName";
-                    """.trimIndent()
+                    """
+                .trimIndent()
         try {
-            val showTablesResult =
-                database.queryJsons(
-                    showTablesQuery,
-                )
+            val showTablesResult = database.queryJsons(showTablesQuery)
             return showTablesResult.map {
                 SnowflakeTableInfo(
                     it["schema_name"].asText(),
                     it["name"].asText(),
-                    it["rows"].asInt()
+                    it["rows"].asInt(),
                 )
             }
         } catch (e: SnowflakeSQLException) {
@@ -117,10 +117,7 @@ class SnowflakeDestinationHandler(
     }
 
     @Throws(Exception::class)
-    private fun getInitialRawTableState(
-        id: StreamId,
-        suffix: String,
-    ): InitialRawTableStatus {
+    private fun getInitialRawTableState(id: StreamId, suffix: String): InitialRawTableStatus {
         val rawTableName = id.rawName + suffix
         val tableExists =
             queryTable(id.rawNamespace, rawTableName).any {
@@ -136,7 +133,7 @@ class SnowflakeDestinationHandler(
             return InitialRawTableStatus(
                 rawTableExists = false,
                 hasUnprocessedRecords = false,
-                maxProcessedTimestamp = Optional.empty()
+                maxProcessedTimestamp = Optional.empty(),
             )
         }
         // Snowflake timestamps have nanosecond precision, so decrement by 1ns
@@ -153,7 +150,7 @@ class SnowflakeDestinationHandler(
                                     StringSubstitutor(
                                             java.util.Map.of(
                                                 "raw_table",
-                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix),
                                             )
                                         )
                                         .replace(
@@ -173,11 +170,12 @@ class SnowflakeDestinationHandler(
                   WHERE "_airbyte_loaded_at" IS NULL
                 ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
                 
-                """.trimIndent()
+                """
+                                                .trimIndent()
                                         )
                                 )
                         }, // The query will always return exactly one record, so use .get(0)
-                        { record: ResultSet -> record.getString("MIN_TIMESTAMP_UTC") }
+                        { record: ResultSet -> record.getString("MIN_TIMESTAMP_UTC") },
                     )
                     .first()
             )
@@ -186,7 +184,7 @@ class SnowflakeDestinationHandler(
                 rawTableExists = true,
                 hasUnprocessedRecords = true,
                 maxProcessedTimestamp =
-                    minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
+                    minUnloadedTimestamp.map { text: String? -> Instant.parse(text) },
             )
         }
 
@@ -209,7 +207,7 @@ class SnowflakeDestinationHandler(
                                     StringSubstitutor(
                                             java.util.Map.of(
                                                 "raw_table",
-                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix),
                                             )
                                         )
                                         .replace(
@@ -229,18 +227,19 @@ class SnowflakeDestinationHandler(
                     )
                 ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
                 
-                """.trimIndent()
+                """
+                                                .trimIndent()
                                         )
                                 )
                         },
-                        { record: ResultSet -> record.getString("MAX_TIMESTAMP_UTC") }
+                        { record: ResultSet -> record.getString("MAX_TIMESTAMP_UTC") },
                     )
                     .first()
             )
         return InitialRawTableStatus(
             rawTableExists = true,
             hasUnprocessedRecords = false,
-            maxProcessedTimestamp = maxTimestamp.map { text: String? -> Instant.parse(text) }
+            maxProcessedTimestamp = maxTimestamp.map { text: String? -> Instant.parse(text) },
         )
     }
 
@@ -250,7 +249,8 @@ class SnowflakeDestinationHandler(
             """
             BEGIN
             BEGIN TRANSACTION
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val endBlock =
             """
@@ -262,7 +262,8 @@ class SnowflakeDestinationHandler(
                     RAISE;
                 END;
             END
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val transactions = sql.asSqlStrings(beginBlock, endBlock)
         val queryId = UUID.randomUUID()
@@ -295,7 +296,7 @@ class SnowflakeDestinationHandler(
                 "Sql {}-{} completed in {} ms",
                 queryId,
                 transactionId,
-                System.currentTimeMillis() - startTime
+                System.currentTimeMillis() - startTime,
             )
         }
     }
@@ -339,7 +340,7 @@ class SnowflakeDestinationHandler(
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
-        existingTable: TableDefinition
+        existingTable: TableDefinition,
     ): Boolean {
         val pks = getPks(stream)
         // This is same as JdbcDestinationHandler#existingSchemaMatchesStreamConfig with upper case
@@ -368,7 +369,7 @@ class SnowflakeDestinationHandler(
                     },
                     { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
                         obj.putAll(m!!)
-                    }
+                    },
                 )
 
         // Filter out Meta columns since they don't exist in stream config.
@@ -389,7 +390,7 @@ class SnowflakeDestinationHandler(
                     },
                     { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
                         obj.putAll(m!!)
-                    }
+                    },
                 )
         // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
         val hasPksWithNonNullConstraint =
@@ -434,12 +435,12 @@ class SnowflakeDestinationHandler(
                     val tempRawTableState =
                         getInitialRawTableState(
                             streamConfig.id,
-                            AbstractStreamOperation.TMP_TABLE_SUFFIX
+                            AbstractStreamOperation.TMP_TABLE_SUFFIX,
                         )
                     val destinationState =
                         destinationStates.getOrDefault(
                             streamConfig.id.asPair(),
-                            toDestinationState(emptyObject())
+                            toDestinationState(emptyObject()),
                         )
                     val finalTableGenerationId =
                         if (isFinalTablePresent && !isFinalTableEmpty) {
@@ -495,7 +496,7 @@ class SnowflakeDestinationHandler(
         return SnowflakeState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("airbyteMetaPresentInRaw") &&
-                json["airbyteMetaPresentInRaw"].asBoolean()
+                json["airbyteMetaPresentInRaw"].asBoolean(),
         )
     }
 
@@ -556,7 +557,7 @@ class SnowflakeDestinationHandler(
         @Throws(SQLException::class)
         fun findExistingTables(
             database: JdbcDatabase,
-            streamIds: List<StreamId>
+            streamIds: List<StreamId>,
         ): Map<String, Map<String, TableDefinition>> {
             val existingTables = HashMap<String, HashMap<String, TableDefinition>>()
             for (stream in streamIds) {

@@ -55,7 +55,7 @@ class MSSQLWriter(
                     dataSource = dataSourceNotNull,
                     stream = stream,
                     sqlBuilder = sqlBuilder,
-                    streamStateStore = streamStateStore
+                    streamStateStore = streamStateStore,
                 )
             }
         }

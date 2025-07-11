@@ -25,6 +25,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicLong
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
  * to use debezium for CDC, it should use this class
@@ -35,7 +36,7 @@ class AirbyteDebeziumHandler<T>(
     private val trackSchemaHistory: Boolean,
     private val firstRecordWaitTime: Duration,
     private val queueSize: Int,
-    private val addDbNameToOffsetState: Boolean
+    private val addDbNameToOffsetState: Boolean,
 ) {
     internal inner class CapacityReportingBlockingQueue<E>(capacity: Int) :
         LinkedBlockingQueue<E>(capacity) {
@@ -72,7 +73,7 @@ class AirbyteDebeziumHandler<T>(
         debeziumPropertiesManager: DebeziumPropertiesManager,
         eventConverter: DebeziumEventConverter,
         cdcSavedInfoFetcher: CdcSavedInfoFetcher,
-        cdcStateHandler: CdcStateHandler
+        cdcStateHandler: CdcStateHandler,
     ): AutoCloseableIterator<AirbyteMessage> {
         LOGGER.info { "Using CDC: true" }
         LOGGER.info {
@@ -91,7 +92,7 @@ class AirbyteDebeziumHandler<T>(
                     AirbyteSchemaHistoryStorage.Companion.initializeDBHistory(
                         cdcSavedInfoFetcher.savedSchemaHistory,
                         cdcStateHandler.compressSchemaHistoryForState(),
-                    ),
+                    )
                 )
             else Optional.empty<AirbyteSchemaHistoryStorage>()
         val publisher = DebeziumRecordPublisher(debeziumPropertiesManager)
@@ -107,13 +108,13 @@ class AirbyteDebeziumHandler<T>(
                 { publisher.hasClosed() },
                 DebeziumShutdownProcedure(queue, { publisher.close() }, { publisher.hasClosed() }),
                 firstRecordWaitTime,
-                config
+                config,
             )
 
         val syncCheckpointDuration =
             if (config.has(DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY))
                 Duration.ofSeconds(
-                    config[DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY].asLong(),
+                    config[DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY].asLong()
                 )
             else DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION
         val syncCheckpointRecords =

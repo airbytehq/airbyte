@@ -17,10 +17,8 @@ import java.time.Clock
 import java.util.concurrent.TimeUnit
 
 @Singleton
-class ClickhouseChecker(
-    clock: Clock,
-    private val clientFactory: RawClickHouseClientFactory,
-) : DestinationChecker<ClickhouseConfiguration> {
+class ClickhouseChecker(clock: Clock, private val clientFactory: RawClickHouseClientFactory) :
+    DestinationChecker<ClickhouseConfiguration> {
     // ensure table name unique across checks — could factor this out into an injectable shared util
     @VisibleForTesting val tableName = "_airbyte_check_table_${clock.millis()}"
 
@@ -42,7 +40,7 @@ class ClickhouseChecker(
                 .insert(
                     resolvedTableName,
                     TEST_DATA.byteInputStream(),
-                    ClickHouseFormat.JSONEachRow
+                    ClickHouseFormat.JSONEachRow,
                 )
                 .get(10, TimeUnit.SECONDS)
 

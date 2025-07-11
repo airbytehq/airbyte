@@ -12,7 +12,7 @@ abstract class DebeziumPropertiesManager(
     private val properties: Properties,
     private val config: JsonNode,
     private val catalog: ConfiguredAirbyteCatalog,
-    private val streamNames: List<String>
+    private val streamNames: List<String>,
 ) {
     fun getDebeziumProperties(offsetManager: AirbyteFileOffsetBackingStore): Properties {
         return getDebeziumProperties(offsetManager, Optional.empty())
@@ -20,7 +20,7 @@ abstract class DebeziumPropertiesManager(
 
     fun getDebeziumProperties(
         offsetManager: AirbyteFileOffsetBackingStore,
-        schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+        schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>,
     ): Properties {
         val props = Properties()
         props.putAll(properties)
@@ -86,7 +86,7 @@ abstract class DebeziumPropertiesManager(
     protected abstract fun getIncludeConfiguration(
         catalog: ConfiguredAirbyteCatalog,
         config: JsonNode?,
-        streamNames: List<String>
+        streamNames: List<String>,
     ): Properties
 
     companion object {

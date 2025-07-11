@@ -88,7 +88,8 @@ class StateManagerGlobalStatesTest {
                     |]},
                     |"sourceStats":{"recordCount":579.0}
                     |}
-                """.trimMargin(),
+                """
+                        .trimMargin()
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
@@ -130,7 +131,8 @@ class StateManagerGlobalStatesTest {
                     |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":123.0}
                     |}
-                """.trimMargin(),
+                """
+                        .trimMargin()
                 )
                 .map { Jsons.readTree(it) },
             checkpointOngoing.map { Jsons.valueToTree<JsonNode>(it) },
@@ -157,7 +159,8 @@ class StateManagerGlobalStatesTest {
                     |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":1245.0}
                     |}
-                """.trimMargin(),
+                """
+                        .trimMargin()
                 )
                 .map { Jsons.readTree(it) },
             checkpointCompleted.map { Jsons.valueToTree<JsonNode>(it) },
@@ -209,7 +212,8 @@ class StateManagerGlobalStatesTest {
                     |"stream_state":{}}
                     |]},"sourceStats":{"recordCount":789.0}
                     |}
-                """.trimMargin(),
+                """
+                        .trimMargin()
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
@@ -262,7 +266,8 @@ class StateManagerGlobalStatesTest {
                     |]},
                     |"sourceStats":{"recordCount":741.0}
                     |}
-                """.trimMargin(),
+                """
+                        .trimMargin()
                 )
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
@@ -293,9 +298,5 @@ class StateManagerGlobalStatesTest {
         return Streams(global, kv, events)
     }
 
-    data class Streams(
-        val global: Global,
-        val kv: Stream,
-        val events: Stream,
-    )
+    data class Streams(val global: Global, val kv: Stream, val events: Stream)
 }

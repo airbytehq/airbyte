@@ -20,6 +20,7 @@ import java.util.*
 import java.util.function.BiFunction
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * JSONPath is specification for querying JSON objects. More information about the specification can
  * be found here: https://goessner.net/articles/JsonPath/. For those familiar with jq, JSONPath will
@@ -88,6 +89,7 @@ object JsonPaths {
      *
      * @param jsonSchemaPath
      * - path as described in [JsonSchemas]
+     *
      * @return path as JSONPath
      */
     fun mapJsonSchemaPathToJsonPath(jsonSchemaPath: List<JsonSchemas.FieldNameOrList>): String {
@@ -128,7 +130,7 @@ object JsonPaths {
     fun assertIsSingleReturnQuery(jsonPath: String?) {
         Preconditions.checkArgument(
             JsonPath.isPathDefinite(jsonPath),
-            "Cannot accept paths with wildcards because they may return more than one item."
+            "Cannot accept paths with wildcards because they may return more than one item.",
         )
     }
 
@@ -140,8 +142,10 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @return all values that match the input query
      */
     fun getValues(json: JsonNode?, jsonPath: String): List<JsonNode> {
@@ -156,14 +160,17 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @return all paths that are present that match the input query. returns a list (instead of a
-     * set), because having a deterministic ordering is valuable for all downstream consumers (i.e.
-     * in most cases if we returned a set, the downstream would then put it in a set and sort it so
-     * that if they are doing replacements using the paths, the behavior is predictable e.g. if you
-     * do replace $.alpha and $.alpha[*], the order you do those replacements in matters).
-     * specifically that said, we do expect that there will be no duplicates in the returned list.
+     *   set), because having a deterministic ordering is valuable for all downstream consumers
+     *   (i.e. in most cases if we returned a set, the downstream would then put it in a set and
+     *   sort it so that if they are doing replacements using the paths, the behavior is predictable
+     *   e.g. if you do replace $.alpha and $.alpha[*], the order you do those replacements in
+     *   matters). specifically that said, we do expect that there will be no duplicates in the
+     *   returned list.
      */
     fun getPaths(json: JsonNode?, jsonPath: String): List<String> {
         return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath).map { obj: JsonNode ->
@@ -180,8 +187,10 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @return value if present, otherwise empty.
      */
     fun getSingleValue(json: JsonNode?, jsonPath: String): Optional<JsonNode> {
@@ -194,8 +203,8 @@ object JsonPaths {
             String.format(
                 "Path returned more than one item. path: %s items: %s",
                 jsonPath,
-                jsonNodes
-            )
+                jsonNodes,
+            ),
         )
         return if (jsonNodes.isEmpty()) Optional.empty() else Optional.of(jsonNodes[0])
     }
@@ -209,8 +218,10 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @return true if path is present in the object, otherwise false.
      */
     fun isPathPresent(json: JsonNode?, jsonPath: String): Boolean {
@@ -223,8 +234,8 @@ object JsonPaths {
             String.format(
                 "Path returned more than one item. path: %s items: %s",
                 jsonPath,
-                foundPaths
-            )
+                foundPaths,
+            ),
         )
         return !foundPaths.isEmpty()
     }
@@ -235,10 +246,13 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @param replacement
      * - a string value to replace the current value at the jsonPath
+     *
      * @throws PathNotFoundException throws if the path is not present in the object
      */
     fun replaceAtStringLoud(json: JsonNode, jsonPath: String, replacement: String): JsonNode {
@@ -251,8 +265,10 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @param replacement
      * - a string value to replace the current value at the jsonPath
      */
@@ -266,8 +282,10 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @param replacement
      * - a json node to replace the current value at the jsonPath
      */
@@ -282,8 +300,10 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @param replacement
      * - a json node to replace the current value at the jsonPath
      */
@@ -302,16 +322,18 @@ object JsonPaths {
      *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @param replacementFunction
      * - a function that takes in a node that matches the path as well as the path to the node
-     * itself. the return of this function will replace the current node.
+     *   itself. the return of this function will replace the current node.
      */
     fun replaceAt(
         json: JsonNode,
         jsonPath: String,
-        replacementFunction: BiFunction<JsonNode, String, JsonNode>
+        replacementFunction: BiFunction<JsonNode, String, JsonNode>,
     ): JsonNode {
         var clone = Jsons.clone(json)
         assertIsJsonPath(jsonPath)
@@ -327,21 +349,23 @@ object JsonPaths {
     }
 
     /**
-     *
      * @param conf
      * - JsonPath configuration. Primarily used to reuse code to allow fetching values or paths from
-     * a json object
+     *   a json object
+     *
      * @param json
      * - json object
+     *
      * @param jsonPath
      * - path into the json object. must be in the format of JSONPath.
+     *
      * @return all values that match the input query (whether the values are paths or actual values
-     * in the json object is determined by the conf)
+     *   in the json object is determined by the conf)
      */
     private fun getInternal(
         conf: Configuration,
         json: JsonNode?,
-        jsonPath: String
+        jsonPath: String,
     ): List<JsonNode> {
         assertIsJsonPath(jsonPath)
         return try {

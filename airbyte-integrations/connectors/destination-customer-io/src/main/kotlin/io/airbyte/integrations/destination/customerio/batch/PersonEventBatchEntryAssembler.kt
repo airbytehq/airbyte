@@ -12,12 +12,7 @@ class PersonEventBatchEntryAssembler : BatchEntryAssembler {
 
     companion object {
         val EXPECTED_PROPERTIES: Set<String> =
-            setOf<String>(
-                "person_email",
-                "event_name",
-                "event_id",
-                "timestamp",
-            )
+            setOf<String>("person_email", "event_name", "event_id", "timestamp")
     }
 
     override fun assemble(record: DestinationRecordRaw): ObjectNode {

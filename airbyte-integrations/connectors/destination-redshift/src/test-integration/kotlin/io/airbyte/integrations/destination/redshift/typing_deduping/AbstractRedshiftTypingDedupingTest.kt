@@ -145,7 +145,8 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
                              }
                            }
                            
-                           """.trimIndent()
+                           """
+                .trimIndent()
         val record2 =
             """
                            {"type": "RECORD",
@@ -161,7 +162,8 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
                              }
                            }
                            
-                           """.trimIndent()
+                           """
+                .trimIndent()
         val largeString1 =
             generateRandomString(RedshiftSuperLimitationTransformer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE)
         val largeString2 =
@@ -281,7 +283,7 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
             Assertions.assertEquals(
                 2,
                 loadedAtValues.size,
-                "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?"
+                "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?",
             )
         }
     }
@@ -303,9 +305,9 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA)
+                            )
+                    )
                 )
         val messages1 = readMessages("dat/sync1_messages.jsonl")
         runSync(
@@ -332,9 +334,9 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA)
+                            )
+                    )
                 )
         val messages2 = readMessages("dat/sync2_messages.jsonl")
         runSync(catalog2, messages2)
@@ -358,7 +360,7 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
             .collect(
                 { StringBuilder() },
                 { obj: java.lang.StringBuilder, codePoint: Int -> obj.appendCodePoint(codePoint) },
-                { obj: java.lang.StringBuilder, s: java.lang.StringBuilder? -> obj.append(s) }
+                { obj: java.lang.StringBuilder, s: java.lang.StringBuilder? -> obj.append(s) },
             )
             .toString()
     }

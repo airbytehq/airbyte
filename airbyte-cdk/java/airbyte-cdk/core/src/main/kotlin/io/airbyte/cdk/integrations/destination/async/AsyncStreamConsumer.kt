@@ -68,9 +68,7 @@ constructor(
             flushOnEveryMessage,
         )
     private val streamNames: Set<StreamDescriptor> =
-        StreamDescriptorUtils.fromConfiguredCatalog(
-            catalog,
-        )
+        StreamDescriptorUtils.fromConfiguredCatalog(catalog)
 
     // Note that this map will only be populated for streams with nonzero records.
     private val recordCounts: ConcurrentMap<StreamDescriptor, AtomicLong> = ConcurrentHashMap()
@@ -93,10 +91,7 @@ constructor(
     }
 
     @Throws(Exception::class)
-    override fun accept(
-        message: String,
-        sizeInBytes: Int,
-    ) {
+    override fun accept(message: String, sizeInBytes: Int) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
         propagateFlushWorkerExceptionIfPresent()
         /*
@@ -106,9 +101,7 @@ constructor(
          */
         val partialAirbyteMessage =
             try {
-                airbyteMessageDeserializer.deserializeAirbyteMessage(
-                    message,
-                )
+                airbyteMessageDeserializer.deserializeAirbyteMessage(message)
             } catch (e: AirbyteMessageDeserializer.UnrecognizedAirbyteMessageTypeException) {
                 logger.warn { "Ignoring unrecognized message type: ${e.message}" }
                 return
@@ -152,10 +145,7 @@ constructor(
             }
             else -> {}
         }
-        bufferEnqueue.addRecord(
-            partialAirbyteMessage,
-            sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
-        )
+        bufferEnqueue.addRecord(partialAirbyteMessage, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES)
     }
 
     @Throws(Exception::class)
@@ -223,11 +213,7 @@ constructor(
     }
 
     private fun getRecordCounter(streamDescriptor: StreamDescriptor): AtomicLong {
-        return recordCounts.computeIfAbsent(
-            streamDescriptor,
-        ) {
-            AtomicLong()
-        }
+        return recordCounts.computeIfAbsent(streamDescriptor) { AtomicLong() }
     }
 
     @Throws(Exception::class)
@@ -263,7 +249,7 @@ constructor(
             throw IllegalArgumentException(
                 "Message contained record from a stream that was not in the catalog. " +
                     "\ncatalog: ${Jsons.serialize(catalog)}, " +
-                    "\nmessage: ${Jsons.serialize(message)}",
+                    "\nmessage: ${Jsons.serialize(message)}"
             )
         }
     }

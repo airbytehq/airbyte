@@ -76,9 +76,8 @@ class ObjectStorageDestinationState(
                         Pair(
                             client
                                 .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
-                                ?.toLongOrNull()
-                                ?: 0L,
-                            obj
+                                ?.toLongOrNull() ?: 0L,
+                            obj,
                         )
                     }
                 }

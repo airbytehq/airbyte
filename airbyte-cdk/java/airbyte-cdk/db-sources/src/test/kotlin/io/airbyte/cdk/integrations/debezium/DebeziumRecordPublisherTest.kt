@@ -28,7 +28,7 @@ internal class DebeziumRecordPublisherTest {
                             .withSyncMode(SyncMode.INCREMENTAL),
                         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public")
                             .withSyncMode(SyncMode.INCREMENTAL),
-                    ),
+                    )
                 )
 
         val expectedWhitelist =
@@ -36,7 +36,7 @@ internal class DebeziumRecordPublisherTest {
         val actualWhitelist =
             RelationalDbDebeziumPropertiesManager.getTableIncludelist(
                 catalog,
-                getCdcStreamListFromCatalog(catalog)
+                getCdcStreamListFromCatalog(catalog),
             )
 
         Assertions.assertEquals(expectedWhitelist, actualWhitelist)
@@ -52,14 +52,14 @@ internal class DebeziumRecordPublisherTest {
                             .withSyncMode(SyncMode.INCREMENTAL),
                         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public")
                             .withSyncMode(SyncMode.FULL_REFRESH),
-                    ),
+                    )
                 )
 
         val expectedWhitelist = "\\Qpublic.id_and_name\\E"
         val actualWhitelist =
             RelationalDbDebeziumPropertiesManager.getTableIncludelist(
                 catalog,
-                getCdcStreamListFromCatalog(catalog)
+                getCdcStreamListFromCatalog(catalog),
             )
 
         Assertions.assertEquals(expectedWhitelist, actualWhitelist)
@@ -84,7 +84,7 @@ internal class DebeziumRecordPublisherTest {
                             .withSyncMode(SyncMode.FULL_REFRESH),
                         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public")
                             .withSyncMode(SyncMode.INCREMENTAL),
-                    ),
+                    )
                 )
 
         val expectedWhitelist =
@@ -92,7 +92,7 @@ internal class DebeziumRecordPublisherTest {
         val actualWhitelist =
             RelationalDbDebeziumPropertiesManager.getColumnIncludeList(
                 catalog,
-                getCdcStreamListFromCatalog(catalog)
+                getCdcStreamListFromCatalog(catalog),
             )
 
         Assertions.assertEquals(expectedWhitelist, actualWhitelist)
@@ -108,7 +108,7 @@ internal class DebeziumRecordPublisherTest {
                             .withSyncMode(SyncMode.INCREMENTAL),
                         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public")
                             .withSyncMode(SyncMode.INCREMENTAL),
-                    ),
+                    )
                 )
 
         val expectedWhitelist = "\\Qpublic.id_and_name\\E"
@@ -147,7 +147,7 @@ internal class DebeziumRecordPublisherTest {
                             .withSyncMode(SyncMode.FULL_REFRESH),
                         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public")
                             .withSyncMode(SyncMode.INCREMENTAL),
-                    ),
+                    )
                 )
 
         val expectedWhitelist =
@@ -186,15 +186,15 @@ internal class DebeziumRecordPublisherTest {
                                 Field.of("fld1", JsonSchemaType.NUMBER),
                                 Field.of("fld2", JsonSchemaType.STRING),
                             )
-                            .withSyncMode(SyncMode.INCREMENTAL),
-                    ),
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                    )
                 )
 
         val anchored =
             "^" +
                 RelationalDbDebeziumPropertiesManager.getColumnIncludeList(
                     catalog,
-                    getCdcStreamListFromCatalog(catalog)
+                    getCdcStreamListFromCatalog(catalog),
                 ) +
                 "$"
         val pattern = Pattern.compile(anchored)

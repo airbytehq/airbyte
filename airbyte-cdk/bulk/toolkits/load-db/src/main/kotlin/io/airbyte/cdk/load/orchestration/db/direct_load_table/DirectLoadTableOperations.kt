@@ -45,10 +45,7 @@ interface DirectLoadTableSqlOperations {
         replace: Boolean,
     )
 
-    suspend fun overwriteTable(
-        sourceTableName: TableName,
-        targetTableName: TableName,
-    )
+    suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName)
 
     suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
@@ -81,10 +78,7 @@ open class DefaultDirectLoadTableSqlOperations(
         )
     }
 
-    override suspend fun overwriteTable(
-        sourceTableName: TableName,
-        targetTableName: TableName,
-    ) {
+    override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         handler.execute(
             generator.overwriteTable(
                 sourceTableName = sourceTableName,

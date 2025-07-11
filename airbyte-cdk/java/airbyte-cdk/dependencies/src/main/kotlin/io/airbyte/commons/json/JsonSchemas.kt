@@ -39,9 +39,9 @@ object JsonSchemas {
         java.util.Set.of(ONE_OF_TYPE, ALL_OF_TYPE, ANY_OF_TYPE)
 
     /**
-     * JsonSchema supports to ways of declaring type. `type: "string"` and `type: ["null",
-     * "string"]`. This method will mutate a JsonNode with a type field so that the output type is
-     * the array version.
+     * JsonSchema supports to ways of declaring type. `type: "string"` and `type:
+     * ["null", "string"]`. This method will mutate a JsonNode with a type field so that the output
+     * type is the array version.
      *
      * @param jsonNode
      * - a json object with children that contain types.
@@ -74,7 +74,7 @@ object JsonSchemas {
                 IOs.writeFile(
                     configRoot,
                     filename,
-                    MoreResources.readResource(String.format("%s/%s", resourceDir, filename))
+                    MoreResources.readResource(String.format("%s/%s", resourceDir, filename)),
                 )
             }
 
@@ -90,12 +90,13 @@ object JsonSchemas {
      *
      * @param jsonSchema
      * - JsonSchema object to traverse
+     *
      * @param consumer
      * - accepts the current node and the path to that node.
      */
     fun traverseJsonSchema(
         jsonSchema: JsonNode,
-        consumer: BiConsumer<JsonNode, List<FieldNameOrList>>
+        consumer: BiConsumer<JsonNode, List<FieldNameOrList>>,
     ) {
         traverseJsonSchemaInternal(jsonSchema, ArrayList(), consumer)
     }
@@ -105,18 +106,20 @@ object JsonSchemas {
      *
      * @param jsonSchema
      * - JsonSchema object to traverse
+     *
      * @param mapper
      * - accepts the current node and the path to that node. whatever is returned will be collected
-     * and returned by the final collection.
+     *   and returned by the final collection.
+     *
      * @param <T> - type of objects being collected
      * @return
      * - collection of all items that were collected during the traversal. Returns a { @link
-     * Collection } because there is no order or uniqueness guarantee so neither List nor Set make
-     * sense. </T>
+     *   Collection } because there is no order or uniqueness guarantee so neither List nor Set make
+     *   sense. </T>
      */
     fun <T> traverseJsonSchemaWithCollector(
         jsonSchema: JsonNode,
-        mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, T>
+        mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, T>,
     ): List<T> {
         // for the sake of code reuse, use the filtered collector method but makes sure the filter
         // always
@@ -133,18 +136,20 @@ object JsonSchemas {
      *
      * @param jsonSchema
      * - JsonSchema object to traverse
+     *
      * @param mapper
      * - accepts the current node and the path to that node. if it returns an empty optional,
-     * nothing will be collected, otherwise, whatever is returned will be collected and returned by
-     * the final collection.
+     *   nothing will be collected, otherwise, whatever is returned will be collected and returned
+     *   by the final collection.
+     *
      * @param <T> - type of objects being collected
      * @return
      * - collection of all items that were collected during the traversal. Returns values in
-     * preoorder traversal order. </T>
+     *   preoorder traversal order. </T>
      */
     fun <T> traverseJsonSchemaWithFilteredCollector(
         jsonSchema: JsonNode,
-        mapper: BiFunction<JsonNode?, List<FieldNameOrList>, Optional<T>>
+        mapper: BiFunction<JsonNode?, List<FieldNameOrList>, Optional<T>>,
     ): List<T> {
         val collector: MutableList<T> = ArrayList()
         traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList> ->
@@ -160,14 +165,16 @@ object JsonSchemas {
      *
      * @param obj
      * - JsonSchema object to traverse
+     *
      * @param predicate
      * - predicate to determine if the path for a node should be collected.
+     *
      * @return
      * - collection of all paths that were collected during the traversal.
      */
     fun collectPathsThatMeetCondition(
         obj: JsonNode,
-        predicate: Predicate<JsonNode?>
+        predicate: Predicate<JsonNode?>,
     ): List<List<FieldNameOrList>> {
         return traverseJsonSchemaWithFilteredCollector(obj) {
             node: JsonNode?,
@@ -178,7 +185,8 @@ object JsonSchemas {
                 )
             } else {
                 return@traverseJsonSchemaWithFilteredCollector Optional.empty<
-                    List<FieldNameOrList>>()
+                    List<FieldNameOrList>
+                >()
             }
         }
     }
@@ -190,20 +198,21 @@ object JsonSchemas {
      *
      * @param jsonSchemaNode
      * - jsonschema object to traverse.
+     *
      * @param consumer
      * - consumer to be called at each node. it accepts the current node and the path to the node
-     * from the root of the object passed at the root level invocation </String>
+     *   from the root of the object passed at the root level invocation </String>
      */
     private fun traverseJsonSchemaInternal(
         jsonSchemaNode: JsonNode,
         path: List<FieldNameOrList>,
-        consumer: BiConsumer<JsonNode, List<FieldNameOrList>>
+        consumer: BiConsumer<JsonNode, List<FieldNameOrList>>,
     ) {
         require(jsonSchemaNode.isObject) {
             String.format(
                 "json schema nodes should always be object nodes. path: %s actual: %s",
                 path,
-                jsonSchemaNode
+                jsonSchemaNode,
             )
         }
         consumer.accept(jsonSchemaNode, path)
@@ -222,7 +231,7 @@ object JsonSchemas {
                         traverseJsonSchemaInternal(
                             jsonSchemaNode[JSON_SCHEMA_ITEMS_KEY],
                             newPath,
-                            consumer
+                            consumer,
                         )
                     } else {
                         log.warn {
@@ -261,6 +270,7 @@ object JsonSchemas {
      *
      * @param node
      * - object to detect use of composite functionality.
+     *
      * @return the composite functionality being used, if not using composite functionality, empty.
      */
     private fun getKeywordIfComposite(node: JsonNode): Optional<String> {
@@ -277,6 +287,7 @@ object JsonSchemas {
      *
      * @param jsonSchema
      * - JSONSchema object
+     *
      * @return type of the node.
      */
     fun getTypeOrObject(jsonSchema: JsonNode): List<String> {
@@ -295,6 +306,7 @@ object JsonSchemas {
      *
      * @param jsonSchema
      * - JSONSchema object
+     *
      * @return type of the node.
      */
     fun getType(jsonSchema: JsonNode): List<String> {

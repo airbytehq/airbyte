@@ -38,7 +38,6 @@ data class Reserved<T>(
  * Manages memory usage for the destination.
  *
  * TODO: Better initialization of available runtime memory?
- *
  * TODO: Some degree of logging/monitoring around how accurate we're actually being?
  */
 class ReservationManager(val totalCapacityBytes: Long) {
@@ -49,6 +48,7 @@ class ReservationManager(val totalCapacityBytes: Long) {
 
     val remainingCapacityBytes: Long
         get() = totalCapacityBytes - usedBytes.get()
+
     val totalBytesReserved: Long
         get() = usedBytes.get()
 

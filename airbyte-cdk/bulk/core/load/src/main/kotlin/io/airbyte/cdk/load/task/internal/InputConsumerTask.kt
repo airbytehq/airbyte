@@ -31,14 +31,14 @@ import kotlinx.coroutines.flow.fold
 private val log = KotlinLogging.logger {}
 
 /**
- * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
- * [CheckpointMessage]s to the state manager.
+ * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel
+ * and @ [CheckpointMessage]s to the state manager.
  *
  * TODO: Handle other message types.
  */
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system"
+    justification = "message is guaranteed to be non-null by Kotlin's type system",
 )
 class InputConsumerTask(
     private val catalog: DestinationCatalog,
@@ -46,7 +46,7 @@ class InputConsumerTask(
     private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partitioner: InputPartitioner,
-    private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
+    private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
 ) : Task {
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
@@ -59,7 +59,7 @@ class InputConsumerTask(
             pipelineEventBookkeepingRouter.handleStreamMessage(
                 reserved.value,
                 postProcessingCallback = { reserved.release() },
-                unopenedStreams
+                unopenedStreams,
             )
         when (pipelineEvent) {
             is PipelineMessage -> {

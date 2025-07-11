@@ -205,7 +205,7 @@ enum class AirbyteJsonSchemaType {
         fun getMatchingValueForType(value: JsonNode, options: ArrayNode): ObjectNode {
             return getMatchingValueForType(
                 value,
-                options.elements().asSequence().map { it as ObjectNode }.toList()
+                options.elements().asSequence().map { it as ObjectNode }.toList(),
             )
         }
 

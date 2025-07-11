@@ -68,7 +68,7 @@ class S3DataLakeTableSynchronizerTest {
     /** Helper to build a schema with [Types.NestedField]s. */
     private fun buildSchema(
         vararg fields: Types.NestedField,
-        identifierFields: Set<Int> = emptySet()
+        identifierFields: Set<Int> = emptySet(),
     ): Schema {
         return Schema(fields.toList(), identifierFields)
     }
@@ -93,7 +93,7 @@ class S3DataLakeTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
             )
 
         // We expect the original schema to be returned
@@ -121,7 +121,7 @@ class S3DataLakeTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
             )
 
         // The result is a new schema after changes, but we can only verify calls on the mock
@@ -147,7 +147,7 @@ class S3DataLakeTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // Verify that "age" is updated to LONG
@@ -168,7 +168,7 @@ class S3DataLakeTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // We expect makeColumnOptional("make_optional") to be called
@@ -191,7 +191,7 @@ class S3DataLakeTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         verify { mockUpdateSchema.addColumn(null, "new_col", Types.StringType.get()) }
@@ -207,7 +207,7 @@ class S3DataLakeTableSynchronizerTest {
                     "user_info",
                     Types.StructType.of(
                         Types.NestedField.required(2, "nested_id", Types.IntegerType.get())
-                    )
+                    ),
                 )
             )
         val incomingSchema =
@@ -219,7 +219,7 @@ class S3DataLakeTableSynchronizerTest {
                         Types.NestedField.required(2, "nested_id", Types.IntegerType.get()),
                         // new subfield
                         Types.NestedField.optional(3, "nested_name", Types.StringType.get()),
-                    )
+                    ),
                 )
             )
 
@@ -234,7 +234,7 @@ class S3DataLakeTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         verify { mockUpdateSchema.addColumn("user_info", "nested_name", Types.StringType.get()) }
@@ -255,7 +255,7 @@ class S3DataLakeTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
@@ -289,7 +289,7 @@ class S3DataLakeTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
@@ -308,7 +308,7 @@ class S3DataLakeTableSynchronizerTest {
         val incomingSchema =
             buildSchema(
                 Types.NestedField.required(3, "id", Types.StringType.get()),
-                identifierFields = setOf(3)
+                identifierFields = setOf(3),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -316,7 +316,7 @@ class S3DataLakeTableSynchronizerTest {
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // We expect setIdentifierFields(listOf("id")) to be called
@@ -332,7 +332,7 @@ class S3DataLakeTableSynchronizerTest {
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "remove_me", Types.StringType.get()),
                 Types.NestedField.required(3, "make_optional", Types.IntegerType.get()),
-                Types.NestedField.required(4, "upgrade_int", Types.IntegerType.get())
+                Types.NestedField.required(4, "upgrade_int", Types.IntegerType.get()),
             )
         val incomingSchema =
             buildSchema(
@@ -344,7 +344,7 @@ class S3DataLakeTableSynchronizerTest {
                 Types.NestedField.required(4, "upgrade_int", Types.LongType.get()),
                 // brand_new -> new column
                 Types.NestedField.optional(5, "brand_new", Types.FloatType.get()),
-                identifierFields = setOf(1)
+                identifierFields = setOf(1),
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -354,14 +354,14 @@ class S3DataLakeTableSynchronizerTest {
             superTypeFinder.findSuperType(
                 Types.IntegerType.get(),
                 Types.LongType.get(),
-                "upgrade_int"
+                "upgrade_int",
             )
         } returns Types.LongType.get()
 
         synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
-            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
         )
 
         // Verify calls, in any order
@@ -388,7 +388,7 @@ class S3DataLakeTableSynchronizerTest {
                 synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
-                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
                 )
             }
             .isInstanceOf(ConfigErrorException::class.java)
@@ -410,7 +410,7 @@ class S3DataLakeTableSynchronizerTest {
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
-                ColumnTypeChangeBehavior.OVERWRITE
+                ColumnTypeChangeBehavior.OVERWRITE,
             )
 
         verify { mockUpdateSchema.deleteColumn("age") }

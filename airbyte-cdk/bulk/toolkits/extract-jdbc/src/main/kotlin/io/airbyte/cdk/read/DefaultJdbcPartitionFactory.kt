@@ -25,12 +25,7 @@ class DefaultJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val handler: CatalogValidationFailureHandler,
     val selectQueryGenerator: SelectQueryGenerator,
-) :
-    JdbcPartitionFactory<
-        DefaultJdbcSharedState,
-        DefaultJdbcStreamState,
-        DefaultJdbcPartition,
-    > {
+) : JdbcPartitionFactory<DefaultJdbcSharedState, DefaultJdbcStreamState, DefaultJdbcPartition> {
 
     private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
@@ -92,7 +87,7 @@ class DefaultJdbcPartitionFactory(
                     streamState,
                     primaryKey = pkMap.keys.toList(),
                     lowerBound = pkMap.values.toList(),
-                    upperBound = null
+                    upperBound = null,
                 )
             }
         } else {
@@ -135,9 +130,7 @@ class DefaultJdbcPartitionFactory(
         }
         val fields: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (primaryKey.keys != fields.map { it.id }.toSet()) {
-            handler.accept(
-                InvalidPrimaryKey(stream.id, primaryKey.keys.toList()),
-            )
+            handler.accept(InvalidPrimaryKey(stream.id, primaryKey.keys.toList()))
             return null
         }
         return fields.associateWith { primaryKey[it.id]!! }
@@ -145,23 +138,17 @@ class DefaultJdbcPartitionFactory(
 
     private fun DefaultJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
         if (cursors.size > 1) {
-            handler.accept(
-                InvalidCursor(stream.id, cursors.keys.toString()),
-            )
+            handler.accept(InvalidCursor(stream.id, cursors.keys.toString()))
             return null
         }
         val cursorLabel: String = cursors.keys.first()
         val cursor: FieldOrMetaField? = stream.schema.find { it.id == cursorLabel }
         if (cursor !is Field) {
-            handler.accept(
-                InvalidCursor(stream.id, cursorLabel),
-            )
+            handler.accept(InvalidCursor(stream.id, cursorLabel))
             return null
         }
         if (stream.configuredCursor != cursor) {
-            handler.accept(
-                InvalidCursor(stream.id, cursorLabel),
-            )
+            handler.accept(InvalidCursor(stream.id, cursorLabel))
             return null
         }
         return cursor to cursors[cursorLabel]!!
@@ -172,10 +159,7 @@ class DefaultJdbcPartitionFactory(
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || configuration.global) {
             if (pkChosenFromCatalog.isEmpty()) {
-                return DefaultJdbcUnsplittableSnapshotPartition(
-                    selectQueryGenerator,
-                    streamState,
-                )
+                return DefaultJdbcUnsplittableSnapshotPartition(selectQueryGenerator, streamState)
             }
             return DefaultJdbcSplittableSnapshotPartition(
                 selectQueryGenerator,
@@ -191,7 +175,7 @@ class DefaultJdbcPartitionFactory(
             return DefaultJdbcUnsplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                cursorChosenFromCatalog
+                cursorChosenFromCatalog,
             )
         }
         return DefaultJdbcSplittableSnapshotWithCursorPartition(
@@ -209,7 +193,7 @@ class DefaultJdbcPartitionFactory(
 
     override fun split(
         unsplitPartition: DefaultJdbcPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<DefaultJdbcPartition> {
         val splitPartitionBoundaries: List<DefaultJdbcStreamStateValue> by lazy {
             opaqueStateValues.map { Jsons.treeToValue(it, DefaultJdbcStreamStateValue::class.java) }

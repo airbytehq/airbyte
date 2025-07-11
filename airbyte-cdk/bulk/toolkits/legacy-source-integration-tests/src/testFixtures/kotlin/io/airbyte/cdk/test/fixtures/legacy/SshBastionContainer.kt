@@ -58,13 +58,13 @@ class SshBastionContainer : AutoCloseable {
                 .put(
                     "tunnel_user_password",
                     if (tunnelMethod == SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH) SSH_PASSWORD
-                    else ""
+                    else "",
                 )
                 .put(
                     "ssh_key",
                     if (tunnelMethod == SshTunnel.TunnelMethod.SSH_KEY_AUTH)
                         container!!.execInContainer("cat", "var/bastion/id_rsa").stdout
-                    else ""
+                    else "",
                 )
                 .build()
         )
@@ -74,7 +74,7 @@ class SshBastionContainer : AutoCloseable {
     fun getTunnelConfig(
         tunnelMethod: SshTunnel.TunnelMethod,
         builderWithSchema: ImmutableMap.Builder<Any, Any>,
-        innerAddress: Boolean
+        innerAddress: Boolean,
     ): JsonNode? {
         return Jsons.jsonNode(
             builderWithSchema
@@ -89,14 +89,14 @@ class SshBastionContainer : AutoCloseable {
 
     fun getBasicDbConfigBuider(
         db: JdbcDatabaseContainer<*>,
-        schemas: MutableList<String>
+        schemas: MutableList<String>,
     ): ImmutableMap.Builder<Any, Any> {
         return getBasicDbConfigBuider(db, db.databaseName).put("schemas", schemas)
     }
 
     fun getBasicDbConfigBuider(
         db: JdbcDatabaseContainer<*>,
-        schemaName: String
+        schemaName: String,
     ): ImmutableMap.Builder<Any, Any> {
         return ImmutableMap.builder<Any, Any>()
             .put("host", Objects.requireNonNull(HostPortResolver.resolveHost(db)))
@@ -139,7 +139,7 @@ class SshBastionContainer : AutoCloseable {
         fun getInnerContainerAddress(container: Container<*>): ImmutablePair<String, Int> {
             return ImmutablePair.of(
                 container.containerInfo.networkSettings.networks.entries.first().value.ipAddress,
-                container.exposedPorts.first()
+                container.exposedPorts.first(),
             )
         }
 

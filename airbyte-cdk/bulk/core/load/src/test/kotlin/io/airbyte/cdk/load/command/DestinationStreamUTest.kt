@@ -65,7 +65,7 @@ class DestinationStreamUTest {
                 .withPrimaryKey(
                     listOf<List<String>>(
                         listOf<String>("composite_key_1"),
-                        listOf<String>("composite_key_2")
+                        listOf<String>("composite_key_2"),
                     )
                 )
 
@@ -116,7 +116,7 @@ class DestinationStreamUTest {
                     "a_stream_name",
                     "namespace",
                     Field.of("field_name", JsonSchemaType.STRING),
-                ),
+                )
             )
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withMinimumGenerationId(0L)

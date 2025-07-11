@@ -20,5 +20,6 @@ class FileHandle(pathName: String) {
     private val file = File(pathName)
 
     fun delete() = file.delete()
+
     fun inputStream() = file.inputStream()
 }

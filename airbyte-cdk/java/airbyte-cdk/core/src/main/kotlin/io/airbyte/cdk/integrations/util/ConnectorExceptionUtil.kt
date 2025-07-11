@@ -9,6 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Utility class defining methods for handling configuration exceptions in connectors. */
 object ConnectorExceptionUtil {
 
@@ -42,7 +43,7 @@ object ConnectorExceptionUtil {
     @JvmStatic
     fun <T : Throwable, Result> getResultsOrLogAndThrowFirst(
         initialMessage: String,
-        eithers: List<Either<out T, Result>>
+        eithers: List<Either<out T, Result>>,
     ): List<Result> {
         val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }
         if (throwables.isNotEmpty()) {

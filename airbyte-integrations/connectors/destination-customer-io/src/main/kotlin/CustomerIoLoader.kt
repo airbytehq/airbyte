@@ -31,7 +31,7 @@ private val logger = KotlinLogging.logger {}
 
 class CustomerIoState(
     private val httpClient: HttpClient,
-    private val entryAssembler: BatchEntryAssembler
+    private val entryAssembler: BatchEntryAssembler,
 ) : AutoCloseable {
     val decoder: JsonDecoder = JsonDecoder()
     val requestBody: ObjectNode = Jsons.objectNode()
@@ -60,7 +60,7 @@ class CustomerIoState(
                     method = RequestMethod.POST,
                     url = "https://track.customer.io/api/v2/batch",
                     headers = mapOf("Content-Type" to "application/json"),
-                    body = requestBody.serializeToJsonBytes()
+                    body = requestBody.serializeToJsonBytes(),
                 )
             )
 
@@ -90,7 +90,7 @@ class CustomerIoState(
 
 class CustomerIoLoader(
     private val httpClient: HttpClient,
-    private val catalog: DestinationCatalog
+    private val catalog: DestinationCatalog,
 ) : DlqLoader<CustomerIoState> {
     override fun start(key: StreamKey, part: Int): CustomerIoState {
         logger.info { "CustomerIoLoader.start for ${key.serializeToString()} with part $part" }
@@ -104,7 +104,7 @@ class CustomerIoLoader(
 
     override fun accept(
         record: DestinationRecordRaw,
-        state: CustomerIoState
+        state: CustomerIoState,
     ): DlqLoader.DlqLoadResult {
         state.accumulate(record)
         if (state.isFull()) {

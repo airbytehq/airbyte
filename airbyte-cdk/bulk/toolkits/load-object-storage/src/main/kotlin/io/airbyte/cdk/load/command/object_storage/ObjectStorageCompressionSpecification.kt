@@ -29,7 +29,7 @@ import java.io.OutputStream
 interface ObjectStorageCompressionSpecificationProvider {
     @get:JsonSchemaTitle("Compression")
     @get:JsonPropertyDescription(
-        "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+        "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\")."
     )
     @get:JsonProperty("compression")
     val compression: ObjectStorageCompressionSpecification?

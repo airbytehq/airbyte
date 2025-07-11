@@ -46,28 +46,28 @@ class GlobalAsyncStateManagerTest {
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
                     PartialAirbyteStateMessage()
-                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                 )
                 .withSerialized(
                     serializedState(
                         STREAM1_DESC,
                         AirbyteStateMessage.AirbyteStateType.GLOBAL,
                         Jsons.jsonNode(mapOf("cursor" to 1)),
-                    ),
+                    )
                 )
         private val GLOBAL_STATE_MESSAGE2: PartialAirbyteMessage =
             PartialAirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
                     PartialAirbyteStateMessage()
-                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                 )
                 .withSerialized(
                     serializedState(
                         STREAM2_DESC,
                         AirbyteStateMessage.AirbyteStateType.GLOBAL,
                         Jsons.jsonNode(mapOf("cursor" to 2)),
-                    ),
+                    )
                 )
 
         private val GLOBAL_STATE_MESSAGE3: PartialAirbyteMessage =
@@ -75,14 +75,14 @@ class GlobalAsyncStateManagerTest {
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
                     PartialAirbyteStateMessage()
-                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                 )
                 .withSerialized(
                     serializedState(
                         STREAM3_DESC,
                         AirbyteStateMessage.AirbyteStateType.GLOBAL,
                         Jsons.jsonNode(mapOf("cursor" to 2)),
-                    ),
+                    )
                 )
         private val STREAM1_STATE_MESSAGE1: PartialAirbyteMessage =
             PartialAirbyteMessage()
@@ -90,14 +90,14 @@ class GlobalAsyncStateManagerTest {
                 .withState(
                     PartialAirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC))
                 )
                 .withSerialized(
                     serializedState(
                         STREAM1_DESC,
                         AirbyteStateMessage.AirbyteStateType.STREAM,
                         Jsons.jsonNode(mapOf("cursor" to 1)),
-                    ),
+                    )
                 )
         private val STREAM1_STATE_MESSAGE2: PartialAirbyteMessage =
             PartialAirbyteMessage()
@@ -105,14 +105,14 @@ class GlobalAsyncStateManagerTest {
                 .withState(
                     PartialAirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC))
                 )
                 .withSerialized(
                     serializedState(
                         STREAM1_DESC,
                         AirbyteStateMessage.AirbyteStateType.STREAM,
                         Jsons.jsonNode(mapOf("cursor" to 2)),
-                    ),
+                    )
                 )
 
         private val STREAM1_STATE_MESSAGE3: PartialAirbyteMessage =
@@ -121,14 +121,14 @@ class GlobalAsyncStateManagerTest {
                 .withState(
                     PartialAirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC))
                 )
                 .withSerialized(
                     serializedState(
                         STREAM1_DESC,
                         AirbyteStateMessage.AirbyteStateType.STREAM,
                         Jsons.jsonNode(mapOf("cursor" to 3)),
-                    ),
+                    )
                 )
         private val STREAM2_STATE_MESSAGE: PartialAirbyteMessage =
             PartialAirbyteMessage()
@@ -136,14 +136,14 @@ class GlobalAsyncStateManagerTest {
                 .withState(
                     PartialAirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM2_DESC)),
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM2_DESC))
                 )
                 .withSerialized(
                     serializedState(
                         STREAM2_DESC,
                         AirbyteStateMessage.AirbyteStateType.STREAM,
                         Jsons.jsonNode(mapOf("cursor" to 4)),
-                    ),
+                    )
                 )
 
         private fun serializedState(
@@ -166,11 +166,11 @@ class GlobalAsyncStateManagerTest {
                                                 listOf(
                                                     AirbyteStreamState()
                                                         .withStreamState(Jsons.emptyObject())
-                                                        .withStreamDescriptor(streamDescriptor),
-                                                ),
-                                            ),
-                                    ),
-                            ),
+                                                        .withStreamDescriptor(streamDescriptor)
+                                                )
+                                            )
+                                    )
+                            )
                     )
                 }
                 AirbyteStateMessage.AirbyteStateType.STREAM -> {
@@ -183,9 +183,9 @@ class GlobalAsyncStateManagerTest {
                                     .withStream(
                                         AirbyteStreamState()
                                             .withStreamState(state)
-                                            .withStreamDescriptor(streamDescriptor),
-                                    ),
-                            ),
+                                            .withStreamDescriptor(streamDescriptor)
+                                    )
+                            )
                     )
                 }
                 else -> throw RuntimeException("LEGACY STATE NOT SUPPORTED")
@@ -204,22 +204,14 @@ class GlobalAsyncStateManagerTest {
         assertEquals(firstStateId, secondStateId)
 
         stateManager.decrement(firstStateId, 2)
-        stateManager.flushStates { e: AirbyteMessage ->
-            emittedStatesFromDestination.add(
-                e,
-            )
-        }
+        stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
         // because no state message has been tracked, there is nothing to flush yet.
         val stateWithStats =
             emittedStatesFromDestination.associateWith { it.state?.destinationStats }
         assertEquals(0, stateWithStats.size)
 
         stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
-        stateManager.flushStates { e: AirbyteMessage ->
-            emittedStatesFromDestination.add(
-                e,
-            )
-        }
+        stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
 
         val expectedDestinationStats = AirbyteStateStats().withRecordCount(2.0)
         val stateWithStats2 =
@@ -232,7 +224,7 @@ class GlobalAsyncStateManagerTest {
                         AirbyteMessage::class.java,
                     ),
                     expectedDestinationStats,
-                ),
+                )
             ),
             stateWithStats2.keys,
         )
@@ -257,11 +249,7 @@ class GlobalAsyncStateManagerTest {
 
             // GLOBAL
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(0.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -274,19 +262,14 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
-            assertThrows(
-                IllegalArgumentException::class.java,
-            ) {
-                stateManager.trackState(
-                    STREAM1_STATE_MESSAGE1,
-                    STATE_MSG_SIZE,
-                )
+            assertThrows(IllegalArgumentException::class.java) {
+                stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             }
         }
 
@@ -305,25 +288,13 @@ class GlobalAsyncStateManagerTest {
 
             // Since this is actually a global state, we can only flush after all streams are done.
             stateManager.decrement(preConvertId0, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             assertEquals(0, emittedStatesFromDestination.size)
             stateManager.decrement(preConvertId1, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             assertEquals(0, emittedStatesFromDestination.size)
             stateManager.decrement(preConvertId2, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(30.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -335,7 +306,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
@@ -351,11 +322,7 @@ class GlobalAsyncStateManagerTest {
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(preConvertId0, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(10.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -367,7 +334,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
@@ -378,11 +345,7 @@ class GlobalAsyncStateManagerTest {
             val afterConvertId1: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.decrement(afterConvertId1, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
@@ -393,7 +356,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats2.keys,
             )
@@ -409,11 +372,7 @@ class GlobalAsyncStateManagerTest {
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(preConvertId0, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(10.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -425,7 +384,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
@@ -433,11 +392,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -449,24 +404,17 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats2,
-                    ),
+                    )
                 ),
                 stateWithStats2.keys,
             )
-            assertEquals(
-                listOf(expectedDestinationStats2),
-                stateWithStats2.values.toList(),
-            )
+            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.toList())
             emittedStatesFromDestination.clear()
 
             val afterConvertId2: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE3, STATE_MSG_SIZE)
             stateManager.decrement(afterConvertId2, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val stateWithStats3 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
@@ -477,7 +425,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats3.keys,
             )
@@ -496,11 +444,7 @@ class GlobalAsyncStateManagerTest {
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(preConvertId0, 10)
             stateManager.decrement(preConvertId1, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(20.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -512,7 +456,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
@@ -524,11 +468,7 @@ class GlobalAsyncStateManagerTest {
             assertEquals(afterConvertId0, afterConvertId1)
             stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.decrement(afterConvertId0, 20)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
@@ -539,7 +479,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats2.keys,
             )
@@ -557,11 +497,7 @@ class GlobalAsyncStateManagerTest {
 
             // GLOBAL
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(0.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -573,19 +509,14 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
-            assertThrows(
-                IllegalArgumentException::class.java,
-            ) {
-                stateManager.trackState(
-                    GLOBAL_STATE_MESSAGE1,
-                    STATE_MSG_SIZE,
-                )
+            assertThrows(IllegalArgumentException::class.java) {
+                stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE)
             }
         }
 
@@ -598,11 +529,7 @@ class GlobalAsyncStateManagerTest {
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 3)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -614,7 +541,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
@@ -625,11 +552,7 @@ class GlobalAsyncStateManagerTest {
             stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(10.0)
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -641,14 +564,11 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats2,
-                    ),
+                    )
                 ),
                 stateWithStats2.keys,
             )
-            assertEquals(
-                listOf(expectedDestinationStats2),
-                stateWithStats2.values.toList(),
-            )
+            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.toList())
         }
 
         @Test
@@ -660,11 +580,7 @@ class GlobalAsyncStateManagerTest {
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 3)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -676,7 +592,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
@@ -684,11 +600,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
@@ -700,24 +612,17 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats2,
-                    ),
+                    )
                 ),
                 stateWithStats2.keys,
             )
-            assertEquals(
-                listOf(expectedDestinationStats2),
-                stateWithStats2.values.toList(),
-            )
+            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.toList())
             emittedStatesFromDestination.clear()
 
             stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE3, STATE_MSG_SIZE)
             stateManager.decrement(stateId, 10)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val stateWithStats3 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             val expectedDestinationStats3 = AirbyteStateStats().withRecordCount(10.0)
@@ -729,14 +634,11 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats3,
-                    ),
+                    )
                 ),
                 stateWithStats3.keys,
             )
-            assertEquals(
-                listOf(expectedDestinationStats3),
-                stateWithStats3.values.toList(),
-            )
+            assertEquals(listOf(expectedDestinationStats3), stateWithStats3.values.toList())
         }
 
         @Test
@@ -750,11 +652,7 @@ class GlobalAsyncStateManagerTest {
 
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE)
             stateManager.decrement(stream1StateId, 3)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -766,7 +664,7 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats,
-                    ),
+                    )
                 ),
                 stateWithStats.keys,
             )
@@ -774,20 +672,12 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateManager.decrement(stream2StateId, 4)
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             assertEquals(listOf<Any>(), emittedStatesFromDestination)
             stateManager.trackState(STREAM2_STATE_MESSAGE, STATE_MSG_SIZE)
             stateManager.decrement(stream2StateId, 3)
             // only flush state if counter is 0.
-            stateManager.flushStates { e: AirbyteMessage ->
-                emittedStatesFromDestination.add(
-                    e,
-                )
-            }
+            stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(7.0)
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
@@ -799,14 +689,11 @@ class GlobalAsyncStateManagerTest {
                             AirbyteMessage::class.java,
                         ),
                         expectedDestinationStats2,
-                    ),
+                    )
                 ),
                 stateWithStats2.keys,
             )
-            assertEquals(
-                listOf(expectedDestinationStats2),
-                stateWithStats2.values.toList(),
-            )
+            assertEquals(listOf(expectedDestinationStats2), stateWithStats2.values.toList())
         }
     }
 
@@ -830,22 +717,11 @@ class GlobalAsyncStateManagerTest {
         val stateId = simulateIncomingRecords(STREAM1_DESC, 6, stateManager)
         stateManager.decrement(stateId, 4)
         stateManager.trackState(GLOBAL_STATE_MESSAGE1, 1)
-        stateManager.flushStates { e: AirbyteMessage ->
-            emittedStatesFromDestination.add(
-                e,
-            )
-        }
+        stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
         assertEquals(0, emittedStatesFromDestination.size)
         stateManager.decrement(stateId, 2)
-        stateManager.flushStates { e: AirbyteMessage ->
-            emittedStatesFromDestination.add(
-                e,
-            )
-        }
+        stateManager.flushStates { e: AirbyteMessage -> emittedStatesFromDestination.add(e) }
         assertEquals(1, emittedStatesFromDestination.size)
-        assertEquals(
-            6.0,
-            emittedStatesFromDestination.first().state?.destinationStats?.recordCount,
-        )
+        assertEquals(6.0, emittedStatesFromDestination.first().state?.destinationStats?.recordCount)
     }
 }

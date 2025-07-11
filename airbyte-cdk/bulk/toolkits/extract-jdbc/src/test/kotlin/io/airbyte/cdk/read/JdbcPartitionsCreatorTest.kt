@@ -57,7 +57,7 @@ class JdbcPartitionsCreatorTest {
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             mutableMapOf(
                                 "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
-                            )
+                            ),
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -67,10 +67,10 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
-                                        sampleSize = 4
+                                        sampleSize = 4,
                                     ),
                                     NoWhere,
-                                    OrderBy(id)
+                                    OrderBy(id),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             idDateString(10000, "2024-08-01", "foo"),
@@ -83,17 +83,17 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
-                                        sampleSize = 4
+                                        sampleSize = 4,
                                     ),
                                     NoWhere,
-                                    OrderBy(id)
+                                    OrderBy(id),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             idDateString(10000, "2024-08-01", "foo"),
                             idDateString(20000, "2024-08-02", "bar"),
                             idDateString(30000, "2024-08-03", "baz"),
                             idDateString(40000, "2024-08-04", "quux"),
-                        )
+                        ),
                     ),
             )
         val expectedPartitions = 5 // adjust this as needed based on inputs
@@ -108,7 +108,7 @@ class JdbcPartitionsCreatorTest {
         val streamState: DefaultJdbcStreamState = partitions.first().streamState
         Assertions.assertEquals(
             LocalDateCodec.encode(cursorUpperBound),
-            streamState.cursorUpperBound
+            streamState.cursorUpperBound,
         )
         Assertions.assertEquals(expectedFetchSize, streamState.fetchSize)
         Assertions.assertEquals(expectedPartitions, partitions.size)
@@ -143,10 +143,10 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
-                                        sampleSize = 4
+                                        sampleSize = 4,
                                     ),
                                     Where(Greater(id, IntCodec.encode(22))),
-                                    OrderBy(id)
+                                    OrderBy(id),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             idDateString(10000, "2024-08-01", "foo"),
@@ -159,17 +159,17 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
-                                        sampleSize = 4
+                                        sampleSize = 4,
                                     ),
                                     Where(Greater(id, IntCodec.encode(22))),
-                                    OrderBy(id)
+                                    OrderBy(id),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             idDateString(10000, "2024-08-01", "foo"),
                             idDateString(20000, "2024-08-02", "bar"),
                             idDateString(30000, "2024-08-03", "baz"),
                             idDateString(40000, "2024-08-04", "quux"),
-                        )
+                        ),
                     ),
             )
         val expectedPartitions = 5 // adjust this as needed based on inputs
@@ -241,11 +241,7 @@ class JdbcPartitionsCreatorTest {
         val stream = stream(withCursor = false)
         val sharedState =
             sharedState(
-                constants =
-                    DefaultJdbcConstants(
-                        withSampling = true,
-                        maxSampleSize = 4,
-                    ),
+                constants = DefaultJdbcConstants(withSampling = true, maxSampleSize = 4),
                 mockedQueries =
                     arrayOf(
                         TestFixtures.MockedQuery(
@@ -256,10 +252,10 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
-                                        sampleSize = 4
+                                        sampleSize = 4,
                                     ),
                                     Where(Greater(id, IntCodec.encode(22))),
-                                    OrderBy(id)
+                                    OrderBy(id),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             idDateString(10000, "2024-08-01", "foo"),
@@ -272,17 +268,17 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
-                                        sampleSize = 4
+                                        sampleSize = 4,
                                     ),
                                     Where(Greater(id, IntCodec.encode(22))),
-                                    OrderBy(id)
+                                    OrderBy(id),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             idDateString(10000, "2024-08-01", "foo"),
                             idDateString(20000, "2024-08-02", "bar"),
                             idDateString(30000, "2024-08-03", "baz"),
                             idDateString(40000, "2024-08-04", "quux"),
-                        )
+                        ),
                     ),
             )
         val expectedFetchSize = 674 // adjust this as needed based on inputs
@@ -316,8 +312,8 @@ class JdbcPartitionsCreatorTest {
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
                             mutableMapOf(
                                 "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
-                            )
-                        ),
+                            ),
+                        )
                     )
             )
         val factory = sharedState.factory()
@@ -352,7 +348,7 @@ class JdbcPartitionsCreatorTest {
             sharedState(
                 constants = DefaultJdbcConstants(withSampling = true),
                 // The JdbcSequentialPartitionsCreator is not expected to query anything.
-                mockedQueries = arrayOf()
+                mockedQueries = arrayOf(),
             )
         val factory = sharedState.factory()
         val bootstrap = stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint))
@@ -383,7 +379,7 @@ class JdbcPartitionsCreatorTest {
 
     inline fun <reified T : DefaultJdbcPartition> concurrentPartitions(
         stream: Stream,
-        readers: List<PartitionReader>
+        readers: List<PartitionReader>,
     ): List<T> {
         Assertions.assertTrue(readers.isNotEmpty())
         val typedReaders = readers.filterIsInstance<JdbcNonResumablePartitionReader<*>>()
@@ -397,7 +393,7 @@ class JdbcPartitionsCreatorTest {
 
     inline fun <reified T : DefaultJdbcPartition> sequentialPartition(
         stream: Stream,
-        readers: List<PartitionReader>
+        readers: List<PartitionReader>,
     ): T {
         Assertions.assertTrue(readers.firstOrNull() is JdbcResumablePartitionReader<*>)
         Assertions.assertNull(readers.getOrNull(1))
@@ -423,7 +419,7 @@ class JdbcPartitionsCreatorTest {
         )
         Assertions.assertEquals(
             PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN,
-            tryAcquireResources()
+            tryAcquireResources(),
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,

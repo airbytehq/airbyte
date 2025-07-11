@@ -21,14 +21,14 @@ constructor(
     private val airbyteApiClient: AirbyteApiClient,
     private val integrationLauncher: IntegrationLauncher,
     private val connectorConfigUpdater: ConnectorConfigUpdater,
-    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
+    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory(),
 ) : DiscoverCatalogTestHarness {
     @Volatile private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
     override fun run(
         discoverSchemaInput: StandardDiscoverCatalogInput,
-        jobRoot: Path
+        jobRoot: Path,
     ): ConnectorJobOutput {
         try {
             val inputConfig = discoverSchemaInput.connectionConfiguration!!
@@ -36,7 +36,7 @@ constructor(
                 integrationLauncher.discover(
                     jobRoot,
                     WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-                    Jsons.serialize(inputConfig)
+                    Jsons.serialize(inputConfig),
                 )
 
             val jobOutput =
@@ -59,12 +59,12 @@ constructor(
                 optionalConfigMsg.isPresent &&
                     TestHarnessUtils.getDidControlMessageChangeConfig(
                         inputConfig,
-                        optionalConfigMsg.get()
+                        optionalConfigMsg.get(),
                     )
             ) {
                 connectorConfigUpdater.updateSource(
                     UUID.fromString(discoverSchemaInput.sourceId),
-                    optionalConfigMsg.get().config
+                    optionalConfigMsg.get().config,
                 )
                 jobOutput.connectorConfigurationUpdated = true
             }
@@ -72,7 +72,7 @@ constructor(
             val failureReason =
                 TestHarnessUtils.getJobFailureReasonFromMessages(
                     ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID,
-                    messagesByType
+                    messagesByType,
                 )
             failureReason.ifPresent { jobOutput.failureReason = it }
 
@@ -88,17 +88,17 @@ constructor(
                             airbyteApiClient.sourceApi.writeDiscoverCatalogResult(
                                 buildSourceDiscoverSchemaWriteRequestBody(
                                     discoverSchemaInput,
-                                    catalog
+                                    catalog,
                                 )
                             )
                         },
-                        WRITE_DISCOVER_CATALOG_LOGS_TAG
+                        WRITE_DISCOVER_CATALOG_LOGS_TAG,
                     )!!
                 jobOutput.discoverCatalogId = result.catalogId
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(
                     "Integration failed to output a catalog struct and did not output a failure reason",
-                    process
+                    process,
                 )
             }
             return jobOutput
@@ -111,7 +111,7 @@ constructor(
 
     private fun buildSourceDiscoverSchemaWriteRequestBody(
         discoverSchemaInput: StandardDiscoverCatalogInput,
-        catalog: AirbyteCatalog
+        catalog: AirbyteCatalog,
     ): SourceDiscoverSchemaWriteRequestBody {
         return SourceDiscoverSchemaWriteRequestBody()
             .catalog(CatalogClientConverters.toAirbyteCatalogClientApi(catalog))

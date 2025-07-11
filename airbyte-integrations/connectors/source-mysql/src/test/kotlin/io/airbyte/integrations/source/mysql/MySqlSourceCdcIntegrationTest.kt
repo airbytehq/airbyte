@@ -40,13 +40,10 @@ class MySqlSourceCdcIntegrationTest {
         assertEquals(1, run1.messages().size)
         assertEquals(
             AirbyteConnectionStatus.Status.SUCCEEDED,
-            run1.messages().first().connectionStatus.status
+            run1.messages().first().connectionStatus.status,
         )
 
-        MySqlContainerFactory.exclusive(
-                imageName = "mysql:9.2.0",
-                MySqlContainerFactory.WithCdcOff,
-            )
+        MySqlContainerFactory.exclusive(imageName = "mysql:9.2.0", MySqlContainerFactory.WithCdcOff)
             .use { nonCdcDbContainer ->
                 {
                     val invalidConfig: MySqlSourceConfigurationSpecification =
@@ -70,7 +67,7 @@ class MySqlSourceCdcIntegrationTest {
 
                     assertEquals(
                         AirbyteConnectionStatus.Status.FAILED,
-                        messageInRun2.connectionStatus.status
+                        messageInRun2.connectionStatus.status,
                     )
                 }
             }
@@ -125,10 +122,7 @@ class MySqlSourceCdcIntegrationTest {
                 )
             val stream: AirbyteStream =
                 MySqlSourceOperations()
-                    .create(
-                        MySqlSourceConfigurationFactory().make(config()),
-                        discoveredStream,
-                    )
+                    .create(MySqlSourceConfigurationFactory().make(config()), discoveredStream)
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
@@ -151,7 +145,7 @@ class MySqlSourceCdcIntegrationTest {
 
         fun provisionTestContainer(
             targetContainer: MySQLContainer<*>,
-            targetConnectionFactory: JdbcConnectionFactory
+            targetConnectionFactory: JdbcConnectionFactory,
         ) {
             val gtidOn =
                 "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +

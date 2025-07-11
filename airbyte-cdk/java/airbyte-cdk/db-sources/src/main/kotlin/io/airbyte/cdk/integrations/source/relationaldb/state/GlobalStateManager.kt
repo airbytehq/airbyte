@@ -20,7 +20,7 @@ import java.util.function.Supplier
  */
 class GlobalStateManager(
     airbyteStateMessage: AirbyteStateMessage,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
@@ -29,7 +29,7 @@ class GlobalStateManager(
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
         StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION,
-        true
+        true,
     ) {
     /**
      * Legacy [CdcStateManager] used to manage state for connectors that support Change Data Capture
@@ -42,14 +42,14 @@ class GlobalStateManager(
      *
      * @param airbyteStateMessage The initial state represented as an [AirbyteStateMessage].
      * @param catalog The [ConfiguredAirbyteCatalog] for the connector associated with this state
-     * manager.
+     *   manager.
      */
     init {
         this.cdcStateManager =
             CdcStateManager(
                 extractCdcState(airbyteStateMessage),
                 extractStreams(airbyteStateMessage),
-                airbyteStateMessage
+                airbyteStateMessage,
             )
     }
 
@@ -95,9 +95,9 @@ class GlobalStateManager(
      * state manager.
      *
      * @param airbyteStateMessage The [AirbyteStateMessage] that contains the initial state provided
-     * to the state manager.
+     *   to the state manager.
      * @return The [CdcState] stored in the state, if any. Note that this will not be `null` but may
-     * be empty.
+     *   be empty.
      */
     private fun extractCdcState(airbyteStateMessage: AirbyteStateMessage?): CdcState? {
         if (airbyteStateMessage!!.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
@@ -118,7 +118,7 @@ class GlobalStateManager(
                     val cloned = Jsons.clone(streamState)
                     AirbyteStreamNameNamespacePair(
                         cloned.streamDescriptor.name,
-                        cloned.streamDescriptor.namespace
+                        cloned.streamDescriptor.namespace,
                     )
                 }
                 .toSet()
@@ -148,7 +148,7 @@ class GlobalStateManager(
          * [AirbyteStateMessage].
          *
          * @param airbyteStateMessage The [AirbyteStateMessage] supplied to this state manager with
-         * the initial state.
+         *   the initial state.
          * @return A [Supplier] that will be used to fetch the streams present in the initial state.
          */
         private fun getStreamsSupplier(
@@ -165,7 +165,7 @@ class GlobalStateManager(
                 } else if (airbyteStateMessage.data != null) {
                     return@Supplier Jsons.`object`<DbState>(
                             airbyteStateMessage.data,
-                            DbState::class.java
+                            DbState::class.java,
                         )!!
                         .streams
                         .map { s: DbStreamState ->

@@ -29,9 +29,7 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import java.io.BufferedOutputStream
 
-data class BigqueryBulkLoadConfiguration(
-    val bigQueryConfiguration: BigqueryConfiguration,
-) :
+data class BigqueryBulkLoadConfiguration(val bigQueryConfiguration: BigqueryConfiguration) :
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
@@ -67,7 +65,7 @@ data class BigqueryBulkLoadConfiguration(
         awsAccessKeyConfiguration =
             AWSAccessKeyConfiguration(
                 accessKeyId = credentials.accessKeyId,
-                secretAccessKey = credentials.secretAccessKey
+                secretAccessKey = credentials.secretAccessKey,
             )
 
         objectStoragePathConfiguration =
@@ -76,7 +74,7 @@ data class BigqueryBulkLoadConfiguration(
                 pathPattern =
                     "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${UUID}",
                 fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
-                resolveNamesMethod = { Transformations.toAlphanumericAndUnderscore(it) }
+                resolveNamesMethod = { Transformations.toAlphanumericAndUnderscore(it) },
             )
     }
 }

@@ -40,6 +40,7 @@ class StandardCheckConnectionInput : Serializable {
     @JsonProperty("actorType")
     @JsonPropertyDescription("enum that describes different types of actors")
     var actorType: ActorType? = null
+
     /** The ID of the actor being checked, so we can persist config updates */
     /** The ID of the actor being checked, so we can persist config updates */
     /** The ID of the actor being checked, so we can persist config updates */
@@ -48,6 +49,7 @@ class StandardCheckConnectionInput : Serializable {
     @JsonProperty("actorId")
     @JsonPropertyDescription("The ID of the actor being checked, so we can persist config updates")
     var actorId: UUID? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */

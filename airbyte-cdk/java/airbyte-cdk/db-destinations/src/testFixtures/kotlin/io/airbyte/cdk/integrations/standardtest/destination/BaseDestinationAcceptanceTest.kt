@@ -36,22 +36,28 @@ private val LOGGER = KotlinLogging.logger {}
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 abstract class BaseDestinationAcceptanceTest(
     // If false, ignore counts and only verify the final state message.
-    protected val verifyIndividualStateAndCounts: Boolean = false,
+    protected val verifyIndividualStateAndCounts: Boolean = false
 ) {
     protected lateinit var processFactory: ProcessFactory
         private set
+
     protected lateinit var jobRoot: Path
         private set
+
     protected var localRoot: Path? = null
         private set
+
     protected lateinit var testEnv: DestinationAcceptanceTest.TestDestinationEnv
         private set
+
     protected var fileTransferMountSource: Path? = null
         private set
+
     protected open val supportsFileTransfer: Boolean = false
     protected var testSchemas: HashSet<String> = HashSet()
     protected lateinit var mConnectorConfigUpdater: ConnectorConfigUpdater
         private set
+
     protected open val isCloudTest: Boolean = true
     protected val featureFlags: FeatureFlags =
         if (isCloudTest) {
@@ -95,7 +101,7 @@ abstract class BaseDestinationAcceptanceTest(
             .withCatalog(
                 DestinationAcceptanceTest.convertProtocolObject(
                     catalog,
-                    io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
+                    io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java,
                 )
             )
             .withDestinationConnectionConfiguration(config)
@@ -113,7 +119,7 @@ abstract class BaseDestinationAcceptanceTest(
             catalog,
             runNormalization,
             imageName,
-            verifyIndividualStateAndCounts
+            verifyIndividualStateAndCounts,
         )
     }
 
@@ -124,7 +130,7 @@ abstract class BaseDestinationAcceptanceTest(
         catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean,
         imageName: String,
-        verifyIndividualStateAndCounts: Boolean
+        verifyIndividualStateAndCounts: Boolean,
     ) {
         val destinationOutput = runSync(config, messages, catalog, runNormalization, imageName)
 
@@ -175,7 +181,7 @@ abstract class BaseDestinationAcceptanceTest(
         catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean,
         imageName: String,
-        additionalEnvs: Map<String, String> = mapOf()
+        additionalEnvs: Map<String, String> = mapOf(),
     ): List<AirbyteMessage> {
         val destinationConfig = getDestinationConfig(config, catalog)
         return runSync(messages, runNormalization, imageName, destinationConfig, additionalEnvs)
@@ -187,14 +193,14 @@ abstract class BaseDestinationAcceptanceTest(
         runNormalization: Boolean,
         imageName: String,
         destinationConfig: WorkerDestinationConfig,
-        additionalEnvs: Map<String, String> = mapOf()
+        additionalEnvs: Map<String, String> = mapOf(),
     ): List<AirbyteMessage> {
         val destination = getDestination(imageName)
 
         destination.start(
             destinationConfig,
             jobRoot,
-            additionalEnvs + inDestinationNormalizationFlags(runNormalization)
+            additionalEnvs + inDestinationNormalizationFlags(runNormalization),
         )
         messages.forEach(
             Consumer { message: AirbyteMessage ->
@@ -202,7 +208,7 @@ abstract class BaseDestinationAcceptanceTest(
                     destination.accept(
                         DestinationAcceptanceTest.convertProtocolObject(
                             message,
-                            io.airbyte.protocol.models.AirbyteMessage::class.java
+                            io.airbyte.protocol.models.AirbyteMessage::class.java,
                         )
                     )
                 }
@@ -239,7 +245,7 @@ abstract class BaseDestinationAcceptanceTest(
                     null,
                     null,
                     false,
-                    featureFlags
+                    featureFlags,
                 )
         )
     }
@@ -272,7 +278,7 @@ abstract class BaseDestinationAcceptanceTest(
                 localRoot.toString(),
                 fileTransferMountSource,
                 "host",
-                getConnectorEnv()
+                getConnectorEnv(),
             )
     }
 
@@ -282,6 +288,7 @@ abstract class BaseDestinationAcceptanceTest(
      *
      * @param testEnv
      * - information about the test environment.
+     *
      * @param TEST_SCHEMAS
      * @throws Exception
      * - can throw any exception, test framework will handle.
@@ -289,7 +296,7 @@ abstract class BaseDestinationAcceptanceTest(
     @Throws(Exception::class)
     protected abstract fun setup(
         testEnv: DestinationAcceptanceTest.TestDestinationEnv,
-        TEST_SCHEMAS: HashSet<String>
+        TEST_SCHEMAS: HashSet<String>,
     )
 
     open fun getConnectorEnv(): Map<String, String> {

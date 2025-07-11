@@ -4,6 +4,4 @@
 
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
-data class TypingDedupingExecutionConfig(
-    val rawTableSuffix: String,
-)
+data class TypingDedupingExecutionConfig(val rawTableSuffix: String)

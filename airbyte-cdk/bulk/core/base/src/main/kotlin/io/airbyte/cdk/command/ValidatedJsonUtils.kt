@@ -16,10 +16,7 @@ import org.openapi4j.schema.validator.ValidationData
 import org.openapi4j.schema.validator.v3.SchemaValidator
 
 object ValidatedJsonUtils {
-    fun <T> parseOne(
-        klazz: Class<T>,
-        json: String,
-    ): T {
+    fun <T> parseOne(klazz: Class<T>, json: String): T {
         val tree: JsonNode =
             try {
                 Jsons.readTree(json)
@@ -30,10 +27,7 @@ object ValidatedJsonUtils {
             ?: throw ConfigErrorException("missing json value while parsing for $klazz")
     }
 
-    fun <T> parseList(
-        elementClass: Class<T>,
-        json: String?,
-    ): List<T> {
+    fun <T> parseList(elementClass: Class<T>, json: String?): List<T> {
         val tree: JsonNode =
             try {
                 Jsons.readTree(json ?: "[]")
@@ -46,10 +40,7 @@ object ValidatedJsonUtils {
         return parseList(elementClass, tree)
     }
 
-    fun <T> parseList(
-        elementClass: Class<T>,
-        tree: JsonNode,
-    ): List<T> {
+    fun <T> parseList(elementClass: Class<T>, tree: JsonNode): List<T> {
         val jsonList: List<JsonNode> = if (tree.isArray) tree.toList() else listOf(tree)
         val schemaNode: JsonNode = generator.generateJsonSchema(elementClass)
         val schemaValidator = SchemaValidator(null, schemaNode)
@@ -68,10 +59,7 @@ object ValidatedJsonUtils {
         return jsonList.map { parseUnvalidated(it, elementClass) }
     }
 
-    fun <T> parseUnvalidated(
-        json: String,
-        klazz: Class<T>,
-    ): T {
+    fun <T> parseUnvalidated(json: String, klazz: Class<T>): T {
         val tree: JsonNode =
             try {
                 Jsons.readTree(json)
@@ -81,10 +69,7 @@ object ValidatedJsonUtils {
         return parseUnvalidated(tree, klazz)
     }
 
-    fun <T> parseUnvalidated(
-        jsonNode: JsonNode,
-        klazz: Class<T>,
-    ): T =
+    fun <T> parseUnvalidated(jsonNode: JsonNode, klazz: Class<T>): T =
         try {
             Jsons.treeToValue(jsonNode, klazz)
         } catch (e: Exception) {
@@ -115,10 +100,7 @@ object ValidatedJsonUtils {
         }
         val definitions: ObjectNode = root["definitions"] as ObjectNode
 
-        fun walk(
-            node: JsonNode,
-            vararg visitedRefs: String,
-        ) {
+        fun walk(node: JsonNode, vararg visitedRefs: String) {
             when (node) {
                 is ArrayNode ->
                     // Recurse over all array elements.
@@ -145,7 +127,7 @@ object ValidatedJsonUtils {
                     val definition: ObjectNode =
                         definitions[ref] as? ObjectNode
                             ?: throw ConfigErrorException(
-                                "Undefined \$ref '$ref' found in JSON schema",
+                                "Undefined \$ref '$ref' found in JSON schema"
                             )
                     for (pair in definition.fields()) {
                         // Inline the definition in the current object.

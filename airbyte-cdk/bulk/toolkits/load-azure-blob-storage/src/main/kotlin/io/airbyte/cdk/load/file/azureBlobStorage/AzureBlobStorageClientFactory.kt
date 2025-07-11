@@ -14,7 +14,7 @@ import jakarta.inject.Singleton
 @Factory
 class AzureBlobStorageClientFactory(
     private val azureBlobStorageClientConfigurationProvider:
-        AzureBlobStorageClientConfigurationProvider,
+        AzureBlobStorageClientConfigurationProvider
 ) {
 
     @Singleton
@@ -46,7 +46,7 @@ class AzureBlobStorageClientFactory(
                     .sasToken(
                         azureBlobStorageClientConfigurationProvider
                             .azureBlobStorageClientConfiguration
-                            .sharedAccessSignature,
+                            .sharedAccessSignature
                     )
                     .buildClient()
             }

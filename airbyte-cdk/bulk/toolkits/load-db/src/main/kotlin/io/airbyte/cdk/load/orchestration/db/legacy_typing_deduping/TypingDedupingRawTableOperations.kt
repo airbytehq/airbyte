@@ -12,7 +12,7 @@ interface TypingDedupingRawTableOperations {
      * accepts a [suffix] parameter, which should be used in conjunction with [overwriteRawTable].
      *
      * @param replace If true, then replace existing resources with empty e.g. tables. If false,
-     * then leave existing resources untouched.
+     *   then leave existing resources untouched.
      */
     fun prepareRawTable(rawTableName: TableName, suffix: String, replace: Boolean = false)
 

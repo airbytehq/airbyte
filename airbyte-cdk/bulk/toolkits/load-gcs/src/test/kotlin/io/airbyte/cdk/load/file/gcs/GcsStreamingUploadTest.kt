@@ -39,7 +39,7 @@ class GcsStreamingUploadTest {
                 gcsBucketName = "test-bucket",
                 path = "test-path",
                 credential = GcsHmacKeyConfiguration("dummy-access-key", "dummy-secret-key"),
-                region = GcsRegion.US_WEST1.region
+                region = GcsRegion.US_WEST1.region,
             )
         metadata = mapOf("env" to "test", "author" to "testUser")
         streamingUpload = GcsStreamingUpload(storage, key, config, metadata)
@@ -144,7 +144,7 @@ class GcsStreamingUploadTest {
         // Verify message mentions the 32 part limit
         assertTrue(
             exception.message?.contains("32") ?: false,
-            "Exception should mention 32 part limit"
+            "Exception should mention 32 part limit",
         )
     }
 
@@ -184,7 +184,7 @@ class GcsStreamingUploadTest {
                 gcsBucketName = "bucket",
                 path = "prefix",
                 credential = GcsHmacKeyConfiguration("dummy-access-key", "dummy-secret-key"),
-                region = GcsRegion.US_WEST1.region
+                region = GcsRegion.US_WEST1.region,
             )
         val upload1 = GcsStreamingUpload(storage, "key", config1, emptyMap())
 
@@ -194,7 +194,7 @@ class GcsStreamingUploadTest {
                 gcsBucketName = "bucket",
                 path = "",
                 credential = GcsHmacKeyConfiguration("dummy-access-key", "dummy-secret-key"),
-                region = GcsRegion.US_WEST1.region
+                region = GcsRegion.US_WEST1.region,
             )
         val upload2 = GcsStreamingUpload(storage, "key", config2, emptyMap())
 

@@ -47,22 +47,9 @@ val clock = ClockFactory().fixed()
 class RootReaderIntegrationTest {
     val testCases: List<TestCase> =
         listOf(
-            TestCase(
-                "simple-1",
-                Create(Read),
-                Create(),
-            ),
-            TestCase(
-                "simple-3",
-                Create(Read, Read, Read),
-                Create(),
-            ),
-            TestCase(
-                "simple-3-2",
-                Create(Read, Read, Read),
-                Create(Read, Read),
-                Create(),
-            ),
+            TestCase("simple-1", Create(Read), Create()),
+            TestCase("simple-3", Create(Read, Read, Read), Create()),
+            TestCase("simple-3-2", Create(Read, Read, Read), Create(Read, Read), Create()),
             TestCase(
                 "backoff-1",
                 CreatorBackOff(Create(Read)),
@@ -73,26 +60,10 @@ class RootReaderIntegrationTest {
                 Create(ReaderBackOff(ReaderBackOff(Read)), ReaderBackOff(Read)),
                 Create(),
             ),
-            TestCase(
-                "failure-1-c",
-                Create(Read),
-                CreatorFailure,
-            ),
-            TestCase(
-                "failure-1-1r",
-                Create(Read),
-                Create(ReaderFailure),
-            ),
-            TestCase(
-                "failure-2-2r",
-                Create(Read, Read),
-                Create(ReaderFailure, Read),
-            ),
-            TestCase(
-                "failure-2-3r",
-                Create(Read, Read),
-                Create(Read, ReaderFailure, Read),
-            ),
+            TestCase("failure-1-c", Create(Read), CreatorFailure),
+            TestCase("failure-1-1r", Create(Read), Create(ReaderFailure)),
+            TestCase("failure-2-2r", Create(Read, Read), Create(ReaderFailure, Read)),
+            TestCase("failure-2-3r", Create(Read, Read), Create(Read, ReaderFailure, Read)),
         )
 
     /** Simulates a READ operation for each test case, which corresponds to a one-stream catalog. */
@@ -238,7 +209,7 @@ class RootReaderIntegrationTest {
                 listOf(
                     ConfigErrorThrowingGlobalPartitionsCreatorFactory(
                         Semaphore(CONSTRAINED),
-                        *testCases.toTypedArray()
+                        *testCases.toTypedArray(),
                     )
                 ),
                 dcf,
@@ -280,10 +251,7 @@ data class TestCase(
     val creatorCases: List<CreatorCase>,
     val resource: Int = 100_000, // some arbitrary large value by default
 ) {
-    constructor(
-        name: String,
-        vararg creatorCases: CreatorCase,
-    ) : this(name, creatorCases.toList())
+    constructor(name: String, vararg creatorCases: CreatorCase) : this(name, creatorCases.toList())
 
     val stream: Stream =
         Stream(
@@ -343,7 +311,7 @@ data class TestCase(
                 }
                 else ->
                     Assertions.fail(
-                        "Unexpected Airbyte message type ${msg.type} in $json in case $name",
+                        "Unexpected Airbyte message type ${msg.type} in $json in case $name"
                     )
             }
         }
@@ -365,12 +333,12 @@ data class TestCase(
                             Assertions.assertFalse(
                                 hasCompleted,
                                 "Case $name cannot emit a STARTED trace " +
-                                    "message because it already emitted a COMPLETE."
+                                    "message because it already emitted a COMPLETE.",
                             )
                             Assertions.assertFalse(
                                 hasIncompleted,
                                 "Case $name cannot emit a STARTED trace " +
-                                    "message because it already emitted an INCOMPLETE."
+                                    "message because it already emitted an INCOMPLETE.",
                             )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE -> {
@@ -378,7 +346,7 @@ data class TestCase(
                             Assertions.assertTrue(
                                 hasStarted,
                                 "Case $name cannot emit a COMPLETE trace " +
-                                    "message because it hasn't emitted a STARTED yet."
+                                    "message because it hasn't emitted a STARTED yet.",
                             )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
@@ -386,45 +354,42 @@ data class TestCase(
                             Assertions.assertTrue(
                                 hasStarted,
                                 "Case $name cannot emit an INCOMPLETE trace " +
-                                    "message because it hasn't emitted a STARTED yet."
+                                    "message because it hasn't emitted a STARTED yet.",
                             )
                         }
                         else ->
                             Assertions.fail(
                                 "unexpected TRACE message status ${trace.streamStatus.status} " +
-                                    "in case $name",
+                                    "in case $name"
                             )
                     }
                 }
-                else ->
-                    Assertions.fail(
-                        "unexpected TRACE message type ${trace.type} in case $name",
-                    )
+                else -> Assertions.fail("unexpected TRACE message type ${trace.type} in case $name")
             }
         }
         Assertions.assertTrue(
             hasStarted,
-            "Case $name should have emitted a STARTED trace message, but hasn't."
+            "Case $name should have emitted a STARTED trace message, but hasn't.",
         )
         if (isSuccessful) {
             if (!hasCompleted) {
                 Assertions.assertTrue(
                     hasCompleted,
-                    "Case $name should have emitted a COMPLETE trace message, but hasn't."
+                    "Case $name should have emitted a COMPLETE trace message, but hasn't.",
                 )
             }
             Assertions.assertFalse(
                 hasIncompleted,
-                "Case $name should not have emitted an INCOMPLETE trace message, but did anyway."
+                "Case $name should not have emitted an INCOMPLETE trace message, but did anyway.",
             )
         } else {
             Assertions.assertFalse(
                 hasCompleted,
-                "Case $name should not have emitted a COMPLETE trace message, but did anyway."
+                "Case $name should not have emitted a COMPLETE trace message, but did anyway.",
             )
             Assertions.assertTrue(
                 hasIncompleted,
-                "Case $name should have emitted an INCOMPLETE trace message, but hasn't."
+                "Case $name should have emitted an INCOMPLETE trace message, but hasn't.",
             )
         }
     }
@@ -461,7 +426,7 @@ data class TestCase(
             }
             Assertions.assertNotNull(
                 actual,
-                "Case $name didn't emit any state checkpoint in round $partitionsCreatorID, but should have emitted: $expected"
+                "Case $name didn't emit any state checkpoint in round $partitionsCreatorID, but should have emitted: $expected",
             )
             for (actualState in actual!!) {
                 Assertions.assertTrue(
@@ -514,10 +479,7 @@ data class TestCase(
                     .toSet()
         }
 
-    private fun ReaderCase.state(
-        creatorID: Long,
-        readerID: Long,
-    ): JsonNode =
+    private fun ReaderCase.state(creatorID: Long, readerID: Long): JsonNode =
         when (this) {
             is ReaderBackOff -> next.state(creatorID, readerID)
             ReaderFailure -> Jsons.nullNode()
@@ -528,24 +490,18 @@ data class TestCase(
 /** A [CreatorCase] specifies how the [TestPartitionsCreator] should behave. */
 sealed interface CreatorCase
 
-data class CreatorBackOff(
-    val next: CreatorCase,
-) : CreatorCase
+data class CreatorBackOff(val next: CreatorCase) : CreatorCase
 
 data object CreatorFailure : CreatorCase
 
-data class Create(
-    val readerCases: List<ReaderCase>,
-) : CreatorCase {
+data class Create(val readerCases: List<ReaderCase>) : CreatorCase {
     constructor(vararg readerCases: ReaderCase) : this(readerCases.toList())
 }
 
 /** A [ReaderCase] specifies how the [TestPartitionReader] should behave. */
 sealed interface ReaderCase
 
-data class ReaderBackOff(
-    val next: ReaderCase,
-) : ReaderCase
+data class ReaderBackOff(val next: ReaderCase) : ReaderCase
 
 data object ReaderFailure : ReaderCase
 
@@ -652,10 +608,8 @@ class TestPartitionReader(
         )
 }
 
-open class TestPartitionsCreatorFactory(
-    val resource: Semaphore,
-    vararg val testCases: TestCase,
-) : PartitionsCreatorFactory {
+open class TestPartitionsCreatorFactory(val resource: Semaphore, vararg val testCases: TestCase) :
+    PartitionsCreatorFactory {
     private val log = KotlinLogging.logger {}
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator {
@@ -726,7 +680,7 @@ data object NoOpMetaFieldDecorator : MetaFieldDecorator {
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {}
 }
 

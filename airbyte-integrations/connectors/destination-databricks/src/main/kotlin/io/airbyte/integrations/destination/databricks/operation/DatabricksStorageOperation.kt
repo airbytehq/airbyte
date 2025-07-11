@@ -26,7 +26,7 @@ class DatabricksStorageOperation(
     private val destinationHandler: DatabricksDestinationHandler,
     private val workspaceClient: WorkspaceClient,
     private val database: String,
-    private val purgeStagedFiles: Boolean = false
+    private val purgeStagedFiles: Boolean = false,
 ) : StorageOperation<SerializableBuffer> {
 
     private val log = KotlinLogging.logger {}
@@ -34,7 +34,7 @@ class DatabricksStorageOperation(
     override fun writeToStage(
         streamConfig: StreamConfig,
         suffix: String,
-        data: SerializableBuffer
+        data: SerializableBuffer,
     ) {
         val streamId = streamConfig.id
         val stagedFile = "${stagingDirectory(streamId, database)}/${data.filename}"
@@ -52,8 +52,9 @@ class DatabricksStorageOperation(
                 )
                 FILEFORMAT = CSV
                 FORMAT_OPTIONS ('header'='true', 'inferSchema'='true', 'escape'='"');
-                """.trimIndent(),
-            ),
+                """
+                    .trimIndent()
+            )
         )
         // Databricks recommends that partners delete files in the staging directory once the data
         // is
@@ -81,7 +82,7 @@ class DatabricksStorageOperation(
     override fun typeAndDedupe(
         streamConfig: StreamConfig,
         maxProcessedTimestamp: Optional<Instant>,
-        finalTableSuffix: String
+        finalTableSuffix: String,
     ) {
         tdutils.executeTypeAndDedupe(
             sqlGenerator,
@@ -121,7 +122,8 @@ class DatabricksStorageOperation(
                 """
                 CREATE OR REPLACE TABLE `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
                 AS SELECT * FROM `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`
-                """.trimIndent(),
+                """
+                    .trimIndent(),
                 "DROP TABLE `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`",
             )
         )
@@ -134,7 +136,8 @@ class DatabricksStorageOperation(
                 """
                 INSERT INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
                 SELECT * FROM `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`
-                """.trimIndent(),
+                """
+                    .trimIndent(),
                 "DROP TABLE `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`",
             )
         )
@@ -162,17 +165,11 @@ class DatabricksStorageOperation(
 
     override fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean) {
         // The table doesn't exist. Create it. Don't force.
-        destinationHandler.execute(
-            sqlGenerator.createTable(streamConfig, suffix, replace),
-        )
+        destinationHandler.execute(sqlGenerator.createTable(streamConfig, suffix, replace))
     }
 
     override fun softResetFinalTable(streamConfig: StreamConfig) {
-        tdutils.executeSoftReset(
-            sqlGenerator,
-            destinationHandler,
-            streamConfig,
-        )
+        tdutils.executeSoftReset(sqlGenerator, destinationHandler, streamConfig)
     }
 
     override fun overwriteFinalTable(streamConfig: StreamConfig, tmpTableSuffix: String) {

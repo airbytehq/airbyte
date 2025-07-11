@@ -8,10 +8,8 @@ import java.sql.Connection
 import java.sql.SQLException
 import java.util.function.Supplier
 
-class JdbcTestDbExecutor(
-    override val assetName: String,
-    jdbcConfig: JdbcSourceConfiguration,
-) : TestDbExecutor {
+class JdbcTestDbExecutor(override val assetName: String, jdbcConfig: JdbcSourceConfiguration) :
+    TestDbExecutor {
 
     private val log = KotlinLogging.logger {}
     private val connectionFactory: Supplier<Connection> = JdbcConnectionFactory(jdbcConfig)

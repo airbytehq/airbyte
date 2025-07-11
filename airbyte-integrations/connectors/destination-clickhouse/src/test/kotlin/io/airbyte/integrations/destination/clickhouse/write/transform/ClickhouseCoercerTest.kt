@@ -74,7 +74,7 @@ class ClickhouseCoercerTest {
         assertEquals(NullValue, result.abValue)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            result.changes[0].reason,
         )
     }
 
@@ -100,7 +100,7 @@ class ClickhouseCoercerTest {
         assertEquals(NullValue, result.abValue)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            result.changes[0].reason,
         )
     }
 
@@ -128,7 +128,7 @@ class ClickhouseCoercerTest {
         assertEquals(NullValue, result.abValue)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            result.changes[0].reason,
         )
     }
 
@@ -158,7 +158,7 @@ class ClickhouseCoercerTest {
         assertEquals(NullValue, result.abValue)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            result.changes[0].reason,
         )
     }
 
@@ -190,7 +190,7 @@ class ClickhouseCoercerTest {
         assertEquals(NullValue, result.abValue)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            result.changes[0].reason,
         )
     }
 

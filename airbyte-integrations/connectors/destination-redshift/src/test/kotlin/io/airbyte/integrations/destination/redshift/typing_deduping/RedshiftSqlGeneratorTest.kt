@@ -41,7 +41,7 @@ class RedshiftSqlGeneratorTest {
                 "test_schema",
                 "users_raw",
                 "test_schema",
-                "users_final"
+                "users_final",
             )
         val id1 = redshiftSqlGenerator.buildColumnId("id1")
         val id2 = redshiftSqlGenerator.buildColumnId("id2")
@@ -79,7 +79,7 @@ class RedshiftSqlGeneratorTest {
                 columns,
                 0,
                 0,
-                0
+                0,
             )
         incrementalAppendStream =
             StreamConfig(
@@ -90,7 +90,7 @@ class RedshiftSqlGeneratorTest {
                 columns,
                 0,
                 0,
-                0
+                0,
             )
     }
 
@@ -103,7 +103,7 @@ class RedshiftSqlGeneratorTest {
                 incrementalDedupStream!!,
                 "unittest",
                 Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")),
-                false
+                false,
             )
         val expectedSqlLines =
             Arrays.stream(
@@ -155,7 +155,7 @@ class RedshiftSqlGeneratorTest {
                         },
                         { obj: java.lang.StringBuilder, s: java.lang.StringBuilder? ->
                             obj.append(s)
-                        }
+                        },
                     )
                     .toString()
             columns[redshiftSqlGenerator.buildColumnId(columnName)] = AirbyteProtocolType.STRING
@@ -170,11 +170,11 @@ class RedshiftSqlGeneratorTest {
                     columns,
                     0,
                     0,
-                    0
+                    0,
                 ),
                 "unittest",
                 Optional.of(Instant.parse("2023-02-15T18:35:24.00Z")),
-                false
+                false,
             )
         // This should not throw an exception.
         Assertions.assertFalse(generatedSql.transactions.isEmpty())

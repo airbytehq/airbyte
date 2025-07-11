@@ -27,10 +27,7 @@ object ApmTraceUtils {
      * @param tagPrefix The prefix to be added to each custom tag name.
      */
     @JvmOverloads
-    fun addTagsToTrace(
-        tags: Map<String?, Any>,
-        tagPrefix: String? = TAG_PREFIX,
-    ) {
+    fun addTagsToTrace(tags: Map<String?, Any>, tagPrefix: String? = TAG_PREFIX) {
         addTagsToTrace(GlobalTracer.get().activeSpan(), tags, tagPrefix)
     }
 
@@ -41,16 +38,12 @@ object ApmTraceUtils {
      * @param tags A map of tags to be added to the currently active span.
      * @param tagPrefix The prefix to be added to each custom tag name.
      */
-    fun addTagsToTrace(
-        span: Span?,
-        tags: Map<String?, Any>,
-        tagPrefix: String?,
-    ) {
+    fun addTagsToTrace(span: Span?, tags: Map<String?, Any>, tagPrefix: String?) {
         if (span != null) {
             tags.entries.forEach(
                 Consumer { entry: Map.Entry<String?, Any> ->
                     span.setTag(formatTag(entry.key, tagPrefix), entry.value.toString())
-                },
+                }
             )
         }
     }
@@ -71,10 +64,7 @@ object ApmTraceUtils {
      * @param span The [Span] that will be associated with the exception.
      * @param t The [Throwable] to be added to the provided span.
      */
-    fun addExceptionToTrace(
-        span: Span?,
-        t: Throwable?,
-    ) {
+    fun addExceptionToTrace(span: Span?, t: Throwable?) {
         if (span != null) {
             span.setTag(Tags.ERROR, true)
             span.log(java.util.Map.of(Fields.ERROR_OBJECT, t))
@@ -93,7 +83,7 @@ object ApmTraceUtils {
             tags.entries.forEach(
                 Consumer { entry: Map.Entry<String?, Any> ->
                     localRootSpan.setTag(formatTag(entry.key, TAG_PREFIX), entry.value.toString())
-                },
+                }
             )
         }
     }
@@ -129,8 +119,6 @@ object ApmTraceUtils {
      * @return The formatted tag key.
      */
     @JvmOverloads
-    fun formatTag(
-        tagKey: String?,
-        tagPrefix: String? = TAG_PREFIX,
-    ): String = String.format(TAG_FORMAT, tagPrefix, tagKey)
+    fun formatTag(tagKey: String?, tagPrefix: String? = TAG_PREFIX): String =
+        String.format(TAG_FORMAT, tagPrefix, tagKey)
 }

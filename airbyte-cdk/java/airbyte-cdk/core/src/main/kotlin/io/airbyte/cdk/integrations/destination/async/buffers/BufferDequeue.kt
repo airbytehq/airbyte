@@ -42,12 +42,7 @@ class BufferDequeue(
         streamDescriptor: StreamDescriptor,
         optimalBytesToRead: Long,
     ): MemoryAwareMessageBatch {
-        val lock: ReentrantLock =
-            bufferLocks.computeIfAbsent(
-                streamDescriptor,
-            ) {
-                ReentrantLock()
-            }
+        val lock: ReentrantLock = bufferLocks.computeIfAbsent(streamDescriptor) { ReentrantLock() }
         lock.lock()
 
         val queue: StreamAwareQueue? = buffers[streamDescriptor]
@@ -85,12 +80,7 @@ class BufferDequeue(
                 queue.addMaxMemory(-bytesRead.get())
             }
 
-            return MemoryAwareMessageBatch(
-                output,
-                bytesRead.get(),
-                memoryManager,
-                stateManager,
-            )
+            return MemoryAwareMessageBatch(output, bytesRead.get(), memoryManager, stateManager)
         } finally {
             lock.unlock()
         }
@@ -126,9 +116,7 @@ class BufferDequeue(
 
     private fun getBuffer(streamDescriptor: StreamDescriptor): Optional<StreamAwareQueue> {
         if (buffers.containsKey(streamDescriptor)) {
-            return Optional.of(
-                (buffers[streamDescriptor])!!,
-            )
+            return Optional.of((buffers[streamDescriptor])!!)
         }
         return Optional.empty()
     }

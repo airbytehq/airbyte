@@ -23,10 +23,11 @@ class RedshiftDV2Migration(
 ) : Migration<RedshiftState> {
     private val legacyV1V2migrator =
         JdbcV1V2Migrator(namingConventionTransformer, database, databaseName)
+
     override fun migrateIfNecessary(
         destinationHandler: DestinationHandler<RedshiftState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<RedshiftState>
+        state: DestinationInitialStatus<RedshiftState>,
     ): Migration.MigrationResult<RedshiftState> {
         logger.info { "Initializing DV2 Migration check" }
         legacyV1V2migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream)
@@ -34,7 +35,7 @@ class RedshiftDV2Migration(
             RedshiftState(
                 needsSoftReset = false,
                 isAirbyteMetaPresentInRaw = false,
-                isGenerationIdPresent = false
+                isGenerationIdPresent = false,
             ),
             true,
         )

@@ -41,7 +41,7 @@ class JdbcAccessorTest {
         h2.execute(
             columns
                 .map { "${it.key} ${it.value}" }
-                .joinToString(", ", "CREATE TABLE datatypes (", ")"),
+                .joinToString(", ", "CREATE TABLE datatypes (", ")")
         )
     }
 
@@ -61,7 +61,7 @@ class JdbcAccessorTest {
                 '2024-03-01 01:02:03',
                 '2024-03-01 01:02:03.456-04',
                 ARRAY[1,2,3]
-            )""",
+            )"""
         )
     }
 

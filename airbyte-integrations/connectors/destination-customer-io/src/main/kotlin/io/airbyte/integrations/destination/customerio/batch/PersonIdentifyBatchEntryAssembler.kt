@@ -11,10 +11,7 @@ import io.airbyte.cdk.util.Jsons
 class PersonIdentifyBatchEntryAssembler : BatchEntryAssembler {
 
     companion object {
-        val EXPECTED_PROPERTIES: Set<String> =
-            setOf<String>(
-                "person_email",
-            )
+        val EXPECTED_PROPERTIES: Set<String> = setOf<String>("person_email")
     }
 
     override fun assemble(record: DestinationRecordRaw): ObjectNode {

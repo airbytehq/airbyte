@@ -57,10 +57,7 @@ class S3DataLakeTypesComparatorTest {
 
     @Test
     fun testNewColumns() {
-        val existingSchema =
-            buildSchema(
-                field("id", Types.IntegerType.get(), false),
-            )
+        val existingSchema = buildSchema(field("id", Types.IntegerType.get(), false))
         val incomingSchema =
             buildSchema(
                 field("id", Types.IntegerType.get(), false),
@@ -83,10 +80,7 @@ class S3DataLakeTypesComparatorTest {
                 field("id", Types.IntegerType.get(), false),
                 field("legacy_col", Types.StringType.get(), true),
             )
-        val incomingSchema =
-            buildSchema(
-                field("id", Types.IntegerType.get(), false),
-            )
+        val incomingSchema = buildSchema(field("id", Types.IntegerType.get(), false))
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
@@ -147,12 +141,12 @@ class S3DataLakeTypesComparatorTest {
         val existingSchema =
             buildSchema(
                 // with UTC adjustment
-                field("timestamp_col", Types.TimestampType.withZone(), true),
+                field("timestamp_col", Types.TimestampType.withZone(), true)
             )
         val incomingSchema =
             buildSchema(
                 // without UTC adjustment
-                field("timestamp_col", Types.TimestampType.withoutZone(), true),
+                field("timestamp_col", Types.TimestampType.withoutZone(), true)
             )
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
@@ -167,27 +161,11 @@ class S3DataLakeTypesComparatorTest {
     @Test
     fun testListTypeElementChanged() {
         val existingSchema =
-            buildSchema(
-                field(
-                    "tags",
-                    Types.ListType.ofRequired(
-                        100,
-                        Types.StringType.get(),
-                    ),
-                    true,
-                ),
-            )
+            buildSchema(field("tags", Types.ListType.ofRequired(100, Types.StringType.get()), true))
         val incomingSchema =
             buildSchema(
                 // element type changed from String to Integer
-                field(
-                    "tags",
-                    Types.ListType.ofRequired(
-                        100,
-                        Types.IntegerType.get(),
-                    ),
-                    true,
-                ),
+                field("tags", Types.ListType.ofRequired(100, Types.IntegerType.get()), true)
             )
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
@@ -202,26 +180,12 @@ class S3DataLakeTypesComparatorTest {
     fun testListTypeElementOptionalityChanged() {
         val existingSchema =
             buildSchema(
-                field(
-                    "values",
-                    Types.ListType.ofRequired(
-                        101,
-                        Types.StringType.get(),
-                    ),
-                    false,
-                ),
+                field("values", Types.ListType.ofRequired(101, Types.StringType.get()), false)
             )
         val incomingSchema =
             buildSchema(
                 // same element type, but changed from required -> optional
-                field(
-                    "values",
-                    Types.ListType.ofOptional(
-                        101,
-                        Types.StringType.get(),
-                    ),
-                    false,
-                ),
+                field("values", Types.ListType.ofOptional(101, Types.StringType.get()), false)
             )
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
@@ -247,14 +211,8 @@ class S3DataLakeTypesComparatorTest {
                 field("nested_name", Types.StringType.get(), true),
             )
 
-        val existingSchema =
-            buildSchema(
-                field("user_info", existingStructType, true),
-            )
-        val incomingSchema =
-            buildSchema(
-                field("user_info", incomingStructType, true),
-            )
+        val existingSchema = buildSchema(field("user_info", existingStructType, true))
+        val incomingSchema = buildSchema(field("user_info", incomingStructType, true))
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
@@ -267,23 +225,15 @@ class S3DataLakeTypesComparatorTest {
     @Test
     fun testStructFieldRenamed() {
         val existingStructType =
-            Types.StructType.of(
-                field("nested_id", Types.IntegerType.get(), false),
-            )
+            Types.StructType.of(field("nested_id", Types.IntegerType.get(), false))
         val incomingStructType =
             Types.StructType.of(
                 // renamed from nested_id -> nested_identifier
-                field("nested_identifier", Types.IntegerType.get(), false),
+                field("nested_identifier", Types.IntegerType.get(), false)
             )
 
-        val existingSchema =
-            buildSchema(
-                field("user_info", existingStructType, false),
-            )
-        val incomingSchema =
-            buildSchema(
-                field("user_info", incomingStructType, false),
-            )
+        val existingSchema = buildSchema(field("user_info", existingStructType, false))
+        val incomingSchema = buildSchema(field("user_info", incomingStructType, false))
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
@@ -302,9 +252,7 @@ class S3DataLakeTypesComparatorTest {
                 field("nested_id", Types.IntegerType.get(), false),
                 field(
                     "nested_struct",
-                    Types.StructType.of(
-                        field("nested_struct_id", Types.IntegerType.get(), false),
-                    ),
+                    Types.StructType.of(field("nested_struct_id", Types.IntegerType.get(), false)),
                     false,
                 ),
             )
@@ -322,14 +270,8 @@ class S3DataLakeTypesComparatorTest {
                 ),
             )
 
-        val existingSchema =
-            buildSchema(
-                field("user_info", existingStructType, false),
-            )
-        val incomingSchema =
-            buildSchema(
-                field("user_info", incomingStructType, false),
-            )
+        val existingSchema = buildSchema(field("user_info", existingStructType, false))
+        val incomingSchema = buildSchema(field("user_info", incomingStructType, false))
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
@@ -376,14 +318,8 @@ class S3DataLakeTypesComparatorTest {
 
     @Test
     fun testUnsupportedTypeBinary() {
-        val existingSchema =
-            buildSchema(
-                field("binary_col", Types.BinaryType.get(), false),
-            )
-        val incomingSchema =
-            buildSchema(
-                field("binary_col", Types.BinaryType.get(), false),
-            )
+        val existingSchema = buildSchema(field("binary_col", Types.BinaryType.get(), false))
+        val incomingSchema = buildSchema(field("binary_col", Types.BinaryType.get(), false))
 
         // The code in typesAreEqual() throws for TypeID.BINARY
         assertThatThrownBy { comparator.compareSchemas(incomingSchema, existingSchema) }
@@ -393,14 +329,8 @@ class S3DataLakeTypesComparatorTest {
 
     @Test
     fun testUnsupportedTypeDecimal() {
-        val existingSchema =
-            buildSchema(
-                field("decimal_col", Types.DecimalType.of(10, 2), false),
-            )
-        val incomingSchema =
-            buildSchema(
-                field("decimal_col", Types.DecimalType.of(10, 2), false),
-            )
+        val existingSchema = buildSchema(field("decimal_col", Types.DecimalType.of(10, 2), false))
+        val incomingSchema = buildSchema(field("decimal_col", Types.DecimalType.of(10, 2), false))
 
         // The code in typesAreEqual() throws for TypeID.DECIMAL
         assertThatThrownBy { comparator.compareSchemas(incomingSchema, existingSchema) }

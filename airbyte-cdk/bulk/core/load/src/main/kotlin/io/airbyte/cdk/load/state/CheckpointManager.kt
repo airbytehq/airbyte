@@ -43,10 +43,8 @@ import kotlinx.coroutines.sync.withLock
  * Used internally by the checkpoint manager to maintain ordered maps of checkpoints. Ordered by
  * index only.
  */
-data class CheckpointKey(
-    val checkpointIndex: CheckpointIndex,
-    val checkpointId: CheckpointId,
-) : Comparable<CheckpointKey> {
+data class CheckpointKey(val checkpointIndex: CheckpointIndex, val checkpointId: CheckpointId) :
+    Comparable<CheckpointKey> {
     // order only by index
     override fun compareTo(other: CheckpointKey): Int {
         return this.checkpointIndex.value - other.checkpointIndex.value
@@ -61,9 +59,8 @@ data class CheckpointKey(
  * record index range associated with each checkpoint message.
  *
  * TODO: Force flush on a configured schedule
- *
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
- * before the destination can succeed.
+ *   before the destination can succeed.
  */
 class CheckpointManager(
     val catalog: DestinationCatalog,
@@ -82,7 +79,9 @@ class CheckpointManager(
     private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
         ConcurrentHashMap<
-            DestinationStream.Descriptor, TreeMap<CheckpointKey, Reserved<CheckpointMessage>>> =
+            DestinationStream.Descriptor,
+            TreeMap<CheckpointKey, Reserved<CheckpointMessage>>,
+        > =
         ConcurrentHashMap()
     private val globalCheckpoints: TreeMap<CheckpointKey, GlobalCheckpoint> = TreeMap()
     private val lastCheckpointKeyEmitted =
@@ -115,7 +114,7 @@ class CheckpointManager(
     // TODO: Is it an error if we don't get all the streams every time?
     suspend fun addGlobalCheckpoint(
         checkpointKey: CheckpointKey,
-        checkpointMessage: Reserved<CheckpointMessage>
+        checkpointMessage: Reserved<CheckpointMessage>,
     ) {
         storedCheckpointsLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
@@ -228,7 +227,7 @@ class CheckpointManager(
                 if (
                     !wasPreviousStateEmitted(
                         stream.mappedDescriptor,
-                        nextCheckpointKey.checkpointIndex
+                        nextCheckpointKey.checkpointIndex,
                     )
                 ) {
                     break
@@ -284,7 +283,7 @@ class CheckpointManager(
 
     private fun wasPreviousStateEmitted(
         descriptor: DestinationStream.Descriptor,
-        nextCheckpointIndex: CheckpointIndex
+        nextCheckpointIndex: CheckpointIndex,
     ): Boolean {
         val lastIndex = lastCheckpointKeyEmitted[descriptor]?.checkpointIndex?.value ?: 0
         if (nextCheckpointIndex.value != lastIndex + 1) {
@@ -334,7 +333,7 @@ class CheckpointManager(
 
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system"
+    justification = "message is guaranteed to be non-null by Kotlin's type system",
 )
 @Singleton
 class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :

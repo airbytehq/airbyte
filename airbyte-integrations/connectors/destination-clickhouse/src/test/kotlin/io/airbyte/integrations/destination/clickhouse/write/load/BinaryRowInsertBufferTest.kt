@@ -49,10 +49,7 @@ class BinaryRowInsertBufferTest {
     @MockK lateinit var clickhouseClient: Client
 
     private val tableName =
-        TableName(
-            namespace = Fixtures.TEST_NAMESPACE,
-            name = Fixtures.TEST_NAME,
-        )
+        TableName(namespace = Fixtures.TEST_NAMESPACE, name = Fixtures.TEST_NAME)
 
     private lateinit var buffer: BinaryRowInsertBuffer
 
@@ -137,7 +134,7 @@ class BinaryRowInsertBufferTest {
             clickhouseClient.insert(
                 "`${tableName.namespace}`.`${tableName.name}`",
                 bufferedPayload,
-                ClickHouseFormat.RowBinary
+                ClickHouseFormat.RowBinary,
             )
         }
     }
@@ -158,7 +155,7 @@ class BinaryRowInsertBufferTest {
                         "field7" to Fixtures.timeWithoutTimezoneValue,
                         "field8" to Fixtures.timestampWithTimezoneValue,
                         "field9" to Fixtures.timestampWithoutTimezoneValue,
-                        "field10" to Fixtures.nullValue
+                        "field10" to Fixtures.nullValue,
                     )
                 ),
                 Arguments.of(
@@ -198,27 +195,13 @@ class BinaryRowInsertBufferTest {
         fun multiValueMatrix() =
             listOf(
                 Arguments.of(
-                    mapOf(
-                        "field1" to Fixtures.objectValue,
-                        "field2" to Fixtures.arrayValue,
-                    )
+                    mapOf("field1" to Fixtures.objectValue, "field2" to Fixtures.arrayValue)
                 ),
                 Arguments.of(
-                    mapOf(
-                        "field1" to Fixtures.arrayValue,
-                        "field2" to Fixtures.objectValue,
-                    )
+                    mapOf("field1" to Fixtures.arrayValue, "field2" to Fixtures.objectValue)
                 ),
-                Arguments.of(
-                    mapOf(
-                        "field1" to Fixtures.arrayValue,
-                    )
-                ),
-                Arguments.of(
-                    mapOf(
-                        "field1" to Fixtures.objectValue,
-                    )
-                ),
+                Arguments.of(mapOf("field1" to Fixtures.arrayValue)),
+                Arguments.of(mapOf("field1" to Fixtures.objectValue)),
             )
     }
 

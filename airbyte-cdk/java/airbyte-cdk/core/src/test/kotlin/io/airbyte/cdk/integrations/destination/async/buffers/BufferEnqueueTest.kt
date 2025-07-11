@@ -27,9 +27,7 @@ class BufferEnqueueTest {
             BufferEnqueue(
                 GlobalMemoryManager(twoMB.toLong()),
                 streamToBuffer,
-                Mockito.mock(
-                    GlobalAsyncStateManager::class.java,
-                ),
+                Mockito.mock(GlobalAsyncStateManager::class.java),
                 DEFAULT_NAMESPACE,
             )
 
@@ -38,9 +36,7 @@ class BufferEnqueueTest {
         val record =
             PartialAirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(
-                    PartialAirbyteRecordMessage().withStream(streamName),
-                )
+                .withRecord(PartialAirbyteRecordMessage().withStream(streamName))
 
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES)
         Assertions.assertEquals(1, streamToBuffer[stream]!!.size())
@@ -55,9 +51,7 @@ class BufferEnqueueTest {
             BufferEnqueue(
                 GlobalMemoryManager(oneKb.toLong()),
                 streamToBuffer,
-                Mockito.mock(
-                    GlobalAsyncStateManager::class.java,
-                ),
+                Mockito.mock(GlobalAsyncStateManager::class.java),
                 DEFAULT_NAMESPACE,
             )
 
@@ -66,9 +60,7 @@ class BufferEnqueueTest {
         val record =
             PartialAirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(
-                    PartialAirbyteRecordMessage().withStream(streamName),
-                )
+                .withRecord(PartialAirbyteRecordMessage().withStream(streamName))
 
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES)
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES)

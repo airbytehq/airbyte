@@ -62,7 +62,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         // We find that in production, substantial time is in fact legitimately required here.
         with(
             "debezium.embedded.shutdown.pause.before.interrupt.ms",
-            5.minutes.inWholeMilliseconds.toString()
+            5.minutes.inWholeMilliseconds.toString(),
         )
         // Unblock CDC syncs by skipping errors caused by unparseable DDLs
         with("schema.history.internal.skip.unparseable.ddl", "true")
@@ -161,6 +161,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
 
     companion object {
         private const val BYTE_VALUE_256_MB = (256 * 1024 * 1024).toString()
+
         fun joinIncludeList(includes: List<String>): String =
             includes.map { it.replace(",", "\\,") }.joinToString(",")
 

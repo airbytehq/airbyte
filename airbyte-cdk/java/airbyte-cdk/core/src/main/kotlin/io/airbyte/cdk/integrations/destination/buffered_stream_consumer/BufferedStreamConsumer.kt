@@ -24,6 +24,7 @@ import java.time.Instant
 import java.util.function.Consumer
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This class consumes AirbyteMessages from the worker.
  *
@@ -67,7 +68,7 @@ internal constructor(
     private val catalog: ConfiguredAirbyteCatalog?,
     private val isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>,
     private val bufferFlushFrequency: Duration,
-    private val defaultNamespace: String?
+    private val defaultNamespace: String?,
 ) : FailureTrackingAirbyteMessageConsumer(), AirbyteMessageConsumer {
     private val streamNames: Set<AirbyteStreamNameNamespacePair> =
         AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog)
@@ -92,7 +93,7 @@ internal constructor(
         bufferingStrategy: BufferingStrategy,
         onClose: OnCloseFunction,
         catalog: ConfiguredAirbyteCatalog?,
-        isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>
+        isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>,
     ) : this(
         outputRecordCollector,
         onStart,
@@ -105,7 +106,7 @@ internal constructor(
         ), // This is purely for backwards compatibility. Many older destinations handle this
         // internally.
         // Starting with Destinations V2, we recommend passing in an explicit namespace.
-        null
+        null,
     )
 
     constructor(
@@ -115,7 +116,7 @@ internal constructor(
         onClose: OnCloseFunction,
         catalog: ConfiguredAirbyteCatalog?,
         isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>,
-        defaultNamespace: String?
+        defaultNamespace: String?,
     ) : this(
         outputRecordCollector,
         onStart,
@@ -124,7 +125,7 @@ internal constructor(
         catalog,
         isValidRecord,
         Duration.ofMinutes(15),
-        defaultNamespace
+        defaultNamespace,
     )
 
     @Throws(Exception::class)
@@ -301,13 +302,13 @@ internal constructor(
 
         private fun throwUnrecognizedStream(
             catalog: ConfiguredAirbyteCatalog?,
-            message: AirbyteMessage
+            message: AirbyteMessage,
         ) {
             throw IllegalArgumentException(
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                     Jsons.serialize(catalog),
-                    Jsons.serialize(message)
+                    Jsons.serialize(message),
                 )
             )
         }

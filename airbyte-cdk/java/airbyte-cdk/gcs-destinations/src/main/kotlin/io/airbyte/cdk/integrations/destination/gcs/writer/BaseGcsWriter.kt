@@ -22,9 +22,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * The base implementation takes care of the following:
- *
  * * Create shared instance variables.
  * * Create the bucket and prepare the bucket path.
  */
@@ -32,14 +32,13 @@ abstract class BaseGcsWriter
 protected constructor(
     protected val config: GcsDestinationConfig,
     protected val s3Client: AmazonS3,
-    configuredStream: ConfiguredAirbyteStream
+    configuredStream: ConfiguredAirbyteStream,
 ) : DestinationFileWriter {
     protected val stream: AirbyteStream = configuredStream.stream
     protected val syncMode: DestinationSyncMode? = configuredStream.destinationSyncMode
     protected val outputPrefix: String = getOutputPrefix(config.bucketPath, stream)
 
     /**
-     *
      * * 1. Create bucket if necessary.
      * * 2. Under OVERWRITE mode, delete all objects with the output prefix.
      */
@@ -132,7 +131,7 @@ protected constructor(
                 "%s_%d_0.%s",
                 formatter.format(timestamp),
                 timestamp.time,
-                format.fileExtension
+                format.fileExtension,
             )
         }
     }

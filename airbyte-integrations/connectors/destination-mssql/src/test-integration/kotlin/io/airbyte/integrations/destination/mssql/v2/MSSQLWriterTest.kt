@@ -125,7 +125,7 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
                                     val meta =
                                         Jsons.deserialize(
                                             metaJson,
-                                            AirbyteRecordMessageMeta::class.java
+                                            AirbyteRecordMessageMeta::class.java,
                                         )
                                     OutputRecord.Meta(
                                         changes =
@@ -139,9 +139,9 @@ class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLC
                                         syncId =
                                             meta.additionalProperties["sync_id"]
                                                 ?.toString()
-                                                ?.toLong()
+                                                ?.toLong(),
                                     )
-                                }
+                                },
                         )
                     output.add(record)
                 }
@@ -162,7 +162,7 @@ object MSSQLDataCleaner : DestinationCleaner {
     private val mssqlSpecification =
         ValidatedJsonUtils.parseOne(
             MSSQLSpecification::class.java,
-            Files.readString(Path.of(CONFIG_FILE))
+            Files.readString(Path.of(CONFIG_FILE)),
         )
     private val config =
         MSSQLConfigurationFactory().makeWithOverrides(mssqlSpecification, emptyMap())
@@ -256,7 +256,8 @@ object MSSQLDataCleaner : DestinationCleaner {
             JOIN sys.tables t ON s.schema_id = t.schema_id
             WHERE s.name = '$schemaName';
             EXEC sp_executesql @sql;
-        """.trimIndent()
+        """
+                .trimIndent()
 
         conn.createStatement().use { stmt -> stmt.execute(dropTablesSql) }
     }

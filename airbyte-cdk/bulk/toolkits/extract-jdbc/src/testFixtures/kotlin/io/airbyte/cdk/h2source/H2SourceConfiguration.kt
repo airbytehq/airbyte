@@ -41,7 +41,7 @@ data class H2SourceConfiguration(
 class H2SourceConfigurationFactory :
     SourceConfigurationFactory<H2SourceConfigurationSpecification, H2SourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: H2SourceConfigurationSpecification,
+        pojo: H2SourceConfigurationSpecification
     ): H2SourceConfiguration {
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
@@ -55,8 +55,8 @@ class H2SourceConfigurationFactory :
             cursor = pojo.getCursorConfigurationValue() ?: UserDefinedCursor,
             resumablePreferred = pojo.resumablePreferred != false,
             maxConcurrency = 1,
-            checkpointTargetInterval = Duration.parse(pojo.timeout).takeIf { it.isPositive }
-                    ?: Duration.ofDays(100L),
+            checkpointTargetInterval =
+                Duration.parse(pojo.timeout).takeIf { it.isPositive } ?: Duration.ofDays(100L),
         )
     }
 }

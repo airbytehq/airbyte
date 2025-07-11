@@ -46,11 +46,7 @@ class ProcessFileTaskLegacy(
                         accumulators.getOrPut(message.stream.mappedDescriptor) {
                             partAccumulatorFactory.make(message.stream)
                         }
-                    acc.handleFileMessage(
-                        message.file,
-                        message.index,
-                        message.checkpointId,
-                    )
+                    acc.handleFileMessage(message.file, message.index, message.checkpointId)
                 }
                 is FileTransferQueueEndOfStream -> {
                     outputQueue.broadcast(PipelineEndOfStream(message.stream.mappedDescriptor))

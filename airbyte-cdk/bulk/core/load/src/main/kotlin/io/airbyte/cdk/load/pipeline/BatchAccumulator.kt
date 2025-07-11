@@ -14,11 +14,10 @@ import io.airbyte.cdk.load.message.WithStream
  * It is the glue that connects a specific step in a specific pipeline to the generic pipeline on
  * the back end. (For example, in a three-stage pipeline like bulk load, step 1 is to create a part,
  * step 2 is to upload it, and step 3 is to load it from object storage into a table.)
- *
  * - [S] is a state type that will be threaded through accumulator calls.
  * - [K] is a key type associated the input data. (NOTE: Currently, there is no support for
- * key-mapping, so the key is always [io.airbyte.cdk.load.message.StreamKey]). Specifically, state
- * will always be managed per-key.
+ *   key-mapping, so the key is always [io.airbyte.cdk.load.message.StreamKey]). Specifically, state
+ *   will always be managed per-key.
  * - [T] is the input data type
  * - [U] is the output data type
  *
@@ -39,7 +38,9 @@ import io.airbyte.cdk.load.message.WithStream
  */
 interface BatchAccumulator<S, K : WithStream, T, U> {
     suspend fun start(key: K, part: Int): S
+
     suspend fun accept(input: T, state: S): BatchAccumulatorResult<S, U>
+
     suspend fun finish(state: S): FinalOutput<S, U>
 }
 
@@ -48,16 +49,12 @@ sealed interface BatchAccumulatorResult<S, U> {
     val output: U?
 }
 
-data class NoOutput<S, U>(
-    override val nextState: S,
-) : BatchAccumulatorResult<S, U> {
+data class NoOutput<S, U>(override val nextState: S) : BatchAccumulatorResult<S, U> {
     override val output: U? = null
 }
 
-data class IntermediateOutput<S, U>(
-    override val nextState: S,
-    override val output: U,
-) : BatchAccumulatorResult<S, U>
+data class IntermediateOutput<S, U>(override val nextState: S, override val output: U) :
+    BatchAccumulatorResult<S, U>
 
 data class FinalOutput<S, U>(override val output: U) : BatchAccumulatorResult<S, U> {
     override val nextState: S? = null

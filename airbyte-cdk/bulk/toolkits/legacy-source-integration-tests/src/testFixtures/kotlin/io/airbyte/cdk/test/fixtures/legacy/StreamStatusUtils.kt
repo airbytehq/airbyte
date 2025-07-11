@@ -12,6 +12,7 @@ import java.util.*
 import java.util.function.Consumer
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Collection of utility methods that support the generation of stream status updates. */
 object StreamStatusUtils {
 
@@ -21,18 +22,18 @@ object StreamStatusUtils {
      * after the first message is consumed by the delegated [Consumer].
      *
      * @param stream The stream from which the delegating [Consumer] will consume messages for
-     * processing.
+     *   processing.
      * @param delegateRecordCollector The delegated [Consumer] that will be called when this
-     * consumer accepts a message for processing.
+     *   consumer accepts a message for processing.
      * @param streamStatusEmitter The optional [Consumer] that will be used to emit stream status
-     * updates.
+     *   updates.
      * @return A wrapping [Consumer] that provides stream status updates when the provided delegate
-     * [Consumer] is invoked.
+     *   [Consumer] is invoked.
      */
     fun statusTrackingRecordCollector(
         stream: AutoCloseableIterator<AirbyteMessage>,
         delegateRecordCollector: Consumer<AirbyteMessage>,
-        streamStatusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        streamStatusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ): Consumer<AirbyteMessage> {
         return object : Consumer<AirbyteMessage> {
             private var firstRead = true
@@ -58,7 +59,7 @@ object StreamStatusUtils {
      */
     fun emitRunningStreamStatus(
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitRunningStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
@@ -71,7 +72,7 @@ object StreamStatusUtils {
      */
     fun emitRunningStreamStatus(
         airbyteStream: AirbyteStreamAware,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitRunningStreamStatus(airbyteStream.airbyteStream, statusEmitter)
     }
@@ -84,14 +85,14 @@ object StreamStatusUtils {
      */
     fun emitRunningStreamStatus(
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug { "RUNNING -> $s" }
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -104,7 +105,7 @@ object StreamStatusUtils {
      */
     fun emitStartStreamStatus(
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitStartStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
@@ -117,7 +118,7 @@ object StreamStatusUtils {
      */
     fun emitStartStreamStatus(
         airbyteStream: AirbyteStreamAware,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitStartStreamStatus(airbyteStream.airbyteStream, statusEmitter)
     }
@@ -130,14 +131,14 @@ object StreamStatusUtils {
      */
     fun emitStartStreamStatus(
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug { "STARTING -> $s" }
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -150,7 +151,7 @@ object StreamStatusUtils {
      */
     fun emitCompleteStreamStatus(
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitCompleteStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
@@ -163,7 +164,7 @@ object StreamStatusUtils {
      */
     fun emitCompleteStreamStatus(
         airbyteStream: AirbyteStreamAware,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitCompleteStreamStatus(airbyteStream.airbyteStream, statusEmitter)
     }
@@ -176,14 +177,14 @@ object StreamStatusUtils {
      */
     fun emitCompleteStreamStatus(
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug { "COMPLETE -> $s" }
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -196,7 +197,7 @@ object StreamStatusUtils {
      */
     fun emitIncompleteStreamStatus(
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitIncompleteStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
@@ -209,7 +210,7 @@ object StreamStatusUtils {
      */
     fun emitIncompleteStreamStatus(
         airbyteStream: AirbyteStreamAware,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         emitIncompleteStreamStatus(airbyteStream.airbyteStream, statusEmitter)
     }
@@ -222,14 +223,14 @@ object StreamStatusUtils {
      */
     fun emitIncompleteStreamStatus(
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug { "INCOMPLETE -> $s" }
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -244,7 +245,7 @@ object StreamStatusUtils {
     private fun emitStreamStatus(
         airbyteStreamNameNamespacePair: AirbyteStreamNameNamespacePair?,
         airbyteStreamStatus: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus,
-        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
+        statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>,
     ) {
         statusEmitter.ifPresent {
             it.accept(

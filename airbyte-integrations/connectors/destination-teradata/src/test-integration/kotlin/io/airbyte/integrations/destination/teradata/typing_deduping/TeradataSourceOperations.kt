@@ -34,11 +34,7 @@ class TeradataSourceOperations : JdbcSourceOperations() {
             resultSet.metaData.getColumnTypeName(colIndex).lowercase(Locale.getDefault())
 
         when (columnTypeName) {
-            "json" ->
-                json.set(
-                    columnName,
-                    Jsons.deserializeExact(resultSet.getString(colIndex)),
-                )
+            "json" -> json.set(columnName, Jsons.deserializeExact(resultSet.getString(colIndex)))
             "timetz" -> putTimeWithTimezone(json, columnName, resultSet, colIndex)
             "timestamptz" -> putTimestampWithTimezone(json, columnName, resultSet, colIndex)
             else -> super.copyToJsonField(resultSet, colIndex, json)

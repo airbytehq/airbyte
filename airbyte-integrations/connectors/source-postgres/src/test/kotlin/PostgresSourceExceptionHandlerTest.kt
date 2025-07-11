@@ -25,7 +25,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "Encountered an error while reading the database, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -36,7 +36,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "Encountered an error while reading the database, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -48,7 +48,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertEquals(
             "Database read failed due to missing read permissions on a table. " +
                 "See the detailed error for the table name and update permissions accordingly.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -59,7 +59,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "Database read failed due SQL statement timeout, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -70,7 +70,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "Database read failed due to connection timeout, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -89,7 +89,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "Database connection error when performing CDC reads, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -100,7 +100,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "Database connection error when performing CDC reads, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -112,7 +112,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.CONFIG))
         Assertions.assertEquals(
             "The configured replication slot has been dropped or has corrupted. Please recreate the replication slot.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -123,7 +123,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "The connection to the Postgres server was unexpectedly closed, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -134,7 +134,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "The connection to the Postgres server was unexpectedly closed, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -145,7 +145,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "The connection to the Postgres server was lost, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -156,7 +156,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "Postgres server is currently in recovery mode, will retry.",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -169,7 +169,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertEquals(
             "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
                 "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -181,7 +181,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertEquals(
             "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
                 "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -194,7 +194,7 @@ class PostgresSourceExceptionHandlerTest {
         Assertions.assertEquals(
             "Postgres server closed the connection due to an idle-in-transaction timeout. Please review your server's timeout configuration " +
                 "and increase the timeout if needed",
-            externalMessage
+            externalMessage,
         )
     }
 
@@ -203,14 +203,14 @@ class PostgresSourceExceptionHandlerTest {
         val exception =
             PSQLException(
                 "An exception occurred in the change event producer. This connector will be stopped.",
-                null
+                null,
             )
         val externalMessage = exceptionHandler!!.getExternalMessage(exception)
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.TRANSIENT))
         Assertions.assertEquals(
             "The sync encountered an unexpected error in the change event producer and has stopped. " +
                 "Please check the logs for details and troubleshoot accordingly.",
-            externalMessage
+            externalMessage,
         )
     }
 

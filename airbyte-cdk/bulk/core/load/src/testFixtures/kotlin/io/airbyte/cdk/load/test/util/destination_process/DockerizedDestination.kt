@@ -105,14 +105,7 @@ class DockerizedDestination(
         "$socketPathDir/ab_socket_${randomSuffix}_$socketIndex.socket"
 
     private fun createSharedVolume() {
-        val createVolumeCommand =
-            listOf(
-                "docker",
-                "volume",
-                "create",
-                "--name",
-                sharedVolumeName,
-            )
+        val createVolumeCommand = listOf("docker", "volume", "create", "--name", sharedVolumeName)
         logger.info { "Creating shared volume $sharedVolumeName" }
         ProcessBuilder(createVolumeCommand).start().waitFor()
     }
@@ -217,16 +210,13 @@ class DockerizedDestination(
                         "-e",
                         "WORKER_JOB_ID=0",
                         imageTag,
-                        command
+                        command,
                     ))
                 .toMutableList()
 
         fun addInput(paramName: String, fileContents: ByteArray) {
             val path = jobRoot.resolve("destination_$paramName.json")
-            Files.write(
-                path,
-                fileContents,
-            )
+            Files.write(path, fileContents)
             path.grantAllPermissions()
 
             cmd.add("--$paramName")
@@ -284,13 +274,7 @@ class DockerizedDestination(
     }
 
     private fun removeSharedVolume() {
-        val removeVolumeCommand =
-            listOf(
-                "docker",
-                "volume",
-                "rm",
-                sharedVolumeName,
-            )
+        val removeVolumeCommand = listOf("docker", "volume", "rm", sharedVolumeName)
         logger.info { "Removing shared volume $sharedVolumeName" }
         ProcessBuilder(removeVolumeCommand).start().waitFor()
     }

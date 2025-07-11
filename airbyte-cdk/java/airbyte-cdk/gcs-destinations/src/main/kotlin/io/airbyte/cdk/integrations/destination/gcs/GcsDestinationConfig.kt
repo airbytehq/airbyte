@@ -28,7 +28,7 @@ class GcsDestinationConfig(
     bucketPath: String,
     bucketRegion: String?,
     val gcsCredentialConfig: GcsCredentialConfig,
-    formatConfig: UploadFormatConfig
+    formatConfig: UploadFormatConfig,
 ) :
     S3DestinationConfig(
         GCS_ENDPOINT,
@@ -41,7 +41,7 @@ class GcsDestinationConfig(
         null,
         null,
         false,
-        S3StorageOperations.DEFAULT_UPLOAD_THREADS
+        S3StorageOperations.DEFAULT_UPLOAD_THREADS,
     ) {
     override fun createS3Client(): AmazonS3 {
         when (gcsCredentialConfig.credentialType) {
@@ -50,7 +50,7 @@ class GcsDestinationConfig(
                 val awsCreds =
                     BasicAWSCredentials(
                         hmacKeyCredential.hmacKeyAccessId,
-                        hmacKeyCredential.hmacKeySecret
+                        hmacKeyCredential.hmacKeySecret,
                     )
 
                 return AmazonS3ClientBuilder.standard()
@@ -77,7 +77,7 @@ class GcsDestinationConfig(
                 config["gcs_bucket_path"].asText(),
                 config["gcs_bucket_region"].asText(),
                 GcsCredentialConfigs.getCredentialConfig(config),
-                getUploadFormatConfig(config)
+                getUploadFormatConfig(config),
             )
         }
     }

@@ -69,9 +69,7 @@ sealed interface DestinationRecordDomainMessage : DestinationStreamAffinedMessag
 
 sealed interface DestinationFileDomainMessage : DestinationStreamAffinedMessage
 
-data class Meta(
-    val changes: List<Change> = mutableListOf(),
-) {
+data class Meta(val changes: List<Change> = mutableListOf()) {
     enum class AirbyteMetaFields(val fieldName: String, val type: AirbyteType) {
         RAW_ID(COLUMN_NAME_AB_RAW_ID, StringType),
         EXTRACTED_AT(COLUMN_NAME_AB_EXTRACTED_AT, IntegerType),
@@ -91,26 +89,17 @@ data class Meta(
                                             ObjectType(
                                                 linkedMapOf(
                                                     "field" to
-                                                        FieldType(
-                                                            StringType,
-                                                            nullable = false,
-                                                        ),
+                                                        FieldType(StringType, nullable = false),
                                                     "change" to
-                                                        FieldType(
-                                                            StringType,
-                                                            nullable = false,
-                                                        ),
+                                                        FieldType(StringType, nullable = false),
                                                     "reason" to
-                                                        FieldType(
-                                                            StringType,
-                                                            nullable = false,
-                                                        ),
-                                                ),
+                                                        FieldType(StringType, nullable = false),
+                                                )
                                             ),
-                                    ),
+                                    )
                                 ),
                         ),
-                ),
+                )
             ),
         ),
         GENERATION_ID(COLUMN_NAME_AB_META, IntegerType),
@@ -161,12 +150,7 @@ data class Meta(
                     try {
                         IntegerValue(BigInteger(value))
                     } catch (e: Exception) {
-                        TimestampWithTimezoneValue(
-                            OffsetDateTime.parse(
-                                value,
-                                DATE_TIME_FORMATTER,
-                            ),
-                        )
+                        TimestampWithTimezoneValue(OffsetDateTime.parse(value, DATE_TIME_FORMATTER))
                     }
                 }
                 COLUMN_NAME_AB_META -> toObjectValue(value.deserializeToNode())
@@ -174,14 +158,14 @@ data class Meta(
                 COLUMN_NAME_DATA -> toObjectValue(value.deserializeToNode())
                 else ->
                     throw NotImplementedError(
-                        "Column name $metaColumnName is not yet supported. This is probably a bug.",
+                        "Column name $metaColumnName is not yet supported. This is probably a bug."
                     )
             }
         }
 
         fun getEmittedAtMs(
             emittedAtMs: Long,
-            extractedAtAsTimestampWithTimezone: Boolean
+            extractedAtAsTimestampWithTimezone: Boolean,
         ): AirbyteValue {
             return if (extractedAtAsTimestampWithTimezone) {
                 TimestampWithTimezoneValue(
@@ -239,8 +223,8 @@ data class DestinationRecord(
                                             reason = change.reason,
                                         )
                                         .asProtocolObject()
-                                },
-                            ),
+                                }
+                            )
                     )
             )
 
@@ -267,7 +251,7 @@ data class DestinationRecordAirbyteValue(
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
-    val serializedSizeBytes: Long = 0L
+    val serializedSizeBytes: Long = 0L,
 )
 
 data class EnrichedDestinationRecordAirbyteValue(
@@ -298,9 +282,9 @@ data class EnrichedDestinationRecordAirbyteValue(
                                 (sourceMeta.changes.toAirbyteValues()) +
                                     declaredFields
                                         .map { it.value.changes.toAirbyteValues() }
-                                        .flatten(),
+                                        .flatten()
                             ),
-                    ),
+                    )
                 ),
                 Meta.AirbyteMetaFields.META.type,
                 name = Meta.COLUMN_NAME_AB_META,
@@ -345,18 +329,14 @@ data class FileReference(
 ) {
     companion object {
         fun fromProtocol(proto: AirbyteRecordMessageFileReference): FileReference =
-            FileReference(
-                proto.stagingFileUrl,
-                proto.sourceFileRelativePath,
-                proto.fileSizeBytes,
-            )
+            FileReference(proto.stagingFileUrl, proto.sourceFileRelativePath, proto.fileSizeBytes)
     }
 }
 
 data class DestinationFile(
     override val stream: DestinationStream,
     val emittedAtMs: Long,
-    val fileMessage: AirbyteRecordMessageFile
+    val fileMessage: AirbyteRecordMessageFile,
 ) : DestinationFileDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     class AirbyteRecordMessageFile {
@@ -365,7 +345,7 @@ data class DestinationFile(
             bytes: Long? = null,
             fileRelativePath: String? = null,
             modified: Long? = null,
-            sourceFileUrl: String? = null
+            sourceFileUrl: String? = null,
         ) {
             this.fileUrl = fileUrl
             this.bytes = bytes
@@ -373,6 +353,7 @@ data class DestinationFile(
             this.modified = modified
             this.sourceFileUrl = sourceFileUrl
         }
+
         constructor() :
             this(
                 fileUrl = null,
@@ -425,7 +406,7 @@ data class DestinationFile(
                     .withStream(stream.unmappedName)
                     .withNamespace(stream.unmappedNamespace)
                     .withEmittedAt(emittedAtMs)
-                    .withAdditionalProperty("file", file),
+                    .withAdditionalProperty("file", file)
             )
     }
 }
@@ -448,8 +429,8 @@ private fun statusToProtocolMessage(
                                 .withNamespace(destinationStream.unmappedNamespace)
                                 .withName(destinationStream.unmappedName)
                         )
-                        .withStatus(status),
-                ),
+                        .withStatus(status)
+                )
         )
 
 data class DestinationRecordStreamComplete(
@@ -475,6 +456,7 @@ sealed interface CheckpointMessage : DestinationMessage {
         private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
         private const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
     }
+
     data class Stats(
         val recordCount: Long,
         val rejectedRecordCount: Long = 0, // TODO should not have a default?
@@ -513,6 +495,7 @@ sealed interface CheckpointMessage : DestinationMessage {
         totalBytes: Long? = null,
         totalRejectedRecords: Long? = null,
     )
+
     fun withDestinationStats(stats: Stats): CheckpointMessage
 
     fun decorateStateMessage(message: AirbyteStateMessage) {
@@ -574,7 +557,7 @@ data class StreamCheckpoint(
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
         totalRecords: Long? = null,
-        totalBytes: Long? = null
+        totalBytes: Long? = null,
     ) : this(
         Checkpoint(
             unmappedNamespace = unmappedNamespace,
@@ -587,20 +570,21 @@ data class StreamCheckpoint(
         serializedSizeBytes = 0L,
         checkpointKey = checkpointKey,
         totalRecords = totalRecords,
-        totalBytes = totalBytes
+        totalBytes = totalBytes,
     )
 
     override fun updateStats(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
     }
+
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
@@ -642,13 +626,14 @@ data class GlobalCheckpoint(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
     }
+
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
@@ -658,7 +643,7 @@ data class GlobalCheckpoint(
                 .withGlobal(
                     AirbyteGlobalState()
                         .withSharedState(state)
-                        .withStreamStates(checkpoints.map { it.asProtocolObject() }),
+                        .withStreamStates(checkpoints.map { it.asProtocolObject() })
                 )
         decorateStateMessage(stateMessage)
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
@@ -671,7 +656,7 @@ data object Undefined : DestinationMessage {
         // Arguably we could accept the raw message in the constructor?
         // But that seems weird - when would we ever want to reemit that message?
         throw NotImplementedError(
-            "Unrecognized messages cannot be safely converted back to a protocol object.",
+            "Unrecognized messages cannot be safely converted back to a protocol object."
         )
     }
 }
@@ -683,7 +668,7 @@ data object Undefined : DestinationMessage {
 data object Ignored : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
         throw NotImplementedError(
-            "Ignored messages cannot be safely converted back to a protocol object.",
+            "Ignored messages cannot be safely converted back to a protocol object."
         )
     }
 }

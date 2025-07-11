@@ -17,9 +17,7 @@ import io.airbyte.cdk.load.file.parquet.ParquetWriterConfigurationProvider
 
 interface ObjectStorageFormatSpecificationProvider {
     @get:JsonSchemaTitle("Output Format")
-    @get:JsonPropertyDescription(
-        "Format of the data output.",
-    )
+    @get:JsonPropertyDescription("Format of the data output.")
     @get:JsonProperty("format")
     val format: ObjectStorageFormatSpecification
 
@@ -44,7 +42,7 @@ interface ObjectStorageFormatSpecificationProvider {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "format_type"
+    property = "format_type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = CSVFormatSpecification::class, name = "CSV"),
@@ -66,7 +64,7 @@ class CSVFormatSpecification(
     @JsonProperty("format_type")
     override val formatType: Type = Type.CSV,
     override val flattening: FlatteningSpecificationProvider.Flattening =
-        FlatteningSpecificationProvider.Flattening.NO_FLATTENING
+        FlatteningSpecificationProvider.Flattening.NO_FLATTENING,
 ) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider
 
 /** JSONL */
@@ -76,7 +74,7 @@ class JsonFormatSpecification(
     @JsonProperty("format_type")
     override val formatType: Type = Type.JSONL,
     override val flattening: FlatteningSpecificationProvider.Flattening? =
-        FlatteningSpecificationProvider.Flattening.NO_FLATTENING
+        FlatteningSpecificationProvider.Flattening.NO_FLATTENING,
 ) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider
 
 interface FlatteningSpecificationProvider {
@@ -86,7 +84,7 @@ interface FlatteningSpecificationProvider {
 
     enum class Flattening(@get:JsonValue val flatteningName: String) {
         NO_FLATTENING("No flattening"),
-        ROOT_LEVEL_FLATTENING("Root level flattening")
+        ROOT_LEVEL_FLATTENING("Root level flattening"),
     }
 }
 
@@ -102,12 +100,12 @@ sealed interface ObjectStorageFormatConfiguration {
 
 data class JsonFormatConfiguration(
     override val extension: String = "jsonl",
-    override val rootLevelFlattening: Boolean = false
+    override val rootLevelFlattening: Boolean = false,
 ) : ObjectStorageFormatConfiguration {}
 
 data class CSVFormatConfiguration(
     override val extension: String = "csv",
-    override val rootLevelFlattening: Boolean = false
+    override val rootLevelFlattening: Boolean = false,
 ) : ObjectStorageFormatConfiguration {}
 
 data class AvroFormatConfiguration(
@@ -119,7 +117,7 @@ data class AvroFormatConfiguration(
 
 data class ParquetFormatConfiguration(
     override val extension: String = "parquet",
-    override val parquetWriterConfiguration: ParquetWriterConfiguration
+    override val parquetWriterConfiguration: ParquetWriterConfiguration,
 ) : ObjectStorageFormatConfiguration, ParquetWriterConfigurationProvider {
     override val rootLevelFlattening: Boolean = true // Always flatten parquet
 }

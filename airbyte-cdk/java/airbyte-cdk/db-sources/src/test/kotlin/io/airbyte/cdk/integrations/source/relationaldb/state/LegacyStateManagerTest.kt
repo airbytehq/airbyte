@@ -33,7 +33,7 @@ class LegacyStateManagerTest {
                             .withCursor(StateTestConstants.CURSOR),
                         DbStreamState()
                             .withStreamName(StateTestConstants.STREAM_NAME2)
-                            .withStreamNamespace(StateTestConstants.NAMESPACE)
+                            .withStreamNamespace(StateTestConstants.NAMESPACE),
                     )
                 )
 
@@ -53,7 +53,7 @@ class LegacyStateManagerTest {
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
-                            )
+                            ),
                     )
                 )
 
@@ -61,36 +61,36 @@ class LegacyStateManagerTest {
 
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR_FIELD1),
-            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR),
-            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR_FIELD1),
-            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR),
-            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
 
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
     }
 
@@ -119,7 +119,7 @@ class LegacyStateManagerTest {
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME3)
                                     .withNamespace(StateTestConstants.NAMESPACE)
-                            )
+                            ),
                     )
                 )
 
@@ -148,7 +148,7 @@ class LegacyStateManagerTest {
                                             ),
                                         DbStreamState()
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                            .withStreamNamespace(StateTestConstants.NAMESPACE),
                                     )
                                     .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
@@ -186,7 +186,7 @@ class LegacyStateManagerTest {
                                             .withCursor("b"),
                                         DbStreamState()
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                            .withStreamNamespace(StateTestConstants.NAMESPACE),
                                     )
                                     .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
@@ -220,7 +220,7 @@ class LegacyStateManagerTest {
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
-                            )
+                            ),
                     )
                 )
         val stateManager: StateManager = LegacyStateManager(DbState(), catalog)
@@ -242,7 +242,7 @@ class LegacyStateManagerTest {
                                             .withCursor("a"),
                                         DbStreamState()
                                             .withStreamName(StateTestConstants.STREAM_NAME2)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                            .withStreamNamespace(StateTestConstants.NAMESPACE),
                                     )
                                     .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
@@ -277,7 +277,7 @@ class LegacyStateManagerTest {
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
-                            )
+                            ),
                     )
                 )
 
@@ -303,7 +303,7 @@ class LegacyStateManagerTest {
                                         DbStreamState()
                                             .withStreamName(StateTestConstants.STREAM_NAME2)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(listOf())
+                                            .withCursorField(listOf()),
                                     )
                                     .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
@@ -336,7 +336,7 @@ class LegacyStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME2)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                             .withCursorField(listOf())
-                                            .withCursor(null)
+                                            .withCursor(null),
                                     )
                                     .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->

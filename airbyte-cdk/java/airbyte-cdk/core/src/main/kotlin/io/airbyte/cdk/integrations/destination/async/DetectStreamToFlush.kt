@@ -45,7 +45,7 @@ internal constructor(
         isClosing,
         flusher,
         Clock.systemUTC(),
-        flushOnEveryMessage
+        flushOnEveryMessage,
     )
 
     val nextStreamToFlush: Optional<StreamDescriptor>
@@ -63,12 +63,13 @@ internal constructor(
      *
      * Rules:
      * * default - By default the, the threshold is a set at a constant:
-     * QUEUE_FLUSH_THRESHOLD_BYTES.
+     *   QUEUE_FLUSH_THRESHOLD_BYTES.
      * * memory pressure - If we are getting close to maxing out available memory, we reduce it to
-     * zero. This helps in the case where there are a lot of streams, so total memory usage is high,
-     * but each individual queue isn't that large.
+     *   zero. This helps in the case where there are a lot of streams, so total memory usage is
+     *   high, but each individual queue isn't that large.
      * * closing - If the Flush Worker is closing, we reduce it to zero. We close when all records
-     * have been added to the queue, at which point, our goal is to flush out any non-empty queues.
+     *   have been added to the queue, at which point, our goal is to flush out any non-empty
+     *   queues.
      *
      * @return based on the conditions, the threshold in bytes.
      */
@@ -96,15 +97,14 @@ internal constructor(
      *
      * @param queueSizeThresholdBytes
      * - the size threshold to use for determining if a stream is ready to flush.
+     *
      * @return the next stream to flush. if no stream is ready to flush, empty.
      */
     @VisibleForTesting
     fun getNextStreamToFlush(queueSizeThresholdBytes: Long): Optional<StreamDescriptor> {
         for (stream in orderStreamsByPriority(bufferDequeue.bufferedStreams)) {
             val latestFlushTimeMs =
-                latestFlushTimeMsPerStream.computeIfAbsent(
-                    stream,
-                ) { _: StreamDescriptor ->
+                latestFlushTimeMsPerStream.computeIfAbsent(stream) { _: StreamDescriptor ->
                     nowProvider.millis()
                 }
             val isTimeTriggeredResult = isTimeTriggered(latestFlushTimeMs)
@@ -193,14 +193,8 @@ internal constructor(
      * @return estimate of records remaining to be process
      */
     @VisibleForTesting
-    fun estimateSizeOfRunningWorkers(
-        stream: StreamDescriptor,
-        currentQueueSize: Long,
-    ): Long {
-        val runningWorkerBatchesSizes =
-            runningFlushWorkers.getSizesOfRunningWorkerBatches(
-                stream,
-            )
+    fun estimateSizeOfRunningWorkers(stream: StreamDescriptor, currentQueueSize: Long): Long {
+        val runningWorkerBatchesSizes = runningFlushWorkers.getSizesOfRunningWorkerBatches(stream)
         val workersWithBatchesSize =
             runningWorkerBatchesSizes
                 .filter { obj: Optional<Long> -> obj.isPresent }
@@ -208,10 +202,8 @@ internal constructor(
         val workersWithoutBatchesCount =
             runningWorkerBatchesSizes.count { obj: Optional<Long> -> obj.isEmpty }
         val workersWithoutBatchesSizeEstimate =
-            (min(
-                    flusher.optimalBatchSizeBytes.toDouble(),
-                    currentQueueSize.toDouble(),
-                ) * workersWithoutBatchesCount)
+            (min(flusher.optimalBatchSizeBytes.toDouble(), currentQueueSize.toDouble()) *
+                    workersWithoutBatchesCount)
                 .toLong()
         return (workersWithBatchesSize + workersWithoutBatchesSizeEstimate)
     }
@@ -240,16 +232,12 @@ internal constructor(
         // eagerly pull attributes so that values are consistent throughout comparison
         val sdToQueueSize =
             streams.associateWith { streamDescriptor: StreamDescriptor ->
-                bufferDequeue.getQueueSizeBytes(
-                    streamDescriptor,
-                )
+                bufferDequeue.getQueueSizeBytes(streamDescriptor)
             }
 
         val sdToTimeOfLastRecord =
             streams.associateWith { streamDescriptor: StreamDescriptor ->
-                bufferDequeue.getTimeOfLastRecord(
-                    streamDescriptor,
-                )
+                bufferDequeue.getTimeOfLastRecord(streamDescriptor)
             }
         return streams.sortedWith(
             Comparator.comparing(
@@ -261,7 +249,7 @@ internal constructor(
                 .thenComparing { s: StreamDescriptor ->
                     sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
                 }
-                .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
+                .thenComparing { s: StreamDescriptor -> s.namespace + s.name }
         )
     }
 

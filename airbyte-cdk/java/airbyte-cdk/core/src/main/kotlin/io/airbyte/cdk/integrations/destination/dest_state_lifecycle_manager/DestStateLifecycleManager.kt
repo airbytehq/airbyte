@@ -9,11 +9,10 @@ import java.util.*
 
 /**
  * This class manages the lifecycle of state message. It tracks state messages that are in 3 states:
- *
  * 1. pending - associated records have been accepted by the connector but has NOT been pushed to
- * the destination
+ *    the destination
  * 1. flushed - associated records have been flushed to tmp storage in the destination but have NOT
- * been committed
+ *    been committed
  * 1. committed - associated records have been committed
  */
 interface DestStateLifecycleManager {
@@ -29,7 +28,7 @@ interface DestStateLifecycleManager {
      * Moves any tracked state messages that are currently pending to flushed.
      *
      * @Deprecated since destination checkpointing will be bundling flush & commit into the same
-     * operation
+     *   operation
      */
     fun markPendingAsFlushed()
 
@@ -44,7 +43,7 @@ interface DestStateLifecycleManager {
      * Moves any tracked state messages that are currently flushed to committed.
      *
      * @Deprecated since destination checkpointing will be bundling flush and commit into the same
-     * operation
+     *   operation
      */
     fun markFlushedAsCommitted()
 

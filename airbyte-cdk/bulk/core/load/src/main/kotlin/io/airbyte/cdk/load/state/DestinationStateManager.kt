@@ -14,17 +14,18 @@ interface DestinationState
 
 interface DestinationStateManager<T : DestinationState> {
     suspend fun getState(stream: DestinationStream): T
+
     suspend fun persistState(stream: DestinationStream)
 }
 
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
-    justification = "state is guaranteed to be non-null by Kotlin's type system"
+    justification = "state is guaranteed to be non-null by Kotlin's type system",
 )
 @Singleton
 @Secondary
 class DefaultDestinationStateManager<T : DestinationState>(
-    private val persister: DestinationStatePersister<T>,
+    private val persister: DestinationStatePersister<T>
 ) : DestinationStateManager<T> {
     private val states: ConcurrentHashMap<DestinationStream.Descriptor, T> = ConcurrentHashMap()
 
@@ -39,5 +40,6 @@ class DefaultDestinationStateManager<T : DestinationState>(
 
 interface DestinationStatePersister<T : DestinationState> {
     suspend fun load(stream: DestinationStream): T
+
     suspend fun persist(stream: DestinationStream, state: T)
 }

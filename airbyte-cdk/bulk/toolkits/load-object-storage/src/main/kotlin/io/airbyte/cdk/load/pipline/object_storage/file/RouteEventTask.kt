@@ -42,11 +42,7 @@ class RouteEventTask(
                 val stream = catalog.getStream(streamDesc)
 
                 if (stream.includeFiles) {
-                    event.context =
-                        PipelineContext(
-                            event.checkpointCounts,
-                            event.value,
-                        )
+                    event.context = PipelineContext(event.checkpointCounts, event.value)
 
                     fileQueue.publish(event, partition)
                 } else {

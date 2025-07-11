@@ -83,13 +83,19 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         get() = Global(listOf(stream))
 
     abstract fun createContainer(): C
+
     abstract fun C.createStream()
+
     abstract fun C.insert12345()
+
     abstract fun C.update135()
+
     abstract fun C.delete24()
 
     abstract fun createCdcPartitionsCreatorDbzOps(): CdcPartitionsCreatorDebeziumOperations<T>
+
     abstract fun createCdcPartitionReaderDbzOps(): CdcPartitionReaderDebeziumOperations<T>
+
     val container: C by lazy { createContainer() }
     private val cdcPartitionsCreatorDbzOps by lazy { createCdcPartitionsCreatorDbzOps() }
     private val cdcPartitionReaderDbzOps by lazy { createCdcPartitionReaderDbzOps() }
@@ -113,9 +119,10 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 stream.id to
                     object : StreamRecordConsumer {
                         override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
+
                         override fun accept(
                             recordData: NativeRecordPayload,
-                            changes: Map<Field, FieldValueChange>?
+                            changes: Map<Field, FieldValueChange>?,
                         ) {
                             outputConsumer.accept(
                                 AirbyteRecordMessage()
@@ -158,30 +165,15 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
 
         container.insert12345()
         val insert =
-            listOf<Record>(
-                Insert(1, 1),
-                Insert(2, 2),
-                Insert(3, 3),
-                Insert(4, 4),
-                Insert(5, 5),
-            )
+            listOf<Record>(Insert(1, 1), Insert(2, 2), Insert(3, 3), Insert(4, 4), Insert(5, 5))
         container.update135()
-        val update =
-            listOf<Record>(
-                Update(1, 6),
-                Update(3, 7),
-                Update(5, 8),
-            )
+        val update = listOf<Record>(Update(1, 6), Update(3, 7), Update(5, 8))
         val p1: T =
             cdcPartitionsCreatorDbzOps.position(
                 cdcPartitionsCreatorDbzOps.generateColdStartOffset()
             )
         container.delete24()
-        val delete =
-            listOf<Record>(
-                Delete(2),
-                Delete(4),
-            )
+        val delete = listOf<Record>(Delete(2), Delete(4))
         val p2: T =
             cdcPartitionsCreatorDbzOps.position(
                 cdcPartitionsCreatorDbzOps.generateColdStartOffset()
@@ -207,14 +199,11 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         Assertions.assertNotNull(r2.closeReason)
         Assertions.assertNotEquals(
             CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
-            r2.closeReason
+            r2.closeReason,
         )
     }
 
-    private fun read(
-        input: ReadInput,
-        upperBound: T,
-    ): ReadResult {
+    private fun read(input: ReadInput, upperBound: T): ReadResult {
         setOutputConsumers()
         val reader =
             CdcPartitionReader(
@@ -225,7 +214,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 input.offset,
                 input.schemaHistory,
                 input.isSynthetic,
-                feedBootstrap
+                feedBootstrap,
             )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -251,7 +240,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             reader.numEmittedRecords.get() +
                 reader.numDiscardedRecords.get() +
                 reader.numHeartbeats.get() +
-                reader.numTombstones.get()
+                reader.numTombstones.get(),
         )
         Assertions.assertEquals(0, reader.numDiscardedRecords.get())
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
@@ -286,8 +275,11 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     sealed interface Record {
         val id: Int
     }
+
     data class Insert(override val id: Int, val v: Int) : Record
+
     data class Update(override val id: Int, val v: Int) : Record
+
     data class Delete(override val id: Int, val ignore: Boolean = false) : Record
 
     abstract inner class AbstractCdcPartitionsCreatorDbzOps<T : Comparable<T>> :
@@ -301,7 +293,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                         .fields()
                         .asSequence()
                         .map { Jsons.readTree(it.key) to Jsons.readTree(it.value.asText()) }
-                        .toMap(),
+                        .toMap()
                 )
             val historyNode: ArrayNode? = opaqueStateValue["schemaHistory"] as? ArrayNode
             val schemaHistory: DebeziumSchemaHistory? =
@@ -309,7 +301,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                     DebeziumSchemaHistory(
                         historyNode.elements().asSequence().toList().map {
                             HistoryRecord(DocumentReader.defaultReader().read(it.asText()))
-                        },
+                        }
                     )
                 } else {
                     null
@@ -324,7 +316,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         override fun deserializeRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue,
-            stream: Stream
+            stream: Stream,
         ): DeserializedRecord {
             val id: Int = key.element("id").asInt()
             val after: Int? = value.after["v"]?.asInt()
@@ -341,7 +333,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 data =
                     mutableMapOf<String, FieldValueEncoder<*>>(
                             "id" to FieldValueEncoder(record.id, IntCodec),
-                            "@c" to FieldValueEncoder(record::class.java.name, TextCodec)
+                            "@c" to FieldValueEncoder(record::class.java.name, TextCodec),
                         )
                         .also {
                             when (record) {
@@ -356,7 +348,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
 
         override fun findStreamNamespace(
             key: DebeziumRecordKey,
-            value: DebeziumRecordValue
+            value: DebeziumRecordValue,
         ): String? = stream.id.namespace
 
         override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
@@ -364,7 +356,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
 
         override fun serializeState(
             offset: DebeziumOffset,
-            schemaHistory: DebeziumSchemaHistory?
+            schemaHistory: DebeziumSchemaHistory?,
         ): OpaqueStateValue =
             Jsons.valueToTree(
                 mapOf(
@@ -379,7 +371,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                         schemaHistory?.wrapped?.map {
                             DocumentWriter.defaultWriter().write(it.document())
                         },
-                ),
+                )
             )
     }
 }

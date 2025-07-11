@@ -82,7 +82,7 @@ object TestConfigHelpers {
                         CatalogHelpers.createAirbyteStream(
                             STREAM_NAME,
                             "namespace",
-                            Field.of(FIELD_NAME, JsonSchemaType.STRING)
+                            Field.of(FIELD_NAME, JsonSchemaType.STRING),
                         )
                     )
             val streamTwo =
@@ -91,7 +91,7 @@ object TestConfigHelpers {
                         CatalogHelpers.createAirbyteStream(
                             STREAM_NAME,
                             "namespace2",
-                            Field.of(FIELD_NAME, JsonSchemaType.STRING)
+                            Field.of(FIELD_NAME, JsonSchemaType.STRING),
                         )
                     )
 
@@ -103,7 +103,7 @@ object TestConfigHelpers {
                     .withStream(
                         CatalogHelpers.createAirbyteStream(
                             STREAM_NAME,
-                            Field.of(FIELD_NAME, JsonSchemaType.STRING)
+                            Field.of(FIELD_NAME, JsonSchemaType.STRING),
                         )
                     )
             catalog.withStreams(listOf(stream))

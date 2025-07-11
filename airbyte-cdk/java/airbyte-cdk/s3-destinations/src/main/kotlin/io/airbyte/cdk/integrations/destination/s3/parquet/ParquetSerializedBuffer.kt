@@ -69,10 +69,7 @@ class ParquetSerializedBuffer(
             catalog.streams
                 .firstOrNull { s: ConfiguredAirbyteStream ->
                     (s.stream.name == stream.name) &&
-                        StringUtils.equals(
-                            s.stream.namespace,
-                            stream.namespace,
-                        )
+                        StringUtils.equals(s.stream.namespace, stream.namespace)
                 }
                 ?.stream
                 ?.jsonSchema
@@ -102,7 +99,7 @@ class ParquetSerializedBuffer(
                     stream.namespace,
                     useV2FieldNames = useV2FeatureSet,
                     addStringToLogicalTypes = false,
-                    appendExtraProps = !useV2FeatureSet
+                    appendExtraProps = !useV2FeatureSet,
                 )
 
         // Build the (preprocessed json record -> avro record) converter
@@ -122,8 +119,8 @@ class ParquetSerializedBuffer(
             AvroParquetWriter.builder<GenericData.Record>(
                     HadoopOutputFile.fromPath(
                         org.apache.hadoop.fs.Path(bufferFile.toUri()),
-                        avroConfig
-                    ),
+                        avroConfig,
+                    )
                 )
                 .withConf(
                     avroConfig
@@ -151,7 +148,7 @@ class ParquetSerializedBuffer(
                         UUID.randomUUID(),
                         generationId,
                         syncId,
-                        record
+                        record,
                     )
                 )
             } else {
@@ -168,7 +165,7 @@ class ParquetSerializedBuffer(
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ): Long {
         throw UnsupportedOperationException(
             "This method is not supported for ParquetSerializedBuffer"
@@ -231,7 +228,7 @@ class ParquetSerializedBuffer(
         @JvmStatic
         fun createFunction(
             s3DestinationConfig: S3DestinationConfig,
-            useV2FieldNames: Boolean = false
+            useV2FieldNames: Boolean = false,
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
@@ -240,7 +237,7 @@ class ParquetSerializedBuffer(
                     s3DestinationConfig.formatConfig!!,
                     stream,
                     catalog,
-                    useV2FieldNames
+                    useV2FieldNames,
                 )
             }
         }

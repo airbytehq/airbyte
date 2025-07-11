@@ -40,17 +40,20 @@ import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecordRaw)
+
     fun flush()
 }
 
 abstract class ManagedByteArrayOutputStream(initialCapacity: Int) :
     ByteArrayOutputStream(initialCapacity) {
     abstract fun extractBytes(): ByteArray
+
     abstract fun resetBuffer()
 }
 
 class StandardByteArrayOutputStream : ManagedByteArrayOutputStream(32) {
     override fun extractBytes(): ByteArray = toByteArray()
+
     override fun resetBuffer() = reset()
 }
 
@@ -62,11 +65,11 @@ interface ObjectStorageFormattingWriterFactory {
 @Secondary
 class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
-    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
-        outputStream: OutputStream
+        outputStream: OutputStream,
     ): ObjectStorageFormattingWriter {
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
         // TODO: FileWriter
@@ -163,6 +166,7 @@ class CSVFormattingWriter(
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
+
     override fun accept(record: DestinationRecordRaw) {
         printer.printRecord(
             record
@@ -296,7 +300,7 @@ class BufferedFormattingWriter<T : OutputStream>(
     private val writer: ObjectStorageFormattingWriter,
     private val buffer: ManagedByteArrayOutputStream,
     private val streamProcessor: StreamProcessor<T>,
-    private val wrappingBuffer: T
+    private val wrappingBuffer: T,
 ) : ObjectStorageFormattingWriter {
     // An empty buffer is not a guarantee of a non-empty
     // file, some writers (parquet) start with a
@@ -345,6 +349,7 @@ class BufferedFormattingWriter<T : OutputStream>(
         writer.close()
     }
 }
+
 /**
  * Re-uses large byte arrays to cut GC pressure when we generate many S3 parts. Keep at most 512 MiB
  * of slabs in the pool.

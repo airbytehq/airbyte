@@ -26,7 +26,7 @@ class AirbyteValueIdentityMapperTest {
                 .with(TimestampWithTimezoneValue("2021-01-01T12:00:00Z"), TimestampTypeWithTimezone)
                 .with(
                     TimestampWithoutTimezoneValue("2021-01-01T12:00:00"),
-                    TimestampTypeWithoutTimezone
+                    TimestampTypeWithoutTimezone,
                 )
                 .with(TimeWithTimezoneValue("12:00:00Z"), TimeTypeWithTimezone)
                 .with(TimeWithoutTimezoneValue("12:00:00"), TimeTypeWithoutTimezone)
@@ -34,11 +34,11 @@ class AirbyteValueIdentityMapperTest {
                 .withRecord()
                 .with(
                     ArrayValue(listOf("a", "b", "c").map(::StringValue)),
-                    ArrayType(FieldType(StringType, false))
+                    ArrayType(FieldType(StringType, false)),
                 )
                 .with(
                     ArrayValue(listOf(IntegerValue(1), BooleanValue(true))),
-                    ArrayTypeWithoutSchema
+                    ArrayTypeWithoutSchema,
                 )
                 .withRecord()
                 .endRecord()
@@ -76,7 +76,7 @@ class AirbyteValueIdentityMapperTest {
                         f(
                             ObjectType(
                                 linkedMapOf("sub_int" to FieldType(IntegerType, nullable = true))
-                            ),
+                            )
                         ),
                     "array" to f(ArrayType(f(IntegerType))),
                     "union" to f(UnionType(setOf(IntegerType, BooleanType), isLegacyUnion = false)),
@@ -102,7 +102,7 @@ class AirbyteValueIdentityMapperTest {
                 ) {
                 override fun mapInteger(
                     value: AirbyteValue,
-                    context: Context
+                    context: Context,
                 ): Pair<AirbyteValue, Context> = nulledOut(IntegerType, context)
             }
 
@@ -121,17 +121,17 @@ class AirbyteValueIdentityMapperTest {
                             "union" to IntegerValue(42),
                         )
                     ),
-                    mappedValue
+                    mappedValue,
                 )
             },
             {
                 assertEquals(
                     listOf(
-                        Meta.Change("int", Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                        Meta.Change("int", Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR)
                     ),
-                    changes
+                    changes,
                 )
-            }
+            },
         )
     }
 

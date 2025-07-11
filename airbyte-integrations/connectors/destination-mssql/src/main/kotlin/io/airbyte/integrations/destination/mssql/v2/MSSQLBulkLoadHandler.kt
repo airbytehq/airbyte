@@ -20,7 +20,7 @@ class MSSQLBulkLoadHandler(
     private val schemaName: String,
     private val mainTableName: String,
     private val bulkUploadDataSource: String,
-    private val mssqlQueryBuilder: MSSQLQueryBuilder
+    private val mssqlQueryBuilder: MSSQLQueryBuilder,
 ) {
 
     companion object {
@@ -39,7 +39,7 @@ class MSSQLBulkLoadHandler(
     fun bulkLoadForAppendOverwrite(
         dataFilePath: String,
         formatFilePath: String,
-        rowsPerBatch: Long? = null
+        rowsPerBatch: Long? = null,
     ) {
         val bulkInsertSql =
             buildBulkInsertSql(
@@ -86,7 +86,7 @@ class MSSQLBulkLoadHandler(
         nonPkColumns: List<String>,
         dataFilePath: String,
         formatFilePath: String,
-        rowsPerBatch: Long? = null
+        rowsPerBatch: Long? = null,
     ) {
         if (primaryKeyColumns.isEmpty()) {
             throw IllegalArgumentException("At least one primary key column is required.")
@@ -140,7 +140,7 @@ class MSSQLBulkLoadHandler(
         conn: Connection,
         tempTableName: String,
         primaryKeyColumns: List<String>,
-        cursorColumns: List<String>
+        cursorColumns: List<String>,
     ) {
         // Build the partition clause for primary keys, e.g. T.[id1], T.[id2]
         val pkPartition = primaryKeyColumns.joinToString(", ") { "T.[$it]" }
@@ -168,7 +168,8 @@ class MSSQLBulkLoadHandler(
         DELETE
         FROM Dedup_CTE
         WHERE row_num > 1;
-    """.trimIndent()
+    """
+                .trimIndent()
 
         logger.info { "Starting deduplication for temp table: $tempTableName" }
         conn.prepareStatement(dedupSql).use { stmt -> stmt.executeUpdate() }
@@ -196,7 +197,7 @@ class MSSQLBulkLoadHandler(
         quotedTableName: String,
         dataFilePath: String,
         formatFilePath: String,
-        rowsPerBatch: Long? = null
+        rowsPerBatch: Long? = null,
     ): String {
         // The ROWS_PER_BATCH hint can help optimize the bulk load.
         // If not provided, it won't be included in the statement.
@@ -227,7 +228,8 @@ class MSSQLBulkLoadHandler(
             SELECT TOP 0 *
             INTO [${tempTableName}]
             FROM ${quoteIdentifier(schemaName, mainTableName)}
-        """.trimIndent()
+        """
+                .trimIndent()
 
         conn.prepareStatement(createTempTableSql).use { stmt -> stmt.executeUpdate() }
         conn.commit()
@@ -240,7 +242,7 @@ class MSSQLBulkLoadHandler(
     private fun buildMergeSql(
         tempTableName: String,
         primaryKeyColumns: List<String>,
-        nonPkColumns: List<String>
+        nonPkColumns: List<String>,
     ): String {
         val quotedTableName = quoteIdentifier(schemaName = schemaName, tableName = mainTableName)
         // 1. ON condition:
@@ -270,7 +272,8 @@ class MSSQLBulkLoadHandler(
             INSERT ($allColumnsCsv)
             VALUES ($sourceColumnsCsv)
         ;
-    """.trimIndent()
+    """
+            .trimIndent()
     }
 
     /** Generates a local temp table name with a timestamp suffix to avoid collisions. */

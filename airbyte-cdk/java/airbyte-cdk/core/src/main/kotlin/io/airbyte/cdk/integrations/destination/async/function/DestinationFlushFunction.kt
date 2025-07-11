@@ -20,10 +20,9 @@ import kotlin.math.max
  * statements.
  *
  * There are 2 different destination types as of this writing:
- *
  * * 1. Destinations that upload files. This includes warehouses and databases.
  * * 2. Destinations that upload data streams. This mostly includes various Cloud storages. This
- * will include reverse-ETL in the future
+ *   will include reverse-ETL in the future
  *
  * In both cases, the simplest way to model the incoming data is as a stream.
  */
@@ -36,10 +35,7 @@ interface DestinationFlushFunction {
      * @throws Exception
      */
     @Throws(Exception::class)
-    fun flush(
-        streamDescriptor: StreamDescriptor,
-        stream: Stream<PartialAirbyteMessage>,
-    )
+    fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>)
 
     /**
      * When invoking [.flush], best effort attempt to invoke flush with a batch of this size. Useful

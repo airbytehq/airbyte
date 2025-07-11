@@ -48,7 +48,7 @@ class FeedBootstrapTest {
                     v,
                     GlobalCursor,
                     CommonMetaField.CDC_UPDATED_AT,
-                    CommonMetaField.CDC_DELETED_AT
+                    CommonMetaField.CDC_DELETED_AT,
                 ),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = listOf(k),
@@ -59,13 +59,14 @@ class FeedBootstrapTest {
 
     fun stateManager(
         globalStateValue: OpaqueStateValue? = null,
-        streamStateValue: OpaqueStateValue? = null
+        streamStateValue: OpaqueStateValue? = null,
     ): StateManager = StateManager(global, globalStateValue, mapOf(stream to streamStateValue))
 
     val dcm = DataChannelMedium.STDIO
     val dcf = DataChannelFormat.JSONL
     val bufferSize = 8192
     val clock = ClockFactory().fixed()
+
     fun Feed.bootstrap(stateManager: StateManager): FeedBootstrap<*> =
         FeedBootstrap.create(
             outputConsumer,
@@ -75,7 +76,7 @@ class FeedBootstrapTest {
             dcf,
             dcm,
             bufferSize,
-            clock
+            clock,
         )
 
     fun expected(vararg data: String): List<String> {
@@ -93,7 +94,7 @@ class FeedBootstrapTest {
         consumer.accept(GLOBAL_RECORD_DATA, changes = null)
         Assertions.assertEquals(
             expected(GLOBAL_RECORD_DATA_JSON),
-            outputConsumer.records().map(Jsons::writeValueAsString)
+            outputConsumer.records().map(Jsons::writeValueAsString),
         )
     }
 
@@ -108,7 +109,7 @@ class FeedBootstrapTest {
         consumer.accept(GLOBAL_RECORD_DATA, changes = null)
         Assertions.assertEquals(
             expected(GLOBAL_RECORD_DATA_JSON),
-            outputConsumer.records().map(Jsons::writeValueAsString)
+            outputConsumer.records().map(Jsons::writeValueAsString),
         )
     }
 
@@ -117,7 +118,7 @@ class FeedBootstrapTest {
         val stateManager: StateManager =
             stateManager(
                 streamStateValue = Jsons.objectNode(),
-                globalStateValue = Jsons.objectNode()
+                globalStateValue = Jsons.objectNode(),
             )
         val globalBootstrap: FeedBootstrap<*> = global.bootstrap(stateManager)
         Assertions.assertEquals(Jsons.objectNode(), globalBootstrap.currentState)
@@ -134,7 +135,7 @@ class FeedBootstrapTest {
         Assertions.assertNull(globalBootstrap.currentState(stream))
         Assertions.assertEquals(
             listOf(RESET_STATE),
-            outputConsumer.states().map(Jsons::writeValueAsString)
+            outputConsumer.states().map(Jsons::writeValueAsString),
         )
     }
 
@@ -149,7 +150,7 @@ class FeedBootstrapTest {
         consumer.accept(STREAM_RECORD_INPUT_DATA, changes = null)
         Assertions.assertEquals(
             expected(STREAM_RECORD_OUTPUT_DATA),
-            outputConsumer.records().map(Jsons::writeValueAsString)
+            outputConsumer.records().map(Jsons::writeValueAsString),
         )
     }
 
@@ -169,7 +170,7 @@ class FeedBootstrapTest {
         consumer.accept(STREAM_RECORD_INPUT_DATA, changes = null)
         Assertions.assertEquals(
             expected(STREAM_RECORD_OUTPUT_DATA),
-            outputConsumer.records().map(Jsons::writeValueAsString)
+            outputConsumer.records().map(Jsons::writeValueAsString),
         )
     }
 
@@ -200,11 +201,12 @@ class FeedBootstrapTest {
                 |"meta":{"changes":[
                 |{"field":"k","change":"TRUNCATED","reason":"SOURCE_RECORD_SIZE_LIMITATION"},
                 |{"field":"v","change":"NULLED","reason":"SOURCE_RETRIEVAL_ERROR"}
-                |]}}""".trimMargin()
+                |]}}"""
+                            .trimMargin()
                     )
                 )
             ),
-            outputConsumer.records().map(Jsons::writeValueAsString)
+            outputConsumer.records().map(Jsons::writeValueAsString),
         )
     }
 
@@ -214,17 +216,13 @@ class FeedBootstrapTest {
         val triggerBasedStream =
             Stream(
                 id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace("ns")),
-                schema =
-                    setOf(
-                        k,
-                        v,
-                    ),
+                schema = setOf(k, v),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(k),
                 configuredCursor =
                     GlobalCursor, // For trigger based CDC the cursor is uniquely defined, we just
                 // use this object for test case
-                )
+            )
 
         // Create state manager and bootstrap without a global feed
         val stateManager =
@@ -236,7 +234,7 @@ class FeedBootstrapTest {
         val msg: NativeRecordPayload =
             mutableMapOf(
                 "k" to FieldValueEncoder(3, IntCodec),
-                "v" to FieldValueEncoder("trigger", TextCodec)
+                "v" to FieldValueEncoder("trigger", TextCodec),
             )
         consumer.accept(msg, changes = null)
 
@@ -270,14 +268,14 @@ class FeedBootstrapTest {
                 "_ab_cdc_updated_at" to
                     FieldValueEncoder(
                         LocalDateTime.parse("2024-03-01T01:02:03.456789"),
-                        LocalDateTimeCodec
+                        LocalDateTimeCodec,
                     ),
-                "_ab_cdc_deleted_at" to FieldValueEncoder(null, NullCodec)
+                "_ab_cdc_deleted_at" to FieldValueEncoder(null, NullCodec),
             )
         val STREAM_RECORD_INPUT_DATA: NativeRecordPayload =
             mutableMapOf(
                 "k" to FieldValueEncoder(2, IntCodec),
-                "v" to FieldValueEncoder("bar", TextCodec)
+                "v" to FieldValueEncoder("bar", TextCodec),
             )
         const val STREAM_RECORD_OUTPUT_DATA =
             """{"k":2,"v":"bar","_ab_cdc_lsn":{},"_ab_cdc_updated_at":"2069-04-20T00:00:00.000000Z","_ab_cdc_deleted_at":null}"""

@@ -19,7 +19,7 @@ import java.util.stream.Stream
 abstract class AbstractStreamOperation<DestinationState : MinimumDestinationState, Data>(
     private val storageOperation: StorageOperation<Data>,
     destinationInitialStatus: DestinationInitialStatus<DestinationState>,
-    private val disableTypeDedupe: Boolean = false
+    private val disableTypeDedupe: Boolean = false,
 ) : StreamOperation<DestinationState> {
     private val log = KotlinLogging.logger {}
 
@@ -31,7 +31,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
      * The status of the raw table that "matters" for this sync. Specifically:
      * * For normal syncs / merge refreshes, this is the status of the real raw table)
      * * For truncate refreshes, this is the status of the temp raw table (because we never even
-     * look at the real raw table)
+     *   look at the real raw table)
      */
     private val initialRawTableStatus: InitialRawTableStatus
 
@@ -74,7 +74,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
 
     private fun prepareStageForNormalSync(
         stream: StreamConfig,
-        destinationInitialStatus: DestinationInitialStatus<DestinationState>
+        destinationInitialStatus: DestinationInitialStatus<DestinationState>,
     ): InitialRawTableStatus {
         log.info {
             "${stream.id.originalNamespace}.${stream.id.originalName}: non-truncate sync. Creating raw table if not exists."
@@ -131,7 +131,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
 
     private fun prepareStageForTruncate(
         destinationInitialStatus: DestinationInitialStatus<DestinationState>,
-        stream: StreamConfig
+        stream: StreamConfig,
     ): Pair<InitialRawTableStatus, String> {
         /*
         tl;dr:
@@ -152,21 +152,14 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
                 }
                 // The temp table is from the correct generation. Set up any other resources
                 // (staging file, etc.), but leave the table untouched.
-                storageOperation.prepareStage(
-                    stream.id,
-                    TMP_TABLE_SUFFIX,
-                )
+                storageOperation.prepareStage(stream.id, TMP_TABLE_SUFFIX)
                 return Pair(destinationInitialStatus.initialTempRawTableStatus, TMP_TABLE_SUFFIX)
             } else {
                 log.info {
                     "${stream.id.originalNamespace}.${stream.id.originalName}: truncate sync, and existing temp raw table belongs to generation $tempStageGeneration (!= current generation ${stream.generationId}). Truncating it."
                 }
                 // The temp stage is from the wrong generation. Nuke it.
-                storageOperation.prepareStage(
-                    stream.id,
-                    TMP_TABLE_SUFFIX,
-                    replace = true,
-                )
+                storageOperation.prepareStage(stream.id, TMP_TABLE_SUFFIX, replace = true)
                 // We nuked the temp raw table, so create a new initial raw table status.
                 return Pair(
                     InitialRawTableStatus(
@@ -196,10 +189,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
                     "${stream.id.originalNamespace}.${stream.id.originalName}: truncate sync, existing real raw table belongs to generation $realStageGeneration (!= current generation ${stream.generationId}), and no preexisting temp raw table. Creating a temp raw table."
                 }
                 // We're initiating a new truncate refresh. Create a new temp stage.
-                storageOperation.prepareStage(
-                    stream.id,
-                    TMP_TABLE_SUFFIX,
-                )
+                storageOperation.prepareStage(stream.id, TMP_TABLE_SUFFIX)
                 return Pair(
                     // Create a fresh raw table status, since we created a fresh temp stage.
                     InitialRawTableStatus(
@@ -215,10 +205,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
                 "${stream.id.originalNamespace}.${stream.id.originalName}: truncate sync, and no preexisting temp or  raw table. Creating a temp raw table."
             }
             // We're initiating a new truncate refresh. Create a new temp stage.
-            storageOperation.prepareStage(
-                stream.id,
-                TMP_TABLE_SUFFIX,
-            )
+            storageOperation.prepareStage(stream.id, TMP_TABLE_SUFFIX)
             return Pair(
                 // Create a fresh raw table status, since we created a fresh temp stage.
                 InitialRawTableStatus(
@@ -334,7 +321,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     abstract fun writeRecordsImpl(
         streamConfig: StreamConfig,
         suffix: String,
-        stream: Stream<PartialAirbyteMessage>
+        stream: Stream<PartialAirbyteMessage>,
     )
 
     override fun finalizeTable(streamConfig: StreamConfig, syncSummary: StreamSyncSummary) {

@@ -61,11 +61,7 @@ data class NamedField(val name: String, val type: AirbyteType, val sample: Any)
 
 /** Defines a performance test scenario. */
 interface PerformanceTestScenario {
-    data class Summary(
-        val records: Long,
-        val size: Long,
-        val expectedRecordsCount: Long,
-    )
+    data class Summary(val records: Long, val size: Long, val expectedRecordsCount: Long)
 
     /** The catalog used for the performance test. */
     val catalog: DestinationCatalog
@@ -231,24 +227,24 @@ abstract class BasicPerformanceTest(
                             NamedField(
                                 "tWithTz",
                                 TimeTypeWithTimezone,
-                                LocalTime.now().atOffset(ZoneOffset.UTC).toString()
+                                LocalTime.now().atOffset(ZoneOffset.UTC).toString(),
                             ),
                             NamedField("t", TimeTypeWithoutTimezone, LocalTime.now().toString()),
                             NamedField(
                                 "tsWithTz",
                                 TimestampTypeWithTimezone,
-                                OffsetDateTime.now().toString()
+                                OffsetDateTime.now().toString(),
                             ),
                             NamedField(
                                 "ts",
                                 TimestampTypeWithoutTimezone,
-                                OffsetDateTime.now().toLocalDateTime().toString()
+                                OffsetDateTime.now().toLocalDateTime().toString(),
                             ),
                             NamedField(
                                 "object",
                                 ObjectTypeWithoutSchema,
-                                Jsons.serialize(mapOf("object" to "value"))
-                            )
+                                Jsons.serialize(mapOf("object" to "value")),
+                            ),
                         ),
                     recordsToInsert = defaultRecordsToInsert,
                     randomizedNamespace = randomizedNamespace,
@@ -312,14 +308,10 @@ abstract class BasicPerformanceTest(
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
                 fileSizeMb = 10,
-                stagingDirectory = Path.of("/tmp")
+                stagingDirectory = Path.of("/tmp"),
             )
         scenario.setup()
-        runSync(
-            testScenario = scenario,
-            useFileTransfer = true,
-            validation = null,
-        )
+        runSync(testScenario = scenario, useFileTransfer = true, validation = null)
     }
 
     @Test
@@ -331,14 +323,10 @@ abstract class BasicPerformanceTest(
                 streamName = testInfo.testMethod.get().name,
                 numFiles = numFilesForFileTransfer,
                 fileSizeMb = 10,
-                stagingDirectory = Path.of("/tmp")
+                stagingDirectory = Path.of("/tmp"),
             )
         scenario.setup()
-        runSync(
-            testScenario = scenario,
-            useFileTransfer = false,
-            validation = null,
-        )
+        runSync(testScenario = scenario, useFileTransfer = false, validation = null)
     }
 
     @Test
@@ -352,7 +340,7 @@ abstract class BasicPerformanceTest(
                     recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
                     numStreams = numStreamsForMultiStream,
                     streamNamePrefix = testInfo.testMethod.get().name,
-                ),
+                )
         )
     }
 
@@ -430,7 +418,7 @@ abstract class BasicPerformanceTest(
                             InputStreamComplete(
                                 DestinationRecordStreamComplete(it, System.currentTimeMillis())
                             ),
-                            broadcast = true
+                            broadcast = true,
                         )
                     }
                     destination.shutdown()

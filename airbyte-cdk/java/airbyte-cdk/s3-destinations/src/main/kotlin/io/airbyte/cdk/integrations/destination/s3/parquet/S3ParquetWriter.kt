@@ -38,7 +38,7 @@ class S3ParquetWriter(
     configuredStream: ConfiguredAirbyteStream,
     uploadTimestamp: Timestamp?,
     schema: Schema?,
-    converter: JsonAvroConverter?
+    converter: JsonAvroConverter?,
 ) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val parquetWriter: ParquetWriter<GenericData.Record>
     private val avroRecordFactory: AvroRecordFactory

@@ -39,12 +39,12 @@ abstract class AzureBlobStorageStreamCopier(
     protected val db: JdbcDatabase,
     protected val azureBlobConfig: AzureBlobStorageConfig,
     private val nameTransformer: StandardNameTransformer,
-    private val sqlOperations: SqlOperations
+    private val sqlOperations: SqlOperations,
 ) : StreamCopier {
     protected var filenameGenerator: StagingFilenameGenerator =
         StagingFilenameGenerator(
             streamName,
-            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong(),
         )
     protected val azureStagingFiles: MutableSet<String> = HashSet()
 
@@ -62,7 +62,7 @@ abstract class AzureBlobStorageStreamCopier(
             csvPrinters[fileName]!!.printRecord(
                 id,
                 Jsons.serialize(recordMessage!!.data),
-                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
+                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt)),
             )
         }
     }
@@ -82,7 +82,7 @@ abstract class AzureBlobStorageStreamCopier(
             val bufferedOutputStream =
                 BufferedOutputStream(
                     appendBlobClient.blobOutputStream,
-                    Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE)
+                    Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE),
                 )
             val writer = PrintWriter(bufferedOutputStream, true, StandardCharsets.UTF_8)
             try {
@@ -99,7 +99,7 @@ abstract class AzureBlobStorageStreamCopier(
             "/",
             stagingFolder,
             schemaName,
-            filenameGenerator.stagingFilename
+            filenameGenerator.stagingFilename,
         )
     }
 
@@ -137,7 +137,7 @@ abstract class AzureBlobStorageStreamCopier(
                 getFullAzurePath(azureStagingFile),
                 schemaName,
                 tmpTableName,
-                azureBlobConfig
+                azureBlobConfig,
             )
         }
         LOGGER.info {
@@ -215,7 +215,7 @@ abstract class AzureBlobStorageStreamCopier(
         snowflakeAzureExternalStageName: String?,
         schema: String?,
         tableName: String?,
-        config: AzureBlobStorageConfig?
+        config: AzureBlobStorageConfig?,
     )
 
     companion object {

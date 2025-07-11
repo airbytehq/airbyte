@@ -23,10 +23,7 @@ class TestApplicationYaml {
     }
 }
 
-data class DefaultValueBean(
-    val stagingFolder: String,
-    val fileTransferEnable: Boolean,
-)
+data class DefaultValueBean(val stagingFolder: String, val fileTransferEnable: Boolean)
 
 @Factory
 class TestFactory {

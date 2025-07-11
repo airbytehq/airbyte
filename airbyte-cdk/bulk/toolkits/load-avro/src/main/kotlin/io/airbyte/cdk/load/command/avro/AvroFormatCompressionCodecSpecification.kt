@@ -14,18 +14,18 @@ import org.apache.avro.file.CodecFactory
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "codec"
+    property = "codec",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(
         value = AvroFormatNoCompressionCodecSpecification::class,
-        name = "no compression"
+        name = "no compression",
     ),
     JsonSubTypes.Type(value = AvroFormatDeflateCodecSpecification::class, name = "Deflate"),
     JsonSubTypes.Type(value = AvroFormatBzip2CodecSpecification::class, name = "bzip2"),
     JsonSubTypes.Type(value = AvroFormatXzCodecSpecification::class, name = "xz"),
     JsonSubTypes.Type(value = AvroFormatZstandardCodecSpecification::class, name = "zstandard"),
-    JsonSubTypes.Type(value = AvroFormatSnappyCodecSpecification::class, name = "snappy")
+    JsonSubTypes.Type(value = AvroFormatSnappyCodecSpecification::class, name = "snappy"),
 )
 sealed class AvroFormatCompressionCodecSpecification(
     @JsonSchemaTitle("Compression Codec") @JsonProperty("codec") open val type: Type
@@ -36,7 +36,7 @@ sealed class AvroFormatCompressionCodecSpecification(
         BZIP2("bzip2"),
         XZ("xz"),
         ZSTANDARD("zstandard"),
-        SNAPPY("snappy")
+        SNAPPY("snappy"),
     }
 
     fun toCompressionConfiguration() =
@@ -58,7 +58,7 @@ sealed class AvroFormatCompressionCodecSpecification(
 data class AvroFormatNoCompressionCodecSpecification(
     @JsonSchemaTitle("Compression Codec")
     @JsonProperty("codec")
-    override val type: Type = Type.NO_COMPRESSION,
+    override val type: Type = Type.NO_COMPRESSION
 ) : AvroFormatCompressionCodecSpecification(type)
 
 data class AvroFormatDeflateCodecSpecification(
@@ -67,20 +67,20 @@ data class AvroFormatDeflateCodecSpecification(
     override val type: Type = Type.DEFLATE,
     @JsonSchemaTitle("Deflate Level")
     @JsonProperty("compression_level")
-    val compressionLevel: Int = 0
+    val compressionLevel: Int = 0,
 ) : AvroFormatCompressionCodecSpecification(type)
 
 data class AvroFormatBzip2CodecSpecification(
     @JsonSchemaTitle("Compression Codec")
     @JsonProperty("codec")
-    override val type: Type = Type.BZIP2,
+    override val type: Type = Type.BZIP2
 ) : AvroFormatCompressionCodecSpecification(type)
 
 data class AvroFormatXzCodecSpecification(
     @JsonSchemaTitle("Compression Codec") @JsonProperty("codec") override val type: Type = Type.XZ,
     @JsonSchemaTitle("Compression Level")
     @JsonProperty("compression_level")
-    val compressionLevel: Int = 6
+    val compressionLevel: Int = 6,
 ) : AvroFormatCompressionCodecSpecification(type)
 
 data class AvroFormatZstandardCodecSpecification(
@@ -92,13 +92,13 @@ data class AvroFormatZstandardCodecSpecification(
     val compressionLevel: Int = 3,
     @JsonSchemaTitle("Include Checksum")
     @JsonProperty("include_checksum")
-    val includeChecksum: Boolean = false
+    val includeChecksum: Boolean = false,
 ) : AvroFormatCompressionCodecSpecification(type)
 
 data class AvroFormatSnappyCodecSpecification(
     @JsonSchemaTitle("Compression Codec")
     @JsonProperty("codec")
-    override val type: Type = Type.SNAPPY,
+    override val type: Type = Type.SNAPPY
 ) : AvroFormatCompressionCodecSpecification(type)
 
 data class AvroCompressionConfiguration(val compressionCodec: CodecFactory)

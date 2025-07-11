@@ -42,7 +42,7 @@ data class MySqlSourceJdbcStreamStateValue(
                             cursorField = listOf(cursor.id),
                             cursors = cursorCheckpoint.asText(),
                             streamName = stream.name,
-                            streamNamespace = stream.namespace!!
+                            streamNamespace = stream.namespace!!,
                         )
                     )
             }
@@ -72,7 +72,7 @@ data class MySqlSourceJdbcStreamStateValue(
             primaryKey: List<Field>,
             primaryKeyCheckpoint: List<JsonNode>,
             cursor: Field,
-            stream: Stream
+            stream: Stream,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
             return when (primaryKeyCheckpoint.first().isNull) {
@@ -88,7 +88,7 @@ data class MySqlSourceJdbcStreamStateValue(
                                     MySqlSourceJdbcStreamStateValue(
                                         cursorField = listOf(cursor.id),
                                         streamName = stream.name,
-                                        streamNamespace = stream.namespace!!
+                                        streamNamespace = stream.namespace!!,
                                     )
                                 ),
                         )
@@ -99,8 +99,7 @@ data class MySqlSourceJdbcStreamStateValue(
 
     enum class StateType {
         PRIMARY_KEY,
-        CURSOR_BASED,
-        ;
+        CURSOR_BASED;
 
         val serialized: String = name.lowercase()
     }

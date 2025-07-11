@@ -34,7 +34,7 @@ internal class GcsAvroWriterTest {
                     "fake-bucketPath",
                     "fake-bucketRegion",
                     GcsHmacKeyCredentialConfig("fake-access-id", "fake-secret"),
-                    UploadAvroFormatConfig(ObjectMapper().createObjectNode())
+                    UploadAvroFormatConfig(ObjectMapper().createObjectNode()),
                 ),
                 Mockito.mock(AmazonS3::class.java, Mockito.RETURNS_DEEP_STUBS),
                 ConfiguredAirbyteStream()
@@ -45,12 +45,12 @@ internal class GcsAvroWriterTest {
                             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
                     ),
                 Timestamp.from(Instant.ofEpochMilli(1234)),
-                null
+                null,
             )
 
         Assertions.assertEquals(
             "fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro",
-            writer.outputPath
+            writer.outputPath,
         )
     }
 }

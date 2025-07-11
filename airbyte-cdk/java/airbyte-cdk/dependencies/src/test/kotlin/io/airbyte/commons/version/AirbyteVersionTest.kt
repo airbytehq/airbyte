@@ -28,12 +28,12 @@ internal class AirbyteVersionTest {
         Assertions.assertEquals(
             0,
             AirbyteVersion(VERSION_678_OMEGA)
-                .compatibleVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA))
+                .compatibleVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA)),
         )
         Assertions.assertEquals(
             0,
             AirbyteVersion(VERSION_678_ALPHA)
-                .compatibleVersionCompareTo(AirbyteVersion(VERSION_679_ALPHA))
+                .compatibleVersionCompareTo(AirbyteVersion(VERSION_679_ALPHA)),
         )
         Assertions.assertTrue(
             0 <
@@ -57,11 +57,11 @@ internal class AirbyteVersionTest {
         )
         Assertions.assertEquals(
             0,
-            AirbyteVersion(VERSION_123_PROD).compatibleVersionCompareTo(AirbyteVersion(DEV))
+            AirbyteVersion(VERSION_123_PROD).compatibleVersionCompareTo(AirbyteVersion(DEV)),
         )
         Assertions.assertEquals(
             0,
-            AirbyteVersion(DEV).compatibleVersionCompareTo(AirbyteVersion(VERSION_123_PROD))
+            AirbyteVersion(DEV).compatibleVersionCompareTo(AirbyteVersion(VERSION_123_PROD)),
         )
     }
 
@@ -70,7 +70,7 @@ internal class AirbyteVersionTest {
         Assertions.assertEquals(
             0,
             AirbyteVersion(VERSION_678_OMEGA)
-                .patchVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA))
+                .patchVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA)),
         )
         Assertions.assertTrue(
             0 >
@@ -104,11 +104,11 @@ internal class AirbyteVersionTest {
         )
         Assertions.assertEquals(
             0,
-            AirbyteVersion(VERSION_123_PROD).patchVersionCompareTo(AirbyteVersion(DEV))
+            AirbyteVersion(VERSION_123_PROD).patchVersionCompareTo(AirbyteVersion(DEV)),
         )
         Assertions.assertEquals(
             0,
-            AirbyteVersion(DEV).patchVersionCompareTo(AirbyteVersion(VERSION_123_PROD))
+            AirbyteVersion(DEV).patchVersionCompareTo(AirbyteVersion(VERSION_123_PROD)),
         )
     }
 

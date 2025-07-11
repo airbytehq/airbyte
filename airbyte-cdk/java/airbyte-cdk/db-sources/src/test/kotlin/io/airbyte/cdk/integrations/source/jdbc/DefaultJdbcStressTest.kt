@@ -54,7 +54,7 @@ internal class DefaultJdbcStressTest : JdbcStressTest() {
                     JdbcUtils.USERNAME_KEY,
                     "postgres",
                     JdbcUtils.PASSWORD_KEY,
-                    ""
+                    "",
                 )
             )
 
@@ -92,7 +92,7 @@ internal class DefaultJdbcStressTest : JdbcStressTest() {
         AbstractJdbcSource<JDBCType>(
             DRIVER_CLASS,
             Supplier { AdaptiveStreamingQueryConfig() },
-            JdbcUtils.defaultSourceOperations
+            JdbcUtils.defaultSourceOperations,
         ),
         Source {
         override fun toDatabaseConfig(config: JsonNode): JsonNode {
@@ -105,8 +105,8 @@ internal class DefaultJdbcStressTest : JdbcStressTest() {
                             DatabaseDriver.POSTGRESQL.urlFormatString,
                             config[JdbcUtils.HOST_KEY].asText(),
                             config[JdbcUtils.PORT_KEY].asInt(),
-                            config[JdbcUtils.DATABASE_KEY].asText()
-                        )
+                            config[JdbcUtils.DATABASE_KEY].asText(),
+                        ),
                     )
 
             if (config.has(JdbcUtils.PASSWORD_KEY)) {

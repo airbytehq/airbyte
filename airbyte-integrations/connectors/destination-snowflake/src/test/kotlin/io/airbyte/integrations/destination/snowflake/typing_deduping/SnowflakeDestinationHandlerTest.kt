@@ -37,15 +37,14 @@ class SnowflakeDestinationHandlerTest {
     @MethodSource("argumentsForExceptionThrownWithExecute")
     fun verifyExecuteKnownExceptionsAreReportedAsConfigError(
         message: String,
-        isConfigErrorException: Boolean
+        isConfigErrorException: Boolean,
     ) {
         doThrow(SnowflakeSQLException(message)).`when`(database).execute(any(String::class.java))
-        executeAndAssertThrowable(
-            isConfigErrorException,
-        ) {
+        executeAndAssertThrowable(isConfigErrorException) {
             destinationHandler.execute(Sql.of("Mock SQL statement"))
         }
     }
+
     private fun executeAndAssertThrowable(isConfigErrorException: Boolean, executable: Executable) {
         if (isConfigErrorException) {
             assertThrows(ConfigErrorException::class.java, executable)
@@ -53,21 +52,17 @@ class SnowflakeDestinationHandlerTest {
             assertThrows(RuntimeException::class.java, executable)
         }
     }
+
     @Test
     fun verifyCreateNamespaceChecksForSchemaExistence() {
         val mockSchemaName = "mockSchema"
-        val showSchemasReturn = """
+        val showSchemasReturn =
+            """
             {"name":"$mockSchemaName"}
-        """.trimIndent()
+        """
+                .trimIndent()
         `when`(database.unsafeQuery(eq("show schemas;")))
-            .thenReturn(
-                listOf(
-                        Jsons.deserialize(
-                            showSchemasReturn,
-                        ),
-                    )
-                    .stream(),
-            )
+            .thenReturn(listOf(Jsons.deserialize(showSchemasReturn)).stream())
         destinationHandler.createNamespaces(setOf(mockSchemaName))
         // verify database.execute is not called
         verify(database, times(0)).execute(anyString())
@@ -84,12 +79,13 @@ class SnowflakeDestinationHandlerTest {
             "but current role has no privileges on it"
         private const val IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG =
             "not allowed to access Snowflake"
+
         @JvmStatic
         fun argumentsForExceptionThrownWithExecute(): Stream<Arguments> {
             return Stream.of(
                 Arguments.of(UNKNOWN_EXCEPTION_MESSAGE, false),
                 Arguments.of(PERMISSION_EXCEPTION_PARTIAL_MSG, true),
-                Arguments.of(IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG, true)
+                Arguments.of(IP_NOT_IN_WHITE_LIST_EXCEPTION_PARTIAL_MSG, true),
             )
         }
     }

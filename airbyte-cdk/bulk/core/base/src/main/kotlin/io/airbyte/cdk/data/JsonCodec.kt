@@ -330,9 +330,7 @@ data object AnyEncoder : JsonEncoder<Any> {
     override fun encode(decoded: Any): JsonNode = Jsons.textNode(decoded.toString())
 }
 
-data class ArrayEncoder<T>(
-    val elementEncoder: JsonEncoder<T>,
-) : JsonEncoder<List<T>> {
+data class ArrayEncoder<T>(val elementEncoder: JsonEncoder<T>) : JsonEncoder<List<T>> {
     override fun encode(decoded: List<T>): JsonNode =
         Jsons.arrayNode().apply {
             for (e in decoded) {
@@ -341,9 +339,7 @@ data class ArrayEncoder<T>(
         }
 }
 
-data class ArrayDecoder<T>(
-    val elementDecoder: JsonDecoder<T>,
-) : JsonDecoder<List<T>> {
+data class ArrayDecoder<T>(val elementDecoder: JsonDecoder<T>) : JsonDecoder<List<T>> {
     override fun decode(encoded: JsonNode): List<T> {
         if (!encoded.isArray) {
             throw IllegalArgumentException("invalid array value $encoded")

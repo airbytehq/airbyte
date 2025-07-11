@@ -21,10 +21,10 @@ class MergeUnionsTest {
                                 properties =
                                     linkedMapOf(
                                         "foo" to FieldType(StringType, false),
-                                        "bar" to FieldType(IntegerType, false)
+                                        "bar" to FieldType(IntegerType, false),
                                     )
                             ),
-                            nullable = false
+                            nullable = false,
                         )
                 )
                 .withRecord()
@@ -53,7 +53,7 @@ class MergeUnionsTest {
                                             FieldType(UnionType.of(StringType, IntegerType), false)
                                     )
                             ),
-                            false
+                            false,
                         )
                 )
                 .withRecord()

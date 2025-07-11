@@ -28,7 +28,7 @@ class InsertLoaderRequestExecutorAccumulator<Q : InsertLoaderRequest>(
         Closeable,
         StreamKey,
         InsertLoaderRequestBuilderAccumulator.Result<Q>,
-        InsertLoaderRequestExecutorAccumulator.Result
+        InsertLoaderRequestExecutorAccumulator.Result,
     > {
 
     data object Result : WithBatchState {
@@ -36,12 +36,12 @@ class InsertLoaderRequestExecutorAccumulator<Q : InsertLoaderRequest>(
     }
 
     override suspend fun start(key: StreamKey, part: Int): Closeable {
-        return Closeable { /* do nothing */}
+        return Closeable { /* do nothing */ }
     }
 
     override suspend fun accept(
         input: InsertLoaderRequestBuilderAccumulator.Result<Q>,
-        state: Closeable
+        state: Closeable,
     ): BatchAccumulatorResult<Closeable, Result> {
         input.request.submit()
         // This could be final or intermediate, might as well avoid churn on the state.

@@ -87,14 +87,14 @@ class SnowflakeSourceOperations() :
             "CHAR",
             "CHARACTER",
             "STRING",
-            "TEXT", -> StringFieldType
-            "BOOLEAN", -> BooleanFieldType
+            "TEXT" -> StringFieldType
+            "BOOLEAN" -> BooleanFieldType
             "NUMBER",
             "DECIMAL",
-            "NUMERIC", -> BigDecimalFieldType
+            "NUMERIC" -> BigDecimalFieldType
             "INT",
-            "INTEGER", -> IntFieldType
-            "BIGINT", -> BigIntegerFieldType
+            "INTEGER" -> IntFieldType
+            "BIGINT" -> BigIntegerFieldType
             "SMALLINT",
             "TINYINT" -> ShortFieldType
             "BYTEINT" -> ByteFieldType
@@ -103,26 +103,26 @@ class SnowflakeSourceOperations() :
             "FLOAT8",
             "DOUBLE",
             "DOUBLE PRECISION",
-            "REAL", -> DoubleFieldType
-            "DATE", -> LocalDateFieldType
-            "TIME", -> LocalTimeFieldType
+            "REAL" -> DoubleFieldType
+            "DATE" -> LocalDateFieldType
+            "TIME" -> LocalTimeFieldType
             "TIMESTAMP_LTZ",
             "TIMESTAMP_TZ",
             "TIMESTAMPLTZ",
-            "TIMESTAMPTZ", -> SnowflakeOffsetDateTimeFieldType
+            "TIMESTAMPTZ" -> SnowflakeOffsetDateTimeFieldType
             "DATETIME",
             "TIMESTAMP",
             "TIMESTAMP_NTZ",
-            "TIMESTAMPNTZ", -> LocalDateTimeFieldType
+            "TIMESTAMPNTZ" -> LocalDateTimeFieldType
             "BINARY",
-            "VARBINARY", -> BytesFieldType
+            "VARBINARY" -> BytesFieldType
             "VARIANT",
             "OBJECT",
             "GEOGRAPHY",
             "GEOMETRY",
             "VECTOR",
             "FILE",
-            "ARRAY", -> StringFieldType
+            "ARRAY" -> StringFieldType
             else -> PokemonFieldType
         }
     }
@@ -221,7 +221,7 @@ class SnowflakeSourceOperations() :
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         return
     }

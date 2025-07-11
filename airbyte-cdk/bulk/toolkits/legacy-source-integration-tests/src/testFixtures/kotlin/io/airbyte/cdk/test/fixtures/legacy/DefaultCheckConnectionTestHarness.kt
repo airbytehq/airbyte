@@ -15,7 +15,7 @@ class DefaultCheckConnectionTestHarness
 constructor(
     private val integrationLauncher: IntegrationLauncher,
     private val connectorConfigUpdater: ConnectorConfigUpdater,
-    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
+    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory(),
 ) : CheckConnectionTestHarness {
     private lateinit var process: Process
 
@@ -29,7 +29,7 @@ constructor(
                 integrationLauncher.check(
                     jobRoot,
                     WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-                    Jsons.serialize(inputConfig)
+                    Jsons.serialize(inputConfig),
                 )
             this.process = process
 
@@ -52,19 +52,19 @@ constructor(
                     optionalConfigMsg.isPresent &&
                         TestHarnessUtils.getDidControlMessageChangeConfig(
                             inputConfig,
-                            optionalConfigMsg.get()
+                            optionalConfigMsg.get(),
                         )
                 ) {
                     when (input.actorType!!) {
                         ActorType.SOURCE ->
                             connectorConfigUpdater.updateSource(
                                 input.actorId,
-                                optionalConfigMsg.get().config
+                                optionalConfigMsg.get().config,
                             )
                         ActorType.DESTINATION ->
                             connectorConfigUpdater.updateDestination(
                                 input.actorId,
-                                optionalConfigMsg.get().config
+                                optionalConfigMsg.get().config,
                             )
                     }
                     jobOutput.connectorConfigurationUpdated = true
@@ -74,7 +74,7 @@ constructor(
             val failureReason =
                 TestHarnessUtils.getJobFailureReasonFromMessages(
                     ConnectorJobOutput.OutputType.CHECK_CONNECTION,
-                    messagesByType
+                    messagesByType,
                 )
             failureReason.ifPresent { failureReason: FailureReason ->
                 jobOutput.failureReason = failureReason
@@ -91,7 +91,7 @@ constructor(
                         .withStatus(
                             Enums.convertTo(
                                 connectionStatus.status,
-                                StandardCheckConnectionOutput.Status::class.java
+                                StandardCheckConnectionOutput.Status::class.java,
                             )
                         )
                         .withMessage(connectionStatus.message)
@@ -100,7 +100,7 @@ constructor(
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(
                     "Error checking connection status: no status nor failure reason were outputted",
-                    process
+                    process,
                 )
             }
             LineGobbler.endSection("CHECK")

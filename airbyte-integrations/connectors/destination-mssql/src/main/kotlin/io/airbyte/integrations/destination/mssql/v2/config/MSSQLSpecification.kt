@@ -100,7 +100,7 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @JsonSchemaTitle("SSH Tunnel Method")
     @JsonPropertyDescription(
         "Whether to initiate an SSH tunnel before connecting to the database," +
-            " and if so, which kind of authentication to use.",
+            " and if so, which kind of authentication to use."
     )
     @JsonSchemaInject(json = """{"order":5}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
@@ -123,6 +123,7 @@ class Unencrypted : EncryptionMethod {
     companion object {
         const val NAME = "unencrypted"
     }
+
     override val name: String = NAME
 }
 
@@ -134,6 +135,7 @@ class EncryptedTrust : EncryptionMethod {
     companion object {
         const val NAME = "encrypted_trust_server_certificate"
     }
+
     override val name: String = NAME
 }
 
@@ -161,6 +163,7 @@ class EncryptedVerify(
     companion object {
         const val NAME = "encrypted_verify_certificate"
     }
+
     override val name: String = NAME
 }
 
@@ -171,7 +174,7 @@ class MSSQLSpecificationExtension : DestinationSpecificationExtension {
         listOf(
             DestinationSyncMode.OVERWRITE,
             DestinationSyncMode.APPEND,
-            DestinationSyncMode.APPEND_DEDUP
+            DestinationSyncMode.APPEND_DEDUP,
         )
     override val supportsIncremental = true
 }

@@ -65,7 +65,7 @@ class DlqTestLoader(private val stateFactory: DlqStateFactory) : DlqLoader<DlqTe
 
     override fun accept(
         record: DestinationRecordRaw,
-        state: DlqTestState
+        state: DlqTestState,
     ): DlqLoader.DlqLoadResult {
         state.accumulate(record)
         return if (state.isFull()) DlqLoader.Complete(state.flush()) else DlqLoader.Incomplete

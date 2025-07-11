@@ -80,7 +80,7 @@ fun createTunnelSession(
                         ?.firstOrNull()
                         ?: throw ConfigErrorException(
                             "Unable to load private key pairs, " +
-                                "verify key pairs are properly inputted",
+                                "verify key pairs are properly inputted"
                         )
                 session.addPublicKeyIdentity(keyPair)
             }

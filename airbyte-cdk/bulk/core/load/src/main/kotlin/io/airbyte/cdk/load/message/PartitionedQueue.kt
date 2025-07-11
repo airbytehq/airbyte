@@ -9,9 +9,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface PartitionedQueue<T> : CloseableCoroutine {
     val partitions: Int
+
     fun consume(partition: Int): Flow<T>
+
     suspend fun publish(value: T, partition: Int)
+
     suspend fun broadcast(value: T)
+
     fun asOrderedFlows(): Array<Flow<T>> = Array(partitions) { consume(it) }
 }
 

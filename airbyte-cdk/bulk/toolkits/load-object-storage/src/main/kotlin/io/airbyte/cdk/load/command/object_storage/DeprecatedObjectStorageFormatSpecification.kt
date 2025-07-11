@@ -31,7 +31,7 @@ import io.airbyte.cdk.load.file.parquet.ParquetWriterConfiguration
 interface DeprecatedObjectStorageFormatSpecificationProvider {
     @get:JsonSchemaTitle("Output Format")
     @get:JsonPropertyDescription(
-        "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
+        "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details"
     )
     @get:JsonProperty("format")
     val format: DeprecatedObjectStorageFormatSpecification
@@ -67,7 +67,7 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
                                 maxPaddingSizeMb = it.maxPaddingSizeMb!!,
                                 pageSizeKb = it.pageSizeKb!!,
                                 dictionaryPageSizeKb = it.dictionaryPageSizeKb!!,
-                                dictionaryEncoding = it.dictionaryEncoding!!
+                                dictionaryEncoding = it.dictionaryEncoding!!,
                             )
                     )
                 }
@@ -88,13 +88,13 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "format_type"
+    property = "format_type",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = DeprecatedCSVFormatSpecification::class, name = "CSV"),
     JsonSubTypes.Type(value = DeprecatedJsonFormatSpecification::class, name = "JSONL"),
     JsonSubTypes.Type(value = DeprecatedAvroFormatSpecification::class, name = "Avro"),
-    JsonSubTypes.Type(value = DeprecatedParquetFormatSpecification::class, name = "Parquet")
+    JsonSubTypes.Type(value = DeprecatedParquetFormatSpecification::class, name = "Parquet"),
 )
 sealed class DeprecatedObjectStorageFormatSpecification(
     @JsonSchemaTitle("Format Type") open val formatType: Type
@@ -103,7 +103,7 @@ sealed class DeprecatedObjectStorageFormatSpecification(
         CSV("CSV"),
         JSONL("JSONL"),
         AVRO("Avro"),
-        PARQUET("Parquet")
+        PARQUET("Parquet"),
     }
 }
 
@@ -172,7 +172,7 @@ class DeprecatedParquetFormatSpecification(
         LZO,
         BROTLI, // TODO: Broken locally in both this and s3 v1; Validate whether it works in prod
         LZ4,
-        ZSTD
+        ZSTD,
     }
 
     @JsonSchemaTitle("Compression Codec")

@@ -48,7 +48,7 @@ class AirbyteLogMessageTemplateTest {
                 outputContent,
                 OUTPUT_STREAM_APPENDER,
                 false,
-                true
+                true,
             )
         outputStreamAppender.start()
 
@@ -80,7 +80,7 @@ class AirbyteLogMessageTemplateTest {
         val connectorLogMessageRegex =
             String.format(
                 "^INFO %s [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$",
-                Pattern.compile(Thread.currentThread().name)
+                Pattern.compile(Thread.currentThread().name),
             )
         val pattern = Pattern.compile(connectorLogMessageRegex)
 

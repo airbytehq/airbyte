@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Helper class for workers to persist updates to Source/Destination configs emitted from
  * AirbyteControlMessages.
@@ -29,7 +30,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 class ConnectorConfigUpdater(
     private val sourceApi: SourceApi,
-    private val destinationApi: DestinationApi
+    private val destinationApi: DestinationApi,
 ) {
     /**
      * Updates the Source from a sync job ID with the provided Configuration. Secrets and OAuth
@@ -39,7 +40,7 @@ class ConnectorConfigUpdater(
         val source =
             AirbyteApiClient.retryWithJitter(
                 { sourceApi.getSource(SourceIdRequestBody().sourceId(sourceId)) },
-                "get source"
+                "get source",
             )!!
 
         val updatedSource =
@@ -52,14 +53,14 @@ class ConnectorConfigUpdater(
                             .connectionConfiguration(Jsons.jsonNode(config.additionalProperties))
                     )
                 },
-                "update source"
+                "update source",
             )!!
 
         LOGGER.info(
             "Persisted updated configuration for source {}. New config hash: {}.",
             sourceId,
             Hashing.sha256()
-                .hashString(updatedSource.connectionConfiguration.asText(), StandardCharsets.UTF_8)
+                .hashString(updatedSource.connectionConfiguration.asText(), StandardCharsets.UTF_8),
         )
     }
 
@@ -75,7 +76,7 @@ class ConnectorConfigUpdater(
                         DestinationIdRequestBody().destinationId(destinationId)
                     )
                 },
-                "get destination"
+                "get destination",
             )!!
 
         val updatedDestination =
@@ -88,7 +89,7 @@ class ConnectorConfigUpdater(
                             .connectionConfiguration(Jsons.jsonNode(config.additionalProperties))
                     )
                 },
-                "update destination"
+                "update destination",
             )!!
 
         LOGGER.info(
@@ -97,8 +98,8 @@ class ConnectorConfigUpdater(
             Hashing.sha256()
                 .hashString(
                     updatedDestination.connectionConfiguration.asText(),
-                    StandardCharsets.UTF_8
-                )
+                    StandardCharsets.UTF_8,
+                ),
         )
     }
 

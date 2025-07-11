@@ -23,7 +23,7 @@ class FailOnAllUnknownTypesExceptNullTest {
                             .objectNode()
                             .set(
                                 "type",
-                                JsonNodeFactory.instance.arrayNode().add("null").add("null")
+                                JsonNodeFactory.instance.arrayNode().add("null").add("null"),
                             )
                     )
                 )

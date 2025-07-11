@@ -24,7 +24,7 @@ import io.micronaut.context.annotation.ConfigurationProperties
 @JsonSchemaTitle("SSH Tunnel Method")
 @JsonSchemaDescription(
     "Whether to initiate an SSH tunnel before connecting to the database, " +
-        "and if so, which kind of authentication to use.",
+        "and if so, which kind of authentication to use."
 )
 sealed interface SshTunnelMethodConfiguration
 
@@ -59,7 +59,7 @@ data class SshKeyAuthTunnelMethod(
     @JsonSchemaTitle("SSH Private Key")
     @JsonPropertyDescription(
         "OS-level user account ssh key credentials in RSA PEM format " +
-            "( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+            "( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )"
     )
     @JsonSchemaInject(json = """{"order":4,"multiline":true,"airbyte_secret": true}""")
     val key: String,
@@ -67,7 +67,7 @@ data class SshKeyAuthTunnelMethod(
 
 @JsonSchemaTitle("Password Authentication")
 @JsonSchemaDescription(
-    "Connect through a jump server tunnel host using username and password authentication",
+    "Connect through a jump server tunnel host using username and password authentication"
 )
 data class SshPasswordAuthTunnelMethod(
     @get:JsonProperty("tunnel_host", required = true)

@@ -36,6 +36,7 @@ class IcebergTypesComparator {
          * parent = "outer~inner"
          * leaf   = "field"
          * ```
+         *
          * If there's no [PARENT_CHILD_SEPARATOR], then it's top-level:
          * ```
          * parent = ""
@@ -56,19 +57,19 @@ class IcebergTypesComparator {
      * A data class representing differences between two Iceberg schemas.
      *
      * @property newColumns list of fully-qualified column names that are new in the incoming
-     * schema.
+     *   schema.
      * @property updatedDataTypes list of fully-qualified column names whose types differ.
      * @property removedColumns list of fully-qualified column names that are no longer in the
-     * incoming schema.
+     *   incoming schema.
      * @property newlyOptionalColumns list of fully-qualified column names that changed from
-     * required -> optional.
+     *   required -> optional.
      */
     data class ColumnDiff(
         val newColumns: MutableList<String> = mutableListOf(),
         val updatedDataTypes: MutableList<String> = mutableListOf(),
         val removedColumns: MutableList<String> = mutableListOf(),
         val newlyOptionalColumns: MutableList<String> = mutableListOf(),
-        var identifierFieldsChanged: Boolean = false
+        var identifierFieldsChanged: Boolean = false,
     ) {
         fun hasChanges(): Boolean {
             return newColumns.isNotEmpty() ||
@@ -91,7 +92,7 @@ class IcebergTypesComparator {
             parentPath = null,
             incomingType = incomingSchema.asStruct(),
             existingType = existingSchema.asStruct(),
-            diff = diff
+            diff = diff,
         )
 
         val incomingIdentifierNames = incomingSchema.identifierFieldNames().toSet()
@@ -113,7 +114,7 @@ class IcebergTypesComparator {
         parentPath: String?,
         incomingType: Types.StructType,
         existingType: Types.StructType,
-        diff: ColumnDiff
+        diff: ColumnDiff,
     ) {
         val incomingFieldsByName = incomingType.fields().associateBy { it.name() }
         val existingFieldsByName = existingType.fields().associateBy { it.name() }
@@ -148,7 +149,7 @@ class IcebergTypesComparator {
                         parentPath = fqName,
                         incomingType = incomingField.type().asStructType(),
                         existingType = existingField.type().asStructType(),
-                        diff = diff
+                        diff = diff,
                     )
                 }
             }
@@ -192,7 +193,9 @@ class IcebergTypesComparator {
             Type.TypeID.TIMESTAMP -> {
                 require(
                     existingType is Types.TimestampType && incomingType is Types.TimestampType
-                ) { "Expected TIMESTAMP types, got $existingType and $incomingType." }
+                ) {
+                    "Expected TIMESTAMP types, got $existingType and $incomingType."
+                }
                 // Must match UTC adjustment or not
                 existingType.shouldAdjustToUTC() == incomingType.shouldAdjustToUTC()
             }

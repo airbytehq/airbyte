@@ -8,6 +8,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Minimal abstract class intended to handle the case where the destination can commit records every
  * time a state message appears. This class does that commit and then immediately emits the state

@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * The purpose of this class is to initialize and spawn the debezium engine with the right
  * properties to fetch records
@@ -30,7 +31,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
     fun start(
         queue: BlockingQueue<ChangeEvent<String?, String?>>,
         offsetManager: AirbyteFileOffsetBackingStore,
-        schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+        schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>,
     ) {
         engine =
             DebeziumEngine.create(Json::class.java)
@@ -38,7 +39,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                     debeziumPropertiesManager.getDebeziumProperties(
                         offsetManager,
                         schemaHistoryManager,
-                    ),
+                    )
                 )
                 .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying { e: ChangeEvent<String?, String?> ->
@@ -90,7 +91,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                         override fun taskStopped() {
                             LOGGER.info { "DebeziumEngine notify: task stopped" }
                         }
-                    },
+                    }
                 )
                 .build()
 

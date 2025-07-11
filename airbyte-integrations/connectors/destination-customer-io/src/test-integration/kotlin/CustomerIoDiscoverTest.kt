@@ -13,7 +13,7 @@ class CustomerIoDiscoverTest :
         successConfigFilenames =
             listOf(
                 DiscoverTestConfig(
-                    configContents = Files.readString(Path.of("secrets/config.json")),
+                    configContents = Files.readString(Path.of("secrets/config.json"))
                 )
-            ),
+            )
     )

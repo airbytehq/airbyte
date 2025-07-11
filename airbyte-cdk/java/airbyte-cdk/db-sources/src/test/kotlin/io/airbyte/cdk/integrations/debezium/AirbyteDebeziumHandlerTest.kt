@@ -26,7 +26,7 @@ class AirbyteDebeziumHandlerTest {
                                 "MODELS_SCHEMA",
                                 Field.of("COL_ID", JsonSchemaType.NUMBER),
                                 Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
-                                Field.of("COL_MODEL", JsonSchemaType.STRING)
+                                Field.of("COL_MODEL", JsonSchemaType.STRING),
                             )
                             .withSupportedSyncModes(
                                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
@@ -56,7 +56,7 @@ class AirbyteDebeziumHandlerTest {
                                 "MODELS_SCHEMA",
                                 Field.of("COL_ID", JsonSchemaType.NUMBER),
                                 Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
-                                Field.of("COL_MODEL", JsonSchemaType.STRING)
+                                Field.of("COL_MODEL", JsonSchemaType.STRING),
                             )
                             .withSupportedSyncModes(
                                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)

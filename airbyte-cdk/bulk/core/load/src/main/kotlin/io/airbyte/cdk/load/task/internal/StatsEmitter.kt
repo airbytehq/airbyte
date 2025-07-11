@@ -32,7 +32,7 @@ class StatsEmitter(
     private val syncManager: SyncManager,
     private val catalog: DestinationCatalog,
     private val outputConsumer: DummyStatsMessageConsumer,
-    @Nullable @Named(STATS_FREQ_QUALIFIER) private val emissionFrequencyMillis: Long? = null
+    @Nullable @Named(STATS_FREQ_QUALIFIER) private val emissionFrequencyMillis: Long? = null,
 ) : Task {
     private val freq: Long = emissionFrequencyMillis ?: DEFAULT_DELAY_MS
 
@@ -63,14 +63,14 @@ class StatsEmitter(
                  * Problem:
                  * - Platform has no knowledge of records/bytes processed per stream
                  * - No existing protocol message exists for destination-to-platform statistics
-                 * reporting
+                 *   reporting
                  * - Progress tracking and monitoring capabilities are lost
                  *
                  * Solution: We repurpose AirbyteRecordMessage as a communication channel for
                  * statistics reporting:
                  * - Destination sends synthetic record messages containing only metadata
                  * - Platform recognizes these as statistics (not actual records) since destinations
-                 * never normally emit record messages
+                 *   never normally emit record messages
                  * - Metadata contains stream-level progress information (record count, byte count)
                  * - Enables real-time progress monitoring and platform visibility
                  *
@@ -87,7 +87,7 @@ class StatsEmitter(
                                 .withData(EMPTY_JSON)
                                 .withAdditionalProperty(OutputConsumer.IS_DUMMY_STATS_MESSAGE, true)
                                 .withAdditionalProperty(DEST_EMITTED_RECORDS_COUNT, recordsRead)
-                                .withAdditionalProperty(DEST_EMITTED_BYTES_COUNT, bytesRead),
+                                .withAdditionalProperty(DEST_EMITTED_BYTES_COUNT, bytesRead)
                         )
 
                 outputConsumer.invoke(statsMessage)
@@ -115,6 +115,7 @@ class FrequencyFactory {
 class DummyStatsMessageConsumer(private val consumer: OutputConsumer) :
     suspend (AirbyteMessage) -> Unit {
     private val log = KotlinLogging.logger {}
+
     override suspend fun invoke(message: AirbyteMessage) {
         consumer.accept(message)
     }

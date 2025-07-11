@@ -45,7 +45,7 @@ class BufferedStreamConsumerTest {
                 InMemoryRecordBufferingStrategy(recordWriter, 1000),
                 onClose,
                 CATALOG,
-                isValidRecord
+                isValidRecord,
             )
 
         Mockito.`when`(isValidRecord.apply(ArgumentMatchers.any<JsonNode>())).thenReturn(true)
@@ -134,7 +134,7 @@ class BufferedStreamConsumerTest {
                 InMemoryRecordBufferingStrategy(recordWriter, 10000),
                 onClose,
                 CATALOG,
-                isValidRecord
+                isValidRecord,
             )
 
         consumer.start()
@@ -222,7 +222,7 @@ class BufferedStreamConsumerTest {
         Assertions.assertThrows(
             IllegalStateException::class.java,
             { consumer.close() },
-            "Expected an error to be thrown on close"
+            "Expected an error to be thrown on close",
         )
 
         verifyStartAndClose()
@@ -305,7 +305,7 @@ class BufferedStreamConsumerTest {
         verifyRecords(
             STREAM_NAME,
             SCHEMA_NAME,
-            expectedRecordsStream1 + expectedRecordsStream1Batch2
+            expectedRecordsStream1 + expectedRecordsStream1Batch2,
         )
         Mockito.verify(outputRecordCollector).accept(STATE_MESSAGE1)
     }
@@ -339,7 +339,7 @@ class BufferedStreamConsumerTest {
         verifyRecords(
             STREAM_NAME,
             SCHEMA_NAME,
-            expectedRecordsStream1 + expectedRecordsStream1Batch2
+            expectedRecordsStream1 + expectedRecordsStream1Batch2,
         )
         verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1Batch3)
         // expects two STATE messages returned since one will be flushed after periodic flushing
@@ -366,7 +366,7 @@ class BufferedStreamConsumerTest {
             .thenReturn(
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM)
+                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM),
             )
         consumer =
             BufferedStreamConsumer(
@@ -377,7 +377,7 @@ class BufferedStreamConsumerTest {
                 CATALOG,
                 isValidRecord, // Never periodic flush
                 Duration.ofHours(24),
-                null
+                null,
             )
         val expectedRecordsStream1 =
             java.util.List.of(
@@ -468,7 +468,7 @@ class BufferedStreamConsumerTest {
             .thenReturn(
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM)
+                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM),
             )
         consumer =
             BufferedStreamConsumer(
@@ -479,7 +479,7 @@ class BufferedStreamConsumerTest {
                 CATALOG,
                 isValidRecord, // Never periodic flush
                 Duration.ofHours(24),
-                null
+                null,
             )
         val expectedRecordsStream1 =
             java.util.List.of(
@@ -556,7 +556,7 @@ class BufferedStreamConsumerTest {
                     CATALOG,
                     isValidRecord,
                     Duration.ofSeconds(PERIODIC_BUFFER_FREQUENCY.toLong()),
-                    null
+                    null,
                 )
             return flushFrequencyConsumer
         }
@@ -578,12 +578,12 @@ class BufferedStreamConsumerTest {
     private fun verifyRecords(
         streamName: String,
         namespace: String,
-        expectedRecords: Collection<AirbyteMessage>
+        expectedRecords: Collection<AirbyteMessage>,
     ) {
         Mockito.verify(recordWriter)
             .accept(
                 AirbyteStreamNameNamespacePair(streamName, namespace),
-                expectedRecords.map { obj: AirbyteMessage -> obj.record }
+                expectedRecords.map { obj: AirbyteMessage -> obj.record },
             )
     }
 
@@ -600,14 +600,14 @@ class BufferedStreamConsumerTest {
                             STREAM_NAME,
                             SCHEMA_NAME,
                             Field.of("id", JsonSchemaType.NUMBER),
-                            Field.of("name", JsonSchemaType.STRING)
+                            Field.of("name", JsonSchemaType.STRING),
                         ),
                         CatalogHelpers.createConfiguredAirbyteStream(
                             STREAM_NAME2,
                             SCHEMA_NAME,
                             Field.of("id", JsonSchemaType.NUMBER),
-                            Field.of("name", JsonSchemaType.STRING)
-                        )
+                            Field.of("name", JsonSchemaType.STRING),
+                        ),
                     )
                 )
 
@@ -628,7 +628,7 @@ class BufferedStreamConsumerTest {
 
         private fun consumeRecords(
             consumer: BufferedStreamConsumer?,
-            records: Collection<AirbyteMessage>
+            records: Collection<AirbyteMessage>,
         ) {
             records.forEach(
                 Consumer { m: AirbyteMessage ->
@@ -653,7 +653,7 @@ class BufferedStreamConsumerTest {
                             "id",
                             RandomStringUtils.randomAlphabetic(7),
                             "name",
-                            "human " + String.format("%8d", i)
+                            "human " + String.format("%8d", i),
                         )
                     )
                 val sizeInBytes = RecordSizeEstimator.getStringByteSize(payload)

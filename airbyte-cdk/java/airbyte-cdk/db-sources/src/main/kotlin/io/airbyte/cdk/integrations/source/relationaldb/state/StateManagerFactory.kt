@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Factory class that creates [StateManager] instances based on the provided state. */
 object StateManagerFactory {
 
@@ -21,16 +22,16 @@ object StateManagerFactory {
      *
      * @param supportedStateType The type of state supported by the connector.
      * @param initialState The deserialized initial state that will be provided to the selected
-     * [StateManager].
+     *   [StateManager].
      * @param catalog The [ConfiguredAirbyteCatalog] for the connector that will utilize the state
-     * manager.
+     *   manager.
      * @return A newly created [StateManager] implementation based on the provided state.
      */
     @JvmStatic
     fun createStateManager(
         supportedStateType: AirbyteStateMessage.AirbyteStateType?,
         initialState: List<AirbyteStateMessage>?,
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
     ): StateManager {
         if (initialState != null && !initialState.isEmpty()) {
             val airbyteStateMessage = initialState[0]
@@ -43,7 +44,7 @@ object StateManagerFactory {
                     val retVal: StateManager =
                         LegacyStateManager(
                             Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!,
-                            catalog
+                            catalog,
                         )
                     return retVal
                 }
@@ -76,7 +77,6 @@ object StateManagerFactory {
     /**
      * Handles the conversion between a different state type and the global state. This method
      * handles the following transitions:
-     *
      * * Stream -> Global (not supported, results in [IllegalArgumentException]
      * * Legacy -> Global (supported)
      * * Global -> Global (supported/no conversion required)
@@ -84,7 +84,7 @@ object StateManagerFactory {
      * @param airbyteStateMessage The current state that is to be converted to global state.
      * @return The converted state message.
      * @throws IllegalArgumentException if unable to convert between the given state type and
-     * global.
+     *   global.
      */
     private fun generateGlobalState(airbyteStateMessage: AirbyteStateMessage): AirbyteStateMessage {
         var globalStateMessage = airbyteStateMessage
@@ -108,7 +108,6 @@ object StateManagerFactory {
     /**
      * Handles the conversion between a different state type and the stream state. This method
      * handles the following transitions:
-     *
      * * Global -> Stream (not supported, results in [IllegalArgumentException]
      * * Legacy -> Stream (supported)
      * * Stream -> Stream (supported/no conversion required)
@@ -116,7 +115,7 @@ object StateManagerFactory {
      * @param states The list of current states.
      * @return The converted state messages.
      * @throws IllegalArgumentException if unable to convert between the given state type and
-     * stream.
+     *   stream.
      */
     private fun generateStreamState(states: List<AirbyteStateMessage>): List<AirbyteStateMessage> {
         val airbyteStateMessage = states[0]

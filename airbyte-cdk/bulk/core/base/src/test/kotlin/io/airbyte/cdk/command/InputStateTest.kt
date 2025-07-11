@@ -31,7 +31,7 @@ class InputStateTest {
                     streamID("foo", "bar") to
                         Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
                     streamID("foo", "baz") to Jsons.readTree("{\"cursors\":{\"c\":30}}"),
-                ),
+                )
             )
         Assertions.assertEquals(
             Jsons.writeValueAsString(expected),
@@ -51,7 +51,7 @@ class InputStateTest {
                 globalStreams =
                     mapOf(
                         streamID("foo", "bar") to
-                            Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
+                            Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}")
                     ),
                 nonGlobalStreams = mapOf(),
             )
@@ -73,12 +73,10 @@ class InputStateTest {
                 globalStreams =
                     mapOf(
                         streamID("foo", "bar") to
-                            Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
+                            Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}")
                     ),
                 nonGlobalStreams =
-                    mapOf(
-                        streamID("foo", "baz") to Jsons.readTree("{\"primary_key\":{\"k\":1}}"),
-                    ),
+                    mapOf(streamID("foo", "baz") to Jsons.readTree("{\"primary_key\":{\"k\":1}}")),
             )
         Assertions.assertEquals(
             Jsons.writeValueAsString(expected),
@@ -95,12 +93,10 @@ class InputStateTest {
                 globalStreams =
                     mapOf(
                         streamID("foo", "bar") to
-                            Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
+                            Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}")
                     ),
                 nonGlobalStreams =
-                    mapOf(
-                        streamID("foo", "baz") to Jsons.readTree("{\"primary_key\":{\"k\":10}}"),
-                    ),
+                    mapOf(streamID("foo", "baz") to Jsons.readTree("{\"primary_key\":{\"k\":10}}")),
             )
         Assertions.assertEquals(
             Jsons.writeValueAsString(expected),

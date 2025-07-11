@@ -25,6 +25,7 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
     override val sqlGenerator = MysqlSqlGenerator()
     override val sourceOperations = MysqlTestSourceOperations()
     override val nameTransformer = MySQLNameTransformer()
+
     override fun getBaseConfig(): ObjectNode = containerizedConfig.deepCopy()
 
     override fun getDataSource(config: JsonNode?): DataSource =
@@ -51,8 +52,8 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
                     concatenateRawTableName(
                         streamNamespace,
                         Names.toAlphanumericAndUnderscore(streamName),
-                    ),
-                ),
+                    )
+                )
             )
         val schema = rawSchema
         return database!!.queryJsons(dslContext.selectFrom(name(schema, tableName)).sql)
@@ -71,14 +72,11 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
                         rawSchema,
                         // Wrap in getIdentifier as a hack for weird mysql name transformer behavior
                         nameTransformer.getIdentifier(
-                            concatenateRawTableName(
-                                streamNamespace,
-                                streamName,
-                            ),
+                            concatenateRawTableName(streamNamespace, streamName)
                         ),
-                    ),
+                    )
                 )
-                .sql,
+                .sql
         )
 
         // mysql doesn't have schemas, it only has databases.

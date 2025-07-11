@@ -89,7 +89,7 @@ import org.slf4j.LoggerFactory
 class RedshiftDestination : BaseConnector(), Destination {
     private fun isEphemeralKeysAndPurgingStagingData(
         config: JsonNode,
-        encryptionConfig: EncryptionConfig
+        encryptionConfig: EncryptionConfig,
     ): Boolean {
         return !isPurgeStagingData(config) &&
             encryptionConfig is AesCbcEnvelopeEncryption &&
@@ -151,7 +151,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                     columns = linkedMapOf(),
                     generationId = 0,
                     minimumGenerationId = 0,
-                    syncId = 0
+                    syncId = 0,
                 )
 
             val databaseName = getDatabaseName(config)
@@ -215,12 +215,10 @@ class RedshiftDestination : BaseConnector(), Destination {
                             .withRecord(
                                 PartialAirbyteRecordMessage()
                                     .withEmittedAt(System.currentTimeMillis())
-                                    .withMeta(
-                                        AirbyteRecordMessageMeta(),
-                                    ),
+                                    .withMeta(AirbyteRecordMessageMeta())
                             )
                     )
-                    .stream()
+                    .stream(),
             )
             streamOperation.finalizeTable(
                 streamConfig,
@@ -234,9 +232,7 @@ class RedshiftDestination : BaseConnector(), Destination {
             // clean up the raw table, this is intentionally not part of actual sync code
             // because we avoid dropping original tables directly.
             destinationHandler.execute(
-                Sql.of(
-                    "DROP TABLE IF EXISTS \"${streamId.rawNamespace}\".\"${streamId.rawName}\";",
-                ),
+                Sql.of("DROP TABLE IF EXISTS \"${streamId.rawNamespace}\".\"${streamId.rawName}\";")
             )
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
@@ -266,7 +262,8 @@ class RedshiftDestination : BaseConnector(), Destination {
                     """
                     Could not connect with provided configuration. 
                     ${e.message}
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
         } finally {
             try {
@@ -289,7 +286,7 @@ class RedshiftDestination : BaseConnector(), Destination {
             DRIVER_CLASS,
             jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
             getDefaultConnectionProperties(),
-            Duration.ofMinutes(2)
+            Duration.ofMinutes(2),
         )
     }
 
@@ -332,24 +329,19 @@ class RedshiftDestination : BaseConnector(), Destination {
     private fun getMigrations(
         database: JdbcDatabase,
         databaseName: String,
-        sqlGenerator: RedshiftSqlGenerator
+        sqlGenerator: RedshiftSqlGenerator,
     ): List<Migration<RedshiftState>> {
         return listOf(
-            RedshiftDV2Migration(
-                namingResolver,
-                database,
-                databaseName,
-                sqlGenerator,
-            ),
+            RedshiftDV2Migration(namingResolver, database, databaseName, sqlGenerator),
             RedshiftRawTableAirbyteMetaMigration(database, databaseName),
-            RedshiftGenerationIdMigration(database, databaseName)
+            RedshiftGenerationIdMigration(database, databaseName),
         )
     }
 
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     private fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
-        defaultNamespace: String?
+        defaultNamespace: String?,
     ): StreamAwareDataTransformer {
         // Redundant override to keep in consistent with InsertDestination. TODO: Unify these 2
         // classes with
@@ -361,7 +353,7 @@ class RedshiftDestination : BaseConnector(), Destination {
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         throw NotImplementedException("Should use the getSerializedMessageConsumer instead")
     }
@@ -370,7 +362,7 @@ class RedshiftDestination : BaseConnector(), Destination {
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer {
         if (config.has(RedshiftDestinationConstants.UPLOADING_METHOD))
             fromJson(
@@ -424,7 +416,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                         initialStatus,
                         FileUploadFormat.CSV,
                         destinationColumns,
-                        disableTD
+                        disableTD,
                     )
                 },
                 redshiftMigrations,
@@ -461,7 +453,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 JdbcUtils.SSL_KEY,
                 "true",
                 "sslfactory",
-                "com.amazon.redshift.ssl.NonValidatingFactory"
+                "com.amazon.redshift.ssl.NonValidatingFactory",
             )
 
         private val destinationColumns = JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION
@@ -477,7 +469,7 @@ class RedshiftDestination : BaseConnector(), Destination {
             return SshWrappedDestination(
                 RedshiftDestination(),
                 JdbcUtils.HOST_LIST_KEY,
-                JdbcUtils.PORT_LIST_KEY
+                JdbcUtils.PORT_LIST_KEY,
             )
         }
 
@@ -496,15 +488,15 @@ class RedshiftDestination : BaseConnector(), Destination {
                             "jdbc:redshift://%s:%s/%s",
                             redshiftConfig[JdbcUtils.HOST_KEY].asText(),
                             redshiftConfig[JdbcUtils.PORT_KEY].asText(),
-                            redshiftConfig[JdbcUtils.DATABASE_KEY].asText()
-                        )
+                            redshiftConfig[JdbcUtils.DATABASE_KEY].asText(),
+                        ),
                     )
                     .put(JdbcUtils.SCHEMA_KEY, schema)
 
             if (redshiftConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
                 configBuilder.put(
                     JdbcUtils.JDBC_URL_PARAMS_KEY,
-                    redshiftConfig[JdbcUtils.JDBC_URL_PARAMS_KEY]
+                    redshiftConfig[JdbcUtils.JDBC_URL_PARAMS_KEY],
                 )
             }
 

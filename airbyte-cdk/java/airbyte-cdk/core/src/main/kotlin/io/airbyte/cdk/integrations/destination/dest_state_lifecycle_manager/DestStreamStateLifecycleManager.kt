@@ -118,6 +118,7 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
          *
          * @param streamToState
          * - map of stream descriptor to its last state
+         *
          * @return queue with the states ordered per the sort mentioned above
          */
         private fun listStatesInOrder(
@@ -133,7 +134,7 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
                                 { entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
                                     entry.key.namespace
                                 },
-                                Comparator.nullsFirst<String>(Comparator.naturalOrder<String>())
+                                Comparator.nullsFirst<String>(Comparator.naturalOrder<String>()),
                             ) // namespace is allowed to be null
                             .thenComparing<String> {
                                 entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
@@ -149,13 +150,14 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
          *
          * @param prevPhase
          * - map of stream to state messages for previous phase that will be moved to next phase.
-         * when this method returns this map will be empty.
+         *   when this method returns this map will be empty.
+         *
          * @param nextPhase
          * - map into which state messages from prevPhase will be added.
          */
         private fun moveToNextPhase(
             prevPhase: MutableMap<StreamDescriptor, AirbyteMessage>,
-            nextPhase: MutableMap<StreamDescriptor, AirbyteMessage>
+            nextPhase: MutableMap<StreamDescriptor, AirbyteMessage>,
         ) {
             if (!prevPhase.isEmpty()) {
                 nextPhase.putAll(prevPhase)

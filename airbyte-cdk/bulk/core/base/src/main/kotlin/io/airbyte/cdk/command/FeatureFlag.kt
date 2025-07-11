@@ -18,7 +18,7 @@ enum class FeatureFlag(
     val micronautEnvironmentName: String,
     val envVar: EnvVar,
     val requiredEnvVarValue: String,
-    private val transformActualValue: (String) -> String = { it }
+    private val transformActualValue: (String) -> String = { it },
 ) {
 
     /** [AIRBYTE_CLOUD_DEPLOYMENT] is active when the connector is running in Airbyte Cloud. */

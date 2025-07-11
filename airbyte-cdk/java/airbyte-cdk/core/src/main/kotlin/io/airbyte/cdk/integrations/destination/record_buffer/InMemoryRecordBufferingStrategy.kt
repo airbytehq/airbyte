@@ -14,6 +14,7 @@ import java.util.*
 import org.apache.commons.io.FileUtils
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This is the default implementation of a [BufferStorage] to be backward compatible. Data is being
  * buffered in a [<] as they are being consumed.
@@ -23,7 +24,7 @@ private val LOGGER = KotlinLogging.logger {}
 class InMemoryRecordBufferingStrategy(
     private val recordWriter: RecordWriter<AirbyteRecordMessage>,
     private val checkAndRemoveRecordWriter: CheckAndRemoveRecordWriter?,
-    private val maxQueueSizeInBytes: Long
+    private val maxQueueSizeInBytes: Long,
 ) : BufferingStrategy {
     private var streamBuffer:
         MutableMap<AirbyteStreamNameNamespacePair, MutableList<AirbyteRecordMessage>> =
@@ -35,7 +36,7 @@ class InMemoryRecordBufferingStrategy(
 
     constructor(
         recordWriter: RecordWriter<AirbyteRecordMessage>,
-        maxQueueSizeInBytes: Long
+        maxQueueSizeInBytes: Long,
     ) : this(recordWriter, null, maxQueueSizeInBytes)
 
     @Throws(Exception::class)
@@ -43,7 +44,7 @@ class InMemoryRecordBufferingStrategy(
         stream: AirbyteStreamNameNamespacePair,
         message: AirbyteMessage,
         generationId: Long,
-        syncId: Long
+        syncId: Long,
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 

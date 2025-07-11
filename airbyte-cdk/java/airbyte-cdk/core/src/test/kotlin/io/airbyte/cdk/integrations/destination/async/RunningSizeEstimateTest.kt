@@ -33,16 +33,9 @@ class RunningSizeEstimateTest {
     @Test
     internal fun testEstimateZeroWorkers() {
         val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
-        Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
-            .thenReturn(
-                emptyList(),
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
+        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))
+            .thenReturn(emptyList())
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(0, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
@@ -51,18 +44,9 @@ class RunningSizeEstimateTest {
     @Test
     internal fun testEstimateWorkerWithBatch() {
         val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
-        Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
-            .thenReturn(
-                listOf(
-                    Optional.of(SIZE_20MB),
-                ),
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
+        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))
+            .thenReturn(listOf(Optional.of(SIZE_20MB)))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(SIZE_20MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
@@ -71,18 +55,9 @@ class RunningSizeEstimateTest {
     @Test
     internal fun testEstimateWorkerWithoutBatchAndQueueLessThanOptimalSize() {
         val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
-        Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
-            .thenReturn(
-                listOf(
-                    Optional.empty(),
-                ),
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
+        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))
+            .thenReturn(listOf(Optional.empty()))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(SIZE_10MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
@@ -91,18 +66,9 @@ class RunningSizeEstimateTest {
     @Test
     internal fun testEstimateWorkerWithoutBatchAndQueueGreaterThanOptimalSize() {
         val bufferDequeue = Mockito.mock(BufferDequeue::class.java)
-        val runningFlushWorkers =
-            Mockito.mock(
-                RunningFlushWorkers::class.java,
-            )
-        Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
-            .thenReturn(
-                listOf(
-                    Optional.empty(),
-                ),
-            )
+        val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
+        Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))
+            .thenReturn(listOf(Optional.empty()))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(

@@ -9,11 +9,7 @@ import io.micronaut.context.annotation.DefaultImplementation
 
 /** Encapsulates database-specific logic turning [OpaqueStateValue] into [JdbcPartition]. */
 @DefaultImplementation(DefaultJdbcPartitionFactory::class)
-interface JdbcPartitionFactory<
-    A : JdbcSharedState,
-    S : JdbcStreamState<A>,
-    P : JdbcPartition<S>,
-> {
+interface JdbcPartitionFactory<A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>> {
 
     /** The state shared by all partitions. Includes global resources. */
     val sharedState: A

@@ -40,10 +40,8 @@ fun GcsBlob.toS3Object() = S3Object(this.key, this.storageConfig.s3BucketConfigu
  * a bare-bone wrapper around the S3Client
  */
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
-class GcsS3Client(
-    private val s3Client: S3Client,
-    private val config: GcsClientConfiguration,
-) : GcsClient {
+class GcsS3Client(private val s3Client: S3Client, private val config: GcsClientConfiguration) :
+    GcsClient {
     override suspend fun list(prefix: String): Flow<GcsBlob> =
         s3Client.list(prefix).map { it.toGcsBlob(config) }
 
@@ -69,7 +67,7 @@ class GcsS3Client(
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<GcsBlob> {
         val s3Upload = s3Client.startStreamingUpload(key, metadata)
         return object : StreamingUpload<GcsBlob> {
@@ -148,7 +146,7 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<GcsBlob> {
         log.info { "Starting streaming upload for $key" }
         return GcsStreamingUpload(storage, key, config, metadata)

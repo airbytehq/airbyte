@@ -14,10 +14,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  * to.
  *
  * Lifecycle:
- *
  * * 1. Instantiate consumer.
  * * 2. start() to initialize any resources that need to be created BEFORE the consumer consumes any
- * messages.
+ *   messages.
  * * 3. Consumes ALL records via [AirbyteMessageConsumer.accept]
  * * 4. Always (on success or failure) finalize by calling [AirbyteMessageConsumer.close]
  *
@@ -46,7 +45,7 @@ interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage, Exception>, A
         /** Append a function to be called on [AirbyteMessageConsumer.close]. */
         fun appendOnClose(
             consumer: AirbyteMessageConsumer?,
-            voidCallable: VoidCallable
+            voidCallable: VoidCallable,
         ): AirbyteMessageConsumer {
             return object : AirbyteMessageConsumer {
                 @Throws(Exception::class)

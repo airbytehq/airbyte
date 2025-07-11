@@ -22,7 +22,7 @@ import org.jooq.impl.DSL
 @SuppressFBWarnings(
     value = ["SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"],
     justification =
-        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement."
+        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.",
 )
 class MySQLSqlOperations : JdbcSqlOperations() {
     private var isLocalFileEnabled = false
@@ -37,7 +37,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tmpTableName: String?
+        tmpTableName: String?,
     ) {
         throw UnsupportedOperationException("Mysql requires V2")
     }
@@ -47,7 +47,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ) {
         if (records.isEmpty()) {
             return
@@ -67,7 +67,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
                 JavaBaseConstants.COLUMN_NAME_DATA,
                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
                 JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-                JavaBaseConstants.COLUMN_NAME_AB_META
+                JavaBaseConstants.COLUMN_NAME_AB_META,
             )
             Files.delete(tmpFile.toPath())
         } catch (e: IOException) {
@@ -82,7 +82,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         schemaName: String?,
         tmpTableName: String?,
         tmpFile: File,
-        vararg columnNames: String
+        vararg columnNames: String,
     ) {
         database.execute { connection: Connection ->
             try {
@@ -122,12 +122,13 @@ class MySQLSqlOperations : JdbcSqlOperations() {
             SET
             %s
             
-            """.trimIndent(),
+            """
+                            .trimIndent(),
                         absoluteFile,
                         schemaName,
                         tmpTableName,
                         colVarDecls,
-                        colAssignments
+                        colAssignments,
                     )
                 connection.createStatement().use { stmt -> stmt.execute(query) }
             } catch (e: Exception) {
@@ -155,7 +156,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
             } catch (e: Exception) {
                 throw RuntimeException(
                     "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
-                    e
+                    e,
                 )
             }
         }
@@ -168,7 +169,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
                 { connection: Connection ->
                     connection.createStatement().executeQuery("select version()")
                 },
-                { resultSet: ResultSet -> resultSet.getString("version()") }
+                { resultSet: ResultSet -> resultSet.getString("version()") },
             )
         return versions[0].substring(0, 3).toDouble()
     }
@@ -191,7 +192,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
                         .createStatement()
                         .executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'")
                 },
-                { resultSet: ResultSet -> resultSet.getString("Value") }
+                { resultSet: ResultSet -> resultSet.getString("Value") },
             )
         return localFiles[0].equals("on", ignoreCase = true)
     }
@@ -200,7 +201,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
     override fun createTableIfNotExists(
         database: JdbcDatabase,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ) {
         super.createTableIfNotExists(database, schemaName, tableName)
 
@@ -227,7 +228,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
                     .on(
                         DSL.table(DSL.name(schemaName, tableName)),
                         DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
-                        DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+                        DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
                     )
                     .sql
             )
@@ -240,7 +241,7 @@ class MySQLSqlOperations : JdbcSqlOperations() {
                     .createIndex("extracted_at")
                     .on(
                         DSL.table(DSL.name(schemaName, tableName)),
-                        DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+                        DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
                     )
                     .getSQL()
             )
@@ -265,14 +266,15 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         %s JSON
         );
         
-        """.trimIndent(),
+        """
+                .trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
         )
     }
 

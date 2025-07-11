@@ -46,7 +46,7 @@ import kotlin.collections.HashMap
 class TeradataDestination :
     AbstractJdbcDestination<MinimumDestinationState>(
         TeradataConstants.DRIVER_CLASS,
-        StandardNameTransformer()
+        StandardNameTransformer(),
     ),
     Destination {
     /**
@@ -65,7 +65,7 @@ class TeradataDestination :
                 TeradataConstants.DRIVER_CLASS,
                 jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 connectionProperties,
-                getConnectionTimeout(connectionProperties)
+                getConnectionTimeout(connectionProperties),
             )
         // set session query band
         setQueryBand(getDatabase(dataSource))
@@ -75,6 +75,7 @@ class TeradataDestination :
     public override fun getConnectionProperties(config: JsonNode): Map<String, String> {
         return MoreMaps.merge(appendLogMech(config), super.getConnectionProperties(config))
     }
+
     /** Appends Logging Mechanism to JDBC URL */
     private fun appendLogMech(config: JsonNode): Map<String, String> {
         val logmechParams: MutableMap<String, String> = HashMap()
@@ -89,6 +90,7 @@ class TeradataDestination :
         }
         return logmechParams
     }
+
     /**
      * Retrieves the JdbcDatabase instance based on the provided DataSource.
      *
@@ -98,6 +100,7 @@ class TeradataDestination :
     public override fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
+
     /**
      * Sets the Teradata session query band to identify the source of SQL requests originating from
      * Airbyte.
@@ -135,13 +138,12 @@ class TeradataDestination :
         }
         if (config.has(TeradataConstants.QUERY_BAND_KEY)) {
             Companion.queryBand =
-                handleUserQueryBandText(
-                    config[TeradataConstants.QUERY_BAND_KEY].asText(),
-                )
+                handleUserQueryBandText(config[TeradataConstants.QUERY_BAND_KEY].asText())
         }
         additionalParameters[TeradataConstants.ENCRYPTDATA] = TeradataConstants.ENCRYPTDATA_ON
         return additionalParameters
     }
+
     /**
      * Returns a migrator that handles the migration between V1 and V2 versions of the destination.
      * This method is used to obtain an instance of a `DestinationV1V2Migrator` for migrating
@@ -153,8 +155,9 @@ class TeradataDestination :
      */
     override fun getV1V2Migrator(
         database: JdbcDatabase,
-        databaseName: String
+        databaseName: String,
     ): DestinationV1V2Migrator = TeradataV1V2Migrator(database)
+
     /**
      * Returns the database name extracted from the provided configuration. The database name is
      * derived from the `JdbcUtils.SCHEMA_KEY` key in the JSON configuration.
@@ -165,6 +168,7 @@ class TeradataDestination :
     override fun getDatabaseName(config: JsonNode): String {
         return config[JdbcUtils.SCHEMA_KEY].asText()
     }
+
     /**
      * Returns a SQL generator that is used to generate SQL statements for interacting with the
      * database. This method provides a Teradata-specific SQL generator.
@@ -175,6 +179,7 @@ class TeradataDestination :
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
         return TeradataSqlGenerator()
     }
+
     /**
      * Returns the SQL operations for handling various SQL-related tasks, such as executing queries
      * or commands. This method returns the Teradata-specific SQL operations implementation.
@@ -185,17 +190,19 @@ class TeradataDestination :
     override fun getSqlOperations(config: JsonNode): SqlOperations {
         return TeradataSqlOperations()
     }
+
     /**
      * Returns a generation handler that is responsible for generating database-related operations
      * such as schema generation, DDL statements, etc. This method provides a Teradata-specific
      * generation handler.
      *
      * @return A `JdbcGenerationHandler` instance that handles database generation tasks specific to
-     * Teradata.
+     *   Teradata.
      */
     override fun getGenerationHandler(): JdbcGenerationHandler {
         return TeradataGenerationHandler()
     }
+
     /**
      * Returns a handler that is used to manage the destination during migration and data
      * processing. This handler is specific to Teradata and will help with raw table schema
@@ -206,16 +213,17 @@ class TeradataDestination :
      * @param database The database instance used to interact with the destination.
      * @param rawTableSchema The raw table schema in the destination database.
      * @return A `JdbcDestinationHandler` that manages the destination database with specific
-     * configurations.
+     *   configurations.
      */
     override fun getDestinationHandler(
         config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
-        rawTableSchema: String
+        rawTableSchema: String,
     ): JdbcDestinationHandler<MinimumDestinationState> {
         return TeradataDestinationHandler(database, rawTableSchema, getGenerationHandler())
     }
+
     /**
      * Returns a list of migration objects that perform database migrations. In this case, an empty
      * list is returned, indicating that no migrations are needed for this particular database.
@@ -230,10 +238,11 @@ class TeradataDestination :
         database: JdbcDatabase,
         databaseName: String,
         sqlGenerator: SqlGenerator,
-        destinationHandler: DestinationHandler<MinimumDestinationState>
+        destinationHandler: DestinationHandler<MinimumDestinationState>,
     ): List<Migration<MinimumDestinationState>> {
         return emptyList()
     }
+
     /**
      * Indicates whether the destination is considered a V2 destination. This flag can be used to
      * determine whether the system is operating in a V1 or V2 context.
@@ -271,12 +280,13 @@ class TeradataDestination :
             out.print(fileValue)
         }
     }
+
     /**
      * Handles and validates the user-defined query band text.
      *
      * @param queryBandText The user-defined query band text.
      * @return The validated query band text, ensuring required parameters are presentin required
-     * format.
+     *   format.
      */
     private fun handleUserQueryBandText(queryBandText: String?): String {
         if (queryBandText.isNullOrBlank()) {
@@ -305,7 +315,7 @@ class TeradataDestination :
                             .replace(
                                 "appname\\s*=\\s*([^;]*)".toRegex(),
                                 "appname=" + appNameValue + "_airbyte",
-                            ),
+                            )
                     )
             }
         } else {
@@ -316,6 +326,7 @@ class TeradataDestination :
         }
         return updatedQueryBand.toString()
     }
+
     /**
      * Converts the provided configuration into JDBC configuration settings.
      *

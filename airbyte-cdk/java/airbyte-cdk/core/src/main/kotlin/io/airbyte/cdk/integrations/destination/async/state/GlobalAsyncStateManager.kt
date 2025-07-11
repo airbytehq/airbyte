@@ -41,8 +41,9 @@ private val logger = KotlinLogging.logger {}
  * The PER-STREAM case is simple, and is as described above. The NON-PER-STREAM case is slightly
  * tricky. Because we don't know the stream type to begin with, we always assume PER_STREAM until
  * the first state message arrives. If this state message is a GLOBAL state, we alias all existing
- * state ids to a single global state id via a set of alias ids. From then onwards, we use one id -
- * [.SENTINEL_GLOBAL_DESC] regardless of stream. Read [.convertToGlobalIfNeeded] for more detail.
+ * state ids to a single global state id via a set of alias ids. From then onwards, we use one
+ * id - [.SENTINEL_GLOBAL_DESC] regardless of stream. Read [.convertToGlobalIfNeeded] for more
+ * detail.
  */
 class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     /** Memory that the manager has allocated to it to use. It can ask for more memory as needed. */
@@ -100,10 +101,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * Because state messages are a watermark, all preceding records need to be flushed before the
      * state message can be processed.
      */
-    fun trackState(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Long,
-    ) {
+    fun trackState(message: PartialAirbyteMessage, sizeInBytes: Long) {
         if (preState) {
             convertToGlobalIfNeeded(message)
             preState = false
@@ -120,6 +118,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      *
      * @param streamDescriptor
      * - stream to get stateId for.
+     *
      * @return state id
      */
     fun getStateIdAndIncrementCounter(streamDescriptor: StreamDescriptor): Long {
@@ -133,10 +132,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * @param stateId reference to a state.
      * @param count to decrement.
      */
-    fun decrement(
-        stateId: Long,
-        count: Long,
-    ) {
+    fun decrement(stateId: Long, count: Long) {
         synchronized(lock) {
             logger.trace { "decrementing state id: $stateId, count: $count" }
             stateIdToCounter[getStateAfterAlias(stateId)]!!.addAndGet(-count)
@@ -208,10 +204,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         freeBytes(bytesFlushed)
     }
 
-    private fun getStateIdAndIncrement(
-        streamDescriptor: StreamDescriptor,
-        increment: Long,
-    ): Long {
+    private fun getStateIdAndIncrement(streamDescriptor: StreamDescriptor, increment: Long): Long {
         val resolvedDescriptor: StreamDescriptor =
             if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) streamDescriptor
             else SENTINEL_GLOBAL_DESC
@@ -238,6 +231,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      *
      * @param streamDescriptor
      * - stream to get stateId for.
+     *
      * @return state id
      */
     private fun getStateId(streamDescriptor: StreamDescriptor): Long {
@@ -279,7 +273,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             // into the non-STREAM world for correctness.
             synchronized(lock) {
                 aliasIds.addAll(
-                    descToStateIdQ.values.flatMap { obj: LinkedBlockingDeque<Long> -> obj },
+                    descToStateIdQ.values.flatMap { obj: LinkedBlockingDeque<Long> -> obj }
                 )
                 descToStateIdQ.clear()
                 retroactiveGlobalStateId = StateIdProvider.nextId
@@ -303,7 +297,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     }
 
     private fun extractStateType(
-        message: PartialAirbyteMessage,
+        message: PartialAirbyteMessage
     ): AirbyteStateMessage.AirbyteStateType {
         return if (message.state?.type == null) {
             // Treated the same as GLOBAL.
@@ -318,25 +312,13 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * id to the newly arrived state message. We also increment the state id in preparation for the
      * next state message.
      */
-    private fun closeState(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Long,
-    ) {
+    private fun closeState(message: PartialAirbyteMessage, sizeInBytes: Long) {
         val resolvedDescriptor: StreamDescriptor =
-            extractStream(message)
-                .orElse(
-                    SENTINEL_GLOBAL_DESC,
-                )
+            extractStream(message).orElse(SENTINEL_GLOBAL_DESC)
         synchronized(lock) {
             logger.debug { "State with arrival number $arrivalNumber received" }
             stateIdToState[getStateId(resolvedDescriptor)] =
-                Pair(
-                    StateMessageWithArrivalNumber(
-                        message,
-                        arrivalNumber,
-                    ),
-                    sizeInBytes,
-                )
+                Pair(StateMessageWithArrivalNumber(message, arrivalNumber), sizeInBytes)
             arrivalNumber++
         }
         registerNewStateId(resolvedDescriptor)
@@ -360,7 +342,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                             "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
                             "Size of State Msg: ${FileUtils.byteCountToDisplaySize(sizeInBytes)}, " +
                             "Needed: ${FileUtils.byteCountToDisplaySize(
-                                sizeInBytes - (memoryAllocated.get() - memoryUsed.get()),
+                                sizeInBytes - (memoryAllocated.get() - memoryUsed.get())
                             )}"
                     }
                     Thread.sleep(1000)
@@ -416,14 +398,9 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
 
     companion object {
         private val SENTINEL_GLOBAL_DESC: StreamDescriptor =
-            StreamDescriptor()
-                .withName(
-                    UUID.randomUUID().toString(),
-                )
+            StreamDescriptor().withName(UUID.randomUUID().toString())
 
-        private fun extractStream(
-            message: PartialAirbyteMessage,
-        ): Optional<StreamDescriptor> {
+        private fun extractStream(message: PartialAirbyteMessage): Optional<StreamDescriptor> {
             if (
                 message.state?.type != null &&
                     message.state?.type == AirbyteStateMessage.AirbyteStateType.STREAM

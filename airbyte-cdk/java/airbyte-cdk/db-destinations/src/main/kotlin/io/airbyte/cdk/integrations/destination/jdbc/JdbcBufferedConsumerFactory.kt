@@ -32,19 +32,16 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Strategy:
- *
  * 1. Create a final table for each stream
- *
  * 2. Accumulate records in a buffer. One buffer per stream
- *
  * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
- * before writing to avoid wasteful record-wise writes. In the case with slow syncs this will be
- * superseded with a periodic record flush from [BufferedStreamConsumer.periodicBufferFlush]
- *
+ *    before writing to avoid wasteful record-wise writes. In the case with slow syncs this will be
+ *    superseded with a periodic record flush from [BufferedStreamConsumer.periodicBufferFlush]
  * 4. Once all records have been written to buffer, flush the buffer and write any remaining records
- * to the database (regardless of how few are left)
+ *    to the database (regardless of how few are left)
  */
 object JdbcBufferedConsumerFactory {
 
@@ -68,7 +65,7 @@ object JdbcBufferedConsumerFactory {
         if (sqlOperations.isSchemaRequired) {
             Preconditions.checkState(
                 config.has("schema"),
-                "jdbc destinations must specify a schema."
+                "jdbc destinations must specify a schema.",
             )
         }
         val writeConfigs = mutableListOf<WriteConfig>()
@@ -82,25 +79,25 @@ object JdbcBufferedConsumerFactory {
                 writeConfigs,
                 typerDeduper,
                 namingResolver,
-                parsedCatalog
+                parsedCatalog,
             ),
             onCloseFunction(
                 database,
                 sqlOperations,
                 generationIdHandler,
                 parsedCatalog,
-                typerDeduper
+                typerDeduper,
             ),
             JdbcInsertFlushFunction(
                 defaultNamespace,
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
-                optimalBatchSizeBytes
+                optimalBatchSizeBytes,
             ),
             catalog,
             BufferManager(defaultNamespace, (Runtime.getRuntime().maxMemory() * 0.2).toLong()),
             FlushFailure(),
             Executors.newFixedThreadPool(2),
-            AirbyteMessageDeserializer(dataTransformer)
+            AirbyteMessageDeserializer(dataTransformer),
         )
     }
 
@@ -117,7 +114,7 @@ object JdbcBufferedConsumerFactory {
                         generationIdHandler.getGenerationIdInTable(
                             database,
                             it.id.rawNamespace,
-                            it.id.rawName
+                            it.id.rawName,
                         ) == it.generationId
                 ) {
                     AbstractStreamOperation.NO_SUFFIX
@@ -156,11 +153,8 @@ object JdbcBufferedConsumerFactory {
 
     /**
      * Sets up destination storage through:
-     *
      * 1. Creates Schema (if not exists)
-     *
      * 2. Creates airybte_raw table (if not exists)
-     *
      * 3. <Optional>Truncates table if sync mode is in OVERWRITE
      *
      * @param database JDBC database to connect to
@@ -197,7 +191,7 @@ object JdbcBufferedConsumerFactory {
                 sqlOperations.createTableIfNotExists(
                     database,
                     schemaName,
-                    dstTableName + writeConfig.rawTableSuffix
+                    dstTableName + writeConfig.rawTableSuffix,
                 )
                 when (writeConfig.minimumGenerationId) {
                     0L -> {}
@@ -206,7 +200,7 @@ object JdbcBufferedConsumerFactory {
                             generationIdHandler.getGenerationIdInTable(
                                 database,
                                 schemaName,
-                                dstTableName + writeConfig.rawTableSuffix
+                                dstTableName + writeConfig.rawTableSuffix,
                             ) != writeConfig.generationId
                         ) {
                             queryList.add(
@@ -258,7 +252,7 @@ object JdbcBufferedConsumerFactory {
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s, \nstream identifier: %s\nkeys: %s",
                     Jsons.serialize(catalog),
                     pair,
-                    pairToWriteConfig.keys
+                    pairToWriteConfig.keys,
                 )
             }
             val writeConfig = pairToWriteConfig.getValue(pair)
@@ -279,7 +273,7 @@ object JdbcBufferedConsumerFactory {
         sqlOperations: SqlOperations,
         generationIdHandler: JdbcGenerationHandler,
         catalog: ParsedCatalog,
-        typerDeduper: TyperDeduper
+        typerDeduper: TyperDeduper,
     ): OnCloseFunction {
         return OnCloseFunction {
             _: Boolean,
@@ -291,7 +285,7 @@ object JdbcBufferedConsumerFactory {
                             generationIdHandler.getGenerationIdInTable(
                                 database,
                                 it.id.rawNamespace,
-                                it.id.rawName
+                                it.id.rawName,
                             ) != it.generationId &&
                             streamSyncSummaries
                                 .getValue(it.id.asStreamDescriptor())

@@ -39,7 +39,7 @@ object StateTestConstants {
     fun getState(
         cursorField: String?,
         cursor: String?,
-        cursorRecordCount: Long
+        cursorRecordCount: Long,
     ): Optional<DbStreamState> {
         return Optional.of(
             DbStreamState()

@@ -13,6 +13,7 @@ import java.util.*
 import java.util.function.Consumer
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Composes multiple [AutoCloseableIterator]s. For each internal iterator, after the first time its
  * [Iterator.hasNext] function returns false, the composite iterator will call
@@ -34,7 +35,7 @@ class CompositeIterator<T>
 internal constructor(
     iterators: List<AutoCloseableIterator<T>>,
     airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?,
-    emitStatus: Boolean = false
+    emitStatus: Boolean = false,
 ) : AbstractIterator<T>(), AutoCloseableIterator<T> {
     private val airbyteStreamStatusConsumer: Optional<Consumer<AirbyteStreamStatusHolder>>
     private val iterators: List<AutoCloseableIterator<T>>
@@ -71,14 +72,14 @@ internal constructor(
                     emitStartStreamStatus(currentIterator().airbyteStream)
                     StreamStatusUtils.emitCompleteStreamStatus(
                         airbyteStream,
-                        airbyteStreamStatusConsumer
+                        airbyteStreamStatusConsumer,
                     )
                 }
             } catch (e: Exception) {
                 if (emitStatus) {
                     StreamStatusUtils.emitIncompleteStreamStatus(
                         airbyteStream,
-                        airbyteStreamStatusConsumer
+                        airbyteStreamStatusConsumer,
                     )
                 }
                 throw RuntimeException(e)
@@ -101,7 +102,7 @@ internal constructor(
                 if (isFirstRun) {
                     StreamStatusUtils.emitRunningStreamStatus(
                         airbyteStream,
-                        airbyteStreamStatusConsumer
+                        airbyteStreamStatusConsumer,
                     )
                 }
             }
@@ -110,7 +111,7 @@ internal constructor(
             if (emitStatus) {
                 StreamStatusUtils.emitIncompleteStreamStatus(
                     airbyteStream,
-                    airbyteStreamStatusConsumer
+                    airbyteStreamStatusConsumer,
                 )
             }
             throw e

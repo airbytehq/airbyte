@@ -56,7 +56,6 @@ class IcebergTableSynchronizer(
 ) {
     /**
      * Compare [table]'s current schema with [incomingSchema] and apply changes as needed:
-     *
      * 1. Remove columns that are no longer in the incoming schema.
      * 2. Update column types to a common supertype if they differ.
      * 3. Mark columns newly optional if changed from required.
@@ -99,7 +98,7 @@ class IcebergTableSynchronizer(
                         superTypeFinder.findSuperType(
                             existingType = existingField.type(),
                             incomingType = incomingField.type(),
-                            columnName = columnName
+                            columnName = columnName,
                         )
                     if (superType !is PrimitiveType) {
                         throw ConfigErrorException(

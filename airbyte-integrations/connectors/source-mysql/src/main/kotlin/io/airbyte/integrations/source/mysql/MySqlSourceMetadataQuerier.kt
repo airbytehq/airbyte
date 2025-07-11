@@ -24,9 +24,7 @@ import java.sql.Statement
 private val log = KotlinLogging.logger {}
 
 /** Delegates to [JdbcMetadataQuerier] except for [fields]. */
-class MySqlSourceMetadataQuerier(
-    val base: JdbcMetadataQuerier,
-) : MetadataQuerier by base {
+class MySqlSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQuerier by base {
 
     override fun extraChecks() {
         base.extraChecks()
@@ -38,12 +36,12 @@ class MySqlSourceMetadataQuerier(
                     Triple(
                         "binlog_format",
                         "show variables where Variable_name = 'binlog_format'",
-                        "ROW"
+                        "ROW",
                     ),
                     Triple(
                         "binlog_row_image",
                         "show variables where Variable_name = 'binlog_row_image'",
-                        "FULL"
+                        "FULL",
                     ),
                 )
 
@@ -76,7 +74,7 @@ class MySqlSourceMetadataQuerier(
         variable: String,
         sql: String,
         expectedValue: String,
-        conn: Connection
+        conn: Connection,
     ) {
         try {
             conn.createStatement().use { stmt: Statement ->
@@ -92,7 +90,7 @@ class MySqlSourceMetadataQuerier(
                                 variable,
                                 expectedValue,
                                 resultValue,
-                            ),
+                            )
                         )
                     }
                     if (rs.next()) {
@@ -121,9 +119,7 @@ class MySqlSourceMetadataQuerier(
             .map { StreamDescriptor().withName(it.name).withNamespace(streamNamespace) }
             .map(StreamIdentifier::from)
 
-    fun findTableName(
-        streamID: StreamIdentifier,
-    ): TableName? =
+    fun findTableName(streamID: StreamIdentifier): TableName? =
         base.memoizedTableNames.find {
             it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
         }
@@ -145,7 +141,7 @@ class MySqlSourceMetadataQuerier(
                                 rs.getString("constraint_name"),
                                 rs.getInt("ordinal_position").takeUnless { rs.wasNull() },
                                 rs.getString("column_name").takeUnless { rs.wasNull() },
-                            ),
+                            )
                         )
                     }
                 }
@@ -155,8 +151,8 @@ class MySqlSourceMetadataQuerier(
                 .groupBy {
                     findTableName(
                         StreamIdentifier.from(
-                            StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema),
-                        ),
+                            StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema)
+                        )
                     )
                 }
                 .mapNotNull { (table, rowsByTable) ->
@@ -168,8 +164,7 @@ class MySqlSourceMetadataQuerier(
                                 rowsByPK.all { it.position != null && it.columnName != null }
                             }
                             .values
-                            .firstOrNull()
-                            ?: return@mapNotNull null
+                            .firstOrNull() ?: return@mapNotNull null
                     val pkColumnNames: List<List<String>> =
                         pkRows
                             .sortedBy { it.position }
@@ -183,9 +178,7 @@ class MySqlSourceMetadataQuerier(
         }
     }
 
-    override fun primaryKey(
-        streamID: StreamIdentifier,
-    ): List<List<String>> {
+    override fun primaryKey(streamID: StreamIdentifier): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }

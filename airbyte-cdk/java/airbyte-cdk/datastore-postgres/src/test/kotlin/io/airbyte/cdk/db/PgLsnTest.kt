@@ -17,7 +17,7 @@ internal class PgLsnTest {
             Assertions.assertEquals(
                 value,
                 lsnToLong(key),
-                String.format("Conversion failed. lsn: %s long value: %s", key, value)
+                String.format("Conversion failed. lsn: %s long value: %s", key, value),
             )
         }
     }
@@ -28,7 +28,7 @@ internal class PgLsnTest {
             Assertions.assertEquals(
                 key,
                 longToLsn(value),
-                String.format("Conversion failed. lsn: %s long value: %s", key, value)
+                String.format("Conversion failed. lsn: %s long value: %s", key, value),
             )
         }
     }
@@ -40,7 +40,7 @@ internal class PgLsnTest {
             Assertions.assertEquals(
                 key,
                 fromLong(value).toString(),
-                String.format("Conversion failed. string: %s lsn: %s", key, value)
+                String.format("Conversion failed. string: %s lsn: %s", key, value),
             )
         }
     }

@@ -23,9 +23,7 @@ private val logger = KotlinLogging.logger {}
 
 @Singleton
 @Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
-class MockDestinationWriter(
-    private val config: MockDestinationConfiguration,
-) : DestinationWriter {
+class MockDestinationWriter(private val config: MockDestinationConfiguration) : DestinationWriter {
     override suspend fun setup() {
         if (config.foo != 0) {
             throw IllegalArgumentException("Foo should be 0")
@@ -45,7 +43,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 is Append -> {
                     MockDestinationBackend.commitFrom(
                         getFilename(stream.mappedDescriptor, staging = true),
-                        getFilename(stream.mappedDescriptor)
+                        getFilename(stream.mappedDescriptor),
                     )
                 }
                 is Dedupe -> {
@@ -60,7 +58,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
             }
             MockDestinationBackend.deleteOldRecords(
                 getFilename(stream.mappedDescriptor),
-                stream.minimumGenerationId
+                stream.minimumGenerationId,
             )
         } else {
             logger.info {

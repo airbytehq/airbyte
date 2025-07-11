@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test
 private val LOGGER = KotlinLogging.logger {}
 
 abstract class AbstractSnowflakeTypingDedupingTest(
-    private val forceUppercaseIdentifiers: Boolean = false,
+    private val forceUppercaseIdentifiers: Boolean = false
 ) : BaseTypingDedupingTest() {
     private lateinit var databaseName: String
     private var database: JdbcDatabase? = null
@@ -82,7 +82,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
     @Throws(Exception::class)
     override fun dumpFinalTableRecords(
         streamNamespace: String?,
-        streamName: String
+        streamName: String,
     ): List<JsonNode> {
         var namespaceOrDefault = streamNamespace
         if (namespaceOrDefault == null) {
@@ -108,7 +108,8 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                 DROP TABLE IF EXISTS "%s"."%s";
                 DROP SCHEMA IF EXISTS "%s" CASCADE
                 
-                """.trimIndent(),
+                """
+                    .trimIndent(),
                 // Raw table is still lowercase by default
                 if (forceUppercaseIdentifiers) {
                     rawSchema.uppercase()
@@ -119,7 +120,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                     if (forceUppercaseIdentifiers) it.uppercase() else it
                 },
                 namespaceOrDefault.uppercase(Locale.getDefault()),
-            ),
+            )
         )
     }
 
@@ -156,9 +157,9 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         // First sync
@@ -199,9 +200,9 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         // First sync
@@ -217,14 +218,11 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                 val copiedConfig = Jsons.clone(config!!)
                 if (config is ObjectNode) {
                     // Opt out of T+D to run old V1 sync
-                    (copiedConfig as ObjectNode?)!!.put(
-                        "use_1s1t_format",
-                        false,
-                    )
+                    (copiedConfig as ObjectNode?)!!.put("use_1s1t_format", false)
                 }
                 copiedConfig
             },
-            streamStatus = null
+            streamStatus = null,
         )
 
         // The record differ code is already adapted to V2 columns format, use the post V2 sync
@@ -239,7 +237,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
             BaseTypingDedupingTest.readRecords("dat/sync2_expectedrecords_v1v2_raw.jsonl")
         val expectedFinalRecords2 =
             BaseTypingDedupingTest.readRecords(
-                "dat/sync2_expectedrecords_v1v2_fullrefresh_append_final.jsonl",
+                "dat/sync2_expectedrecords_v1v2_fullrefresh_append_final.jsonl"
             )
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
@@ -263,9 +261,9 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
 
         // First sync
@@ -303,9 +301,9 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA)
+                            )
+                    )
                 )
 
         // First sync
@@ -337,7 +335,8 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                 deserialize(
                     """
                     {"errors": []}
-                    """.trimIndent(),
+                    """
+                        .trimIndent()
                 ),
             )
             record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase())
@@ -377,9 +376,9 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA)
+                            )
+                    )
                 )
 
         // First sync
@@ -449,7 +448,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                     originalNameFieldValue,
                     rawTableNameFieldValue,
                     "\"name\" field should have contained ${originalNameFieldValue?.toString()?.length} chars. " +
-                        "Instead was ${rawTableNameFieldValue?.toString()?.length} chars long"
+                        "Instead was ${rawTableNameFieldValue?.toString()?.length} chars long",
                 )
                 assertEquals("address", changesFieldValue.get("field").asText())
             } else if (
@@ -460,7 +459,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                     originalAddressFieldValue,
                     rawTableAddressFieldValue,
                     "\"address\" field should have contained ${originalAddressFieldValue?.toString()?.length} chars. " +
-                        "Instead was ${rawTableAddressFieldValue?.toString()?.length} chars long"
+                        "Instead was ${rawTableAddressFieldValue?.toString()?.length} chars long",
                 )
                 assert(rawTableNameFieldValue == null) {
                     "\"name\" field should be null. " +
@@ -472,11 +471,11 @@ abstract class AbstractSnowflakeTypingDedupingTest(
             }
             assertEquals(
                 changesFieldValue.get("change").asText(),
-                AirbyteRecordMessageMetaChange.Change.NULLED.value()
+                AirbyteRecordMessageMetaChange.Change.NULLED.value(),
             )
             assertEquals(
                 changesFieldValue.get("reason").asText(),
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_RECORD_SIZE_LIMITATION.value()
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_RECORD_SIZE_LIMITATION.value(),
             )
         }
     }
@@ -539,18 +538,18 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                     }
                 executor.execute {
                     database.execute(
-                        "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())",
+                        "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())"
                     )
                 }
                 executor.execute {
                     database.execute(
-                        "DELETE FROM \"AIRBYTE_INTERNAL\".\"_AIRBYTE_DESTINATION_STATE\" WHERE \"UPDATED_AT\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())",
+                        "DELETE FROM \"AIRBYTE_INTERNAL\".\"_AIRBYTE_DESTINATION_STATE\" WHERE \"UPDATED_AT\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())"
                     )
                 }
                 executor.execute {
                     val schemaList =
                         database.queryJsons(
-                            "SHOW SCHEMAS IN DATABASE INTEGRATION_TEST_DESTINATION;",
+                            "SHOW SCHEMAS IN DATABASE INTEGRATION_TEST_DESTINATION;"
                         )
                     LOGGER.info(
                         "tableCleaner found ${schemaList.size} schemas in database INTEGRATION_TEST_DESTINATION"

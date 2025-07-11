@@ -21,7 +21,7 @@ internal class TestingNamespacesTest {
         Assertions.assertEquals("test", namespace[0])
         Assertions.assertEquals(
             FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()),
-            namespace[1]
+            namespace[1],
         )
         Assertions.assertFalse(namespace[2].isBlank())
     }
@@ -37,7 +37,7 @@ internal class TestingNamespacesTest {
         Assertions.assertEquals("test", namespace[1])
         Assertions.assertEquals(
             FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()),
-            namespace[2]
+            namespace[2],
         )
         Assertions.assertFalse(namespace[3].isBlank())
     }

@@ -20,14 +20,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-@MicronautTest(
-    rebuildContext = true,
-    environments =
-        [
-            "SyncManagerTest",
-            "MockDestinationCatalog",
-        ]
-)
+@MicronautTest(rebuildContext = true, environments = ["SyncManagerTest", "MockDestinationCatalog"])
 class SyncManagerTest {
     @Inject lateinit var syncManager: SyncManager
 
@@ -138,7 +131,7 @@ class SyncManagerTest {
         assertEquals(
             // stream1 is fine, so the message only includes stream2
             "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
-            e.message
+            e.message,
         )
     }
 }

@@ -33,7 +33,7 @@ object MongoDbInsertClient {
                     ArgType.String,
                     fullName = "connection-string",
                     shortName = "cs",
-                    description = "MongoDb Connection String"
+                    description = "MongoDb Connection String",
                 )
                 .required()
         val databaseName by
@@ -42,7 +42,7 @@ object MongoDbInsertClient {
                     ArgType.String,
                     fullName = "database-name",
                     shortName = "d",
-                    description = "Database Name"
+                    description = "Database Name",
                 )
                 .required()
         val collectionName by
@@ -51,7 +51,7 @@ object MongoDbInsertClient {
                     ArgType.String,
                     fullName = "collection-name",
                     shortName = "cn",
-                    description = "Collection Name"
+                    description = "Collection Name",
                 )
                 .required()
         val username by
@@ -60,7 +60,7 @@ object MongoDbInsertClient {
                     ArgType.String,
                     fullName = "username",
                     shortName = "u",
-                    description = "Username"
+                    description = "Username",
                 )
                 .required()
         val numberOfDocuments by
@@ -69,7 +69,7 @@ object MongoDbInsertClient {
                     ArgType.Int,
                     fullName = "number",
                     shortName = "n",
-                    description = "Number of documents to generate"
+                    description = "Number of documents to generate",
                 )
                 .default(10000)
 
@@ -86,7 +86,7 @@ object MongoDbInsertClient {
                         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY to connectionString,
                         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY to "admin",
                         MongoConstants.USERNAME_CONFIGURATION_KEY to username,
-                        MongoConstants.PASSWORD_CONFIGURATION_KEY to password
+                        MongoConstants.PASSWORD_CONFIGURATION_KEY to password,
                     )
             )
 

@@ -137,12 +137,7 @@ class FileChunkTaskTest<T> {
         // necessary
         // mock the input stream so we emit 3 chunks
         val mockInputStream: FileInputStream = mockk {
-            every { readNBytes(partSizeBytes) } returnsMany
-                listOf(
-                    bytes1,
-                    bytes2,
-                    bytes3,
-                )
+            every { readNBytes(partSizeBytes) } returnsMany listOf(bytes1, bytes2, bytes3)
             every { close() } returns Unit
         }
 
@@ -164,28 +159,16 @@ class FileChunkTaskTest<T> {
                 key = key,
                 value = record,
                 postProcessingCallback = {},
-                context =
-                    PipelineContext(
-                        mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
-                        record,
-                    )
+                context = PipelineContext(mapOf(CheckpointId("1") to CheckpointValue(2, 2)), record),
             )
         task.handleEvent(input)
 
         val expectedFinalPath =
-            Path.of(
-                    "/final/path",
-                    record.fileReference?.sourceFileRelativePath,
-                )
-                .toString()
+            Path.of("/final/path", record.fileReference?.sourceFileRelativePath).toString()
 
         // TODO: this leaks internals of FilePartIterator — factor out injectable factory as
         // necessary
-        val internalPartFactory =
-            PartFactory(
-                key = expectedFinalPath,
-                fileNumber = 0,
-            )
+        val internalPartFactory = PartFactory(key = expectedFinalPath, fileNumber = 0)
 
         val expectedPart1 =
             ObjectLoaderPartFormatter.FormattedPart(internalPartFactory.nextPart(bytes1, false))
@@ -223,11 +206,11 @@ class FileChunkTaskTest<T> {
 
         assertEquals(
             FieldType(StringType, nullable = true),
-            schema.properties[COLUMN_NAME_AIRBYTE_FILE_PATH]
+            schema.properties[COLUMN_NAME_AIRBYTE_FILE_PATH],
         )
         assertContains(
             Jsons.serialize(record.asJsonRecord()),
-            """"$COLUMN_NAME_AIRBYTE_FILE_PATH":"$myFilePath""""
+            """"$COLUMN_NAME_AIRBYTE_FILE_PATH":"$myFilePath"""",
         )
     }
 
@@ -265,13 +248,13 @@ class FileChunkTaskTest<T> {
                 syncId = 3,
                 schema = schema,
                 includeFiles = true,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
 
         fun record(
             message: AirbyteMessage = message(),
             schema: ObjectType = schema(),
-            stream: DestinationStream = stream(schema)
+            stream: DestinationStream = stream(schema),
         ) =
             DestinationRecordRaw(
                 stream = stream,

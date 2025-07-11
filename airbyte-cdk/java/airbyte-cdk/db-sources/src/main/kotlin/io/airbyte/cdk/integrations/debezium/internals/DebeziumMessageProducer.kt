@@ -20,7 +20,7 @@ class DebeziumMessageProducer<T>(
     targetPosition: CdcTargetPosition<T>,
     eventConverter: DebeziumEventConverter,
     offsetManager: AirbyteFileOffsetBackingStore?,
-    schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+    schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>,
 ) : SourceStateMessageProducer<ChangeEventWithMetadata> {
     /**
      * `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as
@@ -79,7 +79,7 @@ class DebeziumMessageProducer<T>(
      */
     override fun processRecordMessage(
         stream: ConfiguredAirbyteStream?,
-        message: ChangeEventWithMetadata
+        message: ChangeEventWithMetadata,
     ): AirbyteMessage {
         if (checkpointOffsetToSend.isEmpty()) {
             try {
@@ -135,7 +135,7 @@ class DebeziumMessageProducer<T>(
                     offset,
                     schemaHistoryManager
                         .map { obj: AirbyteSchemaHistoryStorage -> obj.read() }
-                        .orElse(null)
+                        .orElse(null),
                 )!!
                 .state
         return message

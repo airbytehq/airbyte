@@ -50,7 +50,7 @@ class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
     override fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> {
         val type =
             schema.options.find { matches(it, value) }
@@ -60,7 +60,7 @@ class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
             values =
                 linkedMapOf(
                     "type" to StringValue(UnionTypeToDisjointRecord.typeName(type)),
-                    UnionTypeToDisjointRecord.typeName(type) to valueMapped
+                    UnionTypeToDisjointRecord.typeName(type) to valueMapped,
                 )
         ) to contextMapped
     }

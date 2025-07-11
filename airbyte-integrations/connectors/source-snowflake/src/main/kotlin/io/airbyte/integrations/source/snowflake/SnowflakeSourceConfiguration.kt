@@ -26,7 +26,7 @@ data class SnowflakeSourceConfiguration(
         SshConnectionOptions(
             kotlin.time.Duration.ZERO,
             kotlin.time.Duration.ZERO,
-            kotlin.time.Duration.ZERO
+            kotlin.time.Duration.ZERO,
         ),
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
@@ -60,7 +60,7 @@ class SnowflakeSourceConfigurationFactory :
     }
 
     override fun makeWithoutExceptionHandling(
-        pojo: SnowflakeSourceConfigurationSpecification,
+        pojo: SnowflakeSourceConfigurationSpecification
     ): SnowflakeSourceConfiguration {
         val realHost: String = pojo.host
         val jdbcProperties = mutableMapOf<String, String>()

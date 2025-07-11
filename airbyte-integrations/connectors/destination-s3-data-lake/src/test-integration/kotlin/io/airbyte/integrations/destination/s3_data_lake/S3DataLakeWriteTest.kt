@@ -36,10 +36,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
-abstract class S3DataLakeWriteTest(
-    configContents: String,
-    tableIdGenerator: TableIdGenerator,
-) :
+abstract class S3DataLakeWriteTest(configContents: String, tableIdGenerator: TableIdGenerator) :
     IcebergWriteTest(
         configContents,
         S3DataLakeSpecification::class.java,
@@ -64,10 +61,7 @@ class GlueWriteTest :
     @Test
     fun testNameConflicts() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(
-            name: String,
-            namespaceSuffix: String,
-        ) =
+        fun makeStream(name: String, namespaceSuffix: String) =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace + namespaceSuffix,
                 unmappedName = name,
@@ -76,7 +70,7 @@ class GlueWriteTest :
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
@@ -114,14 +108,14 @@ class GlueWriteTest :
                         "array" to
                             FieldType(
                                 ArrayType(FieldType(NumberType, nullable = true)),
-                                nullable = true
+                                nullable = true,
                             ),
                     )
                 ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
 
         runSync(
@@ -135,10 +129,11 @@ class GlueWriteTest :
                           "id": 1,
                           "array": [42, "potato"]
                         }
-                    """.trimIndent(),
+                    """
+                        .trimIndent(),
                     emittedAtMs = 100,
                 )
-            )
+            ),
         )
 
         dumpAndDiffRecords(
@@ -157,11 +152,11 @@ class GlueWriteTest :
                                     Meta.Change(
                                         "array.1",
                                         Change.NULLED,
-                                        Reason.DESTINATION_SERIALIZATION_ERROR
+                                        Reason.DESTINATION_SERIALIZATION_ERROR,
                                     )
-                                )
+                                ),
                         ),
-                ),
+                )
             ),
             stream,
             primaryKey = listOf(listOf("id")),
@@ -228,7 +223,8 @@ class NessieMinioWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGener
                 "warehouse_location": "s3://demobucket/",
                 "main_branch_name": "main"
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         }
 
         @JvmStatic
@@ -282,7 +278,8 @@ class RestWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator())
                 "warehouse_location": "s3://warehouse/",
                 "main_branch_name": "main"
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         }
 
         @JvmStatic

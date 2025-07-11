@@ -28,11 +28,11 @@ import org.jooq.impl.SQLDataType
 
 open class RedshiftSqlGenerator(
     namingTransformer: NamingConventionTransformer,
-    private val dropCascade: Boolean
+    private val dropCascade: Boolean,
 ) : JdbcSqlGenerator(namingTransformer, dropCascade) {
     constructor(
         namingTransformer: NamingConventionTransformer,
-        config: JsonNode
+        config: JsonNode,
     ) : this(namingTransformer, isDropCascade(config))
 
     private val superType: DataType<*>
@@ -59,20 +59,20 @@ open class RedshiftSqlGenerator(
     /**
      * Notes about Redshift specific SQL * 16MB Limit on the total size of the SQL sent in a session
      * * Default mode of casting within SUPER is lax mode, to enable strict use SET
-     * cast_super_null_on_error='OFF'; * *
-     * https://docs.aws.amazon.com/redshift/latest/dg/super-configurations.html *
-     * https://docs.aws.amazon.com/redshift/latest/dg/r_MERGE.html#r_MERGE_usage_notes * * (Cannot
-     * use WITH clause in MERGE statement).
-     * https://cloud.google.com/bigquery/docs/migration/redshift-sql#merge_statement * *
-     * https://docs.aws.amazon.com/redshift/latest/dg/r_WITH_clause.html#r_WITH_clause-usage-notes *
-     * Primary keys are informational only and not enforced
-     * (https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html) TODO: Look at
-     * SORT KEYS, DISTKEY in redshift for optimizing the query performance.
+     *   cast_super_null_on_error='OFF'; * *
+     *   https://docs.aws.amazon.com/redshift/latest/dg/super-configurations.html *
+     *   https://docs.aws.amazon.com/redshift/latest/dg/r_MERGE.html#r_MERGE_usage_notes * * (Cannot
+     *   use WITH clause in MERGE statement).
+     *   https://cloud.google.com/bigquery/docs/migration/redshift-sql#merge_statement * *
+     *   https://docs.aws.amazon.com/redshift/latest/dg/r_WITH_clause.html#r_WITH_clause-usage-notes *
+     *   Primary keys are informational only and not enforced
+     *   (https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html) TODO: Look at
+     *   SORT KEYS, DISTKEY in redshift for optimizing the query performance.
      */
     override fun castedField(
         field: Field<*>,
         type: AirbyteType,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Field<*> {
         if (type is AirbyteProtocolType) {
             return when (type) {
@@ -81,7 +81,7 @@ open class RedshiftSqlGenerator(
                         CASE_STATEMENT_SQL_TEMPLATE,
                         jsonTypeOf(field).ne("string").and(field.isNotNull()),
                         jsonSerialize(field),
-                        castedField(field, type, useExpensiveSaferCasting)
+                        castedField(field, type, useExpensiveSaferCasting),
                     )
                 }
                 else -> {
@@ -96,13 +96,13 @@ open class RedshiftSqlGenerator(
                 DSL.field(
                     CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
                     jsonTypeOf(field).eq("object"),
-                    DSL.cast(field, structType)
+                    DSL.cast(field, structType),
                 )
             Array.TYPE ->
                 DSL.field(
                     CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
                     jsonTypeOf(field).eq("array"),
-                    DSL.cast(field, arrayType)
+                    DSL.cast(field, arrayType),
                 )
             Union.TYPE -> castedField(field, (type as Union).chooseType(), useExpensiveSaferCasting)
             else -> throw IllegalArgumentException("Unsupported AirbyteType: $type")
@@ -111,7 +111,7 @@ open class RedshiftSqlGenerator(
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): MutableList<Field<*>> {
         return columns.entries
             .stream()
@@ -120,11 +120,11 @@ open class RedshiftSqlGenerator(
                         DSL.field(
                             DSL.quotedName(
                                 JavaBaseConstants.COLUMN_NAME_DATA,
-                                column.key.originalName
+                                column.key.originalName,
                             )
                         ),
                         column.value,
-                        useExpensiveSaferCasting
+                        useExpensiveSaferCasting,
                     )
                     .`as`(column.key.name)
             }
@@ -193,10 +193,10 @@ open class RedshiftSqlGenerator(
                             "\"reason\": \"" +
                             AirbyteRecordMessageMetaChange.Reason.DESTINATION_TYPECAST_ERROR +
                             "\"}"
-                    )
-                )
+                    ),
+                ),
             ),
-            DSL.field("ARRAY()")
+            DSL.field("ARRAY()"),
         )
     }
 
@@ -215,14 +215,14 @@ open class RedshiftSqlGenerator(
                     DSL.function<Boolean>(
                         "IS_OBJECT",
                         SQLDataType.BOOLEAN,
-                        DSL.field(DSL.quotedName(JavaBaseConstants.COLUMN_NAME_AB_META))
+                        DSL.field(DSL.quotedName(JavaBaseConstants.COLUMN_NAME_AB_META)),
                     )
                 )
                 .and(
                     DSL.field(
                             DSL.quotedName(
                                 JavaBaseConstants.COLUMN_NAME_AB_META,
-                                AIRBYTE_META_COLUMN_CHANGES_KEY
+                                AIRBYTE_META_COLUMN_CHANGES_KEY,
                             )
                         )
                         .isNotNull()
@@ -234,9 +234,9 @@ open class RedshiftSqlGenerator(
                         DSL.field(
                             DSL.quotedName(
                                 JavaBaseConstants.COLUMN_NAME_AB_META,
-                                AIRBYTE_META_COLUMN_CHANGES_KEY
+                                AIRBYTE_META_COLUMN_CHANGES_KEY,
                             )
-                        )
+                        ),
                     )
                 )
         val airbyteMetaChangesArray =
@@ -250,11 +250,11 @@ open class RedshiftSqlGenerator(
                     DSL.field(
                         DSL.quotedName(
                             JavaBaseConstants.COLUMN_NAME_AB_META,
-                            AIRBYTE_META_COLUMN_CHANGES_KEY
+                            AIRBYTE_META_COLUMN_CHANGES_KEY,
                         )
                     ),
-                    DSL.field("ARRAY()")
-                )
+                    DSL.field("ARRAY()"),
+                ),
             )
         return DSL.function(
                 "OBJECT",
@@ -265,7 +265,7 @@ open class RedshiftSqlGenerator(
                 DSL.field(
                     DSL.quotedName(
                         JavaBaseConstants.COLUMN_NAME_AB_META,
-                        JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY
+                        JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY,
                     )
                 ),
             )
@@ -282,7 +282,7 @@ open class RedshiftSqlGenerator(
      */
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int> {
         // literally identical to postgres's getRowNumber implementation, changes here probably
         // should
@@ -320,9 +320,9 @@ open class RedshiftSqlGenerator(
                         DSL.field(
                             DSL.quotedName(
                                 JavaBaseConstants.COLUMN_NAME_DATA,
-                                cdcDeletedAtColumn.name
+                                cdcDeletedAtColumn.name,
                             )
-                        )
+                        ),
                     )
                     .ne("null")
             )

@@ -33,7 +33,7 @@ interface RelationalColumnCustomConverter : CustomConverter<SchemaBuilder, Relat
 
     override fun converterFor(
         column: RelationalColumn?,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder>?
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder>?,
     ) {
         if (column == null || registration == null) {
             return

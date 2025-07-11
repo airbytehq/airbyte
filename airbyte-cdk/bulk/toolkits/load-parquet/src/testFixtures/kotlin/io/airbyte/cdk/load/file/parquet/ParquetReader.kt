@@ -18,7 +18,7 @@ import org.apache.parquet.hadoop.ParquetReader as ApacheParquetReader
 
 class ParquetReader(
     private val reader: ApacheParquetReader<GenericRecord>,
-    private val tmpFile: File
+    private val tmpFile: File,
 ) : Closeable {
     private fun read(): GenericRecord? {
         return reader.read()
@@ -37,13 +37,13 @@ fun InputStream.toParquetReader(descriptor: DestinationStream.Descriptor): Parqu
         kotlin.io.path.createTempFile(
             prefix =
                 "${descriptor.namespace}.${Transformations.toAlphanumericAndUnderscore(descriptor.name)}",
-            suffix = ".avro"
+            suffix = ".avro",
         )
     tmpFile.outputStream().use { outputStream -> this.copyTo(outputStream) }
     val reader =
         AvroParquetReader.builder<GenericRecord>(
                 AvroReadSupport(),
-                Path(tmpFile.toAbsolutePath().toString())
+                Path(tmpFile.toAbsolutePath().toString()),
             )
             .build()
 

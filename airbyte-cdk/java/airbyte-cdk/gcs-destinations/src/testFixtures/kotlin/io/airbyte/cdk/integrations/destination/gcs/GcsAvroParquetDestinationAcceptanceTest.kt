@@ -59,7 +59,7 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
                 .collect(
                     Collectors.toMap(
                         Function.identity(),
-                        Function { name: String -> getJsonNode(stream, name) }
+                        Function { name: String -> getJsonNode(stream, name) },
                     )
                 )
 
@@ -93,7 +93,7 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
 
     private fun compareAirbyteTypes(
         airbyteTypePropertyText: String?,
-        value: JsonSchemaType
+        value: JsonSchemaType,
     ): Boolean {
         if (airbyteTypePropertyText == null) {
             return value.jsonSchemaAirbyteType == null
@@ -105,7 +105,7 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
     private fun readCatalogFromFile(catalogFilename: String): AirbyteCatalog {
         return Jsons.deserialize(
             MoreResources.readResource(catalogFilename),
-            AirbyteCatalog::class.java
+            AirbyteCatalog::class.java,
         )
     }
 
@@ -119,7 +119,7 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
     @Throws(Exception::class)
     protected abstract fun retrieveDataTypesFromPersistedFiles(
         streamName: String,
-        namespace: String
+        namespace: String,
     ): Map<String?, Set<Schema.Type?>?>
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {

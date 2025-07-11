@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter
 
 fun interface ExpectedRecordMapper {
     fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord
+
     fun mapStreamDescriptor(descriptor: DestinationStream.Descriptor) = descriptor
 
     fun compose(mapper: ExpectedRecordMapper) =
@@ -26,7 +27,7 @@ fun interface ExpectedRecordMapper {
             override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType) =
                 mapper.mapRecord(
                     this@ExpectedRecordMapper.mapRecord(expectedRecord, schema),
-                    schema
+                    schema,
                 )
         }
 }

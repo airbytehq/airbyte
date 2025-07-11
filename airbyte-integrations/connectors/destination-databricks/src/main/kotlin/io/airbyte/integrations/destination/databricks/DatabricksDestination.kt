@@ -49,7 +49,7 @@ class DatabricksDestination : BaseConnector(), Destination {
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         throw UnsupportedOperationException(
             "GetConsumer is not supported, use getSerializedMessageConsumer"
@@ -68,7 +68,7 @@ class DatabricksDestination : BaseConnector(), Destination {
             val workspaceClient =
                 DatabricksConnectorClientsFactory.createWorkspaceClient(
                     connectorConfig.hostname,
-                    connectorConfig.authentication
+                    connectorConfig.authentication,
                 )
             val storageOperation =
                 DatabricksStorageOperation(
@@ -76,7 +76,7 @@ class DatabricksDestination : BaseConnector(), Destination {
                     destinationHandler,
                     workspaceClient,
                     connectorConfig.database,
-                    connectorConfig.purgeStagingData
+                    connectorConfig.purgeStagingData,
                 )
             val rawTableNamespace = connectorConfig.rawSchemaOverride
             // Add UUID to check table name in case multiple connections
@@ -99,7 +99,7 @@ class DatabricksDestination : BaseConnector(), Destination {
                     columns = linkedMapOf(),
                     generationId = 1,
                     minimumGenerationId = 1,
-                    syncId = 0
+                    syncId = 0,
                 )
 
             // quick utility method to drop the airbyte_check_test_table table
@@ -108,11 +108,7 @@ class DatabricksDestination : BaseConnector(), Destination {
                 val dropCheckTableStatement =
                     "DROP TABLE IF EXISTS `${connectorConfig.database}`.`${streamId.rawNamespace}`.`${streamId.rawName}`;"
                 try {
-                    destinationHandler.execute(
-                        Sql.of(
-                            dropCheckTableStatement,
-                        ),
-                    )
+                    destinationHandler.execute(Sql.of(dropCheckTableStatement))
                 } catch (e: Exception) {
                     log.error(e) { "Failed to execute query $dropCheckTableStatement" }
                     return AirbyteConnectionStatus()
@@ -134,13 +130,13 @@ class DatabricksDestination : BaseConnector(), Destination {
                         InitialRawTableStatus(
                             rawTableExists = false,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.empty()
+                            maxProcessedTimestamp = Optional.empty(),
                         ),
                     initialTempRawTableStatus =
                         InitialRawTableStatus(
                             rawTableExists = false,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.empty()
+                            maxProcessedTimestamp = Optional.empty(),
                         ),
                     isSchemaMismatch = true,
                     isFinalTableEmpty = true,
@@ -165,28 +161,27 @@ class DatabricksDestination : BaseConnector(), Destination {
                     storageOperation,
                     initialStatus,
                     FileUploadFormat.CSV,
-                    disableTypeDedupe = true
+                    disableTypeDedupe = true,
                 )
 
             val data =
                 """
                 {"airbyte_check": "passed"}
-                """.trimIndent()
+                """
+                    .trimIndent()
             val message =
                 PartialAirbyteMessage()
                     .withSerialized(data)
                     .withRecord(
                         PartialAirbyteRecordMessage()
                             .withEmittedAt(System.currentTimeMillis())
-                            .withMeta(
-                                AirbyteRecordMessageMeta(),
-                            ),
+                            .withMeta(AirbyteRecordMessageMeta())
                     )
 
             streamOperation.writeRecords(streamConfig, listOf(message).stream())
             streamOperation.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(1, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+                StreamSyncSummary(1, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE),
             )
             // Clean up after ourselves.
             // Not _strictly_ necessary since we do this at the start of `check`,
@@ -206,7 +201,7 @@ class DatabricksDestination : BaseConnector(), Destination {
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer {
 
         val connectorConfig = DatabricksConnectorConfig.deserialize(config)
@@ -220,7 +215,7 @@ class DatabricksDestination : BaseConnector(), Destination {
         val workspaceClient =
             DatabricksConnectorClientsFactory.createWorkspaceClient(
                 connectorConfig.hostname,
-                connectorConfig.authentication
+                connectorConfig.authentication,
             )
         val datasource = DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)
@@ -234,7 +229,7 @@ class DatabricksDestination : BaseConnector(), Destination {
                 destinationHandler,
                 workspaceClient,
                 connectorConfig.database,
-                connectorConfig.purgeStagingData
+                connectorConfig.purgeStagingData,
             )
 
         // Initialize streams on connector instantiation. Fail fast even before buffers are created
@@ -246,7 +241,7 @@ class DatabricksDestination : BaseConnector(), Destination {
                 destinationHandler,
                 defaultNamespace,
                 DatabricksStreamOperationFactory(storageOperations),
-                listOf()
+                listOf(),
             )
 
         return AsyncStreamConsumer(

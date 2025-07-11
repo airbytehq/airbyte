@@ -82,14 +82,14 @@ class MySqlSourceOperations :
             CommonMetaField.CDC_UPDATED_AT,
             CommonMetaField.CDC_DELETED_AT,
             MySqlSourceCdcMetaFields.CDC_LOG_FILE,
-            MySqlSourceCdcMetaFields.CDC_LOG_POS
+            MySqlSourceCdcMetaFields.CDC_LOG_POS,
         )
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
@@ -137,7 +137,7 @@ class MySqlSourceOperations :
             MysqlType.BIGINT -> LongFieldType
             MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
             MysqlType.FLOAT,
-            MysqlType.FLOAT_UNSIGNED, ->
+            MysqlType.FLOAT_UNSIGNED ->
                 if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
             MysqlType.DOUBLE,
             MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType

@@ -84,8 +84,9 @@ class RootReader(
                 outputConsumer.accept(it)
                 if (dataChannelMedium == DataChannelMedium.SOCKET)
                     PartitionReader.pendingStates.add(it)
-            }
+            },
         )
+
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
         log.info {
@@ -96,7 +97,7 @@ class RootReader(
     }
 
     private suspend inline fun <reified T : Feed> readFeeds(
-        crossinline listener: suspend (Collection<Job>) -> Unit,
+        crossinline listener: suspend (Collection<Job>) -> Unit
     ) {
         val feeds: List<T> = stateManager.feeds.filterIsInstance<T>()
         log.info { "Reading feeds of type ${T::class}." }
@@ -115,7 +116,7 @@ class RootReader(
                                 dataChannelFormat,
                                 dataChannelMedium,
                                 bufferByteSizeThresholdForFlush,
-                                clock
+                                clock,
                             )
                             .read()
                     }
@@ -145,10 +146,7 @@ class RootReader(
         override val key: CoroutineContext.Key<CoroutineExceptionHandler>
             get() = CoroutineExceptionHandler.Key
 
-        override fun handleException(
-            context: CoroutineContext,
-            exception: Throwable,
-        ) {
+        override fun handleException(context: CoroutineContext, exception: Throwable) {
             log.warn(exception) { "canceled feed '${feed.label}' due to thrown exception" }
             streamStatusManager.notifyFailure(feed)
             exceptions[feed] = exception

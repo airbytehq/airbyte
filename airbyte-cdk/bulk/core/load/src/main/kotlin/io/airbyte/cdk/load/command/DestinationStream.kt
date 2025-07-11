@@ -26,26 +26,26 @@ import jakarta.inject.Singleton
  * mapping will be applied in the destination instead of in the orchestrator. The entails
  * - the platform will give the destination a catalog with an unmapped namespace and stream names
  * - the source will send the destination records and control messages with unmapped namespace and
- * stream names
+ *   stream names
  * - the destination will apply the namespace mapping as soon as it receives these messages (all of
- * its written data/table names/object paths will use the mapped namespace and names, same as in a
- * non-speed sync)
+ *   its written data/table names/object paths will use the mapped namespace and names, same as in a
+ *   non-speed sync)
  * - when the destination emits control messages (state, stats), it must use the *unmapped*
- * namespace and names More generally: all inter-application communication will be unmapped, all
- * communication between the connector and the destination, or between the CDK and the connector
- * code, will be mapped.
+ *   namespace and names More generally: all inter-application communication will be unmapped, all
+ *   communication between the connector and the destination, or between the CDK and the connector
+ *   code, will be mapped.
  *
  * TO MAKE THIS AS ERROR-PROOF AS POSSIBLE:
  * - every DestinationStream must be instantiated with an [unmappedName], [unmappedNamespace], AND a
- * [NamespaceMapper]
+ *   [NamespaceMapper]
  * - the default namespace mapper will be identity, and will work as expected for standard syncs
  * - [DestinationStream.Descriptor] will ALWAYS be MAPPED. (All code and tests should follow this
- * pattern.)
+ *   pattern.)
  * - [NamespaceMapper] is treated as data for the purpose of equality checks (ie, same unmapped
- * names + and same mapping rules => same stream)
+ *   names + and same mapping rules => same stream)
  * - currently this won't impact the ordering of stream names for [AirbyteValueProxy.FieldAccessor]
- * s, but only because the only stream name mapping currently supported is prepending a uniform
- * prefix. IF THAT CHANGES, PROXY FIELD ORDERING WILL BREAK.
+ *   s, but only because the only stream name mapping currently supported is prepending a uniform
+ *   prefix. IF THAT CHANGES, PROXY FIELD ORDERING WILL BREAK.
  */
 data class DestinationStream(
     val unmappedNamespace: String?,
@@ -61,7 +61,7 @@ data class DestinationStream(
     val includeFiles: Boolean = false,
     val destinationObjectName: String? = null,
     val matchingKey: List<String>? = null,
-    private val namespaceMapper: NamespaceMapper
+    private val namespaceMapper: NamespaceMapper,
 ) {
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
 
@@ -99,7 +99,7 @@ data class DestinationStream(
                     AirbyteValueProxy.FieldAccessor(
                         index = index,
                         name = namedType.first,
-                        type = namedType.second.type
+                        type = namedType.second.type,
                     )
                 }
                 .toTypedArray()
@@ -165,7 +165,7 @@ data class DestinationStream(
 @Singleton
 class DestinationStreamFactory(
     private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
-    private val namespaceMapper: NamespaceMapper
+    private val namespaceMapper: NamespaceMapper,
 ) {
     fun make(stream: ConfiguredAirbyteStream): DestinationStream {
         return DestinationStream(
@@ -192,7 +192,7 @@ class DestinationStreamFactory(
             matchingKey =
                 stream.destinationObjectName?.let {
                     fromCompositeNestedKeyToCompositeKey(stream.primaryKey)
-                }
+                },
         )
     }
 }

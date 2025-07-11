@@ -16,6 +16,7 @@ import java.util.function.Function
 import java.util.function.Supplier
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Legacy implementation (pre-per-stream state support) of the [StateManager] interface.
  *
@@ -33,7 +34,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
         CURSOR_RECORD_COUNT_FUNCTION,
-        NAME_NAMESPACE_PAIR_FUNCTION
+        NAME_NAMESPACE_PAIR_FUNCTION,
     ) {
     /** Tracks whether the connector associated with this state manager supports CDC. */
     private var isCdc: Boolean
@@ -43,7 +44,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         CdcStateManager(
             dbState.cdcState,
             AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog),
-            null
+            null,
         )
 
     /**
@@ -51,7 +52,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
      *
      * @param dbState The initial state represented as an [DbState] instance.
      * @param catalog The [ConfiguredAirbyteCatalog] for the connector associated with this state
-     * manager.
+     *   manager.
      */
     init {
         this.isCdc = dbState.cdc ?: false
@@ -78,7 +79,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
 
     override fun updateAndEmit(
         pair: AirbyteStreamNameNamespacePair,
-        cursor: String?
+        cursor: String?,
     ): AirbyteStateMessage? {
         return updateAndEmit(pair, cursor, 0L)
     }
@@ -86,7 +87,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
     override fun updateAndEmit(
         pair: AirbyteStreamNameNamespacePair,
         cursor: String?,
-        cursorRecordCount: Long
+        cursorRecordCount: Long,
     ): AirbyteStateMessage? {
         // cdc file gets updated by debezium so the "update" part is a no op.
         if (!isCdc) {

@@ -15,9 +15,7 @@ import org.h2.tools.Server
 
 /** Wraps an H2 in-memory database and exposes a TCP server for it. */
 @Singleton
-class H2TestFixture(
-    @Value("\${h2.database.name}") database: String? = null,
-) : AutoCloseable {
+class H2TestFixture(@Value("\${h2.database.name}") database: String? = null) : AutoCloseable {
     private val log = KotlinLogging.logger {}
 
     private val server: Server
@@ -37,19 +35,13 @@ class H2TestFixture(
         log.info { "H2 server ready to accept connections for $jdbcUrl" }
     }
 
-    fun execute(
-        sqlFmt: String,
-        vararg args: Any?,
-    ) {
+    fun execute(sqlFmt: String, vararg args: Any?) {
         internalConnection.createStatement().use {
             it.execute(String.format(sqlFmt.replace('\n', ' '), *args))
         }
     }
 
-    fun query(
-        sqlFmt: String,
-        vararg args: Any?,
-    ): List<List<Any?>> =
+    fun query(sqlFmt: String, vararg args: Any?): List<List<Any?>> =
         internalConnection.createStatement().use {
             val result = mutableListOf<List<Any?>>()
             it.executeQuery(String.format(sqlFmt.replace('\n', ' '), *args)).use { rs: ResultSet ->

@@ -36,7 +36,7 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
         bigquery.query(
             QueryJobConfiguration.of(
                 """ALTER TABLE `${rawTableName.namespace}`.`${rawTableName.name}$suffix` RENAME TO `${rawTableName.name}`"""
-            ),
+            )
         )
     }
 
@@ -63,7 +63,8 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
                 """
                 INSERT INTO `${rawTableName.namespace}`.`${rawTableName.name}`
                 SELECT * FROM `${rawTableName.namespace}`.`${rawTableName.name}$suffix`
-                """.trimIndent()
+                """
+                    .trimIndent()
             )
         )
         bigquery.delete(tempRawTable)
@@ -74,7 +75,7 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
             bigquery.query(
                 QueryJobConfiguration.of(
                     "SELECT _airbyte_generation_id FROM ${rawTableName.namespace}.${rawTableName.name}$suffix LIMIT 1"
-                ),
+                )
             )
         if (result.totalRows == 0L) {
             return null

@@ -17,12 +17,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 @MicronautTest
-@PropertySource(
-    value =
-        [
-            Property(name = MEDIUM_PROPERTY, value = "SOCKET"),
-        ]
-)
+@PropertySource(value = [Property(name = MEDIUM_PROPERTY, value = "SOCKET")])
 class SocketDataChannelResourceHolderTest() {
     @Inject lateinit var socketFactory: SocketDataChannelFactory
 
@@ -38,6 +33,7 @@ class SocketDataChannelResourceHolderTest() {
 
         override val status: SocketDataChannel.SocketStatus
             get() = innerStatus
+
         override var isBound: Boolean
             get() = innerBound
             set(value) {
@@ -59,6 +55,7 @@ class SocketDataChannelResourceHolderTest() {
         override val isAvailable: Boolean
             get() = innerStatus == SOCKET_READY && !innerBound
     }
+
     @Primary
     @Singleton
     class MockSocketWrapperFactory : SocketDataChannelFactory {

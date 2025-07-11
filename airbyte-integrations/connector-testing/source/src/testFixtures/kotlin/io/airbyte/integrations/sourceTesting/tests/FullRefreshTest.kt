@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 abstract class FullRefreshTest(
     testDbExecutor: TestDbExecutor,
-    testAssetResourceNamer: TestAssetResourceNamer
+    testAssetResourceNamer: TestAssetResourceNamer,
 ) : BaseConnectorTest(testDbExecutor, testAssetResourceNamer) {
 
     override fun setupTestData() {

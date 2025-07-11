@@ -33,6 +33,7 @@ abstract class AbstractDatabricksTypingDedupingTest(
 ) : BaseTypingDedupingTest() {
     override val imageName: String
         get() = "airbyte/destination-databricks:dev"
+
     private val connectorConfig: DatabricksConnectorConfig
         get() {
             return DatabricksConnectorConfig.deserialize(config!!)
@@ -68,7 +69,7 @@ abstract class AbstractDatabricksTypingDedupingTest(
     private fun rawTableIdentifier(
         streamNamespace: String?,
         streamName: String,
-        suffix: String = ""
+        suffix: String = "",
     ): String {
         val rawTableName =
             StreamId.concatenateRawTableName(streamNamespace ?: connectorConfig.schema, streamName)
@@ -82,7 +83,7 @@ abstract class AbstractDatabricksTypingDedupingTest(
 
     override fun dumpFinalTableRecords(
         streamNamespace: String?,
-        streamName: String
+        streamName: String,
     ): List<JsonNode> {
         return dumpTable("`${streamNamespace ?: connectorConfig.schema}`.`$streamName`")
     }
@@ -97,15 +98,11 @@ abstract class AbstractDatabricksTypingDedupingTest(
                         SELECT *
                         FROM `${connectorConfig.database}`.$tableIdentifier
                         ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
-                    """.trimIndent(),
+                    """
+                            .trimIndent()
                     )
             },
-            { resultSet: ResultSet ->
-                JdbcSourceOperations()
-                    .rowToJson(
-                        resultSet,
-                    )
-            },
+            { resultSet: ResultSet -> JdbcSourceOperations().rowToJson(resultSet) },
         )
     }
 
@@ -118,7 +115,7 @@ abstract class AbstractDatabricksTypingDedupingTest(
                     streamNamespace,
                     streamName,
                 )
-            }",
+            }"
         )
         // Clean up volumes in airbyte_internal
         jdbcDatabase.execute(

@@ -63,7 +63,7 @@ class S3AssumeRoleCredentialConfig(private val roleArn: String, environment: Map
             return AWSStaticCredentialsProvider(
                 BasicAWSCredentials(
                     environment.getValue("AWS_ACCESS_KEY_ID"),
-                    environment.getValue("AWS_SECRET_ACCESS_KEY")
+                    environment.getValue("AWS_SECRET_ACCESS_KEY"),
                 )
             )
         }

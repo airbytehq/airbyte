@@ -73,12 +73,12 @@ abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
             assertEquals(
                 checkMessages.size,
                 1,
-                "$testName: Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages"
+                "$testName: Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages",
             )
             assertEquals(
                 AirbyteConnectionStatus.Status.SUCCEEDED,
                 checkMessages.first().connectionStatus.status,
-                "$testName: Expected check to be successful, but message was ${checkMessages.first().connectionStatus}"
+                "$testName: Expected check to be successful, but message was ${checkMessages.first().connectionStatus}",
             )
         }
     }
@@ -94,7 +94,7 @@ abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
                     configContents = updatedConfig,
                     featureFlags = featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
-                    dataChannelMedium = DataChannelMedium.STDIO
+                    dataChannelMedium = DataChannelMedium.STDIO,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
@@ -104,7 +104,7 @@ abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
             assertEquals(
                 checkMessages.size,
                 1,
-                "$testName: Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages"
+                "$testName: Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages",
             )
 
             val connectionStatus = checkMessages.first().connectionStatus
@@ -119,9 +119,9 @@ abstract class CheckIntegrationTest<T : ConfigurationSpecification>(
                 {
                     assertTrue(
                         failurePattern.matcher(connectionStatus.message).find(),
-                        "$testName: Expected to match ${failurePattern.pattern()}, but got ${connectionStatus.message}"
+                        "$testName: Expected to match ${failurePattern.pattern()}, but got ${connectionStatus.message}",
                     )
-                }
+                },
             )
         }
     }

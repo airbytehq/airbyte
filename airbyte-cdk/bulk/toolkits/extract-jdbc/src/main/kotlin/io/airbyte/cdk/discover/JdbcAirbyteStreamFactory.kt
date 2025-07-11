@@ -16,7 +16,7 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
 
     override fun create(
         config: SourceConfiguration,
-        discoveredStream: DiscoveredStream
+        discoveredStream: DiscoveredStream,
     ): AirbyteStream {
         val isCdc = config.isCdc()
         val hasPK = hasValidPrimaryKey(discoveredStream)
@@ -68,7 +68,7 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
      * For this to be possible,
      * 1. the field needs to be part of a key as defined by the source,
      * 2. and its values must be deserializable from the checkpoint persisted in an Airbyte state
-     * message.
+     *    message.
      *
      * This method does not determine (1), of course, because the source keys are defined in the
      * source database itself and are retrieved via [MetadataQuerier.primaryKey]. Instead, this
@@ -83,7 +83,7 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
             NCharacterStreamFieldType,
             ClobFieldType,
             NClobFieldType,
-            JsonStringFieldType, -> false
+            JsonStringFieldType -> false
             else -> true
         }
 

@@ -28,7 +28,7 @@ class PostgresDestinationHandler(
         jdbcDatabase,
         rawTableSchema,
         SQLDialect.POSTGRES,
-        generationHandler = generationHandler
+        generationHandler = generationHandler,
     ) {
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
         // This is mostly identical to the postgres implementation, but swaps jsonb to super
@@ -50,7 +50,7 @@ class PostgresDestinationHandler(
             json.hasNonNull("isAirbyteMetaPresentInRaw") &&
                 json["isAirbyteMetaPresentInRaw"].asBoolean(),
             json.hasNonNull("isAirbyteGenerationIdPresent") &&
-                json["isAirbyteGenerationIdPresent"].asBoolean()
+                json["isAirbyteGenerationIdPresent"].asBoolean(),
         )
     }
 
@@ -85,7 +85,7 @@ class PostgresDestinationHandler(
             ) {
                 throw ConfigErrorException(
                     "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
-                    e
+                    e,
                 )
             }
             throw e

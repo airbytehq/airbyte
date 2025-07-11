@@ -35,11 +35,11 @@ data class DatabricksConnectorConfig(
 
 @JsonTypeName("BASIC")
 data class BasicAuthentication(
-    @JsonProperty("personal_access_token") val personalAccessToken: String,
+    @JsonProperty("personal_access_token") val personalAccessToken: String
 ) : Authentication
 
 @JsonTypeName("OAUTH")
 data class OAuth2Authentication(
     @JsonProperty("client_id") val clientId: String,
-    val secret: String
+    val secret: String,
 ) : Authentication

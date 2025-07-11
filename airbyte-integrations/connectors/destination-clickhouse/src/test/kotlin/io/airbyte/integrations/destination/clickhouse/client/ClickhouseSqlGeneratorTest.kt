@@ -37,14 +37,14 @@ class ClickhouseSqlGeneratorTest {
     @MethodSource("alterTableTestCases")
     fun testAlterTableContainsClauses(
         alterationSummary: AlterationSummary,
-        expectedClauses: List<String>
+        expectedClauses: List<String>,
     ) {
         val tableName = TableName("my_namespace", "my_table")
         val actualSql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
         expectedClauses.forEach { clause ->
             assertTrue(
                 actualSql.contains(clause),
-                "Expected SQL to contain: $clause, but got: $actualSql"
+                "Expected SQL to contain: $clause, but got: $actualSql",
             )
         }
     }
@@ -56,7 +56,7 @@ class ClickhouseSqlGeneratorTest {
                 added = mapOf("col1" to "Int32", "col2" to "String"),
                 modified = mapOf("col3" to "String", "col4" to "Int64"),
                 deleted = setOf("col5", "col6"),
-                hasDedupChange = false
+                hasDedupChange = false,
             )
         val tableName = TableName("my_namespace", "my_table")
         val sql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
@@ -125,7 +125,8 @@ class ClickhouseSqlGeneratorTest {
             """
             EXCHANGE TABLES `source_db`.`source_table`
                 AND `target_db`.`target_table`;
-        """.trimIndent()
+        """
+                .trimIndent()
         val actualSql = clickhouseSqlGenerator.exchangeTable(sourceTable, targetTable)
 
         Assertions.assertEquals(actualSql, expectedSql)
@@ -155,7 +156,8 @@ class ClickhouseSqlGeneratorTest {
                 _airbyte_generation_id,
                 target_col1,target_col2
             FROM `source_namespace`.`source_table`
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val actualSql =
             clickhouseSqlGenerator.copyTable(columnNameMapping, sourceTable, targetTable)
@@ -176,8 +178,8 @@ class ClickhouseSqlGeneratorTest {
                     listOf(
                         " ADD COLUMN `new_column` Nullable(Int32)",
                         " MODIFY COLUMN `existing_column` Nullable(String)",
-                        " DROP COLUMN `old_column`"
-                    )
+                        " DROP COLUMN `old_column`",
+                    ),
                 ),
                 Arguments.of(
                     AlterationSummary(
@@ -186,7 +188,7 @@ class ClickhouseSqlGeneratorTest {
                         deleted = setOf(),
                         hasDedupChange = false,
                     ),
-                    listOf(" ADD COLUMN `new_column` Nullable(Int32)")
+                    listOf(" ADD COLUMN `new_column` Nullable(Int32)"),
                 ),
                 Arguments.of(
                     AlterationSummary(
@@ -195,7 +197,7 @@ class ClickhouseSqlGeneratorTest {
                         deleted = setOf(),
                         hasDedupChange = false,
                     ),
-                    listOf(" MODIFY COLUMN `existing_column` Nullable(String)")
+                    listOf(" MODIFY COLUMN `existing_column` Nullable(String)"),
                 ),
                 Arguments.of(
                     AlterationSummary(
@@ -204,7 +206,7 @@ class ClickhouseSqlGeneratorTest {
                         deleted = setOf("old_column"),
                         hasDedupChange = false,
                     ),
-                    listOf(" DROP COLUMN `old_column`")
+                    listOf(" DROP COLUMN `old_column`"),
                 ),
                 Arguments.of(
                     AlterationSummary(
@@ -219,8 +221,8 @@ class ClickhouseSqlGeneratorTest {
                         " MODIFY COLUMN `col3` Nullable(String)",
                         " MODIFY COLUMN `col4` Nullable(Int64)",
                         " DROP COLUMN `col5`",
-                        " DROP COLUMN `col6`"
-                    )
+                        " DROP COLUMN `col6`",
+                    ),
                 ),
             )
     }

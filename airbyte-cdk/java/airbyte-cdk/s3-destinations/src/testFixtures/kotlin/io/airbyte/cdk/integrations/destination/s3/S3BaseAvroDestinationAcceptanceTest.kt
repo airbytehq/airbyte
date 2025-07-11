@@ -31,8 +31,8 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
                         "compression_level",
                         5,
                         "include_checksum",
-                        true
-                    )
+                        true,
+                    ),
                 )
             )
 
@@ -41,7 +41,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         val nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema)
 
@@ -52,7 +52,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
             val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader<GenericData.Record>(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
-                    GenericDatumReader<GenericData.Record>()
+                    GenericDatumReader<GenericData.Record>(),
                 )
                 .use { dataFileReader ->
                     val jsonReader: ObjectReader =
@@ -76,7 +76,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
         streamName: String,
-        namespace: String
+        namespace: String,
     ): Map<String, Set<Schema.Type>> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String, Set<Schema.Type>> = HashMap()
@@ -85,7 +85,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
             val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
-                    GenericDatumReader<GenericData.Record>()
+                    GenericDatumReader<GenericData.Record>(),
                 )
                 .use { dataFileReader ->
                     while (dataFileReader.hasNext()) {

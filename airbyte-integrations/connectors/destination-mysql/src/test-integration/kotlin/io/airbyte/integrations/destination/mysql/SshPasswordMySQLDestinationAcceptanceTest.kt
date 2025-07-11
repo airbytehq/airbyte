@@ -28,7 +28,7 @@ class SshPasswordMySQLDestinationAcceptanceTest : SshMySQLDestinationAcceptanceT
      * Similar to [.testSyncWithNormalization], disable the custom dbt test.
      *
      * TODO: get custom dbt transformations working
-     * https://github.com/airbytehq/airbyte/issues/33547
+     *   https://github.com/airbytehq/airbyte/issues/33547
      */
     @Disabled(
         "Our dbt interface doesn't correctly parse the SSH password. https://github.com/airbytehq/airbyte/issues/33547 to fix this."

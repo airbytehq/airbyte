@@ -15,10 +15,8 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
-class BigQueryObjectStorageFormattingWriter(
-    stream: DestinationStream,
-    outputStream: OutputStream,
-) : ObjectStorageFormattingWriter {
+class BigQueryObjectStorageFormattingWriter(stream: DestinationStream, outputStream: OutputStream) :
+    ObjectStorageFormattingWriter {
     private val finalSchema = stream.schema.withAirbyteMeta(true)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     private val bigQueryRowGenerator = BigQueryCSVRowGenerator()

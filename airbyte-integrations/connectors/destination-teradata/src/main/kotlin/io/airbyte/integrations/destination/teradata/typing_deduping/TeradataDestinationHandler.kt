@@ -57,7 +57,7 @@ class TeradataDestinationHandler(
         jdbcDatabase,
         rawTableSchema,
         SQLDialect.DEFAULT,
-        generationHandler = generationHandler
+        generationHandler = generationHandler,
     ) {
     /**
      * Converts a JSON node into a `MinimumDestinationState` object.
@@ -67,12 +67,13 @@ class TeradataDestinationHandler(
      */
     override fun toDestinationState(json: JsonNode): MinimumDestinationState =
         MinimumDestinationState.Impl(
-            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
+            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean()
         )
 
     override fun createNamespaces(schemas: Set<String>) {
         TODO("Not yet implemented")
     }
+
     /**
      * Converts an Airbyte type to its corresponding JDBC type name.
      *
@@ -93,6 +94,7 @@ class TeradataDestinationHandler(
             }
         return type
     }
+
     /**
      * Checks if the final table is empty for the given stream ID.
      *
@@ -110,25 +112,24 @@ class TeradataDestinationHandler(
                             .`when`<Int>(
                                 field<Int>(
                                         DSL.select<Int>(DSL.count())
-                                            .from(DSL.name(id.finalNamespace, id.finalName)),
+                                            .from(DSL.name(id.finalNamespace, id.finalName))
                                     )
                                     .gt(0),
                                 DSL.inline(1),
                             )
                             .otherwise(DSL.inline(0))
-                            .`as`("exists_flag"),
+                            .`as`("exists_flag")
                     )
-                    .getSQL(ParamType.INLINED),
+                    .getSQL(ParamType.INLINED)
             )
         } catch (se: SQLException) {
             if (se.errorCode == 3807) {
-                LOGGER.warn(
-                    "Table $id.finalNamespace.$id.finalNamespace does not exists.",
-                )
+                LOGGER.warn("Table $id.finalNamespace.$id.finalNamespace does not exists.")
             }
             throw se
         }
     }
+
     /**
      * Generates an SQL query to delete destination states from the destination state table.
      *
@@ -140,14 +141,7 @@ class TeradataDestinationHandler(
     ): String {
         val query =
             dslContext
-                .deleteFrom(
-                    table(
-                        quotedName(
-                            rawTableNamespace,
-                            DESTINATION_STATE_TABLE_NAME,
-                        ),
-                    ),
-                )
+                .deleteFrom(table(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME)))
                 .where(
                     destinationStates.keys
                         .stream()
@@ -156,16 +150,17 @@ class TeradataDestinationHandler(
                                 .eq(streamId.originalName)
                                 .and(
                                     field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE))
-                                        .eq(streamId.originalNamespace),
+                                        .eq(streamId.originalNamespace)
                                 )
                         }
                         .reduce(DSL.noCondition()) { obj: Condition, arg2: Condition? ->
                             obj.or(arg2)
-                        },
+                        }
                 )
                 .getSQL(ParamType.INLINED)
         return query
     }
+
     /**
      * Commits the given destination states to the database.
      *
@@ -190,24 +185,19 @@ class TeradataDestinationHandler(
                     Timestamp.from(
                         Instant.ofEpochMilli(System.currentTimeMillis())
                             .atZone(ZoneOffset.UTC)
-                            .toInstant(),
+                            .toInstant()
                     )
 
                 // Reinsert all of our states
                 val insertStatesStep: String =
                     dslContext
                         .insertInto(
-                            table(
-                                quotedName(
-                                    rawTableNamespace,
-                                    DESTINATION_STATE_TABLE_NAME,
-                                ),
-                            ),
+                            table(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME))
                         )
                         .columns(
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
-                                String::class.java
+                                String::class.java,
                             ),
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
@@ -215,11 +205,11 @@ class TeradataDestinationHandler(
                             ),
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                                String::class.java
+                                String::class.java,
                             ),
                             field(
                                 quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
-                                Timestamp::class.java
+                                Timestamp::class.java,
                             ),
                         )
                         .values(
@@ -268,7 +258,7 @@ class TeradataDestinationHandler(
                         .createTable(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME))
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
-                            SQLDataType.VARCHAR(256)
+                            SQLDataType.VARCHAR(256),
                         )
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
@@ -276,7 +266,7 @@ class TeradataDestinationHandler(
                         )
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                            SQLDataType.VARCHAR(256)
+                            SQLDataType.VARCHAR(256),
                         )
                         .column(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
@@ -298,13 +288,8 @@ class TeradataDestinationHandler(
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE)),
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT)),
                         )
-                        .from(
-                            quotedName(
-                                rawTableNamespace,
-                                DESTINATION_STATE_TABLE_NAME,
-                            ),
-                        )
-                        .sql,
+                        .from(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME))
+                        .sql
                 )
                 .map { recordJson: JsonNode ->
                     val record = recordJson as ObjectNode
@@ -351,6 +336,7 @@ class TeradataDestinationHandler(
             return emptyMap()
         }
     }
+
     /**
      * Finds the existing table for the given stream ID.
      *
@@ -363,6 +349,7 @@ class TeradataDestinationHandler(
         } else {
             Optional.empty()
         }
+
     /**
      * Executes a list of SQL statements within a transaction.
      *
@@ -391,6 +378,7 @@ class TeradataDestinationHandler(
         private const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
         // Define a set of error codes that should be ignored
         private val ignorableErrorCodes = setOf(5612, 3807, 3598, 3803)
+
         /**
          * Converts an Airbyte Protocol type to a JDBC type name.
          *

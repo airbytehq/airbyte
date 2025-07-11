@@ -40,7 +40,7 @@ class MockDestinationDirectLoader : DirectLoader {
                 recordAirbyteValue.data as ObjectValue,
                 OutputRecord.Meta(
                     changes = recordAirbyteValue.meta?.changes ?: listOf(),
-                    syncId = record.stream.syncId
+                    syncId = record.stream.syncId,
                 ),
             )
         // blind insert into the staging area. We'll dedupe on commit.

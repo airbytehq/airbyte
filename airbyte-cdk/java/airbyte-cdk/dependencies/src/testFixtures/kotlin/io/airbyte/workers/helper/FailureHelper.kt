@@ -55,7 +55,7 @@ object FailureHelper {
         m: AirbyteTraceMessage,
         jobId: Long?,
         attemptNumber: Int?,
-        connectorCommand: ConnectorCommand
+        connectorCommand: ConnectorCommand,
     ): FailureReason {
         val metadata = traceMessageMetadata(jobId, attemptNumber)
         metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString())
@@ -66,7 +66,7 @@ object FailureHelper {
         t: Throwable,
         jobId: Long,
         attemptNumber: Int,
-        connectorCommand: ConnectorCommand
+        connectorCommand: ConnectorCommand,
     ): FailureReason {
         val metadata = jobAndAttemptMetadata(jobId, attemptNumber)
         metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString())
@@ -93,7 +93,7 @@ object FailureHelper {
     fun destinationFailure(
         m: AirbyteTraceMessage,
         jobId: Long?,
-        attemptNumber: Int?
+        attemptNumber: Int?,
     ): FailureReason {
         return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.WRITE)
             .withFailureOrigin(FailureReason.FailureOrigin.DESTINATION)
@@ -103,7 +103,7 @@ object FailureHelper {
         t: Throwable,
         jobId: Long,
         attemptNumber: Int,
-        origin: FailureReason.FailureOrigin?
+        origin: FailureReason.FailureOrigin?,
     ): FailureReason {
         return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK)
             .withFailureOrigin(origin)
@@ -112,7 +112,7 @@ object FailureHelper {
             .withExternalMessage(
                 String.format(
                     "Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing",
-                    origin
+                    origin,
                 )
             )
     }

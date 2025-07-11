@@ -11,6 +11,4 @@ data class DirectLoadInitialStatus(
     val tempTable: DirectLoadTableStatus?,
 ) : DatabaseInitialStatus
 
-data class DirectLoadTableStatus(
-    val isEmpty: Boolean,
-)
+data class DirectLoadTableStatus(val isEmpty: Boolean)

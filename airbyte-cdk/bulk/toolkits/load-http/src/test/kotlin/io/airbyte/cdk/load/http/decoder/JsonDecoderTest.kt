@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-val JSON_CONTENT: String = """
+val JSON_CONTENT: String =
+    """
 {
   "field": "value"
 }
@@ -31,7 +32,7 @@ class JsonDecoderTest {
 
         Assertions.assertEquals(
             mapOf<String, JsonNode>("field" to Jsons.textNode("value")),
-            jsonBody.fields().asSequence().associate { it.key to it.value }
+            jsonBody.fields().asSequence().associate { it.key to it.value },
         )
     }
 }

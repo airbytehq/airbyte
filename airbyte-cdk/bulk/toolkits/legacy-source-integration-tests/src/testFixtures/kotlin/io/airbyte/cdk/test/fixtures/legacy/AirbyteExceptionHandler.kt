@@ -107,11 +107,10 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
          * between error types.
          *
          * If this is active, then the trace message will:
-         *
          * 1. Not contain the stacktrace at all. This causes Sentry to use its fallback grouping
-         * (using exception class and message)
+         *    (using exception class and message)
          * 1. Contain the original exception message as the external message, and a mangled message
-         * as the internal message.
+         *    as the internal message.
          */
         @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String> = HashSet()
 

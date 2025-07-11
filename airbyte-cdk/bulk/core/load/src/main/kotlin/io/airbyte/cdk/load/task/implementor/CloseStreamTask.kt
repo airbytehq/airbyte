@@ -15,14 +15,14 @@ import jakarta.inject.Singleton
 class CloseStreamTask(
     private val syncManager: SyncManager,
     val streamDescriptor: DestinationStream.Descriptor,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher,
 ) : Task {
     override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
         val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
         streamLoader.close(
-            hadNonzeroRecords = syncManager.getStreamManager(streamDescriptor).hadNonzeroRecords(),
+            hadNonzeroRecords = syncManager.getStreamManager(streamDescriptor).hadNonzeroRecords()
         )
         syncManager.getStreamManager(streamDescriptor).markProcessingSucceeded()
         taskLauncher.handleStreamClosed()
@@ -30,9 +30,7 @@ class CloseStreamTask(
 }
 
 @Singleton
-class CloseStreamTaskFactory(
-    private val syncManager: SyncManager,
-) {
+class CloseStreamTaskFactory(private val syncManager: SyncManager) {
     fun make(
         taskLauncher: DestinationTaskLauncher,
         streamDescriptor: DestinationStream.Descriptor,

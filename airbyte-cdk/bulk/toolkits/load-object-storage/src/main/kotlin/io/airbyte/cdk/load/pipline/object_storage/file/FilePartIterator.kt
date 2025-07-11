@@ -14,11 +14,7 @@ class FilePartIterator(
     private val partSizeBytes: Int,
     finalPath: String,
 ) : Iterator<Part> {
-    private val partFactory =
-        PartFactory(
-            key = finalPath,
-            fileNumber = 0,
-        )
+    private val partFactory = PartFactory(key = finalPath, fileNumber = 0)
 
     lateinit var complete: Unit
 

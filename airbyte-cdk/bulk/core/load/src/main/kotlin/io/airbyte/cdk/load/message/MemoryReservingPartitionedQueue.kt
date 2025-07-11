@@ -15,7 +15,7 @@ class ResourceReservingPartitionedQueue<T>(
     val ratioOfTotalMemoryToReserve: Double,
     val numConsumers: Int,
     val numProducers: Int,
-    val expectedResourceUsagePerUnit: Long
+    val expectedResourceUsagePerUnit: Long,
 ) : PartitionedQueue<T> {
 
     private val requestedResourceAmount =

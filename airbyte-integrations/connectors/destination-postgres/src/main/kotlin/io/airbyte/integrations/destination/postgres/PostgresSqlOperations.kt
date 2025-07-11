@@ -26,6 +26,7 @@ val LOGGER = KotlinLogging.logger {}
 
 class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
     private val dropTableQualifier: String = if (useDropCascade) "CASCADE" else ""
+
     override fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
         return if (isDestinationV2) {
             java.util.List.of( // the raw_id index _could_ be unique (since raw_id is a UUID)
@@ -56,7 +57,7 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
                     schemaName +
                     "." +
                     tableName +
-                    "(_airbyte_loaded_at, _airbyte_extracted_at)"
+                    "(_airbyte_loaded_at, _airbyte_extracted_at)",
             )
         } else {
             emptyList()
@@ -70,7 +71,7 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
         schemaName: String?,
         tableName: String?,
         syncId: Long,
-        generationId: Long
+        generationId: Long,
     ) {
         insertRecordsInternal(
             database,
@@ -84,7 +85,7 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_META,
-            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
         )
     }
 
@@ -96,7 +97,7 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
         tmpTableName: String?,
         syncId: Long,
         generationId: Long,
-        vararg columnNames: String
+        vararg columnNames: String,
     ) {
         if (records.isEmpty()) {
             return
@@ -117,7 +118,7 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
                         "COPY %s.%s (%s) FROM stdin DELIMITER ',' CSV",
                         schemaName,
                         tmpTableName,
-                        orderedColumnNames
+                        orderedColumnNames,
                     )
                 LOGGER.info { "executing COPY command: $sql" }
                 val bufferedReader = BufferedReader(FileReader(tmpFile, StandardCharsets.UTF_8))
@@ -142,7 +143,7 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
         database.executeWithinTransaction(
             listOf(
                 "DROP TABLE $rawNamespace.$rawName $dropTableQualifier",
-                "ALTER TABLE $rawNamespace.$tmpName RENAME TO $rawName"
+                "ALTER TABLE $rawNamespace.$tmpName RENAME TO $rawName",
             )
         )
     }

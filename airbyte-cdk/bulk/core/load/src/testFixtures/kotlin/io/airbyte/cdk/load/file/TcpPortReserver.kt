@@ -11,7 +11,7 @@ class TcpPortReserver {
     companion object {
         fun findAvailablePort(): Int {
             while (true) {
-                ServerSocket(/* port = */ 0).use { socket ->
+                ServerSocket(/* port= */ 0).use { socket ->
                     return socket.localPort
                 }
             }

@@ -31,7 +31,7 @@ class AbstractJdbcDestinationTest {
                 JdbcUtils.USERNAME_KEY,
                 "user",
                 JdbcUtils.DATABASE_KEY,
-                "db"
+                "db",
             )
         )
     }
@@ -48,7 +48,7 @@ class AbstractJdbcDestinationTest {
                 JdbcUtils.DATABASE_KEY,
                 "db",
                 JdbcUtils.JDBC_URL_PARAMS_KEY,
-                extraParam
+                extraParam,
             )
         )
     }
@@ -100,7 +100,7 @@ class AbstractJdbcDestinationTest {
                 "key2",
                 "value2",
                 "key3",
-                "value3"
+                "value3",
             )
         Assertions.assertEquals(expectedProperties, connectionProperties)
     }
@@ -159,7 +159,7 @@ class AbstractJdbcDestinationTest {
             config: JsonNode,
             databaseName: String,
             database: JdbcDatabase,
-            rawTableSchema: String
+            rawTableSchema: String,
         ): JdbcDestinationHandler<MinimumDestinationState.Impl> {
             return mock()
         }
@@ -168,7 +168,7 @@ class AbstractJdbcDestinationTest {
             database: JdbcDatabase,
             databaseName: String,
             sqlGenerator: SqlGenerator,
-            destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
+            destinationHandler: DestinationHandler<MinimumDestinationState.Impl>,
         ): List<Migration<MinimumDestinationState.Impl>> {
             return emptyList()
         }

@@ -52,11 +52,11 @@ class AirbyteValueWithMetaToOutputRecord {
                                     reason =
                                         AirbyteRecordMessageMetaChange.Reason.fromValue(
                                             (it.values["reason"] as StringValue).value
-                                        )
+                                        ),
                                 )
                             }
-                            .toMutableList()
-                )
+                            .toMutableList(),
+                ),
         )
     }
 }

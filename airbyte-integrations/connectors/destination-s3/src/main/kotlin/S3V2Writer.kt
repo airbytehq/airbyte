@@ -12,9 +12,8 @@ import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoaderFactory
 import jakarta.inject.Singleton
 
 @Singleton
-class S3V2Writer(
-    private val streamLoaderFactory: ObjectStorageStreamLoaderFactory<S3Object, *>,
-) : DestinationWriter {
+class S3V2Writer(private val streamLoaderFactory: ObjectStorageStreamLoaderFactory<S3Object, *>) :
+    DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return streamLoaderFactory.create(stream)
     }

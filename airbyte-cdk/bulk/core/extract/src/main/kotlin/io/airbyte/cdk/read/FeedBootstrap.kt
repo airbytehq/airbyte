@@ -90,7 +90,7 @@ sealed class FeedBootstrap<T : Feed>(
         }
 
     fun streamProtoRecordConsumers(
-        socketProtoOutputConsumer: SocketProtobufOutputConsumer,
+        socketProtoOutputConsumer: SocketProtobufOutputConsumer
     ): Map<StreamIdentifier, ProtoEfficientStreamRecordConsumer> =
         feed.streams.associate { stream: Stream ->
             stream.id to ProtoEfficientStreamRecordConsumer(stream, socketProtoOutputConsumer)
@@ -105,7 +105,7 @@ sealed class FeedBootstrap<T : Feed>(
      */
     open inner class EfficientStreamRecordConsumer(
         override val stream: Stream,
-        val outputDataChannel: OutputConsumer = outputConsumer
+        val outputDataChannel: OutputConsumer = outputConsumer,
     ) : StreamRecordConsumer {
 
         override fun close() {
@@ -114,7 +114,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         override fun accept(
             recordData: NativeRecordPayload,
-            changes: Map<Field, FieldValueChange>?
+            changes: Map<Field, FieldValueChange>?,
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toJson())
@@ -141,7 +141,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         private fun acceptWithChanges(
             recordData: ObjectNode,
-            changes: List<AirbyteRecordMessageMetaChange>
+            changes: List<AirbyteRecordMessageMetaChange>,
         ) {
             synchronized(this) {
                 for ((fieldName, defaultValue) in defaultRecordData.fields()) {
@@ -226,9 +226,10 @@ sealed class FeedBootstrap<T : Feed>(
         }
 
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
+
         override fun accept(
             recordData: NativeRecordPayload,
-            changes: Map<Field, FieldValueChange>?
+            changes: Map<Field, FieldValueChange>?,
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toProtobuf(defaultRecordData, valueVBuilder))
@@ -247,9 +248,7 @@ sealed class FeedBootstrap<T : Feed>(
             }
         }
 
-        private fun acceptWithoutChanges(
-            recordData: AirbyteRecordMessageProtobuf.Builder,
-        ) {
+        private fun acceptWithoutChanges(recordData: AirbyteRecordMessageProtobuf.Builder) {
             synchronized(this) {
                 socketProtobufOutputConsumer.accept(
                     reusedMessageWithoutChanges.setRecord(recordData).build()
@@ -259,7 +258,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         private fun acceptWithChanges(
             recordData: AirbyteRecordMessageProtobuf.Builder,
-            changes: AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.Builder
+            changes: AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.Builder,
         ) {
             synchronized(this) {
                 recordData.setMeta(changes)
@@ -422,7 +421,7 @@ sealed class FeedBootstrap<T : Feed>(
                         dataChannelFormat,
                         dataChannelMedium,
                         bufferByteSizeThresholdForFlush,
-                        clock
+                        clock,
                     )
                 is Stream ->
                     StreamFeedBootstrap(
@@ -433,7 +432,7 @@ sealed class FeedBootstrap<T : Feed>(
                         dataChannelFormat,
                         dataChannelMedium,
                         bufferByteSizeThresholdForFlush,
-                        clock
+                        clock,
                     )
             }
     }
@@ -445,6 +444,7 @@ sealed class FeedBootstrap<T : Feed>(
  * The purpose of this interface is twofold:
  * 1. to encapsulate a performance-minded implementation behind a simple abstraction;
  * 2. to decorate the RECORD messages with
+ *
  * ```
  *    a) meta-fields in the record data, and
  *    b) field value changes and the motivating reason for these in the record metadata.
@@ -455,6 +455,7 @@ interface StreamRecordConsumer {
     val stream: Stream
 
     fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?)
+
     fun close()
 }
 
@@ -492,7 +493,7 @@ class GlobalFeedBootstrap(
         dataChannelFormat,
         dataChannelMedium,
         bufferByteSizeThresholdForFlush,
-        clock
+        clock,
     )
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
@@ -514,5 +515,5 @@ class StreamFeedBootstrap(
         dataChannelFormat,
         dataChannelMedium,
         bufferByteSizeThresholdForFlush,
-        clock
+        clock,
     )

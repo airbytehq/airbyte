@@ -31,7 +31,7 @@ class MSSQLBulkLoader(
     private val azureBlobClient: AzureBlobClient,
     private val stream: DestinationStream,
     private val mssqlBulkLoadHandler: MSSQLBulkLoadHandler,
-    private val formatFilePath: String
+    private val formatFilePath: String,
 ) : BulkLoader<AzureBlob> {
     private val log = KotlinLogging.logger {}
 
@@ -74,7 +74,7 @@ class MSSQLBulkLoader(
             cursorColumns = importType.cursor,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
     }
 
@@ -83,7 +83,7 @@ class MSSQLBulkLoader(
         log.info { "Loading $dataFilePath into table for ${stream.mappedDescriptor}" }
         mssqlBulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
     }
 
@@ -112,7 +112,7 @@ class MSSQLBulkLoaderFactory(
     private val catalog: DestinationCatalog,
     private val config: MSSQLConfiguration,
     private val bulkLoadConfig: MSSQLBulkLoadConfiguration,
-    private val streamStateStore: StreamStateStore<MSSQLStreamState>
+    private val streamStateStore: StreamStateStore<MSSQLStreamState>,
 ) : BulkLoaderFactory<StreamKey, AzureBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
@@ -123,6 +123,7 @@ class MSSQLBulkLoaderFactory(
     override val maxMemoryRatioReservedForParts: Double = 0.6
 
     private val defaultSchema = config.schema
+
     // This cast is guaranteed to succeed by the `Requires` condition
 
     override fun create(key: StreamKey, partition: Int): BulkLoader<AzureBlob> {
@@ -133,7 +134,7 @@ class MSSQLBulkLoaderFactory(
                 stream.mappedDescriptor.namespace ?: defaultSchema,
                 stream.mappedDescriptor.name,
                 bulkLoadConfig.dataSource,
-                MSSQLQueryBuilder(config.schema, stream)
+                MSSQLQueryBuilder(config.schema, stream),
             )
         val state = streamStateStore.get(key.stream)
         check(state != null && state is MSSQLBulkLoaderStreamState) {

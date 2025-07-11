@@ -31,9 +31,8 @@ class RegexExceptionClassifier(
 /** Micronaut configuration object for [RuleBasedExceptionClassifier] rules. */
 @EachProperty("${REGEX_CLASSIFIER_PREFIX}.rules", list = true)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class RegexExceptionClassifierRule(
-    @param:Parameter override val ordinal: Int,
-) : RuleBasedExceptionClassifier.Rule {
+class RegexExceptionClassifierRule(@param:Parameter override val ordinal: Int) :
+    RuleBasedExceptionClassifier.Rule {
 
     // Micronaut configuration objects work better with mutable properties.
     override lateinit var error: RuleBasedExceptionClassifier.ErrorKind

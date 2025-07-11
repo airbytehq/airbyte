@@ -23,8 +23,5 @@ abstract class CheckTest {
         }
     }
 
-    data class TestCase(
-        val name: String,
-        val configSpec: ConfigurationSpecification,
-    )
+    data class TestCase(val name: String, val configSpec: ConfigurationSpecification)
 }

@@ -31,5 +31,5 @@ data object SnowflakeOffsetDateTimeFieldType :
         OffsetDateTimeCodec,
         OffsetDateTimeCodec,
         // Setter can use the standard approach
-        { stmt, paramIdx, value -> stmt.setObject(paramIdx, value) }
+        { stmt, paramIdx, value -> stmt.setObject(paramIdx, value) },
     )

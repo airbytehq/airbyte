@@ -13,23 +13,14 @@ internal class DataSourceFactoryTest {
 
     @Test
     fun `test data source base url conversion`() {
-        val config =
-            Fixtures.defaultConfig.copy(
-                host = "myhost",
-                port = 1234,
-                database = "db",
-            )
+        val config = Fixtures.defaultConfig.copy(host = "myhost", port = 1234, database = "db")
         val dataSource = config.toSQLServerDataSource()
         assertTrue { dataSource.url.startsWith("jdbc:sqlserver://myhost:1234;databaseName=db;") }
     }
 
     @Test
     fun `test data source handles optional passwords conversion`() {
-        val config =
-            Fixtures.defaultConfig.copy(
-                user = "airbyte-test",
-                password = null,
-            )
+        val config = Fixtures.defaultConfig.copy(user = "airbyte-test", password = null)
         val dataSource = config.toSQLServerDataSource()
         assertEquals("airbyte-test", dataSource.user)
     }
@@ -63,7 +54,7 @@ internal class DataSourceFactoryTest {
             EncryptedVerify(
                 trustStoreName = "name",
                 trustStorePassword = "password",
-                hostNameInCertificate = "cert-host"
+                hostNameInCertificate = "cert-host",
             )
         val config = Fixtures.defaultConfig.copy(sslMethod = sslMethod)
         val dataSource = config.toSQLServerDataSource()

@@ -16,9 +16,7 @@ import jakarta.inject.Singleton
 @Singleton
 class CustomerIoSpecification : ConfigurationSpecificationWithDlq() {
     @get:JsonSchemaTitle("Credentials")
-    @get:JsonPropertyDescription(
-        """Enter the site ID and API key to authenticate.""",
-    )
+    @get:JsonPropertyDescription("""Enter the site ID and API key to authenticate.""")
     @get:JsonProperty("credentials")
     @get:JsonSchemaInject(json = """{"order": 0}""")
     val credentials: CustomerIoCredentialsSpecification = CustomerIoCredentialsSpecification()
@@ -28,14 +26,14 @@ class CustomerIoSpecification : ConfigurationSpecificationWithDlq() {
 class CustomerIoCredentialsSpecification {
     @get:JsonSchemaTitle("Site ID")
     @get:JsonPropertyDescription(
-        """Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">Site ID</a>.""",
+        """Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">Site ID</a>."""
     )
     @get:JsonSchemaInject(json = """{"airbyte_secret": true,"always_show": true,"order":1}""")
     val siteId: String = ""
 
     @get:JsonSchemaTitle("API Key")
     @get:JsonPropertyDescription(
-        """Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">API Key</a>.""",
+        """Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">API Key</a>."""
     )
     @get:JsonSchemaInject(json = """{"airbyte_secret": true,"always_show": true,"order":2}""")
     val apiKey: String = ""
@@ -43,10 +41,7 @@ class CustomerIoCredentialsSpecification {
 
 @Singleton
 class CustomerIoSpecificationExtension : DestinationSpecificationExtension {
-    override val supportedSyncModes =
-        listOf(
-            DestinationSyncMode.APPEND,
-        )
+    override val supportedSyncModes = listOf(DestinationSyncMode.APPEND)
 
     override val supportsIncremental = true
 }

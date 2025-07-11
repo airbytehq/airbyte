@@ -116,7 +116,11 @@ class ObjectLoaderStepBeanFactory {
             null,
         completedUploadPartitioner:
             ObjectLoaderCompletedUploadPartitioner<
-                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+                ObjectKey,
+                ObjectLoaderPartLoader.PartResult<T>,
+                K,
+                T,
+            >? =
             null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
@@ -146,7 +150,11 @@ class ObjectLoaderStepBeanFactory {
         @Named("fileCompletedOutputPartitioner")
         completedUploadPartitioner:
             ObjectLoaderCompletedUploadPartitioner<
-                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+                ObjectKey,
+                ObjectLoaderPartLoader.PartResult<T>,
+                K,
+                T,
+            >? =
             null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
@@ -190,7 +198,7 @@ class ObjectLoaderStepBeanFactory {
         @Named("objectLoaderPartQueue")
         outputQueue:
             PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-        loadStrategy: ObjectLoader
+        loadStrategy: ObjectLoader,
     ): FilePartAccumulatorFactory {
         return FilePartAccumulatorFactory(pathFactory, outputQueue, loadStrategy)
     }

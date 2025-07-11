@@ -29,7 +29,7 @@ abstract class GcsBaseJsonlDestinationAcceptanceTest :
                     "format_type",
                     outputFormat,
                     "compression",
-                    Jsons.jsonNode(Map.of("compression_type", "No Compression"))
+                    Jsons.jsonNode(Map.of("compression_type", "No Compression")),
                 )
             )
 
@@ -38,7 +38,7 @@ abstract class GcsBaseJsonlDestinationAcceptanceTest :
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()

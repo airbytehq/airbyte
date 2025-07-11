@@ -48,7 +48,8 @@ class MSSQLFormatFileCreatorTest {
             WHERE TABLE_SCHEMA = ? 
               AND TABLE_NAME = ?
             ORDER BY ORDINAL_POSITION
-        """.trimIndent()
+        """
+                .trimIndent()
 
         every { dataSource.connection } returns connection
         every { connection.prepareStatement(sql) } returns preparedStatement
@@ -66,14 +67,14 @@ class MSSQLFormatFileCreatorTest {
                     "ORDINAL_POSITION" to 1,
                     "COLUMN_NAME" to "id",
                     "DATA_TYPE" to "int",
-                    "CHARACTER_MAXIMUM_LENGTH" to null
+                    "CHARACTER_MAXIMUM_LENGTH" to null,
                 ),
                 mapOf(
                     "ORDINAL_POSITION" to 2,
                     "COLUMN_NAME" to "name",
                     "DATA_TYPE" to "varchar",
-                    "CHARACTER_MAXIMUM_LENGTH" to 255
-                )
+                    "CHARACTER_MAXIMUM_LENGTH" to 255,
+                ),
             )
         var rowIndex = -1
         every { resultSet.next() } answers
@@ -173,7 +174,7 @@ class MSSQLFormatFileCreatorTest {
         val mapping =
             listOf(
                 CsvToDbColumn(1, 1, "id", "int", null),
-                CsvToDbColumn(2, 2, "name", "varchar", 255)
+                CsvToDbColumn(2, 2, "name", "varchar", 255),
             )
         val creator = MSSQLFormatFileCreator(dataSource, stream, azureBlobClient)
         val delimiter = ","
@@ -189,31 +190,33 @@ class MSSQLFormatFileCreatorTest {
 
         // For the first mapping ("id", int) the pickBcpTypeAndLength returns ("SQLCHAR", 12)
         val expectedLine1 =
-            "%-8d %-10s %-8d %-8d %-8s %-8d %s %s".format(
-                1,
-                "SQLCHAR",
-                0,
-                12,
-                "\"$delimiter\"",
-                1,
-                "id",
-                "SQL_Latin1_General_CP1_CI_AS"
-            )
+            "%-8d %-10s %-8d %-8d %-8s %-8d %s %s"
+                .format(
+                    1,
+                    "SQLCHAR",
+                    0,
+                    12,
+                    "\"$delimiter\"",
+                    1,
+                    "id",
+                    "SQL_Latin1_General_CP1_CI_AS",
+                )
         assertEquals(expectedLine1, lines[2])
 
         // For the second mapping ("name", varchar) the length is computed as 255.
         // Since it is the last mapping, the delimiter becomes the row delimiter.
         val expectedLine2 =
-            "%-8d %-10s %-8d %-8d %-8s %-8d %s %s".format(
-                2,
-                "SQLCHAR",
-                0,
-                255,
-                "\"$rowDelimiter\"",
-                2,
-                "name",
-                "SQL_Latin1_General_CP1_CI_AS"
-            )
+            "%-8d %-10s %-8d %-8d %-8s %-8d %s %s"
+                .format(
+                    2,
+                    "SQLCHAR",
+                    0,
+                    255,
+                    "\"$rowDelimiter\"",
+                    2,
+                    "name",
+                    "SQL_Latin1_General_CP1_CI_AS",
+                )
         assertEquals(expectedLine2, lines[3])
     }
 }

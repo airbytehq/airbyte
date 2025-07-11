@@ -45,6 +45,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This is loosely based on standard-destination-tests's DestinationAcceptanceTest class. The
  * sync-running code is copy-pasted from there.
@@ -65,6 +66,7 @@ abstract class BaseTypingDedupingTest {
     private var randomSuffix: String? = null
     protected var config: JsonNode? = null
         private set
+
     protected var streamNamespace: String? = null
     protected var streamName: String = "dummy"
     private var streamsToTearDown: MutableList<AirbyteStreamNameNamespacePair>? = null
@@ -98,7 +100,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected abstract fun dumpRawTableRecords(
         streamNamespace: String?,
-        streamName: String
+        streamName: String,
     ): List<JsonNode>
 
     /**
@@ -175,7 +177,7 @@ abstract class BaseTypingDedupingTest {
     protected val uniqueSuffix: String
         /**
          * @return A suffix which is different for each concurrent test, but stable within a single
-         * test.
+         *   test.
          */
         get() {
             if (randomSuffix == null) {
@@ -212,7 +214,7 @@ abstract class BaseTypingDedupingTest {
                 generator.buildColumnId("id2") to AirbyteProtocolType.INTEGER,
                 generator.buildColumnId("updated_at") to
                     AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-                generator.buildColumnId("old_cursor") to AirbyteProtocolType.INTEGER
+                generator.buildColumnId("old_cursor") to AirbyteProtocolType.INTEGER,
             )
 
         LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName)
@@ -602,7 +604,7 @@ abstract class BaseTypingDedupingTest {
             expectedFinalRecords1,
             null,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
 
         // Second sync
@@ -619,7 +621,7 @@ abstract class BaseTypingDedupingTest {
             expectedFinalRecords2,
             null,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
     }
 
@@ -636,7 +638,7 @@ abstract class BaseTypingDedupingTest {
                 .put("currency", "USD\u2028")
                 .put(
                     "date",
-                    "2020-03-\n31T00:00:00Z\r"
+                    "2020-03-\n31T00:00:00Z\r",
                 ) // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores
                 // 10.1 as "10" which
                 // fails destination tests
@@ -780,7 +782,7 @@ abstract class BaseTypingDedupingTest {
                                     .withNamespace(namespace2)
                                     .withName(streamName)
                                     .withJsonSchema(SCHEMA)
-                            )
+                            ),
                     )
                 )
 
@@ -796,14 +798,14 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
             namespace1,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
         verifySyncResult(
             readRecords("dat/sync1_expectedrecords_raw2.jsonl"),
             readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
             namespace2,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
 
         // Second sync
@@ -817,14 +819,14 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl"),
             namespace1,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
         verifySyncResult(
             readRecords("dat/sync2_expectedrecords_raw2.jsonl"),
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
             namespace2,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
     }
 
@@ -926,7 +928,7 @@ abstract class BaseTypingDedupingTest {
             Executable {
                 Assertions.assertEquals(
                     2 * nTimes * messages2.size.toLong(),
-                    rawRecords2.size.toLong()
+                    rawRecords2.size.toLong(),
                 )
             },
         )
@@ -936,15 +938,15 @@ abstract class BaseTypingDedupingTest {
                 Executable {
                     DIFFER!!.diffFinalTableRecords(
                         readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
-                        dumpFinalTableRecords(namespace1, streamName)
+                        dumpFinalTableRecords(namespace1, streamName),
                     )
                 },
                 Executable {
                     DIFFER!!.diffFinalTableRecords(
                         readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
-                        dumpFinalTableRecords(namespace2, streamName)
+                        dumpFinalTableRecords(namespace2, streamName),
                     )
-                }
+                },
             )
         }
     }
@@ -979,8 +981,9 @@ abstract class BaseTypingDedupingTest {
                 """
             {"type": "integer"}
             
-            """.trimIndent()
-            )
+            """
+                    .trimIndent()
+            ),
         )
         val configuredStream =
             ConfiguredAirbyteStream()
@@ -1076,16 +1079,18 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA),
-                            ),
-                    ),
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
                 )
         val messages1 = readMessages("dat/sync1_messages.jsonl")
         runSync(catalog, messages1)
 
         assertFails(
             "Expected final table to not exist, but we were able to read records from it."
-        ) { dumpFinalTableRecords(streamNamespace, streamName) }
+        ) {
+            dumpFinalTableRecords(streamNamespace, streamName)
+        }
     }
 
     @Test
@@ -1111,7 +1116,7 @@ abstract class BaseTypingDedupingTest {
                 )
         runSync(
             catalog0,
-            readMessages("dat/sync1_messages.jsonl") + readMessages("dat/sync2_messages.jsonl")
+            readMessages("dat/sync1_messages.jsonl") + readMessages("dat/sync2_messages.jsonl"),
         )
 
         val expectedRawRecords0 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
@@ -1159,7 +1164,7 @@ abstract class BaseTypingDedupingTest {
         verifySyncResult(
             expectedRawRecords1 + expectedRawRecords1,
             expectedFinalRecords1 + expectedFinalRecords1,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
     }
 
@@ -1309,10 +1314,7 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync2_expectedrecords_raw.jsonl").let { baseRecords ->
                 val sync2Records =
                     baseRecords.subList(expectedRawRecords1.size, baseRecords.size).onEach {
-                        (it as ObjectNode).put(
-                            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
-                            44,
-                        )
+                        (it as ObjectNode).put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, 44)
                     }
                 expectedRawRecords1 + sync2Records + sync2Records
             }
@@ -1324,7 +1326,7 @@ abstract class BaseTypingDedupingTest {
                         (it as ObjectNode).put(
                             finalMetadataColumnNames.getOrDefault(
                                 JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
-                                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+                                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                             ),
                             44,
                         )
@@ -1375,14 +1377,14 @@ abstract class BaseTypingDedupingTest {
     protected fun verifySyncResult(
         expectedRawRecords: List<JsonNode>,
         expectedFinalRecords: List<JsonNode>,
-        disableFinalTableComparison: Boolean
+        disableFinalTableComparison: Boolean,
     ) {
         verifySyncResult(
             expectedRawRecords,
             expectedFinalRecords,
             streamNamespace,
             streamName,
-            disableFinalTableComparison
+            disableFinalTableComparison,
         )
     }
 
@@ -1392,7 +1394,7 @@ abstract class BaseTypingDedupingTest {
         expectedFinalRecords: List<JsonNode>,
         streamNamespace: String?,
         streamName: String,
-        disableFinalTableComparison: Boolean
+        disableFinalTableComparison: Boolean,
     ) {
         val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
 
@@ -1404,7 +1406,7 @@ abstract class BaseTypingDedupingTest {
                 expectedRawRecords,
                 actualRawRecords,
                 expectedFinalRecords,
-                actualFinalRecords
+                actualFinalRecords,
             )
         }
     }
@@ -1415,8 +1417,8 @@ abstract class BaseTypingDedupingTest {
      */
     /**
      * @param streamStatus After pushing all the messages in [messages], push a stream status
-     * message for each stream. If this parameter is `null`, then instead do NOT push any status
-     * messages.
+     *   message for each stream. If this parameter is `null`, then instead do NOT push any status
+     *   messages.
      */
     @JvmOverloads
     @Throws(Exception::class)
@@ -1425,7 +1427,7 @@ abstract class BaseTypingDedupingTest {
         messages: List<AirbyteMessage>,
         imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity(),
-        streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE
+        streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
     ) {
         val destination = startSync(catalog, imageName, configTransformer)
         val outputFuture = destinationOutputFuture(destination)
@@ -1439,7 +1441,7 @@ abstract class BaseTypingDedupingTest {
     private fun pushStatusMessages(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         destination: AirbyteDestination,
-        streamStatus: AirbyteStreamStatus
+        streamStatus: AirbyteStreamStatus,
     ) {
         catalog.streams.forEach {
             destination.accept(
@@ -1454,11 +1456,11 @@ abstract class BaseTypingDedupingTest {
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withNamespace(it.stream.namespace)
-                                            .withName(it.stream.name),
+                                            .withName(it.stream.name)
                                     )
-                                    .withStatus(streamStatus),
-                            ),
-                    ),
+                                    .withStatus(streamStatus)
+                            )
+                    )
             )
         }
     }
@@ -1491,11 +1493,11 @@ abstract class BaseTypingDedupingTest {
     }
 
     /**
-     *
      * @param catalog
      * @param imageName
      * @param configTransformer
      * - test specific config overrides or additions can be performed with this function
+     *
      * @return
      * @throws Exception
      */
@@ -1503,7 +1505,7 @@ abstract class BaseTypingDedupingTest {
     protected fun startSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         imageName: String = this.imageName,
-        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
+        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity(),
     ): AirbyteDestination {
         synchronized(this) {
             catalog.streams.forEach(
@@ -1527,7 +1529,7 @@ abstract class BaseTypingDedupingTest {
                 localRoot.toString(),
                 fileTransferMountSource = null,
                 "host",
-                emptyMap()
+                emptyMap(),
             )
         val transformedConfig = configTransformer.apply(config)
         val destinationConfig =
@@ -1546,7 +1548,7 @@ abstract class BaseTypingDedupingTest {
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        EnvVariableFeatureFlags(),
                     )
             )
 
@@ -1558,7 +1560,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected fun endSync(
         destination: AirbyteDestination,
-        destinationOutputFuture: CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>>
+        destinationOutputFuture: CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>>,
     ) {
         destination.notifyEndOfInput()
         // TODO Eventually we'll want to somehow extract the state messages while a sync is running,
@@ -1579,7 +1581,7 @@ abstract class BaseTypingDedupingTest {
     fun fixGenerationId(
         rawRecords: List<JsonNode>,
         finalRecords: List<JsonNode>,
-        generationId: Long
+        generationId: Long,
     ) {
         rawRecords.forEach {
             (it as ObjectNode).put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, generationId)
@@ -1588,9 +1590,9 @@ abstract class BaseTypingDedupingTest {
             (it as ObjectNode).put(
                 finalMetadataColumnNames.getOrDefault(
                     JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
-                    JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+                    JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                 ),
-                generationId
+                generationId,
             )
         }
     }
@@ -1622,7 +1624,7 @@ abstract class BaseTypingDedupingTest {
         protected fun readMessages(
             filename: String,
             streamNamespace: String?,
-            streamName: String?
+            streamName: String?,
         ): List<AirbyteMessage> {
             return readRecords(filename)
                 .map { record: JsonNode -> Jsons.convertValue(record, AirbyteMessage::class.java) }
@@ -1634,7 +1636,7 @@ abstract class BaseTypingDedupingTest {
 
         protected fun pushMessages(
             messages: List<AirbyteMessage>,
-            destination: AirbyteDestination
+            destination: AirbyteDestination,
         ) {
             messages.forEach(
                 Consumer { message: AirbyteMessage ->
@@ -1642,7 +1644,7 @@ abstract class BaseTypingDedupingTest {
                         destination.accept(
                             convertProtocolObject(
                                 message,
-                                io.airbyte.protocol.models.AirbyteMessage::class.java
+                                io.airbyte.protocol.models.AirbyteMessage::class.java,
                             )!!
                         )
                     }

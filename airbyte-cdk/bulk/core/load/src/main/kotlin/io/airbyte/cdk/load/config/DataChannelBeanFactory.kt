@@ -107,7 +107,7 @@ class DataChannelBeanFactory {
     @Named("numDataChannels")
     fun numDataChannels(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
-        @Named("numInputPartitions") numInputPartitions: Int
+        @Named("numInputPartitions") numInputPartitions: Int,
     ): Int {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO -> 1
@@ -141,7 +141,7 @@ class DataChannelBeanFactory {
     /**
      * Because sockets uses multiple threads, state must be kept coherent by
      * - matching AirbyteRecords to AirbyteStateMessages by CheckpointId (from
-     * `additionalProperties['partition_id']`)
+     *   `additionalProperties['partition_id']`)
      * - ordering AirbyteStateMessages by CheckpointIndex (from `additionalProperties['id']`)
      */
     @Singleton
@@ -162,7 +162,7 @@ class DataChannelBeanFactory {
     @Named("_pipelineInputQueue")
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
     fun pipelineInputQueue(
-        @Named("numInputPartitions") numInputPartitions: Int,
+        @Named("numInputPartitions") numInputPartitions: Int
     ): PartitionedQueue<PipelineInputEvent> {
         return StrictPartitionedQueue(
             Array(numInputPartitions) { ChannelMessageQueue(Channel(Channel.UNLIMITED)) }
@@ -173,7 +173,7 @@ class DataChannelBeanFactory {
     @Singleton
     @Named("fileMessageQueue")
     fun fileMessageQueue(
-        config: DestinationConfiguration,
+        config: DestinationConfiguration
     ): MultiProducerChannel<FileTransferQueueMessage> {
         val channel = Channel<FileTransferQueueMessage>(config.batchQueueDepth)
         // There is only a single producer (InputConsumerTask) and there should only ever be one.
@@ -245,7 +245,7 @@ class DataChannelBeanFactory {
                             dataChannelReader,
                             pipelineEventBookkeepingRouter,
                             queueMemoryManager,
-                            logPerNRecords
+                            logPerNRecords,
                         )
                     }
                     .toTypedArray()
@@ -275,7 +275,7 @@ class DataChannelBeanFactory {
             inputFlow,
             pipelineInputQueue,
             partitioner,
-            pipelineEventBookkeepingRouter
+            pipelineEventBookkeepingRouter,
         )
     }
 
@@ -301,7 +301,7 @@ class DataChannelBeanFactory {
     fun namespaceMapper(
         @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
         @Value("\${airbyte.destination.core.mappers.namespace-mapping-config-path}")
-        namespaceMappingConfigPath: String
+        namespaceMappingConfigPath: String,
     ): NamespaceMapper {
         when (dataChannelMedium) {
             DataChannelMedium.STDIO -> {
@@ -321,7 +321,7 @@ class DataChannelBeanFactory {
                 return NamespaceMapper(
                     namespaceDefinitionType = config.namespaceDefinitionType,
                     namespaceFormat = config.namespaceFormat,
-                    streamPrefix = config.streamPrefix
+                    streamPrefix = config.streamPrefix,
                 )
             }
         }

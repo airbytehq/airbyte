@@ -43,7 +43,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
         numberOfDummyRecords: Int,
         numberOfBatches: Int,
         numberOfColumns: Int,
-        numberOfStreams: Int
+        numberOfStreams: Int,
     ) {
         val database = setupDatabase(dbName)
 
@@ -58,7 +58,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
                             schemaName,
                             i,
                             numberOfColumns,
-                            numberOfDummyRecords
+                            numberOfDummyRecords,
                         )
                     ctx.fetch(String.format(insertQueryTemplate, currentTableName))
                 }
@@ -87,7 +87,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
     protected fun prepareCreateTableQuery(
         dbSchemaName: String?,
         numberOfColumns: Int,
-        currentTableName: String?
+        currentTableName: String?,
     ): String {
         val sj = StringJoiner(",")
         for (i in 0 until numberOfColumns) {
@@ -98,7 +98,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             CREATE_DB_TABLE_TEMPLATE,
             dbSchemaName,
             currentTableName,
-            sj.toString()
+            sj.toString(),
         )
     }
 
@@ -106,7 +106,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
         dbSchemaName: String?,
         batchNumber: Int,
         numberOfColumns: Int,
-        recordsNumber: Int
+        recordsNumber: Int,
     ): String {
         val fieldsNames = StringJoiner(",")
         fieldsNames.add("id")
@@ -138,7 +138,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             dbSchemaName,
             "%s",
             fieldsNames.toString(),
-            insertGroupValuesJoiner.toString()
+            insertGroupValuesJoiner.toString(),
         )
     }
 

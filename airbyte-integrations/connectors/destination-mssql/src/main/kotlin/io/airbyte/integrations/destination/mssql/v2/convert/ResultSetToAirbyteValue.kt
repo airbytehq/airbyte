@@ -102,7 +102,7 @@ class ResultSetToAirbyteValue {
             TimeWithTimezoneValue(
                 OffsetDateTime.parse(
                         this,
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX"),
                     )
                     .toOffsetTime()
                     .toString()
@@ -115,7 +115,7 @@ class ResultSetToAirbyteValue {
             TimestampWithTimezoneValue(
                 OffsetDateTime.parse(
                         this,
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX"),
                     )
                     .toString()
             )

@@ -29,7 +29,7 @@ class AbstractDbSourceTest {
         val dbSource =
             Mockito.mock(
                 AbstractDbSourceForTest::class.java,
-                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS)
+                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS),
             )
         val config = Mockito.mock(JsonNode::class.java)
 
@@ -39,7 +39,7 @@ class AbstractDbSourceTest {
         val result =
             StateGeneratorUtils.deserializeInitialState(
                 legacyState,
-                dbSource.getSupportedStateType(config)
+                dbSource.getSupportedStateType(config),
             )
         Assertions.assertEquals(1, result.size)
         Assertions.assertEquals(AirbyteStateMessage.AirbyteStateType.LEGACY, result[0].type)
@@ -51,7 +51,7 @@ class AbstractDbSourceTest {
         val dbSource =
             Mockito.mock(
                 AbstractDbSourceForTest::class.java,
-                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS)
+                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS),
             )
         val config = Mockito.mock(JsonNode::class.java)
 
@@ -61,7 +61,7 @@ class AbstractDbSourceTest {
         val result =
             StateGeneratorUtils.deserializeInitialState(
                 globalState,
-                dbSource.getSupportedStateType(config)
+                dbSource.getSupportedStateType(config),
             )
         Assertions.assertEquals(1, result.size)
         Assertions.assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, result[0].type)
@@ -73,7 +73,7 @@ class AbstractDbSourceTest {
         val dbSource =
             Mockito.mock(
                 AbstractDbSourceForTest::class.java,
-                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS)
+                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS),
             )
         val config = Mockito.mock(JsonNode::class.java)
 
@@ -83,7 +83,7 @@ class AbstractDbSourceTest {
         val result =
             StateGeneratorUtils.deserializeInitialState(
                 streamState,
-                dbSource.getSupportedStateType(config)
+                dbSource.getSupportedStateType(config),
             )
         Assertions.assertEquals(2, result.size)
         Assertions.assertEquals(AirbyteStateMessage.AirbyteStateType.STREAM, result[0].type)
@@ -95,14 +95,14 @@ class AbstractDbSourceTest {
         val dbSource =
             Mockito.mock(
                 AbstractDbSourceForTest::class.java,
-                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS)
+                Mockito.withSettings().useConstructor("").defaultAnswer(Mockito.CALLS_REAL_METHODS),
             )
         val config = Mockito.mock(JsonNode::class.java)
 
         val result =
             StateGeneratorUtils.deserializeInitialState(
                 null,
-                dbSource.getSupportedStateType(config)
+                dbSource.getSupportedStateType(config),
             )
         Assertions.assertEquals(1, result.size)
         Assertions.assertEquals(dbSource.getSupportedStateType(config), result[0].type)

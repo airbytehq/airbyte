@@ -26,19 +26,21 @@ import org.mockito.Mockito
 private val LOGGER = KotlinLogging.logger {}
 
 abstract class S3BaseDestinationAcceptanceTest() :
-    BaseDestinationAcceptanceTest(
-        verifyIndividualStateAndCounts = true,
-    ) {
+    BaseDestinationAcceptanceTest(verifyIndividualStateAndCounts = true) {
     protected val secretFilePath: String = "secrets/config.json"
     override val imageName: String
         get() = "airbyte/destination-s3:dev"
+
     protected var configJson: JsonNode? = null
 
     override fun getConfig(): JsonNode = configJson!!
+
     protected open val baseConfigJson: JsonNode
         get() = Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)))
+
     protected abstract val formatConfig: JsonNode?
         get
+
     protected var s3DestinationConfig: S3DestinationConfig = Mockito.mock()
     protected var s3Client: AmazonS3? = null
     protected var s3nameTransformer: NamingConventionTransformer = Mockito.mock()
@@ -56,16 +58,12 @@ abstract class S3BaseDestinationAcceptanceTest() :
      */
     override fun setup(
         testEnv: DestinationAcceptanceTest.TestDestinationEnv,
-        TEST_SCHEMAS: HashSet<String>
+        TEST_SCHEMAS: HashSet<String>,
     ) {
         val baseConfigJson = baseConfigJson
         // Set a random s3 bucket path for each integration test
         val configJson = Jsons.clone(baseConfigJson)
-        testBucketPath =
-            String.format(
-                "test_%s",
-                RandomStringUtils.insecure().nextAlphanumeric(5),
-            )
+        testBucketPath = String.format("test_%s", RandomStringUtils.insecure().nextAlphanumeric(5))
         (configJson as ObjectNode)
             .put("s3_bucket_path", testBucketPath)
             .set<JsonNode>("format", formatConfig)
@@ -74,7 +72,7 @@ abstract class S3BaseDestinationAcceptanceTest() :
             S3DestinationConfig.getS3DestinationConfig(
                 configJson,
                 storageProvider(),
-                getConnectorEnv()
+                getConnectorEnv(),
             )
         LOGGER.info {
             "${"Test full path: {}/{}"} ${s3DestinationConfig.bucketName} ${s3DestinationConfig.bucketPath}"
@@ -94,9 +92,7 @@ abstract class S3BaseDestinationAcceptanceTest() :
     }
 
     /** Helper method to retrieve all synced objects inside the configured bucket path. */
-    protected fun getAllSyncedObjects(
-        streamName: String,
-    ): List<S3ObjectSummary> {
+    protected fun getAllSyncedObjects(streamName: String): List<S3ObjectSummary> {
         val namespaceStr = s3nameTransformer.getNamespace(getDefaultSchema())
         val streamNameStr = s3nameTransformer.getIdentifier(streamName)
         val outputPrefix =

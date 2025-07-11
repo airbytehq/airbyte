@@ -23,13 +23,6 @@ data class AlterTableReport<Type>(
         columnsToAdd.isEmpty() && columnsToRemove.isEmpty() && columnsToChangeType.isEmpty()
 }
 
-data class ColumnAdd<Type>(
-    val name: String,
-    val type: Type,
-)
+data class ColumnAdd<Type>(val name: String, val type: Type)
 
-data class ColumnChange<Type>(
-    val name: String,
-    val originalType: Type,
-    val newType: Type,
-)
+data class ColumnChange<Type>(val name: String, val originalType: Type, val newType: Type)

@@ -14,11 +14,9 @@ import jakarta.inject.Singleton
  */
 @Singleton
 class ProtocolMessageDeserializer(
-    private val destinationMessageFactory: DestinationMessageFactory,
+    private val destinationMessageFactory: DestinationMessageFactory
 ) {
-    fun deserialize(
-        serialized: String,
-    ): DestinationMessage {
+    fun deserialize(serialized: String): DestinationMessage {
         val airbyteMessage =
             try {
                 serialized.deserializeToClass(AirbyteMessage::class.java)

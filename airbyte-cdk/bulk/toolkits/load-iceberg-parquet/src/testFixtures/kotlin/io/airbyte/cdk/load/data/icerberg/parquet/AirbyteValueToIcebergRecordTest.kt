@@ -48,7 +48,7 @@ class AirbyteValueToIcebergRecordTest {
         val schema =
             Schema(
                 NestedField.required(1, "id", Types.LongType.get()),
-                NestedField.optional(2, "name", Types.StringType.get())
+                NestedField.optional(2, "name", Types.StringType.get()),
             )
         val objectValue =
             ObjectValue(linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe")))
@@ -126,7 +126,7 @@ class AirbyteValueToIcebergRecordTest {
         val result =
             converter.convert(
                 TimeWithoutTimezoneValue(LocalTime.parse("12:34:56")),
-                Types.TimeType.get()
+                Types.TimeType.get(),
             )
         assertEquals(LocalTime.parse("12:34:56"), result)
     }
@@ -136,7 +136,7 @@ class AirbyteValueToIcebergRecordTest {
         val result =
             converter.convert(
                 TimeWithTimezoneValue(OffsetTime.parse("12:34:56Z")),
-                Types.TimeType.get()
+                Types.TimeType.get(),
             )
         // Note LocalTime here. Iceberg+Parquet doesn't have a dedicated timetz type.
         assertEquals(LocalTime.parse("12:34:56"), result)
@@ -147,7 +147,7 @@ class AirbyteValueToIcebergRecordTest {
         val result =
             converter.convert(
                 TimestampWithoutTimezoneValue(LocalDateTime.parse("2024-11-18T12:34:56")),
-                Types.TimestampType.withoutZone()
+                Types.TimestampType.withoutZone(),
             )
         assertEquals(LocalDateTime.parse("2024-11-18T12:34:56"), result)
     }
@@ -157,7 +157,7 @@ class AirbyteValueToIcebergRecordTest {
         val result =
             converter.convert(
                 TimestampWithTimezoneValue(OffsetDateTime.parse("2024-11-18T12:34:56Z")),
-                Types.TimestampType.withZone()
+                Types.TimestampType.withZone(),
             )
         assertEquals(OffsetDateTime.parse("2024-11-18T12:34:56Z"), result)
     }
@@ -179,10 +179,10 @@ class AirbyteValueToIcebergRecordTest {
                             StructType.of(
                                 NestedField.required(6, "change", Types.StringType.get()),
                                 NestedField.required(7, "reason", Types.StringType.get()),
-                            )
-                        )
-                    )
-                )
+                            ),
+                        ),
+                    ),
+                ),
             )
         val objectValue =
             mapOf(
@@ -211,13 +211,13 @@ class AirbyteValueToIcebergRecordTest {
                                             "change" to StringValue("insert"),
                                             "reason" to StringValue("reason"),
                                         )
-                                    )
+                                    ),
                             )
                         ),
                         Meta.AirbyteMetaFields.META.type,
                         "meta",
                         airbyteMetaField = Meta.AirbyteMetaFields.META,
-                    )
+                    ),
             )
 
         val result = objectValue.toIcebergRecord(schema)
@@ -227,12 +227,12 @@ class AirbyteValueToIcebergRecordTest {
         assertEquals(
             "insert",
             ((result.getField("meta") as GenericRecord).getField("changes") as GenericRecord)
-                .getField("change")
+                .getField("change"),
         )
         assertEquals(
             "reason",
             ((result.getField("meta") as GenericRecord).getField("changes") as GenericRecord)
-                .getField("reason")
+                .getField("reason"),
         )
     }
 
@@ -257,7 +257,7 @@ class AirbyteValueToIcebergRecordTest {
                         StringValue("Should be ignored"),
                         StringType,
                         "name",
-                        airbyteMetaField = null
+                        airbyteMetaField = null,
                     ),
             )
 

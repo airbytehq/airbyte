@@ -19,7 +19,6 @@ import java.util.*
  */
 object CatalogClientConverters {
     /**
-     *
      * @param catalog
      * @return
      */
@@ -41,7 +40,7 @@ object CatalogClientConverters {
     @Throws(JsonValidationException::class)
     private fun toConfiguredProtocol(
         stream: AirbyteStream?,
-        config: AirbyteStreamConfiguration?
+        config: AirbyteStreamConfiguration?,
     ): io.airbyte.protocol.models.AirbyteStream {
         if (config!!.fieldSelectionEnabled != null && config.fieldSelectionEnabled!!) {
             // Validate the selected field paths.
@@ -101,7 +100,7 @@ object CatalogClientConverters {
                     throw JsonValidationException(
                         String.format(
                             "Requested selected field %s not found in JSON schema",
-                            selectedFieldName
+                            selectedFieldName,
                         )
                     )
                 }
@@ -153,7 +152,7 @@ object CatalogClientConverters {
             result.setSyncMode(
                 Enums.convertTo(
                     stream.supportedSyncModes!![0],
-                    io.airbyte.api.client.model.generated.SyncMode::class.java
+                    io.airbyte.api.client.model.generated.SyncMode::class.java,
                 )
             )
         } else {
@@ -171,7 +170,7 @@ object CatalogClientConverters {
             .supportedSyncModes(
                 Enums.convertListTo(
                     stream.supportedSyncModes,
-                    io.airbyte.api.client.model.generated.SyncMode::class.java
+                    io.airbyte.api.client.model.generated.SyncMode::class.java,
                 )
             )
             .sourceDefinedCursor(stream.sourceDefinedCursor)

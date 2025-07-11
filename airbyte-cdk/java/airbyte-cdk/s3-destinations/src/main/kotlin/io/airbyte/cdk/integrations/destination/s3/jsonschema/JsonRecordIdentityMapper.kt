@@ -85,7 +85,7 @@ open class JsonRecordIdentityMapper : JsonRecordMapper<JsonNode?>() {
                 val match =
                     AirbyteJsonSchemaType.getMatchingValueForType(
                         item,
-                        schema["items"] as ArrayNode
+                        schema["items"] as ArrayNode,
                     )
                 val newItem = mapRecordWithSchema(item, match)
                 newArray.add(newItem)

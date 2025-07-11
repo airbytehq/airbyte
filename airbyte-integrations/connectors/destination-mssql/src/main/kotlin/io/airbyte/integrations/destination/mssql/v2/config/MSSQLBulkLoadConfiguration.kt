@@ -33,9 +33,7 @@ class MSSQLIsNotConfiguredForBulkLoad : Condition {
 
 @Singleton
 @Requires(condition = MSSQLIsConfiguredForBulkLoad::class)
-class MSSQLBulkLoadConfiguration(
-    private val config: MSSQLConfiguration,
-) :
+class MSSQLBulkLoadConfiguration(private val config: MSSQLConfiguration) :
     ObjectStoragePathConfigurationProvider,
     ObjectStorageCompressionConfigurationProvider<ByteArrayOutputStream>,
     AzureBlobStorageClientConfigurationProvider {

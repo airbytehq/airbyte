@@ -12,9 +12,7 @@ import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericDatumWriter
 import org.apache.avro.generic.GenericRecord
 
-class AvroWriter(
-    private val dataFileWriter: DataFileWriter<GenericRecord>,
-) : Closeable {
+class AvroWriter(private val dataFileWriter: DataFileWriter<GenericRecord>) : Closeable {
     fun write(record: GenericRecord) {
         dataFileWriter.append(record)
     }
@@ -30,7 +28,7 @@ class AvroWriter(
 
 fun OutputStream.toAvroWriter(
     avroSchema: Schema,
-    config: AvroCompressionConfiguration
+    config: AvroCompressionConfiguration,
 ): AvroWriter {
     val datumWriter = GenericDatumWriter<GenericRecord>(avroSchema)
     val dataFileWriter = DataFileWriter(datumWriter)

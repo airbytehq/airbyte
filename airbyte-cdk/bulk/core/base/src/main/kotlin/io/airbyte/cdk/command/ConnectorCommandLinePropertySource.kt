@@ -15,10 +15,8 @@ private val log = KotlinLogging.logger {}
  * connector CLI and turns them into configuration properties. This allows the arguments to be
  * injected into code that depends on them via Micronaut.
  */
-class ConnectorCommandLinePropertySource(
-    commandLine: CommandLine,
-    allLongOptions: List<String>,
-) : MapPropertySource("connector", resolveValues(commandLine, allLongOptions))
+class ConnectorCommandLinePropertySource(commandLine: CommandLine, allLongOptions: List<String>) :
+    MapPropertySource("connector", resolveValues(commandLine, allLongOptions))
 
 const val CONNECTOR_CONFIG_PREFIX: String = "airbyte.connector.config"
 const val CONNECTOR_CATALOG_PREFIX: String = "airbyte.connector.catalog"

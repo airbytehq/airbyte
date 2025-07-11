@@ -29,7 +29,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 class ConcurrentStreamConsumer(
     streamConsumer: Consumer<AutoCloseableIterator<AirbyteMessage>>,
-    requestedParallelism: Int
+    requestedParallelism: Int,
 ) : Consumer<Collection<AutoCloseableIterator<AirbyteMessage>>>, AutoCloseable {
     private val executorService: ExecutorService
     private val exceptions: MutableList<Exception>
@@ -56,7 +56,7 @@ class ConcurrentStreamConsumer(
      *
      * @param streamConsumer The [Consumer] that accepts streams as an [AutoCloseableIterator].
      * @param requestedParallelism The requested amount of parallelism that will be used as a hint
-     * to determine the appropriate number of threads to execute concurrently.
+     *   to determine the appropriate number of threads to execute concurrently.
      */
     init {
         this.parallelism = computeParallelism(requestedParallelism)
@@ -95,7 +95,7 @@ class ConcurrentStreamConsumer(
          * Returns the first captured [Exception].
          *
          * @return The first captured [Exception] or an empty [Optional] if no exceptions were
-         * captured during execution.
+         *   captured during execution.
          */
         get() =
             if (exceptions.isNotEmpty()) {
@@ -139,7 +139,7 @@ class ConcurrentStreamConsumer(
         val parallelism =
             min(
                     defaultPoolSize.toDouble(),
-                    (if (requestedParallelism > 0) requestedParallelism else 1).toDouble()
+                    (if (requestedParallelism > 0) requestedParallelism else 1).toDouble(),
                 )
                 .toInt()
         LOGGER.debug { "Computed concurrent stream consumer parallelism: $parallelism" }
@@ -161,7 +161,7 @@ class ConcurrentStreamConsumer(
             TimeUnit.MILLISECONDS,
             LinkedBlockingQueue(),
             ConcurrentStreamThreadFactory(),
-            ThreadPoolExecutor.AbortPolicy()
+            ThreadPoolExecutor.AbortPolicy(),
         )
     }
 
@@ -227,7 +227,7 @@ class ConcurrentStreamConsumer(
      */
     private class ConcurrentStreamRunnable(
         val stream: AutoCloseableIterator<AirbyteMessage>,
-        val consumer: ConcurrentStreamConsumer
+        val consumer: ConcurrentStreamConsumer,
     ) : Runnable {
         override fun run() {
             consumer.executeStream(stream)

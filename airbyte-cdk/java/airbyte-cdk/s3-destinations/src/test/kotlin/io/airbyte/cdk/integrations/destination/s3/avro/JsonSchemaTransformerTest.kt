@@ -18,7 +18,7 @@ class JsonSchemaTransformerTest {
     private fun mangleAltCombined(
         node: ObjectNode,
         type1: String = "integer",
-        type2: String = "string"
+        type2: String = "string",
     ) {
         val oneOf = MoreMappers.initMapper().createArrayNode()
 
@@ -157,7 +157,8 @@ class JsonSchemaTransformerTest {
                 }
               }
             }
-            """.trimIndent()
+            """
+                    .trimIndent()
             ) as ObjectNode
         val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
 
@@ -174,9 +175,10 @@ class JsonSchemaTransformerTest {
                     }
                   }
                 }
-                """.trimIndent()
+                """
+                    .trimIndent()
             ),
-            mapped
+            mapped,
         )
     }
 
@@ -193,12 +195,13 @@ class JsonSchemaTransformerTest {
                       "description": "foo",
                       "some_random_other_property": "lol, lmao, isn't jsonschema great"
                     }
-                """.trimIndent()
+                """
+                    .trimIndent()
             ) as ObjectNode
         val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
         assertEquals(
             Jsons.deserialize("""{"oneOf":[{"type":"string"},{"type":"integer"}]}"""),
-            mapped
+            mapped,
         )
     }
 }

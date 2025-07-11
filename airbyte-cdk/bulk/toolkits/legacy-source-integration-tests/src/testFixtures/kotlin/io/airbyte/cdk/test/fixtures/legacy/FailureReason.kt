@@ -17,7 +17,7 @@ import java.io.Serializable
     "metadata",
     "stacktrace",
     "retryable",
-    "timestamp"
+    "timestamp",
 )
 class FailureReason : Serializable {
     /** Indicates where the error originated. If not set, the origin of error is not well known. */
@@ -30,6 +30,7 @@ class FailureReason : Serializable {
         "Indicates where the error originated. If not set, the origin of error is not well known."
     )
     var failureOrigin: FailureOrigin? = null
+
     /**
      * Categorizes well known errors into types for programmatic handling. If not set, the type of
      * error is not well known.
@@ -49,6 +50,7 @@ class FailureReason : Serializable {
         "Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known."
     )
     var failureType: FailureType? = null
+
     /**
      * Human readable failure description for consumption by technical system operators, like
      * Airbyte engineers or OSS users.
@@ -68,6 +70,7 @@ class FailureReason : Serializable {
         "Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users."
     )
     var internalMessage: String? = null
+
     /** Human readable failure description for presentation in the UI to non-technical users. */
     /** Human readable failure description for presentation in the UI to non-technical users. */
     /** Human readable failure description for presentation in the UI to non-technical users. */
@@ -78,6 +81,7 @@ class FailureReason : Serializable {
         "Human readable failure description for presentation in the UI to non-technical users."
     )
     var externalMessage: String? = null
+
     /** Key-value pairs of relevant data */
     /** Key-value pairs of relevant data */
     /** Key-value pairs of relevant data */
@@ -86,6 +90,7 @@ class FailureReason : Serializable {
     @JsonProperty("metadata")
     @JsonPropertyDescription("Key-value pairs of relevant data")
     var metadata: Metadata? = null
+
     /** Raw stacktrace associated with the failure. */
     /** Raw stacktrace associated with the failure. */
     /** Raw stacktrace associated with the failure. */
@@ -94,6 +99,7 @@ class FailureReason : Serializable {
     @JsonProperty("stacktrace")
     @JsonPropertyDescription("Raw stacktrace associated with the failure.")
     var stacktrace: String? = null
+
     /**
      * True if it is known that retrying may succeed, e.g. for a transient failure. False if it is
      * known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable
@@ -116,18 +122,10 @@ class FailureReason : Serializable {
         "True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known."
     )
     var retryable: Boolean? = null
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("timestamp")
     @set:JsonProperty("timestamp")
     @JsonProperty("timestamp")

@@ -17,7 +17,7 @@ private const val COLLATION = "SQL_Latin1_General_CP1_CI_AS"
 internal class MSSQLFormatFileCreator(
     private val dataSource: DataSource,
     private val stream: DestinationStream,
-    private val azureBlobClient: AzureBlobClient
+    private val azureBlobClient: AzureBlobClient,
 ) {
 
     /** Simple struct holding column metadata retrieved from SQL Server. */
@@ -77,7 +77,8 @@ internal class MSSQLFormatFileCreator(
             WHERE TABLE_SCHEMA = ? 
               AND TABLE_NAME = ?
             ORDER BY ORDINAL_POSITION
-        """.trimIndent()
+        """
+                .trimIndent()
 
         dataSource.connection.use { conn ->
             conn.prepareStatement(sql).use { stmt ->
@@ -99,7 +100,7 @@ internal class MSSQLFormatFileCreator(
                                 name = colName,
                                 dataType = dataType,
                                 charMaxLength = lengthOrNull,
-                            ),
+                            )
                         )
                     }
                     return columns
@@ -114,13 +115,13 @@ internal class MSSQLFormatFileCreator(
      */
     internal fun buildCsvToDbMapping(
         csvColumnNames: List<String>,
-        dbColumns: List<ColumnInfo>
+        dbColumns: List<ColumnInfo>,
     ): List<CsvToDbColumn> {
         return csvColumnNames.mapIndexed { idx, csvColName ->
             val match =
                 dbColumns.firstOrNull { it.name.equals(csvColName, ignoreCase = true) }
                     ?: error(
-                        "No matching DB column found for CSV column '$csvColName' in table schema.",
+                        "No matching DB column found for CSV column '$csvColName' in table schema."
                     )
             CsvToDbColumn(
                 csvPosition = idx + 1,
@@ -141,7 +142,7 @@ internal class MSSQLFormatFileCreator(
         csvToDbMapping: List<CsvToDbColumn>,
         delimiter: String,
         rowDelimiter: String,
-        formatFileVersion: String
+        formatFileVersion: String,
     ): String {
         val sb = StringBuilder()
 
@@ -164,16 +165,17 @@ internal class MSSQLFormatFileCreator(
             // For simplicity, apply the UTF-8 collation to all text-based columns (SQLCHAR).
             // If the column is numeric or date, the collation will be ignored by the server anyway.
             sb.appendLine(
-                "%-8d %-10s %-8d %-8d %-8s %-8d %s %s".format(
-                    csvPos,
-                    bcpType,
-                    0,
-                    length,
-                    usedDelimiter,
-                    dbOrdinal,
-                    dbColName,
-                    COLLATION,
-                ),
+                "%-8d %-10s %-8d %-8d %-8s %-8d %s %s"
+                    .format(
+                        csvPos,
+                        bcpType,
+                        0,
+                        length,
+                        usedDelimiter,
+                        dbOrdinal,
+                        dbColName,
+                        COLLATION,
+                    )
             )
         }
 

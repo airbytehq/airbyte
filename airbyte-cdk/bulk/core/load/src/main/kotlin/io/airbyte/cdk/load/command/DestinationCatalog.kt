@@ -103,7 +103,7 @@ class DefaultDestinationCatalogFactory {
         streamFactory: DestinationStreamFactory,
         @Value("\${${Operation.PROPERTY}}") operation: String,
         @Named("checkNamespace") checkNamespace: String?,
-        namespaceMapper: NamespaceMapper
+        namespaceMapper: NamespaceMapper,
     ): DestinationCatalog {
         if (operation == "check") {
             // generate a string like "20240523"
@@ -124,7 +124,7 @@ class DefaultDestinationCatalogFactory {
                         generationId = 1,
                         minimumGenerationId = 0,
                         syncId = 1,
-                        namespaceMapper = namespaceMapper
+                        namespaceMapper = namespaceMapper,
                     )
                 )
             )

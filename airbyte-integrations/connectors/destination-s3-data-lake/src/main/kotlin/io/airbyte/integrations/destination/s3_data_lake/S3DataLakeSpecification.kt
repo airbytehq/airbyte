@@ -79,7 +79,7 @@ class S3DataLakeSpecificationExtension : DestinationSpecificationExtension {
         listOf(
             DestinationSyncMode.OVERWRITE,
             DestinationSyncMode.APPEND,
-            DestinationSyncMode.APPEND_DEDUP
+            DestinationSyncMode.APPEND_DEDUP,
         )
     override val supportsIncremental = true
 }

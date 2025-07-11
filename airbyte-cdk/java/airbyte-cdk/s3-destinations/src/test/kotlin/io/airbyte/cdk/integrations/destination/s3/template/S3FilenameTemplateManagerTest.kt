@@ -31,7 +31,7 @@ class S3FilenameTemplateManagerTest {
                     .fileNamePattern(fileNamePattern)
                     .fileExtension(fileExtension)
                     .partId(partId)
-                    .build(),
+                    .build()
             )
 
         val defaultDateFormat: DateFormat =
@@ -55,7 +55,7 @@ class S3FilenameTemplateManagerTest {
                     .fileNamePattern(fileNamePattern)
                     .fileExtension("csv")
                     .partId("1")
-                    .build(),
+                    .build()
             )
 
         assertEquals("te__st.csv", actual)

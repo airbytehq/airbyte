@@ -57,20 +57,20 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                                 Field.of(COL_MODEL, JsonSchemaType.STRING),
                             )
                             .withSupportedSyncModes(
-                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                             )
                             .withSourceDefinedPrimaryKey(
-                                java.util.List.of(java.util.List.of(COL_ID)),
+                                java.util.List.of(java.util.List.of(COL_ID))
                             )
-                            .withIsResumable(true),
-                    ),
+                            .withIsResumable(true)
+                    )
                 )
 
     protected val configuredCatalog: ConfiguredAirbyteCatalog
         get() {
             val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
             configuredCatalog.streams.forEach(
-                Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.INCREMENTAL },
+                Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.INCREMENTAL }
             )
             return configuredCatalog
         }
@@ -79,7 +79,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         get() {
             val fullRefreshConfiguredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
             fullRefreshConfiguredCatalog.streams.forEach(
-                Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.FULL_REFRESH },
+                Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.FULL_REFRESH }
             )
             return fullRefreshConfiguredCatalog
         }
@@ -111,7 +111,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected open fun assertStreamStatusTraceMessageIndex(
         idx: Int,
         allMessages: List<AirbyteMessage>,
-        expectedStreamStatus: AirbyteStreamStatusTraceMessage
+        expectedStreamStatus: AirbyteStreamStatusTraceMessage,
     ) {
         var actualMessage = allMessages[idx]
         Assertions.assertEquals(
@@ -127,7 +127,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     private fun createAirbteStreanStatusTraceMessage(
         namespace: String,
         streamName: String,
-        status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+        status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus,
     ): AirbyteStreamStatusTraceMessage {
 
         return AirbyteStreamStatusTraceMessage()
@@ -144,7 +144,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     // doing so.
     protected open fun assertExpectedStateMessageCountMatches(
         stateMessages: List<AirbyteStateMessage>,
-        totalCount: Long
+        totalCount: Long,
     ) {
         // Do nothing.
     }
@@ -229,7 +229,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun columnClause(
         columnsWithDataType: Map<String, String>,
-        primaryKey: Optional<String>
+        primaryKey: Optional<String>,
     ): String {
         val columnClause = StringBuilder()
         var i = 0
@@ -260,7 +260,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         streamName: String?,
         idCol: String?,
         makeIdCol: String?,
-        modelCol: String?
+        modelCol: String?,
     ) {
         testdb.with(
             "INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
@@ -288,7 +288,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         modelCol: String?,
         modelVal: String?,
         idCol: String?,
-        idValue: Int
+        idValue: Int,
     ) {
         testdb.with(
             "UPDATE %s.%s SET %s = '%s' WHERE %s = %s",
@@ -305,7 +305,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val recordsPerStream = extractRecordMessagesStreamWise(messages)
         val consolidatedRecords: MutableSet<AirbyteRecordMessage> = HashSet()
         recordsPerStream.values.forEach(
-            Consumer { c: Set<AirbyteRecordMessage> -> consolidatedRecords.addAll(c) },
+            Consumer { c: Set<AirbyteRecordMessage> -> consolidatedRecords.addAll(c) }
         )
         return consolidatedRecords
     }
@@ -344,7 +344,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected fun assertExpectedRecords(
         expectedRecords: Set<JsonNode>,
-        actualRecords: Set<AirbyteRecordMessage>
+        actualRecords: Set<AirbyteRecordMessage>,
     ) {
         // assume all streams are cdc.
         assertExpectedRecords(
@@ -357,7 +357,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     private fun assertExpectedRecords(
         expectedRecords: Set<JsonNode>,
         actualRecords: Set<AirbyteRecordMessage>,
-        cdcStreams: Set<String>
+        cdcStreams: Set<String>,
     ) {
         assertExpectedRecords(
             expectedRecords,
@@ -373,7 +373,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         actualRecords: Set<AirbyteRecordMessage>,
         cdcStreams: Set<String>,
         streamNames: Set<String>,
-        namespace: String?
+        namespace: String?,
     ) {
         val actualData =
             actualRecords
@@ -435,7 +435,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                     targetPosition,
                     record,
                 )
-            },
+            }
         )
 
         assertExpectedRecords(HashSet(MODEL_RECORDS), recordMessages)
@@ -445,7 +445,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
         targetPosition: CdcTargetPosition<*>?,
-        record: AirbyteRecordMessage
+        record: AirbyteRecordMessage,
     ) {
         Assertions.assertEquals(extractPosition(record.data), targetPosition)
     }
@@ -545,7 +545,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         1,
                         COL_MODEL,
                         "F-$recordsCreated",
-                    ),
+                    )
                 )
             writeModelRecord(record)
             expectedRecords++
@@ -571,7 +571,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         1,
                         COL_MODEL,
                         "F-$recordsCreated",
-                    ),
+                    )
                 )
             writeModelRecord(record)
             expectedRecords++
@@ -687,10 +687,10 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                             Field.of(COL_MODEL, JsonSchemaType.STRING),
                         )
                         .withSupportedSyncModes(
-                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
                         .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID)))
-                        .withIsResumable(true),
+                        .withIsResumable(true)
                 )
         airbyteStream.syncMode = SyncMode.FULL_REFRESH
 
@@ -908,9 +908,9 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                             Field.of(COL_MODEL, JsonSchemaType.STRING),
                         )
                         .withSupportedSyncModes(
-                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
-                        .withIsResumable(false),
+                        .withIsResumable(false)
                 )
         airbyteStream.syncMode = SyncMode.FULL_REFRESH
 
@@ -1058,10 +1058,10 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         Assertions.assertEquals(
             expectedCatalog.streams.sortedWith(
-                Comparator.comparing { obj: AirbyteStream -> obj.name },
+                Comparator.comparing { obj: AirbyteStream -> obj.name }
             ),
             actualCatalog.streams.sortedWith(
-                Comparator.comparing { obj: AirbyteStream -> obj.name },
+                Comparator.comparing { obj: AirbyteStream -> obj.name }
             ),
         )
     }
@@ -1090,8 +1090,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertEquals(1, streamsInStateAfterFirstSyncCompletion.size)
         Assertions.assertTrue(
             streamsInStateAfterFirstSyncCompletion.contains(
-                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema()),
-            ),
+                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())
+            )
         )
         Assertions.assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.data)
 
@@ -1113,17 +1113,17 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                                     Field.of(COL_MODEL + "_random", JsonSchemaType.STRING),
                                 )
                                 .withSupportedSyncModes(
-                                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                                 )
                                 .withSourceDefinedPrimaryKey(
-                                    java.util.List.of(java.util.List.of(COL_ID + "_random")),
-                                ),
-                        ),
-                    ),
+                                    java.util.List.of(java.util.List.of(COL_ID + "_random"))
+                                )
+                        )
+                    )
             )
 
         newTables.streams.forEach(
-            Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.INCREMENTAL },
+            Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.INCREMENTAL }
         )
         val combinedStreams: MutableList<ConfiguredAirbyteStream> = ArrayList()
         combinedStreams.addAll(configuredCatalog.streams)
@@ -1145,7 +1145,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         1,
                         COL_MODEL,
                         "F-$recordsCreated",
-                    ),
+                    )
                 )
             recordsWritten.add(record)
             writeModelRecord(record)
@@ -1198,7 +1198,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         1,
                         COL_MODEL,
                         "F-$recordsCreated",
-                    ),
+                    )
                 )
             writeModelRecord(record)
             recordsWritten.add(record)
@@ -1212,7 +1212,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         1 + recordsCreated,
                         COL_MODEL + "_random",
                         "Fiesta-random$recordsCreated",
-                    ),
+                    )
                 )
             writeRecords(
                 record2,
@@ -1248,13 +1248,13 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .toSet()
         Assertions.assertTrue(
             streamsInSyncCompletionStateAfterThirdSync.contains(
-                StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema()),
-            ),
+                StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema())
+            )
         )
         Assertions.assertTrue(
             streamsInSyncCompletionStateAfterThirdSync.contains(
-                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema()),
-            ),
+                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())
+            )
         )
         Assertions.assertNotNull(stateMessageEmittedAfterThirdSyncCompletion.data)
 
@@ -1307,8 +1307,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertEquals(1, streamsInStateAfterFirstSyncCompletion.size)
         Assertions.assertTrue(
             streamsInStateAfterFirstSyncCompletion.contains(
-                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema()),
-            ),
+                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())
+            )
         )
 
         val streamStateToBeTested =
@@ -1376,10 +1376,10 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                             Field.of(COL_MODEL, JsonSchemaType.STRING),
                         )
                         .withSupportedSyncModes(
-                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
                         .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID)))
-                        .withIsResumable(true),
+                        .withIsResumable(true)
                 )
         airbyteStream.syncMode = SyncMode.FULL_REFRESH
 
@@ -1472,7 +1472,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun assertStateMessagesForNewTableSnapshotTest(
         stateMessages: List<AirbyteStateMessage>,
-        stateMessageEmittedAfterFirstSyncCompletion: AirbyteStateMessage
+        stateMessageEmittedAfterFirstSyncCompletion: AirbyteStateMessage,
     ) {
         Assertions.assertEquals(2, stateMessages.size)
         val stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateMessages[0]
@@ -1491,13 +1491,13 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertEquals(2, streamsInSnapshotState.size)
         Assertions.assertTrue(
             streamsInSnapshotState.contains(
-                StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema()),
-            ),
+                StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema())
+            )
         )
         Assertions.assertTrue(
             streamsInSnapshotState.contains(
-                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema()),
-            ),
+                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())
+            )
         )
         Assertions.assertNotNull(stateMessageEmittedAfterSnapshotCompletionInSecondSync.data)
 
@@ -1517,13 +1517,13 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertEquals(2, streamsInSnapshotState.size)
         Assertions.assertTrue(
             streamsInSyncCompletionState.contains(
-                StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema()),
-            ),
+                StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema())
+            )
         )
         Assertions.assertTrue(
             streamsInSyncCompletionState.contains(
-                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema()),
-            ),
+                StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())
+            )
         )
         Assertions.assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.data)
     }
@@ -1571,10 +1571,10 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 )
                 .withSourceDefinedCursor(true)
                 .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 )
                 .withSourceDefinedPrimaryKey(
-                    java.util.List.of(java.util.List.of(COL_ID + "_random")),
+                    java.util.List.of(java.util.List.of(COL_ID + "_random"))
                 )
                 .withIsResumable(true)
 
@@ -1591,7 +1591,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected open fun waitForCdcRecords(
         schemaName: String?,
         tableName: String?,
-        recordCount: Int
+        recordCount: Int,
     ) {}
 
     companion object {
@@ -1627,7 +1627,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                             r[COL_MAKE_ID],
                             COL_MODEL + "_random",
                             r[COL_MODEL].asText() + "-random",
-                        ),
+                        )
                     )
                 }
                 .toList()

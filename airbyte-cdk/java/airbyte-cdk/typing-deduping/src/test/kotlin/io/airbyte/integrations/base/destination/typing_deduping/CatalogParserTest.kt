@@ -77,7 +77,7 @@ internal class CatalogParserTest {
                 originalRawNamespace,
                 originalNamespace + "_abab_" + quotedName,
                 originalNamespace,
-                originalName
+                originalName,
             )
         }
         val catalog =
@@ -101,7 +101,7 @@ internal class CatalogParserTest {
                         "airbyte_internal",
                         "a_abab_foofoo_3fd",
                         "a",
-                        "foofoo"
+                        "foofoo",
                     ),
                     parsedCatalog.streams[1].id,
                 )
@@ -133,7 +133,8 @@ internal class CatalogParserTest {
                                                 }
                                               }
                                               
-                                              """.trimIndent()
+                                              """
+                    .trimIndent()
             )
         val catalog = ConfiguredAirbyteCatalog().withStreams(listOf(stream("a", "a", schema)))
 
@@ -143,7 +144,7 @@ internal class CatalogParserTest {
         assertAll(
             { Assertions.assertEquals(2, parsedCatalog.streams[0].columns.size) },
             { Assertions.assertEquals("foofoo", columnsList[0].name) },
-            { Assertions.assertEquals("foofoo_1", columnsList[1].name) }
+            { Assertions.assertEquals("foofoo_1", columnsList[1].name) },
         )
     }
 
@@ -171,7 +172,8 @@ internal class CatalogParserTest {
                                                 }
                                               }
                                               
-                                              """.trimIndent()
+                                              """
+                    .trimIndent()
             )
         val catalog = ConfiguredAirbyteCatalog().withStreams(listOf(stream("a", "a", schema)))
 
@@ -181,7 +183,7 @@ internal class CatalogParserTest {
         assertAll(
             { Assertions.assertEquals(2, parsedCatalog.streams[0].columns.size) },
             { Assertions.assertEquals("aVeryLongC", columnsList[0].name) },
-            { Assertions.assertEquals("aV36rd", columnsList[1].name) }
+            { Assertions.assertEquals("aV36rd", columnsList[1].name) },
         )
     }
 
@@ -212,8 +214,9 @@ internal class CatalogParserTest {
                             }
                           }
                           
-                          """.trimIndent()
-                )
+                          """
+                        .trimIndent()
+                ),
         ): ConfiguredAirbyteStream {
             return ConfiguredAirbyteStream()
                 .withStream(

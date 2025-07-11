@@ -20,7 +20,7 @@ class IcebergStringifyComplexTypes :
     override fun mapObject(
         value: AirbyteValue,
         schema: ObjectType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> {
         if (context.path.isEmpty()) {
             return super.mapObject(value, schema, context)
@@ -31,7 +31,7 @@ class IcebergStringifyComplexTypes :
     override fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> {
         return StringValue(value.serializeToString()) to context
     }
@@ -42,21 +42,24 @@ class IcebergStringifyComplexTypes :
     override fun mapObjectWithoutSchema(
         value: AirbyteValue,
         schema: ObjectTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
+
     override fun mapObjectWithEmptySchema(
         value: AirbyteValue,
         schema: ObjectTypeWithEmptySchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
+
     override fun mapArrayWithoutSchema(
         value: AirbyteValue,
         schema: ArrayTypeWithoutSchema,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
+
     override fun mapUnknown(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
 }

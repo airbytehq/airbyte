@@ -27,17 +27,17 @@ object RestTestContainers {
             .withExposedService(
                 "minio",
                 9000,
-                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)),
             )
             .withExposedService(
                 "rest",
                 8181,
-                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)),
             )
             .withExposedService(
                 "spark-iceberg",
                 8080,
-                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)),
             )
 
     private val startRestContainerRunOnce = AtomicBoolean(false)

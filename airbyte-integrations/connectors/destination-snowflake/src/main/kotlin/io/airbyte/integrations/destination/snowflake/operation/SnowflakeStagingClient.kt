@@ -25,14 +25,14 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
         val rowsParsed: Int,
         val rowsLoaded: Int,
         val errorsSeen: Int,
-        val firstError: String?
+        val firstError: String?,
     )
 
     private enum class CopyStatus {
         UNKNOWN,
         LOADED,
         LOAD_FAILED,
-        PARTIALLY_LOADED
+        PARTIALLY_LOADED,
     }
 
     // Most of the code here is preserved from
@@ -41,7 +41,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
     fun uploadRecordsToStage(
         recordsData: SerializableBuffer,
         stageName: String,
-        stagingPath: String
+        stagingPath: String,
     ): String {
         val exceptionsThrown: MutableList<Exception> = ArrayList()
         var succeeded = false
@@ -63,7 +63,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
             throw RuntimeException(
                 String.format(
                     "Exceptions thrown while uploading records into stage: %s",
-                    join(exceptionsThrown, "\n")
+                    join(exceptionsThrown, "\n"),
                 )
             )
         }
@@ -77,7 +77,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
     private fun uploadRecordsToBucket(
         stageName: String,
         stagingPath: String,
-        recordsData: SerializableBuffer
+        recordsData: SerializableBuffer,
     ) {
         val query = getPutQuery(stageName, stagingPath, recordsData.file!!.absolutePath)
         val queryId = UUID.randomUUID()
@@ -112,7 +112,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
             stageName,
             stagingPath,
             // max allowed param is 99, we don't need so many threads for a single file upload
-            minOf(Runtime.getRuntime().availableProcessors(), 4)
+            minOf(Runtime.getRuntime().availableProcessors(), 4),
         )
     }
 
@@ -120,7 +120,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
     private fun checkStageObjectExists(
         stageName: String,
         stagingPath: String,
-        filename: String
+        filename: String,
     ): Boolean {
         val query = getListQuery(stageName, stagingPath, filename)
         log.debug { "Executing query: $query" }
@@ -170,7 +170,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
         stagingPath: String,
         stagedFiles: List<String>,
         streamId: StreamId,
-        suffix: String = ""
+        suffix: String = "",
     ) {
         try {
             val queryId = UUID.randomUUID()
@@ -230,7 +230,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
                 result.get("rows_parsed").asInt(),
                 result.get("rows_loaded").asInt(),
                 result.get("errors_seen").asInt(),
-                if (result.has("first_error")) result.get("first_error").asText() else null
+                if (result.has("first_error")) result.get("first_error").asText() else null,
             )
         } else {
             // Safety in case snowflake decides to change the response format
@@ -254,14 +254,14 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
         stagingPath: String,
         stagedFiles: List<String>,
         streamId: StreamId,
-        suffix: String
+        suffix: String,
     ): String {
         return String.format(
             COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";",
             streamId.rawNamespace,
             streamId.rawName + suffix,
             stageName,
-            stagingPath
+            stagingPath,
         )
     }
 
@@ -274,7 +274,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
                 files.joinToString { filename: String ->
                     "'${
                     filename.substring(
-                        filename.lastIndexOf("/") + 1,
+                        filename.lastIndexOf("/") + 1
                     )
                 }'"
                 }
@@ -298,6 +298,7 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
     /**
      * Creates a SQL query to drop staging area and all associated files within the staged area
      * https://docs.snowflake.com/en/sql-reference/sql/drop-stage
+     *
      * @param stageName name of staging folder
      * @return SQL query string
      */
@@ -326,7 +327,8 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
             |   FIELD_OPTIONALLY_ENCLOSED_BY = '"'
             |   NULL_IF=('')
             |)
-            """.trimMargin()
+            """
+                .trimMargin()
         private const val DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;"
     }
 }

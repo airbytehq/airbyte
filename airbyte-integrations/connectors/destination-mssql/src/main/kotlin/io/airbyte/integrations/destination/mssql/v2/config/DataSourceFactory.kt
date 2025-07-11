@@ -35,10 +35,7 @@ class DataSourceFactory {
 }
 
 fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
-    data class HostAndPort(
-        val host: String,
-        val port: Int,
-    )
+    data class HostAndPort(val host: String, val port: Int)
 
     val hostAndPort: HostAndPort =
         if (ssh != null) {

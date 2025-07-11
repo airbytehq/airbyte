@@ -18,8 +18,5 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 fun interface OnCloseFunction {
     @JvmSuppressWildcards
     @Throws(Exception::class)
-    fun accept(
-        hasFailed: Boolean,
-        streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>,
-    )
+    fun accept(hasFailed: Boolean, streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 }

@@ -98,7 +98,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
             .stream()
@@ -121,9 +121,9 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                     DatabaseDriver.MYSQL.urlFormatString,
                     db!!.host,
                     db!!.firstMappedPort,
-                    db!!.databaseName
+                    db!!.databaseName,
                 ),
-                SQLDialect.MYSQL
+                SQLDialect.MYSQL,
             )
         return Database(dslContext).query<List<JsonNode>> { ctx: DSLContext? ->
             ctx!!
@@ -132,7 +132,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                         "SELECT * FROM %s.%s ORDER BY %s ASC;",
                         schemaName,
                         tableName,
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
                     )
                 )
                 .stream()
@@ -146,7 +146,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
     override fun retrieveNormalizedRecords(
         testEnv: TestDestinationEnv?,
         streamName: String?,
-        namespace: String?
+        namespace: String?,
     ): List<JsonNode> {
         val tableName = namingResolver.getIdentifier(streamName!!)
         val schema = namingResolver.getIdentifier(namespace!!)
@@ -210,7 +210,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                                         .put("id", 1)
                                         .put(
                                             "data",
-                                            "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}"
+                                            "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}",
                                         )
                                         .build()
                                 )
@@ -220,7 +220,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                     .withType(AirbyteMessage.Type.STATE)
                     .withState(
                         AirbyteStateMessage().withData(jsonNode(ImmutableMap.of("checkpoint", 2)))
-                    )
+                    ),
             )
 
         val config = getConfig()
@@ -297,7 +297,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
         val config: JsonNode =
             (configForBareMetalConnection as ObjectNode).put(
                 JdbcUtils.DATABASE_KEY,
-                "wrongdatabase"
+                "wrongdatabase",
             )
         val destination = MySQLDestination()
         val status = destination.check(config)
@@ -314,12 +314,12 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                 USERNAME_WITHOUT_PERMISSION +
                 "'@'%' IDENTIFIED BY '" +
                 PASSWORD_WITHOUT_PERMISSION +
-                "';\n"
+                "';\n",
         )
         val config: JsonNode =
             (configForBareMetalConnection as ObjectNode).put(
                 JdbcUtils.USERNAME_KEY,
-                USERNAME_WITHOUT_PERMISSION
+                USERNAME_WITHOUT_PERMISSION,
             )
         (config as ObjectNode).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION)
         val destination = MySQLDestination()
@@ -340,12 +340,12 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
     override fun testDataTypeTestWithNormalization(
         messagesFilename: String,
         catalogFilename: String,
-        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
+        testCompatibility: DataTypeTestArgumentProvider.TestCompatibility,
     ) {
         super.testDataTypeTestWithNormalization(
             messagesFilename,
             catalogFilename,
-            testCompatibility
+            testCompatibility,
         )
     }
 
@@ -386,7 +386,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                 db,
                 "GRANT ALTER, CREATE, INSERT, INDEX, UPDATE, DELETE, SELECT, DROP ON *.* TO " +
                     db!!.username +
-                    "@'%';"
+                    "@'%';",
             )
         }
 
@@ -400,9 +400,9 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
                         DatabaseDriver.MYSQL.urlFormatString,
                         db.host,
                         db.firstMappedPort,
-                        db.databaseName
+                        db.databaseName,
                     ),
-                    SQLDialect.MYSQL
+                    SQLDialect.MYSQL,
                 )
             try {
                 Database(dslContext).query { ctx: DSLContext? -> ctx!!.execute(query) }
@@ -414,7 +414,7 @@ open class MySQLDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
         private fun assertStringContains(str: String, target: String) {
             Assertions.assertTrue(
                 str.contains(target),
-                "Expected message to contain \"$target\" but got $str"
+                "Expected message to contain \"$target\" but got $str",
             )
         }
     }

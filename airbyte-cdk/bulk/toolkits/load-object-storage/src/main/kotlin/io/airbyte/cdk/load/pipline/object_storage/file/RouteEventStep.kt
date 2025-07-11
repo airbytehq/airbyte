@@ -31,11 +31,5 @@ class RouteEventStep(
     override val numWorkers: Int = 1
 
     override fun taskForPartition(partition: Int): Task =
-        RouteEventTask(
-            catalog,
-            inputFlows[0],
-            fileQueue,
-            recordQueue,
-            partition,
-        )
+        RouteEventTask(catalog, inputFlows[0], fileQueue, recordQueue, partition)
 }

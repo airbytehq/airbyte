@@ -15,17 +15,18 @@ import kotlin.random.Random
 
 @Singleton
 @Requires(bean = InsertLoader::class)
-class InsertLoaderRequestPartitioner<Q : InsertLoaderRequest>(
-    val insertLoader: InsertLoader<Q>,
-) :
+class InsertLoaderRequestPartitioner<Q : InsertLoaderRequest>(val insertLoader: InsertLoader<Q>) :
     OutputPartitioner<
-        StreamKey, DestinationRecordRaw, StreamKey, InsertLoaderRequestBuilderAccumulator.Result<Q>
+        StreamKey,
+        DestinationRecordRaw,
+        StreamKey,
+        InsertLoaderRequestBuilderAccumulator.Result<Q>,
     > {
     private val prng = Random(System.currentTimeMillis())
 
     override fun getOutputKey(
         inputKey: StreamKey,
-        output: InsertLoaderRequestBuilderAccumulator.Result<Q>
+        output: InsertLoaderRequestBuilderAccumulator.Result<Q>,
     ): StreamKey {
         return inputKey
     }

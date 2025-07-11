@@ -23,7 +23,7 @@ class DataTypeTestArgumentProvider : ArgumentsProvider {
             getArguments(BASIC_TEST),
             getArguments(ARRAY_TEST),
             getArguments(OBJECT_TEST),
-            getArguments(OBJECT_WITH_ARRAY_TEST)
+            getArguments(OBJECT_WITH_ARRAY_TEST),
         )
     }
 
@@ -31,7 +31,7 @@ class DataTypeTestArgumentProvider : ArgumentsProvider {
         return Arguments.of(
             testConfig.getMessageFileVersion(protocolVersion),
             testConfig.getCatalogFileVersion(protocolVersion),
-            testConfig.testCompatibility
+            testConfig.testCompatibility,
         )
     }
 
@@ -39,29 +39,29 @@ class DataTypeTestArgumentProvider : ArgumentsProvider {
     data class TestCompatibility(
         val requireBasicCompatibility: Boolean,
         val requireArrayCompatibility: Boolean,
-        val requireObjectCompatibility: Boolean
+        val requireObjectCompatibility: Boolean,
     ) {
         fun isTestCompatible(
             supportBasicDataTypeTest: Boolean,
             supportArrayDataTypeTest: Boolean,
-            supportObjectDataTypeTest: Boolean
+            supportObjectDataTypeTest: Boolean,
         ): Boolean {
             LOGGER.info("---- Data type test compatibility ----")
             LOGGER.info("| Data type test | Require | Support |")
             LOGGER.info(
                 "| Basic test     | {}   | {}   |",
                 (if (requireBasicCompatibility) "true " else "false"),
-                (if (supportBasicDataTypeTest) "true " else "false")
+                (if (supportBasicDataTypeTest) "true " else "false"),
             )
             LOGGER.info(
                 "| Array test     | {}   | {}   |",
                 (if (requireArrayCompatibility) "true " else "false"),
-                (if (supportArrayDataTypeTest) "true " else "false")
+                (if (supportArrayDataTypeTest) "true " else "false"),
             )
             LOGGER.info(
                 "| Object test    | {}   | {}   |",
                 (if (requireObjectCompatibility) "true " else "false"),
-                (if (supportObjectDataTypeTest) "true " else "false")
+                (if (supportObjectDataTypeTest) "true " else "false"),
             )
             LOGGER.info("--------------------------------------")
 
@@ -91,7 +91,7 @@ class DataTypeTestArgumentProvider : ArgumentsProvider {
     class CatalogMessageTestConfigWithCompatibility(
         catalogFile: String,
         messageFile: String,
-        val testCompatibility: TestCompatibility
+        val testCompatibility: TestCompatibility,
     ) : DataArgumentsProvider.CatalogMessageTestConfigPair(catalogFile, messageFile)
 
     companion object {
@@ -104,25 +104,25 @@ class DataTypeTestArgumentProvider : ArgumentsProvider {
             CatalogMessageTestConfigWithCompatibility(
                 "data_type_basic_test_catalog.json",
                 "data_type_basic_test_messages.txt",
-                TestCompatibility(true, false, false)
+                TestCompatibility(true, false, false),
             )
         val ARRAY_TEST: CatalogMessageTestConfigWithCompatibility =
             CatalogMessageTestConfigWithCompatibility(
                 "data_type_array_test_catalog.json",
                 "data_type_array_test_messages.txt",
-                TestCompatibility(true, true, false)
+                TestCompatibility(true, true, false),
             )
         val OBJECT_TEST: CatalogMessageTestConfigWithCompatibility =
             CatalogMessageTestConfigWithCompatibility(
                 "data_type_object_test_catalog.json",
                 "data_type_object_test_messages.txt",
-                TestCompatibility(true, false, true)
+                TestCompatibility(true, false, true),
             )
         val OBJECT_WITH_ARRAY_TEST: CatalogMessageTestConfigWithCompatibility =
             CatalogMessageTestConfigWithCompatibility(
                 "data_type_array_object_test_catalog.json",
                 "data_type_array_object_test_messages.txt",
-                TestCompatibility(true, true, true)
+                TestCompatibility(true, true, true),
             )
     }
 }

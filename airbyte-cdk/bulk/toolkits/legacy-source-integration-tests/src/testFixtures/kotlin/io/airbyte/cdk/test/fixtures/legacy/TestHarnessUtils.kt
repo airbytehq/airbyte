@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 
 private val LOGGER = KotlinLogging.logger {}
+
 // TODO:(Issue-4824): Figure out how to log Docker process information.
 object TestHarnessUtils {
 
@@ -138,7 +139,7 @@ object TestHarnessUtils {
 
     fun getDidControlMessageChangeConfig(
         initialConfigJson: JsonNode,
-        configMessage: AirbyteControlConnectorConfigMessage
+        configMessage: AirbyteControlConnectorConfigMessage,
     ): Boolean {
         val newConfig = configMessage.config
         val newConfigJson = Jsons.jsonNode(newConfig)
@@ -149,7 +150,7 @@ object TestHarnessUtils {
     fun getMessagesByType(
         process: Process,
         streamFactory: AirbyteStreamFactory,
-        timeOut: Int
+        timeOut: Int,
     ): Map<AirbyteMessage.Type, List<AirbyteMessage>> {
         val messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
         process.inputStream.use { stdout ->
@@ -164,7 +165,7 @@ object TestHarnessUtils {
 
     fun getJobFailureReasonFromMessages(
         outputType: ConnectorJobOutput.OutputType,
-        messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
+        messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>,
     ): Optional<FailureReason> {
         val traceMessage = getTraceMessageFromMessagesByType(messagesByType)
         if (traceMessage != null) {

@@ -49,7 +49,7 @@ class PipelineEventBookkeepingRouterTest {
             1,
             1,
             1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     private fun makeBookkeepingRouter(numDataChannels: Int, markEndOfStreamAtEnd: Boolean = false) =
@@ -62,7 +62,7 @@ class PipelineEventBookkeepingRouterTest {
             batchStateUpdateQueue,
             numDataChannels,
             markEndOfStreamAtEnd,
-            NamespaceMapper(NamespaceDefinitionType.SOURCE)
+            NamespaceMapper(NamespaceDefinitionType.SOURCE),
         )
 
     @BeforeEach
@@ -74,10 +74,7 @@ class PipelineEventBookkeepingRouterTest {
 
     @Test
     fun `router uses inferred checkpoint when checkpoint id not available on record`() = runTest {
-        val router =
-            makeBookkeepingRouter(
-                1,
-            )
+        val router = makeBookkeepingRouter(1)
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -89,7 +86,7 @@ class PipelineEventBookkeepingRouterTest {
                     message = mockk(relaxed = true),
                     serializedSizeBytes = 0L,
                     checkpointId = null,
-                    airbyteRawId = UUID.randomUUID()
+                    airbyteRawId = UUID.randomUUID(),
                 ),
                 unopenedStreams = mutableSetOf(),
             ) as PipelineMessage
@@ -113,7 +110,7 @@ class PipelineEventBookkeepingRouterTest {
                         message = mockk(relaxed = true),
                         serializedSizeBytes = 0L,
                         checkpointId = CheckpointId("bar"),
-                        airbyteRawId = UUID.randomUUID()
+                        airbyteRawId = UUID.randomUUID(),
                     ),
                     unopenedStreams = mutableSetOf(),
                 ) as PipelineMessage
@@ -121,7 +118,7 @@ class PipelineEventBookkeepingRouterTest {
             verify(exactly = 0) { streamManager.inferNextCheckpointKey() }
             assertEquals(
                 mapOf(CheckpointId("bar") to CheckpointValue(1L, 0L)),
-                event.checkpointCounts
+                event.checkpointCounts,
             )
         }
 
@@ -141,7 +138,7 @@ class PipelineEventBookkeepingRouterTest {
         router.handleCheckpoint(
             reservationManager.reserve(
                 1,
-                StreamCheckpoint(checkpointMessage, null, null, emptyMap(), 0, null)
+                StreamCheckpoint(checkpointMessage, null, null, emptyMap(), 0, null),
             )
         )
         router.handleCheckpoint(
@@ -175,8 +172,8 @@ class PipelineEventBookkeepingRouterTest {
                     null,
                     emptyMap(),
                     0,
-                    CheckpointKey(CheckpointIndex(2), CheckpointId("bar"))
-                )
+                    CheckpointKey(CheckpointIndex(2), CheckpointId("bar")),
+                ),
             )
         )
         val global =
@@ -188,7 +185,7 @@ class PipelineEventBookkeepingRouterTest {
                 emptyMap(),
                 null,
                 0,
-                CheckpointKey(CheckpointIndex(2), CheckpointId("baz"))
+                CheckpointKey(CheckpointIndex(2), CheckpointId("baz")),
             )
         router.handleCheckpoint(reservationManager.reserve(1, global))
 
@@ -236,8 +233,8 @@ class PipelineEventBookkeepingRouterTest {
                             null,
                             emptyMap(),
                             0L,
-                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
-                        )
+                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo")),
+                        ),
                     )
                 )
             }
@@ -262,8 +259,8 @@ class PipelineEventBookkeepingRouterTest {
                             emptyMap(),
                             null,
                             0L,
-                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
-                        )
+                            CheckpointKey(CheckpointIndex(1), CheckpointId("foo")),
+                        ),
                     )
                 )
             }

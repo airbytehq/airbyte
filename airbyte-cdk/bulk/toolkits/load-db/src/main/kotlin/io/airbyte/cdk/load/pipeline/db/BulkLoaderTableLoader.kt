@@ -30,7 +30,7 @@ class BulkLoaderTableLoader<K : WithStream, T : RemoteObject<*>>(
         BulkLoader<T>,
         K,
         ObjectLoaderUploadCompleter.UploadResult<T>,
-        BulkLoaderTableLoader.LoadResult
+        BulkLoaderTableLoader.LoadResult,
     > {
     data object LoadResult : WithBatchState {
         override val state: BatchState = BatchState.COMPLETE
@@ -42,7 +42,7 @@ class BulkLoaderTableLoader<K : WithStream, T : RemoteObject<*>>(
 
     override suspend fun accept(
         input: ObjectLoaderUploadCompleter.UploadResult<T>,
-        state: BulkLoader<T>
+        state: BulkLoader<T>,
     ): BatchAccumulatorResult<BulkLoader<T>, LoadResult> {
         if (input.remoteObject == null) {
             return NoOutput(state)

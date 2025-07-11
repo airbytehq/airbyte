@@ -54,12 +54,12 @@ class CsvSerializedBuffer(
     }
 
     /**
-     * TODO: (ryankfu) remove this call within
-     * [io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy] and move
-     * to use recordString
-     *
      * @param record AirbyteRecordMessage to be written
      * @throws IOException
+     *
+     * TODO: (ryankfu) remove this call within
+     *   [io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy] and
+     *   move to use recordString
      */
     @Deprecated("Deprecated in Java")
     @Throws(IOException::class)
@@ -74,7 +74,7 @@ class CsvSerializedBuffer(
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ) {
         csvPrinter!!.printRecord(
             csvSheetGenerator.getDataRow(
@@ -83,7 +83,7 @@ class CsvSerializedBuffer(
                 emittedAt,
                 airbyteMetaString,
                 generationId,
-            ),
+            )
         )
     }
 
@@ -118,7 +118,7 @@ class CsvSerializedBuffer(
         fun createFunction(
             config: UploadCsvFormatConfig?,
             createStorageFunction: Callable<BufferStorage>,
-            useV2FieldNames: Boolean = false
+            useV2FieldNames: Boolean = false,
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
@@ -135,20 +135,13 @@ class CsvSerializedBuffer(
                         catalog.streams
                             .filter { s: ConfiguredAirbyteStream ->
                                 s.stream.name == stream.name &&
-                                    StringUtils.equals(
-                                        s.stream.namespace,
-                                        stream.namespace,
-                                    )
+                                    StringUtils.equals(s.stream.namespace, stream.namespace)
                             }
                             .firstOrNull()
                             ?.stream
                             ?.jsonSchema
                             ?: throw RuntimeException(
-                                String.format(
-                                    "No such stream %s.%s",
-                                    stream.namespace,
-                                    stream.name,
-                                ),
+                                String.format("No such stream %s.%s", stream.namespace, stream.name)
                             ),
                         config,
                         useV2FieldNames,
@@ -157,11 +150,7 @@ class CsvSerializedBuffer(
                     CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC)
                         .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
                 val compression = config.compressionType != CompressionType.NO_COMPRESSION
-                CsvSerializedBuffer(
-                        createStorageFunction.call(),
-                        csvSheetGenerator,
-                        compression,
-                    )
+                CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator, compression)
                     .withCsvFormat(csvSettings)
             }
         }

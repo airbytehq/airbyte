@@ -39,10 +39,7 @@ class TableCatalogFactoryTest {
         }
 
         val finalTableNameGenerator = FinalTableNameGenerator { descriptor ->
-            TableName(
-                descriptor.namespace!!,
-                descriptor.name.replace("bar", ""),
-            )
+            TableName(descriptor.namespace!!, descriptor.name.replace("bar", ""))
         }
 
         val columnNameGenerator = ColumnNameGenerator { input ->
@@ -57,7 +54,7 @@ class TableCatalogFactoryTest {
                     catalog,
                     rawTableNameGenerator,
                     finalTableNameGenerator,
-                    columnNameGenerator
+                    columnNameGenerator,
                 )
 
         // Get the final table names for both streams
@@ -68,12 +65,7 @@ class TableCatalogFactoryTest {
             { assertEquals("foofoo", stream1TableInfo.tableNames.finalTableName!!.name) },
             { assertEquals("a", stream1TableInfo.tableNames.finalTableName!!.namespace) },
             { assertEquals("foofoo_3fd", stream2TableInfo.tableNames.finalTableName!!.name) },
-            {
-                assertEquals(
-                    "a",
-                    stream2TableInfo.tableNames.finalTableName!!.namespace,
-                )
-            }
+            { assertEquals("a", stream2TableInfo.tableNames.finalTableName!!.namespace) },
         )
 
         // Now check raw table names with exact expected suffix
@@ -82,16 +74,16 @@ class TableCatalogFactoryTest {
             {
                 assertEquals(
                     DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
-                    stream1TableInfo.tableNames.rawTableName!!.namespace
+                    stream1TableInfo.tableNames.rawTableName!!.namespace,
                 )
             },
             { assertEquals("a_foofoo_3fd", stream2TableInfo.tableNames.rawTableName!!.name) },
             {
                 assertEquals(
                     DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
-                    stream2TableInfo.tableNames.rawTableName!!.namespace
+                    stream2TableInfo.tableNames.rawTableName!!.namespace,
                 )
-            }
+            },
         )
     }
 
@@ -121,7 +113,7 @@ class TableCatalogFactoryTest {
                     catalog,
                     rawTableNameGenerator = null,
                     finalTableNameGenerator,
-                    columnNameGenerator
+                    columnNameGenerator,
                 )
 
         // Get the final table names for both streams
@@ -132,12 +124,7 @@ class TableCatalogFactoryTest {
             { assertEquals("foo", stream1TableInfo.tableNames.finalTableName!!.name) },
             { assertEquals("a", stream1TableInfo.tableNames.finalTableName!!.namespace) },
             { assertEquals("bar", stream2TableInfo.tableNames.finalTableName!!.name) },
-            {
-                assertEquals(
-                    "a",
-                    stream2TableInfo.tableNames.finalTableName!!.namespace,
-                )
-            }
+            { assertEquals("a", stream2TableInfo.tableNames.finalTableName!!.namespace) },
         )
 
         // Now check raw table names are null
@@ -178,14 +165,14 @@ class TableCatalogFactoryTest {
                     catalog,
                     rawTableNameGenerator,
                     finalTableNameGenerator,
-                    columnNameGenerator
+                    columnNameGenerator,
                 )
 
         val columnMapping = tableCatalog[stream]!!.columnNameMapping
         val mappedNames =
             listOf(
                 columnMapping["aVeryLongColumnName"]!!,
-                columnMapping["aVeryLongColumnNameWithMoreTextAfterward"]!!
+                columnMapping["aVeryLongColumnNameWithMoreTextAfterward"]!!,
             )
 
         assertEquals(2, mappedNames.size)
@@ -227,7 +214,7 @@ class TableCatalogFactoryTest {
                     catalog,
                     rawTableNameGenerator,
                     finalTableNameGenerator,
-                    columnNameGenerator
+                    columnNameGenerator,
                 )
 
         val columnMapping = tableCatalog[stream]!!.columnNameMapping
@@ -238,7 +225,7 @@ class TableCatalogFactoryTest {
         assertAll(
             { assertEquals(2, mappedColumns.size) },
             { assertEquals("foofoo", mappedColumns[0]) },
-            { assertEquals("foofoo_1", mappedColumns[1]) }
+            { assertEquals("foofoo_1", mappedColumns[1]) },
         )
     }
 
@@ -263,10 +250,7 @@ class TableCatalogFactoryTest {
         // Simulate name collision by downcasing, while retaining the original name
         // as the display name
         val columnNameGenerator = ColumnNameGenerator { input ->
-            ColumnNameGenerator.ColumnName(
-                displayName = input,
-                canonicalName = input.lowercase(),
-            )
+            ColumnNameGenerator.ColumnName(displayName = input, canonicalName = input.lowercase())
         }
 
         val tableCatalog =
@@ -280,19 +264,13 @@ class TableCatalogFactoryTest {
 
         val columnMapping = tableCatalog[stream]!!.columnNameMapping
 
-        assertEquals(
-            mapOf(
-                "FOO" to "FOO",
-                "foo" to "foo_1",
-            ),
-            columnMapping,
-        )
+        assertEquals(mapOf("FOO" to "FOO", "foo" to "foo_1"), columnMapping)
     }
 
     private fun createTestStream(
         name: String,
         namespace: String,
-        schema: AirbyteType = ObjectType(linkedMapOf())
+        schema: AirbyteType = ObjectType(linkedMapOf()),
     ): DestinationStream {
         return DestinationStream(
             unmappedNamespace = namespace,
@@ -302,7 +280,7 @@ class TableCatalogFactoryTest {
             generationId = 1L,
             minimumGenerationId = 0L,
             syncId = 0L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
     }
 }

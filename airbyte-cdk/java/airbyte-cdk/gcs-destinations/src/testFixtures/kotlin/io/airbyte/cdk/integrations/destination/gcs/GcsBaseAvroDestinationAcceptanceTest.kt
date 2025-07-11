@@ -37,7 +37,7 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
         testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
-        streamSchema: JsonNode
+        streamSchema: JsonNode,
     ): List<JsonNode> {
         val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
 
@@ -48,7 +48,7 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
             val `object` = s3Client.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader<GenericData.Record>(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
-                    GenericDatumReader<GenericData.Record>()
+                    GenericDatumReader<GenericData.Record>(),
                 )
                 .use { dataFileReader ->
                     val jsonReader: ObjectReader = MAPPER.reader()
@@ -69,7 +69,7 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
         streamName: String,
-        namespace: String
+        namespace: String,
     ): Map<String?, Set<Schema.Type?>?> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
@@ -78,7 +78,7 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
             val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
             DataFileReader(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
-                    GenericDatumReader<GenericData.Record>()
+                    GenericDatumReader<GenericData.Record>(),
                 )
                 .use { dataFileReader ->
                     while (dataFileReader.hasNext()) {

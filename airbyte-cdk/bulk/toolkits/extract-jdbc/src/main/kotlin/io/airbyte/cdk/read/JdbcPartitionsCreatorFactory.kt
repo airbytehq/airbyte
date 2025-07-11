@@ -14,9 +14,7 @@ abstract class JdbcPartitionsCreatorFactory<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
->(
-    val partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : PartitionsCreatorFactory {
+>(val partitionFactory: JdbcPartitionFactory<A, S, P>) : PartitionsCreatorFactory {
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is StreamFeedBootstrap) return null
@@ -35,9 +33,8 @@ class JdbcSequentialPartitionsCreatorFactory<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
->(
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+>(partitionFactory: JdbcPartitionFactory<A, S, P>) :
+    JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         JdbcSequentialPartitionsCreator(partition, partitionFactory)
@@ -51,9 +48,8 @@ class JdbcConcurrentPartitionsCreatorFactory<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
->(
-    partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+>(partitionFactory: JdbcPartitionFactory<A, S, P>) :
+    JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         JdbcConcurrentPartitionsCreator(partition, partitionFactory)
@@ -64,7 +60,7 @@ class JdbcPartitionCreatorFactorySupplier<
     T : JdbcPartitionsCreatorFactory<A, S, P>,
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
-    P : JdbcPartition<S>
+    P : JdbcPartition<S>,
 >(val factory: T) : PartitionsCreatorFactorySupplier<T> {
     override fun get(): T = factory
 }

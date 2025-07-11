@@ -17,6 +17,7 @@ import java.util.*
 import javax.annotation.Nonnull
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * An S3 configuration. Typical usage sets at most one of `bucketPath` (necessary for more delicate
  * data syncing to S3)
@@ -31,10 +32,12 @@ open class S3DestinationConfig {
     val formatConfig: UploadFormatConfig?
     var fileNamePattern: String? = null
         private set
+
     var environment: Map<String, String>
 
     private val lock = Any()
     private var s3Client: AmazonS3?
+
     fun getS3Client(): AmazonS3 {
         synchronized(lock) {
             s3Client?.let {
@@ -58,7 +61,7 @@ open class S3DestinationConfig {
         pathFormat: String?,
         credentialConfig: S3CredentialConfig?,
         formatConfig: UploadFormatConfig?,
-        s3Client: AmazonS3
+        s3Client: AmazonS3,
     ) {
         this.endpoint = endpoint
         this.bucketName = bucketName
@@ -83,7 +86,7 @@ open class S3DestinationConfig {
         fileNamePattern: String?,
         checkIntegrity: Boolean,
         uploadThreadsCount: Int,
-        environment: Map<String, String> = System.getenv()
+        environment: Map<String, String> = System.getenv(),
     ) {
         this.endpoint = endpoint
         this.bucketName = bucketName
@@ -171,14 +174,14 @@ open class S3DestinationConfig {
             bucketPath,
             bucketRegion,
             s3CredentialConfig,
-            formatConfig
+            formatConfig,
         )
     }
 
     class Builder(
         private var bucketName: String?,
         private var bucketPath: String,
-        private var bucketRegion: String?
+        private var bucketRegion: String?,
     ) {
         private var endpoint: String? = ""
         private var pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT
@@ -271,7 +274,7 @@ open class S3DestinationConfig {
                 fileNamePattern,
                 checkIntegrity,
                 uploadThreadsCount,
-                environment
+                environment,
             )
         }
     }
@@ -296,7 +299,7 @@ open class S3DestinationConfig {
         @JvmStatic
         fun getS3DestinationConfig(
             @Nonnull config: JsonNode,
-            environment: Map<String, String> = System.getenv()
+            environment: Map<String, String> = System.getenv(),
         ): S3DestinationConfig {
             return getS3DestinationConfig(config, StorageProvider.AWS_S3, environment)
         }
@@ -305,13 +308,13 @@ open class S3DestinationConfig {
         fun getS3DestinationConfig(
             @Nonnull config: JsonNode,
             @Nonnull storageProvider: StorageProvider = StorageProvider.AWS_S3,
-            environment: Map<String, String> = System.getenv()
+            environment: Map<String, String> = System.getenv(),
         ): S3DestinationConfig {
             var builder =
                 create(
                     getProperty(config, S3Constants.S_3_BUCKET_NAME),
                     "",
-                    getProperty(config, S3Constants.S_3_BUCKET_REGION)
+                    getProperty(config, S3Constants.S_3_BUCKET_REGION),
                 )
 
             if (config.has(S3Constants.S_3_BUCKET_PATH)) {
@@ -333,7 +336,7 @@ open class S3DestinationConfig {
                         val endpoint =
                             String.format(
                                 R2_INSTANCE_URL,
-                                getProperty(config, S3Constants.ACCOUNT_ID)
+                                getProperty(config, S3Constants.ACCOUNT_ID),
                             )
                         builder = builder.withEndpoint(endpoint)
                     }
@@ -355,12 +358,12 @@ open class S3DestinationConfig {
                 if (config.has(S3Constants.ACCESS_KEY_ID)) {
                     S3AccessKeyCredentialConfig(
                         getProperty(config, S3Constants.ACCESS_KEY_ID),
-                        getProperty(config, S3Constants.SECRET_ACCESS_KEY)
+                        getProperty(config, S3Constants.SECRET_ACCESS_KEY),
                     )
                 } else if (config.has(S3Constants.ROLE_ARN)) {
                     S3AssumeRoleCredentialConfig(
                         getProperty(config, S3Constants.ROLE_ARN)!!,
-                        environment
+                        environment,
                     )
                 } else {
                     S3AWSDefaultProfileCredentialConfig()

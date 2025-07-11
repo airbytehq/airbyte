@@ -5,9 +5,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.ThreadContextElement
 
 /** Alternative to [kotlinx.coroutines.CoroutineName] that works in prod. */
-data class ThreadRenamingCoroutineName(
-    val name: String,
-) : ThreadContextElement<String> {
+data class ThreadRenamingCoroutineName(val name: String) : ThreadContextElement<String> {
     companion object Key : CoroutineContext.Key<ThreadRenamingCoroutineName>
 
     override val key: CoroutineContext.Key<ThreadRenamingCoroutineName>
@@ -19,10 +17,7 @@ data class ThreadRenamingCoroutineName(
         return previousName
     }
 
-    override fun restoreThreadContext(
-        context: CoroutineContext,
-        oldState: String,
-    ) {
+    override fun restoreThreadContext(context: CoroutineContext, oldState: String) {
         Thread.currentThread().name = oldState
     }
 

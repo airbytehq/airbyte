@@ -13,7 +13,7 @@ class NamespaceMapperTest {
     private fun makeStream(
         unmappedNamespace: String,
         unmappedName: String,
-        namespaceMapper: NamespaceMapper
+        namespaceMapper: NamespaceMapper,
     ): DestinationStream {
         return DestinationStream(
             unmappedNamespace = unmappedNamespace,
@@ -23,7 +23,7 @@ class NamespaceMapperTest {
             minimumGenerationId = 0,
             syncId = 1,
             schema = mockk(relaxed = true),
-            namespaceMapper = namespaceMapper
+            namespaceMapper = namespaceMapper,
         )
     }
 
@@ -38,7 +38,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("namespace", "name"),
-            stream.mappedDescriptor
+            stream.mappedDescriptor,
         )
     }
 
@@ -53,7 +53,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("namespace", "prefix_name"),
-            stream.mappedDescriptor
+            stream.mappedDescriptor,
         )
     }
 
@@ -68,11 +68,11 @@ class NamespaceMapperTest {
             makeStream(
                 unmappedNamespace = "namespace",
                 unmappedName = "name",
-                namespaceMapper = mapper
+                namespaceMapper = mapper,
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("namespace", "name"),
-            stream.mappedDescriptor
+            stream.mappedDescriptor,
         )
     }
 
@@ -91,16 +91,13 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor("custom_format_namespace", "name"),
-            stream.mappedDescriptor
+            stream.mappedDescriptor,
         )
     }
 
     @Test
     fun `namespace is always null in destination mode`() {
-        val mapper =
-            NamespaceMapper(
-                namespaceDefinitionType = NamespaceDefinitionType.DESTINATION,
-            )
+        val mapper = NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.DESTINATION)
         val stream =
             makeStream(
                 unmappedNamespace = "namespace",
@@ -125,7 +122,7 @@ class NamespaceMapperTest {
             )
         Assertions.assertEquals(
             DestinationStream.Descriptor(null, "prefix_name"),
-            stream.mappedDescriptor
+            stream.mappedDescriptor,
         )
     }
 }

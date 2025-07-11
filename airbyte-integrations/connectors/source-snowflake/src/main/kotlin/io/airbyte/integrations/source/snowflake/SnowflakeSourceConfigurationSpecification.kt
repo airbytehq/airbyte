@@ -32,16 +32,7 @@ import jakarta.inject.Singleton
  */
 @JsonSchemaTitle("Snowflake Source Spec")
 @JsonPropertyOrder(
-    value =
-        [
-            "credentials",
-            "host",
-            "role",
-            "warehouse",
-            "database",
-            "schema",
-            "jdbc_url_params",
-        ],
+    value = ["credentials", "host", "role", "warehouse", "database", "schema", "jdbc_url_params"]
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
@@ -92,7 +83,7 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "Additional properties to pass to the JDBC URL string when connecting to the database " +
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
-            "(example: key1=value1&key2=value2&key3=value3).",
+            "(example: key1=value1&key2=value2&key3=value3)."
     )
     @JsonSchemaInject(json = """{"order":6}""")
     var jdbcUrlParams: String? = null
@@ -144,7 +135,7 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
             "will query each table or view individually to check access privileges " +
             "and inaccessible tables, views, or columns therein will be removed. " +
             "In large schemas, this might cause schema discovery to take too long, " +
-            "in which case it might be advisable to disable this feature.",
+            "in which case it might be advisable to disable this feature."
     )
     var checkPrivileges: Boolean? = true
 
@@ -153,10 +144,7 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
 
     @JsonAnySetter
-    fun setAdditionalProperty(
-        name: String,
-        value: Any,
-    ) {
+    fun setAdditionalProperty(name: String, value: Any) {
         additionalPropertiesMap[name] = value
     }
 }
@@ -166,12 +154,12 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
 @JsonSubTypes(
     JsonSubTypes.Type(
         value = KeyPairCredentialsSpecification::class,
-        name = "Key Pair Authentication"
+        name = "Key Pair Authentication",
     ),
     JsonSubTypes.Type(
         value = UsernamePasswordCredentialsSpecification::class,
-        name = "username/password"
-    )
+        name = "username/password",
+    ),
 )
 @JsonSchemaTitle("Authorization Method")
 sealed interface CredentialsSpecification
@@ -198,7 +186,7 @@ data class KeyPairCredentialsSpecification(
     @JsonSchemaTitle("Passphrase")
     @JsonPropertyDescription("Passphrase for private key")
     @JsonSchemaInject(json = """{"order":3,"airbyte_secret":true}""")
-    val privateKeyPassword: String? = null
+    val privateKeyPassword: String? = null,
 ) : CredentialsSpecification
 
 @JsonSchemaTitle("Username and Password")
@@ -216,7 +204,7 @@ data class UsernamePasswordCredentialsSpecification(
     @JsonSchemaTitle("Password")
     @JsonPropertyDescription("The password associated with the username.")
     @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
-    val password: String
+    val password: String,
 ) : CredentialsSpecification
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
@@ -224,7 +212,7 @@ data class UsernamePasswordCredentialsSpecification(
     JsonSubTypes.Type(
         value = UserDefinedCursorConfigurationSpecification::class,
         name = "user_defined",
-    ),
+    )
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -235,7 +223,7 @@ sealed interface IncrementalConfigurationSpecification
     "Incrementally detects new inserts and updates using the " +
         "<a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/" +
         "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
-        "(e.g. created_at, updated_at).",
+        "(e.g. created_at, updated_at)."
 )
 data object UserDefinedCursorConfigurationSpecification : IncrementalConfigurationSpecification
 

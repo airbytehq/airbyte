@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class JsonSchemaToAirbyteType(
     @Property(name = "airbyte.destination.core.types.unions")
-    private val unionBehavior: UnionBehavior,
+    private val unionBehavior: UnionBehavior
 ) {
     enum class UnionBehavior {
         /**
@@ -84,10 +84,7 @@ class JsonSchemaToAirbyteType(
                 if (options.isArray) {
                     // intentionally don't use the `unionOf()` utility method.
                     // We know this is a non-legacy union.
-                    UnionType.of(
-                        options.mapNotNull { convertInner(it) },
-                        isLegacyUnion = false,
-                    )
+                    UnionType.of(options.mapNotNull { convertInner(it) }, isLegacyUnion = false)
                 } else {
                     // options is supposed to be a list, but fallback to sane behavior if it's not.
                     convertInner(options)
@@ -164,16 +161,14 @@ class JsonSchemaToAirbyteType(
         return ObjectType(propertiesMapped, additionalProperties, required)
     }
 
-    private fun fieldFromSchema(
-        fieldSchema: ObjectNode,
-    ): FieldType {
+    private fun fieldFromSchema(fieldSchema: ObjectNode): FieldType {
         val airbyteType = convertInner(fieldSchema) ?: UnknownType(fieldSchema)
         return FieldType(airbyteType, nullable = true)
     }
 
     private fun unionFromCombinedTypes(
         options: List<JsonNode>,
-        parentSchema: ObjectNode
+        parentSchema: ObjectNode,
     ): AirbyteType {
         // Denormalize the properties across each type (the converter only checks what matters
         // per type).

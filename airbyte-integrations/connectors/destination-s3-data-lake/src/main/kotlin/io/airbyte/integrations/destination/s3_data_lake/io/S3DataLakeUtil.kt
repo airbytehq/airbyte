@@ -42,8 +42,9 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * Collection of Iceberg related utilities.
+ *
  * @param assumeRoleCredentials is a temporary fix to allow us to run the integrations tests. This
- * will be removed when we change all of this to use Micronaut
+ *   will be removed when we change all of this to use Micronaut
  */
 @Singleton
 class S3DataLakeUtil(
@@ -56,7 +57,7 @@ class S3DataLakeUtil(
 
     fun createNamespaceWithGlueHandling(
         streamDescriptor: DestinationStream.Descriptor,
-        catalog: Catalog
+        catalog: Catalog,
     ) {
         try {
             icebergUtil.createNamespace(streamDescriptor, catalog)
@@ -108,7 +109,7 @@ class S3DataLakeUtil(
         config: S3DataLakeConfiguration,
         catalogConfig: RestCatalogConfiguration,
         s3Properties: Map<String, String>,
-        region: String?
+        region: String?,
     ): Map<String, String> {
         val awsAccessKeyId =
             requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
@@ -150,7 +151,7 @@ class S3DataLakeUtil(
     private fun buildNessieProperties(
         config: S3DataLakeConfiguration,
         catalogConfig: NessieCatalogConfiguration,
-        s3Properties: Map<String, String>
+        s3Properties: Map<String, String>,
     ): Map<String, String> {
         val awsAccessKeyId =
             requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
@@ -200,7 +201,7 @@ class S3DataLakeUtil(
             if (catalogConfig.awsArnRoleConfiguration.roleArn != null) {
                 buildRoleBasedClientProperties(
                     catalogConfig.awsArnRoleConfiguration.roleArn!!,
-                    config
+                    config,
                 )
             } else {
                 buildKeyBasedClientProperties(config)
@@ -211,7 +212,7 @@ class S3DataLakeUtil(
 
     private fun buildRoleBasedClientProperties(
         roleArn: String,
-        config: S3DataLakeConfiguration
+        config: S3DataLakeConfiguration,
     ): Map<String, String> {
         val region = config.s3BucketConfiguration.s3BucketRegion
         val (accessKeyId, secretAccessKey, externalId) =

@@ -37,7 +37,7 @@ class AirbyteTypeToMsqlTypeTest {
                 linkedMapOf(
                     "id" to FieldType(IntegerType, false),
                     "name" to FieldType(StringType, true),
-                ),
+                )
             )
         val result = converter.convert(objectType)
         assertEquals(MssqlType.TEXT, result)

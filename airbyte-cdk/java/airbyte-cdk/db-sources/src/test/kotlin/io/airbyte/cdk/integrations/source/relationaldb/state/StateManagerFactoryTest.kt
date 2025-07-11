@@ -24,7 +24,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 null,
-                catalog
+                catalog,
             )
         }
 
@@ -32,7 +32,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 listOf(),
-                catalog
+                catalog,
             )
         }
 
@@ -40,7 +40,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.LEGACY,
                 null,
-                catalog
+                catalog,
             )
         }
 
@@ -48,7 +48,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.LEGACY,
                 listOf(),
-                catalog
+                catalog,
             )
         }
 
@@ -56,7 +56,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 null,
-                catalog
+                catalog,
             )
         }
 
@@ -64,7 +64,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 listOf(),
-                catalog
+                catalog,
             )
         }
     }
@@ -79,7 +79,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.LEGACY,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -114,7 +114,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -140,7 +140,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -165,7 +165,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
         }
     }
@@ -199,7 +199,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.GLOBAL,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -224,7 +224,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -250,7 +250,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)
@@ -285,7 +285,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
         }
     }
@@ -309,7 +309,7 @@ class StateManagerFactoryTest {
             StateManagerFactory.createStateManager(
                 AirbyteStateMessage.AirbyteStateType.STREAM,
                 List.of(airbyteStateMessage),
-                catalog
+                catalog,
             )
 
         Assertions.assertNotNull(stateManager)

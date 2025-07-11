@@ -9,9 +9,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 
-class IntegrationTestOperations(
-    private val configSpec: ConfigurationSpecification,
-) {
+class IntegrationTestOperations(private val configSpec: ConfigurationSpecification) {
 
     fun check(): Boolean {
         val output = CliRunner.source("check", configSpec).run()
@@ -29,7 +27,7 @@ class IntegrationTestOperations(
     fun sync(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage> = listOf(),
-        vararg featureFlags: FeatureFlag
+        vararg featureFlags: FeatureFlag,
     ): BufferingOutputConsumer {
         return CliRunner.source("read", configSpec, catalog, state, *featureFlags).run()
     }

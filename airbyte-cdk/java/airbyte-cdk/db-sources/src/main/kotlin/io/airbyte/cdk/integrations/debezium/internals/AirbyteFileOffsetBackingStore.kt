@@ -22,6 +22,7 @@ import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.util.SafeObjectInputStream
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This class handles reading and writing a debezium offset file. In many cases it is duplicating
  * logic in debezium because that logic is not exposed in the public API. We mostly treat the
@@ -32,7 +33,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 class AirbyteFileOffsetBackingStore(
     private val offsetFilePath: Path,
-    private val dbName: Optional<String>
+    private val dbName: Optional<String>,
 ) {
     fun read(): Map<String, String> {
         val raw = load()
@@ -173,7 +174,7 @@ class AirbyteFileOffsetBackingStore(
         // https://debezium.io/documentation/reference/2.2/development/engine.html#engine-properties
         props.setProperty(
             "offset.storage",
-            "org.apache.kafka.connect.storage.FileOffsetBackingStore"
+            "org.apache.kafka.connect.storage.FileOffsetBackingStore",
         )
         props.setProperty("offset.storage.file.filename", offsetFilePath.toString())
         props.setProperty("offset.flush.interval.ms", "1000") // todo: make this longer
@@ -187,6 +188,7 @@ class AirbyteFileOffsetBackingStore(
                 "\"" +
                 key.substring(key.length - 2))
         }
+
         private fun mongoShardMutation(input: String): String {
             val jsonObjectStart = input.indexOf("{", input.indexOf("["))
             val jsonObjectEnd = input.lastIndexOf("}")
@@ -217,7 +219,7 @@ class AirbyteFileOffsetBackingStore(
         @JvmStatic
         fun initializeState(
             cdcState: JsonNode?,
-            dbName: Optional<String>
+            dbName: Optional<String>,
         ): AirbyteFileOffsetBackingStore {
             val cdcWorkingDir: Path
             try {

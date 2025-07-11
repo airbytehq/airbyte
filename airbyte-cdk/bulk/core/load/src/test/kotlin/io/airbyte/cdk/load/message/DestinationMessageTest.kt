@@ -58,7 +58,7 @@ class DestinationMessageTest {
     private fun factory(
         isFileTransferEnabled: Boolean,
         requireCheckpointKey: Boolean = false,
-        namespaceMapper: NamespaceMapper = NamespaceMapper()
+        namespaceMapper: NamespaceMapper = NamespaceMapper(),
     ) =
         DestinationMessageFactory(
             DestinationCatalog(
@@ -71,7 +71,7 @@ class DestinationMessageTest {
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
-                        namespaceMapper = namespaceMapper
+                        namespaceMapper = namespaceMapper,
                     )
                 )
             ),
@@ -95,7 +95,7 @@ class DestinationMessageTest {
             // as `Int?`.
             // Fortunately, the protocol models are (by definition) round-trippable through JSON.
             serialized.deserializeToClass(AirbyteMessage::class.java),
-            serialized.length.toLong()
+            serialized.length.toLong(),
         )
     }
 
@@ -173,7 +173,7 @@ class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -192,9 +192,9 @@ class DestinationMessageTest {
                                     listOf(
                                         AirbyteStreamState()
                                             .withStreamDescriptor(descriptor.asProtocolObject())
-                                            .withStreamState(blob2),
-                                    ),
-                                ),
+                                            .withStreamState(blob2)
+                                    )
+                                )
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
@@ -210,7 +210,7 @@ class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -246,7 +246,7 @@ class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -265,9 +265,9 @@ class DestinationMessageTest {
                                     listOf(
                                         AirbyteStreamState()
                                             .withStreamDescriptor(descriptor.asProtocolObject())
-                                            .withStreamState(blob2),
-                                    ),
-                                ),
+                                            .withStreamState(blob2)
+                                    )
+                                )
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
@@ -288,7 +288,7 @@ class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 
@@ -332,9 +332,9 @@ class DestinationMessageTest {
                                     listOf(
                                         AirbyteStreamState()
                                             .withStreamDescriptor(descriptor.asProtocolObject())
-                                            .withStreamState(blob2),
-                                    ),
-                                ),
+                                            .withStreamState(blob2)
+                                    )
+                                )
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
@@ -485,7 +485,7 @@ class DestinationMessageTest {
     @CsvSource(
         "/files/test/1.pdf, /assets/test/1.pdf, 30",
         "/files/test/index.html, /html/test/1.html, 12580",
-        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999"
+        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999",
     )
     fun `a file reference can be parsed from a protocol message`(
         stagingFileUrl: String,
@@ -507,7 +507,7 @@ class DestinationMessageTest {
     @CsvSource(
         "/files/test/1.pdf, /assets/test/1.pdf, 30",
         "/files/test/index.html, /html/test/1.html, 12580",
-        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999"
+        "/files/cat.jpg, /cats/photos/1/lion.jpg, 999",
     )
     fun `a destination record raw is initialized with a file reference if present on the protocol msg`(
         stagingFileUrl: String,
@@ -627,10 +627,10 @@ class DestinationMessageTest {
                         properties =
                             linkedMapOf(
                                 "id" to FieldType(IntegerType, nullable = true),
-                                "name" to FieldType(StringType, nullable = true)
+                                "name" to FieldType(StringType, nullable = true),
                             )
                     ),
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val catalog = DestinationCatalog(streams = listOf(stream))
 
@@ -668,7 +668,7 @@ class DestinationMessageTest {
             destinationRecord
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue()
-                .emittedAtMs
+                .emittedAtMs,
         )
         assertEquals(
             1,
@@ -676,7 +676,7 @@ class DestinationMessageTest {
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue()
                 .declaredFields["id"]
-                ?.let { (it.abValue as IntegerValue).value.toInt() }
+                ?.let { (it.abValue as IntegerValue).value.toInt() },
         )
         assertEquals(
             "test",
@@ -684,7 +684,7 @@ class DestinationMessageTest {
                 .asDestinationRecordRaw()
                 .asEnrichedDestinationRecordAirbyteValue()
                 .declaredFields["name"]
-                ?.let { (it.abValue as StringValue).value }
+                ?.let { (it.abValue as StringValue).value },
         )
     }
 
@@ -752,9 +752,9 @@ class DestinationMessageTest {
                                                     .withNamespace("potato")
                                                     .withName("tomato")
                                             )
-                                            .withStreamState(blob2),
-                                    ),
-                                ),
+                                            .withStreamState(blob2)
+                                    )
+                                )
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
@@ -770,7 +770,7 @@ class DestinationMessageTest {
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
                 .asProtocolMessage()
-                .serializeToString()
+                .serializeToString(),
         )
     }
 }

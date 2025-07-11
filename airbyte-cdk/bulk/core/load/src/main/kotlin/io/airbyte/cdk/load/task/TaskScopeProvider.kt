@@ -70,7 +70,6 @@ class TaskScopeProvider(config: DestinationConfiguration) {
                 it.job.join()
                 log.info { "Task completed" }
             }
-        }
-            ?: log.error { "Timed out waiting for tasks to complete" }
+        } ?: log.error { "Timed out waiting for tasks to complete" }
     }
 }

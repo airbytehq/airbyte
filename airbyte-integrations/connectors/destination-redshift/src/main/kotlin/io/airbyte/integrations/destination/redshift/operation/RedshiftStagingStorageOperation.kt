@@ -56,7 +56,7 @@ class RedshiftStagingStorageOperation(
         destinationHandler.execute(
             Sql.transactionally(
                 """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}" $cascadeClause""",
-                """ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}$suffix" RENAME TO "${streamId.rawName}" """
+                """ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}$suffix" RENAME TO "${streamId.rawName}" """,
             )
         )
     }
@@ -78,7 +78,8 @@ class RedshiftStagingStorageOperation(
                 """
                 ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}"
                 APPEND FROM "${streamId.rawNamespace}"."${streamId.rawName}$suffix"
-                """.trimIndent(),
+                """
+                    .trimIndent(),
                 // No need to drop cascade. If the user created a view on top of the temp raw table,
                 // that would be pretty weird, and we should fail loudly.
                 """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}$suffix" """,
@@ -87,7 +88,7 @@ class RedshiftStagingStorageOperation(
             // transaction, so we can't run the SET statement.
             // We're only working with schema/table names, so it's fine to just quote the
             // identifiers instead of relying on this option.
-            forceCaseSensitiveIdentifier = false
+            forceCaseSensitiveIdentifier = false,
         )
     }
 
@@ -106,7 +107,7 @@ class RedshiftStagingStorageOperation(
     override fun writeToStage(
         streamConfig: StreamConfig,
         suffix: String,
-        data: SerializableBuffer
+        data: SerializableBuffer,
     ) {
         val streamId = streamConfig.id
         val objectPath: String = getStagingPath(streamId)
@@ -118,7 +119,7 @@ class RedshiftStagingStorageOperation(
                 data,
                 streamId.rawNamespace,
                 objectPath,
-                streamConfig.generationId
+                streamConfig.generationId,
             )
 
         log.info {
@@ -131,7 +132,7 @@ class RedshiftStagingStorageOperation(
             destinationHandler,
             streamId.rawNamespace,
             streamId.rawName,
-            suffix
+            suffix,
         )
         log.info {
             "Copy to target table ${streamId.rawNamespace}.${streamId.rawName}$suffix in destination complete."
@@ -176,7 +177,7 @@ class RedshiftStagingStorageOperation(
     override fun typeAndDedupe(
         streamConfig: StreamConfig,
         maxProcessedTimestamp: Optional<Instant>,
-        finalTableSuffix: String
+        finalTableSuffix: String,
     ) {
         TyperDeduperUtil.executeTypeAndDedupe(
             sqlGenerator = sqlGenerator,
@@ -206,7 +207,7 @@ class RedshiftStagingStorageOperation(
                 writeDatetime.monthValue,
                 writeDatetime.dayOfMonth,
                 writeDatetime.hour,
-                connectionId
+                connectionId,
             )
         )
     }
@@ -254,7 +255,8 @@ class RedshiftStagingStorageOperation(
             REGION '${s3Config.bucketRegion}' TIMEFORMAT 'auto'
             STATUPDATE OFF
             MANIFEST;
-            """.trimIndent()
+            """
+                .trimIndent()
 
         // Disable statement logging. The statement contains a plaintext S3 secret+access key.
         destinationHandler.execute(Sql.of(copyQuery), logStatements = false)
@@ -273,7 +275,8 @@ class RedshiftStagingStorageOperation(
                     ${JavaBaseConstants.COLUMN_NAME_AB_META} SUPER NULL,
                     ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID} BIGINT NULL
                 )
-            """.trimIndent()
+            """
+                .trimIndent()
         }
 
         private fun truncateRawTableQuery(streamId: StreamId, suffix: String): String {

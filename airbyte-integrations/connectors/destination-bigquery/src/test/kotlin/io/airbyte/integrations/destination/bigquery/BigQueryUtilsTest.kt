@@ -63,7 +63,7 @@ class BigQueryUtilsTest {
         private fun validBigQueryIdProvider(): Stream<Arguments> {
             return Stream.of(
                 Arguments.arguments("my-project", "my_dataset", "my_dataset"),
-                Arguments.arguments("my-project", "my-project:my_dataset", "my_dataset")
+                Arguments.arguments("my-project", "my-project:my_dataset", "my_dataset"),
             )
         }
 
@@ -73,13 +73,13 @@ class BigQueryUtilsTest {
                 Arguments.arguments(
                     "my-project",
                     ":my_dataset",
-                    "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `` in Dataset ID"
+                    "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `` in Dataset ID",
                 ),
                 Arguments.arguments(
                     "my-project",
                     "your-project:my_dataset",
-                    "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `your-project` in Dataset ID"
-                )
+                    "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `your-project` in Dataset ID",
+                ),
             )
         }
     }

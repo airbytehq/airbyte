@@ -39,7 +39,7 @@ class ClickhouseDirectLoaderFactoryTest {
     @MethodSource("streamDescriptors")
     fun `creates loader with buffer and correctly mapped table name`(
         stream: DestinationStream.Descriptor,
-        table: TableName
+        table: TableName,
     ) {
         every { stateStore.get(stream) } returns DirectLoadTableExecutionConfig(table)
 

@@ -49,7 +49,7 @@ data class StateWithCounts<S : AutoCloseable>(
     val accumulatorState: S,
     val checkpointCounts: MutableMap<CheckpointId, CheckpointValue> = mutableMapOf(),
     val inputCount: Long = 0,
-    val createdAtMs: Long = System.currentTimeMillis()
+    val createdAtMs: Long = System.currentTimeMillis(),
 ) : AutoCloseable {
     override fun close() {
         accumulatorState.close()
@@ -121,7 +121,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                     key,
                                     state.checkpointCounts,
                                     output.output,
-                                    state.inputCount
+                                    state.inputCount,
                                 )
 
                                 state.close()
@@ -140,10 +140,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 
                         // Accumulate the input and get the new state and output.
                         val result =
-                            batchAccumulator.accept(
-                                input.value,
-                                stateWithCounts.accumulatorState,
-                            )
+                            batchAccumulator.accept(input.value, stateWithCounts.accumulatorState)
 
                         // Update bookkeeping metadata
                         input.postProcessingCallback?.let {
@@ -162,7 +159,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 if (
                                     flushStrategy?.shouldFlush(
                                         stateWithCounts.inputCount,
-                                        System.currentTimeMillis() - stateWithCounts.createdAtMs
+                                        System.currentTimeMillis() - stateWithCounts.createdAtMs,
                                     ) == true
                                 ) {
                                     val finalResult = batchAccumulator.finish(result.nextState!!)
@@ -198,7 +195,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             stateStore.stateWithCounts[input.key] =
                                 stateWithCounts.copy(
                                     accumulatorState = finalAccState,
-                                    inputCount = inputCount
+                                    inputCount = inputCount,
                                 )
                         } else {
                             stateStore.stateWithCounts.remove(input.key)?.let {
@@ -271,7 +268,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private suspend fun finishKeys(
         stateStore: StateStore<K1, S>,
         keys: Iterable<K1>,
-        reason: String
+        reason: String,
     ) {
         keys.forEach { key ->
             log.debug { "Finishing state for $key due to $reason" }
@@ -315,7 +312,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     state = output.state,
                     taskName = stepId,
                     part = part,
-                    inputCount = inputCount
+                    inputCount = inputCount,
                 )
             batchUpdateQueue.publish(update)
         }
@@ -360,7 +357,7 @@ class LoadPipelineStepTaskFactory(
             numWorkers,
             stepId,
             streamCompletions,
-            maxNumConcurrentKeys
+            maxNumConcurrentKeys,
         )
     }
 
@@ -381,7 +378,7 @@ class LoadPipelineStepTaskFactory(
             part,
             numWorkers,
             stepId = "first-step",
-            maxNumConcurrentKeys = maxNumConcurrentKeys
+            maxNumConcurrentKeys = maxNumConcurrentKeys,
         )
     }
 
@@ -399,7 +396,7 @@ class LoadPipelineStepTaskFactory(
             null,
             part,
             numWorkers,
-            stepId = "final-step"
+            stepId = "final-step",
         )
     }
 

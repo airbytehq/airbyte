@@ -53,8 +53,8 @@ class DevNullConfigurationFactory :
                                         Logging(
                                             maxEntryCount =
                                                 pojo.testDestination.loggingConfig.maxEntryCount
-                                                    .toInt(),
-                                        ),
+                                                    .toInt()
+                                        )
                                 )
                             }
                             is EveryNthEntryConfig -> {
@@ -78,7 +78,7 @@ class DevNullConfigurationFactory :
                                                     .toInt(),
                                             sampleRate =
                                                 pojo.testDestination.loggingConfig.samplingRatio,
-                                            seed = pojo.testDestination.loggingConfig.seed?.toLong()
+                                            seed = pojo.testDestination.loggingConfig.seed?.toLong(),
                                         )
                                 )
                             }

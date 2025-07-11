@@ -64,7 +64,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
                 LOGGER.info("Looking for [$regex]")
                 Assertions.assertTrue(
                     stringMessages.any { line: String -> line.matches(regex.toRegex()) },
-                    "Failed to find regex: $regex"
+                    "Failed to find regex: $regex",
                 )
             }
         )
@@ -78,7 +78,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         testRoot =
             Files.createTempDirectory(
                 Files.createDirectories(Path.of("/tmp/standard_test")),
-                "pytest"
+                "pytest",
             )
         runExecutableVoid(Command.SETUP)
     }
@@ -95,7 +95,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         GET_STATE,
         GET_REGEX_TESTS,
         SETUP,
-        TEARDOWN
+        TEARDOWN,
     }
 
     @Throws(IOException::class)
@@ -131,7 +131,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
                 PYTHON_CONTAINER_NAME,
                 cmd.toString().lowercase(Locale.getDefault()),
                 "--out",
-                "/test_root"
+                "/test_root",
             )
 
         val process = ProcessBuilder(dockerCmd).start()

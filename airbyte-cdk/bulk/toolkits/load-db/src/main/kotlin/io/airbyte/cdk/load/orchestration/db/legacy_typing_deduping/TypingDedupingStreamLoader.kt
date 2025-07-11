@@ -41,7 +41,7 @@ class TypingDedupingStreamLoader(
      * The status of the raw table that "matters" for this sync. Specifically:
      * * For normal syncs / merge refreshes, this is the status of the real raw table)
      * * For truncate refreshes, this is the status of the temp raw table (because we never even
-     * look at the real raw table)
+     *   look at the real raw table)
      */
     private lateinit var initialRawTableStatus: RawTableInitialStatus
 
@@ -63,10 +63,7 @@ class TypingDedupingStreamLoader(
             finalTmpTableSuffix = NO_SUFFIX
         }
 
-        streamStateStore.put(
-            stream.mappedDescriptor,
-            TypingDedupingExecutionConfig(rawTableSuffix),
-        )
+        streamStateStore.put(stream.mappedDescriptor, TypingDedupingExecutionConfig(rawTableSuffix))
     }
 
     private fun prepareStageForTruncate(): Pair<RawTableInitialStatus, String> {
@@ -84,7 +81,7 @@ class TypingDedupingStreamLoader(
             val tempStageGeneration =
                 rawTableOperations.getRawTableGeneration(
                     tableNames.rawTableName!!,
-                    TMP_TABLE_SUFFIX
+                    TMP_TABLE_SUFFIX,
                 )
             if (tempStageGeneration == null || tempStageGeneration == stream.generationId) {
                 logger.info {
@@ -92,10 +89,7 @@ class TypingDedupingStreamLoader(
                 }
                 // The temp table is from the correct generation. Set up any other resources
                 // (staging file, etc.), but leave the table untouched.
-                rawTableOperations.prepareRawTable(
-                    tableNames.rawTableName,
-                    TMP_TABLE_SUFFIX,
-                )
+                rawTableOperations.prepareRawTable(tableNames.rawTableName, TMP_TABLE_SUFFIX)
                 return Pair(initialStatus.tempRawTableStatus.reify(), TMP_TABLE_SUFFIX)
             } else {
                 logger.info {
@@ -108,10 +102,7 @@ class TypingDedupingStreamLoader(
                     replace = true,
                 )
                 // We nuked the temp raw table, so create a new initial raw table status.
-                return Pair(
-                    RawTableInitialStatus.emptyTableStatus,
-                    TMP_TABLE_SUFFIX,
-                )
+                return Pair(RawTableInitialStatus.emptyTableStatus, TMP_TABLE_SUFFIX)
             }
         } else if (initialStatus.rawTableStatus != null) {
             // It's possible to "resume" a truncate sync that was previously already finalized.
@@ -133,10 +124,7 @@ class TypingDedupingStreamLoader(
                     "${stream.mappedDescriptor.toPrettyString()}: truncate sync, existing real raw table belongs to generation $realStageGeneration (!= current generation ${stream.generationId}), and no preexisting temp raw table. Creating a temp raw table."
                 }
                 // We're initiating a new truncate refresh. Create a new temp stage.
-                rawTableOperations.prepareRawTable(
-                    tableNames.rawTableName,
-                    TMP_TABLE_SUFFIX,
-                )
+                rawTableOperations.prepareRawTable(tableNames.rawTableName, TMP_TABLE_SUFFIX)
                 return Pair(
                     // Create a fresh raw table status, since we created a fresh temp stage.
                     RawTableInitialStatus.emptyTableStatus,
@@ -148,10 +136,7 @@ class TypingDedupingStreamLoader(
                 "${stream.mappedDescriptor.toPrettyString()}: truncate sync, and no preexisting temp or  raw table. Creating a temp raw table."
             }
             // We're initiating a new truncate refresh. Create a new temp stage.
-            rawTableOperations.prepareRawTable(
-                tableNames.rawTableName!!,
-                TMP_TABLE_SUFFIX,
-            )
+            rawTableOperations.prepareRawTable(tableNames.rawTableName!!, TMP_TABLE_SUFFIX)
             return Pair(
                 // Create a fresh raw table status, since we created a fresh temp stage.
                 RawTableInitialStatus.emptyTableStatus,
@@ -193,10 +178,8 @@ class TypingDedupingStreamLoader(
                         } else {
                             tempRawTableTimestamp
                         }
-                    }
-                        ?: realRawTableTimestamp
-                }
-                    ?: initialStatus.tempRawTableStatus.maxProcessedTimestamp
+                    } ?: realRawTableTimestamp
+                } ?: initialStatus.tempRawTableStatus.maxProcessedTimestamp
             val updatedStatus =
                 RawTableInitialStatus(
                     hasUnprocessedRecords = hasUnprocessedRecords,
@@ -226,7 +209,7 @@ class TypingDedupingStreamLoader(
                 tableNames.finalTableName!!,
                 columnNameMapping,
                 NO_SUFFIX,
-                replace = false
+                replace = false,
             )
             return NO_SUFFIX
         }
@@ -296,7 +279,7 @@ class TypingDedupingStreamLoader(
                 tableNames.finalTableName!!,
                 columnNameMapping,
                 TMP_TABLE_SUFFIX,
-                replace = true
+                replace = true,
             )
             logger.info {
                 "Using temp final table for table ${stream.mappedDescriptor.toPrettyString()}, this will be overwritten at end of sync"
@@ -372,7 +355,7 @@ class TypingDedupingStreamLoader(
                 tableNames,
                 columnNameMapping,
                 maxProcessedTimestamp = maxProcessedTimestamp,
-                finalTableSuffix = finalTmpTableSuffix
+                finalTableSuffix = finalTmpTableSuffix,
             )
         }
 
@@ -386,7 +369,7 @@ class TypingDedupingStreamLoader(
             finalTableOperations.overwriteFinalTable(
                 stream,
                 tableNames.finalTableName!!,
-                finalTableSuffix = finalTmpTableSuffix
+                finalTableSuffix = finalTmpTableSuffix,
             )
         } else {
             logger.info {

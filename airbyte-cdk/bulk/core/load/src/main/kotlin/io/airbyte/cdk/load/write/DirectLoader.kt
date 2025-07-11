@@ -64,7 +64,9 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
  */
 interface DirectLoader : AutoCloseable {
     sealed interface DirectLoadResult
+
     data object Incomplete : DirectLoadResult
+
     data object Complete : DirectLoadResult
 
     /**

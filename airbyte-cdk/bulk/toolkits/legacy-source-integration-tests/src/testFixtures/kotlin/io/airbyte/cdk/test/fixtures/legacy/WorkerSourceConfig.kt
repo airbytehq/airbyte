@@ -21,22 +21,14 @@ import java.util.*
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder("sourceId", "sourceConnectionConfiguration", "catalog", "state")
 class WorkerSourceConfig : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("sourceId")
     @set:JsonProperty("sourceId")
     @JsonProperty("sourceId")
     var sourceId: UUID? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
@@ -45,22 +37,15 @@ class WorkerSourceConfig : Serializable {
     @JsonProperty("sourceConnectionConfiguration")
     @JsonPropertyDescription("Integration specific blob. Must be a valid JSON string.")
     var sourceConnectionConfiguration: JsonNode? = null
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("catalog")
     @set:JsonProperty("catalog")
     @JsonProperty("catalog")
     var catalog: ConfiguredAirbyteCatalog? = null
+
     /**
      * State
      *

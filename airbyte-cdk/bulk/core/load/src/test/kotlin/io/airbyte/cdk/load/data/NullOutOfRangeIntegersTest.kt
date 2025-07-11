@@ -24,19 +24,15 @@ class NullOutOfRangeIntegersTest {
                     IntegerType,
                     NullValue,
                     nameOverride = "big_integer",
-                    nullable = true
+                    nullable = true,
                 )
                 .build()
         val (actualValue, changes) = NullOutOfRangeIntegers().map(valueIn, schemaIn)
         Assertions.assertEquals(expectedValue, actualValue)
         Assertions.assertEquals(1, changes.size)
         Assertions.assertEquals(
-            Meta.Change(
-                "big_integer",
-                Change.NULLED,
-                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            ),
-            changes[0]
+            Meta.Change("big_integer", Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION),
+            changes[0],
         )
     }
 
@@ -52,14 +48,14 @@ class NullOutOfRangeIntegersTest {
                     IntegerType,
                     NullValue,
                     nameOverride = "too_small",
-                    nullable = true
+                    nullable = true,
                 )
                 .with(
                     IntegerValue(300),
                     IntegerType,
                     NullValue,
                     nameOverride = "too_big",
-                    nullable = true
+                    nullable = true,
                 )
                 .build()
         val (actualValue, changes) =
@@ -67,19 +63,11 @@ class NullOutOfRangeIntegersTest {
         Assertions.assertEquals(expectedValue, actualValue)
         Assertions.assertEquals(
             setOf(
-                Meta.Change(
-                    "too_small",
-                    Change.NULLED,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-                ),
-                Meta.Change(
-                    "too_big",
-                    Change.NULLED,
-                    Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-                ),
-                changes[1]
+                Meta.Change("too_small", Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION),
+                Meta.Change("too_big", Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION),
+                changes[1],
             ),
-            changes.toSet()
+            changes.toSet(),
         )
     }
 }

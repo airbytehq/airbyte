@@ -17,28 +17,28 @@ class RecordWaitTimeUtilTest {
         Assertions.assertDoesNotThrow { RecordWaitTimeUtil.checkFirstRecordWaitTime(emptyConfig) }
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            RecordWaitTimeUtil.getFirstRecordWaitSeconds(emptyConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitSeconds(emptyConfig),
         )
         Assertions.assertEquals(
             RecordWaitTimeUtil.DEFAULT_FIRST_RECORD_WAIT_TIME,
-            RecordWaitTimeUtil.getFirstRecordWaitTime(emptyConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitTime(emptyConfig),
         )
 
         val normalConfig =
             Jsons.jsonNode(
                 Map.of(
                     "replication_method",
-                    Map.of("method", "CDC", "initial_waiting_seconds", 500)
+                    Map.of("method", "CDC", "initial_waiting_seconds", 500),
                 )
             )
         Assertions.assertDoesNotThrow { RecordWaitTimeUtil.checkFirstRecordWaitTime(normalConfig) }
         Assertions.assertEquals(
             Optional.of(500),
-            RecordWaitTimeUtil.getFirstRecordWaitSeconds(normalConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitSeconds(normalConfig),
         )
         Assertions.assertEquals(
             Duration.ofSeconds(500),
-            RecordWaitTimeUtil.getFirstRecordWaitTime(normalConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitTime(normalConfig),
         )
 
         val tooShortTimeout = RecordWaitTimeUtil.MIN_FIRST_RECORD_WAIT_TIME.seconds.toInt() - 1
@@ -46,7 +46,7 @@ class RecordWaitTimeUtilTest {
             Jsons.jsonNode(
                 Map.of(
                     "replication_method",
-                    Map.of("method", "CDC", "initial_waiting_seconds", tooShortTimeout)
+                    Map.of("method", "CDC", "initial_waiting_seconds", tooShortTimeout),
                 )
             )
         Assertions.assertThrows(IllegalArgumentException::class.java) {
@@ -54,11 +54,11 @@ class RecordWaitTimeUtilTest {
         }
         Assertions.assertEquals(
             Optional.of(tooShortTimeout),
-            RecordWaitTimeUtil.getFirstRecordWaitSeconds(tooShortConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitSeconds(tooShortConfig),
         )
         Assertions.assertEquals(
             RecordWaitTimeUtil.MIN_FIRST_RECORD_WAIT_TIME,
-            RecordWaitTimeUtil.getFirstRecordWaitTime(tooShortConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitTime(tooShortConfig),
         )
 
         val tooLongTimeout = RecordWaitTimeUtil.MAX_FIRST_RECORD_WAIT_TIME.seconds.toInt() + 1
@@ -66,7 +66,7 @@ class RecordWaitTimeUtilTest {
             Jsons.jsonNode(
                 Map.of(
                     "replication_method",
-                    Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimeout)
+                    Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimeout),
                 )
             )
         Assertions.assertThrows(IllegalArgumentException::class.java) {
@@ -74,11 +74,11 @@ class RecordWaitTimeUtilTest {
         }
         Assertions.assertEquals(
             Optional.of(tooLongTimeout),
-            RecordWaitTimeUtil.getFirstRecordWaitSeconds(tooLongConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitSeconds(tooLongConfig),
         )
         Assertions.assertEquals(
             RecordWaitTimeUtil.MAX_FIRST_RECORD_WAIT_TIME,
-            RecordWaitTimeUtil.getFirstRecordWaitTime(tooLongConfig)
+            RecordWaitTimeUtil.getFirstRecordWaitTime(tooLongConfig),
         )
     }
 }

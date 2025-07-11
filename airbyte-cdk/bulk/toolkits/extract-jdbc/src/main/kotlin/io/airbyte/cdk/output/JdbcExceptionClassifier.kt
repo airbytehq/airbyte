@@ -50,9 +50,8 @@ class JdbcExceptionClassifier(
 /** Micronaut configuration object for [JdbcExceptionClassifier] rules. */
 @EachProperty("${JDBC_CLASSIFIER_PREFIX}.rules", list = true)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class JdbcExceptionClassifierRule(
-    @param:Parameter override val ordinal: Int,
-) : RuleBasedExceptionClassifier.Rule {
+class JdbcExceptionClassifierRule(@param:Parameter override val ordinal: Int) :
+    RuleBasedExceptionClassifier.Rule {
 
     // Micronaut configuration objects work better with mutable properties.
     override lateinit var error: RuleBasedExceptionClassifier.ErrorKind

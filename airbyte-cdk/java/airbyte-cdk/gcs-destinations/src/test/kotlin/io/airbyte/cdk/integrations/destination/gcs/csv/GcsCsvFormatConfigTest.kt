@@ -52,7 +52,7 @@ class GcsCsvFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
@@ -77,7 +77,7 @@ class GcsCsvFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 }

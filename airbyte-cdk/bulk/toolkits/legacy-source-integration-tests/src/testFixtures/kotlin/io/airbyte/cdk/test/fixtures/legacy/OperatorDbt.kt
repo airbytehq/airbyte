@@ -17,18 +17,9 @@ import java.io.Serializable
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder("gitRepoUrl", "gitRepoBranch", "dockerImage", "dbtArguments")
 class OperatorDbt : Serializable {
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
-    /**
-     *
-     * (Required)
-     */
+    /** (Required) */
+    /** (Required) */
+    /** (Required) */
     @get:JsonProperty("gitRepoUrl")
     @set:JsonProperty("gitRepoUrl")
     @JsonProperty("gitRepoUrl")

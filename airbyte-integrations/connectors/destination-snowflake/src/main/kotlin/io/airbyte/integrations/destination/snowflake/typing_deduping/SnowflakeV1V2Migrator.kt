@@ -22,7 +22,7 @@ private val LOGGER = KotlinLogging.logger {}
 class SnowflakeV1V2Migrator(
     private val namingConventionTransformer: NamingConventionTransformer,
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
     @SneakyThrows
     @Throws(Exception::class)
@@ -30,7 +30,7 @@ class SnowflakeV1V2Migrator(
         try {
             return database
                 .queryJsons(
-                    "SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE \"$databaseName\";",
+                    "SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE \"$databaseName\";"
                 )
                 .isNotEmpty()
         } catch (e: SnowflakeSQLException) {
@@ -44,7 +44,7 @@ class SnowflakeV1V2Migrator(
 
     override fun schemaMatchesExpectation(
         existingTable: TableDefinition,
-        columns: Collection<String>
+        columns: Collection<String>,
     ): Boolean {
         return containsAllIgnoreCase(existingTable.columns.keys, columns)
     }
@@ -53,7 +53,7 @@ class SnowflakeV1V2Migrator(
     @Throws(Exception::class)
     override fun getTableIfExists(
         namespace: String?,
-        tableName: String?
+        tableName: String?,
     ): Optional<TableDefinition> {
         return Optional.ofNullable(
             SnowflakeDestinationHandler.getTable(database, namespace!!, tableName!!)
@@ -66,7 +66,7 @@ class SnowflakeV1V2Migrator(
         val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName)
         return NamespacedTableName(
             namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace),
-            tableName
+            tableName,
         )
     }
 
@@ -76,7 +76,7 @@ class SnowflakeV1V2Migrator(
         // In v2 we preserve cases
         return super.doesValidV1RawTableExist(
             namespace!!.uppercase(Locale.getDefault()),
-            tableName!!.uppercase(Locale.getDefault())
+            tableName!!.uppercase(Locale.getDefault()),
         )
     }
 }

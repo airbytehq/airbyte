@@ -103,15 +103,16 @@ class LoadPipelineStepTaskUTest {
             part,
             part,
             taskId,
-            ConcurrentHashMap()
+            ConcurrentHashMap(),
         )
 
     private fun messageEvent(
         key: StreamKey,
         value: String,
-        counts: Map<Int, CheckpointValue> = emptyMap()
+        counts: Map<Int, CheckpointValue> = emptyMap(),
     ): PipelineEvent<StreamKey, String> =
         PipelineMessage(counts.mapKeys { CheckpointId(it.key.toString()) }, key, value)
+
     private fun endOfStreamEvent(key: StreamKey): PipelineEvent<StreamKey, String> =
         PipelineEndOfStream(key.stream)
 
@@ -394,14 +395,14 @@ class LoadPipelineStepTaskUTest {
                         messageEvent(
                             key1,
                             "stream1_value",
-                            mapOf(it / 6 to CheckpointValue(it.toLong(), it.toLong()))
+                            mapOf(it / 6 to CheckpointValue(it.toLong(), it.toLong())),
                         )
                     ) // 0 -> 15, 1 -> 51
                     collector.emit(
                         messageEvent(
                             key2,
                             "stream2_value",
-                            mapOf((it / 4) + 1 to CheckpointValue(it.toLong(), it.toLong()))
+                            mapOf((it / 4) + 1 to CheckpointValue(it.toLong(), it.toLong())),
                         )
                     ) // 1 -> 6, 2 -> 22, 3 -> 38
                 }
@@ -420,12 +421,12 @@ class LoadPipelineStepTaskUTest {
                 key1.stream,
                 mapOf(
                     CheckpointId("0") to CheckpointValue(15L, 15L),
-                    CheckpointId("1") to CheckpointValue(51L, 51L)
+                    CheckpointId("1") to CheckpointValue(51L, 51L),
                 ),
                 BatchState.COMPLETE,
                 taskId,
                 part,
-                inputCount = 12L
+                inputCount = 12L,
             )
         val expectedBatchUpdateStream2 =
             BatchStateUpdate(
@@ -433,12 +434,12 @@ class LoadPipelineStepTaskUTest {
                 mapOf(
                     CheckpointId("1") to CheckpointValue(6L, 6L),
                     CheckpointId("2") to CheckpointValue(22L, 22L),
-                    CheckpointId("3") to CheckpointValue(38L, 38L)
+                    CheckpointId("3") to CheckpointValue(38L, 38L),
                 ),
                 BatchState.PERSISTED,
                 taskId,
                 part,
-                inputCount = 12L
+                inputCount = 12L,
             )
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream1) }
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream2) }
@@ -451,7 +452,7 @@ class LoadPipelineStepTaskUTest {
         val inputFlows =
             arrayOf<Flow<PipelineEvent<StreamKey, String>>>(
                 mockk(relaxed = true),
-                mockk(relaxed = true)
+                mockk(relaxed = true),
             )
         val tasks =
             (0 until 2).map {
@@ -465,7 +466,7 @@ class LoadPipelineStepTaskUTest {
                     it,
                     2,
                     taskId,
-                    completionMap
+                    completionMap,
                 )
             }
 
@@ -639,7 +640,7 @@ class LoadPipelineStepTaskUTest {
                 1,
                 1,
                 taskId,
-                ConcurrentHashMap()
+                ConcurrentHashMap(),
             )
 
         val streamKey = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
@@ -652,17 +653,11 @@ class LoadPipelineStepTaskUTest {
                         stream = mockk(relaxed = true),
                         rawData = mockk(relaxed = true),
                         serializedSizeBytes = "serialized".length.toLong(),
-                        airbyteRawId = UUID.randomUUID()
+                        airbyteRawId = UUID.randomUUID(),
                     ),
             )
 
-        task.handleOutput(
-            streamKey,
-            mapOf(),
-            true,
-            1,
-            context,
-        )
+        task.handleOutput(streamKey, mapOf(), true, 1, context)
 
         val msgSlot = slot<PipelineMessage<TestKey, Boolean>>()
         coVerify { outputQueue.publish(capture(msgSlot), any()) }

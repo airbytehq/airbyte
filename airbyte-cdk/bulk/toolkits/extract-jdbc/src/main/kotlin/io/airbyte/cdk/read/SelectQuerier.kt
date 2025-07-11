@@ -18,10 +18,7 @@ import java.sql.ResultSet
 
 @DefaultImplementation(JdbcSelectQuerier::class)
 interface SelectQuerier {
-    fun executeQuery(
-        q: SelectQuery,
-        parameters: Parameters = Parameters(),
-    ): Result
+    fun executeQuery(q: SelectQuery, parameters: Parameters = Parameters()): Result
 
     data class Parameters(
         /** When set, the [ObjectNode] in the [Result] is reused; take care with this! */
@@ -33,7 +30,7 @@ interface SelectQuerier {
     ) {
         constructor(
             reuseResultObject: Boolean = false,
-            fetchSize: Int? = null
+            fetchSize: Int? = null,
         ) : this(reuseResultObject, fetchSize, fetchSize)
     }
 
@@ -47,9 +44,7 @@ interface SelectQuerier {
 
 /** Default implementation of [SelectQuerier]. */
 @Singleton
-class JdbcSelectQuerier(
-    private val jdbcConnectionFactory: JdbcConnectionFactory,
-) : SelectQuerier {
+class JdbcSelectQuerier(private val jdbcConnectionFactory: JdbcConnectionFactory) : SelectQuerier {
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
@@ -147,7 +142,7 @@ class JdbcSelectQuerier(
                     resultRow.data[column.id] =
                         FieldValueEncoder(
                             null,
-                            NullCodec // Use NullCodec for null values
+                            NullCodec, // Use NullCodec for null values
                         ) // Use NullCodec for null values
                     if (!hasLoggedException) {
                         log.warn(e) { "Error deserializing value in column $column." }

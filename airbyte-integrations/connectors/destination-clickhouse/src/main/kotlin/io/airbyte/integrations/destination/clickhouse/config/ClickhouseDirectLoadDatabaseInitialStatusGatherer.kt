@@ -13,8 +13,4 @@ import jakarta.inject.Singleton
 class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
     airbyteClient: AirbyteClient,
     tempTableNameGenerator: TempTableNameGenerator,
-) :
-    BaseDirectLoadInitialStatusGatherer(
-        airbyteClient,
-        tempTableNameGenerator,
-    )
+) : BaseDirectLoadInitialStatusGatherer(airbyteClient, tempTableNameGenerator)

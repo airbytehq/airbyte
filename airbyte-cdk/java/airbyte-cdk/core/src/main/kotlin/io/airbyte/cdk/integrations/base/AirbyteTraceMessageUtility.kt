@@ -64,7 +64,7 @@ object AirbyteTraceMessageUtility {
         type: AirbyteEstimateTraceMessage.Type?,
         rowEstimate: Long,
         streamName: String?,
-        streamNamespace: String?
+        streamNamespace: String?,
     ) {
         emitMessage(
             makeAirbyteMessageFromTraceMessage(

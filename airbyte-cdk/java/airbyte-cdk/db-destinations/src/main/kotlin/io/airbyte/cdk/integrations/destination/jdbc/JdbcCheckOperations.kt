@@ -21,20 +21,24 @@ object JdbcCheckOperations {
     /**
      * Verifies if provided creds has enough permissions. Steps are: 1. Create schema if not exists.
      * 2. Create test table. 3. Insert dummy record to newly created table if "attemptInsert" set to
-     * true.
+     *    true.
      * 4. Delete table created on step 2.
      *
      * @param outputSchema
      * - schema to tests against.
+     *
      * @param database
      * - database to tests against.
+     *
      * @param namingResolver
      * - naming resolver.
+     *
      * @param sqlOps
      * - SqlOperations object
+     *
      * @param attemptInsert
      * - set true if need to make attempt to insert dummy records to newly created table. Set false
-     * to skip insert step.
+     *   to skip insert step.
      */
     @JvmStatic
     @Throws(Exception::class)
@@ -43,7 +47,7 @@ object JdbcCheckOperations {
         database: JdbcDatabase,
         namingResolver: NamingConventionTransformer,
         sqlOps: SqlOperations,
-        attemptInsert: Boolean
+        attemptInsert: Boolean,
     ) {
         // verify we have write permissions on the target schema by creating a table with a
         // random name,
@@ -63,7 +67,7 @@ object JdbcCheckOperations {
             val outputTableName =
                 namingResolver.getIdentifier(
                     "_airbyte_connection_test_" +
-                        UUID.randomUUID().toString().replace("-".toRegex(), ""),
+                        UUID.randomUUID().toString().replace("-".toRegex(), "")
                 )
             sqlOps.createSchemaIfNotExists(database, outputSchema)
             sqlOps.createTableIfNotExists(database, outputSchema, outputTableName)
@@ -99,7 +103,7 @@ object JdbcCheckOperations {
          * Generates a dummy AirbyteRecordMessage with random values.
          *
          * @return AirbyteRecordMessage object with dummy values that may be used to test insert
-         * permission.
+         *   permission.
          */
         get() {
             val dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }")
@@ -107,7 +111,7 @@ object JdbcCheckOperations {
                 .withRecord(
                     PartialAirbyteRecordMessage()
                         .withStream("stream1")
-                        .withEmittedAt(1602637589000L),
+                        .withEmittedAt(1602637589000L)
                 )
                 .withSerialized(dummyDataToInsert.toString())
         }

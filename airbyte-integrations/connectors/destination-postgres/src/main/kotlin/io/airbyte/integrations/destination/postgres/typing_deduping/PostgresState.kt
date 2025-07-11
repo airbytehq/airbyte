@@ -9,7 +9,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 data class PostgresState(
     val needsSoftReset: Boolean,
     val isAirbyteMetaPresentInRaw: Boolean,
-    val isAirbyteGenerationIdPresent: Boolean
+    val isAirbyteGenerationIdPresent: Boolean,
 ) : MinimumDestinationState {
     override fun needsSoftReset(): Boolean {
         return needsSoftReset

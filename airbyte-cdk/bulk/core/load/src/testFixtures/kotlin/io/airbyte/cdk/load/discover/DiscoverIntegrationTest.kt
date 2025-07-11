@@ -59,11 +59,11 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
             assertEquals(
                 catalogMessages.size,
                 1,
-                "$testName: Expected to receive exactly one destination catalog message, but got ${catalogMessages.size}: $catalogMessages"
+                "$testName: Expected to receive exactly one destination catalog message, but got ${catalogMessages.size}: $catalogMessages",
             )
             assertFalse(
                 catalogMessages.first().destinationCatalog.operations.isEmpty(),
-                "$testName: Catalogs is expected to have at least one operation"
+                "$testName: Catalogs is expected to have at least one operation",
             )
         }
     }

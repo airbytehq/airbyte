@@ -12,7 +12,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 
 class NonResumableStateMessageProducer<T>(
     private val isCdc: Boolean,
-    private val sourceStateMessageProducer: SourceStateMessageProducer<T>
+    private val sourceStateMessageProducer: SourceStateMessageProducer<T>,
 ) : SourceStateMessageProducer<AirbyteMessage> {
     override fun generateStateMessageAtCheckpoint(
         stream: ConfiguredAirbyteStream?
@@ -22,7 +22,7 @@ class NonResumableStateMessageProducer<T>(
 
     override fun processRecordMessage(
         stream: ConfiguredAirbyteStream?,
-        message: AirbyteMessage
+        message: AirbyteMessage,
     ): AirbyteMessage {
         return message
     }
@@ -36,7 +36,7 @@ class NonResumableStateMessageProducer<T>(
                     .withStreamDescriptor(
                         StreamDescriptor()
                             .withName(stream!!.stream.name)
-                            .withNamespace(stream.stream.namespace),
+                            .withNamespace(stream.stream.namespace)
                     )
 
             return AirbyteStateMessage()

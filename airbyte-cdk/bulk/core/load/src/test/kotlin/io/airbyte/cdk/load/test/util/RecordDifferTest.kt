@@ -32,9 +32,9 @@ class RecordDifferTest {
                                 "id2" to 100,
                                 "updated_at" to OffsetDateTime.parse("1970-01-01T00:00:00Z"),
                                 "name" to "alice",
-                                "phone" to "1234"
+                                "phone" to "1234",
                             ),
-                            airbyteMeta = null
+                            airbyteMeta = null,
                         ),
                         // Matching records
                         OutputRecord(
@@ -46,7 +46,7 @@ class RecordDifferTest {
                                 "updated_at" to OffsetDateTime.parse("1970-01-01T00:00:01Z"),
                                 "name" to "bob",
                             ),
-                            airbyteMeta = null
+                            airbyteMeta = null,
                         ),
                         // Different records
                         OutputRecord(
@@ -58,7 +58,7 @@ class RecordDifferTest {
                                 "updated_at" to OffsetDateTime.parse("1970-01-01T00:00:02Z"),
                                 "name" to "charlie",
                                 "phone" to "1234",
-                                "email" to "charlie@example.com"
+                                "email" to "charlie@example.com",
                             ),
                             airbyteMeta = OutputRecord.Meta(syncId = 42),
                         ),
@@ -75,7 +75,7 @@ class RecordDifferTest {
                                 "updated_at" to OffsetDateTime.parse("1970-01-01T00:00:01Z"),
                                 "name" to "bob",
                             ),
-                            airbyteMeta = null
+                            airbyteMeta = null,
                         ),
                         // Different records
                         OutputRecord(
@@ -87,9 +87,9 @@ class RecordDifferTest {
                                 "updated_at" to OffsetDateTime.parse("1970-01-01T00:00:02Z"),
                                 "name" to "charlie",
                                 "phone" to "5678",
-                                "address" to "1234 charlie street"
+                                "address" to "1234 charlie street",
                             ),
-                            airbyteMeta = null
+                            airbyteMeta = null,
                         ),
                         // Extra actual record
                         OutputRecord(
@@ -101,7 +101,7 @@ class RecordDifferTest {
                                 "updated_at" to OffsetDateTime.parse("1970-01-01T00:00:03Z"),
                                 "name" to "dana",
                             ),
-                            airbyteMeta = null
+                            airbyteMeta = null,
                         ),
                     ),
             )
@@ -116,8 +116,9 @@ class RecordDifferTest {
               email: Expected StringValue(value=charlie@example.com), but was <unset>
               address: Expected <unset>, but was StringValue(value=1234 charlie street)
             Unexpected record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampWithTimezoneValue(value=1970-01-01T00:00:03Z)): OutputRecord(rawId=null, extractedAt=1970-01-01T00:00:01.234Z, loadedAt=null, generationId=42, data=ObjectValue(values={id1=IntegerValue(value=1), id2=IntegerValue(value=100), updated_at=TimestampWithTimezoneValue(value=1970-01-01T00:00:03Z), name=StringValue(value=dana)}), airbyteMeta=null)
-            """.trimIndent(),
-            diff
+            """
+                .trimIndent(),
+            diff,
         )
     }
 
@@ -154,7 +155,7 @@ class RecordDifferTest {
                             data = mapOf("id" to 1, "name" to "foo"),
                             airbyteMeta = null,
                         ),
-                    )
+                    ),
                 )
         assertNull(diff)
     }
@@ -230,7 +231,7 @@ class RecordDifferTest {
                             data = mapOf("id" to 1, "name" to "foo"),
                             airbyteMeta = null,
                         ),
-                    )
+                    ),
                 )
         assertNull(diff)
     }
@@ -251,10 +252,10 @@ class RecordDifferTest {
                                         mapOf(
                                             "foo" to "bar",
                                             "sub_list" to listOf(mapOf<String, Any?>()),
-                                        )
+                                        ),
                                 ),
                             airbyteMeta = null,
-                        ),
+                        )
                     ),
                     listOf(
                         OutputRecord(
@@ -269,10 +270,10 @@ class RecordDifferTest {
                                             "foo" to "bar",
                                             "bar" to null,
                                             "sub_list" to listOf(mapOf("foo" to null)),
-                                        )
+                                        ),
                                 ),
                             airbyteMeta = null,
-                        ),
+                        )
                     ),
                 )
         assertNull(diff)

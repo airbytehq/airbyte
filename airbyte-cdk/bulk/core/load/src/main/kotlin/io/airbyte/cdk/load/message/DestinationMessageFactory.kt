@@ -31,7 +31,7 @@ class DestinationMessageFactory(
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
-        serializedSizeBytes: Long
+        serializedSizeBytes: Long,
     ): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
             return value?.let {
@@ -42,7 +42,7 @@ class DestinationMessageFactory(
                     is Long -> it
                     else ->
                         throw IllegalArgumentException(
-                            "Unexpected value for $name: $it (${it::class.qualifiedName})",
+                            "Unexpected value for $name: $it (${it::class.qualifiedName})"
                         )
                 }
             }
@@ -53,7 +53,7 @@ class DestinationMessageFactory(
                 val descriptor =
                     namespaceMapper.map(
                         namespace = message.record.namespace,
-                        name = message.record.stream
+                        name = message.record.stream,
                     )
                 val stream = catalog.getStream(descriptor)
                 if (fileTransferEnabled) {
@@ -77,7 +77,7 @@ class DestinationMessageFactory(
                         )
                     } catch (e: Exception) {
                         throw IllegalArgumentException(
-                            "Failed to construct file message: ${e.message}",
+                            "Failed to construct file message: ${e.message}"
                         )
                     }
                 } else {
@@ -171,7 +171,7 @@ class DestinationMessageFactory(
                             additionalProperties = message.state.additionalProperties,
                             originalTypeField = message.state.type,
                             serializedSizeBytes = serializedSizeBytes,
-                            checkpointKey = keyFromAdditionalPropertiesMaybe(additionalProperties)
+                            checkpointKey = keyFromAdditionalPropertiesMaybe(additionalProperties),
                         )
                     }
                     else -> // TODO: Do we still need to handle LEGACY?
@@ -183,7 +183,7 @@ class DestinationMessageFactory(
     }
 
     private fun keyFromAdditionalPropertiesMaybe(
-        additionalProperties: Map<String, Any>,
+        additionalProperties: Map<String, Any>
     ): CheckpointKey? {
         val id = additionalProperties[Meta.CHECKPOINT_ID_NAME]?.let { CheckpointId(it as String) }
         val index =
@@ -242,7 +242,7 @@ class DestinationMessageFactory(
                         } else {
                             null
                         },
-                    name = message.record.streamName
+                    name = message.record.streamName,
                 )
             val stream = catalog.getStream(descriptor)
             DestinationRecord(

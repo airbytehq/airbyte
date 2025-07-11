@@ -49,9 +49,10 @@ class PersonIdentifyBatchEntryAssemblerTest {
                     "an_attribute": 123
                   }
                 }
-            """.trimIndent()
+            """
+                    .trimIndent()
             ),
-            entry
+            entry,
         )
     }
 
@@ -69,7 +70,7 @@ class PersonIdentifyBatchEntryAssemblerTest {
             stream = mockk(relaxed = true),
             rawData = rawData,
             serializedSizeBytes = "serialized".length.toLong(),
-            airbyteRawId = UUID.randomUUID()
+            airbyteRawId = UUID.randomUUID(),
         )
     }
 }
