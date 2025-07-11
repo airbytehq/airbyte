@@ -34,7 +34,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   static final String COLLECTION_INCLUDE_LIST_KEY = "collection.include.list";
   static final String DATABASE_INCLUDE_LIST_KEY = "database.include.list";
-
+  // For single db
+  static final String CAPTURE_TARGET_KEY = "capture.target";
   static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
   static final String MONGODB_POST_IMAGE_VALUE = "post_image";
   static final String DOUBLE_QUOTES_PATTERN = "\"";

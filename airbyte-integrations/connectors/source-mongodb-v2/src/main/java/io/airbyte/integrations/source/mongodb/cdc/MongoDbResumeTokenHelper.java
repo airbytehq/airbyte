@@ -10,6 +10,11 @@ import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
@@ -64,6 +69,26 @@ public class MongoDbResumeTokenHelper {
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
     final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
+      /*
+       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
+       * the call to getResumeToken() will return null!
+       */
+      eventStreamCursor.tryNext();
+      return eventStreamCursor.getResumeToken();
+    }
+  }
+
+  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient,
+                                                      final String databaseName,
+                                                      final ConfiguredAirbyteCatalog catalog) {
+    final List<String> collectionsList = catalog.getStreams().stream()
+            .map(s -> s.getStream().getName())
+            .toList();
+    LOGGER.info("Resume token for db {} with collection filter {}", databaseName, Arrays.toString(collectionsList.toArray()));
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+            Filters.in("ns.coll", collectionsList)));
+    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
     try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
       /*
        * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,

@@ -82,24 +82,44 @@ public class MongoDbCdcInitializer {
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
-    logOplogInfo(mongoClient);
+
+
+    final JsonNode initialDebeziumState;
+    final BsonDocument initialResumeToken;
+    final List<List<ConfiguredAirbyteStream>> streamsByDatabase = new ArrayList<>();
 
     final List<String> databaseNames = config.getDatabaseNames();
-    final List<List<ConfiguredAirbyteStream>> streamsByDatabase = new ArrayList<>();
-    for (String databaseName : databaseNames) {
+    if (databaseNames.size() == 1) {
+      final String databaseName = databaseNames.get(0);
       List<ConfiguredAirbyteStream> s = streams.stream()
-          .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
-          .map(Jsons::clone)
-          .toList();
+              .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
+              .map(Jsons::clone)
+              .toList();
       streamsByDatabase.add(s);
-    }
-    // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
 
-    final String serverId = config.getDatabaseConfig().get("connection_string").asText();
-    final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, serverId);
+      initialResumeToken =
+              MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
+
+      initialDebeziumState =
+              mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, databaseName);
+
+      logOplogInfo(mongoClient);
+    } else {
+      for (String databaseName : databaseNames) {
+        List<ConfiguredAirbyteStream> s = streams.stream()
+                .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
+                .map(Jsons::clone)
+                .toList();
+        streamsByDatabase.add(s);
+      }
+      // calculate the initial resume token for all the collections discovered for the input databases.
+      initialResumeToken =
+              MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+      final String serverId = config.getDatabaseConfig().get("connection_string").asText();
+      initialDebeziumState =
+              mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, serverId);
+      logOplogInfo(mongoClient);
+    }
 
     final MongoDbCdcState cdcState =
         (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
@@ -162,11 +182,21 @@ public class MongoDbCdcInitializer {
         .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream)))
         .map(stream -> stream.getStream().getNamespace() + "\\." + stream.getStream().getName()).toList();
 
-    final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators = new ArrayList<>();
-    for (int i = 0; i < databaseNames.size(); i++) {
-      initialSnapshotIterators
-          .addAll(initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseNames.get(i)),
-              config, false, false, emittedAt, Optional.of(initialLoadTimeout)));
+    final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators;
+    if (databaseNames.size() == 1) {
+      initialSnapshotIterators = initialSnapshotHandler.getIterators(
+              initialSnapshotStreams, stateManager,
+              mongoClient.getDatabase(databaseNames.get(0)),
+              config, false, false, emittedAt, Optional.of(initialLoadTimeout));
+    } else {
+      final List<AutoCloseableIterator<AirbyteMessage>> iterators = new ArrayList<>();
+      for (int i = 0; i < databaseNames.size(); i++) {
+        iterators.addAll(initialSnapshotHandler.getIterators(
+                initialSnapshotStreams, stateManager,
+                mongoClient.getDatabase(databaseNames.get(i)),
+                config, false, false, emittedAt, Optional.of(initialLoadTimeout)));
+      }
+      initialSnapshotIterators = iterators;
     }
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
