@@ -23,7 +23,6 @@ from .streams import (
     AdListingGroupCriterion,
     CampaignBiddingStrategy,
     CampaignCriterion,
-    ClickView,
     CustomerClient,
     CustomerLabel,
 )
@@ -227,7 +226,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
             AdListingGroupCriterion(**default_config),
             CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
-            ClickView(**incremental_config),
             CustomerLabel(**default_config),
         ]
         for single_query_config in config.get("custom_queries_array", []):
