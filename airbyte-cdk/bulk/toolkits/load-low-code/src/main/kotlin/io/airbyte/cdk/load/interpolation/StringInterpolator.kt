@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.hubspot.jinjava.Jinjava
 import com.hubspot.jinjava.JinjavaConfig
 import com.hubspot.jinjava.el.JinjavaInterpreterResolver
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.util.Jsons
 import java.beans.FeatureDescriptor
 import jinjava.javax.el.CompositeELResolver
@@ -22,6 +23,10 @@ import jinjava.javax.el.PropertyNotWritableException
  * Given this class is registered as an ELResolver in the JinjavaConfig, the user will be able to
  * write `node["field"]` instead of `node.get("field").
  */
+@SuppressFBWarnings(
+    "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE",
+    justification = "The param in getValue needs to be nullable because it's a Java class but we fail if it's null"
+)
 private class MapGetOperatorELResolver : ELResolver() {
     override fun getCommonPropertyType(context: ELContext?, base: Any?): Class<*>? {
         return if (isBaseValid(base)) {
