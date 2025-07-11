@@ -84,8 +84,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
     val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
-    @JsonIgnore
-    override var tunnelConfig: SshTunnelMethodConfiguration? = null
+    @JsonIgnore override var tunnelConfig: SshTunnelMethodConfiguration? = null
 
     @JsonSetter("tunnel_method")
     fun setTunnelMethodValue(value: SshTunnelMethodConfiguration?) {
@@ -154,8 +153,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
     val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
-    @JsonIgnore
-    override var tunnelConfig: SshTunnelMethodConfiguration? = null
+    @JsonIgnore override var tunnelConfig: SshTunnelMethodConfiguration? = null
 
     @JsonSetter("tunnel_method")
     fun setTunnelMethodValue(value: SshTunnelMethodConfiguration?) {
