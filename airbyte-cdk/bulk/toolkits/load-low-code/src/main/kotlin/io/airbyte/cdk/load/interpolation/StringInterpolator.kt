@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.interpolation
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.hubspot.jinjava.Jinjava
 import com.hubspot.jinjava.JinjavaConfig
@@ -88,5 +87,4 @@ class StringInterpolator {
     }
 }
 
-fun JsonNode.toInterpolationContext(): Any =
-    Jsons.convertValue(this, jacksonTypeRef<Any>())
+fun JsonNode.toInterpolationContext(): Any = Jsons.convertValue(this, jacksonTypeRef<Any>())

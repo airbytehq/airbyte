@@ -67,7 +67,8 @@ class StringInterpolationTest {
 
     @Test
     internal fun `test given ObjectNode when eval then extract values from ObjectNode`() {
-        val objectNode = Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
+        val objectNode =
+            Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
 
         val interpolatedValue =
             StringInterpolator()
@@ -80,7 +81,8 @@ class StringInterpolationTest {
 
     @Test
     internal fun `test given ObjectNode with get accessor when eval then return value`() {
-        val objectNode = Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
+        val objectNode =
+            Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
 
         val interpolatedValue =
             StringInterpolator()
@@ -93,7 +95,8 @@ class StringInterpolationTest {
 
     @Test
     internal fun `test given ObjectNode with condition when eval then compare the value of the node and not the node itself`() {
-        val objectNode = Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
+        val objectNode =
+            Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
 
         val interpolatedValue =
             StringInterpolator()
