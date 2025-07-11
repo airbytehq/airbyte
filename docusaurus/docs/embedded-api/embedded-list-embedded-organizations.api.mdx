@@ -1,0 +1,63 @@
+---
+id: embedded-list-embedded-organizations
+title: "List Embedded Organizations"
+description: "List Embedded Organizations"
+sidebar_label: "List Embedded Organizations"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV01z0zAQ/SuePYs6LXDxrWVSyAzQDglwyGQyirVJ1NqSKsmB4NF/Z1aOU+eDQjscc7Ilv337VvvsbGrwfOEgG4O2C67kL+6lVg4mDLRBG1cDARlgOUMhULwqpPPTdjXdjWJg0RmtHDrIarjo9egi0OVWGoJABsMqz9G5eVUkXzZgYJBr5VF5gnNjCplHxvTOUUwNLl9iyenOWNLlZZNhN31Wg/RYuqdxUyloy68NQgbOW6kWwGCubck9ZFBVUgADL31BgJtOaDIQENgum+IlHuM7Gv+ZwIHBXFrnpz+0vXeG5/hMSdcUnXxvo6OqwNpwPbvD3MdePFTSotjv7jSSHRZxVNbkeCXwmI9by9d/KNg9S5jrZvsone9vbLZDuXVNCET+5pjJrrhIKAs6/3JzlegcX8TmcrW+mUM23u9RYNsdVRUFhE4BnzbhgQFaq+1T/pxLLMRLE13H4MD+t+BprsWLyfrEkLwjhmMWaGGXRkbkE37qN4fHQOCcV4WHbDz5F8oDn7w+9Mm1tjMpBKqTS04uiS65uDh0yTdeSNF8wBsZJ7OczBIYvD320zNQHq3iRTJEu0J7cszJMa1jAgOHeWWlX8dCPoxGt1fILdpIN2F7VqIRKGlnoORmb9Qu0S81jeYLpMyG+yVkkHIj09V52k7o6c6AlcKjhCE5rul8V8j2NJfeG4JHGGQwawBUhVRzHZGbaodacZtc3g5gv4TukxVa1+z2znpn53TaRjtf8vgCNHP0X2reId8q9fjTp6bgMo6llS2it+N5jIEbSbnPgW3/w+xNv0RMk+dSO+or1PWMO/xqixBo+6FCS/2aMFhxK/mMSh5PAoMlchF7V8M9rqnreY6GmrHiRRVttP+mU5O3jXvfHwEDXpHQbTGbY2btTcfxXK073HXdIEb6HlUIwDYiPK0hTEIIvwF4/cXY
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Embedded Organizations"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/organizations/"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+List Embedded Organizations
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organizations":{"items":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"organization_name":{"type":"string","title":"Organization Name"},"first_workspace_id":{"type":"string","format":"uuid","title":"First Workspace Id"}},"type":"object","required":["organization_id","organization_name","first_workspace_id"],"title":"Organization"},"type":"array","title":"Organizations"}},"type":"object","required":["organizations"],"title":"ListEmbeddedOrganizationsResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

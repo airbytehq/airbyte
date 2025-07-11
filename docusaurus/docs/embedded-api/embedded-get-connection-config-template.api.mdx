@@ -1,0 +1,71 @@
+---
+id: embedded-get-connection-config-template
+title: "Get Connection Config Template"
+description: "Get Connection Config Template"
+sidebar_label: "Get Connection Config Template"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV01v2zgQ/SvCnLYAWyfZ3Ytujptmc9gmaNy9GIZAiyOZjUSyJBXUK+i/F0Pakhx709bYo0/6mnkzfHyk+FrwvHSQLiDXSmHupVZZrlUhy8xjbSruEZYMtEHL6eOdgBSwXqEQKN6W6LNXEhk4zBsr/QbSRQt/zecP18gtWkgXy27JwHDLa/RoXQhQvEZIQQpgIBWkYLhfAwOLXxtpUUDqbYMMXL7GmkPagt8YynDeSlUCg0LbmntIoWkCipe+ooA7AR0VtOiMVg4dJV9dXNBFoMutNDQCSOGxyXN0rmiq5NM2GBix41F5CufGVDIPZEy+OMppRw0ZS1R5GStoW3Il/w3BmRS/0vH9KDWh9hk16qWKYJGqQ7hd+vshNvlIsS/yee61zQQWUskTuhvDTwkqed9DHek2CmNUQK++YO7/A3AWozsGudUqw2/GonMyUs3V5r4IatnvtWP9G9VUFdBs78BnVqvkZoDpGCitspVF/iRVmeVrrkp0mbFYoEWVv0rtR62S621qMoupycOQSkMveFMRbbJU2gby3UblGVFhkZbGgL/SukKuRgUeNypP7lUyi6EjPJJ/x+DX5ipOR6wrMu5fzRXc41sva4QxfSE1mXoCaow4FehzTA1AHTvQwrDMFwcr54j6fyzooyJkcX8Z8bE3ppFsbtHP+s0tinK+3druGxoCDeKPY5vINRcJjQadP33zqNE5XuKpov97m94xQGu1DZjSY+0OSxUSK3FqoQ8huWP/d8NZrsXJYDeEkMwI4ZjUdmFTI0MkDDHcWr6BF0huvAoXy5+B7P8eO538fqiTD9qupBCozio5qySo5OrqUCX/8EqK+GuMbZzFchZLx+DPY7+eO+XRKl4lj2if0Z4Vc1bMTjHxUD7Syi36ZDjhbM/dyXywbzX6tSbHVyKhBzuWwoQbOXm+nOxs4OSF73OTwRO6SStFN3KCjyS0OOFjP9iTuPbewNbiheNxDKDmpSp0iNydk7XiNpk+3MHLgY2/PKON3gEu3l28uySSjXa+5kH3W8v5Qyb28PtmPX7zE1NxGTxFY6ug6sDSAriRVP4SWG+Y4zrc4yq+2rEFDFIp6BC61o5mGdp2xR1+tlXX0euvDVpy00sGz9xKviImFi0I6eheQFrwyuFBw/3yh98+bY/ZbxJgxweyE6EiCT7zqqEnYPCEm2jPu2XHYI1cBCvfbj9M8xyNH6UcbDS0OHpN3d7MgQFviK3BDcXpZrub0YLbb6dtY8RcP6Hqur47T8/UYNd9B1nkzAQ=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Connection Config Template"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/config_templates/connections/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get Connection Config Template
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"destination_name":{"type":"string","title":"Destination Name"},"destination_actor_definition_id":{"type":"string","format":"uuid","title":"Destination Actor Definition Id"},"destination_config":{"type":"object","title":"Destination Config"},"cron_expression":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Cron Expression"},"non_breaking_changes_preference":{"type":"string","title":"Non Breaking Changes Preference","default":"ignore"},"sync_on_create":{"type":"boolean","title":"Sync On Create","default":true},"id":{"type":"string","format":"uuid","title":"Id"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"updated_at":{"type":"string","format":"date-time","title":"Updated At"}},"type":"object","required":["organization_id","destination_name","destination_actor_definition_id","destination_config","id","created_at","updated_at"],"title":"GetConnectionConfigTemplateOut"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

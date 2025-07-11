@@ -13,6 +13,7 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
+const embeddedApiSidebar = require("./docs/embedded-api/sidebar");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -22,7 +23,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ["@docusaurus/theme-mermaid"],
+  themes: ["@docusaurus/theme-mermaid", "docusaurus-theme-openapi-docs"],
   title: "Airbyte Docs",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -192,6 +193,39 @@ const config = {
           productInformation,
           docMetaTags,
         ],
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded-api",
+        path: "docs/embedded-api",
+        routeBasePath: "/embedded-api/",
+        docItemComponent: "@theme/ApiItem",
+        async sidebarItemsGenerator() {
+          return embeddedApiSidebar;
+        },
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "embedded-api",
+        docsPluginId: "embedded-api",
+        config: {
+          embedded: {
+            specPath: "embedded-api-test.json",
+            // specPath:
+            //   "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json",
+            outputDir: "docs/embedded-api",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: false,
+              sidebarCollapsible: false,
+            },
+          },
+        },
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
