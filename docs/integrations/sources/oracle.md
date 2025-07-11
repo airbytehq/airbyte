@@ -162,6 +162,8 @@ Airbyte supports three network connectivity options for connecting to Oracle:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.6 | 2025-07-10 | [62920](https://github.com/airbytehq/airbyte/pull/62920) | Convert to new gradle build flow |
+| 0.5.5 | 2025-07-10 | [62921](https://github.com/airbytehq/airbyte/pull/62921) | Convert to new gradle build flow |
 | 0.5.3 | 2024-12-18 | [49883](https://github.com/airbytehq/airbyte/pull/49883) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.5.2 | 2024-02-13 | [35225](https://github.com/airbytehq/airbyte/pull/35225) | Adopt CDK 0.20.4 |
 | 0.5.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |

@@ -166,6 +166,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------|
+| 2.1.0 | 2025-07-11 | [62930](https://github.com/airbytehq/airbyte/pull/62930) | Promoting release candidate 2.1.0-rc.1 to a main version. |
 | 2.1.0-rc.1 | 2025-07-07 | [62110](https://github.com/airbytehq/airbyte/pull/62110) | Bump cdk v6 |
 | 2.0.2 | 2025-07-05 | [62709](https://github.com/airbytehq/airbyte/pull/62709) | Update dependencies |
 | 2.0.1 | 2025-06-28 | [51965](https://github.com/airbytehq/airbyte/pull/51965) | Update dependencies |

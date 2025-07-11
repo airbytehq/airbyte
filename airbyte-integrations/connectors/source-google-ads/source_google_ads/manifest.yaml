@@ -40,11 +40,10 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'][0] }}/googleAds:searchStream"
+    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
-    resource_name: "{{ parameters.get('resource_name', None) if parameters else None }}"
 
   base_error_handler:
     type: DefaultErrorHandler
@@ -135,17 +134,13 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1
-        deduplicate: true
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream: "#/definitions/customer_client"
-              parent_key: "clientCustomer"
-              partition_field: "customer_id"
-              extra_fields: [["manager"]]
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
+            extra_fields: [["manager"]]
     transformations:
       - type: KeysToSnakeCase
       - type: CustomTransformation
@@ -175,16 +170,12 @@ definitions:
     retriever:
       $ref: "#/definitions/incremental_stream_base/retriever"
       partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1
-        deduplicate: true
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream: "#/definitions/customer_client_non_manager"
-              parent_key: "clientCustomer"
-              partition_field: "customer_id"
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client_non_manager"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"

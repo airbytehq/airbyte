@@ -1,0 +1,73 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/clickhouse",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Clickhouse Specification Cloud",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "host" : {
+        "type" : "string",
+        "description" : "Hostname of the database.",
+        "title" : "Hostname",
+        "order" : 0
+      },
+      "port" : {
+        "type" : "string",
+        "description" : "HTTP port of the database. Default(s) HTTP: 8123 — HTTPS: 8443",
+        "title" : "Port",
+        "order" : 1,
+        "default" : "8443"
+      },
+      "protocol" : {
+        "type" : "string",
+        "enum" : [ "http", "https" ],
+        "description" : "Protocol for the database connection string.",
+        "title" : "Protocol",
+        "order" : 2,
+        "default" : "https",
+        "airbyte_hidden" : true
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "Name of the database.",
+        "title" : "Database",
+        "order" : 3,
+        "default" : "default"
+      },
+      "username" : {
+        "type" : "string",
+        "description" : "Username to use to access the database.",
+        "title" : "Username",
+        "order" : 4,
+        "default" : "default"
+      },
+      "password" : {
+        "type" : "string",
+        "description" : "Password associated with the username.",
+        "title" : "Password",
+        "order" : 5,
+        "airbyte_secret" : true
+      },
+      "enable_json" : {
+        "type" : "boolean",
+        "description" : "Use the JSON type when possible. If disabled, the JSON will be converted to a string.",
+        "title" : "Enable JSON",
+        "order" : 6,
+        "default" : false
+      }
+    },
+    "required" : [ "host", "port", "protocol", "database", "username", "password" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

@@ -38,6 +38,7 @@ private class RecordingOutputConsumer(clock: Clock = Clock.fixed(Instant.EPOCH, 
         _messages += airbyteMessage
     }
     override fun close() = Unit
+    override fun withLockFlush() = Unit
 }
 
 class StatsEmitterTest {

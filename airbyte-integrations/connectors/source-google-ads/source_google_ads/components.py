@@ -4,7 +4,7 @@
 
 import json
 import logging
-from dataclasses import InitVar, dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
@@ -165,7 +165,6 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     Migrates legacy per-partition Google Ads state to low code format
     that includes parent_slice for each customer_id partition.
 
-
     Example input state:
     {
       "1234567890": {"segments.date": "2120-10-10"},
@@ -268,7 +267,7 @@ class GoogleAdsHttpRequester(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
-        manager = stream_slice.extra_fields.get("manager", [False])[0]
+        manager = stream_slice.extra_fields.get("manager", False)
         resource_name = self._resource_name.eval(self.config) or self.name
         fields = [
             field
@@ -295,5 +294,5 @@ class GoogleAdsHttpRequester(HttpRequester):
     ) -> Mapping[str, Any]:
         return {
             "developer-token": self.config["credentials"]["developer_token"],
-            "login-customer-id": stream_slice["parent_slice"][0]["customer_id"],
+            "login-customer-id": stream_slice["parent_slice"]["customer_id"],
         }
