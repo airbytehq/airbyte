@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.clickhouse.check
 
+import com.clickhouse.client.api.Client
 import com.clickhouse.data.ClickHouseFormat
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.check.DestinationChecker
@@ -73,5 +74,9 @@ class ClickhouseChecker(
 // This exists solely for testing. It will hopefully be deleted once we fix DI.
 @Singleton
 class RawClickHouseClientFactory {
-    fun make(config: ClickhouseConfiguration) = ClickhouseBeanFactory().clickhouseClient(config)
+    fun make(config: ClickhouseConfiguration): Client {
+        val factory = ClickhouseBeanFactory()
+        val tunnel = factory.tunnel(config)
+        return ClickhouseBeanFactory().clickhouseClient(config, tunnel)
+    }
 }
