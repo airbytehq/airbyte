@@ -13,7 +13,7 @@ data:
     - suite: integrationTests
   connectorType: source
   definitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-cockroachdb
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   githubIssueLabel: source-cockroachdb
