@@ -198,6 +198,7 @@ const deployAirbyte = {
         "deploying-airbyte/integrations/database",
         // "deploying-airbyte/integrations/monitoring",
         "deploying-airbyte/integrations/ingress",
+        "deploying-airbyte/integrations/ingress-1-7",
         "deploying-airbyte/integrations/custom-image-registries",
       ],
     },
