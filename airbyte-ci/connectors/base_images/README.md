@@ -53,7 +53,8 @@ RUN mkdir -p 755 /usr/share/nltk_data
 
 | Version | Published | Docker Image Address | Changelog |
 |---------|-----------|--------------|-----------|
-|  4.0.1-rc.1 | ❌|  | Bump to Python 3.11.13 to patch security vulnerabilities |
+|  4.0.2 | ✅|  | Bump to Python 3.11.13 to patch security vulnerabilities |
+|  4.0.1-rc.1 | ✅| docker.io/airbyte/python-connector-base:4.0.1-rc.1@sha256:5d1d8216467b29cf8a65d42e9c3316cdb5e62529ec3bcb14cfa993f5221316ed | Bump to Python 3.11.13 to patch security vulnerabilities |
 |  4.0.0 | ✅| docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22 | Python 3.11.11 |
 |  4.0.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:4.0.0-rc.1@sha256:0f3b3baab5ee7a040dd9f01b436afabf023b86616e21215ef7467e0501b463ea |  |
 |  3.0.2 | ✅| docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75 |  |
@@ -77,6 +78,7 @@ RUN mkdir -p 755 /usr/share/nltk_data
 |---------|-----------|--------------|-----------|
 |  2.1.0-test-1 | ✅| docker.io/airbyte/java-connector-base:2.1.0-test-1@sha256:68ae2f8041efa3df55395013a192e35480f7a8129c9c11ec8924f8a39d55ffe6 |  |
 |  2.1.0-test | ✅| docker.io/airbyte/java-connector-base:2.1.0-test@sha256:14c7ea45c1f83e5a16f02fef54d3b7d855882eb050360c10ce2dcececfdad373 |  |
+|  2.0.3 | ✅| docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47 |  |
 |  2.0.2 | ✅| docker.io/airbyte/java-connector-base:2.0.2@sha256:f8e47304842a2c4d75ac223cf4b3c4117aa1c5c9207149369d296616815fe5b0 |  |
 |  2.0.1 | ✅| docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3 | Bump Amazon Coretto image version for compatibility with Apple M4 architecture. |
 |  2.0.0 | ✅| docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454 | ~Release non root base image~ |
@@ -131,9 +133,6 @@ poetry run mypy base_images --check-untyped-defs
 ```
 
 ## CHANGELOG
-
-### 1.6.0
-- Add a Python base image 4.0.1 with Python 3.11.13 security update.
 
 ### 1.4.0
 - Declare a base image for our java connectors.
