@@ -76,20 +76,21 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                | Subject                                                                        |
-|:--------|:-----------|:------------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.0.1   | 2025-07-10 | [\#62906](https://github.com/airbytehq/airbyte/pull/62906)  | Adds bespoke validation for legacy hostnames that contain a protocol.          |
-| 2.0.0   | 2025-07-10 | [\#62887](https://github.com/airbytehq/airbyte/pull/62887)  | Cut 2.0.0 release. Replace existing connector.                                 |
-| 0.1.11  | 2025-07-09 | [\#62883](https://github.com/airbytehq/airbyte/pull/62883)  | Only set JSON properties on client if enabled to support older CH deployments. |
-| 0.1.10  | 2025-07-08 | [\#62861](https://github.com/airbytehq/airbyte/pull/62861)  | Set user agent header for internal CH telemetry.                               |
-| 0.1.9   | 2025-07-03 | [\#62509](https://github.com/airbytehq/airbyte/pull/62509)  | Simplify union stringification behavior.                                       |
-| 0.1.8   | 2025-06-30 | [\#62100](https://github.com/airbytehq/airbyte/pull/62100)  | Add JSON support.                                                              |
-| 0.1.7   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047)  | Remove the use of the internal namespace.                                      |
-| 0.1.6   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047)  | Hide protocol option when running on cloud.                                    |
-| 0.1.5   | 2025-06-24 | [\#62043](https://github.com/airbytehq/airbyte/pull/62043)  | Expose database protocol config option.                                        |
-| 0.1.4   | 2025-06-24 | [\#62040](https://github.com/airbytehq/airbyte/pull/62040)  | Checker inserts into configured DB.                                            |
-| 0.1.3   | 2025-06-24 | [\#62038](https://github.com/airbytehq/airbyte/pull/62038)  | Allow the client to connect to the resolved DB.                                |
-| 0.1.2   | 2025-06-23 | [\#62028](https://github.com/airbytehq/airbyte/pull/62028)  | Enable the registry in OSS and cloud.                                          |
-| 0.1.1   | 2025-06-23 | [\#62022](https://github.com/airbytehq/airbyte/pull/62022)  | Publish first beta version and pin the CDK version.                            |
-| 0.1.0   | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024)  | Release first beta version.                                                    |
+| Version | Date       | Pull Request                                               | Subject                                                                        |
+|:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.0.2   | 2025-07-10 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928)   | Makes json optional in spec to work around UI issue.                           |
+| 2.0.1   | 2025-07-10 | [\#62906](https://github.com/airbytehq/airbyte/pull/62906) | Adds bespoke validation for legacy hostnames that contain a protocol.          |
+| 2.0.0   | 2025-07-10 | [\#62887](https://github.com/airbytehq/airbyte/pull/62887) | Cut 2.0.0 release. Replace existing connector.                                 |
+| 0.1.11  | 2025-07-09 | [\#62883](https://github.com/airbytehq/airbyte/pull/62883) | Only set JSON properties on client if enabled to support older CH deployments. |
+| 0.1.10  | 2025-07-08 | [\#62861](https://github.com/airbytehq/airbyte/pull/62861) | Set user agent header for internal CH telemetry.                               |
+| 0.1.9   | 2025-07-03 | [\#62509](https://github.com/airbytehq/airbyte/pull/62509) | Simplify union stringification behavior.                                       |
+| 0.1.8   | 2025-06-30 | [\#62100](https://github.com/airbytehq/airbyte/pull/62100) | Add JSON support.                                                              |
+| 0.1.7   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047) | Remove the use of the internal namespace.                                      |
+| 0.1.6   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047) | Hide protocol option when running on cloud.                                    |
+| 0.1.5   | 2025-06-24 | [\#62043](https://github.com/airbytehq/airbyte/pull/62043) | Expose database protocol config option.                                        |
+| 0.1.4   | 2025-06-24 | [\#62040](https://github.com/airbytehq/airbyte/pull/62040) | Checker inserts into configured DB.                                            |
+| 0.1.3   | 2025-06-24 | [\#62038](https://github.com/airbytehq/airbyte/pull/62038) | Allow the client to connect to the resolved DB.                                |
+| 0.1.2   | 2025-06-23 | [\#62028](https://github.com/airbytehq/airbyte/pull/62028) | Enable the registry in OSS and cloud.                                          |
+| 0.1.1   | 2025-06-23 | [\#62022](https://github.com/airbytehq/airbyte/pull/62022) | Publish first beta version and pin the CDK version.                            |
+| 0.1.0   | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024) | Release first beta version.                                                    |
 </details>
