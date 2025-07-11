@@ -26,12 +26,6 @@ from .streams import (
     ClickView,
     CustomerClient,
     CustomerLabel,
-    DisplayKeywordView,
-    GeographicView,
-    KeywordView,
-    ShoppingPerformanceView,
-    TopicView,
-    UserLocationView,
 )
 from .utils import GAQL, logger, traced_exception
 
@@ -236,19 +230,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
             ClickView(**incremental_config),
             CustomerLabel(**default_config),
         ]
-        # Metrics streams cannot be requested for a manager account.
-        if non_manager_accounts:
-            streams.extend(
-                [
-                    UserLocationView(**non_manager_incremental_config),
-                    TopicView(**non_manager_incremental_config),
-                    DisplayKeywordView(**non_manager_incremental_config),
-                    ShoppingPerformanceView(**non_manager_incremental_config),
-                    GeographicView(**non_manager_incremental_config),
-                    KeywordView(**non_manager_incremental_config),
-                ]
-            )
-
         for single_query_config in config.get("custom_queries_array", []):
             query_stream = self.create_custom_query_stream(
                 google_api, single_query_config, customers, non_manager_accounts, incremental_config, non_manager_incremental_config

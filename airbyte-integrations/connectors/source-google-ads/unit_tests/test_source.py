@@ -12,7 +12,7 @@ import pendulum
 import pytest
 import requests
 from pendulum import duration, today
-from source_google_ads.components import GoogleAdsPerPartitionStateMigration
+from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
@@ -591,3 +591,53 @@ def test_state_migration(input_state, records_and_slices, expected):
     migrator = GoogleAdsPerPartitionStateMigration(config=None, customer_client_stream=stream_mock)
 
     assert migrator.migrate(input_state) == expected
+
+
+_ANY_VALUE = -1
+
+
+@pytest.mark.parametrize(
+    "input_keys, expected_keys",
+    [
+        (
+            {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+            {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+        ),
+        (
+            {"123Number": _ANY_VALUE, "456Another123": _ANY_VALUE},
+            {"123number": _ANY_VALUE, "456another123": _ANY_VALUE},
+        ),
+        (
+            {
+                "NestedRecord": {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+                "456Another123": _ANY_VALUE,
+            },
+            {
+                "nested_record": {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+                "456another123": _ANY_VALUE,
+            },
+        ),
+        (
+            {"hello@world": _ANY_VALUE, "test#case": _ANY_VALUE},
+            {"hello_world": _ANY_VALUE, "test_case": _ANY_VALUE},
+        ),
+        (
+            {"MixedUPCase123": _ANY_VALUE, "lowercaseAnd123": _ANY_VALUE},
+            {"mixed_upcase123": _ANY_VALUE, "lowercase_and123": _ANY_VALUE},
+        ),
+        ({"Café": _ANY_VALUE, "Naïve": _ANY_VALUE}, {"cafe": _ANY_VALUE, "naive": _ANY_VALUE}),
+        (
+            {
+                "This is a full sentence": _ANY_VALUE,
+                "Another full sentence with more words": _ANY_VALUE,
+            },
+            {
+                "this_is_a_full_sentence": _ANY_VALUE,
+                "another_full_sentence_with_more_words": _ANY_VALUE,
+            },
+        ),
+    ],
+)
+def test_keys_transformation(input_keys, expected_keys):
+    KeysToSnakeCaseGoogleAdsTransformation().transform(input_keys)
+    assert input_keys == expected_keys
