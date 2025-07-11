@@ -98,6 +98,14 @@ class UsersSchemaLoader(SchemaLoader):
                         }
                     }
                 }
+            case "nested":
+                return {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {}
+                }
             case "object":
                 return {
                     "type": [
@@ -107,7 +115,12 @@ class UsersSchemaLoader(SchemaLoader):
                     "properties": {}
                 }
             case _:
-                raise Exception(f"Unknown field type: {field_type}")
+                return {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
 
     def get_json_schema(self) -> Mapping[str, Any]:
         schema = {
@@ -169,7 +182,7 @@ class UsersSchemaLoader(SchemaLoader):
                 continue
 
             # We are dealing with a top-level field or object
-            if field_type == "object":
+            if field_type == "object" or field_type == "nested":
                 # Add the base object schema
                 self.objects[field_name] = self._get_field_schema(field_type)
             else:

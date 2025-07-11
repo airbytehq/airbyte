@@ -3,6 +3,28 @@ import responses
 from source_iterable.components import UsersSchemaLoader
 
 @pytest.fixture
+def iterable_response_unknown():
+    return {
+        "fields": {
+            "testUnknown": "unknown",
+        }
+    }
+
+@pytest.fixture
+def expected_schema_unknown():
+    return {
+        "type": ["null", "object"],
+        "properties": {
+            "testUnknown": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            }
+        }
+    }
+
+@pytest.fixture
 def iterable_response_string():
     return {
         "fields": {
@@ -220,7 +242,39 @@ def expected_schema_object_and_sub_object():
         }
     }
 
+@pytest.fixture
+def iterable_response_nested():
+    return {
+        "fields": {
+            "testNested": "nested",
+            "testNested.testString": "string",
+        }
+    }
+
+@pytest.fixture
+def expected_schema_nested():
+    return {
+        "type": ["null", "object"],
+        "properties": {
+            "testNested": {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "properties": {
+                    "testString": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                }
+            }
+        }
+    }
+
 @pytest.mark.parametrize("api_response_fixture,expected_schema_fixture", [
+    ("iterable_response_unknown", "expected_schema_unknown"),
     ("iterable_response_string", "expected_schema_string"),
     ("iterable_response_long", "expected_schema_long"),
     ("iterable_response_double", "expected_schema_double"),
@@ -229,6 +283,7 @@ def expected_schema_object_and_sub_object():
     ("iterable_response_geo_location", "expected_schema_geo_location"),
     ("iterable_response_object", "expected_schema_object"),
     ("iterable_response_object_and_sub_object", "expected_schema_object_and_sub_object"),
+    ("iterable_response_nested", "expected_schema_nested"),
 ])
 @responses.activate
 def test_users_schema_loader_with_data_types(config, api_response_fixture, expected_schema_fixture, request):
