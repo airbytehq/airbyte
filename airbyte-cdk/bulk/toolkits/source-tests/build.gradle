@@ -1,0 +1,11 @@
+plugins {
+    id 'java-test-fixtures'
+}
+
+group = 'io.airbyte.cdk.test.fixtures'
+
+dependencies {
+    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc'))
+}

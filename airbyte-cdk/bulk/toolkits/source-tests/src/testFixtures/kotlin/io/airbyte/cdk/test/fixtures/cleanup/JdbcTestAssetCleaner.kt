@@ -5,9 +5,9 @@
 package io.airbyte.integrations.sourceTesting.cleanup
 
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.integrations.sourceTesting.JdbcTestDbExecutor
-import io.airbyte.integrations.sourceTesting.SqlDialect
-import io.airbyte.integrations.sourceTesting.TestAssetResourceNamer
+import io.airbyte.cdk.test.fixtures.cleanup.TestAssetResourceNamer
+import io.airbyte.cdk.test.fixtures.connector.JdbcTestDbExecutor
+import io.airbyte.cdk.test.fixtures.connector.SqlDialect
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Clock
 
