@@ -31,3 +31,8 @@ naming semantics, we will not remove existing data. If you would like to, you
 will need to delete all the tables saved in the old format, which for most
 people should be under `airbyte_internal.{database}_raw__`, but may vary based
 on your specific configuration.
+
+## SSH Support
+
+SSH is not yet implemented for the new connector. If you require SSH support,
+please hold off on migrating for now.
