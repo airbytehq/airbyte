@@ -12,7 +12,6 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import dpath
 import requests
 import unidecode
-from pydantic.v1 import BaseModel, Extra
 
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
@@ -36,7 +35,7 @@ class RangePartitionRouter(SinglePartitionRouter):
         self.parameters = parameters
         self.sheet_row_count = parameters.get("row_count", 0)
         self.sheet_id = parameters.get("sheet_id")
-        self.batch_size = parameters.get("batch_size")
+        self.batch_size = parameters.get("batch_size", 1000000)
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         start_range = 2  # skip 1 row, as expected column (fields) names there
@@ -187,8 +186,9 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         self._values_to_match_key = parameters["values_to_match_key"]
         schema_type_identifier = parameters["schema_type_identifier"]
         names_conversion = self.config.get("names_conversion", False)
+        properties_to_match = parameters.get("properties_to_match", {})
         self._indexed_properties_to_match = self.extract_properties_to_match(
-            parameters["properties_to_match"], schema_type_identifier, names_conversion=names_conversion
+            properties_to_match, schema_type_identifier, names_conversion=names_conversion
         )
 
     def extract_properties_to_match(self, properties_to_match, schema_type_identifier, names_conversion):
