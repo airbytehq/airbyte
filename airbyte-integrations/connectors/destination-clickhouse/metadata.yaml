@@ -19,7 +19,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "This connector has been re-written from scratch. Data will now be typed and stored in final (non-raw) tables. The connector should function without changes, but downstream pipelines may be affected."
+        message: "This connector has been re-written from scratch. Data will now be typed and stored in final (non-raw) tables. The connector may require changes to its configuration to function properly and downstream pipelines may be affected."
         upgradeDeadline: "2025-08-19"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
   tags:
