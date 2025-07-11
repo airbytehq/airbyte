@@ -68,6 +68,7 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
+| 0.4.2 | 2025-07-10 | [62919](https://github.com/airbytehq/airbyte/pull/62919) | Convert to new gradle build flow |
 | 0.4.1 | 2025-04-30 | [59171](https://github.com/airbytehq/airbyte/pull/59171) | Fixing vulnerabilities in dependencies. |
 | 0.4.0   | 2025-03-18 | [55828](https://github.com/airbytehq/airbyte/pull/55828)                                           | Add configurations for AWS MSK IAM and fix JSON format               |
 | 0.3.0   | 2025-02-18 | [53231](https://github.com/airbytehq/airbyte/pull/53231)                                           | Add configurations for OAUTHBEARER SASL Mechanism                    |
