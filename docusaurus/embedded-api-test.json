@@ -1,0 +1,1828 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sonar API",
+    "description": "Sonar API",
+    "version": "0.0.1"
+  },
+  "tags": [
+    {
+      "name": "source_config_template",
+      "x-displayName": "Source Config Template",
+      "description": "Operations for managing source configuration templates"
+    },
+    {
+      "name": "connection_config_template",
+      "x-displayName": "Connection Config Template",
+      "description": "Operations for managing connection configuration templates"
+    },
+    {
+      "name": "partial_user_config",
+      "x-displayName": "Partial User Config",
+      "description": "Operations for managing partial user configurations"
+    },
+    {
+      "name": "organizations",
+      "x-displayName": "Organizations",
+      "description": "Operations for managing embedded organizations"
+    }
+  ],
+  "paths": {
+    "/api/v1/embedded/config_templates/sources/": {
+      "post": {
+        "tags": ["source_config_template"],
+        "summary": "Create Source Config Template",
+        "operationId": "embedded-create_source_config_template",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSourceConfigTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSourceConfigTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["source_config_template"],
+        "summary": "List Source Config Templates",
+        "operationId": "embedded-list_source_config_templates",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to list templates for",
+              "title": "Organization Id"
+            },
+            "description": "The organization ID to list templates for"
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The workspace ID to list templates for",
+              "title": "Workspace Id"
+            },
+            "description": "The workspace ID to list templates for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceConfigTemplateListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/embedded/config_templates/sources/{id}": {
+      "get": {
+        "tags": ["source_config_template"],
+        "summary": "Get Source Config Template",
+        "operationId": "embedded-get_source_config_template",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSourceConfigTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/embedded/config_templates/connections/{id}": {
+      "get": {
+        "tags": ["connection_config_template"],
+        "summary": "Get Connection Config Template",
+        "operationId": "embedded-get_connection_config_template",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetConnectionConfigTemplateOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["connection_config_template"],
+        "summary": "Delete Connection Config Template",
+        "operationId": "embedded-delete_connection_config_template",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetConnectionConfigTemplateOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/embedded/config_templates/connections/": {
+      "post": {
+        "tags": ["connection_config_template"],
+        "summary": "Create Connection Config Template",
+        "operationId": "embedded-create_connection_config_template",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConnectionConfigTemplateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateConnectionConfigTemplateOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/embedded/partial_user_configs/": {
+      "post": {
+        "tags": ["partial_user_config"],
+        "summary": "Create Partial User Config",
+        "operationId": "embedded-create_partial_user_config",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePartialUserConfigRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePartialUserConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["partial_user_config"],
+        "summary": "List Partial User Configs",
+        "operationId": "embedded-list_partial_user_configs",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListPartialUserConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/embedded/partial_user_configs/{id}": {
+      "get": {
+        "tags": ["partial_user_config"],
+        "summary": "Get Partial User Config",
+        "operationId": "embedded-get_partial_user_config",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPartialUserConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["partial_user_config"],
+        "summary": "Update Partial User Config",
+        "operationId": "embedded-update_partial_user_config",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartialUserConfigRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdatePartialUserConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/embedded/organizations/": {
+      "get": {
+        "tags": ["organizations"],
+        "summary": "List Embedded Organizations",
+        "operationId": "embedded-list_embedded_organizations",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListEmbeddedOrganizationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/embedded/organizations/current-scoped": {
+      "get": {
+        "tags": ["organizations"],
+        "summary": "Get Current Scoped Organization",
+        "description": "Get the organization id for a scoped token.",
+        "operationId": "embedded-get_current_scoped_organization",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationIdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdvancedAuth": {
+        "properties": {
+          "auth_flow_type": {
+            "type": "string",
+            "title": "Auth Flow Type"
+          },
+          "predicate_key": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Predicate Key"
+          },
+          "predicate_value": {
+            "type": "string",
+            "title": "Predicate Value"
+          },
+          "oauth_config_specification": {
+            "$ref": "#/components/schemas/OAuthConfigSpecification"
+          }
+        },
+        "type": "object",
+        "required": [
+          "auth_flow_type",
+          "predicate_key",
+          "predicate_value",
+          "oauth_config_specification"
+        ],
+        "title": "AdvancedAuth"
+      },
+      "ApiError": {
+        "properties": {
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          }
+        },
+        "type": "object",
+        "title": "ApiError"
+      },
+      "ApiErrorResponse": {
+        "properties": {
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "ApiErrorResponse"
+      },
+      "ConnectionSpecification": {
+        "properties": {
+          "required": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required"
+          },
+          "properties": {
+            "type": "object",
+            "title": "Properties"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Additionalproperties"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "$schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "$Schema"
+          }
+        },
+        "type": "object",
+        "required": ["required", "properties", "title", "type"],
+        "title": "ConnectionSpecification"
+      },
+      "ConnectorSpecification": {
+        "properties": {
+          "documentationUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documentationurl"
+          },
+          "connectionSpecification": {
+            "$ref": "#/components/schemas/ConnectionSpecification"
+          },
+          "supportsNormalization": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supportsnormalization"
+          },
+          "supportsDBT": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supportsdbt"
+          },
+          "advanced_auth": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedAuth"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["connectionSpecification"],
+        "title": "ConnectorSpecification"
+      },
+      "CreateConnectionConfigTemplateIn": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "destination_name": {
+            "type": "string",
+            "title": "Destination Name"
+          },
+          "destination_actor_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Destination Actor Definition Id"
+          },
+          "destination_config": {
+            "type": "object",
+            "title": "Destination Config"
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression"
+          },
+          "non_breaking_changes_preference": {
+            "type": "string",
+            "title": "Non Breaking Changes Preference",
+            "default": "ignore"
+          },
+          "sync_on_create": {
+            "type": "boolean",
+            "title": "Sync On Create",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "destination_name",
+          "destination_actor_definition_id",
+          "destination_config"
+        ],
+        "title": "CreateConnectionConfigTemplateIn"
+      },
+      "CreateConnectionConfigTemplateOut": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "destination_name": {
+            "type": "string",
+            "title": "Destination Name"
+          },
+          "destination_actor_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Destination Actor Definition Id"
+          },
+          "destination_config": {
+            "type": "object",
+            "title": "Destination Config"
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression"
+          },
+          "non_breaking_changes_preference": {
+            "type": "string",
+            "title": "Non Breaking Changes Preference",
+            "default": "ignore"
+          },
+          "sync_on_create": {
+            "type": "boolean",
+            "title": "Sync On Create",
+            "default": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "connection_config": {
+            "type": "object",
+            "title": "Connection Config"
+          },
+          "secret_coordinates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Secret Coordinates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "destination_name",
+          "destination_actor_definition_id",
+          "destination_config",
+          "id",
+          "created_at",
+          "updated_at",
+          "connection_config",
+          "secret_coordinates"
+        ],
+        "title": "CreateConnectionConfigTemplateOut"
+      },
+      "CreatePartialUserConfigRequest": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "source_config_template_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Config Template Id"
+          },
+          "connection_configuration": {
+            "type": "object",
+            "title": "Connection Configuration"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace_id",
+          "source_config_template_id",
+          "connection_configuration"
+        ],
+        "title": "CreatePartialUserConfigRequest"
+      },
+      "CreatePartialUserConfigResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Id"
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "source_config_template": {
+            "$ref": "#/components/schemas/SourceConfigTemplateResponse"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_id",
+          "source_definition_id",
+          "source_name",
+          "source_config_template",
+          "created_at"
+        ],
+        "title": "CreatePartialUserConfigResponse"
+      },
+      "CreateSourceConfigTemplateRequest": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "actor_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Actor Definition Id"
+          },
+          "partial_default_config": {
+            "type": "object",
+            "title": "Partial Default Config"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "actor_definition_id",
+          "partial_default_config"
+        ],
+        "title": "CreateSourceConfigTemplateRequest"
+      },
+      "CreateSourceConfigTemplateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": ["id"],
+        "title": "CreateSourceConfigTemplateResponse"
+      },
+      "GetConnectionConfigTemplateOut": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "destination_name": {
+            "type": "string",
+            "title": "Destination Name"
+          },
+          "destination_actor_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Destination Actor Definition Id"
+          },
+          "destination_config": {
+            "type": "object",
+            "title": "Destination Config"
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression"
+          },
+          "non_breaking_changes_preference": {
+            "type": "string",
+            "title": "Non Breaking Changes Preference",
+            "default": "ignore"
+          },
+          "sync_on_create": {
+            "type": "boolean",
+            "title": "Sync On Create",
+            "default": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "destination_name",
+          "destination_actor_definition_id",
+          "destination_config",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GetConnectionConfigTemplateOut"
+      },
+      "GetPartialUserConfigResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_config_template": {
+            "$ref": "#/components/schemas/SourceConfigTemplateResponse"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Actor Id"
+          },
+          "connection_configuration": {
+            "type": "object",
+            "title": "Connection Configuration"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_config_template",
+          "actor_id",
+          "connection_configuration"
+        ],
+        "title": "GetPartialUserConfigResponse"
+      },
+      "GetSourceConfigTemplateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id"
+          },
+          "user_config_spec": {
+            "$ref": "#/components/schemas/ConnectorSpecification"
+          },
+          "partial_default_config": {
+            "type": "object",
+            "title": "Partial Default Config"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "source_definition_id",
+          "user_config_spec",
+          "partial_default_config"
+        ],
+        "title": "GetSourceConfigTemplateResponse"
+      },
+      "ListEmbeddedOrganizationsResponse": {
+        "properties": {
+          "organizations": {
+            "items": {
+              "$ref": "#/components/schemas/Organization"
+            },
+            "type": "array",
+            "title": "Organizations"
+          }
+        },
+        "type": "object",
+        "required": ["organizations"],
+        "title": "ListEmbeddedOrganizationsResponse"
+      },
+      "ListPartialUserConfigResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PartialUserConfigListItem"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "ListPartialUserConfigResponse"
+      },
+      "OAuthConfigSpecification": {
+        "properties": {
+          "oauth_user_input_from_connector_config_specification": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oauth User Input From Connector Config Specification"
+          },
+          "oauth_connector_input_specification": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oauth Connector Input Specification"
+          },
+          "complete_oauth_output_specification": {
+            "type": "object",
+            "title": "Complete Oauth Output Specification",
+            "default": {}
+          },
+          "complete_oauth_server_input_specification": {
+            "type": "object",
+            "title": "Complete Oauth Server Input Specification",
+            "default": {}
+          },
+          "complete_oauth_server_output_specification": {
+            "type": "object",
+            "title": "Complete Oauth Server Output Specification",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "OAuthConfigSpecification"
+      },
+      "Organization": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "first_workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "First Workspace Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "organization_name",
+          "first_workspace_id"
+        ],
+        "title": "Organization"
+      },
+      "OrganizationIdResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          }
+        },
+        "type": "object",
+        "required": ["organization_id"],
+        "title": "OrganizationIdResponse"
+      },
+      "PartialUserConfigListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "config_template_name": {
+            "type": "string",
+            "title": "Config Template Name"
+          },
+          "config_template_icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Template Icon"
+          },
+          "source_config_template_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Config Template Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "config_template_name",
+          "config_template_icon",
+          "source_config_template_id"
+        ],
+        "title": "PartialUserConfigListItem"
+      },
+      "SourceConfigTemplateListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "icon"],
+        "title": "SourceConfigTemplateListItem"
+      },
+      "SourceConfigTemplateListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SourceConfigTemplateListItem"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "SourceConfigTemplateListResponse"
+      },
+      "SourceConfigTemplateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "actor_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Actor Definition Id"
+          },
+          "user_config_spec": {
+            "$ref": "#/components/schemas/ConnectorSpecification"
+          },
+          "partial_default_config": {
+            "type": "object",
+            "title": "Partial Default Config"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "actor_definition_id",
+          "user_config_spec",
+          "partial_default_config"
+        ],
+        "title": "SourceConfigTemplateResponse"
+      },
+      "UpdatePartialUserConfigRequest": {
+        "properties": {
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "connection_configuration": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Configuration"
+          }
+        },
+        "type": "object",
+        "title": "UpdatePartialUserConfigRequest"
+      },
+      "UpdatePartialUserConfigResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Id"
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "source_config_template": {
+            "$ref": "#/components/schemas/SourceConfigTemplateResponse"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_id",
+          "source_definition_id",
+          "source_name",
+          "source_config_template",
+          "updated_at"
+        ],
+        "title": "UpdatePartialUserConfigResponse"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

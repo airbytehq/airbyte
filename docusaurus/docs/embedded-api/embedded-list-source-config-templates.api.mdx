@@ -1,0 +1,71 @@
+---
+id: embedded-list-source-config-templates
+title: "List Source Config Templates"
+description: "List Source Config Templates"
+sidebar_label: "List Source Config Templates"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV02T0zgQ/SuuPgsyMywX3wYYIFUsUDth95BKpRSrnYixJSHJsxtc+u9US47HGQcIqeWWU2K5+/XXk6zXgudrB/kcnG5sgctCq1Kulx5rU3GPsGCgDVrupVZTATlgvUIhUDyppPPLw14OGDgsGiv9FvJ5C29ns48vkFu0kM8XYcHAcMtr9GhdNFC8RshB2zVX8muMtpQCGEgFOXxp0G6BgcUvjbQoIC955ZCBKzZYc8hb8FtDAM5bqdbAoNS25h5yaJqII9AVVhoChhxmG8yGsbLpq8zrjErK+iKyUltg4KWvCPrDnr2AcDpoYH3F/2p75wwv8HeX2wc6ptZ/Hoy/U+gRcDRmi85o5dBR0lcXF/SzD3bbFAU6VzZV9ldnDAwKrTwqT+bcmEoWsaOTz4582kEjjCV6epkiCO7jqvRYu/FrKY7p3a4JqfQ0p7HXzuo9vQ8MZJFS42r7oYyc3vegmXcrqqmq2J0+EvmGwHYGevUZC7/HgDnE3GI2XbABwG3chi/jLpx1Q3gnnZ96rOEBl1vLt4PcX1G7fhY39vSIWP30QiDIPw4N+wUXGWGj86cPuUbn+BpPbfafnXtggNZq635AmFJiJU4N9Do6B/Z/J7wstDgZ7IYQspeEcGjwO7NrI6PlD8hzk5pHh0PJm8rHk/0IyBFPno158lrblRQC1ZklZ5ZEllxdjVnyN6+kSJ/alMaZLGeyBAbPD316psqjVbzKbtHeoz0z5syYHWNGF1y6zmTpnpOli042G0ibGv1GkxZaI2Eb7jeQw4QbObm/nOwE0uSxKJokseQmA3V0S/RKYx5qpL51G+8NdBd/el4lA0pZqlJHy/5eprjNrj9OR9f/4Zt7tC6tXjy9eHpJrTXa+ZpHtnei5Cf176H3qXr8z09MxaUi0MZWkcmxN3PgRlLwS2C9gEx7byQbU4+AAd05N9rRSKFtV9zhJ1uFQMtJIBHnhHR8VQ0k0qPc+t39a5LvUEV3uD2oUO951ZB1ZPyv5XOcJvt+Mo/E40MmC3qwklKJO4LBBrmI6rvtfK+LAo0feI1OP0Lpqf7mZgYMeEPj7EfesZHt/gxOAa62A+y2TRYzfYcqBNgV4OkZwiKE8A0Ib6xJ
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Source Config Templates"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/config_templates/sources/"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+List Source Config Templates
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organization_id","in":"query","required":false,"schema":{"type":"string","format":"uuid","description":"The organization ID to list templates for","title":"Organization Id"},"description":"The organization ID to list templates for"},{"name":"workspace_id","in":"query","required":false,"schema":{"type":"string","format":"uuid","description":"The workspace ID to list templates for","title":"Workspace Id"},"description":"The workspace ID to list templates for"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"data":{"items":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"name":{"type":"string","title":"Name"},"icon":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Icon"}},"type":"object","required":["id","name","icon"],"title":"SourceConfigTemplateListItem"},"type":"array","title":"Data"}},"type":"object","required":["data"],"title":"SourceConfigTemplateListResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

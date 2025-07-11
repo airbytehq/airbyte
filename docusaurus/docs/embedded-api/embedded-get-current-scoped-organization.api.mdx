@@ -1,0 +1,63 @@
+---
+id: embedded-get-current-scoped-organization
+title: "Get Current Scoped Organization"
+description: "Get the organization id for a scoped token."
+sidebar_label: "Get Current Scoped Organization"
+hide_title: true
+hide_table_of_contents: true
+api: eJztVk1vGjEQ/SurOTuBpO1lb0mUpByqRIX2glZoWA/gZLEd24tKV/7v1XiBLB+HNuqRE4t58+breXkNBJx7yMdg3By1+o1BGe2hECDJl05Z/g45PFLIwoKyLixTMpsZl2HmS2NJZsG8kr4EAcaSS5CBhBxoOSUpSV7MKUzK2jnSYdKGTLp8IMCRt0Z78pA3cN3v88d+IcO6LMn7WV1l3zdgEFAaHUgHhqO1lSoTYe/Fc0wDvlzQEvnJOq4tqDZDN/tEST4Ka0uQgw9O6TkImBm3xAA51LWSICCoUDHgqTuIgYQYxTbWTF+oDKmbt1o5kofz5VTFaaqB3HUVI3N+PjWEW5QZk5MPH29+Sd7jnFKYXj/NIB8fth/F7kTXVQWxU/W3TXgUQM4ZlzhVoKU/TjVTVMmPJnpIwVH874InpZEfJrtnhuyOGU5tfgu7sSoh4R2DzuEaDpg88IWbYV0FyMfF31Ae6eTTsU4ejJsqKUmfVXJWSVLJ9fWxSn5ipWT7ImvLOIvlLJYo4Mupv56BDuQ0VtmQ3IrcWTFnxWwVEwV4Kmunwjo18nU0er4ldOQSXcHDCwvDlnBOzGYxLCCHHlrVW131tj6xt+dFexvHeNE6RnhPMmRNtbvtptrNaxGCZXiCQQ7TFsB1Kj0zCbnpZ2g0uuzmeQCHxrf7y4qcb0/7l/3LK56nNT4sMUlcY8rCTvmuLTkbtr74ad/k7iVo3m/OP5rsTZeBfoWerVBprqd2VVJ+muwY0Cqu+wrEzoWzPd/z+gIOJlwIWBjPGoCmmaKnH66KkY/fanK820LACp3CKQ9vXEQBC0KZ9tzAK61ZIWVJlpe8wqpOkjt8K+wJ4vF+BAKw5rJ3C9wsTGwfOrcD9brD3TQtYsSziRHEpog0K4hFjPEPgpxvVw==
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Current Scoped Organization"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/organizations/current-scoped"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get the organization id for a scoped token.
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"}},"type":"object","required":["organization_id"],"title":"OrganizationIdResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
