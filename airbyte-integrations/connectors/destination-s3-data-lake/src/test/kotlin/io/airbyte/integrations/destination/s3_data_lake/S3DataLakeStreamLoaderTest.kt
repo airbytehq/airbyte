@@ -253,8 +253,7 @@ internal class S3DataLakeStreamLoaderTest {
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
-            every { constructGenerationIdSuffix(any() as Long) } returns ""
-            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
         val streamLoader =
             S3DataLakeStreamLoader(
@@ -407,8 +406,7 @@ internal class S3DataLakeStreamLoaderTest {
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
-            every { constructGenerationIdSuffix(any() as Long) } returns ""
-            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
         val streamLoader =
             S3DataLakeStreamLoader(
