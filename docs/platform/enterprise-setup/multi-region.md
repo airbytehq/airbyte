@@ -5,7 +5,7 @@ products: oss-enterprise
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Multiple region deployments
+# Multiple region deployments (Self-Managed Enterprise)
 
 Self-Managed Enterprise customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment, and it can help you reduce data egress costs with cloud providers.
 
