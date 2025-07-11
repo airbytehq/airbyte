@@ -25,7 +25,8 @@ import jinjava.javax.el.PropertyNotWritableException
  */
 @SuppressFBWarnings(
     "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE",
-    justification = "The param in getValue needs to be nullable because it's a Java class but we fail if it's null"
+    justification =
+        "The param in getValue needs to be nullable because it's a Java class but we fail if it's null"
 )
 private class MapGetOperatorELResolver : ELResolver() {
     override fun getCommonPropertyType(context: ELContext?, base: Any?): Class<*>? {
