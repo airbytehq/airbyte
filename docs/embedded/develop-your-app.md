@@ -38,7 +38,7 @@ Key Features
 
 ### Local deployment
 
-Ensure you are in the `sonar-demoapp` root directory, then install dependencies:
+Ensure you are in the `embedded-sampleweb-reactjs` root directory, then install dependencies:
 
 ```bash
 npm install
