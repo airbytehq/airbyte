@@ -10,6 +10,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.hubspot.jinjava.Jinjava
 import com.hubspot.jinjava.JinjavaConfig
 import com.hubspot.jinjava.el.JinjavaInterpreterResolver
+import io.airbyte.cdk.util.Jsons
 import java.beans.FeatureDescriptor
 import jinjava.javax.el.CompositeELResolver
 import jinjava.javax.el.ELContext
@@ -91,4 +92,4 @@ class StringInterpolator {
 }
 
 fun JsonNode.toInterpolationContext(): Any =
-    ObjectMapper().convertValue(this, jacksonTypeRef<Any>())
+    Jsons.convertValue(this, jacksonTypeRef<Any>())
