@@ -6,7 +6,7 @@
 import logging
 import re
 from collections import namedtuple
-from unittest.mock import Mock, call
+from unittest.mock import MagicMock, Mock, call
 
 import pendulum
 import pytest
@@ -539,48 +539,72 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
 
 
 @pytest.mark.parametrize(
-    "input_state, expected",
+    "input_state, records_and_slices, expected",
     [
         # no partitions ⇒ empty
-        ({}, {}),
-        # single partition ⇒ that date
+        ({}, [], {}),
+        # single partition ⇒ one migrated state
         (
             {"123": {"segments.date": "2120-10-10"}},
-            {"use_global_cursor": True, "state": {"segments.date": "2120-10-10"}},
-        ),
-        # multiple partitions ⇒ pick the earliest date
-        (
+            [
+                # (record, slice)
+                ({"id": "123", "clientCustomer": "123"}, {"customer_id": "456"})
+            ],
             {
-                "a": {"segments.date": "2020-01-02"},
-                "b": {"segments.date": "2020-01-01"},
+                "states": [
+                    {
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2120-10-10"},
+                    }
+                ],
+                "state": {"segments.date": "2120-10-10"},
             },
-            {"use_global_cursor": True, "state": {"segments.date": "2020-01-01"}},
         ),
-        # mixed: only one has the cursor field
+        # multiple partitions ⇒ only those matching state, with earliest date
         (
+            {"a": {"segments.date": "2020-01-02"}, "b": {"segments.date": "2020-01-01"}, "z": {"segments.date": "2021-01-01"}},
+            [
+                ({"id": "b", "clientCustomer": "b"}, {"customer_id": "p1"}),
+                ({"id": "a", "clientCustomer": "a"}, {"customer_id": "p2"}),
+                # a record that won't match legacy state
+                ({"id": "x", "clientCustomer": "x"}, {"customer_id": "p3"}),
+            ],
             {
-                "a": {"segments.date": "2020-01-02"},
-                "b": {"other": "x"},
+                "states": [
+                    {
+                        "partition": {"customer_id": "b", "parent_slice": {"customer_id": "p1", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-01"},
+                    },
+                    {
+                        "partition": {"customer_id": "a", "parent_slice": {"customer_id": "p2", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-02"},
+                    },
+                ],
+                "state": {"segments.date": "2020-01-01"},
             },
-            {"use_global_cursor": True, "state": {"segments.date": "2020-01-02"}},
         ),
         # none have the cursor field ⇒ empty
-        (
-            {
-                "a": {"foo": "bar"},
-                "b": {"baz": 42},
-            },
-            {},
-        ),
-        # no state in the input ⇒ empty
-        ({"parent_state": {}, "lookback_window": 13, "use_global_cursor": True}, {}),
-        # already migrated state ⇒ no change
+        ({"x": {"foo": "bar"}, "y": {"baz": 42}}, [], {}),
+        # already migrated state ⇒ unchanged
         (
             {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+            [],
             {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
         ),
     ],
 )
-def test_migrate_various_partitions(input_state, expected):
-    migrator = GoogleAdsPerPartitionStateMigration(config=None)
+def test_state_migration(input_state, records_and_slices, expected):
+    # Create a fake customer_client_stream
+    stream_mock = MagicMock()
+
+    # Define what _read_parent_stream will yield
+    stream_mock.stream_slices.return_value = (s for _, s in records_and_slices)
+
+    def fake_read_records(stream_slice, sync_mode):
+        return (r for r, s in records_and_slices if s == stream_slice)
+
+    stream_mock.read_records.side_effect = fake_read_records
+
+    migrator = GoogleAdsPerPartitionStateMigration(config=None, customer_client_stream=stream_mock)
+
     assert migrator.migrate(input_state) == expected
