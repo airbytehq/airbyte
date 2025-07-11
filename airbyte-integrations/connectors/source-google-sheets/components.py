@@ -32,20 +32,45 @@ class RangePartitionRouter(SinglePartitionRouter):
     parameters: Mapping[str, Any]
 
     def __init__(self, parameters: Mapping[str, Any]) -> None:
+        print(f"DEBUG: RangePartitionRouter.__init__ called with parameters: {parameters}")
         super().__init__(parameters)
         self.parameters = parameters
         self.sheet_row_count = parameters.get("row_count", 0)
         self.sheet_id = parameters.get("sheet_id")
-        self.batch_size = parameters.get("batch_size")
+        self.batch_size = parameters.get("batch_size", 1000000)  # Default value to prevent None + int error
+        print(f"DEBUG: RangePartitionRouter initialized with sheet_row_count={self.sheet_row_count}, sheet_id={self.sheet_id}, batch_size={self.batch_size}")
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         start_range = 2  # skip 1 row, as expected column (fields) names there
+        print(f"DEBUG: RangePartitionRouter.stream_slices called with sheet_row_count={self.sheet_row_count}, sheet_id={self.sheet_id}, batch_size={self.batch_size}")
+        print(f"DEBUG: RangePartitionRouter.parameters in stream_slices: {self.parameters}")
+        
+        # Check if parameters have been updated since initialization
+        current_row_count = self.parameters.get("row_count", 0)
+        current_sheet_id = self.parameters.get("sheet_id")
+        current_batch_size = self.parameters.get("batch_size", 1000000)
+        
+        if (current_row_count != self.sheet_row_count or 
+            current_sheet_id != self.sheet_id or 
+            current_batch_size != self.batch_size):
+            print(f"DEBUG: Parameters updated! Updating instance variables...")
+            print(f"DEBUG: row_count: {self.sheet_row_count} -> {current_row_count}")
+            print(f"DEBUG: sheet_id: {self.sheet_id} -> {current_sheet_id}")
+            print(f"DEBUG: batch_size: {self.batch_size} -> {current_batch_size}")
+            self.sheet_row_count = current_row_count
+            self.sheet_id = current_sheet_id
+            self.batch_size = current_batch_size
 
-        while start_range <= self.sheet_row_count:
-            end_range = start_range + self.batch_size
-            logger.info(f"Fetching range {self.sheet_id}!{start_range}:{end_range}")
-            yield StreamSlice(partition={"start_range": start_range, "end_range": end_range}, cursor_slice={})
-            start_range = end_range + 1
+        # If we have valid parameters, we should generate slices
+        if self.sheet_row_count > 0 and self.sheet_id:
+            while start_range <= self.sheet_row_count:
+                end_range = start_range + self.batch_size
+                print(f"DEBUG: Generating slice: {self.sheet_id}!{start_range}:{end_range}")
+                logger.info(f"Fetching range {self.sheet_id}!{start_range}:{end_range}")
+                yield StreamSlice(partition={"start_range": start_range, "end_range": end_range}, cursor_slice={})
+                start_range = end_range + 1
+        else:
+            print(f"DEBUG: Skipping slice generation - invalid parameters: row_count={self.sheet_row_count}, sheet_id={self.sheet_id}")
 
 
 class RawSchemaParser:
@@ -182,6 +207,8 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
     """
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        print("DEBUG: DpathSchemaMatchingExtractor.__post_init__ called")
+        print(f"DEBUG: DpathSchemaMatchingExtractor parameters: {parameters}")
         super().__post_init__(parameters)
         self.decoder = JsonDecoder(parameters={})
         self._values_to_match_key = parameters["values_to_match_key"]
@@ -249,6 +276,9 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         return False
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
+        print("DEBUG: DpathSchemaMatchingExtractor.extract_records called")
+        print("Hello?")
+        print(f"DEBUG: properties_to_match: {getattr(self, '_parameters', {}).get('properties_to_match')}")
         raw_records_extracted = super().extract_records(response=response)
         
         # Check if we need to initialize properties_to_match from parameters
