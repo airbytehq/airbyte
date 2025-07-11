@@ -1,0 +1,32 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+  connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+  connectorType: destination
+  definitionId: c0b24000-d34d-b33f-fea7-6b96dc0e5f0d
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-shelby
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/shelby
+  githubIssueLabel: destination-shelby
+  icon: icon.svg
+  license: ELv2
+  name: Destination Shelby
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releases:
+  releaseStage: alpha
+  supportLevel: alhpa
+  supportsRefreshes: true
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
