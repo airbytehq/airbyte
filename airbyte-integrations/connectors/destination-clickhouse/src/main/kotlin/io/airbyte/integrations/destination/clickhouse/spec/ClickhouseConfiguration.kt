@@ -44,7 +44,7 @@ class ClickhouseConfigurationFactory :
             pojo.database,
             pojo.username,
             pojo.password,
-            pojo.enableJson,
+            pojo.enableJson ?: false,
         )
     }
 
