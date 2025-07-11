@@ -115,7 +115,12 @@ class UsersSchemaLoader(SchemaLoader):
                     "properties": {}
                 }
             case _:
-                raise Exception(f"Unknown field type: {field_type}")
+                return {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
 
     def get_json_schema(self) -> Mapping[str, Any]:
         schema = {

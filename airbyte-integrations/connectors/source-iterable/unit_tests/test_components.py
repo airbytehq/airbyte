@@ -3,6 +3,28 @@ import responses
 from source_iterable.components import UsersSchemaLoader
 
 @pytest.fixture
+def iterable_response_unknown():
+    return {
+        "fields": {
+            "testUnknown": "unknown",
+        }
+    }
+
+@pytest.fixture
+def expected_schema_unknown():
+    return {
+        "type": ["null", "object"],
+        "properties": {
+            "testUnknown": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            }
+        }
+    }
+
+@pytest.fixture
 def iterable_response_string():
     return {
         "fields": {
@@ -252,6 +274,7 @@ def expected_schema_nested():
     }
 
 @pytest.mark.parametrize("api_response_fixture,expected_schema_fixture", [
+    ("iterable_response_unknown", "expected_schema_unknown"),
     ("iterable_response_string", "expected_schema_string"),
     ("iterable_response_long", "expected_schema_long"),
     ("iterable_response_double", "expected_schema_double"),
