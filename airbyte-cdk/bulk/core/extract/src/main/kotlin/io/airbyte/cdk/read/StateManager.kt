@@ -245,7 +245,9 @@ private class GlobalStateManager(
                         }
                     )
                     // Only add id and partition_id if they are not null (stdio mode compatibility).
-                    .apply { streamStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) } }
+                    .apply {
+                        streamStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) }
+                    }
                     .apply {
                         streamStateForCheckpoint.partitionId?.let { partitionId ->
                             withAdditionalProperty("partition_id", partitionId)
