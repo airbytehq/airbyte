@@ -245,7 +245,7 @@ const ConnectorMetadataCallout = ({
           {isEnterprise ? (
             <>
               <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Cloud <b>with Teams add-on</b>
+                <EnabledIcon isEnabled={true} /> Cloud <b>Teams</b>
               </Chip>
               <Chip className={isOss ? styles.available : styles.unavailable}>
                 <EnabledIcon isEnabled={isOss} /> Self-Managed Community
