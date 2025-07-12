@@ -99,7 +99,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
             " and if so, which kind of authentication to use.",
     )
     @JsonSchemaInject(json = """{"order":5}""")
-    fun getTunnelMethodValue(): SshTunnelMethodConfiguration =
+    fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
 }
 
@@ -169,7 +169,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
             " and if so, which kind of authentication to use.",
     )
     @JsonSchemaInject(json = """{"order":7}""")
-    fun getTunnelMethodValue(): SshTunnelMethodConfiguration =
+    fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
 }
 
