@@ -19,23 +19,26 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurati
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
-import org.apache.sshd.common.util.net.SshdSocketAddress
 import java.util.*
+import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
 class ClickhouseBeanFactory {
     @Singleton
-    fun tunnel(config: ClickhouseConfiguration): Optional<TunnelSession> { // Micronaut won't let me just do null with `?`
-        val tun = when (val ssh = config.tunnelConfig) {
-            is SshKeyAuthTunnelMethod,
-            is SshPasswordAuthTunnelMethod -> {
-                val remote = SshdSocketAddress(config.hostname, config.port.toInt())
-                val sshConnectionOptions: SshConnectionOptions =
-                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
-                createTunnelSession(remote, ssh, sshConnectionOptions)
+    fun tunnel(
+        config: ClickhouseConfiguration
+    ): Optional<TunnelSession> { // Micronaut won't let me just do null with `?`
+        val tun =
+            when (val ssh = config.tunnelConfig) {
+                is SshKeyAuthTunnelMethod,
+                is SshPasswordAuthTunnelMethod -> {
+                    val remote = SshdSocketAddress(config.hostname, config.port.toInt())
+                    val sshConnectionOptions: SshConnectionOptions =
+                        SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                    createTunnelSession(remote, ssh, sshConnectionOptions)
+                }
+                else -> null
             }
-            else -> null
-        }
 
         return Optional.ofNullable(tun)
     }
