@@ -20,12 +20,13 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificati
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import org.apache.sshd.common.util.net.SshdSocketAddress
+import java.util.*
 
 @Factory
 class ClickhouseBeanFactory {
     @Singleton
-    fun tunnel(config: ClickhouseConfiguration): TunnelSession? {
-        return when (val ssh = config.tunnelConfig) {
+    fun tunnel(config: ClickhouseConfiguration): Optional<TunnelSession> { // Micronaut won't let me just do null with `?`
+        val tun = when (val ssh = config.tunnelConfig) {
             is SshKeyAuthTunnelMethod,
             is SshPasswordAuthTunnelMethod -> {
                 val remote = SshdSocketAddress(config.hostname, config.port.toInt())
@@ -35,15 +36,17 @@ class ClickhouseBeanFactory {
             }
             else -> null
         }
+
+        return Optional.ofNullable(tun)
     }
 
     @Singleton
     fun clickhouseClient(
         config: ClickhouseConfiguration,
-        tunnel: TunnelSession?,
+        tunnel: Optional<TunnelSession>,
     ): Client {
         val endpoint =
-            if (tunnel != null) "${tunnel.address.hostName}:${tunnel.address.port}"
+            if (tunnel.isPresent) "${tunnel.get().address.hostName}:${tunnel.get().address.port}"
             else config.endpoint
 
         val builder =
