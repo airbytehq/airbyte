@@ -6,7 +6,6 @@ from datetime import timedelta
 from typing import Any, List, MutableMapping, Tuple
 
 import pytest
-from source_instagram.source import SourceInstagram
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -20,6 +19,8 @@ from airbyte_cdk.models import (
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+
+from .conftest import get_source
 
 
 @pytest.fixture(name="state")
@@ -68,7 +69,7 @@ class TestInstagramSource:
         records = []
         states = []
         output = read(
-            SourceInstagram(config=conf, catalog=None, state=state),
+            get_source(config=conf, state=state),
             conf,
             CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build(),
             state=state,
