@@ -42,6 +42,7 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.10 | 2025-07-12 | [63139](https://github.com/airbytehq/airbyte/pull/63139) | Update dependencies |
 | 0.4.9 | 2025-07-05 | [62641](https://github.com/airbytehq/airbyte/pull/62641) | Update dependencies |
 | 0.4.8 | 2025-06-21 | [61866](https://github.com/airbytehq/airbyte/pull/61866) | Update dependencies |
 | 0.4.7 | 2025-06-14 | [61085](https://github.com/airbytehq/airbyte/pull/61085) | Update dependencies |
