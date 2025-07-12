@@ -9,15 +9,15 @@ import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
-import io.micronaut.context.annotation.Factory
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.ssh.createTunnelSession
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
+import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import org.apache.sshd.common.util.net.SshdSocketAddress
 
@@ -28,13 +28,11 @@ class ClickhouseBeanFactory {
         return when (val ssh = config.tunnelConfig) {
             is SshKeyAuthTunnelMethod,
             is SshPasswordAuthTunnelMethod -> {
-                val remote =
-                    SshdSocketAddress(config.hostname, config.port.toInt())
+                val remote = SshdSocketAddress(config.hostname, config.port.toInt())
                 val sshConnectionOptions: SshConnectionOptions =
                     SshConnectionOptions.fromAdditionalProperties(emptyMap())
                 createTunnelSession(remote, ssh, sshConnectionOptions)
             }
-
             else -> null
         }
     }
@@ -44,10 +42,9 @@ class ClickhouseBeanFactory {
         config: ClickhouseConfiguration,
         tunnel: TunnelSession?,
     ): Client {
-        val endpoint = if (tunnel != null)
-            "${tunnel.address.hostName}:${tunnel.address.port}"
-        else
-            config.endpoint
+        val endpoint =
+            if (tunnel != null) "${tunnel.address.hostName}:${tunnel.address.port}"
+            else config.endpoint
 
         val builder =
             Client.Builder()
