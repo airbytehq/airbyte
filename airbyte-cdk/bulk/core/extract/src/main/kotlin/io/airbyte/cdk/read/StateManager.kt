@@ -203,10 +203,10 @@ private data class Stale(
 ) : StateForCheckpoint {
     override val numRecords: Long
         get() = 0L
-    override val id: Int
-        get() = 0
+    override val id: Int?
+        get() = null
     override val partitionId: String?
-        get() = ""
+        get() = null
 }
 
 private class GlobalStateManager(
@@ -243,7 +243,16 @@ private class GlobalStateManager(
                             true -> Jsons.objectNode()
                             false -> streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
                         }
-                    ),
+                    )
+                    // Only add id and partition_id if they are not null (stdio mode compatibility).
+                    .apply {
+                        streamStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) }
+                    }
+                    .apply {
+                        streamStateForCheckpoint.partitionId?.let { partitionId ->
+                            withAdditionalProperty("partition_id", partitionId)
+                        }
+                    },
             )
         }
         if (!shouldCheckpoint) {
@@ -253,10 +262,20 @@ private class GlobalStateManager(
             AirbyteGlobalState()
                 .withSharedState(globalStateForCheckpoint.opaqueStateValue)
                 .withStreamStates(streamStates)
+
         return AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
             .withGlobal(airbyteGlobalState)
             .withSourceStats(AirbyteStateStats().withRecordCount(totalNumRecords.toDouble()))
+            // Only add id and partition_id if they are not null (stdio mode compatibility).
+            .apply {
+                globalStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) }
+            }
+            .apply {
+                globalStateForCheckpoint.partitionId?.let { partitionId ->
+                    withAdditionalProperty("partition_id", partitionId)
+                }
+            }
     }
 }
 
