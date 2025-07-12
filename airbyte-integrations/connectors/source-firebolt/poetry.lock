@@ -214,13 +214,13 @@ ujson = ["ujson (>=5.10.0)"]
 
 [[package]]
 name = "certifi"
-version = "2025.6.15"
+version = "2025.7.9"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "certifi-2025.6.15-py3-none-any.whl", hash = "sha256:2e0c7ce7cb5d8f8634ca55d2ba7e6ec2689a2fd6537d8dec1296a477a4910057"},
-    {file = "certifi-2025.6.15.tar.gz", hash = "sha256:d747aa5a8b9bbbb1bb8c22bb13e22bd1f18e9796defa16bab421f7f7a317323b"},
+    {file = "certifi-2025.7.9-py3-none-any.whl", hash = "sha256:d842783a14f8fdd646895ac26f719a061408834473cfc10203f6a575beb15d39"},
+    {file = "certifi-2025.7.9.tar.gz", hash = "sha256:c1d2ec05395148ee10cf672ffc28cd37ea0ab0d99f9cc74c43e588cbd111b079"},
 ]
 
 [[package]]
@@ -515,13 +515,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "firebolt-sdk"
-version = "1.12.0"
+version = "1.13.0"
 description = "Python SDK for Firebolt"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "firebolt_sdk-1.12.0-py3-none-any.whl", hash = "sha256:4e11becc1527dc705cb7dad58f3e909cc81307fb1703f7c78d8ea99d6b8a3e4d"},
-    {file = "firebolt_sdk-1.12.0.tar.gz", hash = "sha256:41939f3dc9982a55f10016d0d24840d85a614b9a9915cc74e98e0852e93c6d87"},
+    {file = "firebolt_sdk-1.13.0-py3-none-any.whl", hash = "sha256:daeeb7f4f53e37122777a53246afa30aef9eab2a4f9347a03dc7c572699dd188"},
+    {file = "firebolt_sdk-1.13.0.tar.gz", hash = "sha256:e8b93d125d405a2dde7e919a093c702ace1b3d501efa92a5922b4c012277001f"},
 ]
 
 [package.dependencies]
@@ -539,6 +539,7 @@ python-dateutil = ">=2.8.2"
 readerwriterlock = ">=1.0.9"
 sqlparse = ">=0.4.2"
 trio = ">=0.22.0"
+truststore = {version = ">=0.10", markers = "python_version >= \"3.10\""}
 
 [package.extras]
 ciso8601 = ["ciso8601 (==2.2.0)"]
@@ -1620,6 +1621,17 @@ idna = "*"
 outcome = "*"
 sniffio = ">=1.3.0"
 sortedcontainers = "*"
+
+[[package]]
+name = "truststore"
+version = "0.10.1"
+description = "Verify certificates using native system trust stores"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "truststore-0.10.1-py3-none-any.whl", hash = "sha256:b64e6025a409a43ebdd2807b0c41c8bff49ea7ae6550b5087ac6df6619352d4c"},
+    {file = "truststore-0.10.1.tar.gz", hash = "sha256:eda021616b59021812e800fa0a071e51b266721bef3ce092db8a699e21c63539"},
+]
 
 [[package]]
 name = "typing-extensions"
