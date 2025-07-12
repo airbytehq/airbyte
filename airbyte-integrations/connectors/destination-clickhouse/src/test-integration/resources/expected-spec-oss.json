@@ -159,7 +159,7 @@
         "type" : "object"
       }
     },
-    "required" : [ "host", "port", "protocol", "database", "username", "password", "tunnel_method" ],
+    "required" : [ "host", "port", "protocol", "database", "username", "password" ],
     "groups" : [ {
       "id" : "connection",
       "title" : "Connection"
