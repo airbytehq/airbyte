@@ -1,6 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
+import urllib.parse as urlparse
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -22,8 +23,6 @@ from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
-
-from .common import remove_params_from_url
 
 
 GRAPH_URL = "https://graph.facebook.com/v21.0"
@@ -65,6 +64,15 @@ def get_http_response(name: str, path: str, request_params: Dict, config: Config
         http_logger.error(f"Error getting children data: {error}")
         raise Exception(error)
     return response.json()
+
+
+def remove_params_from_url(url, params):
+    parsed = urlparse.urlparse(url)
+    query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
+    filtered = dict((k, v) for k, v in query.items() if k not in params)
+    return urlparse.urlunparse(
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+    )
 
 
 @dataclass
