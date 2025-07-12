@@ -151,6 +151,7 @@ class ClickhouseCheckerTest {
                 username,
                 password,
                 enableJson,
+                tunnelConfig = null,
             )
     }
 }
