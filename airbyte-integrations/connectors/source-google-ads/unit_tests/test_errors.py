@@ -11,7 +11,7 @@ import pytest
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupLabel, Label, ServiceAccounts
+from source_google_ads.streams import ServiceAccounts
 
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -69,11 +69,7 @@ def test_expected_errors(mocker, config, exception, error_message):
 
 @pytest.mark.parametrize(
     ("cls", "raise_expected"),
-    (
-        (AdGroupLabel, False),
-        (Label, False),
-        (ServiceAccounts, True),
-    ),
+    ((ServiceAccounts, True),),
 )
 def test_read_record_error_handling(mocker, config, customers, cls, raise_expected):
     mock_google_ads_request_failure(mocker, ["CUSTOMER_NOT_ENABLED"])
