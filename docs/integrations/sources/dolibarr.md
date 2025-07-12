@@ -45,6 +45,7 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.6 | 2025-07-12 | [62976](https://github.com/airbytehq/airbyte/pull/62976) | Update dependencies |
 | 1.0.5 | 2025-07-09 | [62869](https://github.com/airbytehq/airbyte/pull/62869) | Enabled "incremental Parent" switch for the child streams that have parent streams with incremental sync. |
 | 1.0.4 | 2025-07-05 | [62779](https://github.com/airbytehq/airbyte/pull/62779) | Update dependencies |
 | 1.0.3 | 2025-06-28 | [62306](https://github.com/airbytehq/airbyte/pull/62306) | Update dependencies |
