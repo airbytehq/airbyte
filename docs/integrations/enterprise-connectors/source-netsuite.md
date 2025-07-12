@@ -89,7 +89,7 @@ The process of setting up OAuth 2.0 for Netsuite SuiteAnalytics Connect is as fo
       Airbyte supports all key types supported by Netsuite.
     - Upload the public key to Netsuite and save the Certificate ID.
 5. On the Airbyte source-netsuite's config page fill-in the Client ID, Certificate ID and the role ID for the role the token was created or selected in step 3.
-6. Upload the public key that was generated in step 4.
+6. Upload the private key that was generated in step 4.
 7. Confirm Netsuite is accessible by clicking the "Test and save" button.
 
 Please consult the [Netsuite OAuth 2.0 for Connect documentation](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_0907012138.html) for further details.
