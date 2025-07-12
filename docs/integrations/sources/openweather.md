@@ -38,6 +38,7 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.28 | 2025-07-12 | [63176](https://github.com/airbytehq/airbyte/pull/63176) | Update dependencies |
 | 0.3.27 | 2025-07-05 | [62648](https://github.com/airbytehq/airbyte/pull/62648) | Update dependencies |
 | 0.3.26 | 2025-06-28 | [62338](https://github.com/airbytehq/airbyte/pull/62338) | Update dependencies |
 | 0.3.25 | 2025-06-21 | [61040](https://github.com/airbytehq/airbyte/pull/61040) | Update dependencies |
