@@ -306,6 +306,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.10.3 | 2025-05-17 | [60562](https://github.com/airbytehq/airbyte/pull/60562) | Update dependencies |
 | 0.10.2 | 2025-05-10 | [59113](https://github.com/airbytehq/airbyte/pull/59113) | Update dependencies |
 | 0.10.1 | 2025-05-07 | [59700](https://github.com/airbytehq/airbyte/pull/59711) | Fix edege case for unexcpeted uris. |
 | 0.10.0 | 2025-05-07 | [59700](https://github.com/airbytehq/airbyte/pull/59700) | Promoting release candidate 0.10.0-rc.1 to a main version. |
