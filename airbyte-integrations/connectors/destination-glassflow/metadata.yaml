@@ -2,7 +2,7 @@ data:
   connectorSubtype: message_queue
   connectorType: destination
   definitionId: 6af33483-3956-4fea-a38c-04d136e90fa8
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/destination-glassflow
   githubIssueLabel: destination-glassflow
   icon: glassflow.svg
