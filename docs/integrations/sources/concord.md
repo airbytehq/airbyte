@@ -32,6 +32,7 @@ The API is accessible from two environments, sandbox and production. You can lea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.29 | 2025-07-12 | [62975](https://github.com/airbytehq/airbyte/pull/62975) | Update dependencies |
 | 0.0.28 | 2025-07-05 | [62771](https://github.com/airbytehq/airbyte/pull/62771) | Update dependencies |
 | 0.0.27 | 2025-06-28 | [62301](https://github.com/airbytehq/airbyte/pull/62301) | Update dependencies |
 | 0.0.26 | 2025-06-21 | [61978](https://github.com/airbytehq/airbyte/pull/61978) | Update dependencies |
