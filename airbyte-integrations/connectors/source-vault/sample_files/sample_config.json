@@ -1,0 +1,7 @@
+{
+  "vault_url": "https://vault.example.com",
+  "role_id": "your-role-id-here",
+  "secret_id": "your-secret-id-here",
+  "namespace": "",
+  "verify_ssl": true
+}
