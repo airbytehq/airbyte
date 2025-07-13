@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
@@ -23,7 +22,7 @@ import jakarta.inject.Singleton
 @Secondary
 class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
+    private val checkpointManager: CheckpointManager,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
 ) : Task {
     val log = KotlinLogging.logger {}
@@ -35,16 +34,27 @@ class UpdateCheckpointsTask(
         checkpointMessageQueue.consume().collect {
             when (it.value) {
                 is StreamCheckpointWrapped -> {
-                    val (stream, checkpointId, message) = it.value
-                    log.info { "Updating checkpoint for stream $stream with id $checkpointId" }
-                    checkpointManager.addStreamCheckpoint(stream, checkpointId, it.replace(message))
+                    val (stream, checkpointKey, message) = it.value
+                    log.info {
+                        "Updating stream checkpoint $stream:$checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
+                    checkpointManager.addStreamCheckpoint(
+                        stream,
+                        checkpointKey,
+                        it.replace(message)
+                    )
                 }
                 is GlobalCheckpointWrapped -> {
-                    val (streamCheckpointIds, message) = it.value
-                    log.info { "Updating global checkpoint for streams $streamCheckpointIds" }
-                    checkpointManager.addGlobalCheckpoint(streamCheckpointIds, it.replace(message))
+                    val (checkpointKey, message) = it.value
+                    log.info {
+                        "Updating global checkpoint with $checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
+                    checkpointManager.addGlobalCheckpoint(checkpointKey, it.replace(message))
                 }
             }
+            // If its corresponding data was processed before this checkpoint was added,
+            // then it's possible it's already data-sufficient.
+            checkpointManager.flushReadyCheckpointMessages()
         }
         syncManager.markCheckpointsProcessed()
         log.info { "All checkpoints (state) updated" }

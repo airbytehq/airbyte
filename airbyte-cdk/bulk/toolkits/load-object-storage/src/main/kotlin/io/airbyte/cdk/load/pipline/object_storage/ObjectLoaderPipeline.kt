@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
-import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.LoadPipeline
@@ -51,22 +51,25 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(bean = ObjectLoader::class)
 class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
-    catalog: DestinationCatalog,
-    routeEventStep: RouteEventStep,
-    fileChunkStep: FileChunkStep<T>,
-    @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
-    @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
-    forwardFileRecordStep: ForwardFileRecordStep<T>,
-    @Named("fileRecordPartFormatterStep") fileRecordFormatStep: ObjectLoaderPartFormatterStep,
+    routeEventStep: RouteEventStep?,
+    fileChunkStep: FileChunkStep<T>?,
+    @Named("filePartLoaderStep") fileChunkUploader: ObjectLoaderPartLoaderStep<T>?,
+    @Named("fileUploadCompleterStep") fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>?,
+    forwardFileRecordStep: ForwardFileRecordStep<T>?,
+    @Named("fileRecordPartFormatterStep") fileRecordFormatStep: ObjectLoaderPartFormatterStep?,
     @Named("recordPartFormatterStep") recordFormatStep: ObjectLoaderPartFormatterStep,
     @Named("recordPartLoaderStep") recordUploadStep: ObjectLoaderPartLoaderStep<T>,
     @Named("recordUploadCompleterStep") recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
     @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
     processFileTaskLegacyStep: ProcessFileTaskLegacyStep,
+    @Named("isFileTransfer") isFileTransfer: Boolean,
+    @Named("oneShotObjectLoaderStep")
+    oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
+    @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
 ) :
     LoadPipeline(
         selectPipelineSteps(
-            catalog,
+            isFileTransfer,
             routeEventStep,
             fileChunkStep,
             fileChunkUploader,
@@ -78,34 +81,37 @@ class ObjectLoaderPipeline<K : WithStream, T : RemoteObject<*>>(
             recordCompleterStep,
             isLegacyFileTransfer,
             processFileTaskLegacyStep,
+            oneShotObjectLoaderStep,
+            dataChannelMedium
         )
     ) {
     companion object {
-        fun hasFileTransfer(catalog: DestinationCatalog): Boolean =
-            catalog.streams.any { it.includeFiles }
-
         fun <K : WithStream, T : RemoteObject<*>> selectPipelineSteps(
-            catalog: DestinationCatalog,
-            routeEventStep: RouteEventStep,
-            fileChunkStep: FileChunkStep<T>,
-            fileChunkUploader: ObjectLoaderPartLoaderStep<T>,
-            fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
-            forwardFileRecordStep: ForwardFileRecordStep<T>,
-            fileRecordFormatStep: ObjectLoaderPartFormatterStep,
+            isFileTransfer: Boolean,
+            routeEventStep: RouteEventStep?,
+            fileChunkStep: FileChunkStep<T>?,
+            fileChunkUploader: ObjectLoaderPartLoaderStep<T>?,
+            fileCompleterStep: ObjectLoaderUploadCompleterStep<K, T>?,
+            forwardFileRecordStep: ForwardFileRecordStep<T>?,
+            fileRecordFormatStep: ObjectLoaderPartFormatterStep?,
             recordPartStep: ObjectLoaderPartFormatterStep,
             recordUploadStep: ObjectLoaderPartLoaderStep<T>,
             recordCompleterStep: ObjectLoaderUploadCompleterStep<K, T>,
             isLegacyFileTransfer: Boolean,
             legacyProcessFileStep: ProcessFileTaskLegacyStep,
+            oneShotObjectLoaderStep: ObjectLoaderOneShotUploaderStep<K, T>,
+            dataChannelMedium: DataChannelMedium
         ): List<LoadPipelineStep> {
-            return if (hasFileTransfer(catalog)) {
+            return if (dataChannelMedium == DataChannelMedium.SOCKET) {
+                listOf(oneShotObjectLoaderStep)
+            } else if (isFileTransfer) {
                 listOf(
-                    routeEventStep,
-                    fileChunkStep,
-                    fileChunkUploader,
-                    fileCompleterStep,
-                    forwardFileRecordStep,
-                    fileRecordFormatStep,
+                    routeEventStep!!,
+                    fileChunkStep!!,
+                    fileChunkUploader!!,
+                    fileCompleterStep!!,
+                    forwardFileRecordStep!!,
+                    fileRecordFormatStep!!,
                     recordUploadStep,
                     recordCompleterStep,
                 )

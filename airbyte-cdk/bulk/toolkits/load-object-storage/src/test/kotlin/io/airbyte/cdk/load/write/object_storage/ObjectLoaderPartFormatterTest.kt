@@ -6,10 +6,10 @@ package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
+import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
@@ -27,6 +27,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import java.io.OutputStream
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -51,7 +52,7 @@ class ObjectLoaderPartFormatterTest {
     fun setup() {
         pathFactory = mockk()
         bufferedWriterFactory = mockk()
-        stream = mockk()
+        stream = mockk(relaxed = true)
         bufferedWriter = mockk()
         catalog = mockk()
         stateManager = mockk()
@@ -63,7 +64,7 @@ class ObjectLoaderPartFormatterTest {
         coEvery { bufferedWriter.flush() } returns Unit
         coEvery { bufferedWriter.close() } returns Unit
         every { objectLoader.objectSizeBytes } returns fileSizeBytes
-        every { stream.descriptor } returns streamDescriptor
+        every { stream.mappedDescriptor } returns streamDescriptor
         every { catalog.getStream(any()) } returns stream
         coEvery { pathFactory.getFinalDirectory(any()) } returns "foo"
         coEvery { stateManager.getState(any()) } returns state
@@ -84,13 +85,19 @@ class ObjectLoaderPartFormatterTest {
 
     private fun makeRecord(): DestinationRecordRaw =
         DestinationRecordRaw(
-            stream,
-            AirbyteMessage()
-                .withRecord(
-                    AirbyteRecordMessage().withEmittedAt(42).withData(Jsons.createObjectNode())
+            stream = stream,
+            rawData =
+                DestinationRecordJsonSource(
+                    source =
+                        AirbyteMessage()
+                            .withRecord(
+                                AirbyteRecordMessage()
+                                    .withEmittedAt(42)
+                                    .withData(Jsons.createObjectNode())
+                            )
                 ),
-            ObjectTypeWithEmptySchema,
-            serializedSizeBytes = 0L
+            serializedSizeBytes = 0L,
+            airbyteRawId = UUID.randomUUID(),
         )
 
     private fun makeRecords(n: Int): Iterator<DestinationRecordRaw> =
@@ -156,7 +163,7 @@ class ObjectLoaderPartFormatterTest {
 
         coEvery { pathFactory.getPathToFile(any(), any()) } answers { "path.${secondArg<Long>()}" }
 
-        val initialState = acc.start(StreamKey(stream.descriptor), 0)
+        val initialState = acc.start(StreamKey(stream.mappedDescriptor), 0)
         // Object 1
 
         // part 0->1/2b of 4b total => not data sufficient
@@ -193,7 +200,7 @@ class ObjectLoaderPartFormatterTest {
         // Object 2
 
         // Next part 4/4b => data sufficient, should be second and final
-        val initialState2 = acc.start(StreamKey(stream.descriptor), 0)
+        val initialState2 = acc.start(StreamKey(stream.mappedDescriptor), 0)
         when (val result4 = threadRecords(4, acc, initialState2)) {
             is FinalOutput -> {
                 assert(result4.output.part.bytes.contentEquals(makeBytes(2)))

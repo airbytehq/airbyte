@@ -1,4 +1,4 @@
-name: "Add labels to github issues based on context"
+name: "Auto-Label Issues"
 on:
   issues:
     types: [opened, labeled, unlabeled]

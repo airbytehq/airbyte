@@ -75,7 +75,7 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
                     val obj = input.upload.await().complete()
                     FinalOutput(UploadResult(objectLoader.stateAfterUpload, obj))
                 } else {
-                    log.info {
+                    log.debug {
                         "After loaded part ${input.partIndex} (isFinal=${input.isFinal}), ${state.objectKey} still incomplete, not finishing (state $state)"
                     }
                     NoOutput(state)

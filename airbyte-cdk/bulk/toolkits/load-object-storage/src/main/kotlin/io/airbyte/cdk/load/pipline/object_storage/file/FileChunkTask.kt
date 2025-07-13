@@ -95,7 +95,7 @@ class FileChunkTask<T>(
                 log.info { "Processing file ${file.stagingFileUrl} with $numParts parts" }
 
                 val uploadId = uploadIdGenerator.generate()
-                val objectKey = ObjectKey(stream.descriptor, filePath, uploadId)
+                val objectKey = ObjectKey(stream.mappedDescriptor, filePath, uploadId)
 
                 parts.forEach {
                     log.info { "Read ${it.bytes?.size ?: 0} bytes from ${file.stagingFileUrl}" }
@@ -131,7 +131,7 @@ class FileChunkTask<T>(
             (stream.schema as? ObjectType)
                 ?.properties
                 ?.put(COLUMN_NAME_AIRBYTE_FILE_PATH, FieldType(StringType, nullable = true))
-            asRawJson().let { jsonNode ->
+            asJsonRecord().let { jsonNode ->
                 (jsonNode as ObjectNode).put(COLUMN_NAME_AIRBYTE_FILE_PATH, filePath)
             }
         }

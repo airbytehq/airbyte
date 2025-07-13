@@ -1,15 +1,18 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
+import base64
 import calendar
-from typing import Optional
+from typing import Any, Dict, Optional
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
 
 
 class ArticlesRequestBuilder(ZendeskSupportBaseRequestBuilder):
+    # def articles_endpoint(cls, config: Dict[str, Any]) -> "ArticlesRequestBuilder":
+    #     client_access_token = _get_client_access_token_from_config(config)
+    #     return cls("d3v-airbyte", "help_center/incremental/articles").with_client_access_token(client_access_token)
     @classmethod
     def articles_endpoint(cls, authenticator: Authenticator) -> "ArticlesRequestBuilder":
         return cls("d3v-airbyte", "help_center/incremental/articles").with_authenticator(authenticator)
@@ -39,6 +42,14 @@ class ArticlesRequestBuilder(ZendeskSupportBaseRequestBuilder):
         self._sort_order = sort_order
         return self
 
-    def with_start_time(self, start_time: pendulum.DateTime) -> "ArticlesRequestBuilder":
+    def with_start_time(self, start_time: AirbyteDateTime) -> "ArticlesRequestBuilder":
         self._start_time = str(calendar.timegm(start_time.timetuple()))
         return self
+
+
+# todo make this reusable by other methods
+def _get_client_access_token_from_config(config: Dict[str, Any]) -> str:
+    email_login = config["credentials"]["email"] + "/token"
+    password = config["credentials"]["api_token"]
+    encoded_token = base64.b64encode(f"{email_login}:{password}".encode("utf-8"))
+    return f"Bearer {encoded_token.decode('utf-8')}"

@@ -450,11 +450,17 @@
           "account": {
             "type": ["object", "null"],
             "properties": {
-              "business_account_id": { "type": ["string", "null"] },
-              "page_id": { "type": ["string", "null"] }
+              "business_account_id": {
+                "type": ["string", "null"]
+              },
+              "page_id": {
+                "type": ["string", "null"]
+              }
             }
           },
-          "id": { "type": "string" }
+          "id": {
+            "type": "string"
+          }
         },
         "required": ["id"]
       },

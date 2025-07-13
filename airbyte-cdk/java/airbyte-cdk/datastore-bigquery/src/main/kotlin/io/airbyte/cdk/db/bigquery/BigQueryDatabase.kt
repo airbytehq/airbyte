@@ -5,7 +5,7 @@ package io.airbyte.cdk.db.bigquery
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.api.gax.retrying.RetrySettings
-import com.google.auth.oauth2.ServiceAccountCredentials
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.*
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Streams
@@ -38,10 +38,10 @@ constructor(
         try {
             this.sourceOperations = sourceOperations
             val bigQueryBuilder = BigQueryOptions.newBuilder()
-            var credentials: ServiceAccountCredentials? = null
+            var credentials: GoogleCredentials? = null
             if (!jsonCreds.isNullOrEmpty()) {
                 credentials =
-                    ServiceAccountCredentials.fromStream(
+                    GoogleCredentials.fromStream(
                         ByteArrayInputStream(jsonCreds.toByteArray(StandardCharsets.UTF_8))
                     )
             }
@@ -50,7 +50,7 @@ constructor(
                     .setProjectId(projectId)
                     .setCredentials(
                         if (!Objects.isNull(credentials)) credentials
-                        else ServiceAccountCredentials.getApplicationDefault()
+                        else GoogleCredentials.getApplicationDefault()
                     )
                     .setHeaderProvider {
                         ImmutableMap.of("user-agent", getUserAgentHeader(connectorVersion))

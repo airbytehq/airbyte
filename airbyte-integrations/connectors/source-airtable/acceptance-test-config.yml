@@ -5,7 +5,9 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "integration_tests/spec.json"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: 4.6.0
   connection:
     tests:
       - config_path: "secrets/config.json"

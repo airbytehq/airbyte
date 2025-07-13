@@ -5,6 +5,8 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.normalizeName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoChangeStreamException;
@@ -18,6 +20,7 @@ import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
@@ -25,16 +28,7 @@ import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.MongoDbPartition;
 import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.pipeline.spi.Partition;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.bson.BsonDocument;
@@ -88,31 +82,41 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
   }
 
   /**
-   * Test whether the retrieved saved offset resume token value is valid. A valid resume token is one
-   * that can be used to resume a change event stream in MongoDB.
+   * Tests whether the provided saved offset resume token is valid for resuming a MongoDB change event
+   * stream.
    *
    * @param savedOffset The resume token from the saved offset.
-   * @param mongoClient The {@link MongoClient} used to validate the saved offset.
-   *
-   * @return {@code true} if the saved offset value is valid Otherwise, {@code false} is returned to
-   *         indicate that an initial snapshot should be performed.
+   * @param mongoClient The MongoClient used to validate the saved offset.
+   * @param databaseNames The list of database names to check.
+   * @param streamsByDatabase The list of lists of ConfiguredAirbyteStream objects, grouped by
+   *        database.
+   * @return {@code true} if the saved offset value is valid; otherwise, {@code false} to indicate
+   *         that an initial snapshot should be performed.
    */
   public boolean isValidResumeToken(final BsonDocument savedOffset,
                                     final MongoClient mongoClient,
-                                    final String databaseName,
-                                    final ConfiguredAirbyteCatalog catalog) {
+                                    final List<String> databaseNames,
+                                    final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
     }
 
-    // Scope the change stream to the collections & database of interest - this mirrors the logic while
-    // getting the most recent resume token.
-    final List<String> collectionsList = catalog.getStreams().stream()
-        .map(s -> s.getStream().getName())
-        .toList();
-    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
-        Filters.in("ns.coll", collectionsList)));
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
+    // databaseNames and streamsByDatabase must be the same length
+    List<Bson> orFilters = new ArrayList<>();
+    for (int i = 0; i < databaseNames.size(); i++) {
+      String dbName = databaseNames.get(i);
+      List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
+      List<String> collectionNames = streams.stream()
+          .map(s -> s.getStream().getName())
+          .toList();
+      // Match documents where ns.db == dbName and ns.coll in collectionNames
+      orFilters.add(Filters.and(
+          Filters.eq("ns.db", dbName),
+          Filters.in("ns.coll", collectionNames)));
+    }
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
+    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
 
     // Attempt to start the stream after the saved offset.
     eventStream.resumeAfter(savedOffset);
@@ -153,7 +157,19 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     HashMap<Object, Object> safeProps = new HashMap<>(debeziumProperties);
     safeProps.put("mongodb.password", "****");
     LOGGER.info("properties: " + safeProps);
-    return parseSavedOffset(debeziumProperties);
+    Optional<BsonDocument> offset = parseSavedOffset(debeziumProperties);
+    if (offset.isEmpty()) {
+      LOGGER
+          .info(
+              "This connector is using the old offset format where server_id is set to database name, migrating to the new offset format where save_id is now connection string.");
+      for (String databaseName : debeziumProperties.getProperty(DATABASE_INCLUDE_LIST_KEY).split(",")) {
+        debeziumProperties.setProperty("name", normalizeName(databaseName));
+        offset = parseSavedOffset(debeziumProperties);
+        if (!offset.isEmpty())
+          break;
+      }
+    }
+    return offset;
   }
 
   /**
@@ -176,36 +192,31 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       final MongoDbConnectorConfig mongoDbConnectorConfig = new MongoDbConnectorConfig(config);
 
       final MongoDbOffsetContext.Loader loader = new MongoDbOffsetContext.Loader(mongoDbConnectorConfig);
-
       final Partition mongoDbPartition = new MongoDbPartition(properties.getProperty(CONNECTOR_NAME_PROPERTY));
 
       final Set<Partition> partitions =
           Collections.singleton(mongoDbPartition);
       final OffsetReader<Partition, MongoDbOffsetContext, MongoDbOffsetContext.Loader> offsetReader = new OffsetReader<>(offsetStorageReader, loader);
       final Map<Partition, MongoDbOffsetContext> offsets = offsetReader.offsets(partitions);
-
       if (offsets == null || offsets.values().stream().noneMatch(Objects::nonNull)) {
         return Optional.empty();
       }
-
       final MongoDbOffsetContext context = offsets.get(mongoDbPartition);
       final var offset = context.getOffset();
-
       final Object resumeTokenData = offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
 
       if (resumeTokenData != null) {
+        LOGGER.info("Resume token is not null");
         final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData.toString());
         return Optional.of(resumeToken);
       } else {
         return Optional.empty();
       }
-
     } finally {
       LOGGER.info("Closing offsetStorageReader and fileOffsetBackingStore");
       if (offsetStorageReader != null) {
         offsetStorageReader.close();
       }
-
       if (fileOffsetBackingStore != null) {
         fileOffsetBackingStore.stop();
       }

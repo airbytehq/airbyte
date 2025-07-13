@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 6.2.25-rc.1
+  dockerImageTag: 6.2.26-rc.1
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   githubIssueLabel: source-faker
@@ -18,8 +18,10 @@ data:
   name: Sample Data (Faker)
   registryOverrides:
     cloud:
+      dockerImageTag: 6.2.24
       enabled: true
     oss:
+      dockerImageTag: 6.2.24
       enabled: true
   releaseStage: beta
   releases:

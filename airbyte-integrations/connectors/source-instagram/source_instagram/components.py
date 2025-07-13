@@ -1,12 +1,17 @@
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-import logging
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, MutableMapping, Optional
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import logging
+from dataclasses import InitVar, dataclass, field
+from datetime import datetime
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+
+import dpath
 import requests
 
-from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
@@ -14,7 +19,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient, HttpMethod
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config
-from source_instagram import SourceInstagram
+from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 from .common import remove_params_from_url
 
@@ -236,3 +243,103 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
         record_total_value = record.pop("total_value")
         record["value"] = {res.get("dimension_values", [""])[0]: res.get("value") for res in record_total_value["breakdowns"][0]["results"]}
         return record
+
+
+@dataclass
+class UserInsightsExtractor(RecordExtractor):
+    """
+    Custom extractor that is needed for the Instagram user_insights stream because the existing transformations
+    functionality for AddedFieldDefinition does not support interpolation on the target path to inject a value
+    into.
+
+    The user_insights stream path is dependent on which slice query property chunk we are currently syncing
+    because it is used in the key. For example, chunk for `week` period and the `reach` metric should
+    be rendered as `reach_week`, but this can only be done with interpolation which currently isn't supported.
+    """
+
+    field_path: List[Union[InterpolatedString, str]]
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
+        for path_index in range(len(self.field_path)):
+            if isinstance(self.field_path[path_index], str):
+                self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        for body in self.decoder.decode(response):
+            results = []
+            if len(self._field_path) == 0:
+                extracted = body
+            else:
+                path = [path.eval(self.config) for path in self._field_path]
+                if "*" in path:
+                    extracted = dpath.values(body, path)
+                else:
+                    extracted = dpath.get(body, path, default=[])  # type: ignore # extracted will be a MutableMapping, given input data structure
+            if isinstance(extracted, list):
+                results = extracted
+            elif extracted:
+                raise ValueError(f"field_path should always point towards a list field in the response body for property_history streams")
+
+            complete_record = dict()
+            for result in results:
+                period = result.get("period")
+                metric_key = result.get("name")
+                if period in ["week", "days_28"]:
+                    metric_key += f"_{period}"
+                metric_value = result.get("values")[0].get("value")
+                complete_record[metric_key] = metric_value
+                if "date" not in complete_record:
+                    complete_record["date"] = result.get("values")[0].get("end_time")
+            yield complete_record
+
+
+@dataclass
+class UserInsightsSubstreamPartitionRouter(SubstreamPartitionRouter):
+    """
+    The way the Python user_insights stream was a substream of the Api/Accounts parent stream, but it only incorporated
+    the business_account_id as the partition field. However, the actual parent stream slice is an account object made
+    up of a business_account_id and a page_id. This creates issues when trying to extract the state of the current
+    partition because the incoming state of an existing connection will not contain the page_id.
+
+    This custom component retains the existing behavior of the Python implementation by only saving the business_account_id
+    to the per-partition state while adding the page_id to the extra_fields so it can be used while readiing records
+    for a given partition.
+    """
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for stream_slice in super().stream_slices():
+            account_object = stream_slice.partition.get("business_account_id")
+            stream_slice = StreamSlice(
+                partition={"business_account_id": account_object.get("business_account_id")},
+                cursor_slice=stream_slice.cursor_slice,
+                extra_fields={"page_id": account_object.get("page_id")},
+            )
+            yield stream_slice
+
+
+class RFC3339DatetimeSchemaNormalization(TypeTransformer):
+    """
+    The Instagram API returns dates in the format 2025-01-01T07:00:00+0000, but the existing implementation
+    normalized dates to the RFC 3339 format 2025-01-01T07:00:00+00:00.
+    """
+
+    def __init__(self, *args, **kwargs):
+        config = TransformConfig.CustomSchemaNormalization
+        super().__init__(config)
+        self.registerCustomTransform(self.get_transform_function())
+
+    def get_transform_function(self):
+        def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
+            target_format = field_schema.get("format")
+            target_airbyte_type = field_schema.get("airbyte_type")
+
+            if original_value and target_format == "date-time" and target_airbyte_type == "timestamp_with_timezone":
+                ab_datetime = ab_datetime_parse(original_value)
+                return ab_datetime_format(ab_datetime)
+            return original_value
+
+        return transform_function

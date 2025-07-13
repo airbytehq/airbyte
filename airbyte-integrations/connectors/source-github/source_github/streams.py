@@ -29,6 +29,7 @@ from .errors_handlers import (
     ContributorActivityErrorHandler,
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
+    is_conflict_with_empty_repository,
 )
 from .graphql import (
     CursorStorage,
@@ -216,6 +217,24 @@ class GithubStream(GithubStreamABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
         return record
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        if is_conflict_with_empty_repository(response):
+            # I would expect that this should be handled (skipped) by the error handler, but it seems like
+            # ignored this error but continue to processing records. This may be fixed in latest CDK versions.
+            return
+        yield from super().parse_response(
+            response=response,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
 
 class SemiIncrementalMixin(CheckpointMixin):
@@ -1614,7 +1633,10 @@ class ContributorActivity(GithubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
-        record.update(record.pop("author"))
+        author = record.pop("author", None)
+        # It's been found that the author field can be None, so we check for it
+        if author:
+            record.update(author)
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:

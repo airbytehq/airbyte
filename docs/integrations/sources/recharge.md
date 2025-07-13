@@ -76,7 +76,8 @@ The Recharge source connector supports the following sync modes:
 | Metafields         | [2021-11](https://developer.rechargepayments.com/2021-11/metafields)                                                                             | id          | ✅                    | ❌                   | ✅ Standard Plan             |
 | Onetimes           | [2021-11](https://developer.rechargepayments.com/2021-11/onetimes)                                                                               | id          | ✅                    | ✅                   | ✅ Standard Plan             |
 | Orders             | [2021-11](https://developer.rechargepayments.com/2021-11/orders) / [2021-01 (Deprecated)](https://developer.rechargepayments.com/2021-01/orders) | id          | ✅                    | ✅                   | ✅ Standard Plan             |
-| Products           | [2021-11](https://developer.rechargepayments.com/2021-11/products)                                                                               | id          | ✅                    | ❌                   | ✅ Standard Plan             |
+| Payment Methods    | [2021-11](https://developer.rechargepayments.com/2021-11/payment_methods)                                                                        | id          | ✅                    | ❌                   | 🎯 Pro and Custom plans only |
+| Plans             | [2021-11](https://developer.rechargepayments.com/2021-11/plans/plans_list)                                                                                  | id          | ✅                    | ❌                   | ✅ Standard Plan             |
 | Shop               | [2021-01 (Deprecated)](https://developer.rechargepayments.com/2021-01#shop)                                                                      | id          | ✅                    | ❌                   | ✅ Standard Plan             |
 | Subscriptions      | [2021-11](https://developer.rechargepayments.com/2021-11/subscriptions)                                                                          | id          | ✅                    | ✅                   | ✅ Standard Plan             |
 
@@ -121,7 +122,8 @@ The following table lists the required read scopes and plan requirements for eac
 | Metafields         | `read_address`, `read_customer`, `read_subscription`, `read_order`, `read_charge` (Enable scopes for the resources whose metafields you want to sync) | Standard Plan            |
 | Onetimes           | `read_subscriptions`                                                                                                                                  | Standard Plan            |
 | Orders             | `read_orders`                                                                                                                                         | Standard Plan            |
-| Products           | `read_products`                                                                                                                                       | Standard Plan            |
+| Payment Methods    | `read_payment_methods`                                                                                                                                | Pro or Custom plans only |
+| Plans           | `read_products`                                                                                                                                          | Standard Plan            |
 | Shop               | `read_shop`                                                                                                                                           | Standard Plan            |
 | Subscriptions      | `read_subscriptions`                                                                                                                                  | Standard Plan            |
 
@@ -152,6 +154,12 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.2 | 2025-07-12 | [63057](https://github.com/airbytehq/airbyte/pull/63057) | Update dependencies |
+| 3.0.1 | 2025-07-05 | [62581](https://github.com/airbytehq/airbyte/pull/62581) | Update dependencies |
+| 3.0.0 | 2025-06-20 | [61727](https://github.com/airbytehq/airbyte/pull/61727) | Removes deprecated `products` stream. Adds new `plans` stream. |
+| 2.10.1 | 2025-06-14 | [61073](https://github.com/airbytehq/airbyte/pull/61073) | Update dependencies |
+| 2.10.0 | 2025-05-29 | [60810](https://github.com/airbytehq/airbyte/pull/60810) | Add new `payment_methods` stream |
+| 2.9.1 | 2025-05-24 | [60151](https://github.com/airbytehq/airbyte/pull/60151) | Update dependencies |
 | 2.9.0 | 2025-05-16 | [60317](https://github.com/airbytehq/airbyte/pull/60317) | Improve 429 error handler |
 | 2.8.0 | 2025-05-14 | [60265](https://github.com/airbytehq/airbyte/pull/60265) | Added `credit_adjustments` stream |
 | 2.7.0 | 2025-05-08 | [59734](https://github.com/airbytehq/airbyte/pull/59734) | Added lookback window to connector manifest configuration |
