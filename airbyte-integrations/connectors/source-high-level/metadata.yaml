@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - api.leadconnectorpro.co
+      - api.leadconnectorhq.com
   registryOverrides:
     oss:
       enabled: true

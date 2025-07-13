@@ -532,7 +532,7 @@ definitions:
           $ref: "#/schemas/Contact Search"
   base_requester:
     type: HttpRequester
-    url_base: https://api.leadconnectorpro.co
+    url_base: https://api.leadconnectorhq.com
     authenticator:
       type: ApiKeyAuthenticator
       api_token: '{{ config["api_key"] }}'
