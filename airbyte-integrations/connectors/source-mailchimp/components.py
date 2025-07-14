@@ -2,12 +2,15 @@
 
 from typing import Any, Iterable, MutableMapping
 
+import dpath
 import requests
 
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import (
+    ConfigTransformation,
+)
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.traced_exception import FailureType
 
 
 class MailChimpRecordExtractorEmailActivity(DpathExtractor):
@@ -22,104 +25,85 @@ class MailChimpRecordExtractorEmailActivity(DpathExtractor):
         )
 
 
-class MailChimpOAuthDataCenterExtractor(RecordTransformation):
-    """
-    Custom component to extract data center from OAuth access token.
-    This is used during stream processing to dynamically set the data center.
-    """
-    
-    def transform(
-        self, 
-        record: MutableMapping[str, Any], 
-        config: MutableMapping[str, Any],
-        stream_state: MutableMapping[str, Any],
-        stream_slice: MutableMapping[str, Any]
-    ) -> None:
+class MailChimpOAuthDataCenterExtractor(ConfigTransformation):
+    def transform(self, config: MutableMapping[str, Any]) -> None:
         """
-        Extract data center from OAuth access token and add it to config.
+        Extract the data center from OAuth tokens and add it to the config.
+        For API key auth, extract from the API key itself.
+        For OAuth auth, make an HTTP request to get the data center.
+        """
+        # Check if this is OAuth authentication
+        print(f"Config: {config}")
+        if config.get("credentials", {}).get("auth_type") == "oauth2.0":
+            
+            access_token = config.get("credentials", {}).get("access_token")
+            # OAuth flow - extract data center from access token
+            
+            # Make HTTP request to get OAuth metadata
+            try:
+                response = requests.get(
+                    "https://login.mailchimp.com/oauth2/metadata",
+                    headers={"Authorization": f"OAuth {access_token}"},
+                    timeout=10
+                )
+                response.raise_for_status()
+                
+                # Check for invalid token error
+                error = response.json().get("error")
+                if error == "invalid_token":
+                    raise AirbyteTracedException(
+                        failure_type=FailureType.config_error,
+                        internal_message=error,
+                        message=(
+                            "The access token you provided was invalid. "
+                            "Please check your credentials and try again."
+                        ),
+                    )
+                
+                # Extract data center from the "dc" field
+                data_center = response.json().get("dc")
+                if data_center:
+                    # Only add to user config fields, avoid framework-injected fields
+                    self._safe_add_field(config, "data_center", data_center)
+                    
+            except Exception as e:
+                # If we can't get the data center, log the error but don't fail
+                # The connector will handle this gracefully
+                print(
+                    f"Warning: Could not extract data center from OAuth token: {e}"
+                )
+                
+        elif config.get("credentials", {}).get("auth_type") == "apikey":
+            # API key flow - extract data center from API key
+            api_key = config.get("credentials", {}).get("apikey")
+            if api_key and "-" in api_key:
+                # API key format: "prefix-datacenter"
+                data_center = api_key.split("-")[-1]
+                self._safe_add_field(config, "data_center", data_center)
+        elif "apikey" in config:
+            # Backward compatibility - check for API key at top level
+            api_key = config["apikey"]
+            if api_key and "-" in api_key:
+                # API key format: "prefix-datacenter"
+                data_center = api_key.split("-")[-1]
+                self._safe_add_field(config, "data_center", data_center)
+
+    def _safe_add_field(self, config: MutableMapping[str, Any], field_name: str, value: Any) -> None:
+        """
+        Safely add a field to the config, avoiding framework-injected fields.
         
         Args:
-            record: The record being processed (not used in this case)
-            config: The connector configuration
-            stream_state: The stream state (not used in this case)
-            stream_slice: The stream slice (not used in this case)
+            config: The config to modify
+            field_name: The name of the field to add
+            value: The value to set
         """
-        credentials = config.get("credentials", {})
-        auth_type = credentials.get("auth_type")
+        # Avoid modifying framework-injected fields
+        framework_fields = {
+            "__injected_declarative_manifest",
+            "__injected_components_py", 
+            "__injected_components_py_checksums"
+        }
         
-        if auth_type == "oauth2.0" and not config.get("data_center"):
-            # For OAuth, make HTTP request to get data center
-            access_token = credentials.get("access_token")
-            if not access_token:
-                raise AirbyteTracedException(
-                    failure_type=FailureType.config_error,
-                    message=(
-                        "Access token is required for OAuth authentication."
-                    )
-                )
-            data_center = self._get_oauth_data_center(access_token)
-            config["data_center"] = data_center
-
-    def _get_oauth_data_center(self, access_token: str) -> str:
-        """
-        Retrieve data center for OAuth credentials by making API request.
-
-        Args:
-            access_token: OAuth access token
-
-        Returns:
-            Data center string (e.g., 'us1', 'eu1')
-
-        Raises:
-            AirbyteTracedException: If token is invalid or request fails
-        """
-        try:
-            headers = {"Authorization": f"OAuth {access_token}"}
-            response = requests.get(
-                "https://login.mailchimp.com/oauth2/metadata", 
-                headers=headers,
-                timeout=30
-            )
-
-            # Requests to this endpoint return 200 even if token is invalid
-            response_data = response.json()
-            error = response_data.get("error")
-
-            if error == "invalid_token":
-                raise AirbyteTracedException(
-                    failure_type=FailureType.config_error,
-                    internal_message=error,
-                    message=(
-                        "The access token you provided was invalid. "
-                        "Please check your credentials and try again."
-                    )
-                )
-
-            data_center = response_data.get("dc")
-            if not data_center:
-                raise AirbyteTracedException(
-                    failure_type=FailureType.config_error,
-                    message=(
-                        "Could not retrieve data center from OAuth metadata "
-                        "response."
-                    )
-                )
-
-            return data_center
-
-        except requests.RequestException as e:
-            raise AirbyteTracedException(
-                failure_type=FailureType.config_error,
-                message=(
-                    f"Failed to retrieve data center from OAuth metadata: "
-                    f"{str(e)}"
-                )
-            )
-        except (ValueError, KeyError) as e:
-            raise AirbyteTracedException(
-                failure_type=FailureType.config_error,
-                message=(
-                    f"Invalid response format from OAuth metadata endpoint: "
-                    f"{str(e)}"
-                )
-            )
+        # Only add the field if it's not a framework-injected field
+        if field_name not in framework_fields:
+            dpath.new(config, [field_name], value)
