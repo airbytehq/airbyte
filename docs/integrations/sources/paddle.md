@@ -32,21 +32,22 @@ API Reference: https://developer.paddle.com/api-reference/overview
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                               |
-|---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------|
-| 0.1.2   | 2025-07-10 | [62891](https://github.com/airbytehq/airbyte/pull/62891) | Remove `custom_data` property constraints and add it to `customers` stream            |
-| 0.1.1   | 2025-07-05 | [62566](https://github.com/airbytehq/airbyte/pull/62566) | Update dependencies                                                                   |
-| 0.1.0   | 2025-07-01 | [62479](https://github.com/airbytehq/airbyte/pull/62479) | Add adjustments stream                                                                |
-| 0.0.11  | 2025-07-01 | [62461](https://github.com/airbytehq/airbyte/pull/62461) | Add constant retry backoff per Paddle API Docs                                        |
-| 0.0.10  | 2025-06-28 | [62318](https://github.com/airbytehq/airbyte/pull/62318) | Update dependencies                                                                   |
-| 0.0.9   | 2025-06-21 | [61917](https://github.com/airbytehq/airbyte/pull/61917) | Update dependencies                                                                   |
-| 0.0.8   | 2025-06-14 | [60485](https://github.com/airbytehq/airbyte/pull/60485) | Update dependencies                                                                   |
-| 0.0.7   | 2025-05-10 | [60059](https://github.com/airbytehq/airbyte/pull/60059) | Update dependencies                                                                   |
-| 0.0.6   | 2025-05-04 | [59518](https://github.com/airbytehq/airbyte/pull/59518) | Update dependencies                                                                   |
-| 0.0.5   | 2025-04-27 | [59085](https://github.com/airbytehq/airbyte/pull/59085) | Update dependencies                                                                   |
-| 0.0.4   | 2025-04-19 | [58515](https://github.com/airbytehq/airbyte/pull/58515) | Update dependencies                                                                   |
-| 0.0.3   | 2025-04-12 | [57847](https://github.com/airbytehq/airbyte/pull/57847) | Update dependencies                                                                   |
-| 0.0.2   | 2025-04-05 | [57338](https://github.com/airbytehq/airbyte/pull/57338) | Update dependencies                                                                   |
-| 0.0.1   | 2025-04-04 | [57003](https://github.com/airbytehq/airbyte/pull/57003) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 0.2.0   | 2025-07-10 | [62891](https://github.com/airbytehq/airbyte/pull/62891) | Remove `custom_data` property constraints and add it to `customers` stream            |
+| 0.1.2 | 2025-07-12 | [63195](https://github.com/airbytehq/airbyte/pull/63195) | Update dependencies |
+| 0.1.1 | 2025-07-05 | [62566](https://github.com/airbytehq/airbyte/pull/62566) | Update dependencies |
+| 0.1.0 | 2025-07-01 | [62479](https://github.com/airbytehq/airbyte/pull/62479) | Add adjustments stream |
+| 0.0.11 | 2025-07-01 | [62461](https://github.com/airbytehq/airbyte/pull/62461) | Add constant retry backoff per Paddle API Docs |
+| 0.0.10 | 2025-06-28 | [62318](https://github.com/airbytehq/airbyte/pull/62318) | Update dependencies |
+| 0.0.9 | 2025-06-21 | [61917](https://github.com/airbytehq/airbyte/pull/61917) | Update dependencies |
+| 0.0.8 | 2025-06-14 | [60485](https://github.com/airbytehq/airbyte/pull/60485) | Update dependencies |
+| 0.0.7 | 2025-05-10 | [60059](https://github.com/airbytehq/airbyte/pull/60059) | Update dependencies |
+| 0.0.6 | 2025-05-04 | [59518](https://github.com/airbytehq/airbyte/pull/59518) | Update dependencies |
+| 0.0.5 | 2025-04-27 | [59085](https://github.com/airbytehq/airbyte/pull/59085) | Update dependencies |
+| 0.0.4 | 2025-04-19 | [58515](https://github.com/airbytehq/airbyte/pull/58515) | Update dependencies |
+| 0.0.3 | 2025-04-12 | [57847](https://github.com/airbytehq/airbyte/pull/57847) | Update dependencies |
+| 0.0.2 | 2025-04-05 | [57338](https://github.com/airbytehq/airbyte/pull/57338) | Update dependencies |
+| 0.0.1 | 2025-04-04 | [57003](https://github.com/airbytehq/airbyte/pull/57003) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
