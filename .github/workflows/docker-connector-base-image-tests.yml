@@ -194,6 +194,7 @@ jobs:
         run: |
           echo "BASE_IMAGE=${{ needs.build-java-base-image.outputs.java-base-image }}"
           echo "CONNECTOR_NAME=${{ matrix.connector }}"
+          echo "CONNECTOR_VERSION=temp-sha-${{ github.event.pull_request.head.sha }}"
 
       - name: Build ${{ matrix.connector }} Image
         id: docker-build-java-connector
@@ -206,6 +207,7 @@ jobs:
           build-args: |
             BASE_IMAGE=ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
             CONNECTOR_NAME=${{ matrix.connector }}
+            CONNECTOR_VERSION=temp-sha-${{ github.event.pull_request.head.sha }}
           tags: |
             ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}
             ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}

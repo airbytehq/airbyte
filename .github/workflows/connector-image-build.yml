@@ -25,6 +25,21 @@ on:
         type: string
         required: true
         description: "The name of the connector to build and test. If empty, this is a no-op."
+      publish_to_production:
+        default: 'false'
+        type: string
+        # options:    # type 'choice' is not available in `workflow_call` triggers
+        #   - 'false' # Do not publish the production image (default)
+        #   - 'true'  # Publish the production image (fail if already exists)
+        #   - 'force' # Force publish the production image (overwrite if already exists)
+        description: |
+          Whether to build and publish the production image. If `false` (default), only GHCR test
+          images will be published. If `true`, the image will be published with the `latest`
+          tag, as well as the version specified by `dockerImageTag` in `metadata.yaml`.
+
+          If `force`, the image will be published even if the image already
+          exists. Otherwise, if `true` is set, the workflow will fail if the version specified by
+          `dockerImageTag` has already been published.
 
 permissions:
   contents: read
@@ -60,28 +75,75 @@ jobs:
         id: vars
         run: |
           set -eu
+
           # Detect connector root directory:
           CONNECTOR_ROOT="airbyte-integrations/connectors/${{ inputs.connector }}"
           echo "connector-root=$CONNECTOR_ROOT" | tee -a $GITHUB_OUTPUT
           cd $CONNECTOR_ROOT
-          # Read connector language and base image:
+
+          # Read connector metadata:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-base-image=$(poe -qq get-base-image)" | tee -a $GITHUB_OUTPUT
+
+          # Set PR number variables:
           PR_NUMBER=${{ inputs.pr || github.event.pull_request.number }}
-          IMAGE_PR_NUM_TAG="ghcr.io/airbytehq/${{ inputs.connector }}:draft-pr-${PR_NUMBER}"
           echo "pr-number=$PR_NUMBER" | tee -a $GITHUB_OUTPUT
-          echo "image-pr-num-tag=${IMAGE_PR_NUM_TAG}" | tee -a $GITHUB_OUTPUT
-          echo "image-build-num-tag=${IMAGE_PR_NUM_TAG}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+
+          # Set image tags for internal builds:
+          GHCR_REPO="ghcr.io/airbytehq/${{ inputs.connector }}"
+          if [[ ! -z "$PR_NUMBER" ]]; then
+            echo "image-pr-num-tag=${GHCR_REPO}:temp-pr-${PR_NUMBER}" | tee -a $GITHUB_OUTPUT
+            echo "image-build-num-tag=${GHCR_REPO}:temp-pr-${PR_NUMBER}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+          else
+            echo "image-pr-num-tag=" | tee -a $GITHUB_OUTPUT
+            echo "image-build-num-tag=${GHCR_REPO}:temp-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+          fi
+
+          # Set production image tags for GHCR and DockerHub:
+          CONNECTOR_VERSION=$(poe -qq get-version)
+          echo "connector-version=$CONNECTOR_VERSION" | tee -a $GITHUB_OUTPUT
+          if [[ "${{ inputs.publish_to_production }}" == 'true' || "${{ inputs.publish_to_production }}" == 'force' ]]; then
+            echo "ghcr-prod-tag=${GHCR_REPO}:$CONNECTOR_VERSION" | tee -a $GITHUB_OUTPUT
+            echo "dockerhub-prod-tag=airbyte/${{ inputs.connector }}:$CONNECTOR_VERSION" | tee -a $GITHUB_OUTPUT
+          fi
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        if: inputs.publish_to_production == 'true' || inputs.publish_to_production == 'force'
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Check if Production Image Tag Exists
+        uses: tyriis/docker-image-tag-exists@v2.1.0
+        id: check-if-prod-image-exists
+        if: inputs.publish_to_production == 'true' || inputs.publish_to_production == 'force'
+        with:
+          registry: docker.io
+          repository: airbyte/${{ inputs.connector }}
+          tag: "${{ steps.vars.outputs.connector-version }}"
+        # outputs:
+        #   tag: "found" | "not found"
+
+      - name: Fail Fast if Prod Image Already Published ${{ inputs.publish_to_production != 'force' && '(force=false)' || '' }}
+        if: |
+          inputs.publish_to_production == 'true' &&
+          steps.check-if-prod-image-exists.outputs.tag == 'found'
+        run: |
+          echo "❌ Image 'airbyte/${{ inputs.connector }}:${{ steps.vars.outputs.connector-version }}' already published. Use 'force' to overwrite."
+          exit 1
 
       # Java deps
-      - uses: actions/setup-java@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
         if: ${{ steps.vars.outputs.connector-language == 'java' }}
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
         if: ${{ steps.vars.outputs.connector-language == 'java' }}
         with:
           cache-read-only: false
@@ -103,7 +165,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Connector Image
+      - name: Build '${{ inputs.connector }}' Image [Internal]
         id: build-connector-image
         uses: docker/build-push-action@v5
         with:
@@ -113,9 +175,11 @@ jobs:
           tags: |
             ${{ steps.vars.outputs.image-pr-num-tag }}
             ${{ steps.vars.outputs.image-build-num-tag }}
+            ${{ steps.vars.outputs.ghcr-prod-tag || '' }}
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
             CONNECTOR_NAME=${{ inputs.connector }}
+            CONNECTOR_VERSION=${{ steps.vars.outputs.connector-version }}
           push: true
 
       - name: Run `spec` Image Test
@@ -125,10 +189,26 @@ jobs:
             ${{ steps.vars.outputs.image-build-num-tag }} \
             spec
 
-      - name: Run ${{ inputs.connector }} Image Vulnerability Scan
+      - name: Scan '${{ inputs.connector }}' for Image Vulnerability
         uses: anchore/scan-action@v6
         with:
           image: "${{ steps.vars.outputs.image-build-num-tag }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
+
+      # Publish the production image (reuses the image build cache)
+      - name: Publish 'airbyte/${{ inputs.connector }}/${{ steps.vars.outputs.connector-version }}' [Production]
+        if: inputs.publish_to_production == 'true' || inputs.publish_to_production == 'force'
+        uses: docker/build-push-action@v5
+        with:
+          context: airbyte-integrations/connectors/${{ inputs.connector }}
+          file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-language }}-connector
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ steps.vars.outputs.dockerhub-prod-tag }}
+          build-args: |
+            BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
+            CONNECTOR_NAME=${{ inputs.connector }}
+            CONNECTOR_VERSION=${{ steps.vars.outputs.connector-version }}
+          push: true
