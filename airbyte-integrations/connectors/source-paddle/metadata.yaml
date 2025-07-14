@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb34e66a-c9b5-41ca-974f-2b82c26ae71a
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-paddle
   githubIssueLabel: source-paddle
   icon: icon.svg
