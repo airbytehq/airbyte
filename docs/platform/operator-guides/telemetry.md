@@ -12,7 +12,7 @@ Airbyte collects telemetry data from the UI and the servers to help improve the 
 If you'd like to turn off telemetry data collection, follow the directions below.
 
 <Tabs groupId="cloud-hosted">
-  <TabItem value="self-managed" label="Self-Managed (Helm Chart V1)">
+  <TabItem value="self-managed-v1" label="Self-Managed (Helm Chart V1)">
       To disable telemetry for your instance, modify the `values.yaml` file and override the hardcoded telemetry setting using component-specific `env_vars` sections:
 
       ```yaml
@@ -28,7 +28,7 @@ If you'd like to turn off telemetry data collection, follow the directions below
       ```
 
   </TabItem>
-  <TabItem value="self-managed" label="Self-Managed (Helm Chart V2)">
+  <TabItem value="self-managed-v2" label="Self-Managed (Helm Chart V2)">
 
   To turn off telemetry for your instance, modify your `values.yaml` file and define the following environment variable:
 
