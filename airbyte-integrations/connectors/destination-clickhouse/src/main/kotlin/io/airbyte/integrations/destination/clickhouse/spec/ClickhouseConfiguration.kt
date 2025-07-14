@@ -47,7 +47,7 @@ class ClickhouseConfigurationFactory :
             pojo.username,
             pojo.password,
             pojo.enableJson ?: false,
-            pojo.tunnelConfig,
+            pojo.getTunnelMethodValue(),
         )
     }
 
@@ -70,7 +70,7 @@ class ClickhouseConfigurationFactory :
             username = overrides.getOrDefault("username", spec.username),
             enableJson =
                 overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
-            tunnelConfig = spec.tunnelConfig,
+            tunnelConfig = spec.getTunnelMethodValue(),
         )
     }
 }
