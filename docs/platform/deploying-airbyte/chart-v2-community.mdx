@@ -81,7 +81,7 @@ how to populate secrets manager considering everything is in clear text
 
 When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different Airbyte users have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
 
-### Add and index the Helm chart 2.0 repo
+### Add V2 chart repo
 
 Helm chart V2 uses a separate repo than V1 did. In your command line tool, add this repo and index it.
 
