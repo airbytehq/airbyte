@@ -3,8 +3,11 @@
 #
 from __future__ import annotations
 
-from source_vault import SourceVault
+import sys
+from airbyte_cdk import launch
+from .source import SourceVault
 
 
 def run() -> None:
-    SourceVault.launch()
+    source = SourceVault()
+    launch(source, sys.argv[1:])

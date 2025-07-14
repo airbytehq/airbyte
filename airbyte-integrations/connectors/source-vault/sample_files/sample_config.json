@@ -1,7 +1,7 @@
 {
-  "vault_url": "https://vault.example.com",
-  "role_id": "your-role-id-here",
-  "secret_id": "your-secret-id-here",
+  "vault_url": "https://vault-cluster-public-vault-f1897343.66cde020.z1.hashicorp.cloud:8200",
+  "role_id": "59a3055e-b987-7d87-e422-ba53239a7f0e",
+  "secret_id": "b430423a-1725-5077-d81e-9ec906884ff0",
   "namespace": "",
   "verify_ssl": true
 }

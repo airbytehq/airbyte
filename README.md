@@ -79,29 +79,14 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 
 This connector supports the following streams:
 
-1. **vault_info** - Information about the Vault instance (full refresh)
-2. **users** - User entities from Vault's identity system (full refresh)
-3. **roles** - Authentication roles from various auth methods (full refresh)
-4. **policies** - Access control policies (full refresh)
-5. **groups** - Group entities from Vault's identity system (full refresh)
-6. **namespaces** - Namespaces (Enterprise feature, recursive) (full refresh)
-7. **secrets** - Secret names without values (recursive) (full refresh)
-8. **identity_providers** - OIDC identity providers (full refresh)
-9. **audit** - Audit logs and audit device information (incremental)
-
-### Audit Stream Details
-
-The **audit** stream supports incremental sync and retrieves:
-- Information about configured audit devices
-- Audit log entries (when accessible)
-
-**Note on Audit Logs**: HashiCorp Vault typically writes audit logs to files, syslog, or sockets, which are not directly accessible via the Vault API. The audit stream currently returns information about configured audit devices. To access actual audit log entries, you would need to:
-
-1. Configure Vault to write audit logs to a location accessible by the connector
-2. Extend the connector to read from that location (file system, database, etc.)
-3. Parse and process the audit log entries
-
-The audit stream uses the `timestamp` field as the cursor for incremental syncs, allowing you to sync only new audit records since the last sync.
+1. **vault_info** - Information about the Vault instance
+2. **users** - User entities from Vault's identity system
+3. **roles** - Authentication roles from various auth methods
+4. **policies** - Access control policies
+5. **groups** - Group entities from Vault's identity system
+6. **namespaces** - Namespaces (Enterprise feature, recursive)
+7. **secrets** - Secret names without values (recursive)
+8. **identity_providers** - OIDC identity providers
 
 ## Features
 
@@ -110,4 +95,3 @@ The audit stream uses the `timestamp` field as the cursor for incremental syncs,
 - Recursively discovers namespaces and secrets
 - Retrieves metadata without exposing secret values
 - Configurable SSL verification
-- Incremental sync support for audit logs

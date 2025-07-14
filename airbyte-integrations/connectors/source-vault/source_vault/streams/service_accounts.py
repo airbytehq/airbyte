@@ -8,12 +8,12 @@ import hvac
 from .base import VaultStream
 
 
-class Users(VaultStream):
-    """Stream for retrieving human users from Vault's identity system and user-based auth methods across all namespaces."""
+class ServiceAccounts(VaultStream):
+    """Stream for retrieving service accounts from Vault's AppRole auth method and identity entities without user-based auth aliases across all namespaces."""
     
     @property
     def name(self) -> str:
-        return "users"
+        return "service_accounts"
     
     def get_json_schema(self) -> Mapping[str, Any]:
         return {
@@ -57,9 +57,26 @@ class Users(VaultStream):
                 "creation_time": {"type": ["string", "null"]},
                 "last_update_time": {"type": ["string", "null"]},
                 "disabled": {"type": ["boolean", "null"]},
-                "user_source": {"type": ["string", "null"]},
+                "account_source": {"type": ["string", "null"]},
                 "auth_method": {"type": ["string", "null"]},
                 "mount_path": {"type": ["string", "null"]},
+                # AppRole specific fields
+                "role_id": {"type": ["string", "null"]},
+                "bind_secret_id": {"type": ["boolean", "null"]},
+                "secret_id_bound_cidrs": {
+                    "type": ["array", "null"],
+                    "items": {"type": "string"}
+                },
+                "secret_id_num_uses": {"type": ["integer", "null"]},
+                "secret_id_ttl": {"type": ["integer", "null"]},
+                "token_ttl": {"type": ["integer", "null"]},
+                "token_max_ttl": {"type": ["integer", "null"]},
+                "token_bound_cidrs": {
+                    "type": ["array", "null"],
+                    "items": {"type": "string"}
+                },
+                "token_num_uses": {"type": ["integer", "null"]},
+                "token_type": {"type": ["string", "null"]},
             }
         }
     
@@ -87,7 +104,7 @@ class Users(VaultStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Generate stream slices based on namespaces.
-        Each slice represents a namespace to scan for users.
+        Each slice represents a namespace to scan for service accounts.
         """
         # Import here to avoid circular imports
         from .namespaces import Namespaces
@@ -125,7 +142,7 @@ class Users(VaultStream):
             alias.get("mount_type") in user_auth_methods 
             for alias in aliases
         )
-
+    
     def read_records(
         self,
         sync_mode,
@@ -133,7 +150,7 @@ class Users(VaultStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """Read human users from Vault identity store and user-based auth methods for a specific namespace slice."""
+        """Read service accounts from Vault identity store and AppRole auth methods for a specific namespace slice."""
         
         # Get namespace from slice, fallback to default
         if stream_slice:
@@ -141,12 +158,12 @@ class Users(VaultStream):
         else:
             namespace_path = self.vault_namespace or "root"
         
-        self.logger.info(f"Scanning for users in namespace: {namespace_path}")
+        self.logger.info(f"Scanning for service accounts in namespace: {namespace_path}")
         
         # Create client for this namespace
         client = self._create_client_for_namespace(namespace_path)
 
-        # 1. Scan Identity Entities that have user-based auth method aliases
+        # 1. Scan Identity Entities that DON'T have user-based auth method aliases
         try:
             # List all entities in this namespace
             list_response = client.secrets.identity.list_entities()
@@ -176,9 +193,9 @@ class Users(VaultStream):
                         if not entity_data:
                             entity_data = basic_info
                             entity_data["id"] = entity_id
-
-                        # Only include if this entity has user-based auth method aliases
-                        if self._has_user_auth_aliases(entity_data):
+                        
+                        # Only include if this entity does NOT have user-based auth method aliases
+                        if not self._has_user_auth_aliases(entity_data):
                             record = {
                                 "id": entity_data.get("id", entity_id),
                                 "name": entity_data.get("name"),
@@ -193,9 +210,20 @@ class Users(VaultStream):
                                 "creation_time": entity_data.get("creation_time"),
                                 "last_update_time": entity_data.get("last_update_time"),
                                 "disabled": entity_data.get("disabled"),
-                                "user_source": "identity_entity",
+                                "account_source": "identity_entity",
                                 "auth_method": None,
                                 "mount_path": None,
+                                # AppRole specific fields (null for identity entities)
+                                "role_id": None,
+                                "bind_secret_id": None,
+                                "secret_id_bound_cidrs": None,
+                                "secret_id_num_uses": None,
+                                "secret_id_ttl": None,
+                                "token_ttl": None,
+                                "token_max_ttl": None,
+                                "token_bound_cidrs": None,
+                                "token_num_uses": None,
+                                "token_type": None,
                             }
                             
                             yield record
@@ -209,87 +237,108 @@ class Users(VaultStream):
         except Exception as e:
             self.logger.debug(f"Error listing identity entities in namespace {namespace_path}: {str(e)}")
         
-        # 2. Scan User-Based Auth Methods (userpass, ldap, okta, radius, oidc, jwt, github)
+        # 2. Scan AppRole Auth Methods for actual service account roles
         try:
             # List all auth methods
             auth_methods = client.sys.list_auth_methods()
             
             if auth_methods and isinstance(auth_methods, dict) and "data" in auth_methods:
-                auth_method_count = 0
-                # Define which auth methods are considered user-based
-                user_auth_methods = ["userpass", "ldap", "okta", "radius", "oidc", "jwt", "github"]
+                approle_count = 0
                 
                 for mount_path, auth_data in auth_methods["data"].items():
                     auth_type = auth_data.get("type", "")
                     
-                    # Only process user-based auth methods
-                    if auth_type in user_auth_methods:
-                        auth_method_count += 1
+                    # Only process AppRole auth methods
+                    if auth_type == "approle":
+                        approle_count += 1
                         
                         try:
-                            # Try to list users for this auth method
-                            users_path = f"auth/{mount_path}users"
+                            # List all roles in this AppRole mount
+                            roles_path = f"auth/{mount_path}role"
                             
                             try:
-                                users_response = client.list(users_path)
+                                roles_response = client.list(roles_path)
                             except:
-                                # Some auth methods might use different paths
-                                users_path = f"auth/{mount_path}user"
+                                # Try alternative path
+                                roles_path = f"auth/{mount_path}roles"
                                 try:
-                                    users_response = client.list(users_path)
+                                    roles_response = client.list(roles_path)
                                 except:
+                                    self.logger.debug(f"Could not list roles for AppRole mount {mount_path}")
                                     continue
                             
-                            if users_response and isinstance(users_response, dict) and "data" in users_response:
-                                user_names = users_response["data"].get("keys", [])
-                                self.logger.debug(f"Found {len(user_names)} {auth_type} users in {mount_path}")
+                            if roles_response and isinstance(roles_response, dict) and "data" in roles_response:
+                                role_names = roles_response["data"].get("keys", [])
+                                self.logger.debug(f"Found {len(role_names)} AppRole roles in {mount_path}")
                                 
-                                for user_name in user_names:
+                                for role_name in role_names:
                                     try:
-                                        # Read user details
-                                        user_path = f"{users_path}/{user_name}"
-                                        user_response = client.read(user_path)
+                                        # Read role details
+                                        role_path = f"auth/{mount_path}role/{role_name}"
+                                        role_response = client.read(role_path)
                                         
-                                        if user_response and isinstance(user_response, dict) and "data" in user_response:
-                                            user_data = user_response["data"]
+                                        if role_response and isinstance(role_response, dict) and "data" in role_response:
+                                            role_data = role_response["data"]
                                             
-                                            # Create user record for auth method user
+                                            # Get role ID
+                                            role_id_path = f"auth/{mount_path}role/{role_name}/role-id"
+                                            try:
+                                                role_id_response = client.read(role_id_path)
+                                                if role_id_response and isinstance(role_id_response, dict) and "data" in role_id_response:
+                                                    role_id = role_id_response["data"]["role_id"]
+                                                else:
+                                                    role_id = None
+                                            except:
+                                                role_id = None
+                                            
+                                            # Create service account record for AppRole
                                             record = {
-                                                "id": f"{mount_path}{user_name}",
-                                                "name": user_name,
+                                                "id": f"{mount_path}{role_name}",
+                                                "name": role_name,
                                                 "metadata": {
-                                                    k: v for k, v in user_data.items() 
-                                                    if k not in ["policies", "token_policies", "password_hash"]
+                                                    "description": role_data.get("description", ""),
+                                                    "mount_path": mount_path,
+                                                    "mount_type": auth_type,
                                                 },
-                                                "policies": user_data.get("policies", []),
-                                                "aliases": [],  # Auth method users don't have aliases like identity entities
+                                                "policies": role_data.get("policies", []) + role_data.get("token_policies", []),
+                                                "aliases": [],  # AppRoles don't have aliases like identity entities
                                                 "group_ids": [],
                                                 "direct_group_ids": [],
                                                 "inherited_group_ids": [],
                                                 "namespace_id": None,
                                                 "namespace_path": namespace_path,
-                                                "creation_time": None,  # Auth method users don't have creation timestamps
+                                                "creation_time": None,  # AppRoles don't have creation timestamps
                                                 "last_update_time": None,
-                                                "disabled": user_data.get("disabled", False),
-                                                "user_source": "auth_method",
+                                                "disabled": False,
+                                                "account_source": "approle",
                                                 "auth_method": auth_type,
                                                 "mount_path": mount_path,
+                                                # AppRole specific fields
+                                                "role_id": role_id,
+                                                "bind_secret_id": role_data.get("bind_secret_id", True),
+                                                "secret_id_bound_cidrs": role_data.get("secret_id_bound_cidrs", []),
+                                                "secret_id_num_uses": role_data.get("secret_id_num_uses"),
+                                                "secret_id_ttl": role_data.get("secret_id_ttl"),
+                                                "token_ttl": role_data.get("token_ttl"),
+                                                "token_max_ttl": role_data.get("token_max_ttl"),
+                                                "token_bound_cidrs": role_data.get("token_bound_cidrs", []),
+                                                "token_num_uses": role_data.get("token_num_uses"),
+                                                "token_type": role_data.get("token_type"),
                                             }
                                             
                                             yield record
                                             
                                     except Exception as e:
-                                        self.logger.warning(f"Error reading {auth_type} user {user_name} from {mount_path} in namespace {namespace_path}: {str(e)}")
+                                        self.logger.warning(f"Error reading AppRole {role_name} from {mount_path} in namespace {namespace_path}: {str(e)}")
                                         continue
                                         
                         except Exception as e:
-                            self.logger.debug(f"Could not list users for auth method {mount_path} in namespace {namespace_path}: {str(e)}")
+                            self.logger.debug(f"Could not list roles for AppRole mount {mount_path} in namespace {namespace_path}: {str(e)}")
                             continue
                 
-                self.logger.debug(f"Processed {auth_method_count} user-based auth methods in namespace {namespace_path}")
+                self.logger.debug(f"Processed {approle_count} AppRole auth methods in namespace {namespace_path}")
             else:
                 self.logger.debug(f"No auth methods found in namespace: {namespace_path}")
                 
         except Exception as e:
-            self.logger.debug(f"Error listing auth methods in namespace {namespace_path}: {str(e)}")
-            
+            self.logger.debug(f"Error listing auth methods in namespace {namespace_path}: {str(e)}") 

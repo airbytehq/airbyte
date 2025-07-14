@@ -3,10 +3,9 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import hvac
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 
 
@@ -29,13 +28,6 @@ class VaultStream(Stream, ABC):
     def primary_key(self) -> Optional[str]:
         """Return the primary key field."""
         return "id"
-    
-    @property
-    def supported_sync_modes(self) -> List[SyncMode]:
-        """List of sync modes supported by this stream."""
-        # By default, all streams support full refresh
-        # Override this in streams that support incremental
-        return [SyncMode.full_refresh]
     
     def get_json_schema(self) -> Mapping[str, Any]:
         """Return the json schema for the stream."""

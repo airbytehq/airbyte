@@ -108,6 +108,24 @@ Note that the `namespace` parameter is optional:
 - For HCP Vault (HashiCorp Cloud Platform), use `"admin"`
 - For self-hosted Vault, use `"root"` or leave empty (`""`)
 
+### Setting up Vault AppRole Authentication
+
+Use the provided setup script to create the necessary AppRole and policy:
+
+```bash
+# Make the script executable
+chmod +x setup-fabrix-read.sh
+
+# Run the setup script (requires vault CLI and authentication)
+./setup-fabrix-read.sh
+```
+
+This script will:
+1. Enable AppRole authentication
+2. Create a read-only policy with appropriate permissions
+3. Create an AppRole role with non-expiring secret IDs
+4. Generate Role ID and Secret ID for use in the connector
+
 ### Locally running the connector
 
 ```bash
@@ -147,18 +165,220 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-vault:dev discover --c
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-vault:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
+### Running our CI test suite
+
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
+```bash
+airbyte-ci connectors --name=source-vault test
+```
+
+### Customizing acceptance Tests
+
+Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+
+### Dependency Management
+
+All of your dependencies should be managed via Poetry.
+To add a new dependency, run:
+
+```bash
+poetry add <package-name>
+```
+
+Please commit the changes to `pyproject.toml` and `poetry.lock` files.
+
+## Publishing a new version of the connector
+
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-vault test`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
+   - bump the `dockerImageTag` value in in `metadata.yaml`
+   - bump the `version` value in `pyproject.toml`
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/vault.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
+
+# Fabrix
+
+## Vault Credentials Setup for Running Locally
+
+When running the Vault connector locally using launch.json, you need valid Vault credentials. The connector uses AppRole authentication.
+
+### Setting up AppRole in Vault
+
+1. **Enable AppRole authentication** (if not already enabled):
+   ```bash
+   vault auth enable approle
+   ```
+
+2. **Create the read-only policy** using the provided script:
+   ```bash
+   ./setup-fabrix-read.sh
+   ```
+
+3. **Update your secrets/config.json** with the generated credentials:
+   ```json
+   {
+     "vault_url": "https://your-vault-instance.com:8200",
+     "role_id": "your-role-id-from-script",
+     "secret_id": "your-secret-id-from-script",
+     "namespace": "admin",
+     "verify_ssl": true
+   }
+   ```
+
+### Regenerating Secret IDs
+
+If your secret ID expires, generate a new one:
+
+```bash
+vault write -f auth/approle/role/fabrix-read/secret-id
+```
+
+## Fabrix Build
+
+Run from Devcontainer (so airbyte-ci is runnable)
+
+### Quick Build (Recommended)
+
+Use the provided build script for a complete build:
+
+```bash
+# Build both ARM and AMD64 architectures and export tar files
+./build.sh
+```
+
+This script will:
+1. Build for both ARM64 and AMD64 architectures
+2. Export images to tar files
+3. Show next steps for deployment
+
+### Manual Build Commands
+
+If you prefer to build manually:
+
+#### Build for ARM
+```bash
+airbyte-ci connectors --name=source-vault build --architecture linux/arm64 -t arm
+```
+
+#### Build for AMD64
+```bash
+airbyte-ci connectors --name=source-vault build --architecture linux/amd64 -t amd
+```
+
+#### Export images to files - Extract for dev container to local docker for ECR push
+
+```bash
+# Export ARM image to tar file
+docker save airbyte/source-vault:arm -o vault-connector-arm.tar
+
+# Export AMD64 image to tar file
+docker save airbyte/source-vault:amd -o vault-connector-amd.tar
+
+# You can then copy these tar files to your host machine and load them into Docker
+# On your host machine:
+docker load -i vault-connector-arm.tar
+docker load -i vault-connector-amd.tar
+```
+
+## Push to ECR
+
+### Quick Deploy (Recommended)
+
+Use the provided deployment script:
+
+```bash
+# Deploy to ECR (requires AWS credentials)
+./deploy-ecr.sh
+
+# Or deploy a specific version
+./deploy-ecr.sh 1.0.1
+```
+
+This script will:
+1. Login to ECR
+2. Load images from tar files (if present)
+3. Tag and push both ARM and AMD64 images
+4. Create multi-architecture manifests
+5. Push versioned and latest tags
+
+### Manual Deploy Commands
+
+After loading the Docker images, you can tag and push them to your ECR repository manually:
+
+```bash
+# Login to ECR (ensure AWS credentials are configured)
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 794038212761.dkr.ecr.us-east-1.amazonaws.com
+
+# Version tag to use
+VERSION="1.0.0"
+
+# Tag and push ARM image with version and 'arm' tag
+docker tag airbyte/source-vault:arm 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-arm
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-arm
+
+# Also push as 'arm' tag for latest reference
+docker tag airbyte/source-vault:arm 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:arm
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:arm
+
+# Tag and push AMD64 image with version and 'amd' tag
+docker tag airbyte/source-vault:amd 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-amd
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-amd
+
+# Also push as 'amd' tag for latest reference
+docker tag airbyte/source-vault:amd 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:amd
+docker push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:amd
+
+# Create and push a multi-architecture manifest
+# This will create a manifest that points to both ARM and AMD images and selects the right one based on the cluster's architecture
+docker manifest create 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION} \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-arm \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-amd
+
+# Annotate the manifest with architecture information
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION} \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-arm --os linux --arch arm64
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION} \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}-amd --os linux --arch amd64
+
+# Push the manifest
+docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:${VERSION}
+
+# Also create a 'latest' manifest for convenience
+docker manifest create 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:latest \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:arm \
+  --amend 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:amd
+
+# Annotate the latest manifest
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:latest \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:arm --os linux --arch arm64
+docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:latest \
+  794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:amd --os linux --arch amd64
+
+# Push the latest manifest
+docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:latest
+```
+
 ## Streams
 
 This connector supports the following streams:
 
 1. **vault_info** - Information about the Vault instance
-2. **users** - User entities from Vault's identity system
-3. **roles** - Authentication roles from various auth methods
+2. **users** - Human user entities from Vault's identity system and user-based auth methods (userpass, ldap, okta, radius)
+3. **service_accounts** - Service account entities from Vault's identity system and AppRole auth methods
 4. **policies** - Access control policies
 5. **groups** - Group entities from Vault's identity system
 6. **namespaces** - Namespaces (Enterprise feature, recursive)
 7. **secrets** - Secret names without values (recursive)
 8. **identity_providers** - OIDC identity providers
+9. **auth_methods** - Authentication methods
 
 ## Features
 
@@ -167,3 +387,48 @@ This connector supports the following streams:
 - Recursively discovers namespaces and secrets
 - Retrieves metadata without exposing secret values
 - Configurable SSL verification
+- Non-expiring secret IDs for production deployment
+- Separates human users from service accounts for better data organization
+- Comprehensive AppRole support with detailed configuration information
+
+## User vs Service Account Classification
+
+The connector separates users from service accounts based on auth method types:
+
+### Users Stream
+- Identity entities with aliases from user-based auth methods: `userpass`, `ldap`, `okta`, `radius`, `oidc`, `jwt`, `github`
+- Users from user-based auth methods: `userpass`, `ldap`, `okta`, `radius`, `oidc`, `jwt`, `github`
+
+### Service Accounts Stream
+- AppRole roles with detailed configuration (role_id, token settings, policies)
+- Identity entities without user-based auth method aliases (machine/service accounts)
+- Service-oriented auth methods: `approle`, `aws`, `gcp`, `azure`, `kubernetes`, `cert`, `tls`, etc.
+
+This classification ensures that human users (authenticated via traditional user-based methods) are clearly separated from automated service accounts and machine identities.
+
+## Configuration
+
+### TTL Settings
+
+The connector is configured with the following TTL settings for production use:
+
+- **Secret ID TTL**: `0` (never expires) - Perfect for production deployment
+- **Token TTL**: `12h` (12 hours) - Tokens expire and are renewed automatically
+- **Token Max TTL**: `24h` (24 hours) - Maximum token lifetime
+
+This configuration provides:
+- **Operational simplicity**: Secret IDs never expire once deployed
+- **Security best practices**: Tokens refresh regularly
+- **Automatic renewal**: HVAC client handles token renewal automatically
+
+### Permissions
+
+The connector requires a Vault policy with read access to:
+- System health and status endpoints
+- Identity entities and groups
+- Authentication methods and roles
+- Policies
+- Secret engines metadata
+- Namespaces (if using Vault Enterprise)
+
+See `setup-fabrix-read.sh` for the complete policy definition.

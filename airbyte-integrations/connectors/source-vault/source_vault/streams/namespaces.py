@@ -3,6 +3,7 @@
 #
 
 from typing import Any, Iterable, Mapping, Optional, List
+import hvac
 
 from .base import VaultStream
 
@@ -26,25 +27,38 @@ class Namespaces(VaultStream):
             }
         }
     
+    def _create_client_for_namespace(self, namespace_path: str) -> hvac.Client:
+        """Create a new client configured for a specific namespace using the existing token."""
+        vault_url = self.config["vault_url"]
+        verify_ssl = self.config.get("verify_ssl", True)
+        
+        # Normalize client_namespace for HCP Vault (strip root prefix if present)
+        client_namespace = None if namespace_path == "root" else namespace_path
+        client = hvac.Client(
+            url=vault_url,
+            verify=verify_ssl,
+            namespace=client_namespace
+        )
+        
+        # Use the token from the main client (already authenticated)
+        client.token = self.client.token
+        
+        return client
+    
     def _list_namespaces_recursive(self, parent_path: str = "") -> List[Mapping[str, Any]]:
         """Recursively list all namespaces."""
         namespaces = []
         
         try:
-            # List namespaces at current level
-            if parent_path:
-                # Set the namespace context for listing
-                original_namespace = self.client.namespace
-                self.client.namespace = parent_path
-                
-            list_response = self.client.sys.list_namespaces()
+            # Create client for this namespace
+            client = self._create_client_for_namespace(parent_path if parent_path else self.vault_namespace)
             
-            if parent_path:
-                # Restore original namespace
-                self.client.namespace = original_namespace
+            self.logger.debug(f"Listing namespaces at path: '{parent_path}'")
+            list_response = client.sys.list_namespaces()
             
             if list_response and "data" in list_response:
                 namespace_names = list_response["data"].get("keys", [])
+                self.logger.debug(f"Found namespace keys at '{parent_path}': {namespace_names}")
                 
                 for ns_name in namespace_names:
                     # Clean namespace name (remove trailing slash)
@@ -56,6 +70,8 @@ class Namespaces(VaultStream):
                     else:
                         full_path = ns_name
                     
+                    self.logger.debug(f"Processing namespace: {full_path}")
+                    
                     # Add this namespace
                     namespace_record = {
                         "id": full_path,
@@ -66,27 +82,24 @@ class Namespaces(VaultStream):
                     
                     # Try to get additional metadata
                     try:
-                        if parent_path:
-                            self.client.namespace = parent_path
+                        ns_detail = client.read(f"sys/namespaces/{ns_name}")
                             
-                        ns_detail = self.client.read(f"sys/namespaces/{ns_name}")
-                        
-                        if parent_path:
-                            self.client.namespace = original_namespace
-                            
-                        if ns_detail and "data" in ns_detail:
+                        if ns_detail and isinstance(ns_detail, dict) and "data" in ns_detail:
                             namespace_record["custom_metadata"] = ns_detail["data"].get("custom_metadata", {})
-                    except:
-                        pass
+                    except Exception as e:
+                        self.logger.debug(f"Could not read metadata for namespace {ns_name}: {e}")
                     
                     namespaces.append(namespace_record)
                     
                     # Recursively list child namespaces
+                    self.logger.debug(f"Recursively scanning child namespaces of: {full_path}")
                     child_namespaces = self._list_namespaces_recursive(full_path)
                     namespaces.extend(child_namespaces)
+            else:
+                self.logger.debug(f"No namespaces found at path: '{parent_path}'")
                     
         except Exception as e:
-            self.logger.debug(f"Error listing namespaces at {parent_path}: {str(e)}")
+            self.logger.debug(f"Error listing namespaces at '{parent_path}': {str(e)}")
             # Namespaces might not be available (non-Enterprise) or access denied
             
         return namespaces
@@ -100,7 +113,7 @@ class Namespaces(VaultStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Read namespaces from Vault."""
         # Always include the current/root namespace
-        current_namespace = self.namespace or "root"
+        current_namespace = self.vault_namespace or "root"
         yield {
             "id": current_namespace,
             "path": current_namespace,
@@ -108,8 +121,11 @@ class Namespaces(VaultStream):
             "custom_metadata": {},
         }
         
-        # List all child namespaces recursively
-        namespaces = self._list_namespaces_recursive(self.namespace)
+        # List all child namespaces recursively starting from the root namespace
+        self.logger.info(f"Starting recursive namespace discovery from: {self.vault_namespace}")
+        namespaces = self._list_namespaces_recursive(self.vault_namespace)
         
+        self.logger.info(f"Found {len(namespaces)} child namespaces")
         for namespace in namespaces:
+            self.logger.debug(f"Yielding namespace: {namespace['path']}")
             yield namespace

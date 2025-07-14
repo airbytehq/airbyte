@@ -12,11 +12,11 @@ from airbyte_cdk.sources.streams import Stream
 class VaultStream(Stream, ABC):
     """Base stream class for HashiCorp Vault."""
     
-    def __init__(self, client: hvac.Client, config: Mapping[str, Any], namespace: str = "", **kwargs):
+    def __init__(self, client: hvac.Client, config: Mapping[str, Any], vault_namespace: str = "", **kwargs):
         super().__init__(**kwargs)
         self.client = client
         self.config = config
-        self.namespace = namespace
+        self.vault_namespace = vault_namespace
         
     @property
     @abstractmethod

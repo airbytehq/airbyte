@@ -14,10 +14,11 @@ from .streams import (
     IdentityProviders,
     Namespaces,
     Policies,
-    Roles,
     Secrets,
     Users,
     VaultInfo,
+    AuthMethods,
+    ServiceAccounts,
 )
 
 
@@ -52,13 +53,14 @@ class SourceVault(AbstractSource):
         
         return [
             VaultInfo(client=client, config=config),
-            Users(client=client, config=config, namespace=namespace),
-            Roles(client=client, config=config, namespace=namespace),
-            Policies(client=client, config=config, namespace=namespace),
-            Groups(client=client, config=config, namespace=namespace),
-            Namespaces(client=client, config=config, namespace=namespace),
-            Secrets(client=client, config=config, namespace=namespace),
-            IdentityProviders(client=client, config=config, namespace=namespace),
+            Users(client=client, config=config, vault_namespace=namespace),
+            ServiceAccounts(client=client, config=config, vault_namespace=namespace),
+            Policies(client=client, config=config, vault_namespace=namespace),
+            Groups(client=client, config=config, vault_namespace=namespace),
+            Namespaces(client=client, config=config, vault_namespace=namespace),
+            Secrets(client=client, config=config, vault_namespace=namespace),
+            IdentityProviders(client=client, config=config, vault_namespace=namespace),
+            AuthMethods(client=client, config=config, vault_namespace=namespace),
         ]
 
     def _get_vault_client(self, config: Mapping[str, Any]) -> hvac.Client:

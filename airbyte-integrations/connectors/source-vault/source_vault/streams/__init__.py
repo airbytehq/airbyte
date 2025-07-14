@@ -6,18 +6,20 @@ from .groups import Groups
 from .identity_providers import IdentityProviders
 from .namespaces import Namespaces
 from .policies import Policies
-from .roles import Roles
 from .secrets import Secrets
 from .users import Users
 from .vault_info import VaultInfo
+from .auth_methods import AuthMethods
+from .service_accounts import ServiceAccounts
 
 __all__ = [
     "Groups",
     "IdentityProviders", 
     "Namespaces",
     "Policies",
-    "Roles",
     "Secrets",
     "Users",
     "VaultInfo",
+    "AuthMethods",
+    "ServiceAccounts",
 ]

@@ -10,7 +10,6 @@ from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.sources.streams import Stream
 
 from .streams import (
-    Audit,
     Groups,
     IdentityProviders,
     Namespaces,
@@ -60,7 +59,6 @@ class SourceVault(AbstractSource):
             Namespaces(client=client, config=config, namespace=namespace),
             Secrets(client=client, config=config, namespace=namespace),
             IdentityProviders(client=client, config=config, namespace=namespace),
-            Audit(client=client, config=config, namespace=namespace),
         ]
 
     def _get_vault_client(self, config: Mapping[str, Any]) -> hvac.Client:

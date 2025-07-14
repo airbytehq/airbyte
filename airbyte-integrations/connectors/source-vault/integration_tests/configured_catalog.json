@@ -20,7 +20,7 @@
     },
     {
       "stream": {
-        "name": "roles",
+        "name": "service_accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -66,6 +66,15 @@
     {
       "stream": {
         "name": "identity_providers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "auth_methods",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

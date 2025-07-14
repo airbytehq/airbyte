@@ -8,30 +8,28 @@ import hvac
 from .base import VaultStream
 
 
-class IdentityProviders(VaultStream):
-    """Stream for retrieving identity providers (OIDC) from Vault across all namespaces."""
+class AuthMethods(VaultStream):
+    """Stream for retrieving auth methods from Vault across all namespaces."""
     
     @property
     def name(self) -> str:
-        return "identity_providers"
+        return "auth_methods"
     
     def get_json_schema(self) -> Mapping[str, Any]:
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
-                "id": {"type": ["string", "null"]},
-                "name": {"type": ["string", "null"]},
-                "issuer": {"type": ["string", "null"]},
-                "issuer_ca_pem": {"type": ["string", "null"]},
-                "allowed_client_ids": {
-                    "type": ["array", "null"],
-                    "items": {"type": "string"}
-                },
-                "scopes_supported": {
-                    "type": ["array", "null"],
-                    "items": {"type": "string"}
-                },
+                "path": {"type": ["string", "null"]},
+                "type": {"type": ["string", "null"]},
+                "description": {"type": ["string", "null"]},
+                "accessor": {"type": ["string", "null"]},
+                "local": {"type": ["boolean", "null"]},
+                "seal_wrap": {"type": ["boolean", "null"]},
+                "external_entropy_access": {"type": ["boolean", "null"]},
+                "options": {"type": ["object", "null"]},
+                "config": {"type": ["object", "null"]},
+                "uuid": {"type": ["string", "null"]},
                 "namespace_path": {"type": ["string", "null"]},
             }
         }
@@ -60,7 +58,7 @@ class IdentityProviders(VaultStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Generate stream slices based on namespaces.
-        Each slice represents a namespace to scan for identity providers.
+        Each slice represents a namespace to scan for auth methods.
         """
         # Import here to avoid circular imports
         from .namespaces import Namespaces
@@ -94,7 +92,7 @@ class IdentityProviders(VaultStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """Read OIDC identity providers from Vault for a specific namespace slice."""
+        """Read auth methods from Vault for a specific namespace slice."""
         
         # Get namespace from slice, fallback to default
         if stream_slice:
@@ -102,50 +100,36 @@ class IdentityProviders(VaultStream):
         else:
             namespace_path = self.vault_namespace or "root"
         
-        self.logger.info(f"Scanning for identity providers in namespace: {namespace_path}")
+        self.logger.info(f"Scanning for auth methods in namespace: {namespace_path}")
         
         try:
             # Create client for this namespace
             client = self._create_client_for_namespace(namespace_path)
             
-            # List all OIDC providers
-            list_response = client.secrets.identity.list_oidc_providers()
+            # List all auth methods
+            list_response = client.sys.list_auth_methods()
             
             if not list_response or "data" not in list_response:
-                self.logger.debug(f"No identity providers found in namespace: {namespace_path}")
+                self.logger.debug(f"No auth methods found in namespace: {namespace_path}")
                 return
             
-            provider_names = list_response["data"].get("keys", [])
-            self.logger.debug(f"Found {len(provider_names)} identity providers in namespace {namespace_path}")
-            
-            for provider_name in provider_names:
-                try:
-                    # Read provider details
-                    provider_response = client.secrets.identity.read_oidc_provider(
-                        name=provider_name
-                    )
-                    
-                    if provider_response and "data" in provider_response:
-                        provider_data = provider_response["data"]
-                        
-                        # Extract provider record
-                        record = {
-                            "id": provider_name,
-                            "name": provider_name,
-                            "issuer": provider_data.get("issuer"),
-                            "issuer_ca_pem": provider_data.get("issuer_ca_pem"),
-                            "allowed_client_ids": provider_data.get("allowed_client_ids", []),
-                            "scopes_supported": provider_data.get("scopes_supported", []),
-                            "namespace_path": namespace_path,
-                        }
-                        
-                        yield record
-                        
-                except Exception as e:
-                    self.logger.warning(f"Error reading OIDC provider {provider_name} in namespace {namespace_path}: {str(e)}")
-                    continue
-                    
+            for path, data in list_response["data"].items():
+                record = {
+                    "path": path,
+                    "type": data.get("type"),
+                    "description": data.get("description"),
+                    "accessor": data.get("accessor"),
+                    "local": data.get("local"),
+                    "seal_wrap": data.get("seal_wrap"),
+                    "external_entropy_access": data.get("external_entropy_access"),
+                    "options": data.get("options", {}),
+                    "config": data.get("config", {}),
+                    "uuid": data.get("uuid"),
+                    "namespace_path": namespace_path,
+                }
+                
+                yield record
+                
         except Exception as e:
-            self.logger.debug(f"Error listing OIDC providers in namespace {namespace_path}: {str(e)}")
-            # OIDC providers might not be configured
-            return
+            self.logger.debug(f"Error listing auth methods in namespace {namespace_path}: {str(e)}")
+            return 
