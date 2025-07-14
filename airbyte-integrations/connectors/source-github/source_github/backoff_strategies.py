@@ -8,7 +8,9 @@ from typing import Any, Optional, Union
 import requests
 
 from airbyte_cdk import BackoffStrategy
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class GithubStreamABCBackoffStrategy(BackoffStrategy):
@@ -19,6 +21,10 @@ class GithubStreamABCBackoffStrategy(BackoffStrategy):
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
     ) -> Optional[float]:
+        if response_or_exception.status_code == 403:
+            raise AirbyteTracedException(
+                message=f"Please check your permissions for stream: {self.stream.name}", failure_type=FailureType.config_error
+            )
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
