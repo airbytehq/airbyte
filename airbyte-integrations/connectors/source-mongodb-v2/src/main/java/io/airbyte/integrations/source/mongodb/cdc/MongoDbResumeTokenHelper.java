@@ -79,26 +79,6 @@ public class MongoDbResumeTokenHelper {
     }
   }
 
-  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient,
-                                                      final String databaseName,
-                                                      final ConfiguredAirbyteCatalog catalog) {
-    final List<String> collectionsList = catalog.getStreams().stream()
-            .map(s -> s.getStream().getName())
-            .toList();
-    LOGGER.info("Resume token for db {} with collection filter {}", databaseName, Arrays.toString(collectionsList.toArray()));
-    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
-            Filters.in("ns.coll", collectionsList)));
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
-    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
-      /*
-       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
-       * the call to getResumeToken() will return null!
-       */
-      eventStreamCursor.tryNext();
-      return eventStreamCursor.getResumeToken();
-    }
-  }
-
   /**
    * Extracts the timestamp from a Debezium MongoDB change event.
    *
