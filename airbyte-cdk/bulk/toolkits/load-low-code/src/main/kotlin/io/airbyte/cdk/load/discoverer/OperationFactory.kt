@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.discoverer
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -20,9 +24,11 @@ class OperationFactory(
     /** Generate a destination operation based on a schema object from the API. */
     fun create(schemaFromApi: JsonNode, importType: ImportType): DestinationOperation? {
         val objectName: String = schemaFromApi.extract(objectNamePath).asText()
-        val fields = fieldFactoriesByImportType[importType]?.let {
-            fieldFactory -> schemaFromApi.extractArray(fieldsPath).map { fieldFactory.create(it) }
-        } ?: throw IllegalArgumentException("Unsupported type $importType")
+        val fields =
+            fieldFactoriesByImportType[importType]?.let { fieldFactory ->
+                schemaFromApi.extractArray(fieldsPath).map { fieldFactory.create(it) }
+            }
+                ?: throw IllegalArgumentException("Unsupported type $importType")
 
         val matchingKeys =
             fields.filter {

@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.discoverer
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.FieldType
 import java.util.function.Predicate
 
