@@ -146,7 +146,7 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0 | 2025-07-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd) | Promoting release candidate 4.1.0-rc.3 to a main version. |
+| 4.1.0 | 2025-07-14 | [63289](https://github.com/airbytehq/airbyte/pull/63289) | Promoting release candidate 4.1.0-rc.3 to a main version. |
 
 | 4.1.0-rc.3 | 2025-07-10 | [62902](https://github.com/airbytehq/airbyte/pull/62902)     | Revert add `views` metric to `StoryInsights` and `MediaInsights` streams.                                                                                              |
 | 4.1.0-rc.2 | 2025-07-09 | [62844](https://github.com/airbytehq/airbyte/pull/62844) | Migrate `UserInsights` stream to low-code                                                                                                                              |
