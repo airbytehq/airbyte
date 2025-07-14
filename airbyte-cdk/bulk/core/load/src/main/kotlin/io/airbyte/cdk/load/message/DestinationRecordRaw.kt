@@ -79,7 +79,11 @@ data class DestinationRecordRaw(
             if (!proxy.hasField(fieldAccessor)) {
                 return@forEach
             }
-            val fieldValue = proxy.getAirbyteValue(fieldAccessor)
+            val fieldValue =
+                proxy.getAirbyteValue(
+                    field = fieldAccessor,
+                    respectLegacyUnions = respectLegacyUnions
+                )
             val enrichedValue =
                 EnrichedAirbyteValue(
                     abValue = NullValue,

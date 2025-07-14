@@ -70,7 +70,10 @@ fun AirbyteValueProxy.asJson(orderedSchema: Array<FieldAccessor>): ObjectNode {
     return objectNode
 }
 
-fun AirbyteValueProxy.getAirbyteValue(field: FieldAccessor): AirbyteValue? =
+fun AirbyteValueProxy.getAirbyteValue(
+    field: FieldAccessor,
+    respectLegacyUnions: Boolean = false
+): AirbyteValue? =
     try {
         when (field.type) {
             is ArrayType,
@@ -78,9 +81,25 @@ fun AirbyteValueProxy.getAirbyteValue(field: FieldAccessor): AirbyteValue? =
             is ObjectType,
             is ObjectTypeWithoutSchema,
             is ObjectTypeWithEmptySchema,
-            is UnionType,
             is UnknownType -> this.getJsonNode(field)?.let { v -> JsonToAirbyteValue().convert(v) }
                     ?: NullValue
+            is UnionType ->
+                if (respectLegacyUnions && field.type.isLegacyUnion) {
+                    // If we care about legacy unions, and this is a legacy union,
+                    // do the legacy union thing.
+                    getAirbyteValue(
+                        FieldAccessor(
+                            index = field.index,
+                            name = field.name,
+                            type = field.type.chooseType()
+                        ),
+                        respectLegacyUnions = true
+                    )
+                } else {
+                    // Don't touch non-legacy unions, just pass it through
+                    this.getJsonNode(field)?.let { v -> JsonToAirbyteValue().convert(v) }
+                        ?: NullValue
+                }
             is BooleanType -> this.getBoolean(field)?.let { v -> BooleanValue(v) } ?: NullValue
             is IntegerType -> this.getInteger(field)?.let { v -> IntegerValue(v) } ?: NullValue
             is NumberType -> this.getNumber(field)?.let { v -> NumberValue(v) } ?: NullValue
