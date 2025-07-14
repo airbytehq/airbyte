@@ -42,7 +42,12 @@ class FeedReader(
 ) {
     private val log = KotlinLogging.logger {}
 
-    private val stateId: AtomicInteger = AtomicInteger(1)
+    companion object {
+        // statdId is unique across all state messages sent during a read operation regardless of
+        // the stream feed from which it's sent.
+        private val stateId: AtomicInteger = AtomicInteger(1)
+    }
+
     private val feedBootstrap: FeedBootstrap<*> =
         FeedBootstrap.create(
             root.outputConsumer,

@@ -268,9 +268,7 @@ private class GlobalStateManager(
             .withGlobal(airbyteGlobalState)
             .withSourceStats(AirbyteStateStats().withRecordCount(totalNumRecords.toDouble()))
             // Only add id and partition_id if they are not null (stdio mode compatibility).
-            .apply {
-                globalStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) }
-            }
+            .apply { globalStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) } }
             .apply {
                 globalStateForCheckpoint.partitionId?.let { partitionId ->
                     withAdditionalProperty("partition_id", partitionId)
