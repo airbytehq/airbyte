@@ -34,6 +34,7 @@ API Reference: https://api-reference.shutterstock.com/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-07-12 | [63048](https://github.com/airbytehq/airbyte/pull/63048) | Update dependencies |
 | 0.0.12 | 2025-07-05 | [62678](https://github.com/airbytehq/airbyte/pull/62678) | Update dependencies |
 | 0.0.11 | 2025-06-28 | [62226](https://github.com/airbytehq/airbyte/pull/62226) | Update dependencies |
 | 0.0.10 | 2025-06-21 | [61815](https://github.com/airbytehq/airbyte/pull/61815) | Update dependencies |

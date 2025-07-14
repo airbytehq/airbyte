@@ -7,9 +7,12 @@ import sys
 from pathlib import Path
 
 import pytest
+from source_google_ads import SourceGoogleAds
 from source_google_ads.models import CustomerModel
 
 from airbyte_cdk import YamlDeclarativeSource
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -100,3 +103,23 @@ def additional_customers(config, customers):
 @pytest.fixture
 def customers_manager(config):
     return [CustomerModel(id=_id, time_zone="local", is_manager_account=True) for _id in config["customer_id"].split(",")]
+
+
+def find_stream(stream_name, config, state=None):
+    streams = SourceGoogleAds(config, None, state).streams(config=config)
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
+
+
+def read_full_refresh(stream_instance: Stream):
+    res = []
+    schema = stream_instance.get_json_schema()
+    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
+    for slice in slices:
+        records = stream_instance.read_records(stream_slice=slice, sync_mode=SyncMode.full_refresh)
+        for record in records:
+            stream_instance.transformer.transform(record, schema)
+            res.append(record)
+    return res

@@ -4,9 +4,11 @@
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import anyascii
 import requests
 
 from airbyte_cdk.models import SyncMode
@@ -174,6 +176,7 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     Migrates legacy per-partition Google Ads state to low code format
     that includes parent_slice for each customer_id partition.
 
+
     Example input state:
     {
       "1234567890": {"segments.date": "2120-10-10"},
@@ -300,3 +303,67 @@ class GoogleAdsHttpRequester(HttpRequester):
             "developer-token": self.config["credentials"]["developer_token"],
             "login-customer-id": stream_slice["parent_slice"]["customer_id"],
         }
+
+
+@dataclass
+class KeysToSnakeCaseGoogleAdsTransformation(RecordTransformation):
+    """
+    Transforms keys in a Google Ads record to snake_case.
+    The difference with KeysToSnakeCaseTransformation is that this transformation doesn't add underscore before digits.
+    """
+
+    token_pattern: re.Pattern[str] = re.compile(
+        r"""
+            \d*[A-Z]+[a-z]*\d*        # uppercase word (with optional leading/trailing digits)
+          | \d*[a-z]+\d*              # lowercase word (with optional leading/trailing digits)
+          | (?P<NoToken>[^a-zA-Z\d]+) # any non-alphanumeric separators
+        """,
+        re.VERBOSE,
+    )
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        transformed_record = self._transform_record(record)
+        record.clear()
+        record.update(transformed_record)
+
+    def _transform_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        transformed_record = {}
+        for key, value in record.items():
+            transformed_key = self.process_key(key)
+            transformed_value = value
+
+            if isinstance(value, dict):
+                transformed_value = self._transform_record(value)
+
+            transformed_record[transformed_key] = transformed_value
+        return transformed_record
+
+    def process_key(self, key: str) -> str:
+        key = self.normalize_key(key)
+        tokens = self.tokenize_key(key)
+        tokens = self.filter_tokens(tokens)
+        return self.tokens_to_snake_case(tokens)
+
+    def normalize_key(self, key: str) -> str:
+        return str(anyascii.anyascii(key))
+
+    def tokenize_key(self, key: str) -> List[str]:
+        tokens = []
+        for match in self.token_pattern.finditer(key):
+            token = match.group(0) if match.group("NoToken") is None else ""
+            tokens.append(token)
+        return tokens
+
+    def filter_tokens(self, tokens: List[str]) -> List[str]:
+        if len(tokens) >= 3:
+            tokens = tokens[:1] + [t for t in tokens[1:-1] if t] + tokens[-1:]
+        return tokens
+
+    def tokens_to_snake_case(self, tokens: List[str]) -> str:
+        return "_".join(token.lower() for token in tokens)
