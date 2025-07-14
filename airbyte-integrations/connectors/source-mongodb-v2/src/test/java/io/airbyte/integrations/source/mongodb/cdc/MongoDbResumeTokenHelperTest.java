@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
@@ -41,9 +42,11 @@ class MongoDbResumeTokenHelperTest {
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
         Filters.or(List.of(
@@ -51,6 +54,8 @@ class MongoDbResumeTokenHelperTest {
                 Filters.eq("ns.db", DATABASE),
                 Filters.in("ns.coll", Collections.emptyList()))))));
     when(mongoClient.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+
     final BsonDocument actualResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of()));
     assertEquals(resumeTokenDocument, actualResumeToken);
