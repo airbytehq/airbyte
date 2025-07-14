@@ -66,7 +66,15 @@ public class MongoDbResumeTokenHelper {
     }
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    final ChangeStreamIterable<BsonDocument> eventStream;
+    if (databaseNames.size() == 1) {
+      LOGGER.info("Most recent CDC token for a single database.");
+      eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
+    } else {
+      LOGGER.info("Most recent CDC token for multiple databases.");
+      eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    }
+
     try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
       /*
        * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
