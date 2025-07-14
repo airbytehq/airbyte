@@ -30,8 +30,8 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Collections;
 import java.util.List;
@@ -62,44 +62,43 @@ class MongoDbDebeziumStateUtilTest {
   protected static final ConfiguredAirbyteCatalog SINGLE_DB_CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(SINGLE_DB_CATALOG);
 
   private static final AirbyteCatalog MULTIPLE_DB_CATALOG = new AirbyteCatalog().withStreams(List.of(
-          CatalogHelpers.createAirbyteStream(
-                          "test-collection",
-                          DATABASE,
-                          Field.of("id", JsonSchemaType.INTEGER),
-                          Field.of("string", JsonSchemaType.STRING))
-                          .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
-                          .withSourceDefinedPrimaryKey(List.of(List.of("_id"))),
-          CatalogHelpers.createAirbyteStream(
-                          "test-collection-1",
-                          DATABASE_1,
-                          Field.of("id", JsonSchemaType.INTEGER),
-                          Field.of("name", JsonSchemaType.STRING))
-                  .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
-                  .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
+      CatalogHelpers.createAirbyteStream(
+          "test-collection",
+          DATABASE,
+          Field.of("id", JsonSchemaType.INTEGER),
+          Field.of("string", JsonSchemaType.STRING))
+          .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("_id"))),
+      CatalogHelpers.createAirbyteStream(
+          "test-collection-1",
+          DATABASE_1,
+          Field.of("id", JsonSchemaType.INTEGER),
+          Field.of("name", JsonSchemaType.STRING))
+          .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
 
   List<ConfiguredAirbyteStream> database1Streams = CatalogHelpers.toDefaultConfiguredCatalog(MULTIPLE_DB_CATALOG).getStreams()
-          .stream().filter(stream -> stream.getStream().getNamespace().equals(DATABASE))
-          .toList();
+      .stream().filter(stream -> stream.getStream().getNamespace().equals(DATABASE))
+      .toList();
 
   List<ConfiguredAirbyteStream> database2Streams = CatalogHelpers.toDefaultConfiguredCatalog(MULTIPLE_DB_CATALOG).getStreams().stream()
-          .filter(stream -> stream.getStream().getNamespace().equals(DATABASE_1))
-          .toList();
+      .filter(stream -> stream.getStream().getNamespace().equals(DATABASE_1))
+      .toList();
 
   final List<Bson> SINGLE_DB_PIPELINE = Collections.singletonList(Aggregates.match(
-          Filters.or(List.of(
-                  Filters.and(
-                          Filters.eq("ns.db", DATABASE),
-                          Filters.in("ns.coll", List.of("test-collection")))))));
+      Filters.or(List.of(
+          Filters.and(
+              Filters.eq("ns.db", DATABASE),
+              Filters.in("ns.coll", List.of("test-collection")))))));
 
   private final List<Bson> MULTIPLE_DB_PIPELINE = Collections.singletonList(Aggregates.match(
-          Filters.or(List.of(
-                  Filters.and(
-                          Filters.eq("ns.db", DATABASE),
-                          Filters.in("ns.coll", List.of("test-collection"))),
-                  Filters.and(
-                          Filters.eq("ns.db", DATABASE_1),
-                          Filters.in("ns.coll", "test-collection-1"))))));
-
+      Filters.or(List.of(
+          Filters.and(
+              Filters.eq("ns.db", DATABASE),
+              Filters.in("ns.coll", List.of("test-collection"))),
+          Filters.and(
+              Filters.eq("ns.db", DATABASE_1),
+              Filters.in("ns.coll", "test-collection-1"))))));
 
   private MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
 
@@ -140,7 +139,7 @@ class MongoDbDebeziumStateUtilTest {
     final Optional<BsonDocument> parsedOffset =
         mongoDbDebeziumStateUtil.savedOffset(
             baseProperties,
-                SINGLE_DB_CONFIGURED_CATALOG,
+            SINGLE_DB_CONFIGURED_CATALOG,
             initialState,
             config);
     assertTrue(parsedOffset.isPresent());
@@ -162,7 +161,7 @@ class MongoDbDebeziumStateUtilTest {
 
     final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-            mock(MongoChangeStreamCursor.class);
+        mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
@@ -171,7 +170,8 @@ class MongoDbDebeziumStateUtilTest {
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
+    assertTrue(
+        mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
   }
 
   @Test
@@ -188,7 +188,8 @@ class MongoDbDebeziumStateUtilTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
     when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1), List.of(database1Streams, database2Streams)));
+    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1),
+        List.of(database1Streams, database2Streams)));
   }
 
   @Test
@@ -197,7 +198,7 @@ class MongoDbDebeziumStateUtilTest {
 
     final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-            mock(MongoChangeStreamCursor.class);
+        mock(MongoChangeStreamCursor.class);
 
     final MongoClient mongoClient = mock(MongoClient.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
@@ -207,7 +208,8 @@ class MongoDbDebeziumStateUtilTest {
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
+    assertFalse(
+        mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
   }
 
   @Test
@@ -226,7 +228,8 @@ class MongoDbDebeziumStateUtilTest {
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
     when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1), List.of(database1Streams, database2Streams)));
+    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1),
+        List.of(database1Streams, database2Streams)));
   }
 
 }

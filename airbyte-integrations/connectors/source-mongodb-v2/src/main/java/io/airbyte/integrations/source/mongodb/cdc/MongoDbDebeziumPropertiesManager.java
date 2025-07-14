@@ -18,14 +18,13 @@ import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Custom {@link DebeziumPropertiesManager} specific for the configuration of the Debezium MongoDB
@@ -92,7 +91,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbDebeziumPropertiesManager.class);
 
   @Override
-  protected @NotNull Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final @NotNull List<String> cdcStreamNames) {
+  protected @NotNull Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog,
+                                                        final JsonNode config,
+                                                        final @NotNull List<String> cdcStreamNames) {
     final Properties properties = new Properties();
     // Database/collection selection
 
@@ -105,11 +106,11 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     config.get(MongoConstants.DATABASE_CONFIGURATION_KEY).forEach(db -> databasesNames.add(db.asText()));
 
     if (databasesNames.size() == 1) {
-          properties.setProperty(CAPTURE_SCOPE_KEY, "database");
-          properties.setProperty(CAPTURE_TARGET_KEY, databasesNames.getFirst());
-      } else {
-          properties.setProperty(CAPTURE_SCOPE_KEY, "deployment");
-      }
+      properties.setProperty(CAPTURE_SCOPE_KEY, "database");
+      properties.setProperty(CAPTURE_TARGET_KEY, databasesNames.getFirst());
+    } else {
+      properties.setProperty(CAPTURE_SCOPE_KEY, "deployment");
+    }
     return properties;
   }
 
