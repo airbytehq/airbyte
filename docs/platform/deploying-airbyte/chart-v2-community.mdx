@@ -10,7 +10,7 @@ import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
 
 # Upgrade to Helm chart V2 (Self-Managed Community)
 
-Airbyte has upgraded its Helm chart to a new version called "V2." Upgrading to Helm chart V2 is currently optional. At some future date the V2 Helm chart will become the standard, so we advise that you upgrade your existing deployment to use the new chart before the transition. If you're a new Airbyte customer, you can skip the upgrade altogether and start with the new chart.
+Airbyte has upgraded its Helm chart to a new version called "V2." Using Helm chart V2 is currently optional. At some future date the V2 Helm chart will become the standard, so we advise that you upgrade your existing deployment to use the new chart before the transition. If you're a new Airbyte customer, you can skip the upgrade altogether and start with the new chart.
 
 :::important Enterprise customers
 Follow the [Self-Managed Enterprise guide](../enterprise-setup/chart-v2-enterprise) instead.
@@ -69,7 +69,7 @@ In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you co
 
 When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different Airbyte users have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
 
-### Add and index the Helm chart 2.0 repo
+### Add V2 chart repo
 
 Helm chart V2 uses a different repo URL than V1 did. In your command line tool, add this repo and index it.
 
