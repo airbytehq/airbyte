@@ -317,6 +317,9 @@ The Record Selector component contains a few different levers to configure this 
 - Field Path
 - Record Filter
 - Cast Record Fields to Schema Types
+- Transform Before Filtering
+
+The Connector Builder UI generates forms directly from Airbyte's component schema, ensuring that all available options and configurations are accessible through the interface. You can switch between the UI and YAML modes at any time to view or edit the underlying configuration.
 
 These will be explained below.
 
@@ -471,7 +474,7 @@ A Field Path with a placeholder `*` selects all children at the current position
 ```
 
 ### Record Filter
-In some cases, certain certain records should be excluded from the final output of the connector, which can be accomplished through the Record Filter feature within the Record Selector component.
+In some cases, certain records should be excluded from the final output of the connector, which can be accomplished through the Record Filter feature within the Record Selector component.
 
 For example, say your API response looks like this:
 ```
@@ -496,10 +499,56 @@ You can accomplish this by setting the Record Filter to `{{ record.status != 'ex
 
 Any records for which this expression evaluates to `true` will be emitted by the connector, and any for which it evaluates to `false` will be excluded from the output.
 
+#### Available variables in filter expressions
+
+The filter condition has access to multiple context variables for dynamic filtering:
+
+- `record` - The current record being evaluated
+- `config` - The connector configuration
+- `next_page_token` - Token for pagination context
+- `stream_interval` - Time interval for incremental syncs
+- `stream_partition` - Current partition being processed
+- `stream_slice` - Current stream slice (for incremental syncs)
+
+#### Examples
+
+- `{{ record.status in ['active', 'expired'] }}` - Include records with specific status values
+- `{{ record['created_at'] >= stream_interval['start_time'] }}` - Date range filtering using stream interval
+- `{{ record['priority'] > config['min_priority'] }}` - Filter based on configuration values
+- `{{ record.get('email') is not none }}` - Only records with email addresses
+
 Note that Record Filter value must be an [interpolated string](/platform/connector-development/config-based/advanced-topics/string-interpolation) with the filtering condition placed inside double curly braces `{{ }}`.
 
 ### Cast Record Fields to Schema Types
 Sometimes the type of a field in the record is not the desired type. If the existing field type can be simply cast to the desired type, this can be solved by setting the stream's declared schema to the desired type and enabling `Cast Record Fields to Schema Types`.
+
+#### Schema normalization options
+
+You can configure schema normalization behavior with two options:
+
+- **Default**: Enables type casting and normalization according to the declared schema. Fields will be converted to match the expected types (e.g., string numbers to numeric types, date strings to proper date formats, boolean normalization).
+- **None**: Disables schema normalization. Records are passed through without type casting, preserving the original field types from the API response.
+
+#### When to use each option
+
+**Use "Default" when:**
+- You need consistent data types for downstream processing
+- Your destination requires specific field types
+- You want to ensure data quality and type safety
+
+**Use "None" when:**
+- You want to preserve the original API response format
+- Your destination can handle mixed or dynamic types
+- You're experiencing issues with type conversion
+
+### Transform Before Filtering
+
+The `transform_before_filtering` property controls whether record transformations are applied before or after record filtering:
+
+- **true**: Transformations are applied first, then filtering
+- **false** (default): Filtering is applied first, then transformations
+
+This setting is useful when you need to transform records before applying filter conditions, or when you want to filter records before expensive transformation operations.
 
 For example, say the API response looks like this:
 ```
