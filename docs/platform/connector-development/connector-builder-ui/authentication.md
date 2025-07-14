@@ -21,6 +21,8 @@ Check the documentation of the API you want to integrate for the used authentica
 - [OAuth 2.0 (Declarative)](#oauth-20-declarative)
 - [OAuth (Legacy)](#oauth-legacy)
 - [Session Token](#session-token)
+- [Selective Authenticator](#selective-authenticator)
+- [Shared Authenticator](#shared-authenticator)
 
 Select the matching authentication method for your API and check the sections below for more information about individual methods.
 
@@ -313,6 +315,64 @@ We will walk through each part of the configuration below. Throughout this, we w
   - Choose `API Key` if your session token needs to be injected into a query parameter or header of the data requests.
     - Metabase takes in the session token through a specific header, so this would be set to `API Key`, Inject Session Token into outgoing HTTP Request would be set to `Header`, and Header Name would be set to `X-Metabase-Session`.
   - Choose `Bearer` if your session token needs to be sent as a standard Bearer token.
+
+## Selective Authenticator
+
+Selective Authenticator allows you to dynamically choose between different authentication methods based on a configuration property value. This is useful when your connector needs to support multiple authentication options and let users select which one to use.
+
+### Configuration
+
+- **Authenticator Selection Path**: An array of strings defining the path in the configuration to the property that determines which authenticator to use
+- **Authenticators**: A mapping of authenticator names to their respective configurations
+
+### How it works
+
+The Selective Authenticator evaluates the value at the specified configuration path and uses it to select the appropriate authenticator from the available options. For example, if the selection path points to a config property with value "api_key", it will use the authenticator mapped to "api_key".
+
+### Example
+
+If you want to support both API Key and OAuth authentication:
+
+1. **Authenticator Selection Path**: `["auth", "type"]`
+2. **Authenticators**: 
+   - `api_key`: Configure an API Key authenticator
+   - `oauth`: Configure an OAuth authenticator
+
+When users configure their connector, they would set `auth.type` to either "api_key" or "oauth", and the Selective Authenticator will automatically use the corresponding authentication method.
+
+### Use Cases
+
+- APIs that support multiple authentication methods
+- Connectors that need to work with different API versions requiring different auth
+- Providing flexibility for users to choose their preferred authentication method
+
+## Shared Authenticator
+
+Shared Authenticator is a UI feature that allows you to share authenticator configurations across different parts of your connector. This helps reduce duplication and ensures consistency when the same authentication method is used in multiple places.
+
+### How it works
+
+In the Connector Builder UI, you'll see a link icon with a toggle switch next to authenticator fields that can be shared. This feature allows you to:
+
+- **Link configurations**: Share the same authenticator configuration across multiple components
+- **Unlink configurations**: Use different authenticator settings for specific components
+- **Resolve conflicts**: When there are different values, a dialog helps you choose which one to use
+
+### Using Shared Authenticators
+
+1. **Enable sharing**: Click the link toggle to share an authenticator configuration
+2. **Manage conflicts**: If there are different values between shared and local configurations, you'll see a dialog asking which value to use
+3. **Disable sharing**: Toggle off to use a local configuration instead of the shared one
+
+### Benefits
+
+- **Consistency**: Ensures the same authentication method is used across your connector
+- **Efficiency**: Reduces the need to configure the same authenticator multiple times
+- **Maintenance**: Changes to shared authenticators automatically apply everywhere they're used
+
+### Example
+
+If your connector uses the same API key authentication for both data retrieval and metadata requests, you can configure the API key once and share it across both components using the Shared Authenticator feature.
 
 ### Custom authentication methods
 
