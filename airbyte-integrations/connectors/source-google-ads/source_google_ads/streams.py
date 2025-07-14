@@ -309,15 +309,6 @@ class ServiceAccounts(GoogleAdsStream):
     primary_key = ["customer.id"]
 
 
-class Campaign(IncrementalGoogleAdsStream):
-    """
-    Campaign stream: https://developers.google.com/google-ads/api/fields/v18/campaign
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "segments.date", "segments.hour", "segments.ad_network_type"]
-
-
 class CampaignBudget(IncrementalGoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v18/campaign_budget
@@ -349,29 +340,6 @@ class CampaignLabel(GoogleAdsStream):
 
     # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["campaign.id", "label.id"]
-
-
-class AdGroup(IncrementalGoogleAdsStream):
-    """
-    AdGroup stream: https://developers.google.com/google-ads/api/fields/v18/ad_group
-    """
-
-    primary_key = ["ad_group.id", "segments.date"]
-
-    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
-        # validation that the customer is not a manager
-        # due to unsupported metrics.cost_micros field and removing it in case custom is a manager
-        if [customer for customer in self.customers if customer.id == stream_slice["customer_id"]][0].is_manager_account:
-            fields = [field for field in fields if field != "metrics.cost_micros"]
-        table_name = get_resource_name(self.name)
-        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
-        cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
-
-        query = GoogleAds.convert_schema_into_query(
-            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
-        )
-        return query
 
 
 class AdGroupLabel(GoogleAdsStream):
@@ -433,74 +401,6 @@ class AdGroupAdLegacy(IncrementalGoogleAdsStream):
     """
 
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date", "segments.ad_network_type"]
-
-
-class DisplayKeywordView(IncrementalGoogleAdsStream):
-    """
-    DisplayKeywordView stream: https://developers.google.com/google-ads/api/fields/v18/display_keyword_view
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance
-    """
-
-    primary_key = [
-        "ad_group.id",
-        "ad_group_criterion.criterion_id",
-        "segments.date",
-        "segments.ad_network_type",
-        "segments.device",
-    ]
-
-
-class TopicView(IncrementalGoogleAdsStream):
-    """
-    DisplayTopicsPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v18/topic_view
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance
-    """
-
-    primary_key = [
-        "ad_group.id",
-        "ad_group_criterion.criterion_id",
-        "segments.date",
-        "segments.ad_network_type",
-        "segments.device",
-    ]
-
-
-class ShoppingPerformanceView(IncrementalGoogleAdsStream):
-    """
-    ShoppingPerformanceView stream: https://developers.google.com/google-ads/api/fields/v18/shopping_performance_view
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
-    """
-
-
-class UserLocationView(IncrementalGoogleAdsStream):
-    """
-    UserLocationView stream: https://developers.google.com/google-ads/api/fields/v18/user_location_view
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
-    """
-
-    primary_key = [
-        "customer.id",
-        "user_location_view.country_criterion_id",
-        "user_location_view.targeting_location",
-        "segments.date",
-        "segments.ad_network_type",
-    ]
-
-
-class GeographicView(IncrementalGoogleAdsStream):
-    """
-    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v18/geographic_view
-    """
-
-    primary_key = ["customer.id", "geographic_view.country_criterion_id", "geographic_view.location_type", "segments.date"]
-
-
-class KeywordView(IncrementalGoogleAdsStream):
-    """
-    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v18/keyword_view
-    """
-
-    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id", "segments.date"]
 
 
 class ClickView(IncrementalGoogleAdsStream):

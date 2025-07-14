@@ -6,11 +6,12 @@
 import logging
 import re
 from collections import namedtuple
-from unittest.mock import Mock, call
+from unittest.mock import MagicMock, Mock, call
 
 import pendulum
 import pytest
 from pendulum import duration, today
+from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
@@ -117,7 +118,7 @@ def test_chunk_date_range():
 
 
 def test_streams_count(config, mock_get_customers):
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     streams = source.streams(config)
     expected_streams_number = 30
     print(f"{config=} \n{streams=}")
@@ -125,7 +126,7 @@ def test_streams_count(config, mock_get_customers):
 
 
 def test_read_missing_stream(config, mock_get_customers):
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
 
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -156,8 +157,8 @@ def test_read_missing_stream(config, mock_get_customers):
         ("SELECT segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign", False),
     ),
 )
-def test_metrics_in_custom_query(query, is_metrics_in_query):
-    source = SourceGoogleAds()
+def test_metrics_in_custom_query(config, query, is_metrics_in_query):
+    source = SourceGoogleAds(config, None, None)
     assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
 
 
@@ -379,9 +380,9 @@ def test_google_type_conversion(mock_fields_meta_data, customers):
         assert desired_mapping[prop] == value.get("type"), f"{prop} should be {value}"
 
 
-def test_check_connection_should_pass_when_config_valid(mocker):
+def test_check_connection_should_pass_when_config_valid(config, mocker):
     mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
     check_successful, message = source.check_connection(
         logging.getLogger("airbyte"),
         {
@@ -420,8 +421,8 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     assert message is None
 
 
-def test_end_date_is_not_in_the_future(customers):
-    source = SourceGoogleAds()
+def test_end_date_is_not_in_the_future(config, customers):
+    source = SourceGoogleAds(config, None, None)
     config = source.get_incremental_stream_config(
         None, {"end_date": today().add(days=1).to_date_string(), "conversion_window_days": 14, "start_date": "2020-01-23"}, customers
     )
@@ -503,7 +504,7 @@ def mock_send_request(query: str, customer_id: str, login_customer_id: str = "de
         ),  # Non-empty filter, expect filtered customers
     ],
 )
-def test_get_customers(mocker, customer_status_filter, expected_ids, send_request_calls):
+def test_get_customers(config, mocker, customer_status_filter, expected_ids, send_request_calls):
     mock_google_api = Mock()
 
     mock_google_api.get_accessible_accounts.return_value = ["123", "789"]
@@ -512,7 +513,7 @@ def test_get_customers(mocker, customer_status_filter, expected_ids, send_reques
 
     mock_config = {"customer_status_filter": customer_status_filter, "customer_ids": ["123", "456", "789"]}
 
-    source = SourceGoogleAds()
+    source = SourceGoogleAds(config, None, None)
 
     customers = source.get_customers(mock_google_api, mock_config)
 
@@ -535,3 +536,125 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
 
     assert updated_stream.days_of_data_storage == 90
     assert updated_stream.slice_duration == duration(days=0)
+
+
+@pytest.mark.parametrize(
+    "input_state, records_and_slices, expected",
+    [
+        # no partitions ⇒ empty
+        ({}, [], {}),
+        # single partition ⇒ one migrated state
+        (
+            {"123": {"segments.date": "2120-10-10"}},
+            [
+                # (record, slice)
+                ({"id": "123", "clientCustomer": "123"}, {"customer_id": "456"})
+            ],
+            {
+                "states": [
+                    {
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2120-10-10"},
+                    }
+                ],
+                "state": {"segments.date": "2120-10-10"},
+            },
+        ),
+        # multiple partitions ⇒ only those matching state, with earliest date
+        (
+            {"a": {"segments.date": "2020-01-02"}, "b": {"segments.date": "2020-01-01"}, "z": {"segments.date": "2021-01-01"}},
+            [
+                ({"id": "b", "clientCustomer": "b"}, {"customer_id": "p1"}),
+                ({"id": "a", "clientCustomer": "a"}, {"customer_id": "p2"}),
+                # a record that won't match legacy state
+                ({"id": "x", "clientCustomer": "x"}, {"customer_id": "p3"}),
+            ],
+            {
+                "states": [
+                    {
+                        "partition": {"customer_id": "b", "parent_slice": {"customer_id": "p1", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-01"},
+                    },
+                    {
+                        "partition": {"customer_id": "a", "parent_slice": {"customer_id": "p2", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-02"},
+                    },
+                ],
+                "state": {"segments.date": "2020-01-01"},
+            },
+        ),
+        # none have the cursor field ⇒ empty
+        ({"x": {"foo": "bar"}, "y": {"baz": 42}}, [], {}),
+        # already migrated state ⇒ unchanged
+        (
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+            [],
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+        ),
+    ],
+)
+def test_state_migration(input_state, records_and_slices, expected):
+    # Create a fake customer_client_stream
+    stream_mock = MagicMock()
+
+    # Define what _read_parent_stream will yield
+    stream_mock.stream_slices.return_value = (s for _, s in records_and_slices)
+
+    def fake_read_records(stream_slice, sync_mode):
+        return (r for r, s in records_and_slices if s == stream_slice)
+
+    stream_mock.read_records.side_effect = fake_read_records
+
+    migrator = GoogleAdsPerPartitionStateMigration(config=None, customer_client_stream=stream_mock)
+
+    assert migrator.migrate(input_state) == expected
+
+
+_ANY_VALUE = -1
+
+
+@pytest.mark.parametrize(
+    "input_keys, expected_keys",
+    [
+        (
+            {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+            {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+        ),
+        (
+            {"123Number": _ANY_VALUE, "456Another123": _ANY_VALUE},
+            {"123number": _ANY_VALUE, "456another123": _ANY_VALUE},
+        ),
+        (
+            {
+                "NestedRecord": {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+                "456Another123": _ANY_VALUE,
+            },
+            {
+                "nested_record": {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+                "456another123": _ANY_VALUE,
+            },
+        ),
+        (
+            {"hello@world": _ANY_VALUE, "test#case": _ANY_VALUE},
+            {"hello_world": _ANY_VALUE, "test_case": _ANY_VALUE},
+        ),
+        (
+            {"MixedUPCase123": _ANY_VALUE, "lowercaseAnd123": _ANY_VALUE},
+            {"mixed_upcase123": _ANY_VALUE, "lowercase_and123": _ANY_VALUE},
+        ),
+        ({"Café": _ANY_VALUE, "Naïve": _ANY_VALUE}, {"cafe": _ANY_VALUE, "naive": _ANY_VALUE}),
+        (
+            {
+                "This is a full sentence": _ANY_VALUE,
+                "Another full sentence with more words": _ANY_VALUE,
+            },
+            {
+                "this_is_a_full_sentence": _ANY_VALUE,
+                "another_full_sentence_with_more_words": _ANY_VALUE,
+            },
+        ),
+    ],
+)
+def test_keys_transformation(input_keys, expected_keys):
+    KeysToSnakeCaseGoogleAdsTransformation().transform(input_keys)
+    assert input_keys == expected_keys

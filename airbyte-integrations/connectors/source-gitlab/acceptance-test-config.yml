@@ -3,15 +3,16 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_gitlab/spec.json"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: 1.8.0
   connection:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
-      - config_path: "secrets/config_oauth.json"
-        status: "succeed"
+      # Disabling `config_oauth.json` due to local oauth testing limitations
+      # - config_path: "secrets/config_oauth.json"
+      #   status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
@@ -34,10 +35,6 @@ acceptance_tests:
             bypass_reason: "Group in this config does not have epics issues. This stream is tested in the above TC."
         expect_records:
           path: "integration_tests/expected_records_with_ids.jsonl"
-      - config_path: "secrets/config_oauth.json"
-        timeout_seconds: 3600
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
       - config_path: "secrets/config_with_ids.json"
