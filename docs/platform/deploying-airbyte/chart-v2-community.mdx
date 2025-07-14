@@ -1,5 +1,6 @@
 ---
 products: oss-community
+draft: true
 ---
 
 import Tabs from '@theme/Tabs';
@@ -9,15 +10,11 @@ import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
 
 # Upgrade to Helm chart V2 (Self-Managed Community)
 
-Airbyte has upgraded its Helm chart to a new version called "V2." Using Helm chart V2 is currently optional. In the future, at a date not yet announced, Helm chart V2 will become mandatory. However, you should upgrade your existing Airbyte deployment to use the new Helm chart before it's mandatory. If you're a new Airbyte customer, you can use Helm chart V2 from the start, and avoid the upgrade entirely.
+Airbyte has upgraded its Helm chart to a new version called "V2." Upgrading to Helm chart V2 is currently optional. At some future date the V2 Helm chart will become the standard, so we advise that you upgrade your existing deployment to use the new chart before the transition. If you're a new Airbyte customer, you can skip the upgrade altogether and start with the new chart.
 
 :::important Enterprise customers
 Follow the [Self-Managed Enterprise guide](../enterprise-setup/chart-v2-enterprise) instead.
 :::
-
-## What's a Helm chart?
-
-Airbyte runs on [Kubernetes](https://kubernetes.io/). [Helm](https://helm.sh/) is a package manager for Kubernetes. A [Helm chart](https://helm.sh/docs/topics/charts/) is a collection of files that describe a related set of Kubernetes resources. Think of Helm charts as the method Airbyte uses to define, install, and manage its Kubernetes application. When you install or upgrade Airbyte, you pull in a specific Helm chart representing that version.
 
 ## Why you should upgrade
 
@@ -33,7 +30,7 @@ Upgrading to the new Helm chart now has the following benefits.
 
 The following versions of Airbyte can use Helm chart V2:
 
-- Airbyte version 1.6.0 and later, if installed and managed with Helm _and_ connected to an external database, storage, and secrets manager
+- Airbyte version 1.6.0 and later, if installed and managed with Helm _and_ connected to an external database and external storage bucket
 
 The following versions of Airbyte _can't_ use Helm chart V2:
 
@@ -41,17 +38,17 @@ The following versions of Airbyte _can't_ use Helm chart V2:
 
 - Airbyte versions installed and managed with abctl
 
-- Airbyte versions that aren't connected to an external database, storage, and secrets manager
+- Airbyte versions that aren't connected to an external database and storage bucket
 
 :::danger
-Don't migrate to Helm chart V2 if you haven't set up an external database, storage, and secrets manager. These resources contain the data your Airbyte deployment needs to operate and a fresh deployment won't work without them. Airbyte is evaluating possible migration paths for open source deployments that don't meet this requirement.
+Don't migrate to Helm chart V2 if you haven't set up an external database and storage. These resources contain the data your Airbyte deployment needs to operate and a fresh deployment won't work without them. Airbyte is evaluating possible migration paths for open source deployments that don't meet this requirement.
 :::
 
 ## How to upgrade
 
 In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you complete the following steps.
 
-1. Ensure you have configured Airbyte to use an external database, external bucket storage, and external secrets manager.
+1. Ensure you have configured Airbyte to use an external database and external bucket storage.
 
 2. Prepare to deploy a fresh installation of Airbyte.
 
@@ -59,23 +56,14 @@ In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you co
 
 4. Deploy a new version of Airbyte using your new `values.yaml` file and the new Helm chart version.
 
-<!-- ### Configure external database, bucket storage, and secrets manager -->
+<!-- ### Configure external database and bucket storage -->
 
 <!-- This might be a non-starter for community. Can we reasonably ask them to do this? -->
 
-<!-- Although Airbyte provides its own basic database, storage, and secrets management, most people opt to use their own. If you don't already do this, you must enable these before migrating.
+<!-- Although Airbyte provides its own basic database and storage, most people opt to use their own. If you don't already do this, you must enable these before migrating.
 
 - [Configure an external database](integrations/database)
-- [Configure external storage](integrations/storage)
-- [Configure external secrets](integrations/secrets) -->
-
-<!-- Is a deployment necessary here to activate? Anything specific that needs to be done. 
-
-pg dump then pg import into the new database.
-minio to s3
-how to populate secrets manager considering everything is in clear text
-
--->
+- [Configure external storage](integrations/storage) -->
 
 ### Prepare a fresh deployment of Airbyte
 
@@ -83,9 +71,13 @@ When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fres
 
 ### Add and index the Helm chart 2.0 repo
 
-Helm chart V2 uses a separate repo than V1 did. In your command line tool, add this repo and index it.
+Helm chart V2 uses a different repo URL than V1 did. In your command line tool, add this repo and index it.
 
 ```bash
+# Helm chart V1
+# helm repo add airbyte https://airbytehq.github.io/helm-charts
+
+# Helm chart V2
 helm repo add airbyte-v2 https://airbytehq.github.io/charts
 helm repo update
 ```

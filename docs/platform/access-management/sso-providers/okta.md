@@ -26,7 +26,7 @@ The exact process differs between the Cloud or Self-Managed versions of Airbyte.
 For security purposes, Airbyte disables existing [applications](/platform/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
 :::
 
-You need to create a new Okta OIDC App Integration for your Airbyte. Documentation on how to do this in Okta can be found [here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm). You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
+You need to create a new Okta OIDC App Integration for Airbyte. Documentation on how to do this in Okta can be found [here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm). You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
 
 ![Screenshot of Okta app integration creation modal](./assets/okta-create-new-app-integration.png)
 
@@ -70,7 +70,7 @@ Before you can proceed, you require your **Company Identifier** so you can prope
 
 ## Self-Managed Enterprise with Okta OIDC
 
-You need to create a new Okta OIDC App Integration for your Airbyte. Documentation on how to do this in Okta can be found [here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm). You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
+You need to create a new Okta OIDC App Integration for Airbyte. Documentation on how to do this in Okta can be found [here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm). You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
 
 ![Screenshot of Okta app integration creation modal](./assets/okta-create-new-app-integration.png)
 
@@ -127,7 +127,8 @@ To set up single sign using generic OIDC for Airbyte Self-Managed Enterprise, co
 - [Redeploy Airbyte](#sme-deploy)
 
 :::note
-You can only use generic OIDC after you migrate to [Helm chart 2.0](../../enterprise-setup/chart-v2-enterprise).
+You can only use generic OIDC after you migrate to Helm chart V2.
+<!-- [Helm chart V2](../../enterprise-setup/chart-v2-enterprise). -->
 :::
 
 ### Create an Okta app for Airbyte {#sme-create-okta-app}

@@ -111,7 +111,8 @@ To set up single sign on for Airbyte Self-Managed Enterprise, complete the follo
 - [Redeploy Airbyte](#sme-deploy)
 
 :::note
-You can only use generic OIDC after you migrate to [Helm chart 2.0](../../enterprise-setup/chart-v2-enterprise).
+You can only use generic OIDC after you migrate to Helm chart V2.
+<!-- [Helm chart V2](../../enterprise-setup/chart-v2-enterprise). -->
 :::
 
 ### Create application {#sme-entra-id-app}
