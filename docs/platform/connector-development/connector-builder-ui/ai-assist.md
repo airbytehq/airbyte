@@ -89,8 +89,4 @@ To begin using the AI Assistant:
 4. Provide your API documentation URL or OpenAPI specification
 5. Review and refine the generated configuration as needed
 
-The Assistant works best when you provide comprehensive API documentation, but it can also work with partial documentation and will guide you through any missing information.
-
----
-
-We’re excited to see how much time AI Assistant can save you during the beta phase. While it's not perfect yet, it already simplifies the process of building and managing connectors.
+We're excited to see how much time AI Assistant can save you during the beta phase. While it's not perfect yet, it already simplifies the process of building and managing connectors.
