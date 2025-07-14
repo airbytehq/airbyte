@@ -23,8 +23,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Custom {@link DebeziumPropertiesManager} specific for the configuration of the Debezium MongoDB
@@ -87,8 +85,6 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   protected @NotNull String getName(final JsonNode config) {
     return normalizeName(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
   }
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbDebeziumPropertiesManager.class);
 
   @Override
   protected @NotNull Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog,

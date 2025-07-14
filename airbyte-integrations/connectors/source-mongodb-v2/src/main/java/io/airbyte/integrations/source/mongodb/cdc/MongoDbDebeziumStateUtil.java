@@ -118,14 +118,14 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
     final ChangeStreamIterable<BsonDocument> eventStream;
-    LOGGER.info("DEBUG: Database count: {}, databases: {}", databaseNames.size(), databaseNames);
 
     // Use database-level watch when only one database is configured to minimize required permissions.
     // Empty database validation is handled upstream in MongoDbSource.check()
     if (databaseNames.size() == 1) {
-      LOGGER.info("We are using a single database stream {} as the first one", databaseNames.getFirst());
+      LOGGER.info("Watching for CDC events for a single database stream {}.", databaseNames.getFirst());
       eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
     } else {
+      LOGGER.info("Watching for CDC events for multiple databases.");
       eventStream = mongoClient.watch(pipeline, BsonDocument.class);
     }
 
