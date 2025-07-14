@@ -22,11 +22,11 @@ class AirbyteOkHttpClient(
     constructor(
         client: OkHttpClient,
         retryPolicy: RetryPolicy<okhttp3.Response>
-    )  : this(client, listOf(retryPolicy))
+    ) : this(client, listOf(retryPolicy))
 
     constructor(
         client: OkHttpClient,
-    )  : this(client, RetryPolicyFactory().createDefault())
+    ) : this(client, RetryPolicyFactory().createDefault())
 
     override fun send(request: Request): Response {
         val url = createUrl(request)
@@ -37,10 +37,14 @@ class AirbyteOkHttpClient(
                 .method(request.method.toString(), request.body?.toRequestBody())
                 .apply { request.headers.forEach { header -> addHeader(header.key, header.value) } }
                 .build()
-        val response = when (retryPolicies.isEmpty()) {
-            true -> client.newCall(okhttpRequest).execute()
-            false -> FailsafeCall.with(retryPolicies[0], *retryPolicies.drop(1).toTypedArray()).compose(client.newCall(okhttpRequest)).execute()
-        }
+        val response =
+            when (retryPolicies.isEmpty()) {
+                true -> client.newCall(okhttpRequest).execute()
+                false ->
+                    FailsafeCall.with(retryPolicies[0], *retryPolicies.drop(1).toTypedArray())
+                        .compose(client.newCall(okhttpRequest))
+                        .execute()
+            }
         return OkHttpResponse(response)
     }
 
