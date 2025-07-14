@@ -30,7 +30,7 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val username: String
     abstract val password: String
     abstract val enableJson: Boolean?
-    abstract val tunnelConfig: SshTunnelMethodConfiguration?
+    abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
 }
 
 @Singleton
@@ -84,7 +84,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
     val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
-    @JsonIgnore override var tunnelConfig: SshTunnelMethodConfiguration? = null
+    @JsonIgnore var tunnelConfig: SshTunnelMethodConfiguration? = null
 
     @JsonSetter("tunnel_method")
     fun setTunnelMethodValue(value: SshTunnelMethodConfiguration?) {
@@ -98,7 +98,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
             " and if so, which kind of authentication to use.",
     )
     @JsonSchemaInject(json = """{"order":5}""")
-    fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
+    override fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
 }
 
@@ -153,7 +153,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
     val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
-    @JsonIgnore override var tunnelConfig: SshTunnelMethodConfiguration? = null
+    @JsonIgnore var tunnelConfig: SshTunnelMethodConfiguration? = null
 
     @JsonSetter("tunnel_method")
     fun setTunnelMethodValue(value: SshTunnelMethodConfiguration?) {
@@ -167,7 +167,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
             " and if so, which kind of authentication to use.",
     )
     @JsonSchemaInject(json = """{"order":7}""")
-    fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
+    override fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
 }
 
