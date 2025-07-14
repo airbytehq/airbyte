@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
  * - Thread-safe descriptor caching
  * - Configurable polling and retry logic
  * - Protobuf to JSON conversion
+ * - Support for Google protobuf well-known types (Timestamp, Struct, Duration, etc.)
  */
 public class ProtobufFormat extends AbstractFormat {
 
@@ -273,6 +274,7 @@ public class ProtobufFormat extends AbstractFormat {
 
   /**
    * Maps Protobuf field types to corresponding JSON Schema types.
+   * Handles Google protobuf well-known types like Timestamp and Struct.
    *
    * @param fieldDescriptor Protobuf field descriptor
    * @return Corresponding JsonSchemaType
@@ -283,8 +285,76 @@ public class ProtobufFormat extends AbstractFormat {
       case INT64, UINT64, INT32, FIXED64, FIXED32, UINT32, SFIXED32, SFIXED64, SINT32, SINT64 ->
           JsonSchemaType.INTEGER;
       case BOOL -> JsonSchemaType.BOOLEAN;
-      case MESSAGE -> JsonSchemaType.OBJECT;
+      case MESSAGE -> getJsonSchemaTypeForMessageField(fieldDescriptor);
       default -> JsonSchemaType.STRING; // STRING, BYTES, ENUM and others
+    };
+  }
+
+  /**
+   * Determines the appropriate JSON Schema type for MESSAGE type fields.
+   * Handles Google protobuf well-known types with special mappings.
+   *
+   * @param fieldDescriptor Protobuf field descriptor for a MESSAGE type
+   * @return Corresponding JsonSchemaType
+   */
+  private JsonSchemaType getJsonSchemaTypeForMessageField(Descriptors.FieldDescriptor fieldDescriptor) {
+    String messageTypeName = fieldDescriptor.getMessageType().getFullName();
+    
+    return switch (messageTypeName) {
+      case "google.protobuf.Timestamp" -> {
+        LOGGER.debug("Mapping google.protobuf.Timestamp to STRING type");
+        yield JsonSchemaType.STRING; // Timestamps are serialized as ISO 8601 strings
+      }
+      case "google.protobuf.Struct" -> {
+        LOGGER.debug("Mapping google.protobuf.Struct to OBJECT type");
+        yield JsonSchemaType.OBJECT; // Struct represents a generic JSON object
+      }
+      case "google.protobuf.Value" -> {
+        LOGGER.debug("Mapping google.protobuf.Value to OBJECT type (can hold any JSON value)");
+        yield JsonSchemaType.OBJECT; // Value can represent any JSON value
+      }
+      case "google.protobuf.ListValue" -> {
+        LOGGER.debug("Mapping google.protobuf.ListValue to ARRAY type");
+        yield JsonSchemaType.ARRAY; // ListValue represents a JSON array
+      }
+      case "google.protobuf.Duration" -> {
+        LOGGER.debug("Mapping google.protobuf.Duration to STRING type");
+        yield JsonSchemaType.STRING; // Durations are serialized as strings (e.g., "1.000340012s")
+      }
+      case "google.protobuf.FieldMask" -> {
+        LOGGER.debug("Mapping google.protobuf.FieldMask to STRING type");
+        yield JsonSchemaType.STRING; // FieldMask is serialized as comma-separated field paths
+      }
+      case "google.protobuf.Any" -> {
+        LOGGER.debug("Mapping google.protobuf.Any to OBJECT type");
+        yield JsonSchemaType.OBJECT; // Any can contain any message type
+      }
+      case "google.protobuf.Empty" -> {
+        LOGGER.debug("Mapping google.protobuf.Empty to OBJECT type");
+        yield JsonSchemaType.OBJECT; // Empty message maps to empty object
+      }
+      // Wrapper types for primitive values
+      case "google.protobuf.DoubleValue", "google.protobuf.FloatValue" -> {
+        LOGGER.debug("Mapping {} to NUMBER type", messageTypeName);
+        yield JsonSchemaType.NUMBER;
+      }
+      case "google.protobuf.Int64Value", "google.protobuf.UInt64Value", 
+           "google.protobuf.Int32Value", "google.protobuf.UInt32Value" -> {
+        LOGGER.debug("Mapping {} to INTEGER type", messageTypeName);
+        yield JsonSchemaType.INTEGER;
+      }
+      case "google.protobuf.BoolValue" -> {
+        LOGGER.debug("Mapping google.protobuf.BoolValue to BOOLEAN type");
+        yield JsonSchemaType.BOOLEAN;
+      }
+      case "google.protobuf.StringValue", "google.protobuf.BytesValue" -> {
+        LOGGER.debug("Mapping {} to STRING type", messageTypeName);
+        yield JsonSchemaType.STRING;
+      }
+      default -> {
+        LOGGER.debug("Mapping custom message type '{}' to OBJECT type", messageTypeName);
+        yield JsonSchemaType.OBJECT; // Regular message types
+      }
     };
   }
 
