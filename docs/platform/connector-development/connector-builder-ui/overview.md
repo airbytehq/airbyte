@@ -1,14 +1,14 @@
 # Connector Builder
 
 Connector Builder is a no-code tool that’s part of the Airbyte UI.
-It provides an intuitive user interface on top of the [declarative component schema](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml), which defines the structure and validation rules for [low-code YAML connectors](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview). The UI automatically generates forms and validation based on this schema, letting you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace.
+It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview), letting you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace. You can seamlessly switch between the visual UI and direct YAML editing as needed.
 Connector Builder offers the most straightforward method for building, contributing, and maintaining connectors.
 
 ## How it works
 
-The Connector Builder UI is powered by Airbyte's declarative component schema, which serves as the foundation for all low-code connectors. This schema defines every component, property, and validation rule available for building connectors. The UI automatically generates forms, input validation, and configuration options directly from this schema, ensuring that your connector configurations are always valid and complete.
+The Connector Builder provides a visual interface that has the same capabilities as writing [low-code YAML connectors](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) directly. Instead of writing YAML code, you configure your connector through intuitive forms with built-in validation and helpful guidance.
 
-When you configure a connector in the Builder, you're essentially creating a YAML manifest that conforms to the declarative component schema. The UI guides you through this process with intuitive forms, real-time validation, and helpful descriptions—all derived automatically from the schema definitions.
+When you build a connector in the UI, you're creating a YAML manifest behind the scenes. The Builder ensures your configuration is always valid and complete, with real-time feedback and clear error messages. You can export this YAML manifest at any time or switch to direct YAML editing if you prefer a code-first approach.
 
 ## When should I use Connector Builder?
 
