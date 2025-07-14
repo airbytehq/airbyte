@@ -103,7 +103,7 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/customer_client_non_manager"
+            stream: "#/definitions/customer_client"
             parent_key: "clientCustomer"
             partition_field: "customer_id"
     transformations:
@@ -430,6 +430,16 @@ definitions:
       schema:
         $ref: "#/schemas/customer"
 
+  customer_label_stream:
+    $ref: "#/definitions/full_refresh_stream_base"
+    name: customer_label
+    primary_key:
+      - customer_label.resource_name
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/customer_label"
+
   label_stream:
     $ref: "#/definitions/full_refresh_stream_base"
     name: label
@@ -463,6 +473,7 @@ streams:
   - "#/definitions/campaign_budget_stream"
   - "#/definitions/campaign_label_stream"
   - "#/definitions/customer_stream"
+  - "#/definitions/customer_label_stream"
   - "#/definitions/label_stream"
   - "#/definitions/user_interest_stream"
 
@@ -3629,3 +3640,33 @@ schemas:
         type:
           - "null"
           - integer
+  customer_label:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      customer_label.resource_name:
+        description:
+          The resource name that uniquely identifies the customer label in
+          the system.
+        type:
+          - "null"
+          - string
+      customer_label.customer:
+        description:
+          The name or details of the customer that the label is associated
+          with.
+        type:
+          - "null"
+          - string
+      customer.id:
+        description: The unique identifier of the customer associated with the label.
+        type:
+          - "null"
+          - integer
+      customer_label.label:
+        description:
+          The category or tag applied to the customer for specific identification
+          or grouping.
+        type:
+          - "null"
+          - string

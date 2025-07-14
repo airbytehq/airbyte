@@ -2,22 +2,7 @@
 
 
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import CustomerLabel, ShoppingPerformanceView
-
-
-def test_query_customer_label_stream(customers, config):
-    credentials = config["credentials"]
-    api = GoogleAds(credentials=credentials)
-
-    stream_config = dict(
-        api=api,
-        customers=customers,
-    )
-    stream = CustomerLabel(**stream_config)
-    assert (
-        stream.get_query(stream_slice={"customer_id": "123"})
-        == "SELECT customer_label.resource_name, customer_label.customer, customer.id, customer_label.label FROM customer_label"
-    )
+from source_google_ads.streams import ShoppingPerformanceView
 
 
 def test_query_shopping_performance_view_stream(customers, config):

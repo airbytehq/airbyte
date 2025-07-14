@@ -19,7 +19,7 @@ from google.api_core.exceptions import (
 )
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import ClickView, CustomerLabel
+from source_google_ads.streams import ClickView, ServiceAccounts
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
@@ -312,7 +312,7 @@ def test_read_records_unauthenticated(mocker, customers, config):
         api=api,
         customers=customers,
     )
-    stream = CustomerLabel(**stream_config)
+    stream = ServiceAccounts(**stream_config)
     with pytest.raises(AirbyteTracedException) as exc_info:
         list(stream.read_records(SyncMode.full_refresh, {"customer_id": "customer_id", "login_customer_id": "default"}))
 

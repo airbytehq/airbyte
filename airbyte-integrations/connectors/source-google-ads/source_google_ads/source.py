@@ -25,7 +25,6 @@ from .streams import (
     CampaignCriterion,
     ClickView,
     CustomerClient,
-    CustomerLabel,
     DisplayKeywordView,
     GeographicView,
     KeywordView,
@@ -234,7 +233,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
             CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
             ClickView(**incremental_config),
-            CustomerLabel(**default_config),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:
