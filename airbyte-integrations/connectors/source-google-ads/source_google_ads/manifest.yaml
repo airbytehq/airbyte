@@ -107,7 +107,8 @@ definitions:
             parent_key: "clientCustomer"
             partition_field: "customer_id"
     transformations:
-      - type: KeysToSnakeCase
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
     state_migrations:
@@ -289,10 +290,15 @@ definitions:
       - segments.date
       - segments.ad_network_type
       - segments.device
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/account_performance_report"
+
 
   ad_group_stream:
     $ref: "#/definitions/incremental_stream_base"
@@ -324,6 +330,10 @@ definitions:
       - ad_group.id
       - ad_group_ad.ad.id
       - label.id
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -404,6 +414,10 @@ definitions:
       - segments.date
       - segments.budget_campaign_association_status.campaign
       - segments.budget_campaign_association_status.status
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
