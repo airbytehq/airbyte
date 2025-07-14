@@ -119,16 +119,16 @@ definitions:
             metric: >-
               {% if stream_partition.media_insights_info.media_product_type ==
               "REELS" %}{{
-              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares,views'
+              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares'
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'reach,saved,views'}}{% elif
+              %}{{  'reach,saved'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
-              'reach,saved,likes,comments,shares,follows,profile_visits,views'
+              'reach,saved,likes,comments,shares,follows,profile_visits'
               }}{%elif stream_partition.media_insights_info.media_type ==
-              "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits,views' }}{% else %}{{
-              'reach,saved,likes,comments,shares,follows,profile_visits,views' }}{%
+              "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits' }}{% else %}{{
+              'reach,saved,likes,comments,shares,follows,profile_visits' }}{%
               endif %}
           error_handler:
             type: CompositeErrorHandler
@@ -448,7 +448,7 @@ definitions:
           path: "{{ stream_partition.story_insights_info.story_id }}/insights"
           http_method: GET
           request_parameters:
-            metric: reach,replies,follows,profile_visits,shares,total_interactions,views
+            metric: reach,replies,follows,profile_visits,shares,total_interactions
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -507,6 +507,124 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/StoryInsights"
+    UserInsights:
+      type: DeclarativeStream
+      name: user_insights
+      primary_key:
+        - business_account_id
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          path: "{{ stream_partition.business_account_id }}/insights"
+          http_method: GET
+          query_properties:
+            type: QueryProperties
+            # This is a bit of a tricky way that we structure our query groupings so that we can
+            # request pairs of each period and their associated metrics to request.
+            #
+            # By ordering the list by each pair and creating property chunks of two, we can reference
+            # them when building request_parameters and still allow for the records to be merged
+            property_list:
+              # Chunk 1: period: day, metrics: follower_count,reach
+              - day
+              - "follower_count,reach"
+              # Chunk 2: period: week, metrics: reach
+              - week
+              - reach
+              # Chunk 3: period: days_28, metrics: reach
+              - days_28
+              - reach
+              # Chunk 4: period: lifetime, metrics: online_followers
+              - lifetime
+              - online_followers
+            property_chunking:
+              type: PropertyChunking
+              property_limit_type: property_count
+              property_limit: 2
+              record_merge_strategy:
+                type: GroupByKeyMergeStrategy
+                key:
+                  - date
+          request_parameters:
+            # Because of how we structured the query properties chunks above, the period will be the
+            # first entry in the current query properties chunk and metrics is the second entry
+            period: "{{ stream_partition.extra_fields['query_properties'][0] }}"
+            metric: "{{ stream_partition.extra_fields['query_properties'][1] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_instagram.components.UserInsightsExtractor
+            field_path:
+              - data
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: source_instagram.components.RFC3339DatetimeSchemaNormalization
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: source_instagram.components.UserInsightsSubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: account
+              partition_field: business_account_id
+              stream:
+                $ref: "#/definitions/streams/Api"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        # The Instagram API expects date time range parameters in 2025-06-01T07:00:00Z format, but the
+        # API response returns date as 2025-06-01T07:00:00+0000. This requires that start_datetime and
+        # end_datetime specify a different datetime_format than the outer DatetimeBasedCursor which is
+        # used to persist state in RFC 3339 format (+00:00)
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('start_date', (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        step: P1D
+        cursor_granularity: PT0S
+        start_time_option:
+          type: RequestOption
+          field_name: since
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: until
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: "{{ stream_partition.extra_fields.get('page_id') }}"
+              value_type: string
+            - type: AddedFieldDefinition
+              path:
+                - business_account_id
+              value: "{{ stream_partition.get('business_account_id') }}"
+              value_type: string
+      state_migrations:
+        - type: LegacyToPerPartitionStateMigration
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/UserInsights"
     Api:
       type: DeclarativeStream
       name: Api
@@ -586,6 +704,7 @@ streams:
   - $ref: "#/definitions/streams/Stories"
   - $ref: "#/definitions/streams/StoryInsights"
   - $ref: "#/definitions/streams/Api"
+  - $ref: "#/definitions/streams/UserInsights"
 
 # Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
 concurrency_level:
@@ -855,11 +974,6 @@ schemas:
         type:
           - "null"
           - integer
-      views:
-        description: The number of views on the media.
-        type:
-          - "null"
-          - integer
     required:
       - id
   Users:
@@ -1097,11 +1211,53 @@ schemas:
         type:
           - "null"
           - integer
-      views:
-        description: The number of views on the story.
+  UserInsights:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      page_id:
+        description: The unique identifier for the user's Instagram page.
+        type:
+          - "null"
+          - string
+      business_account_id:
+        description: The unique identifier for the user's business account.
+        type:
+          - "null"
+          - string
+      date:
+        description: The date and time the insights data was fetched.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      follower_count:
+        description: The total number of followers for the user's account.
         type:
           - "null"
           - integer
+      reach:
+        description: The total number of unique accounts that have seen the user's content.
+        type:
+          - "null"
+          - integer
+      reach_week:
+        description: The total reach in the last week.
+        type:
+          - "null"
+          - integer
+      reach_days_28:
+        description: The total reach in the last 28 days.
+        type:
+          - "null"
+          - integer
+      online_followers:
+        description: The number of followers who are currently online.
+        type:
+          - "null"
+          - object
   Api:
     type: object
     $schema: http://json-schema.org/schema#

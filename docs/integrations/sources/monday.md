@@ -77,6 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 |:--------|:-----------| :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| 2.4.0 | 2025-07-09 | [62886](https://github.com/airbytehq/airbyte/pull/62886) | Promoting release candidate 2.4.0-rc.1 to a main version. |
 | 2.4.0-rc.1 | 2025-07-02 | [62444](https://github.com/airbytehq/airbyte/pull/62444) | Migrate connector to manifest-only |
 | 2.3.1 | 2025-05-31 | [53828](https://github.com/airbytehq/airbyte/pull/53828) | Update dependencies |
 | 2.3.0 | 2025-04-02 | [56967](https://github.com/airbytehq/airbyte/pull/56967) | Promoting release candidate 2.3.0-rc.1 to a main version. |

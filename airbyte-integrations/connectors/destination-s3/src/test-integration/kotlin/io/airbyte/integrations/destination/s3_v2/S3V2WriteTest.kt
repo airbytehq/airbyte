@@ -414,6 +414,54 @@ class S3V2WriteTestCsvGzip :
         allTypesBehavior = Untyped,
     )
 
+class S3V2WriteTestCsvUncompressedProtoSocket :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
+
+class S3V2WriteTestCsvFlattenedProtoSocket :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
+
 class S3V2WriteTestAvroUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,

@@ -83,6 +83,7 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 1.3.5 | 2025-07-12 | [63204](https://github.com/airbytehq/airbyte/pull/63204) | Update dependencies |
 | 1.3.4 | 2025-07-05 | [62668](https://github.com/airbytehq/airbyte/pull/62668) | Update dependencies |
 | 1.3.3 | 2025-06-28 | [62283](https://github.com/airbytehq/airbyte/pull/62283) | Update dependencies |
 | 1.3.2 | 2025-06-21 | [61828](https://github.com/airbytehq/airbyte/pull/61828) | Update dependencies |
