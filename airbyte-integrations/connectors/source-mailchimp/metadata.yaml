@@ -7,7 +7,7 @@ data:
       - "*.api.mailchimp.com"
       - "login.mailchimp.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.0@sha256:4ee59c9d62c18191ab9b27dabc7de1ed89c519d54680e764ac055695f6cd2d1f
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1.post4.dev16275471665@sha256:fbbab8446ad6a60fbef9c584cf1b7cafbcf2576c9f5cdde173b36f235f8e0cf2
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002

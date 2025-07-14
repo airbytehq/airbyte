@@ -32,78 +32,75 @@ class MailChimpOAuthDataCenterExtractor(ConfigTransformation):
         For API key auth, extract from the API key itself.
         For OAuth auth, make an HTTP request to get the data center.
         """
-        # Check if this is OAuth authentication
-        print(f"Config: {config}")
-        if config.get("credentials", {}).get("auth_type") == "oauth2.0":
-            
-            access_token = config.get("credentials", {}).get("access_token")
-            # OAuth flow - extract data center from access token
-            
-            # Make HTTP request to get OAuth metadata
-            try:
-                response = requests.get(
-                    "https://login.mailchimp.com/oauth2/metadata",
-                    headers={"Authorization": f"OAuth {access_token}"},
-                    timeout=10
-                )
-                response.raise_for_status()
-                
-                # Check for invalid token error
-                error = response.json().get("error")
-                if error == "invalid_token":
-                    raise AirbyteTracedException(
-                        failure_type=FailureType.config_error,
-                        internal_message=error,
-                        message=(
-                            "The access token you provided was invalid. "
-                            "Please check your credentials and try again."
-                        ),
-                    )
-                
-                # Extract data center from the "dc" field
-                data_center = response.json().get("dc")
-                if data_center:
-                    # Only add to user config fields, avoid framework-injected fields
-                    self._safe_add_field(config, "data_center", data_center)
-                    
-            except Exception as e:
-                # If we can't get the data center, log the error but don't fail
-                # The connector will handle this gracefully
-                print(
-                    f"Warning: Could not extract data center from OAuth token: {e}"
-                )
-                
-        elif config.get("credentials", {}).get("auth_type") == "apikey":
-            # API key flow - extract data center from API key
-            api_key = config.get("credentials", {}).get("apikey")
-            if api_key and "-" in api_key:
-                # API key format: "prefix-datacenter"
-                data_center = api_key.split("-")[-1]
-                self._safe_add_field(config, "data_center", data_center)
-        elif "apikey" in config:
-            # Backward compatibility - check for API key at top level
+
+        # Exit early if the data center is already in the config
+        if config.get("data_center"):
+            return
+
+        try:
+            if config.get("credentials", {}).get("auth_type") == "oauth2.0":
+                self._extract_data_center_from_oauth(config)
+            else:
+                self._extract_data_center_from_apikey(config)
+        except AirbyteTracedException:
+            # Re-raise AirbyteTracedException as-is
+            raise
+        except Exception as e:
+            # Convert other exceptions to AirbyteTracedException
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message=f"Failed to extract data center: {str(e)}",
+                message=(
+                    "Unable to extract data center from credentials. "
+                    "Please check your configuration and try again."
+                ),
+            ) from e
+
+    @staticmethod
+    def _extract_data_center_from_oauth(config: MutableMapping[str, Any]) -> None:
+        """Make a request to oauth2/metadata endpoint to get the data center."""
+        access_token = config.get("credentials", {}).get("access_token")
+
+        response = requests.get(
+            "https://login.mailchimp.com/oauth2/metadata",
+            headers={"Authorization": f"OAuth {access_token}"},
+            timeout=10
+        )
+        response.raise_for_status()
+
+        # Mailchimp returns a 200 response with an error key if the token is invalid
+        error = response.json().get("error")
+        if error == "invalid_token":
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message=error,
+                message=(
+                    "The access token you provided was invalid. "
+                    "Please check your credentials and try again."
+                ),
+            )
+
+        # Extract data center from the "dc" field
+        data_center = response.json().get("dc")
+        if data_center:
+            dpath.new(config, ["data_center"], data_center)
+
+    @staticmethod
+    def _extract_data_center_from_apikey(config: MutableMapping[str, Any]) -> None:
+        """Extract the data center directly from the API key."""
+
+        # Backward compatibility - check for API key at top level
+        if config.get("apikey"):
             api_key = config["apikey"]
             if api_key and "-" in api_key:
                 # API key format: "prefix-datacenter"
                 data_center = api_key.split("-")[-1]
-                self._safe_add_field(config, "data_center", data_center)
+                dpath.new(config, ["data_center"], data_center)
+                return
 
-    def _safe_add_field(self, config: MutableMapping[str, Any], field_name: str, value: Any) -> None:
-        """
-        Safely add a field to the config, avoiding framework-injected fields.
-        
-        Args:
-            config: The config to modify
-            field_name: The name of the field to add
-            value: The value to set
-        """
-        # Avoid modifying framework-injected fields
-        framework_fields = {
-            "__injected_declarative_manifest",
-            "__injected_components_py", 
-            "__injected_components_py_checksums"
-        }
-        
-        # Only add the field if it's not a framework-injected field
-        if field_name not in framework_fields:
-            dpath.new(config, [field_name], value)
+        # API key flow - extract data center from API key
+        api_key = config.get("credentials", {}).get("apikey")
+        if api_key and "-" in api_key:
+            # API key format: "prefix-datacenter"
+            data_center = api_key.split("-")[-1]
+            dpath.new(config, ["data_center"], data_center)
