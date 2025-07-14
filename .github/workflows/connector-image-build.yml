@@ -92,11 +92,11 @@ jobs:
           # Set image tags for internal builds:
           GHCR_REPO="ghcr.io/airbytehq/${{ inputs.connector }}"
           if [[ ! -z "$PR_NUMBER" ]]; then
-            echo "image-pr-num-tag=${GHCR_REPO}:temp-pr-${PR_NUMBER}" | tee -a $GITHUB_OUTPUT
-            echo "image-build-num-tag=${GHCR_REPO}:temp-pr-${PR_NUMBER}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+            echo "image-pr-num-tag=${GHCR_REPO}:test-pr${PR_NUMBER}" | tee -a $GITHUB_OUTPUT
+            echo "image-build-num-tag=${GHCR_REPO}:test-pr${PR_NUMBER}-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
           else
             echo "image-pr-num-tag=" | tee -a $GITHUB_OUTPUT
-            echo "image-build-num-tag=${GHCR_REPO}:temp-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
+            echo "image-build-num-tag=${GHCR_REPO}:test-build${{ github.run_number }}" | tee -a $GITHUB_OUTPUT
           fi
 
           # Set production image tags for GHCR and DockerHub:
@@ -175,7 +175,6 @@ jobs:
           tags: |
             ${{ steps.vars.outputs.image-pr-num-tag }}
             ${{ steps.vars.outputs.image-build-num-tag }}
-            ${{ steps.vars.outputs.ghcr-prod-tag || '' }}
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
             CONNECTOR_NAME=${{ inputs.connector }}
@@ -207,6 +206,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ steps.vars.outputs.dockerhub-prod-tag }}
+            ${{ steps.vars.outputs.ghcr-prod-tag }}
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.connector-base-image }}
             CONNECTOR_NAME=${{ inputs.connector }}
