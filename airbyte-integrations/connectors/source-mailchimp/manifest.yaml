@@ -42,7 +42,7 @@ definitions:
         inject_into: "request_parameter"
         field_name: "offset"
     requester:
-      url_base: https://{{ config.get('data_center', '') }}.api.mailchimp.com/3.0/
+      url_base: https://{{ config['data_center'] }}.api.mailchimp.com/3.0/
       http_method: GET
       authenticator:
         type: SelectiveAuthenticator
@@ -4783,7 +4783,7 @@ spec:
         description: Extract data center from API key credentials and add it to config for future requests
         transformations:
           - type: CustomConfigTransformation
-            class_name: source_declarative_manifest.components.MailChimpOAuthDataCenterExtractor
+            class_name: source_declarative_manifest.components.ExtractAndSetDataCenterConfigValue
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

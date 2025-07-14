@@ -14,23 +14,17 @@ from airbyte_cdk.utils.traced_exception import FailureType
 
 
 class MailChimpRecordExtractorEmailActivity(DpathExtractor):
-    def extract_records(
-        self, response: requests.Response
-    ) -> Iterable[MutableMapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
         records = super().extract_records(response=response)
-        yield from (
-            {**record, **activity_item}
-            for record in records
-            for activity_item in record.pop("activity", [])
-        )
+        yield from ({**record, **activity_item} for record in records for activity_item in record.pop("activity", []))
 
 
-class MailChimpOAuthDataCenterExtractor(ConfigTransformation):
+class ExtractAndSetDataCenterConfigValue(ConfigTransformation):
     def transform(self, config: MutableMapping[str, Any]) -> None:
         """
-        Extract the data center from OAuth tokens and add it to the config.
+        Extract the data center from auth credentials and add it to the config.
         For API key auth, extract from the API key itself.
-        For OAuth auth, make an HTTP request to get the data center.
+        For OAuth, make an HTTP request to get the data center.
         """
 
         # Exit early if the data center is already in the config
@@ -50,10 +44,7 @@ class MailChimpOAuthDataCenterExtractor(ConfigTransformation):
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
                 internal_message=f"Failed to extract data center: {str(e)}",
-                message=(
-                    "Unable to extract data center from credentials. "
-                    "Please check your configuration and try again."
-                ),
+                message=("Unable to extract data center from credentials. " "Please check your configuration and try again."),
             ) from e
 
     @staticmethod
@@ -62,9 +53,7 @@ class MailChimpOAuthDataCenterExtractor(ConfigTransformation):
         access_token = config.get("credentials", {}).get("access_token")
 
         response = requests.get(
-            "https://login.mailchimp.com/oauth2/metadata",
-            headers={"Authorization": f"OAuth {access_token}"},
-            timeout=10
+            "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": f"OAuth {access_token}"}, timeout=10
         )
         response.raise_for_status()
 
@@ -74,10 +63,7 @@ class MailChimpOAuthDataCenterExtractor(ConfigTransformation):
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
                 internal_message=error,
-                message=(
-                    "The access token you provided was invalid. "
-                    "Please check your credentials and try again."
-                ),
+                message=("The access token you provided was invalid. " "Please check your credentials and try again."),
             )
 
         # Extract data center from the "dc" field

@@ -7,7 +7,7 @@ from typing import Any, Mapping
 
 import pytest
 import requests
-from components import MailChimpOAuthDataCenterExtractor
+from components import ExtractAndSetDataCenterConfigValue
 
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.traced_exception import FailureType
@@ -19,12 +19,12 @@ def load_config(config_path: str) -> Mapping[str, Any]:
         return json.load(config)
 
 
-class TestMailChimpOAuthDataCenterExtractor:
-    """Test cases for MailChimpOAuthDataCenterExtractor."""
+class TestExtractAndSetDataCenterConfigValue:
+    """Test cases for ExtractAndSetDataCenterConfigValue."""
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.extractor = MailChimpOAuthDataCenterExtractor()
+        self.extractor = ExtractAndSetDataCenterConfigValue()
 
     def test_transform_with_existing_data_center(self):
         """Test that transform exits early if data_center already exists."""
@@ -99,7 +99,7 @@ class TestMailChimpOAuthDataCenterExtractor:
         assert "Unable to extract data center" in exc_info.value.message
 
 
-class TestMailChimpOAuthDataCenterExtractorIntegration:
+class TestExtractAndSetDataCenterConfigValueIntegration:
     """Integration tests using actual config files."""
 
     @pytest.mark.parametrize(
@@ -122,7 +122,7 @@ class TestMailChimpOAuthDataCenterExtractorIntegration:
         if "data_center" in config:
             del config["data_center"]
 
-        extractor = MailChimpOAuthDataCenterExtractor()
+        extractor = ExtractAndSetDataCenterConfigValue()
         extractor.transform(config)
 
         assert config.get("data_center") == expected_data_center
