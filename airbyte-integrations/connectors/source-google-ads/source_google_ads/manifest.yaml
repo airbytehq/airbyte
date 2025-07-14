@@ -291,7 +291,7 @@ definitions:
       - ad_group_criterion.criterion_id
       - segments.date
       - segments.ad_network_type
-      - segments.device"
+      - segments.device
     transformations:
       - type: CustomTransformation
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
