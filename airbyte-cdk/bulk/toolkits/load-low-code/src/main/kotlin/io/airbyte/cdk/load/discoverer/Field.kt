@@ -26,11 +26,15 @@ class Field(
     fun getName(): String = name
 
     /**
-     * [Nullability has been reverted](https://github.com/airbytehq/airbyte/pull/62854) and there are no plans to move forward so we will consider everything as nullable for now
+     * [Nullability has been reverted](https://github.com/airbytehq/airbyte/pull/62854) and there
+     * are no plans to move forward so we will consider everything as nullable for now
      */
     fun getType(): FieldType {
         val apiType = apiRepresentation.extract(typePath).asText()
-        return FieldType(typeMapper[apiType] ?: throw IllegalStateException("Unknown type $apiType"), nullable = true)
+        return FieldType(
+            typeMapper[apiType] ?: throw IllegalStateException("Unknown type $apiType"),
+            nullable = true
+        )
     }
 
     fun isMatchingKey(): Boolean {
