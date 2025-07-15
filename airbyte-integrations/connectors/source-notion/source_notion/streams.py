@@ -4,9 +4,9 @@
 
 import logging as Logger
 from abc import ABC
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
-import pendulum
 import pydantic
 import requests
 from requests import HTTPError
@@ -17,6 +17,7 @@ from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_now
 
 
 # maximum block hierarchy recursive request depth
@@ -51,7 +52,8 @@ class NotionStream(HttpStream, ABC):
 
         # If start_date is not found in config, set it to 2 years ago and update value in config for use in next stream
         if not self.start_date:
-            self.start_date = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+            two_years_ago = ab_datetime_now() - timedelta(weeks=104)  # 2 years = 104 weeks
+            self.start_date = ab_datetime_format(two_years_ago)
             config["start_date"] = self.start_date
 
     @property

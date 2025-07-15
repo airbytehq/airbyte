@@ -16,9 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_notion"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "1.5.1" # pinning to 1.5.1 to avoid breaking changes. This will be removed once we migrated to manifest only
-airbyte-protocol-models = "0.11.0" # pinning to 0.11.0 to avoid breaking changes. This will be removed once we migrated to manifest only
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-notion = "source_notion.run:run"
