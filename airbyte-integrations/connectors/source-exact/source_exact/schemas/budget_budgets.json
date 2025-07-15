@@ -117,7 +117,7 @@
         "string"
       ]
     },
-    "HiD": {
+    "HID": {
       "description": "Numerical ID. Never displayed to the user, but it may have its use for performance reasons",
       "type": [
         "null",
