@@ -31,8 +31,8 @@ Stream templates support three different types of components resolvers to produc
 The most common resolver type that fetches data via HTTP requests. This resolver uses a retriever component to coordinate how records are extracted across stream slices and request pages.
 
 **Configuration:**
-- `retriever`: Component used to coordinate record extraction (SimpleRetriever, AsyncRetriever, or CustomRetriever)
-- `components_mapping`: Array of ComponentMappingDefinition objects that define how to map retrieved data to template variables
+- **Retriever** - Component used to coordinate record extraction (configured through the UI form)
+- **Components Mapping** - Define how resolver data maps to template variables (configured in the mapping section)
 
 **Example use case:** Fetching a list of repositories from GitHub API to generate individual issue streams for each repository.
 
@@ -41,8 +41,8 @@ The most common resolver type that fetches data via HTTP requests. This resolver
 Resolves and populates stream templates with components fetched from the source configuration. This is useful when the list of streams to generate is defined in the connector's configuration.
 
 **Configuration:**
-- `stream_config`: Configuration defining how to extract stream information from the source config
-- `components_mapping`: Array of ComponentMappingDefinition objects for mapping config data to template variables
+- **Stream Config** - Configuration defining how to extract stream information from the source config
+- **Components Mapping** - Define how config data maps to template variables (configured in the mapping section)
 
 **Example use case:** A connector where users specify a list of database tables in the configuration, and each table becomes a separate stream.
 
@@ -51,14 +51,14 @@ Resolves and populates stream templates with components fetched from the source 
 Resolves and populates dynamic streams from predefined parametrized values in the manifest. This allows you to define a static list of stream variations directly in the connector manifest.
 
 **Configuration:**
-- `stream_parameters`: StreamParametersDefinition containing predefined parameter values
-- `components_mapping`: Array of ComponentMappingDefinition objects for mapping parameters to template variables
+- **Stream Parameters** - Predefined parameter values for stream generation
+- **Components Mapping** - Define how parameters map to template variables (configured in the mapping section)
 
 **Example use case:** A connector that always creates streams for a fixed set of data types or regions.
 
 ## Components Mapping
 
-The `components_mapping` configuration defines how data from the resolver is mapped to variables that can be used in the Generated Stream Template. Each mapping definition includes:
+The Components Mapping configuration defines how data from the resolver is mapped to variables that can be used in the Generated Stream Template. This is configured through the UI form and includes:
 
 ### Field Path
 A list of potentially nested fields indicating the full path where the value will be added or updated in the template. Supports:
@@ -142,14 +142,13 @@ The generated stream configurations are read-only; to make changes to them, you 
 
 The Connector Builder UI provides access to commonly used configuration fields for the **Produce Data for Template** section:
 
-- `components_mapping` - Define how resolver data maps to template variables
-- `retriever.requester.url_base` - Base URL for HTTP requests
-- `retriever.requester.path` - URL path for the endpoint
-- `retriever.requester.url` - Complete URL (alternative to url_base + path)
-- `retriever.requester.http_method` - HTTP method (GET, POST, etc.)
-- `retriever.requester.authenticator` - Authentication configuration
-- `retriever.record_selector.extractor` - How to extract records from the response
-- `stream_config` - Stream configuration for ConfigComponentsResolver
+- **URL Path** - The API endpoint path for fetching template data
+- **HTTP Method** - Request method (GET, POST, etc.)
+- **Authentication** - Authentication configuration for the request
+- **Record Selector** - How to extract records from the API response
+- **Components Mapping** - Define how resolver data maps to template variables (available in advanced configurations)
+
+Additional fields are available through the form interface, organized into logical sections like request configuration, response handling, and data mapping.
 
 ### YAML Mode for Advanced Features
 
