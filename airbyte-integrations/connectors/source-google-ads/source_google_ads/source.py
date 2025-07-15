@@ -19,7 +19,6 @@ from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
     AccountPerformanceReport,
-    AdGroup,
     AdGroupAd,
     AdGroupAdLabel,
     AdGroupAdLegacy,
@@ -37,14 +36,8 @@ from .streams import (
     Customer,
     CustomerClient,
     CustomerLabel,
-    DisplayKeywordView,
-    GeographicView,
-    KeywordView,
     Label,
-    ShoppingPerformanceView,
-    TopicView,
     UserInterest,
-    UserLocationView,
 )
 from .utils import GAQL, logger, traced_exception
 
@@ -241,7 +234,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            AdGroup(**incremental_config),
             AdGroupAd(**incremental_config),
             AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),
@@ -264,14 +256,8 @@ class SourceGoogleAds(YamlDeclarativeSource):
             streams.extend(
                 [
                     CampaignBudget(**non_manager_incremental_config),
-                    UserLocationView(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
-                    TopicView(**non_manager_incremental_config),
-                    DisplayKeywordView(**non_manager_incremental_config),
-                    ShoppingPerformanceView(**non_manager_incremental_config),
                     AdGroupAdLegacy(**non_manager_incremental_config),
-                    GeographicView(**non_manager_incremental_config),
-                    KeywordView(**non_manager_incremental_config),
                 ]
             )
 
