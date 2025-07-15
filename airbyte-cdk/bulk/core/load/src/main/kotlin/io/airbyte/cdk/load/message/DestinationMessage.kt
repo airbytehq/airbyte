@@ -160,7 +160,7 @@ data class Meta(
                     // Handle both cases here.
                     try {
                         IntegerValue(BigInteger(value))
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         TimestampWithTimezoneValue(
                             OffsetDateTime.parse(
                                 value,
@@ -665,6 +665,49 @@ data class GlobalCheckpoint(
     }
 }
 
+data class GlobalSnapshotCheckpoint(
+    val state: JsonNode?,
+    override val sourceStats: Stats?,
+    override var destinationStats: Stats? = null,
+    val checkpoints: List<Checkpoint> = emptyList(),
+    override val additionalProperties: Map<String, Any>,
+    val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
+        AirbyteStateMessage.AirbyteStateType.GLOBAL,
+    override val serializedSizeBytes: Long,
+    override val checkpointKey: CheckpointKey? = null,
+    override var totalRecords: Long? = null,
+    override var totalBytes: Long? = null,
+    override var totalRejectedRecords: Long? = null,
+    val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>
+) : CheckpointMessage {
+
+    override fun updateStats(
+        destinationStats: Stats?,
+        totalRecords: Long?,
+        totalBytes: Long?,
+        totalRejectedRecords: Long?
+    ) {
+        destinationStats?.let { this.destinationStats = it }
+        totalRecords?.let { this.totalRecords = it }
+        totalBytes?.let { this.totalBytes = it }
+        totalRejectedRecords?.let { this.totalRejectedRecords = it }
+    }
+    override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
+
+    override fun asProtocolMessage(): AirbyteMessage {
+        val stateMessage =
+            AirbyteStateMessage()
+                .withType(originalTypeField)
+                .withGlobal(
+                    AirbyteGlobalState()
+                        .withSharedState(state)
+                        .withStreamStates(checkpoints.map { it.asProtocolObject() }),
+                )
+        decorateStateMessage(stateMessage)
+        return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
+    }
+}
+
 /** Catchall for anything unimplemented. */
 data object Undefined : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
@@ -677,7 +720,7 @@ data object Undefined : DestinationMessage {
 }
 
 /**
- * For messages we recognize but do not want to process. Different from [Undefined] mainly in that
+ * For messages, we recognize but do not want to process. Different from [Undefined] mainly in that
  * we don't log a warning.
  */
 data object Ignored : DestinationMessage {

@@ -21,6 +21,8 @@ import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.FileTransferQueueRecord
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
+import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
+import io.airbyte.cdk.load.message.GlobalSnapshotCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineHeartbeat
@@ -48,11 +50,11 @@ import org.apache.mina.util.ConcurrentHashSet
  *    backpressure scheme (note: the exception to this is for file transfer, which forwards the
  *    record after handling the file; and of course obviously for state)
  * ```
- * These differences might diverge/converge as we tune (ie, because of lock contention with multiple
- * sockets, or because the socket pattern ends up working for stdio as well). For now, since the
- * main difference is what is done with the pipeline events, we'll consolidate bookkeeping into a
- * single class that yields events from DestinationMessage(s). CheckpointIds can be inferred iff the
- * record does not provide one.
+ * These differences might diverge/converge as we tune (i.e., because of lock contention with
+ * multiple sockets, or because the socket pattern ends up working for stdio as well). For now,
+ * since the main difference is what is done with the pipeline events, we'll consolidate bookkeeping
+ * into a single class that yields events from DestinationMessage(s). CheckpointIds can be inferred
+ * if the record does not provide one.
  */
 @Singleton
 class PipelineEventBookkeepingRouter(
@@ -98,7 +100,7 @@ class PipelineEventBookkeepingRouter(
                 val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
                 manager.incrementByteCount(record.serializedSizeBytes)
-                // Fallback to the manager if the record doesn't have a checkpointId
+                // Fallback to the manager if the record doesn't have a checkpoint ID.
                 // This should only happen in STDIO mode.
                 val checkpointId =
                     record.checkpointId ?: manager.inferNextCheckpointKey().checkpointId
@@ -159,6 +161,7 @@ class PipelineEventBookkeepingRouter(
             }
 
             /** For a global state message, gather the */
+            is GlobalSnapshotCheckpoint,
             is GlobalCheckpoint -> {
                 val (checkpointKey, checkpointRecordCount) =
                     if (checkpoint.checkpointKey == null) {
@@ -184,14 +187,18 @@ class PipelineEventBookkeepingRouter(
                             checkpoint.checkpointKey!!.checkpointId,
                             sourceCounts
                         )
-                        Pair(checkpoint.checkpointKey!!, sourceCounts)
+                        Pair(checkpoint.checkpointKey, sourceCounts)
                     }
 
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
-                checkpointQueue.publish(
-                    reservation.replace(GlobalCheckpointWrapped(checkpointKey, messageWithCount))
-                )
+                val wrappedCheckpoint =
+                    if (checkpoint is GlobalCheckpoint) {
+                        GlobalCheckpointWrapped(checkpointKey!!, messageWithCount)
+                    } else {
+                        GlobalSnapshotCheckpointWrapped(checkpointKey!!, messageWithCount)
+                    }
+                checkpointQueue.publish(reservation.replace(wrappedCheckpoint))
             }
         }
     }
@@ -229,7 +236,7 @@ class PipelineEventBookkeepingRouter(
                     val sawComplete = sawEndOfStreamComplete.contains(it.mappedDescriptor)
                     val manager = syncManager.getStreamManager(it.mappedDescriptor)
                     if (sawComplete) {
-                        manager.markEndOfStream(sawComplete)
+                        manager.markEndOfStream(true)
                     }
                     batchStateUpdateQueue.publish(
                         BatchEndOfStream(
