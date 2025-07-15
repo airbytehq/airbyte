@@ -7,7 +7,6 @@ from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
-import pydantic
 import requests
 from requests import HTTPError
 
@@ -16,7 +15,6 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 
 
 # maximum block hierarchy recursive request depth
@@ -71,19 +69,61 @@ class NotionStream(HttpStream, ABC):
         return 60 * 11
 
     @staticmethod
-    def check_invalid_start_cursor(response: requests.Response):
-        if response.status_code == 400:
-            message = response.json().get("message", "")
-            if message.startswith("The start_cursor provided is invalid: "):
-                return message
-
-    @staticmethod
     def throttle_request_page_size(current_page_size):
         """
         Helper method to halve page_size when encountering a 504 Gateway Timeout error.
         """
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
+
+    @staticmethod
+    def check_invalid_start_cursor(response: requests.Response):
+        """Check if the error is due to an invalid start cursor."""
+        if response.status_code == 400:
+            message = response.json().get("message", "")
+            if message.startswith("The start_cursor provided is invalid: "):
+                return message
+        return None
+
+    @staticmethod
+    def should_retry_for_notion_error(response: requests.Response) -> bool:
+        """
+        Check if we should retry for specific Notion API errors.
+        Returns False for errors that should not be retried.
+        """
+        if response.status_code == 400:
+            # Check for invalid start cursor error
+            if NotionStream.check_invalid_start_cursor(response):
+                return False
+
+            # Check for ai_block error
+            try:
+                error_data = response.json()
+                if error_data.get("code") == "validation_error" and "Block type ai_block is not supported via the API" in error_data.get(
+                    "message", ""
+                ):
+                    return False
+            except (ValueError, KeyError):
+                pass
+
+        elif response.status_code == 404:
+            # Don't retry 404 errors for blocks
+            if "/blocks/" in response.url:
+                return False
+
+        # For all other cases, let the CDK handle retry logic
+        return True
+
+    def should_retry(self, response: requests.Response) -> bool:
+        """
+        Override the CDK's should_retry to handle Notion-specific error cases.
+        """
+        # First check our Notion-specific error handling
+        if not self.should_retry_for_notion_error(response):
+            return False
+
+        # For all other cases, use the CDK's default retry logic
+        return super().should_retry(response)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
@@ -165,11 +205,13 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
             for record in super().read_records(sync_mode, stream_state=stream_state, **kwargs):
                 self.state = self._get_updated_state(self.state, record)
                 yield record
-        except UserDefinedBackoffException as e:
+        except requests.exceptions.HTTPError as e:
+            # Check for invalid start cursor error
             message = self.check_invalid_start_cursor(e.response)
             if message:
                 self.logger.error(f"Skipping stream {self.name}, error message: {message}")
                 return
+            # Re-raise other HTTP errors
             raise e
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
@@ -188,7 +230,7 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         # Get the current state value as a string
         current_state_value = (current_stream_state or {}).get(self.cursor_field, "")
         record_time = latest_record.get(self.cursor_field, self.start_date)
-        
+
         # For now, just use the record time as the state value
         # The complex logic with max_cursor_time and is_finished can be simplified
         # since we're moving to low-code anyway
