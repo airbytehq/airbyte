@@ -10,6 +10,7 @@ import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.List
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -219,6 +220,7 @@ private class GlobalStateManager(
             .mapValues { GlobalStreamStateManager(it.key, it.value) }
             .mapKeys { it.key.id }
 
+    private val stateId: AtomicInteger = AtomicInteger(1)
     fun checkpoint(): AirbyteStateMessage? {
         var shouldCheckpoint = false
         var totalNumRecords = 0L
@@ -258,6 +260,7 @@ private class GlobalStateManager(
         if (!shouldCheckpoint) {
             return null
         }
+
         val airbyteGlobalState =
             AirbyteGlobalState()
                 .withSharedState(globalStateForCheckpoint.opaqueStateValue)
@@ -268,7 +271,7 @@ private class GlobalStateManager(
             .withGlobal(airbyteGlobalState)
             .withSourceStats(AirbyteStateStats().withRecordCount(totalNumRecords.toDouble()))
             // Only add id and partition_id if they are not null (stdio mode compatibility).
-            .apply { globalStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) } }
+            .apply { /*globalStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) }*/ withAdditionalProperty("id", stateId.getAndIncrement()) }
             .apply {
                 globalStateForCheckpoint.partitionId?.let { partitionId ->
                     withAdditionalProperty("partition_id", partitionId)
