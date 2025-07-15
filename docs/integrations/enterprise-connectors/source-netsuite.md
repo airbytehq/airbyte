@@ -78,8 +78,8 @@ The process of setting up OAuth 2.0 for Netsuite SuiteAnalytics Connect is as fo
     - Under OAuth 2.0 Check the "Client Credentials (Machine to Machine) Grant" box only. (No need for Authorization Code grant)
     - Check the "SuiteAnalytics Connect" scope.
     - Upon creation copy and save the Consumer Key.
-3. Set Permission (Setup > Users/Roles > Manage Roles > New)
-    - Select the user you want to use for the token. This user must have a role with the "Log in using Access Tokens" permission, in addition to "SuiteAnalytics Connect".
+3. Set Permission (Setup > Users/Roles > Manage Users)
+    - Select or create the user you want to use for the token. This user must have a role with the "Log in using Access Tokens" permission, in addition to "SuiteAnalytics Connect".
     - Select or create the role you want to use for the token. **This would typically be the "Data Warehouse Integrator" role**.
 4. Generate or upload the public key of a public/private key pair to Netsuite (Setup > Integration > Manage Authentication > OAuth 2.0 Client Credentials Setup)
     - In case you need to generate a new key pair, the following OpenSSL command can be used:
@@ -88,7 +88,7 @@ The process of setting up OAuth 2.0 for Netsuite SuiteAnalytics Connect is as fo
       ```
       Airbyte supports all key types supported by Netsuite.
     - Upload the public key to Netsuite and save the Certificate ID.
-5. On the Airbyte source-netsuite's config page fill-in the Client ID, Certificate ID and the role ID for the role the token was created or selected in step 3.
+5. On the Airbyte source-netsuite's config page fill-in the Consumer key, Certificate ID and the role ID for the role the token was created or selected in step 3.
 6. Upload the private key that was generated in step 4.
 7. Confirm Netsuite is accessible by clicking the "Test and save" button.
 
