@@ -335,6 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.12.0-rc.2 | 2025-07-15 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fixes erroneous transformation override                                                                                                                               |
 | 3.12.0-rc.1 | 2025-07-15 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate additional streams to low-code: See PR for more details                                                                                                                               |
 | 3.11.0 | 2025-07-15 | [63302](https://github.com/airbytehq/airbyte/pull/63302) | Promoting release candidate 3.11.0-rc.1 to a main version. |
 | 3.11.0-rc.1 | 2025-07-14 | [62846](https://github.com/airbytehq/airbyte/pull/62846) | Migrate views streams to Low Code                                                                                                                                      |
