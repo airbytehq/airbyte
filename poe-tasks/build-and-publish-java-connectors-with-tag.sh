@@ -77,6 +77,10 @@ is_in_whitelist() {
     source-mysql|\
     source-mssql|\
     source-mongodb|\
+    source-db2-enterprise|\
+    source-sap-hana|\
+    source-netsuite|\
+    source-oracle-enterprise|\
     source-bigquery|\
     source-clickhouse|\
     source-clickhouse-strict-encrypt|\
