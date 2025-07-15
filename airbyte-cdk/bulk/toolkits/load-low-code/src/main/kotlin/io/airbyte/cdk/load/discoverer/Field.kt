@@ -5,10 +5,10 @@
 package io.airbyte.cdk.load.discoverer
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import java.util.function.Predicate
 
-/** Potential improvement: memoize at least isMatchingKey as it will be called multiple times */
 class Field(
     private val apiRepresentation: JsonNode,
     namePath: List<String>,
@@ -16,7 +16,7 @@ class Field(
     matchingKeyPredicate: Predicate<JsonNode>,
     availabilityPredicate: Predicate<JsonNode>,
     requiredPredicate: Predicate<JsonNode>,
-    private val typeMapper: Map<String, FieldType>,
+    private val typeMapper: Map<String, AirbyteType>,
 ) {
     private val name: String = apiRepresentation.extract(namePath).asText()
     private val matchingKey: Boolean = matchingKeyPredicate.test(apiRepresentation)
@@ -25,9 +25,12 @@ class Field(
 
     fun getName(): String = name
 
+    /**
+     * [Nullability has been reverted](https://github.com/airbytehq/airbyte/pull/62854) and there are no plans to move forward so we will consider everything as nullable for now
+     */
     fun getType(): FieldType {
         val apiType = apiRepresentation.extract(typePath).asText()
-        return typeMapper[apiType] ?: throw IllegalStateException("Unknown type $apiType")
+        return FieldType(typeMapper[apiType] ?: throw IllegalStateException("Unknown type $apiType"), nullable = true)
     }
 
     fun isMatchingKey(): Boolean {

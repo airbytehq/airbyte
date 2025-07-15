@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.discoverer
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import java.util.function.Predicate
 
@@ -14,7 +15,7 @@ class FieldFactory(
     private val matchingKeyPredicate: Predicate<JsonNode>,
     private val availabilityPredicate: Predicate<JsonNode>,
     private val requiredPredicate: Predicate<JsonNode>,
-    private val typeMapper: Map<String, FieldType>,
+    private val typeMapper: Map<String, AirbyteType>,
 ) {
     fun create(apiRepresentation: JsonNode): Field {
         return Field(
