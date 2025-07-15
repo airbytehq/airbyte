@@ -38,7 +38,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       2.0.0:
         message: Version 2.0.0 introduces changes to stream names for those syncing more than one Google Analytics 4 property. It allows streams from all properties to sync successfully. Please upgrade the connector to enable this additional functionality.
