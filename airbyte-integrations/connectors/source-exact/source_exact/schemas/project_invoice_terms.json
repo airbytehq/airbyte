@@ -76,14 +76,6 @@
       ],
       "format": "date-time"
     },
-    "EndDate": {
-      "description": "End date of the project. In combination with the start date the status is determined",
-      "type": [
-        "null",
-        "string"
-      ],
-      "format": "date-time"
-    },
     "InvoiceDate": {
       "description": "Invoice date of invoice term",
       "type": [

@@ -88,3 +88,9 @@ When Extracting with Airbyte the preference is from Sync, Bulk, Single.
 As per Exact Online's documentation.
 > The sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.
 The single and bulk api’s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.
+
+## ToDo List
+- [ ] Improve logging so that in the case of a refresh of a token before its expiry date does not only give a 401 but also its message
+  - `401 Client Error: Unauthorized for url: https://start.exactonline.nl/api/oauth2/token`
+- [ ] Refactor ExactStream to not have subclasses set the `cursor_field = ""` as then the cursor field needs to be 
+  defined within the schema which it isn't
