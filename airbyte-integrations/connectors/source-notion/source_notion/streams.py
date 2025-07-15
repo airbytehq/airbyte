@@ -5,9 +5,8 @@
 import logging as Logger
 from abc import ABC
 from datetime import timedelta
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
-import pydantic
 import requests
 from requests import HTTPError
 
@@ -46,7 +45,7 @@ class NotionStream(HttpStream, ABC):
 
     raise_on_http_errors = True
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
+    def __init__(self, config: MutableMapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -120,7 +119,7 @@ class NotionStream(HttpStream, ABC):
         return response.status_code == 400 or response.status_code == 429 or response.status_code >= 500
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        params = super().request_headers(**kwargs)
+        params = dict(super().request_headers(**kwargs))
         # Notion API version, see https://developers.notion.com/reference/versioning
         params["Notion-Version"] = "2022-06-28"
         return params
@@ -141,33 +140,12 @@ class NotionStream(HttpStream, ABC):
         next_cursor = response.json().get("next_cursor")
         if next_cursor:
             return {"next_cursor": next_cursor}
+        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # sometimes notion api returns response without results object
         data = response.json().get("results", [])
         yield from data
-
-
-T = TypeVar("T")
-
-
-class StateValueWrapper(pydantic.BaseModel):
-    stream: T
-    state_value: str
-    max_cursor_time: Any = ""
-
-    def __repr__(self):
-        """Overrides print view"""
-        return self.value
-
-    @property
-    def value(self) -> str:
-        """Return max cursor time after stream sync is finished."""
-        return self.max_cursor_time if self.stream.is_finished else self.state_value
-
-    def dict(self, **kwargs):
-        """Overrides default logic to return current value only."""
-        return {pydantic.utils.ROOT_KEY: self.value}
 
 
 class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
@@ -197,7 +175,7 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
 
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
         if not self.obj_type:
-            return
+            return None
 
         # search request body
         # Docs: https://developers.notion.com/reference/post-search
@@ -219,8 +197,9 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
 
         try:
             for record in super().read_records(sync_mode, stream_state=stream_state, **kwargs):
-                self.state = self._get_updated_state(self.state, record)
-                yield record
+                if isinstance(record, Mapping):
+                    self.state = self._get_updated_state(self.state, record)
+                    yield record
         except UserDefinedBackoffException as e:
             message = self.check_invalid_start_cursor(e.response)
             if message:
@@ -233,8 +212,6 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         for record in records:
             record_lmd = record.get(self.cursor_field, "")
             state_lmd = stream_state.get(self.cursor_field, "")
-            if isinstance(state_lmd, StateValueWrapper):
-                state_lmd = state_lmd.value
             if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
                 yield record
 
@@ -243,14 +220,16 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        state_value = (current_stream_state or {}).get(self.cursor_field, "")
-        if not isinstance(state_value, StateValueWrapper):
-            state_value = StateValueWrapper(stream=self, state_value=state_value)
+        # Get the current state value as a string
+        current_state_value = (current_stream_state or {}).get(self.cursor_field, "")
 
+        # Get the record time
         record_time = latest_record.get(self.cursor_field, self.start_date)
-        state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
 
-        return {self.cursor_field: state_value}
+        # Return the maximum of current state and record time as a string
+        max_time = max(current_state_value, record_time) if current_state_value else record_time
+
+        return {self.cursor_field: max_time}
 
 
 class Pages(IncrementalNotionStream):
@@ -294,11 +273,15 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
         self.is_finished = False
         for page in slices:
+            if page is None:
+                continue
             page_id = page["parent"]["id"]
             self.block_id_stack.append(page_id)
 
             # stream sync is finished when it is on the last slice
-            self.is_finished = page_id == slices[-1]["parent"]["id"]
+            last_slice = slices[-1]
+            if last_slice is not None:
+                self.is_finished = page_id == last_slice["parent"]["id"]
 
             yield {"page_id": page_id}
 
@@ -333,11 +316,12 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
         records = super().read_records(**kwargs)
         for record in records:
-            if record.get("has_children", False):
-                # do the depth first traversal recursive call, get children blocks
-                self.block_id_stack.append(record["id"])
-                yield from self.read_records(**kwargs)
-            yield record
+            if isinstance(record, Mapping):
+                if record.get("has_children", False):
+                    # do the depth first traversal recursive call, get children blocks
+                    self.block_id_stack.append(record["id"])
+                    yield from self.read_records(**kwargs)
+                yield record
 
         self.block_id_stack.pop()
 
