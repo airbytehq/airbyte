@@ -274,6 +274,18 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
 **Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
 
+## Compaction
+
+:::caution
+**Do not run compaction during a truncate refresh sync to prevent data loss.**
+During a truncate refresh sync, the system deletes all files that don't belong to the latest generation. This includes:
+
+- Files without generation IDs (compacted files)
+- Files from previous generations
+
+If compaction runs simultaneously with the sync, it will delete files from the current generation, causing data loss. The system identifies generations by parsing file names for generation IDs.
+:::
+
 ## Considerations and limitations
 
 This section documents known considerations and limitations about how this Iceberg destination interacts with other products.
@@ -312,6 +324,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.33  | 2025-07-09 | [62888](https://github.com/airbytehq/airbyte/pull/62888)   | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario                                |
 | 0.3.32  | 2025-07-08 | [62852](https://github.com/airbytehq/airbyte/pull/62852)   | Fix metadata (revert accidental archiving)                                                                                      |
 | 0.3.31  | 2025-07-07 | [62835](https://github.com/airbytehq/airbyte/pull/62835)   | Pin to latest CDK version 0.522                                                                                                 |
 | 0.3.30  | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105)   | ReplaceBranch to staging from main instead of fast forwarding                                                                   |

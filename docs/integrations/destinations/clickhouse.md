@@ -50,24 +50,41 @@ Make sure your ClickHouse database can be accessed by Airbyte. If your database 
 You need a ClickHouse user with the following permissions:
 
 - can create tables and write rows.
-- can create databases e.g:
+- can create databases
+- can alter, drop and exchange tables
 
-You can create such a user by running:
+You can create such a user by running the following:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
-GRANT CREATE ON {your configured default database} * TO airbyte_user;
 GRANT DROP ON * TO airbyte_user;
-GRANT TRUNCATE ON * TO airbyte_user;
-GRANT INSERT ON * TO airbyte_user;
-GRANT SELECT ON * TO airbyte_user;
-GRANT CREATE DATABASE ON airbyte_internal.* TO airbyte_user;
-GRANT CREATE TABLE ON airbyte_internal.* TO airbyte_user;
-GRANT DROP ON airbyte_internal.* TO airbyte_user;
-GRANT TRUNCATE ON airbyte_internal.* TO airbyte_user;
-GRANT INSERT ON airbyte_internal.* TO airbyte_user;
-GRANT SELECT ON airbyte_internal.* TO airbyte_user;
+GRANT CREATE ON {database}.* TO airbyte_user;
+GRANT DROP ON {database}.* TO airbyte_user;
+GRANT ALTER ON {database}.* TO airbyte_user;
+GRANT TRUNCATE ON {database}.* TO airbyte_user;
+GRANT INSERT ON {database}.* TO airbyte_user;
+GRANT SELECT ON {database}.* TO airbyte_user;
+GRANT CREATE DATABASE ON {database}.* TO airbyte_user;
+GRANT CREATE TABLE ON {database}.* TO airbyte_user;
 ```
+
+Where `{database}` is the database configured on your connector.
+
+Then for each connection using this connector with a custom namespace, run:
+
+```
+GRANT CREATE ON {namespace}.* TO airbyte_user;
+GRANT DROP ON {namespace}.* TO airbyte_user;
+GRANT ALTER ON {namespace}.* TO airbyte_user;
+GRANT TRUNCATE ON {namespace}.* TO airbyte_user;
+GRANT INSERT ON {namespace}.* TO airbyte_user;
+GRANT SELECT ON {namespace}.* TO airbyte_user;
+GRANT CREATE DATABASE ON {namespace}.* TO airbyte_user;
+GRANT CREATE TABLE ON {namespace}.* TO airbyte_user;
+```
+
+Where `{namespace}` is the custom namespace configured for that connection.
+
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
 
@@ -78,7 +95,8 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.0.2   | 2025-07-10 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928)   | Makes json optional in spec to work around UI issue.                           |
+| 2.0.3   | 2025-07-11 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928) | Publish metadata changes.                                                      |
+| 2.0.2   | 2025-07-10 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928) | Makes json optional in spec to work around UI issue.                           |
 | 2.0.1   | 2025-07-10 | [\#62906](https://github.com/airbytehq/airbyte/pull/62906) | Adds bespoke validation for legacy hostnames that contain a protocol.          |
 | 2.0.0   | 2025-07-10 | [\#62887](https://github.com/airbytehq/airbyte/pull/62887) | Cut 2.0.0 release. Replace existing connector.                                 |
 | 0.1.11  | 2025-07-09 | [\#62883](https://github.com/airbytehq/airbyte/pull/62883) | Only set JSON properties on client if enabled to support older CH deployments. |

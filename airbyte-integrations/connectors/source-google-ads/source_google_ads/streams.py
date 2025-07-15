@@ -278,12 +278,13 @@ class CustomerClient(GoogleAdsStream):
             yield record
 
 
-class CustomerLabel(GoogleAdsStream):
+class ServiceAccounts(GoogleAdsStream):
     """
-    Customer Label stream: https://developers.google.com/google-ads/api/fields/v18/customer_label
+    This stream is intended to be used as a service class, not exposed to a user
     """
 
-    primary_key = ["customer_label.resource_name"]
+    CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
+    primary_key = ["customer.id"]
 
 
 class CampaignBiddingStrategy(IncrementalGoogleAdsStream):

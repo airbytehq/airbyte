@@ -24,7 +24,6 @@ from .streams import (
     CampaignBiddingStrategy,
     CampaignCriterion,
     CustomerClient,
-    CustomerLabel,
 )
 from .utils import GAQL, logger, traced_exception
 
@@ -226,7 +225,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
             AdListingGroupCriterion(**default_config),
             CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
-            CustomerLabel(**default_config),
         ]
         for single_query_config in config.get("custom_queries_array", []):
             query_stream = self.create_custom_query_stream(
