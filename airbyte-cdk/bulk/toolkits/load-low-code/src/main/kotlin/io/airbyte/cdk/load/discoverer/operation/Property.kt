@@ -2,14 +2,14 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.discoverer
+package io.airbyte.cdk.load.discoverer.operation
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import java.util.function.Predicate
 
-class Field(
+class Property(
     private val apiRepresentation: JsonNode,
     namePath: List<String>,
     private val typePath: List<String>,

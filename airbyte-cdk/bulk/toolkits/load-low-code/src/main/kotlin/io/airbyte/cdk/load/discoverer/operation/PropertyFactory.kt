@@ -2,13 +2,13 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.discoverer
+package io.airbyte.cdk.load.discoverer.operation
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.AirbyteType
 import java.util.function.Predicate
 
-class FieldFactory(
+class PropertyFactory(
     private val namePath: List<String>,
     private val typePath: List<String>,
     private val matchingKeyPredicate: Predicate<JsonNode>,
@@ -16,8 +16,8 @@ class FieldFactory(
     private val requiredPredicate: Predicate<JsonNode>,
     private val typeMapper: Map<String, AirbyteType>,
 ) {
-    fun create(apiRepresentation: JsonNode): Field {
-        return Field(
+    fun create(apiRepresentation: JsonNode): Property {
+        return Property(
             apiRepresentation,
             namePath,
             typePath,
