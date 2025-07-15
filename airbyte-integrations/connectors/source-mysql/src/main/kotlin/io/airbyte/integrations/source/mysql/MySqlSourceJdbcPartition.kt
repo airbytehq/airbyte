@@ -258,11 +258,14 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
-                primaryKey = checkpointColumns,
-                primaryKeyCheckpoint =
-                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
-            )
+            when (upperBound) {
+                null -> MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+                else ->
+                    MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+                        primaryKey = checkpointColumns,
+                        primaryKeyCheckpoint = checkpointColumns.map { upperBound.get(0) },
+                    )
+            }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
