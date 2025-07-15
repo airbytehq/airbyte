@@ -349,6 +349,7 @@ class FinancialReceivablesList(ExactOtherStream):
 
     endpoint = "read/financial/ReceivablesList"
     primary_key = "HID"
+    # TODO Refactor so that a cursor field does not have to be set to "" on a subclass
     # An empty cursor field as this stream has no cursor, will fail if set to None,
     # Inspired by the Stream(ABC), perhaps refactor the ExactSyncStream or let this class
     # Inherit from Exact stream so we do not have to redifine the cursor field here
