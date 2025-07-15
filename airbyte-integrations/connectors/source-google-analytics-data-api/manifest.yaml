@@ -1016,7 +1016,7 @@ dynamic_streams:
               cursor_field: {{ ns.cursor }}
               lookback_window: "P{{ config.get('lookback_window', 2) }}D"
               step: "P{{ config.get('window_in_days', 365) }}D"
-              cursor_granularity: PT1S
+              cursor_granularity: P1D
               cursor_datetime_formats:
                 - "%Y%m%d"
                 - "%Y%m"
