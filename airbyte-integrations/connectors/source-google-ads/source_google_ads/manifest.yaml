@@ -291,6 +291,10 @@ definitions:
       - segments.ad_network_type
       - segments.device
     transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -343,6 +347,10 @@ definitions:
       - segments.date
       - segments.ad_network_type
     transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -414,6 +422,10 @@ definitions:
       - segments.budget_campaign_association_status.campaign
       - segments.budget_campaign_association_status.status
     transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -3608,7 +3620,7 @@ schemas:
           - "null"
           - integer
       metrics.view_through_conversions:
-        description: Conversions where
+        description: Conversions where the display ad was shown but not clicked
         type:
           - "null"
           - integer
