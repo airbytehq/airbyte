@@ -29,13 +29,9 @@ For advanced use cases that require custom logic not covered by the standard cur
 
 ## Configuration
 
-:::info Advanced Mode
-This documentation describes the incremental sync configuration as it appears when **Advanced mode** is enabled in the Connector Builder. Advanced mode provides access to all available configuration options. If you're using the basic mode, some of these options may be grouped differently or hidden in collapsible sections.
-:::
-
 To configure incremental syncs for a stream in the connector builder, you have to specify how the records will represent the **"last changed" / "updated at" timestamp**, the **initial time range** to fetch records for and **how to request records from a certain time range**.
 
-In the Advanced mode UI, these things are specified like this:
+In the Connector Builder UI, these things are specified like this:
 
 - The **"Cursor Field"** is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
 - The **"Cursor Datetime Formats"** specifies one or more formats that the cursor field might use. The connector will try each format in order until it finds one that matches. This is useful when your API returns dates in multiple formats across different records.
@@ -61,7 +57,7 @@ The UI will suggest detected formats based on your test data, making it easy to 
 
 ## Advanced Configuration Options
 
-When Advanced mode is enabled in the Connector Builder, additional configuration options become available for fine-tuning incremental sync behavior:
+The Connector Builder provides additional configuration options for fine-tuning incremental sync behavior:
 
 ### Data Feed Configuration
 - **"Is Data Feed"**: Enable this when the API doesn't support filtering and returns data from newest to oldest. This replaces the previous "API time filtering capabilities" dropdown.
@@ -79,7 +75,7 @@ When Advanced mode is enabled in the Connector Builder, additional configuration
 - **"Partition Field Start"**: Name of the partition start time field (e.g., "starting_time")
 - **"Partition Field End"**: Name of the partition end time field (e.g., "ending_time")
 
-These advanced options provide fine-grained control over incremental sync behavior for complex API requirements.
+These configuration options provide fine-grained control over incremental sync behavior for complex API requirements.
 
 ## Example
 
@@ -149,7 +145,7 @@ In some cases, it's helpful to reference the start and end date of the interval 
 
 ## Incremental sync without time filtering (Data Feed Mode)
 
-Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. In Advanced mode, enable the **"Is Data Feed"** option for these cases.
+Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. For these cases, enable the **"Is Data Feed"** option.
 
 When this option is enabled:
 - The "Start Time Option" and "End Time Option" fields are disabled
