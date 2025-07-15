@@ -320,15 +320,8 @@ class ClickViewHttpRequester(GoogleAdsHttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        manager = stream_slice.extra_fields.get("manager", False)
         schema = self.schema_loader.get_json_schema()["properties"]
-        fields = [
-            field
-            for field in schema.keys()
-            # exclude metrics.* if this is a manager account
-            if not (manager and field.startswith("metrics."))
-        ]
-
+        fields = [field for field in schema.keys()]
         return {"query": f"SELECT {', '.join(fields)} FROM click_view WHERE segments.date = '{stream_slice['start_time']}'"}
 
 
