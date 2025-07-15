@@ -2795,7 +2795,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "string" to "foo",
+                            "string" to "fo\u0000o",
                             "number" to 42.1,
                             "integer" to 42,
                             "boolean" to true,
