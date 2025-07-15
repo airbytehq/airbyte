@@ -272,6 +272,9 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.3-rc.2 | 2025-07-15 | [63297](https://github.com/airbytehq/airbyte/pull/63297) | Enable progressive rollout |
+| 2.9.3-rc.1 | 2025-07-15 | [63297](https://github.com/airbytehq/airbyte/pull/63297) | Fix bug where concurrent partitions are not merged back together properly so sequential state can't progress to the latest record |
+| 2.9.2 | 2025-07-12 | [63129](https://github.com/airbytehq/airbyte/pull/63129) | Update dependencies |
 | 2.9.1 | 2025-07-05 | [61135](https://github.com/airbytehq/airbyte/pull/61135) | Update dependencies |
 | 2.9.0 | 2025-07-03 | [62507](https://github.com/airbytehq/airbyte/pull/62507) | Promoting release candidate 2.9.0-rc.1 to a main version. |
 | 2.9.0-rc.1     | 2025-06-30 | [61550](https://github.com/airbytehq/airbyte/pull/61550) | Unwrap to manifest-only                                                                                                                                                |
