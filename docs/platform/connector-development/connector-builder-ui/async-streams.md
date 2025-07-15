@@ -232,34 +232,6 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
    - SendGrid returns a CSV file with the contacts data
    - In the main Request/Response tabs, you'll see this download request and the resulting data
 
-## Schema-Driven Form Architecture
-
-The Connector Builder UI uses a schema-driven architecture that automatically generates form fields based on the AsyncRetriever component definition in the declarative component schema. This approach ensures that:
-
-- All available configuration options are automatically reflected in the UI
-- Field validation is consistent with the underlying YAML schema
-- New configuration options become available in the UI as soon as they're added to the schema
-- The UI stays synchronized with the latest CDK capabilities
-
-The AsyncRetriever type defines the complete structure for asynchronous streams, including:
-- `creation_requester`: Configuration for job creation requests
-- `polling_requester`: Configuration for status polling requests  
-- `download_requester`: Configuration for result download requests
-- `status_extractor`: Logic for extracting status from polling responses
-- `status_mapping`: Mapping of API status values to standard connector states
-- `download_target_extractor`: Logic for extracting download URLs/identifiers
-
-## Advanced Configuration Options
-
-Each tab includes an "Advanced" section that contains additional configuration options. This section automatically expands if there are validation errors in any of the advanced fields, helping you identify and resolve configuration issues.
-
-Advanced options include:
-- Custom error handling strategies for each request type
-- Complex authentication configurations
-- Advanced pagination settings for download responses
-- Data transformation rules
-- Custom request/response processing logic
-
 ## Best Practices for Asynchronous Streams
 
 1. **Verify Each Stage**: Use the Other Requests panel to verify that each stage is working correctly:
@@ -279,4 +251,4 @@ Advanced options include:
 
 7. **Leverage Schema Validation**: The schema-driven forms provide real-time validation feedback to help you catch configuration errors early.
 
-Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs. The schema-driven UI provides comprehensive feedback during testing to help you understand what's happening at each stage.   
+Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs. The schema-driven UI provides comprehensive feedback during testing to help you understand what's happening at each stage.     
