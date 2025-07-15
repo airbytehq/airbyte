@@ -17,6 +17,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
+        # NetSuite has lots of streams available, we test the portion of them only.
         empty_streams:
           - name: customrecord01
           - name: billingaccount

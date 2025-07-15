@@ -23,6 +23,7 @@ acceptance_tests:
           - name: user_sessions
   full_refresh:
     tests:
+      # test streams except "run_looks"
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
         ignored_fields:
@@ -32,6 +33,7 @@ acceptance_tests:
           looks:
             - name: properties
             - name: last_accessed_at
+      # test the stream "run_looks" separately
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_run_looks_catalog.json
   incremental:
