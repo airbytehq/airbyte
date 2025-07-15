@@ -2,6 +2,8 @@
 
 In the Connector Builder UI, you can create two types of streams: **Synchronous Request** and **Asynchronous Job**. Understanding the difference is important for efficiently extracting data from APIs that use asynchronous processing.
 
+The Connector Builder UI uses a schema-driven architecture that dynamically generates form fields based on the declarative component schema. This ensures that all available configuration options are automatically reflected in the interface, providing a comprehensive and up-to-date configuration experience.
+
 ## Synchronous Streams
 
 Synchronous streams operate in real-time, where:
@@ -32,25 +34,34 @@ Common examples include analytics report generation, large data exports (like Se
 
 ## Configuring an Asynchronous Stream
 
-To make an existing stream asynchronous, at the top-right of the stream configuration, select `Request type` > `Asynchronous Job`.
+To make an existing stream asynchronous, use the **Retrieval Type** selector at the top-right of the stream configuration and select `Asynchronous Job`.
 
-To create a new stream as an asynchronous stream, click the `+` add stream button, and select `Request type`> `Asynchronous Job`.
+To create a new stream as an asynchronous stream, click the `+` add stream button, and select `Retrieval Type` > `Asynchronous Job`.
 
-An asynchronous stream in the Connector Builder UI is divided into three main tabs:
+An asynchronous stream in the Connector Builder UI is divided into four main tabs: **Creation**, **Polling**, **Download**, and **Schema**. The first three tabs correspond to the three phases of asynchronous data extraction, while the Schema tab allows you to configure the stream's data schema.
 
 ### 1. Creation Tab
 
-The Creation tab configures how to request that a job be created on the server.
+The Creation tab configures how to request that a job be created on the server. This tab uses schema-driven form controls that automatically generate the appropriate input fields based on the AsyncRetriever component definition.
 
 ![Creation Tab](./assets/connector_builder_async_creation_tab.png)
 
 #### Key Components:
 
-- **URL**: The full URL that the request should be sent to to create the job
-- **HTTP Method**: Typically POST for job creation, but this can vary by API
-- **HTTP Response Format**: Format of the response from the job creation request. This will also be used for the polling response.
-- **Authentication**: Authentication method for the creation request
-- **Request Options**: Headers, query parameters, and request body for the creation request
+- **URL** (`retriever.creation_requester.url`): The full URL that the request should be sent to create the job (required)
+- **HTTP Method** (`retriever.creation_requester.http_method`): The HTTP method for job creation, typically POST but can vary by API
+- **HTTP Response Format** (`retriever.decoder`): Format of the response from the job creation request, which will also be used for polling responses
+- **Authentication** (`retriever.creation_requester.authenticator`): Authentication method for the creation request, with support for various authentication types
+- **Request Parameters** (`retriever.creation_requester.request_parameters`): Query parameters to include in the creation request
+- **Request Headers** (`retriever.creation_requester.request_headers`): HTTP headers to include in the creation request  
+- **Request Body** (`retriever.creation_requester.request_body`): Request body content for the creation request
+- **Incremental Sync** (`incremental_sync`): Configuration for incremental synchronization if the stream supports it
+- **Partition Router** (`retriever.partition_router`): Configuration for partitioning the stream into multiple requests
+- **Error Handler** (`retriever.creation_requester.error_handler`): Error handling configuration for creation requests
+
+#### Advanced Configuration
+
+Additional configuration options are available in the collapsed "Advanced" section, which automatically expands if there are validation errors in any of the advanced fields.
 
 #### Example Configuration (SendGrid):
 
@@ -58,23 +69,30 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
 
 - **URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports`
 - **HTTP Method** dropdown: `POST`
+- **HTTP Response Format** dropdown: `JSON`
 - In the **Authentication** section: 
   - Select **Bearer Token** authentication type
   - Fill out the **API Key** user input with your SendGrid API key
 
 ### 2. Polling Tab
 
-The Polling tab defines how to check the status of a running job.
+The Polling tab defines how to check the status of a running job. This tab provides schema-driven form controls for configuring all aspects of the polling process.
 
 ![Polling Tab](./assets/connector_builder_async_polling_tab.png)
 
 #### Key Components:
 
-- **URL**: The full URL that the request should be sent to to check the status of the job. Use the `{{ creation_response }}` variable to reference the response from the creation request when constructing this URL.
-- **HTTP Method**: Typically GET for status checking, but this can vary by API
-- **Status Extractor**: Extracts the job status from the response
-- **Status Mapping**: Maps API-specific status values to standard statuses
-- **Download Target Extractor**: Extracts the URL or ID for downloading results
+- **URL** (`retriever.polling_requester.url`): The full URL for checking job status. Use the `{{ creation_response }}` variable to reference the creation request response when constructing this URL (required)
+- **HTTP Method** (`retriever.polling_requester.http_method`): HTTP method for status checking, typically GET but can vary by API
+- **Status Extractor** (`retriever.status_extractor`): Extracts the job status value from the polling response using a field path
+- **Status Mapping** (`retriever.status_mapping`): Maps API-specific status values to standard connector statuses (completed, failed, running, timeout)
+- **Download Target Extractor** (`retriever.download_target_extractor`): Extracts the URL or identifier for downloading results from the polling response
+- **Polling Job Timeout** (`retriever.polling_job_timeout`): Maximum time to wait for job completion before timing out
+- **Request Parameters** (`retriever.polling_requester.request_parameters`): Query parameters for polling requests
+- **Request Headers** (`retriever.polling_requester.request_headers`): HTTP headers for polling requests
+- **Request Body** (`retriever.polling_requester.request_body`): Request body for polling requests (if needed)
+- **Authentication** (`retriever.polling_requester.authenticator`): Authentication method for polling requests
+- **Error Handler** (`retriever.polling_requester.error_handler`): Error handling configuration for polling requests
 
 #### Status Extractor and Status Mapping Explained
 
@@ -111,21 +129,28 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
   - Set **Timeout** to: `timeout`
 - In the **Download Target Extractor** section:
   - Set the **Field Path** to: `urls`
+- **Polling Job Timeout**: Set an appropriate timeout value (e.g., `PT30M` for 30 minutes)
 
 ### 3. Download Tab
 
-The Download tab configures how to retrieve the results once the job is complete.
+The Download tab configures how to retrieve the results once the job is complete. This tab provides comprehensive configuration options for processing the downloaded data.
 
 ![Download Tab](./assets/connector_builder_async_download_tab.png)
 
 #### Key Components:
 
-- **URL**: The full URL that the request should be sent to to download the results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor in the Polling tab.
-- **HTTP Method**: Typically GET for downloading, but this can vary by API
-- **HTTP Response Format**: Format of the downloaded data
-- **Download Extractor**: Optional path to extract a specific path from the download response for constructing records.
-- **Primary Key**: Unique identifier for records
-- **Record Selector**: Identifies individual records in the response
+- **URL** (`retriever.download_requester.url`): The full URL for downloading results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor (required)
+- **HTTP Method** (`retriever.download_requester.http_method`): HTTP method for downloading, typically GET but can vary by API
+- **HTTP Response Format** (`retriever.download_decoder`): Format of the downloaded data (JSON, CSV, XML, etc.)
+- **Record Selector** (`retriever.record_selector`): Configuration for identifying and extracting individual records from the response, including the extractor field path
+- **Primary Key** (`primary_key`): Unique identifier field(s) for records in the stream
+- **Request Parameters** (`retriever.download_requester.request_parameters`): Query parameters for download requests
+- **Request Headers** (`retriever.download_requester.request_headers`): HTTP headers for download requests
+- **Request Body** (`retriever.download_requester.request_body`): Request body for download requests (if needed)
+- **Authentication** (`retriever.download_requester.authenticator`): Authentication method for download requests
+- **Download Paginator** (`retriever.download_paginator`): Pagination configuration if the download response is paginated
+- **Transformations** (`transformations`): Data transformation rules to apply to downloaded records
+- **Error Handler** (`retriever.download_requester.error_handler`): Error handling configuration for download requests
 
 #### Example Configuration (SendGrid):
 
@@ -134,7 +159,7 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
 - **URL** field: `{{ download_target }}`
 - **HTTP Method** dropdown: `GET`
 - **HTTP Response Format** dropdown: `CSV`
-- In the **Download Extractor** section:
+- In the **Record Selector** section:
   - Leave the **Field Path** empty since we want to use the entire CSV content
 - Set **Primary Key** to: `CONTACT_ID`
 
@@ -214,10 +239,16 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
    - Verify that status is at the expected place with the expected values in the polling response 
    - Ensure the download target is correctly extracted by checking the main Request tab URL
 
-2. **Configure Status Mapping Properly**: Include all possible API status values in your status mapping.
+2. **Configure Status Mapping Properly**: Include all possible API status values in your status mapping. The schema-driven forms will validate that you've provided mappings for all required states.
 
-3. **Use the Right Http Response Format**: Make sure you select the correct HTTP Response Format (JSON, CSV, XML, etc.) for both creation and download
+3. **Use the Right HTTP Response Format**: Make sure you select the correct HTTP Response Format (JSON, CSV, XML, etc.) for both creation and download phases.
 
-4. **Check for Rate Limits**: Many APIs limit how frequently you can poll for job status. Configure appropriate error handling if you hit these limits.
+4. **Configure Appropriate Timeouts**: Set reasonable values for `polling_job_timeout` to avoid indefinite waiting for job completion.
 
-Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs. 
+5. **Handle Rate Limits**: Many APIs limit how frequently you can poll for job status. Configure appropriate error handling and retry strategies.
+
+6. **Test Thoroughly**: Use the comprehensive testing features to verify each phase of the asynchronous process works correctly.
+
+7. **Leverage Schema Validation**: The schema-driven forms provide real-time validation feedback to help you catch configuration errors early.
+
+Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs. The schema-driven UI provides comprehensive feedback during testing to help you understand what's happening at each stage.     
