@@ -29,19 +29,21 @@ For advanced use cases that require custom logic not covered by the standard cur
 
 ## Configuration
 
+:::info Advanced Mode
+This documentation describes the incremental sync configuration as it appears when **Advanced mode** is enabled in the Connector Builder. Advanced mode provides access to all available configuration options. If you're using the basic mode, some of these options may be grouped differently or hidden in collapsible sections.
+:::
+
 To configure incremental syncs for a stream in the connector builder, you have to specify how the records will represent the **"last changed" / "updated at" timestamp**, the **initial time range** to fetch records for and **how to request records from a certain time range**.
 
-In the builder UI, these things are specified like this:
+In the Advanced mode UI, these things are specified like this:
 
-- The **"Cursor field"** is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
-- The **"Cursor datetime formats"** specifies one or more formats that the cursor field might use. The connector will try each format in order until it finds one that matches. This is useful when your API returns dates in multiple formats across different records.
-- The **"API time filtering capabilities"** specifies how the API handles time-based filtering:
-  - **Range**: API supports both start and end datetime filtering
-  - **Start**: API only supports filtering from a start datetime (always returns data up to now)  
-  - **No filter (data feed)**: API doesn't support time filtering and returns data in newest-to-oldest order
-- The **"Start datetime"** is the initial start date of the time range to fetch records for. When doing incremental syncs, subsequent syncs will use the last cursor value from the previous sync.
-- The **"End datetime"** (only for Range mode) is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started.
-- The **"Inject start/end time into outgoing HTTP request"** defines how to send the datetime values to the API. Options include query parameters, headers, or request body fields.
+- The **"Cursor Field"** is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
+- The **"Cursor Datetime Formats"** specifies one or more formats that the cursor field might use. The connector will try each format in order until it finds one that matches. This is useful when your API returns dates in multiple formats across different records.
+- The **"Start Datetime"** is the initial start date of the time range to fetch records for. When doing incremental syncs, subsequent syncs will use the last cursor value from the previous sync.
+- The **"End Datetime"** is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started.
+- The **"Start Time Option"** defines how to send the start datetime values to the API. Options include query parameters, headers, or request body fields.
+- The **"End Time Option"** defines how to send the end datetime values to the API. Options include query parameters, headers, or request body fields.
+- The **"Datetime Format"** specifies the format used when sending datetime values in API requests.
 
 ## Cursor Datetime Formats
 
@@ -56,6 +58,28 @@ Common datetime formats include:
 - `%ms` - Unix timestamp in milliseconds (e.g., "1681542658123")
 
 The UI will suggest detected formats based on your test data, making it easy to configure the right format for your API.
+
+## Advanced Configuration Options
+
+When Advanced mode is enabled in the Connector Builder, additional configuration options become available for fine-tuning incremental sync behavior:
+
+### Data Feed Configuration
+- **"Is Data Feed"**: Enable this when the API doesn't support filtering and returns data from newest to oldest. This replaces the previous "API time filtering capabilities" dropdown.
+- **"Is Client Side Incremental"**: Enable when the API doesn't support cursor-based filtering and returns all data. The connector will filter records locally.
+
+### Performance Optimization  
+- **"Global Substream Cursor"**: Store cursor as one value instead of per partition. Optimizes performance when the parent stream has thousands of partitions.
+- **"Is Compare Strictly"**: Skip requests if the start time equals the end time. Useful for APIs that don't accept queries where start equals end time.
+
+### Date Range Clamping
+- **"Clamping"**: Adjust datetime window boundaries to the beginning and end of specified periods (day, week, month).
+  - **Target**: The period to clamp by (e.g., "DAY", "WEEK", "MONTH")
+
+### Partition Configuration
+- **"Partition Field Start"**: Name of the partition start time field (e.g., "starting_time")
+- **"Partition Field End"**: Name of the partition end time field (e.g., "ending_time")
+
+These advanced options provide fine-grained control over incremental sync behavior for complex API requirements.
 
 ## Example
 
@@ -77,14 +101,15 @@ Content records have the following form:
 }
 ```
 
-As this fulfills the requirements for incremental syncs, we can configure the "Incremental sync" section in the following way:
+As this fulfills the requirements for incremental syncs, we can configure the incremental sync section in the following way:
 
-- "Cursor field" is set to `webPublicationDate`
-- "Datetime format" is set to `%Y-%m-%dT%H:%M:%SZ`
-- "Start datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
-- "End datetime" is set to "now" to fetch all articles up to the current date
-- "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
-- "Inject end time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `to-date`
+- "Cursor Field" is set to `webPublicationDate`
+- "Cursor Datetime Formats" includes `%Y-%m-%dT%H:%M:%SZ`
+- "Datetime Format" is set to `%Y-%m-%dT%H:%M:%SZ`
+- "Start Datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
+- "End Datetime" is set to "now" to fetch all articles up to the current date
+- "Start Time Option" is set to `request_parameter` with "Field Name" set to `from-date`
+- "End Time Option" is set to `request_parameter` with "Field Name" set to `to-date`
 
 <iframe width="640" height="835" src="https://www.loom.com/embed/78eb5da26e2e4f4aa9c3a48573d9ed3b" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
@@ -124,17 +149,17 @@ In some cases, it's helpful to reference the start and end date of the interval 
 
 ## Incremental sync without time filtering (Data Feed Mode)
 
-Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. In these cases, the "API time filtering capabilities" option needs to be set to "No filter (data feed)". 
+Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. In Advanced mode, enable the **"Is Data Feed"** option for these cases.
 
-When this mode is selected:
-- The "Inject start time into outgoing HTTP request" and "Inject end time into outgoing HTTP request" options are disabled
+When this option is enabled:
+- The "Start Time Option" and "End Time Option" fields are disabled
 - The "Split up interval" advanced option is disabled  
 - The connector will automatically paginate through records until it encounters a cursor value that is less than or equal to the cutoff date from the previous sync
 
-The `/new` endpoint of the [Reddit API](https://www.reddit.com/dev/api/#GET_new) is such an API. By configuring pagination and setting time filtering capabilities to the "No filter (data feed)" option, the connector will automatically request the next page of records until the cutoff datetime is encountered.
+The `/new` endpoint of the [Reddit API](https://www.reddit.com/dev/api/#GET_new) is such an API. By enabling the "Is Data Feed" option and configuring pagination, the connector will automatically request the next page of records until the cutoff datetime is encountered.
 
 :::warning
-The "No filter (data feed)" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases it's better to disable incremental syncs and sync the full set of records on a regular schedule.
+The "Is Data Feed" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases it's better to disable incremental syncs and sync the full set of records on a regular schedule.
 :::
 
 ## Advanced settings
@@ -145,8 +170,8 @@ The description above is sufficient for a lot of APIs. However there are some mo
 
 When incremental syncs are enabled and "Split Up Interval" is configured, the connector splits the time range between the cutoff date and the desired end date into smaller intervals. This requires two settings:
 
-- **Step**: The size of each time interval expressed as an [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g., `P10D` for 10 days, `PT1H` for 1 hour)
-- **Cursor Granularity**: The smallest time unit the API supports for filtering, also as an ISO 8601 duration (e.g., `PT1S` for 1 second, `P1D` for 1 day)
+- **"Step"**: The size of each time interval expressed as an [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g., `P10D` for 10 days, `PT1H` for 1 hour)
+- **"Cursor Granularity"**: The smallest time unit the API supports for filtering, also as an ISO 8601 duration (e.g., `PT1S` for 1 second, `P1D` for 1 day)
 
 The cursor granularity ensures that intervals don't overlap. For example, if the granularity is 1 second (`PT1S`), then when one interval ends at `2023-01-09T23:59:59Z`, the next interval will start at `2023-01-10T00:00:00Z`.
 
@@ -168,16 +193,16 @@ If "Split Up Interval" is left unset, the connector will not split up the time r
 
 ### Lookback window
 
-The "Lookback window" specifies a duration that is subtracted from the last cutoff date before starting to sync.
+The **"Lookback Window"** specifies a duration that is subtracted from the last cutoff date before starting to sync.
 
 Some APIs update records over time but do not allow to filter or search by modification date, only by creation date. For example the API of The Guardian might change the title of an article after it got published, but the `webPublicationDate` still shows the original date the article got published initially.
 
 In these cases, there are two options:
 
 - **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
-- **Configure the "Lookback window"** to not only sync exclusively new records, but resync some portion of records before the cutoff date to catch changes that were made to existing records, trading off data consistency and the amount of synced records. In the case of the API of The Guardian, news articles tend to only be updated for a few days after the initial release date, so this strategy should be able to catch most updates without having to resync all articles.
+- **Configure the "Lookback Window"** to not only sync exclusively new records, but resync some portion of records before the cutoff date to catch changes that were made to existing records, trading off data consistency and the amount of synced records. In the case of the API of The Guardian, news articles tend to only be updated for a few days after the initial release date, so this strategy should be able to catch most updates without having to resync all articles.
 
-Reiterating the example from above with a "Lookback window" of 2 days configured, let's assume the last encountered article looked like this:
+Reiterating the example from above with a "Lookback Window" of 2 days configured, let's assume the last encountered article looked like this:
 
 <pre>
 {`{
@@ -197,7 +222,7 @@ curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-13T07:30:58Z<
 
 ## Custom parameter injection
 
-Using the "Inject start time / end time into outgoing HTTP request" option in the incremental sync form works for most cases, but sometimes the API has special requirements that can't be handled this way:
+Using the "Start Time Option" and "End Time Option" fields in the incremental sync form works for most cases, but sometimes the API has special requirements that can't be handled this way:
 
 - The API requires adding a prefix or a suffix to the actual value
 - Multiple values need to be put together in a single parameter
@@ -218,9 +243,9 @@ For APIs that use continuously increasing integer values (like auto-incrementing
 - The API supports filtering by numeric ranges
 
 ### Configuration
-- **Cursor field**: The field containing the incrementing integer value (e.g., "id", "sequence_number")
-- **Start value**: The initial value to start syncing from (e.g., 0, 1, or a specific ID)
-- **Inject start value**: How to send the cursor value in API requests (query parameter, header, etc.)
+- **"Cursor Field"**: The field containing the incrementing integer value (e.g., "id", "sequence_number")
+- **"Start Datetime"**: The initial value to start syncing from (e.g., 0, 1, or a specific ID)
+- **"Start Time Option"**: How to send the cursor value in API requests (query parameter, header, etc.)
 
 ### Example
 If your API has records with incrementing IDs and supports a `since_id` parameter:
@@ -233,8 +258,8 @@ If your API has records with incrementing IDs and supports a `since_id` paramete
 ```
 
 You would configure:
-- Cursor field: `id`
-- Start value: `0` (or the ID you want to start from)
-- Inject start value: Query parameter named `since_id`
+- "Cursor Field": `id`
+- "Start Datetime": `0` (or the ID you want to start from)
+- "Start Time Option": Query parameter named `since_id`
 
 The connector will track the highest ID seen and use it as the starting point for the next sync.
