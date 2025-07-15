@@ -16,187 +16,186 @@
         "null",
         "number"
       ]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Deliverable": {
+      "description": "WBS's deliverable linked to the invoice term",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Description": {
+      "description": "Description of invoice term",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Division": {
+      "description": "Division number",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "ExecutionFromDate": {
+      "description": "Execution date: From of invoice term",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "ExecutionToDate": {
+      "description": "Execution date: To of invoice term",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "EndDate": {
+      "description": "End date of the project. In combination with the start date the status is determined",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "InvoiceDate": {
+      "description": "Invoice date of invoice term",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "InvoiceId": {
+      "description": "ID of sales invoice",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "InvoiceStatus": {
+      "description": "The invoice status of the invoice term. E.g: 10 = Draft, 20 = Open, 30 = Processing..., 50 = Processed",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "Item": {
+      "description": "Item that linked to the invoice term",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ItemDescription": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Modified": {
+      "description": "Last modified date of invoice term",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "ID of user that modified the record",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ModifierFullName": {
+      "description": "Full name of user that modified the record",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Notes": {
+      "description": "Notes linked to the invoice term for providing additional information",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Percentage": {
+      "description": "Percentage of amount per project`s budeged amount",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "Project": {
+      "description": "ID of project that linked to the invoice term",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ProjectDescription": {
+      "description": "Project description that linked to the invoice term",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "VATCode": {
+      "description": "VAT code that used in the invoice term",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "VATCodeDescription": {
+      "description": "Description of VAT code that used in the invoce term",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "VATPercentage": {
+      "description": "Persentage of VAT code that used in the invoice term",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "WBS": {
+      "description": "ID of WBS that linked to the invoice term",
+      "type": [
+        "null",
+        "string"
+      ]
     }
-  },
-  "Created": {
-    "description": "Creation date",
-    "type": [
-      "null",
-      "string"
-    ],
-    "format": "date-time"
-  },
-  "Creator": {
-    "description": "User ID of creator",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "CreatorFullName": {
-    "description": "Name of creator",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "Deliverable": {
-    "description": "WBS's deliverable linked to the invoice term",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "Description": {
-    "description": "Description of invoice term",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "Division": {
-    "description": "Division number",
-    "type": [
-      "null",
-      "integer"
-    ]
-  },
-  "ExecutionFromDate": {
-    "description": "Execution date: From of invoice term",
-    "type": [
-      "null",
-      "string"
-    ],
-    "format": "date-time"
-  },
-  "ExecutionToDate": {
-    "description": "Execution date: To of invoice term",
-    "type": [
-      "null",
-      "string"
-    ],
-    "format": "date-time"
-  },
-  "EndDate": {
-    "description": "End date of the project. In combination with the start date the status is determined",
-    "type": [
-      "null",
-      "string"
-    ],
-    "format": "date-time"
-  },
-  "InvoiceDate": {
-    "description": "Invoice date of invoice term",
-    "type": [
-      "null",
-      "string"
-    ],
-    "format": "date-time"
-  },
-  "InvoiceId": {
-    "description": "ID of sales invoice",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "InvoiceStatus": {
-    "description": "The invoice status of the invoice term. E.g: 10 = Draft, 20 = Open, 30 = Processing..., 50 = Processed",
-    "type": [
-      "null",
-      "integer"
-    ]
-  },
-  "Item": {
-    "description": "Item that linked to the invoice term",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "ItemDescription": {
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "Modified": {
-    "description": "Last modified date of invoice term",
-    "type": [
-      "null",
-      "string"
-    ],
-    "format": "date-time"
-  },
-  "Modifier": {
-    "description": "ID of user that modified the record",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "ModifierFullName": {
-    "description": "Full name of user that modified the record",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "Notes": {
-    "description": "Notes linked to the invoice term for providing additional information",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "Percentage": {
-    "description": "Percentage of amount per project`s budeged amount",
-    "type": [
-      "null",
-      "number"
-    ]
-  },
-  "Project": {
-    "description": "ID of project that linked to the invoice term",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "ProjectDescription": {
-    "description": "Project description that linked to the invoice term",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "VATCode": {
-    "description": "VAT code that used in the invoice term",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "VATCodeDescription": {
-    "description": "Description of VAT code that used in the invoce term",
-    "type": [
-      "null",
-      "string"
-    ]
-  },
-  "VATPercentage": {
-    "description": "Persentage of VAT code that used in the invoice term",
-    "type": [
-      "null",
-      "number"
-    ]
-  },
-  "WBS": {
-    "description": "ID of WBS that linked to the invoice term",
-    "type": [
-      "null",
-      "string"
-    ]
   }
 }
-
