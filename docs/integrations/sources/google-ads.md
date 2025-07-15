@@ -335,6 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.0 | 2025-07-15 | [63302](https://github.com/airbytehq/airbyte/pull/63302) | Promoting release candidate 3.11.0-rc.1 to a main version. |
 | 3.11.0-rc.1 | 2025-07-14 | [62846](https://github.com/airbytehq/airbyte/pull/62846) | Migrate views streams to Low Code                                                                                                                                      |
 | 3.10.0      | 2025-07-14 | [63282](https://github.com/airbytehq/airbyte/pull/63282) | Promoting release candidate 3.10.0-rc.1 to a main version.                                                                                                             |
 | 3.10.0-rc.1 | 2025-07-10 | [62066](https://github.com/airbytehq/airbyte/pull/62066) | Migrate AdGroup stream to Low Code                                                                                                                                     |
