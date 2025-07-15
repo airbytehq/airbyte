@@ -16,16 +16,34 @@ The knowledge of a cursor value also allows the Airbyte system to automatically 
 
 ## Configuration
 
-To configure incremental syncs for a stream in the connector builder, you have to specify how the records will represent the **"last changed" / "updated at" timestamp**, the **initial time range** to fetch records for and **how to request records from a certain time range**.
+To configure incremental syncs for a stream in the connector builder, you need to specify the **cursor field**, **datetime formats**, **time filtering capabilities**, and **request injection** settings.
 
-In the builder UI, these things are specified like this:
+In the builder UI, these are configured as follows:
 
-- The "Cursor field" is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
-- The "Datetime format" specifies the format the cursor field is using to specify date and time. Check out the [YAML reference](/platform/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/DatetimeBasedCursor) for a full list of supported formats.
-- "API time filtering capabilities" specifies if the API allows filtering by start and end datetime or whether it's a "feed" of data going from newest to oldest records. See the ["Incremental sync without time filtering"](#incremental-sync-without-time-filtering) section below for details.
-- The "Start datetime" is the initial start date of the time range to fetch records for. When doing incremental syncs, the second sync will overwrite this date with the last record that got synced so far.
-- The "End datetime" is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started to sync all changes that happened so far.
-- The "Inject start/end time into outgoing HTTP request" defines how to request records that got changed in the time range to sync. In most cases the start and end time is added as a query parameter or body parameter.
+- **Cursor field** - The property in the record that defines when the record was last updated. This field is used to determine which records have been synced and which are new.
+- **Cursor datetime formats** - The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. The UI can auto-detect common formats from your test data.
+- **API time filtering capabilities** - Specifies how the API allows filtering by datetime:
+  - **Range**: API supports both start and end datetime filtering
+  - **Start**: API supports start datetime filtering but returns all data from start to now
+  - **No filter (data feed)**: API doesn't support filtering and returns data in descending order (newest to oldest)
+- **Start datetime** - The initial start date for the time range to fetch records. For incremental syncs, subsequent syncs will use the last cursor value as the new start date.
+- **End datetime** - The end date for the time range (only available for Range mode). Usually set to "now" to sync all changes up to the current time.
+- **Inject start/end time into outgoing HTTP request** - Configures how to send the datetime values to the API (as query parameters, headers, or request body).
+
+### Cursor datetime formats
+
+The Connector Builder supports multiple datetime formats for parsing cursor field values. You can specify multiple formats in order of preference - the first format that successfully parses the cursor value will be used.
+
+The UI can automatically detect common datetime formats from your test data. When you test your stream, if a format is detected that isn't in your current list, you'll see a suggestion to add it.
+
+Common formats include:
+- `%Y-%m-%dT%H:%M:%S.%f%z` - ISO 8601 with microseconds and timezone
+- `%Y-%m-%dT%H:%M:%SZ` - ISO 8601 with seconds
+- `%Y-%m-%d` - Date only
+- `%s` - Unix timestamp (seconds)
+- `%ms` - Unix timestamp (milliseconds)
+
+This is different from the **outgoing datetime format**, which controls how datetime values are formatted when sent to the API in requests.
 
 ## Example
 
@@ -50,7 +68,8 @@ Content records have the following form:
 As this fulfills the requirements for incremental syncs, we can configure the "Incremental sync" section in the following way:
 
 - "Cursor field" is set to `webPublicationDate`
-- "Datetime format" is set to `%Y-%m-%dT%H:%M:%SZ`
+- "Cursor datetime formats" is set to `%Y-%m-%dT%H:%M:%SZ`
+- "API time filtering capabilities" is set to "Range" (supports both start and end datetime filtering)
 - "Start datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
 - "End datetime" is set to "now" to fetch all articles up to the current date
 - "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
@@ -92,17 +111,42 @@ The `from-date` is set to the cutoff date of articles synced already and the `to
 In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](/platform/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
 
-## Incremental sync without time filtering
+## API time filtering capabilities
 
-Some APIs do not allow filtering records by a date field, but instead only provide a paginated "feed" of data that is ordered from newest to oldest. In these cases, the "API time filtering capabilities" option needs to be set to "No filter". As they can't be applied in this situation, the "Inject start time into outgoing HTTP request" and "Inject end time into outgoing HTTP request" options as well as the "Split up interval" option are disabled automatically.
+The Connector Builder supports three different API filtering modes:
+
+### Range filtering
+The API can filter data based on both start and end datetime parameters. This is the most common and efficient mode, allowing you to request only the data within a specific time window.
+
+### Start filtering  
+The API can filter data based on a start datetime parameter but doesn't support an end datetime. When using this mode, the API will return all data from the start datetime up to the current time.
+
+### No filter (data feed)
+Some APIs don't support datetime filtering and instead provide a paginated "feed" of data ordered from newest to oldest. 
+
+:::warning
+The "No filter" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases, it's better to disable incremental syncs and sync the full set of records on a regular schedule.
+:::
+
+When using "No filter" mode, the connector will automatically request pages of records until it encounters a cursor value that is less than or equal to the cutoff date from the previous sync. The "Inject start/end time into outgoing HTTP request" options are disabled in this mode since the API doesn't support filtering.
 
 The `/new` endpoint of the [Reddit API](https://www.reddit.com/dev/api/#GET_new) is such an API. By configuring pagination and setting time filtering capabilities to the "No filter" option, the connector will automatically request the next page of records until the cutoff datetime is encountered. This is done by comparing the cursor value of the records with the either the configured start date or the latest cursor value that was encountered in a previous sync - if the cursor value is less than or equal to that cutoff date, the sync is finished. The latest cursor value is saved as part of the connection and used as the cutoff date for the next sync.
 
-:::warning
-The "No filter" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases it's better to disable incremental syncs and sync the full set of records on a regular schedule.
-:::
-
 ## Advanced settings
+
+### Outgoing datetime format
+
+The "Outgoing datetime format" specifies how datetime values are formatted when sent to the API in requests. If not specified, the first format from your cursor datetime formats will be used.
+
+Supported format placeholders include:
+- `%s` - Unix timestamp (seconds) - `1686218963`
+- `%s_as_float` - Unix timestamp as float with microsecond precision - `1686218963.123456`
+- `%ms` - Unix timestamp (milliseconds) - `1686218963123`
+- `%Y-%m-%dT%H:%M:%S.%f%z` - ISO 8601 with microseconds and timezone
+- `%Y-%m-%d` - Date only format
+- And many other standard datetime format codes
+
+For a complete list of format codes, see the [Python strftime documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).
 
 The description above is sufficient for a lot of APIs. However there are some more subtle configurations which sometimes become relevant.
 
@@ -122,6 +166,12 @@ curl 'https://content.guardianapis.com/search?from-date=<b>2023-01-20T00:00:00Z<
 </pre>
 
 After an interval is processed, the cursor value of the last record will be saved as part of the connection as the new cutoff date, as described in the [example above](#example).
+
+Splitting intervals is useful for:
+- **Protecting against failures** - If a sync fails, at most one interval's worth of data needs to be resynced
+- **API requirements** - Some APIs require data to be fetched in specific time chunks
+
+This option is not available when using "No filter" mode since the API doesn't support datetime filtering.
 
 If "Split Up Interval" is left unset, the connector will not split up the time range at all but will instead just request all records for the entire target time range. This configuration works for all connectors, but there are two reasons to change it:
 
