@@ -24,13 +24,11 @@ definitions:
             fields: >-
               caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username,children
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -131,40 +129,32 @@ definitions:
               'reach,saved,likes,comments,shares,follows,profile_visits' }}{%
               endif %}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and
-                      response['error']['error_subcode'] == 2108006 }}
-                    http_codes: []
-                    error_message: >-
-                      Insights error for business_account_id: {{
-                      response['error']['message'] }}
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and ( (response['error']['code'] ==
-                      100 and response['error']['error_subcode'] == 33) or
-                      (response['error']['code'] == 10 and
-                      response['error']['message'] == "(#10) Application does
-                      not have permission for this action") ) }}
-                    error_message: >-
-                      Check provided permissions for: {{
-                      response['error']['message'] }}
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and
+                  response['error']['error_subcode'] == 2108006 }}
+                http_codes: []
+                error_message: >-
+                  Insights error for business_account_id: {{
+                  response['error']['message'] }}
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and ( (response['error']['code'] ==
+                  100 and response['error']['error_subcode'] == 33) or
+                  (response['error']['code'] == 10 and
+                  response['error']['message'] == "(#10) Application does
+                  not have permission for this action") ) }}
+                error_message: >-
+                  Check provided permissions for: {{
+                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -223,13 +213,11 @@ definitions:
             fields: >-
               id,biography,ig_id,followers_count,follows_count,media_count,name,profile_picture_url,username,website
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -276,13 +264,11 @@ definitions:
             breakdown: "{{ stream_partition.breakdown }}"
             metric_type: total_value
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -362,13 +348,11 @@ definitions:
             fields: >-
               caption,id,ig_id,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -450,20 +434,18 @@ definitions:
           request_parameters:
             metric: reach,replies,follows,profile_visits,shares,total_interactions
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and response['error']['code'] == 10 }}
-                    error_message: >-
-                      Insights error: {{ response['error']['message'] }}
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and response['error']['code'] == 10 }}
+                error_message: >-
+                  Insights error: {{ response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -554,40 +536,32 @@ definitions:
             period: "{{ stream_partition.extra_fields['query_properties'][0] }}"
             metric: "{{ stream_partition.extra_fields['query_properties'][1] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and
-                      response['error']['error_subcode'] == 2108006 }}
-                    http_codes: []
-                    error_message: >-
-                      Insights error for business_account_id: {{
-                      response['error']['message'] }}
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and ( (response['error']['code'] ==
-                      100 and response['error']['error_subcode'] == 33) or
-                      (response['error']['code'] == 10 and
-                      response['error']['message'] == "(#10) Application does
-                      not have permission for this action") ) }}
-                    error_message: >-
-                      Check provided permissions for: {{
-                      response['error']['message'] }}
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and
+                  response['error']['error_subcode'] == 2108006 }}
+                http_codes: []
+                error_message: >-
+                  Insights error for business_account_id: {{
+                  response['error']['message'] }}
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and ( (response['error']['code'] ==
+                  100 and response['error']['error_subcode'] == 33) or
+                  (response['error']['code'] == 10 and
+                  response['error']['message'] == "(#10) Application does
+                  not have permission for this action") ) }}
+                error_message: >-
+                  Check provided permissions for: {{
+                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -668,13 +642,11 @@ definitions:
           request_parameters:
             fields: id,instagram_business_account
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
