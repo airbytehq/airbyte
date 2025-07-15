@@ -37,4 +37,5 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery'
 
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
+    testImplementation "io.mockk:mockk:1.13.13"
 }
