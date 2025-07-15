@@ -4778,6 +4778,7 @@ spec:
         type: string
         airbyte_hidden: true
   config_normalization_rules:
+    type: ConfigNormalizationRules
     config_migrations:
       - type: ConfigMigration
         description: Extract data center from API key credentials and add it to config for future requests
