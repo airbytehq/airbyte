@@ -140,27 +140,44 @@ class DatabricksDestinationHandler(
     private fun findExistingTable(
         streamIds: List<StreamId>
     ): Map<String, LinkedHashMap<String, TableDefinition>> {
-        val paramHolder = IntRange(1, streamIds.size).joinToString { "?" }
+        // Databricks has a limit of 256 parameters per query
+        // We use 1 parameter for table_catalog + 2N parameters (N for schemas, N for table names)
+        // So we need to ensure 1 + 2*batchSize <= 256, which means batchSize <= 127.5
+        // Using 125 to be safe
+        val batchSize = 125
+        val allResults = mutableListOf<JsonNode>()
 
-        val infoSchemaQuery =
-            """
-            |SELECT table_schema, table_name, column_name, data_type, is_nullable
-            |FROM ${databaseName.lowercase()}.information_schema.columns
-            |WHERE
-            |   table_catalog = ?
-            |   AND table_schema IN ($paramHolder)
-            |   AND table_name IN ($paramHolder)
-            |ORDER BY table_schema, table_name, ordinal_position
-        """.trimMargin()
+        // Process streams in batches to avoid exceeding parameter limit
+        for (batch in streamIds.chunked(batchSize)) {
+            val paramHolder = IntRange(1, batch.size).joinToString { "?" }
 
-        val namespaces = streamIds.asSequence().map { it.finalNamespace }.toList().toTypedArray()
-        val names = streamIds.asSequence().map { it.finalName }.toList().toTypedArray()
-        val results =
-            jdbcDatabase.queryJsons(infoSchemaQuery, databaseName.lowercase(), *namespaces, *names)
+            val infoSchemaQuery =
+                """
+                |SELECT table_schema, table_name, column_name, data_type, is_nullable
+                |FROM ${databaseName.lowercase()}.information_schema.columns
+                |WHERE
+                |   table_catalog = ?
+                |   AND table_schema IN ($paramHolder)
+                |   AND table_name IN ($paramHolder)
+                |ORDER BY table_schema, table_name, ordinal_position
+            """.trimMargin()
+
+            val namespaces = batch.asSequence().map { it.finalNamespace }.toList().toTypedArray()
+            val names = batch.asSequence().map { it.finalName }.toList().toTypedArray()
+            val batchResults =
+                jdbcDatabase.queryJsons(
+                    infoSchemaQuery,
+                    databaseName.lowercase(),
+                    *namespaces,
+                    *names
+                )
+
+            allResults.addAll(batchResults)
+        }
 
         // GroupBys and Associates preserve original iteration order, we used LinkedHashMap in old
         // java land so adapting to it.
-        return results
+        return allResults
             .groupBy { it.get("table_schema").asText()!! }
             .mapValues { (_, v) ->
                 v.groupBy { it.get("table_name").asText()!! }
