@@ -1,30 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import CustomerLabel
-
-from airbyte_cdk.models import SyncMode
 
 from .conftest import find_stream, read_full_refresh
-
-
-def test_query_customer_label_stream(customers, config):
-    credentials = config["credentials"]
-    api = GoogleAds(credentials=credentials)
-
-    stream_config = dict(
-        api=api,
-        customers=customers,
-    )
-    stream = CustomerLabel(**stream_config)
-    assert (
-        stream.get_query(stream_slice={"customer_id": "123"})
-        == "SELECT customer_label.resource_name, customer_label.customer, customer.id, customer_label.label FROM customer_label"
-    )
 
 
 @patch.object(SourceGoogleAds, "get_customers", return_value=[])
