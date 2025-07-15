@@ -36,9 +36,10 @@ class IterableStream(HttpStream, ABC):
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
 
-    def __init__(self, authenticator):
+    def __init__(self, authenticator, config=None, **kwargs):
         self._cred = authenticator
         self._slice_retry = 0
+        self._config = config
         super().__init__(authenticator)
 
     @property
@@ -153,8 +154,8 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
 
-    def __init__(self, start_date=None, end_date=None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, start_date=None, end_date=None, config=None, **kwargs):
+        super().__init__(config=config, **kwargs)
         self._start_date = pendulum.parse(start_date)
         self._end_date = end_date and pendulum.parse(end_date)
         self.stream_params = {"dataTypeName": self.data_field}
@@ -191,7 +192,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
             return {
                 self.cursor_field: str(
                     max(
-                        latest_benchmark,
+                        self._field_to_datetime(latest_benchmark),
                         self._field_to_datetime(current_stream_state[self.cursor_field]),
                     )
                 )
@@ -217,7 +218,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for obj in response.iter_lines():
             record = json.loads(obj)
-            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field]).to_iso8601_string()
             yield record
 
     def request_kwargs(
@@ -303,7 +304,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
         start_datetime = self.get_start_date(stream_state)
-        self._adjustable_generator = AdjustableSliceGenerator(start_datetime, self._end_date)
+        self._adjustable_generator = AdjustableSliceGenerator(start_datetime, self._end_date, self._config)
         return self._adjustable_generator
 
     def read_records(
@@ -585,5 +586,5 @@ class Templates(IterableExportStreamRanged):
         records = response_json.get(self.data_field, [])
 
         for record in records:
-            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field]).to_iso8601_string()
             yield record

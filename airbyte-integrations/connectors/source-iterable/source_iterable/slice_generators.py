@@ -5,7 +5,7 @@
 import dataclasses
 import math
 from dataclasses import dataclass
-from typing import Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, Any
 
 import pendulum
 from pendulum.datetime import DateTime, Period
@@ -28,9 +28,10 @@ class SliceGenerator:
     _start_date: DateTime = None
     _end_data: DateTime = None
 
-    def __init__(self, start_date: DateTime, end_date: Optional[DateTime] = None):
+    def __init__(self, start_date: DateTime, end_date: Optional[DateTime] = None, config: dict | None = None):
         self._start_date = start_date
         self._end_date = end_date or pendulum.now("UTC")
+        self.config = config
 
     def __iter__(self):
         return self
@@ -89,40 +90,49 @@ class AdjustableSliceGenerator(SliceGenerator):
     have different range based on was the previous slice processed successfully
     and how much time it took.
     The alghorithm is following:
-    1. First slice have INITIAL_RANGE_DAYS (30 days) length.
+    1. First slice have initial_range_days (30 days) length.
     2. When slice is processed by stream this class expect "adjust_range"
     method to be called with parameter how much time it took to process
     previous request
     3. Knowing previous slice range we can calculate days per minute processing
     speed. Dividing this speed by REQUEST_PER_MINUTE_LIMIT (4) we can calculate
-    next slice range. Next range cannot be greater than MAX_RANGE_DAYS (180 days)
+    next slice range. Next range cannot be greater than max_range_days (180 days)
 
     If processing of previous slice havent been completed "reduce_range" method
     should be called. It would reset next range start date to previous slice
-    and reduce next slice range by RANGE_REDUCE_FACTOR (2 times)
+    and reduce next slice range by range_reduce_factor (2 times)
 
     In case if range havent been adjusted before getting next slice (it could
     happend if there were no records for given date range), next slice would
-    have MAX_RANGE_DAYS (180) length.
+    have max_range_days (180) length.
     """
 
-    REQUEST_PER_MINUTE_LIMIT = 4
-    INITIAL_RANGE_DAYS: int = 30
-    DEFAULT_RANGE_DAYS: int = 90
-    MAX_RANGE_DAYS: int = 180
-    RANGE_REDUCE_FACTOR = 2
+    request_per_minute_limit = 4
+    initial_range_days: int = 30
+    default_range_days: int = 90
+    max_range_days: int = 180
+    range_reduce_factor = 2
 
-    # This variable play important roles: stores length of previos range before
-    # next adjusting next slice lenght and provide length of next slice after
-    # adjusting
-    _current_range: int = INITIAL_RANGE_DAYS
-    # Save previous start date in case if slice processing fail and we need to
-    # go back to previous range.
-    _prev_start_date: DateTime = None
-    # In case if adjust_range method havent been called (no records for slice)
-    # next range would have MAX_RANGE_DAYS length
-    # Default is True so for first slice it would length would be INITIAL_RANGE_DAYS (30 days)
-    _range_adjusted = True
+    def __init__(self, start_date: DateTime, end_date: Optional[DateTime] = None, config: dict[str, Any] | None = None):
+        super().__init__(start_date, end_date, config)
+        if config:
+            self.request_per_minute_limit = config.get("request_per_minute_limit", self.request_per_minute_limit)
+            self.initial_range_days = config.get("initial_range_days", self.initial_range_days)
+            self.default_range_days = config.get("default_range_days", self.default_range_days)
+            self.max_range_days = config.get("max_range_days", self.max_range_days)
+            self.range_reduce_factor = config.get("range_reduce_factor", self.range_reduce_factor)
+
+        # This variable play important roles: stores length of previos range before
+        # next adjusting next slice lenght and provide length of next slice after
+        # adjusting
+        self._current_range: int = self.initial_range_days
+        # Save previous start date in case if slice processing fail and we need to
+        # go back to previous range.
+        self._prev_start_date: DateTime | None = None
+        # In case if adjust_range method havent been called (no records for slice)
+        # next range would have max_range_days length
+        # Default is True so for first slice it would length would be initial_range_days (30 days)
+        self._range_adjusted = True
 
     def adjust_range(self, previous_request_time: Period):
         """
@@ -131,21 +141,21 @@ class AdjustableSliceGenerator(SliceGenerator):
         """
         minutes_spent = previous_request_time.total_minutes()
         if minutes_spent == 0:
-            self._current_range = self.DEFAULT_RANGE_DAYS
+            self._current_range = self.default_range_days
         else:
             days_per_minute = self._current_range / minutes_spent
-            next_range = math.floor(days_per_minute / self.REQUEST_PER_MINUTE_LIMIT)
-            self._current_range = min(next_range or self.DEFAULT_RANGE_DAYS, self.MAX_RANGE_DAYS)
+            next_range = math.floor(days_per_minute / self.request_per_minute_limit)
+            self._current_range = min(next_range or self.default_range_days, self.max_range_days)
         self._range_adjusted = True
 
     def reduce_range(self) -> StreamSlice:
         """
         This method is supposed to be called when slice processing failed.
         Reset next slice start date to previous one and reduce slice range by
-        RANGE_REDUCE_FACTOR (2 times).
+        range_reduce_factor (2 times).
         Returns updated slice to try again.
         """
-        self._current_range = int(max(self._current_range / self.RANGE_REDUCE_FACTOR, self.INITIAL_RANGE_DAYS))
+        self._current_range = int(max(self._current_range / self.range_reduce_factor, self.initial_range_days))
         start_date = self._prev_start_date
         end_date = min(self._end_date, start_date + (pendulum.Duration(days=self._current_range)))
         self._start_date = end_date
@@ -161,7 +171,7 @@ class AdjustableSliceGenerator(SliceGenerator):
         if self._start_date >= self._end_date:
             raise StopIteration()
         if not self._range_adjusted:
-            self._current_range = self.MAX_RANGE_DAYS
+            self._current_range = self.max_range_days
         next_start_date = min(self._end_date, self._start_date + pendulum.Duration(days=self._current_range))
         slice = StreamSlice(start_date=self._start_date, end_date=next_start_date)
         self._prev_start_date = self._start_date
