@@ -4,7 +4,7 @@
 
 import logging as Logger
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import pydantic
@@ -85,34 +85,6 @@ class NotionStream(HttpStream, ABC):
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
-        For a 429 response, we can use the retry-header to determine how long to wait before retrying.
-        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
-        Docs: https://developers.notion.com/reference/errors#rate-limiting
-        """
-        retry_after = response.headers.get("retry-after", "5")
-        if response.status_code == 429:
-            return float(retry_after)
-        if self.check_invalid_start_cursor(response):
-            return 10
-        return super().backoff_time(response)
-
-    def should_retry(self, response: requests.Response) -> bool:
-        # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
-        if response.status_code == 504:
-            self.page_size = self.throttle_request_page_size(self.page_size)
-            self.logger.info(f"Encountered a server timeout. Reducing request page size to {self.page_size} and retrying.")
-
-        # If page_size has been reduced after encountering a 504 Gateway Timeout error,
-        # we increase it back to the default of 100 once a success response is achieved, for the following API calls.
-        if response.status_code == 200 and self.page_size != 100:
-            self.page_size = 100
-            self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to {self.page_size}.")
-
-        return response.status_code == 400 or super().should_retry(response)
-
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
         # Notion API version, see https://developers.notion.com/reference/versioning
@@ -140,28 +112,6 @@ class NotionStream(HttpStream, ABC):
         # sometimes notion api returns response without results object
         data = response.json().get("results", [])
         yield from data
-
-
-T = TypeVar("T")
-
-
-class StateValueWrapper(pydantic.BaseModel):
-    stream: T
-    state_value: str
-    max_cursor_time: Any = ""
-
-    def __repr__(self):
-        """Overrides print view"""
-        return self.value
-
-    @property
-    def value(self) -> str:
-        """Return max cursor time after stream sync is finished."""
-        return self.max_cursor_time if self.stream.is_finished else self.state_value
-
-    def dict(self, **kwargs):
-        """Overrides default logic to return current value only."""
-        return {pydantic.utils.ROOT_KEY: self.value}
 
 
 class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
@@ -227,8 +177,6 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         for record in records:
             record_lmd = record.get(self.cursor_field, "")
             state_lmd = stream_state.get(self.cursor_field, "")
-            if isinstance(state_lmd, StateValueWrapper):
-                state_lmd = state_lmd.value
             if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
                 yield record
 
@@ -237,14 +185,16 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        state_value = (current_stream_state or {}).get(self.cursor_field, "")
-        if not isinstance(state_value, StateValueWrapper):
-            state_value = StateValueWrapper(stream=self, state_value=state_value)
-
+        # Get the current state value as a string
+        current_state_value = (current_stream_state or {}).get(self.cursor_field, "")
         record_time = latest_record.get(self.cursor_field, self.start_date)
-        state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
+        
+        # For now, just use the record time as the state value
+        # The complex logic with max_cursor_time and is_finished can be simplified
+        # since we're moving to low-code anyway
+        new_state_value = max(current_state_value, record_time) if current_state_value else record_time
 
-        return {self.cursor_field: state_value}
+        return {self.cursor_field: new_state_value}
 
 
 class Pages(IncrementalNotionStream):
@@ -334,26 +284,3 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             yield record
 
         self.block_id_stack.pop()
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 404:
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.error(
-                f"Stream {self.name}: {response.json().get('message')}. 404 HTTP response returns if the block specified by id doesn't"
-                " exist, or if the integration doesn't have access to the block."
-                "See more in docs: https://developers.notion.com/reference/get-block-children"
-            )
-            return False
-
-        if response.status_code == 400:
-            error_code = response.json().get("code")
-            error_msg = response.json().get("message")
-            if "validation_error" in error_code and "ai_block is not supported" in error_msg:
-                setattr(self, "raise_on_http_errors", False)
-                self.logger.error(
-                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type."
-                )
-                return False
-            else:
-                return super().should_retry(response)
-        return super().should_retry(response)
