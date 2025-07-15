@@ -6,21 +6,23 @@
 import logging
 import re
 from collections import namedtuple
-from unittest.mock import MagicMock, Mock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pendulum
 import pytest
+import requests
 from pendulum import duration, today
-from source_google_ads.components import GoogleAdsPerPartitionStateMigration
+from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupAdLegacy, chunk_date_range
+from source_google_ads.streams import CampaignBiddingStrategy, chunk_date_range
 from source_google_ads.utils import GAQL
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 from .common import MockGoogleAdsClient
 
@@ -38,7 +40,7 @@ def stream_mock(mocker, config, customers):
     def mock(latest_record):
         mocker.patch("source_google_ads.streams.GoogleAdsStream.read_records", Mock(return_value=[latest_record]))
         google_api = GoogleAds(credentials=config["credentials"])
-        client = AdGroupAdLegacy(
+        client = CampaignBiddingStrategy(
             start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], customers=customers
         )
         return client
@@ -121,7 +123,6 @@ def test_streams_count(config, mock_get_customers):
     source = SourceGoogleAds(config, None, None)
     streams = source.streams(config)
     expected_streams_number = 30
-    print(f"{config=} \n{streams=}")
     assert len(streams) == expected_streams_number
 
 
@@ -429,24 +430,6 @@ def test_end_date_is_not_in_the_future(config, customers):
     assert config.get("end_date") == today().to_date_string()
 
 
-def test_stream_slices(config, customers):
-    google_api = GoogleAds(credentials=config["credentials"])
-    stream = AdGroupAdLegacy(
-        start_date=config["start_date"],
-        api=google_api,
-        conversion_window_days=config["conversion_window_days"],
-        customers=customers,
-        end_date="2021-02-10",
-    )
-    slices = list(stream.stream_slices())
-    assert slices == [
-        {"start_date": "2020-12-18", "end_date": "2021-01-01", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-01-02", "end_date": "2021-01-16", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-01-17", "end_date": "2021-01-31", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-02-01", "end_date": "2021-02-10", "customer_id": "123", "login_customer_id": None},
-    ]
-
-
 def mock_send_request(query: str, customer_id: str, login_customer_id: str = "default"):
     print(query, customer_id, login_customer_id)
     if customer_id == "123":
@@ -608,3 +591,53 @@ def test_state_migration(input_state, records_and_slices, expected):
     migrator = GoogleAdsPerPartitionStateMigration(config=None, customer_client_stream=stream_mock)
 
     assert migrator.migrate(input_state) == expected
+
+
+_ANY_VALUE = -1
+
+
+@pytest.mark.parametrize(
+    "input_keys, expected_keys",
+    [
+        (
+            {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+            {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+        ),
+        (
+            {"123Number": _ANY_VALUE, "456Another123": _ANY_VALUE},
+            {"123number": _ANY_VALUE, "456another123": _ANY_VALUE},
+        ),
+        (
+            {
+                "NestedRecord": {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+                "456Another123": _ANY_VALUE,
+            },
+            {
+                "nested_record": {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+                "456another123": _ANY_VALUE,
+            },
+        ),
+        (
+            {"hello@world": _ANY_VALUE, "test#case": _ANY_VALUE},
+            {"hello_world": _ANY_VALUE, "test_case": _ANY_VALUE},
+        ),
+        (
+            {"MixedUPCase123": _ANY_VALUE, "lowercaseAnd123": _ANY_VALUE},
+            {"mixed_upcase123": _ANY_VALUE, "lowercase_and123": _ANY_VALUE},
+        ),
+        ({"Café": _ANY_VALUE, "Naïve": _ANY_VALUE}, {"cafe": _ANY_VALUE, "naive": _ANY_VALUE}),
+        (
+            {
+                "This is a full sentence": _ANY_VALUE,
+                "Another full sentence with more words": _ANY_VALUE,
+            },
+            {
+                "this_is_a_full_sentence": _ANY_VALUE,
+                "another_full_sentence_with_more_words": _ANY_VALUE,
+            },
+        ),
+    ],
+)
+def test_keys_transformation(input_keys, expected_keys):
+    KeysToSnakeCaseGoogleAdsTransformation().transform(input_keys)
+    assert input_keys == expected_keys

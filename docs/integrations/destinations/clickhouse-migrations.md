@@ -1,5 +1,10 @@
 # Clickhouse Migration Guide
 
+## SSH Support :warning:
+
+SSH is not yet implemented for the new connector. If you require SSH support,
+please hold off on migrating for now.
+
 ## Upgrading to 2.0.0
 
 This version differs from 1.0.0 radically. Whereas 1.0.0 wrote all your data
@@ -27,3 +32,23 @@ naming semantics, we will not remove existing data. If you would like to, you
 will need to delete all the tables saved in the old format, which for most
 people should be under `airbyte_internal.{database}_raw__`, but may vary based
 on your specific configuration.
+
+## Gotchas
+
+### Namespaces and the default database
+
+In V2 namespaces are treated as equivalent to a ClickHouse "database". This
+means if you set a custom namespace for your connection that will be the
+database the connector will use for queries instead of the "database"
+configured in the Destination settings.
+
+Previously, namespaces where added as a prefix to the table name. If you have
+existing connections configured in this fashion you may want to remove them.
+
+### Hostname
+
+If the "Hostname" property in your configuration contains the protocol ("http
+or "https"), you will need to remove it.
+
+The previous versions incidentally tolerated the protocol being stored in the
+hostname field.

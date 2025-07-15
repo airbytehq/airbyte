@@ -23,7 +23,7 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val database: String
     abstract val username: String
     abstract val password: String
-    abstract val enableJson: Boolean
+    abstract val enableJson: Boolean?
 }
 
 @Singleton
@@ -71,7 +71,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     )
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
-    override val enableJson: Boolean = false
+    override val enableJson: Boolean? = false
 }
 
 @Singleton
@@ -119,7 +119,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     )
     @get:JsonProperty("enable_json")
     @get:JsonSchemaInject(json = """{"order": 6, "default": false}""")
-    override val enableJson: Boolean = false
+    override val enableJson: Boolean? = false
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {
