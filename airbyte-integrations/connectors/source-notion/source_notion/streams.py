@@ -91,7 +91,7 @@ class NotionStream(HttpStream, ABC):
         """
         Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
         For a 429 response, we can use the retry-header to determine how long to wait before retrying.
-        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
+        For 500-level errors, we use exponential backoff with a retry_factor of 5.
         Docs: https://developers.notion.com/reference/errors#rate-limiting
         """
         retry_after = response.headers.get("retry-after", "5")
@@ -99,7 +99,10 @@ class NotionStream(HttpStream, ABC):
             return float(retry_after)
         if self.check_invalid_start_cursor(response):
             return 10
-        return super().backoff_time(response)
+        # For 500+ errors, use exponential backoff
+        if response.status_code >= 500:
+            return self.retry_factor * (2 ** (self.max_retries - 1))
+        return None
 
     def should_retry(self, response: requests.Response) -> bool:
         # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
@@ -113,7 +116,8 @@ class NotionStream(HttpStream, ABC):
             self.page_size = 100
             self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to {self.page_size}.")
 
-        return response.status_code == 400 or super().should_retry(response)
+        # Temporary workaround to replace the deprecated calls to super().should_retry(response)
+        return response.status_code == 400 or response.status_code == 429 or response.status_code >= 500
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
@@ -357,5 +361,6 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
                 )
                 return False
             else:
-                return super().should_retry(response)
-        return super().should_retry(response)
+                # Temporary workaround to replace the deprecated calls to super().should_retry(response)
+                return response.status_code == 429 or response.status_code >= 500
+        return response.status_code == 429 or response.status_code >= 500
