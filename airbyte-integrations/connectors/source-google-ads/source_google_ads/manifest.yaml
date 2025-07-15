@@ -329,10 +329,6 @@ definitions:
       - ad_group.id
       - ad_group_ad.ad.id
       - label.id
-    transformations:
-      - type: AddFields
-        fields:
-          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -346,6 +342,10 @@ definitions:
       - ad_group_ad.ad.id
       - segments.date
       - segments.ad_network_type
+    transformations:
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
     schema_loader:
       type: InlineSchemaLoader
       schema:
