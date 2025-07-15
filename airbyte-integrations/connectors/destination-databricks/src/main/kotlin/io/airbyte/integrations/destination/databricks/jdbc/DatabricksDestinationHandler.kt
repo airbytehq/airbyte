@@ -165,8 +165,13 @@ class DatabricksDestinationHandler(
             val namespaces = batch.asSequence().map { it.finalNamespace }.toList().toTypedArray()
             val names = batch.asSequence().map { it.finalName }.toList().toTypedArray()
             val batchResults =
-                jdbcDatabase.queryJsons(infoSchemaQuery, databaseName.lowercase(), *namespaces, *names)
-            
+                jdbcDatabase.queryJsons(
+                    infoSchemaQuery,
+                    databaseName.lowercase(),
+                    *namespaces,
+                    *names
+                )
+
             allResults.addAll(batchResults)
         }
 
