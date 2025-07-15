@@ -299,7 +299,6 @@ definitions:
       schema:
         $ref: "#/schemas/account_performance_report"
 
-
   ad_group_stream:
     $ref: "#/definitions/incremental_stream_base"
     name: ad_group
