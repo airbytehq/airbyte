@@ -21,8 +21,8 @@ To configure incremental syncs for a stream in the connector builder, you need t
 In the builder UI, these are configured as follows:
 
 - **Cursor field** - The property in the record that defines when the record was last updated. This field is used to determine which records have been synced and which are new.
-- **Cursor datetime formats** - The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. The UI can auto-detect common formats from your test data.
-- **API time filtering capabilities** - Specifies how the API allows filtering by datetime:
+- **Datetime formats** - The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. The UI can auto-detect common formats from your test data.
+- **Time filtering mode** - Specifies how the API allows filtering by datetime:
   - **Range**: API supports both start and end datetime filtering
   - **Start**: API supports start datetime filtering but returns all data from start to now
   - **No filter (data feed)**: API doesn't support filtering and returns data in descending order (newest to oldest)
@@ -30,7 +30,7 @@ In the builder UI, these are configured as follows:
 - **End datetime** - The end date for the time range (only available for Range mode). Usually set to "now" to sync all changes up to the current time.
 - **Inject start/end time into outgoing HTTP request** - Configures how to send the datetime values to the API (as query parameters, headers, or request body).
 
-### Cursor datetime formats
+### Datetime formats
 
 The Connector Builder supports multiple datetime formats for parsing cursor field values. You can specify multiple formats in order of preference - the first format that successfully parses the cursor value will be used.
 
@@ -68,8 +68,8 @@ Content records have the following form:
 As this fulfills the requirements for incremental syncs, we can configure the "Incremental sync" section in the following way:
 
 - "Cursor field" is set to `webPublicationDate`
-- "Cursor datetime formats" is set to `%Y-%m-%dT%H:%M:%SZ`
-- "API time filtering capabilities" is set to "Range" (supports both start and end datetime filtering)
+- "Datetime formats" is set to `%Y-%m-%dT%H:%M:%SZ`
+- "Time filtering mode" is set to "Range" (supports both start and end datetime filtering)
 - "Start datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
 - "End datetime" is set to "now" to fetch all articles up to the current date
 - "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
@@ -111,7 +111,7 @@ The `from-date` is set to the cutoff date of articles synced already and the `to
 In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](/platform/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
 
-## API time filtering capabilities
+## Time filtering modes
 
 The Connector Builder supports three different API filtering modes:
 
