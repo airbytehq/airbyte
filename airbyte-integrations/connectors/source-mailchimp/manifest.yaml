@@ -4777,6 +4777,14 @@ spec:
         description: Technical fields used to identify datacenter to send request to
         type: string
         airbyte_hidden: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Extract data center from API key credentials and add it to config for future requests
+        transformations:
+          - type: CustomConfigTransformation
+            class_name: source_declarative_manifest.components.ExtractAndSetDataCenterConfigValue
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
