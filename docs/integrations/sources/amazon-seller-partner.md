@@ -248,7 +248,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.7.1 | 2025-07-15 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.7.1 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
 | 4.7.0 | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |
 | 4.7.0-rc.1 | 2025-06-30 | [62119](https://github.com/airbytehq/airbyte/pull/62119) | Migrate to manifest-only |
 | 4.6.4 | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
