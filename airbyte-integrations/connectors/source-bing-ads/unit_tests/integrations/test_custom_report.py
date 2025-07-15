@@ -3,11 +3,10 @@
 from typing import Any
 
 from base_test import BaseTest
-from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from config_builder import ConfigBuilder
 from freezegun import freeze_time
 from test_hourly_reports import HourlyReportsTestWithStateChangesAfterMigration, get_state_after_migration
-from test_report_stream import SOURCE_BING_ADS, TestSuiteReportStream
+from test_report_stream import TestSuiteReportStream
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -305,10 +304,6 @@ class CustomReportSummary(BaseTest):
             .build()
         )
 
-    @property
-    def service_manager(self) -> ReportingServiceManager:
-        return ReportingServiceManager
-
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
         self.mock_accounts_search_api(
@@ -326,26 +321,23 @@ class CustomReportSummary(BaseTest):
 
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == self.start_date
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
         state = StateBuilder().with_stream_state(self.stream_name, {"TimePeriod": self.start_date}).build()
-        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == self.start_date
@@ -411,10 +403,6 @@ class CustomReportDayOfWeek(BaseTest):
             .build()
         )
 
-    @property
-    def service_manager(self) -> ReportingServiceManager:
-        return ReportingServiceManager
-
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
         self.mock_accounts_search_api(
@@ -432,16 +420,14 @@ class CustomReportDayOfWeek(BaseTest):
 
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
 
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file_transform_record(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
         for record in output.records:
             record = record.record.data
@@ -452,19 +438,17 @@ class CustomReportDayOfWeek(BaseTest):
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
         state = StateBuilder().with_stream_state(self.stream_name, {"TimePeriod": self.start_date}).build()
-        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
@@ -530,10 +514,6 @@ class CustomReportHourOfDay(BaseTest):
             .build()
         )
 
-    @property
-    def service_manager(self) -> ReportingServiceManager:
-        return ReportingServiceManager
-
     def mock_report_apis(self):
         self.mock_user_query_api(response_template="user_query")
         self.mock_accounts_search_api(
@@ -551,16 +531,14 @@ class CustomReportHourOfDay(BaseTest):
 
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
 
     @freeze_time("2024-05-06")
     def test_return_records_from_given_csv_file_transform_record(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
         for record in output.records:
             record = record.record.data
@@ -571,19 +549,17 @@ class CustomReportHourOfDay(BaseTest):
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
-        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
-        assert SOURCE_BING_ADS
         self.mock_report_apis()
         state = StateBuilder().with_stream_state(self.stream_name, {"TimePeriod": self.start_date}).build()
-        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
+        output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
         assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"

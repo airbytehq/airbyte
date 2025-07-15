@@ -28,7 +28,8 @@ class BigQueryCSVRowGenerator {
     fun generate(record: DestinationRecordRaw, schema: ObjectType): List<Any> {
         val enrichedRecord =
             record.asEnrichedDestinationRecordAirbyteValue(
-                extractedAtAsTimestampWithTimezone = true
+                extractedAtAsTimestampWithTimezone = true,
+                respectLegacyUnions = true,
             )
 
         enrichedRecord.declaredFields.values.forEach { value ->
@@ -51,8 +52,15 @@ class BigQueryCSVRowGenerator {
                 // serialize complex types to string
                 is ArrayType,
                 is ObjectType,
-                is UnionType,
                 is UnknownType -> value.abValue = StringValue(actualValue.serializeToString())
+
+                // non-legacy unions should be serialized.
+                // But legacy unions are converted to an actual type by validateAirbyteValue(),
+                // so leave them unchanged.
+                is UnionType ->
+                    if (!(value.type as UnionType).isLegacyUnion) {
+                        value.abValue = StringValue(actualValue.serializeToString())
+                    }
                 else -> {}
             }
         }

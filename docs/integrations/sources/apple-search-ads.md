@@ -71,6 +71,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.8.3 | 2025-07-12 | [63087](https://github.com/airbytehq/airbyte/pull/63087) | Update dependencies |
 | 0.8.2 | 2025-06-15 | [61626](https://github.com/airbytehq/airbyte/pull/61626) | Update dependencies |
 | 0.8.1 | 2025-05-17 | [60627](https://github.com/airbytehq/airbyte/pull/60627) | Update dependencies |
 | 0.8.0 | 2025-05-13 | [60241](https://github.com/airbytehq/airbyte/pull/60241) | Add token refresh endpoint override configuration override |

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -25,7 +26,9 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -43,7 +46,6 @@ import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.state.CheckpointId
@@ -294,6 +296,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val schematizedObjectBehavior: SchematizedNestedValueBehavior,
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
+    val coercesLegacyUnions: Boolean = false,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
     /**
@@ -319,7 +322,9 @@ abstract class BasicFunctionalityIntegrationTest(
      *
      * (warehouse destinations with direct-load tables should set this to true).
      */
-    val commitDataIncrementallyToEmptyDestination: Boolean =
+    val commitDataIncrementallyToEmptyDestinationOnAppend: Boolean =
+        commitDataIncrementally || commitDataIncrementallyOnAppend,
+    val commitDataIncrementallyToEmptyDestinationOnDedupe: Boolean =
         commitDataIncrementally || commitDataIncrementallyOnAppend,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
@@ -1044,6 +1049,114 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     /**
+     * Some destinations make complicated changes based on the sync mode, e.g. Bigquery changing the
+     * table's clustering config. Verify that we can do those changes across truncates.
+     */
+    @Test
+    open fun testTruncateRefreshChangeSyncMode() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(dedupBehavior != null)
+        fun makeStream(
+            generationId: Long,
+            minimumGenerationId: Long,
+            syncId: Long,
+            importType: ImportType
+        ) =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                importType,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId,
+                minimumGenerationId,
+                syncId,
+                namespaceMapper = namespaceMapperForMedium()
+            )
+        val stream =
+            makeStream(
+                generationId = 12,
+                minimumGenerationId = 12,
+                syncId = 42,
+                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+            )
+        // start a truncate refresh in DEDUPE mode, but emit INCOMPLETE.
+        runSyncUntilStateAckAndExpectFailure(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    stream = stream,
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            ),
+            StreamCheckpoint(
+                unmappedName = stream.unmappedName,
+                unmappedNamespace = stream.unmappedNamespace,
+                blob = """{}""",
+                sourceRecordCount = 1,
+                checkpointKey = checkpointKeyForMedium(),
+            ),
+            syncEndBehavior = UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS,
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOfNotNull(
+                if (commitDataIncrementally || commitDataIncrementallyToEmptyDestinationOnDedupe) {
+                    OutputRecord(
+                        extractedAt = 1234,
+                        generationId = 12,
+                        data = mapOf("id" to 42, "name" to "first_value"),
+                        airbyteMeta = OutputRecord.Meta(syncId = 42),
+                    )
+                } else {
+                    null
+                }
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+
+        // start (and complete) a new truncate in APPEND mode.
+        // This should now delete the first sync's data, and insert the new record.
+        val finalStream =
+            makeStream(
+                generationId = 13,
+                minimumGenerationId = 13,
+                syncId = 43,
+                Append,
+            )
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    stream = stream,
+                    """{"id": 43, "name": "second_value"}""",
+                    emittedAtMs = 2345,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 2345,
+                    generationId = 13,
+                    data = mapOf("id" to 43, "name" to "second_value"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
      * Test behavior in a failed truncate refresh. Sync 1 just populates two records with ID 1 and
      * 2. The test then runs two more syncs:
      * 1. Sync 2 emits ID 1, and then fails the sync (i.e. no COMPLETE stream status). We expect the
@@ -1286,7 +1399,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         dumpAndDiffRecords(
             parsedConfig,
-            if (commitDataIncrementallyToEmptyDestination) {
+            if (commitDataIncrementallyToEmptyDestinationOnAppend) {
                 listOf(
                     makeOutputRecord(
                         id = 1,
@@ -3554,6 +3667,80 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedRecords,
             stream,
             primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
+     * Run a sync with a legacy union of number|boolean. Validate that we correctly coerce/null
+     * nonobvious values.
+     */
+    @Test
+    open fun testCoerceLegacyUnions() {
+        assumeTrue(verifyDataWriting)
+        assumeTrue(coercesLegacyUnions)
+        val stream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "x" to
+                            FieldType(
+                                // It's easier to just hardcode a jsonschema here.
+                                // In theory we could modify AirbyteTypeToJsonSchema to do this,
+                                // but legacy unions are really annoying to construct.
+                                UnknownType(Jsons.readTree("""{"type": ["number", "boolean"]}""")),
+                                nullable = true
+                            ),
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 12,
+                namespaceMapper = namespaceMapperForMedium(),
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                // 42 wrapped in a string - should be coerced to 42
+                InputRecord(stream, """{"x": "42"}""", emittedAtMs = 1234),
+                // "potato" is not a valid number, should get nulled out.
+                InputRecord(stream, """{"x": "potato"}""", emittedAtMs = 2345),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 42,
+                    data = mapOf("x" to NumberValue(BigDecimal.valueOf(42))),
+                    airbyteMeta = OutputRecord.Meta(syncId = 12),
+                ),
+                OutputRecord(
+                    extractedAt = 2345,
+                    generationId = 42,
+                    data = mapOf("x" to NullValue),
+                    airbyteMeta =
+                        OutputRecord.Meta(
+                            syncId = 12,
+                            changes =
+                                listOf(
+                                    Change(
+                                        "x",
+                                        AirbyteRecordMessageMetaChange.Change.NULLED,
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_SERIALIZATION_ERROR,
+                                    ),
+                                ),
+                        ),
+                ),
+            ),
+            stream,
+            primaryKey = emptyList(),
             cursor = null,
         )
     }

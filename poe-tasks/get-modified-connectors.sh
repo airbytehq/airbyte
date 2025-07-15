@@ -11,6 +11,7 @@ JAVA=false
 NO_JAVA=false
 JSON=false
 PREV_COMMIT=false
+LOCAL_CDK=false
 
 # parse flags
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --prev-commit|--compare-prev)
       PREV_COMMIT=true
+      ;;
+    --local-cdk|local-cdk)
+      LOCAL_CDK=true
       ;;
     *)
       echo "Unknown argument: $1" >&2;
@@ -130,9 +134,35 @@ print_list() {
 
 # Allow empty arrays without 'unbound variable' error from here on out.
 set +u
+# 10) If --local-cdk flag is set, also add Java connectors with useLocalCdk = true regardless of changes.
+if $LOCAL_CDK; then
+  echo "Finding Java Bulk CDK connectors with version = local..." >&2
 
-# 10) Print all if no filters applied
+  for connector_dir in airbyte-integrations/connectors/*; do
+    if [[ -d "$connector_dir" ]]; then
+      # Check if it's a Java connector (either with build.gradle or build.gradle.kts)
+      if [ -f "$connector_dir/build.gradle" ] || [ -f "$connector_dir/build.gradle.kts" ]; then
+        connector_name=$(basename "$connector_dir")
 
+        # Determine which build file exists
+        build_file="build.gradle"
+        if [ -f "$connector_dir/build.gradle.kts" ]; then
+          build_file="build.gradle.kts"
+        fi
+
+        # Search for cdk = 'local' or cdk = "local" in airbyteBulkConnector block
+        if grep -q "airbyteBulkConnector" "$connector_dir/$build_file" && grep -q "cdk *= *['\"]local['\"]" "$connector_dir/$build_file"; then
+          connectors+=("$connector_name")
+        fi
+      fi
+    fi
+  done
+
+  # Remove any duplicates using sort, parse it using mapfile and assign to $connectors.
+  mapfile -t connectors < <(printf '%s\n' "${connectors[@]}" | sort -u)
+fi
+
+# 11) Print all if no filters applied
 if ! $JAVA && ! $NO_JAVA; then
   print_list "${connectors[@]}"
   exit 0

@@ -100,6 +100,7 @@ GET https://api.yotpo.com/v1/apps/{app_key}/reviews?utoken={access_token}
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.2.5 | 2025-07-12 | [63210](https://github.com/airbytehq/airbyte/pull/63210) | Update dependencies |
 | 0.2.4 | 2025-07-05 | [62684](https://github.com/airbytehq/airbyte/pull/62684) | Update dependencies |
 | 0.2.3 | 2025-06-28 | [62250](https://github.com/airbytehq/airbyte/pull/62250) | Update dependencies |
 | 0.2.2 | 2025-06-21 | [61748](https://github.com/airbytehq/airbyte/pull/61748) | Update dependencies |

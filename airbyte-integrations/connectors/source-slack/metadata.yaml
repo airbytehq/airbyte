@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   githubIssueLabel: source-slack
@@ -29,6 +29,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
         message: Due to changes in the Slack API Terms of Service, the Slack connector is being migrated to a new Marketplace application to retain a higher rate limit for syncing data. As part of moving from the old OAuth application to the new one, users will need to re-authenticate their source from within the Airbyte application to continue syncing data at a higher speed. For more information, see the [announcement](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq).

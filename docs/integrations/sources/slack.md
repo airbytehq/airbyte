@@ -126,6 +126,8 @@ The connector is restricted by Slack [rate limits](https://api.slack.com/docs/ra
 
 We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration setings.
 
+If you expect to sync a large amount of data (like historical data) you can try to increase the number of workers, default is 1. This could cause to being rate limited by Slack, so you should monitor the logs for rate limit errors.
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -164,6 +166,8 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------|
+| 2.1.0 | 2025-07-11 | [62930](https://github.com/airbytehq/airbyte/pull/62930) | Promoting release candidate 2.1.0-rc.1 to a main version. |
+| 2.1.0-rc.1 | 2025-07-07 | [62110](https://github.com/airbytehq/airbyte/pull/62110) | Bump cdk v6 |
 | 2.0.2 | 2025-07-05 | [62709](https://github.com/airbytehq/airbyte/pull/62709) | Update dependencies |
 | 2.0.1 | 2025-06-28 | [51965](https://github.com/airbytehq/airbyte/pull/51965) | Update dependencies |
 | 2.0.0 | 2025-06-25 | [62055](https://github.com/airbytehq/airbyte/pull/62055) | Add breaking change notification for migrating to the new Slack Marketplace application to retain higher rate limits. |

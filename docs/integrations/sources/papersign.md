@@ -22,6 +22,7 @@ The Airbyte connector for [Papersign](https://paperform.co/products/papersign/) 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-07-12 | [63231](https://github.com/airbytehq/airbyte/pull/63231) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62571](https://github.com/airbytehq/airbyte/pull/62571) | Update dependencies |
 | 0.0.26 | 2025-06-28 | [62360](https://github.com/airbytehq/airbyte/pull/62360) | Update dependencies |
 | 0.0.25 | 2025-06-21 | [61882](https://github.com/airbytehq/airbyte/pull/61882) | Update dependencies |

@@ -1,0 +1,28 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_insights"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "business_account_id": "17841400000000000"
+            },
+            "cursor": {
+              "date": "2025-06-28T07:00:00+00:00"
+            }
+          }
+        ],
+        "state": {
+          "date": "2025-06-28T07:00:00+00:00"
+        },
+        "lookback_window": 4,
+        "parent_state": {}
+      }
+    }
+  }
+]
