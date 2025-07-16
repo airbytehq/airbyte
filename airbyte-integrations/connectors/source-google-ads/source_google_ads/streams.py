@@ -287,36 +287,6 @@ class ServiceAccounts(GoogleAdsStream):
     primary_key = ["customer.id"]
 
 
-class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
-    """
-    Campaign Bidding Strategy stream: https://developers.google.com/google-ads/api/fields/v18/campaign
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
-
-
-class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
-    """
-    Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v18/ad_group
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
-
-
-class ClickView(IncrementalGoogleAdsStream):
-    """
-    ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v18/ClickView
-    """
-
-    primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
-    days_of_data_storage = 90
-    # where clause for cursor is inclusive from both sides, duration 0 will result in - '"2022-01-01" <= cursor AND "2022-01-01" >= cursor'
-    # Queries including ClickView must have a filter limiting the results to one day
-    slice_duration = pendulum.duration(days=0)
-
-
 class ChangeStatus(IncrementalGoogleAdsStream):
     """
     Change status stream: https://developers.google.com/google-ads/api/fields/v18/change_status
