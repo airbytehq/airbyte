@@ -1,0 +1,71 @@
+---
+id: embedded-config-templates-connections-id-get-connection-config-template
+title: "Get Connection Config Template"
+description: "Get Connection Config Template"
+sidebar_label: "Get Connection Config Template"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1v2zgQ/SvCnHYBOk6yuxfdHDdNc9gmaNy9GIZAiyObjUSqJGXUK+i/L4aULPlj09bo0SfL0sybmTePFEc1OL6yEM8h1Uph6qRWSapVJleJw6LMuUNYMNAlGk4PHwXEgMUShUAxOrC0ox7FjmopmtEKXfIGNAOLaWWk20I8r+HDbPZ8h9yggXi+aBYMSm54gQ6N9QaKFwgxSAEMpIIYSu7WwMDg10oaFBA7UyEDm66x4BDX4LYleVhnpFoBg0ybgjuIoao8ipMuJ4NHAQ0FNGhLrSxacr69vqYfgTY1sqQKIIaXKk3R2qzKo0+tMTDiz6FyZM7LMpepp2v8xZJPPUioNESmkyGCNiuu5L/eOJHiZzJ+GrhGlD6jRJ1UASxQdQzXub/rbaOPZHvgz1OnTSIwk0qekd0QfkJQ0bsd1IlsgzAGAfTyC6bufwCnwbphkBqtEvxWGrRWBqq52j5lXi37uTZsd0dVeQ7U7Q58arSK7nuYhoHSKlka5K9SrZJ0zdUKbVIazNCgSt+k9qNW0V3rGk2Da/Tcu1LpGa9yok2ulDaefLtVaUJUGKSl0eMvtc6Rq0GAl61KoycVTYPpAI/k3zD4uV6FdoS4IuHuTV/BHY6cLBCG9HnXaOIIqCrFuUCfg6sHatiRFvplPj9aOSfU/31BnxQhC/vLgI+9mgayeUA33W1uQZSzdmt7qqgEKuLPU5vIHRcRVYPWnb95FGgtX+G5ov+7dW8YoDHaeEzpsLDHoTKJuTg30Hvv3LBfnXCSanE22D0hRFNCOCW1zmxSSm8JvQ03hm/hAMkOV+F88SOQu7dHp5M/jnXyXpulFALVRSUXlXiV3N4eq+QfnksRXo0hjYtYLmJpGPx16tXzqBwaxfPoBc0GzUUxF8V0igmH8oFWHtBF/QmnPXdHs358K9CtNc2EKyR0P47FMOalHG9uxt2gOD4cFMeDQXFMg6KfBEmOYc6rTA4xrJ0rbTwmtCsuzXLr8IpLOExyEh5F9220aPL86FnuZssXkm6Q0HDC3LWF4kA7NPoDdzAgOqTKtLfsaDsV64cSYkDVBYPrq+urG2pmqa0ruF9f7Wj7Xcb3Qu1KcPjNjcucSz+7ePrqthtz4CWRtrkBthvdw3rf60m41XUFGMRS0GF3rS2pCep6yS1+NnnT0O2vFRqa2hcMNtxIviR+5jUIaelaQJzx3OJRwrttBn771B7nf4+AnS6kE7siqW94XtE/YPCK2/AZoFk0DNbIhf9kULcPJmmKpRu4HG1oJI+ddh/uZ8CAV8RWP3UFEbDuYrCw99Op62Ax06+ommaXnaP/lGDT/AfGR/2f
+sidebar_class_name: "get api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Connection Config Template"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/config_templates/connections/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get Connection Config Template
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"destination_name":{"type":"string","title":"Destination Name"},"destination_actor_definition_id":{"type":"string","format":"uuid","title":"Destination Actor Definition Id"},"destination_config":{"type":"object","title":"Destination Config"},"cron_expression":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Cron Expression"},"non_breaking_changes_preference":{"type":"string","title":"Non Breaking Changes Preference","default":"ignore"},"sync_on_create":{"type":"boolean","title":"Sync On Create","default":true},"id":{"type":"string","format":"uuid","title":"Id"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"updated_at":{"type":"string","format":"date-time","title":"Updated At"}},"type":"object","required":["organization_id","destination_name","destination_actor_definition_id","destination_config","id","created_at","updated_at"],"title":"GetConnectionConfigTemplateOut"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

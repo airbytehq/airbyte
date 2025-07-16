@@ -14,6 +14,7 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
+const embeddedApiSidebar = require("./api-docs/embedded-api/sidebar");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -182,6 +183,64 @@ const config = {
           productInformation,
           docMetaTags,
         ],
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded-api",
+        path: "api-docs/embedded-api",
+        routeBasePath: "/embedded-api/",
+        docItemComponent: "@theme/ApiItem",
+        async sidebarItemsGenerator() {
+          // We only want to include visible endpoints on the sidebar. We need to filter out endpoints with tags
+          // that are not included in the spec. Even if we didn't need to filter out elements the OpenAPI plugin generates a sidebar.ts
+          // file that exports a nested object, but Docusaurus expects just the array of sidebar items, so we need to extracts the actual sidebar
+          // items from the generated file structure.
+
+          const responseSpec = await fetch(
+            "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json",
+          );
+          const data = await responseSpec.json();
+
+          // when we have display name correct, we should change this to tag["x-display-name"]
+          const allowedTags = data.tags.map((tag) => tag["name"]);
+
+          // embeddedApiSidebar is the actual array of sidebar items from the generated file
+          const sidebarItems = Array.isArray(embeddedApiSidebar)
+            ? embeddedApiSidebar
+            : [];
+
+          const filteredItems = sidebarItems.filter((item) => {
+            if (item.type !== "category") {
+              return true;
+            }
+
+            return allowedTags.includes(item.label);
+          });
+
+          return filteredItems;
+        },
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "embedded-api",
+        docsPluginId: "embedded-api",
+        config: {
+          embedded: {
+            specPath:
+              "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json",
+            outputDir: "api-docs/embedded-api",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: false,
+              sidebarCollapsible: false,
+            },
+          },
+        },
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
