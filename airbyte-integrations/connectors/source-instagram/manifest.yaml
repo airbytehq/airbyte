@@ -24,13 +24,11 @@ definitions:
             fields: >-
               caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username,children
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -97,9 +95,9 @@ definitions:
               value: "{{ stream_partition.account.business_account_id }}"
               value_type: string
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramMediaChildrenTransformation
+          class_name: source_declarative_manifest.components.InstagramMediaChildrenTransformation
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramClearUrlTransformation
+          class_name: source_declarative_manifest.components.InstagramClearUrlTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -131,40 +129,32 @@ definitions:
               'reach,saved,likes,comments,shares,follows,profile_visits' }}{%
               endif %}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and
-                      response['error']['error_subcode'] == 2108006 }}
-                    http_codes: []
-                    error_message: >-
-                      Insights error for business_account_id: {{
-                      response['error']['message'] }}
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and ( (response['error']['code'] ==
-                      100 and response['error']['error_subcode'] == 33) or
-                      (response['error']['code'] == 10 and
-                      response['error']['message'] == "(#10) Application does
-                      not have permission for this action") ) }}
-                    error_message: >-
-                      Check provided permissions for: {{
-                      response['error']['message'] }}
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and
+                  response['error']['error_subcode'] == 2108006 }}
+                http_codes: []
+                error_message: >-
+                  Insights error for business_account_id: {{
+                  response['error']['message'] }}
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and ( (response['error']['code'] ==
+                  100 and response['error']['error_subcode'] == 33) or
+                  (response['error']['code'] == 10 and
+                  response['error']['message'] == "(#10) Application does
+                  not have permission for this action") ) }}
+                error_message: >-
+                  Check provided permissions for: {{
+                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -180,7 +170,7 @@ definitions:
                 $ref: "#/definitions/streams/Media"
       transformations:
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramInsightsTransformation
+          class_name: source_declarative_manifest.components.InstagramInsightsTransformation
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -203,7 +193,7 @@ definitions:
               value: "{{ stream_partition.media_insights_info.business_account_id }}"
               value_type: string
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramClearUrlTransformation
+          class_name: source_declarative_manifest.components.InstagramClearUrlTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -223,13 +213,11 @@ definitions:
             fields: >-
               id,biography,ig_id,followers_count,follows_count,media_count,name,profile_picture_url,username,website
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -252,7 +240,7 @@ definitions:
               value: "{{ stream_partition.account.page_id }}"
               value_type: string
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramClearUrlTransformation
+          class_name: source_declarative_manifest.components.InstagramClearUrlTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -276,13 +264,11 @@ definitions:
             breakdown: "{{ stream_partition.breakdown }}"
             metric_type: total_value
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -327,7 +313,7 @@ definitions:
                 - metric
               value: "{{ record['name'] }}"
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramBreakDownResultsTransformation
+          class_name: source_declarative_manifest.components.InstagramBreakDownResultsTransformation
         - type: RemoveFields
           field_pointers:
             - - name
@@ -362,13 +348,11 @@ definitions:
             fields: >-
               caption,id,ig_id,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -433,7 +417,7 @@ definitions:
                 - timestamp
               value: '{% set datetime_str = format_datetime(record["timestamp"], "%Y-%m-%dT%H:%M:%S%z") %}{% set formatted_datetime = datetime_str[:-2] + ":" + datetime_str[-2:] %}{{ formatted_datetime }}'
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramClearUrlTransformation
+          class_name: source_declarative_manifest.components.InstagramClearUrlTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -450,20 +434,18 @@ definitions:
           request_parameters:
             metric: reach,replies,follows,profile_visits,shares,total_interactions
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ 'error' in response and response['error']['code'] == 10 }}
-                    error_message: >-
-                      Insights error: {{ response['error']['message'] }}
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and response['error']['code'] == 10 }}
+                error_message: >-
+                  Insights error: {{ response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -479,7 +461,7 @@ definitions:
                 $ref: "#/definitions/streams/Stories"
       transformations:
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramInsightsTransformation
+          class_name: source_declarative_manifest.components.InstagramInsightsTransformation
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -502,7 +484,7 @@ definitions:
               value: "{{ stream_partition.story_insights_info.business_account_id }}"
               value_type: string
         - type: CustomTransformation
-          class_name: source_instagram.components.InstagramClearUrlTransformation
+          class_name: source_declarative_manifest.components.InstagramClearUrlTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -559,19 +541,40 @@ definitions:
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and
+                  response['error']['error_subcode'] == 2108006 }}
+                http_codes: []
+                error_message: >-
+                  Insights error for business_account_id: {{
+                  response['error']['message'] }}
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and ( (response['error']['code'] ==
+                  100 and response['error']['error_subcode'] == 33) or
+                  (response['error']['code'] == 10 and
+                  response['error']['message'] == "(#10) Application does
+                  not have permission for this action") ) }}
+                error_message: >-
+                  Check provided permissions for: {{
+                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
-            class_name: source_instagram.components.UserInsightsExtractor
+            class_name: source_declarative_manifest.components.UserInsightsExtractor
             field_path:
               - data
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: source_instagram.components.RFC3339DatetimeSchemaNormalization
+            class_name: source_declarative_manifest.components.RFC3339DatetimeSchemaNormalization
         partition_router:
           type: CustomPartitionRouter
-          class_name: source_instagram.components.UserInsightsSubstreamPartitionRouter
+          class_name: source_declarative_manifest.components.UserInsightsSubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: account
@@ -639,13 +642,11 @@ definitions:
           request_parameters:
             fields: id,instagram_business_account
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -735,6 +736,91 @@ metadata:
         - transformations
       StoryInsights:
         - transformations
+
+spec:
+  type: Spec
+  documentation_url: "https://docs.airbyte.com/integrations/sources/instagram"
+  changelog_url: "https://docs.airbyte.com/integrations/sources/instagram"
+  connection_specification:
+    title: Source Instagram
+    type: object
+    properties:
+      start_date:
+        title: Start Date
+        description: >-
+          The date from which you'd like to replicate data for User Insights, in
+          the format YYYY-MM-DDT00:00:00Z. All data generated after this date will
+          be replicated. If left blank, the start date will be set to 2 years
+          before the present date.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2017-01-25T00:00:00Z"
+        type: string
+        format: date-time
+      access_token:
+        title: Access Token
+        description: >-
+          The value of the access token generated with <b>instagram_basic,
+          instagram_manage_insights, pages_show_list, pages_read_engagement,
+          Instagram Public Content Access</b> permissions. See the <a
+          href="https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram">docs</a>
+          for more information
+        airbyte_secret: true
+        type: string
+      client_id:
+        title: Client Id
+        description: The Client ID for your Oauth application
+        airbyte_secret: true
+        type: string
+      client_secret:
+        title: Client Secret
+        description: The Client Secret for your Oauth application
+        airbyte_secret: true
+        type: string
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 2
+        maximum: 40
+        default: 15
+        examples:
+          - 1
+          - 2
+          - 3
+        description: The number of worker threads to use for the sync.
+    required:
+      - access_token
+  supportsIncremental: true
+  supported_destination_sync_modes:
+    - append
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - client_secret
 
 schemas:
   Media:

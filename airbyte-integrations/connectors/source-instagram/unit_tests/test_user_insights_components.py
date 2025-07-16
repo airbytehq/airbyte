@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from source_instagram.components import RFC3339DatetimeSchemaNormalization, UserInsightsExtractor, UserInsightsSubstreamPartitionRouter
 
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.types import StreamSlice
@@ -76,7 +75,7 @@ from airbyte_cdk.sources.types import StreamSlice
         ),
     ],
 )
-def test_user_insights_extractor(metrics_response, expected_record):
+def test_user_insights_extractor(components_module, metrics_response, expected_record):
     response = {
         "data": metrics_response,
         "paging": {
@@ -88,14 +87,14 @@ def test_user_insights_extractor(metrics_response, expected_record):
     decoder = MagicMock()
     decoder.decode.return_value = [response]
 
-    extractor = UserInsightsExtractor(field_path=["data"], decoder=decoder, config={}, parameters={})
+    extractor = components_module.UserInsightsExtractor(field_path=["data"], decoder=decoder, config={}, parameters={})
     records = list(extractor.extract_records(response))
     assert len(records) == 1
     day_record = records[0]
     assert day_record == expected_record
 
 
-def test_user_insights_substream_partition_router():
+def test_user_insights_substream_partition_router(components_module):
     parent_stream_configs = [
         ParentStreamConfig(
             stream=MagicMock(),
@@ -118,7 +117,9 @@ def test_user_insights_substream_partition_router():
             ),
         ],
     ):
-        partition_router = UserInsightsSubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, config={}, parameters={})
+        partition_router = components_module.UserInsightsSubstreamPartitionRouter(
+            parent_stream_configs=parent_stream_configs, config={}, parameters={}
+        )
 
         slices = list(partition_router.stream_slices())
 
@@ -150,8 +151,8 @@ def test_user_insights_substream_partition_router():
         ),
     ],
 )
-def test_rfc3339_datetime_schema_normalization(original_value, field_schema, expected_value):
-    type_transformer = RFC3339DatetimeSchemaNormalization()
+def test_rfc3339_datetime_schema_normalization(components_module, original_value, field_schema, expected_value):
+    type_transformer = components_module.RFC3339DatetimeSchemaNormalization()
     transform = type_transformer.get_transform_function()
 
     transformed_value = transform(original_value=original_value, field_schema=field_schema)
