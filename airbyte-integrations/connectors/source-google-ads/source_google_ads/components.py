@@ -306,6 +306,26 @@ class GoogleAdsHttpRequester(HttpRequester):
 
 
 @dataclass
+class ClickViewHttpRequester(GoogleAdsHttpRequester):
+    """
+    Custom HTTP requester for ClickView stream.
+    """
+
+    schema_loader: InlineSchemaLoader = None
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        schema = self.schema_loader.get_json_schema()["properties"]
+        fields = [field for field in schema.keys()]
+        return {"query": f"SELECT {', '.join(fields)} FROM click_view WHERE segments.date = '{stream_slice['start_time']}'"}
+
+
+@dataclass
 class KeysToSnakeCaseGoogleAdsTransformation(RecordTransformation):
     """
     Transforms keys in a Google Ads record to snake_case.

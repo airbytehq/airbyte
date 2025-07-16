@@ -18,12 +18,9 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AdGroupBiddingStrategy,
     AdGroupCriterion,
     AdListingGroupCriterion,
-    CampaignBiddingStrategy,
     CampaignCriterion,
-    ClickView,
     CustomerClient,
 )
 from .utils import GAQL, logger, traced_exception
@@ -221,12 +218,9 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
             AdListingGroupCriterion(**default_config),
-            CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
-            ClickView(**incremental_config),
         ]
         for single_query_config in config.get("custom_queries_array", []):
             query_stream = self.create_custom_query_stream(
