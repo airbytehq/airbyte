@@ -220,10 +220,8 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
             AdListingGroupCriterion(**default_config),
-            CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
         ]
         for single_query_config in config.get("custom_queries_array", []):
