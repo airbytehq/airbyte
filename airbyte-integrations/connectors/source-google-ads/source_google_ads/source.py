@@ -18,10 +18,8 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AdGroupBiddingStrategy,
     AdGroupCriterion,
     AdListingGroupCriterion,
-    CampaignBiddingStrategy,
     CampaignCriterion,
     CustomerClient,
 )
