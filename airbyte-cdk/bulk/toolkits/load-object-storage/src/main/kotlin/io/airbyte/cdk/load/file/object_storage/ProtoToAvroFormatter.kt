@@ -6,15 +6,41 @@ package io.airbyte.cdk.load.file.object_storage
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
-import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.AirbyteValueProxy
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.Transformations
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.avro.toAvroSchema
+import io.airbyte.cdk.load.data.collectUnknownPaths
+import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.io.OutputStream
-import java.time.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
@@ -26,6 +52,8 @@ class ProtoToAvroFormatter(
     formatConfig: AvroFormatConfiguration,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+    private val longMin = Long.MIN_VALUE.toBigInteger()
+    private val longMax = Long.MAX_VALUE.toBigInteger()
 
     private val logicalSchema: ObjectType =
         mergeUnions(stream.schema).withAirbyteMeta(rootLevelFlattening)
@@ -93,9 +121,9 @@ class ProtoToAvroFormatter(
 
     private fun foldUnionOptions(into: MutableSet<AirbyteType>, from: Iterable<AirbyteType>) {
         for (opt in from) when (opt) {
-            is UnionType -> foldUnionOptions(into, opt.options) // flatten union‑of‑union
-            is ObjectType -> mergeObjectOption(into, opt) // merge object branches
-            else -> into += opt // primitives / arrays / …
+            is UnionType -> foldUnionOptions(into, opt.options)
+            is ObjectType -> mergeObjectOption(into, opt)
+            else -> into += opt
         }
     }
 
@@ -153,10 +181,6 @@ class ProtoToAvroFormatter(
 
     override fun flush() = writer.flush()
     override fun close() = writer.close()
-
-    private val longMin = Long.MIN_VALUE.toBigInteger()
-    private val longMax = Long.MAX_VALUE.toBigInteger()
-
     private fun buildColumnWriters(): List<ColumnWriter> {
         val accessors = stream.airbyteValueProxyFieldAccessors
 
@@ -209,7 +233,7 @@ class ProtoToAvroFormatter(
                         }
                     is DateType -> { rec, p, ch ->
                             p.getDate(acc)?.let {
-                                runCatching { LocalDate.parse(it).toEpochDay().toInt() }
+                                runCatching { LocalDate.parse(it).toEpochDay() }
                                     .onSuccess { d -> rec.put(fieldName, d) }
                                     .onFailure {
                                         rec.put(fieldName, null)
@@ -220,7 +244,7 @@ class ProtoToAvroFormatter(
                     is TimeTypeWithTimezone -> { rec, p, ch ->
                             p.getTimeWithTimezone(acc)?.let {
                                 runCatching { microsOfDayTz(OffsetTime.parse(it)) }
-                                    .onSuccess { rec.put(fieldName, it) }
+                                    .onSuccess { t -> rec.put(fieldName, t) }
                                     .onFailure {
                                         rec.put(fieldName, null)
                                         addError(ch)
@@ -230,7 +254,7 @@ class ProtoToAvroFormatter(
                     is TimeTypeWithoutTimezone -> { rec, p, ch ->
                             p.getTimeWithoutTimezone(acc)?.let {
                                 runCatching { microsOfDay(LocalTime.parse(it)) }
-                                    .onSuccess { rec.put(fieldName, it) }
+                                    .onSuccess { t -> rec.put(fieldName, t) }
                                     .onFailure {
                                         rec.put(fieldName, null)
                                         addError(ch)
@@ -240,7 +264,7 @@ class ProtoToAvroFormatter(
                     is TimestampTypeWithTimezone -> { rec, p, ch ->
                             p.getTimestampWithTimezone(acc)?.let {
                                 runCatching { epochMicrosTz(OffsetDateTime.parse(it)) }
-                                    .onSuccess { rec.put(fieldName, it) }
+                                    .onSuccess { t -> rec.put(fieldName, t) }
                                     .onFailure {
                                         rec.put(fieldName, null)
                                         addError(ch)
@@ -250,7 +274,7 @@ class ProtoToAvroFormatter(
                     is TimestampTypeWithoutTimezone -> { rec, p, ch ->
                             p.getTimestampWithoutTimezone(acc)?.let {
                                 runCatching { epochMicros(LocalDateTime.parse(it)) }
-                                    .onSuccess { rec.put(fieldName, it) }
+                                    .onSuccess { t -> rec.put(fieldName, t) }
                                     .onFailure {
                                         rec.put(fieldName, null)
                                         addError(ch)
@@ -366,7 +390,7 @@ class ProtoToAvroFormatter(
                 TimestampTypeWithoutTimezone -> epochMicros(LocalDateTime.parse(node.textValue()))
                 is ObjectTypeWithoutSchema,
                 is ObjectTypeWithEmptySchema,
-                is ArrayTypeWithoutSchema -> node.toString() // mapped to Avro string
+                is ArrayTypeWithoutSchema -> node.toString()
                 is UnknownType -> null
             }
         } catch (_: Exception) {
@@ -391,14 +415,14 @@ class ProtoToAvroFormatter(
             is TimeTypeWithTimezone,
             is TimeTypeWithoutTimezone,
             is TimestampTypeWithTimezone,
-            is TimestampTypeWithoutTimezone -> node.isTextual // all kept as strings
+            is TimestampTypeWithoutTimezone -> node.isTextual
             is ObjectType,
             is ObjectTypeWithoutSchema,
             is ObjectTypeWithEmptySchema -> node.isObject
             is ArrayType,
             is ArrayTypeWithoutSchema -> node.isArray
             is UnionType -> schema.options.any { nodeMatches(node, it) }
-            is UnknownType -> true // accept anything
+            is UnknownType -> false
         }
 
     private fun pickUnionBranch(
