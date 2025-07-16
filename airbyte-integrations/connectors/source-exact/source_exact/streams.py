@@ -105,6 +105,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         # Contains the full next page, so don't append new query params
         if next_page_token:
             return {}
+
         configured_properties = list(self.get_json_schema()["properties"].keys())
         params = {
             "$select": ",".join(configured_properties),

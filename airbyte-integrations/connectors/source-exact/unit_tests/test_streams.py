@@ -88,7 +88,7 @@ def test_request_params_with_sync_stream(config_oauth: dict, next_page_token, cu
     stream = MyTestExactSyncStream(config_oauth)
     stream.state = {"456": {"Timestamp": cursor_value}}
 
-    assert stream.request_params(next_page_token, {"division": "456"}) == expected
+    assert stream.request_params(stream.state, {"division": "456"}, next_page_token, ) == expected
 
 
 @pytest.mark.parametrize(
@@ -130,7 +130,7 @@ def test_request_params_with_other_stream(config_oauth: dict, next_page_token, c
     stream = MyTestExactOtherStream(config_oauth)
     stream.state = {"456": {"Modified": cursor_value}}
 
-    assert stream.request_params(next_page_token, {"division": "456"}) == expected
+    assert stream.request_params(stream.state, {"division": "456"},next_page_token) == expected
 
 
 @pytest.mark.parametrize(
