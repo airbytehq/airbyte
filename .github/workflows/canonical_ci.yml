@@ -77,7 +77,8 @@ jobs:
 
           # Run tests for the connector. Skip the tests which are relevant to upstream repository.
           airbyte-ci --disable-update-check --disable-dagger-run connectors --name=$CONNECTOR test \
-              --skip-step=qa_checks --skip-step=version_inc_check --skip-step=acceptance --skip-step=python_cli_validation
+              --skip-step=qa_checks --skip-step=version_inc_check --skip-step=acceptance --skip-step=python_cli_validation \
+              --skip-step=integration
 
           # return back to root
           cd ../../../
