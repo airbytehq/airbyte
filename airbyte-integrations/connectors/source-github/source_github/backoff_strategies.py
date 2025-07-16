@@ -8,9 +8,7 @@ from typing import Any, Optional, Union
 import requests
 
 from airbyte_cdk import BackoffStrategy
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.utils import AirbyteTracedException
 
 
 class GithubStreamABCBackoffStrategy(BackoffStrategy):
