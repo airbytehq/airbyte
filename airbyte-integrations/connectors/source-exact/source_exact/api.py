@@ -10,7 +10,7 @@ from source_exact.auth import ExactOauth2Authenticator
 class ExactAPI:
     def __init__(self, config):
         self.config = config
-        self._authenticator : None | ExactOauth2Authenticator = None
+        self._authenticator: None | ExactOauth2Authenticator = None
 
     @property
     def authenticator(self) -> ExactOauth2Authenticator:
