@@ -92,5 +92,3 @@ The single and bulk api’s are designed for a different purpose. They provide a
 ## ToDo List
 - [ ] Improve logging so that in the case of a refresh of a token before its expiry date does not only give a 401 but also its message
   - `401 Client Error: Unauthorized for url: https://start.exactonline.nl/api/oauth2/token`
-- [ ] Refactor ExactStream to not have subclasses set the `cursor_field = ""` as then the cursor field needs to be 
-  defined within the schema which it isn't
