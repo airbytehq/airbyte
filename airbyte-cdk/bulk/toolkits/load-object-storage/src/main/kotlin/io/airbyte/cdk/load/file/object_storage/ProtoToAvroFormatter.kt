@@ -233,7 +233,7 @@ class ProtoToAvroFormatter(
                         }
                     is DateType -> { rec, p, ch ->
                             p.getDate(acc)?.let {
-                                runCatching { LocalDate.parse(it).toEpochDay() }
+                                runCatching { LocalDate.parse(it).toEpochDay().toInt() }
                                     .onSuccess { d -> rec.put(fieldName, d) }
                                     .onFailure {
                                         rec.put(fieldName, null)

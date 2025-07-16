@@ -2738,13 +2738,13 @@ abstract class BasicFunctionalityIntegrationTest(
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
                         .filter {
-                            it != "boolean" && dataChannelFormat == DataChannelFormat.PROTOBUF
+                            it != "boolean" || dataChannelFormat != DataChannelFormat.PROTOBUF
                         }
                         .filter {
-                            it != "integer" && dataChannelFormat == DataChannelFormat.PROTOBUF
+                            it != "integer" || dataChannelFormat != DataChannelFormat.PROTOBUF
                         }
                         .filter {
-                            it != "number" && dataChannelFormat == DataChannelFormat.PROTOBUF
+                            it != "number" || dataChannelFormat != DataChannelFormat.PROTOBUF
                         }
                         .map { key ->
                             val change =
