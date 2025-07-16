@@ -64,7 +64,7 @@ files and methods should be named.
 First install test dependencies into your virtual environment:
 
 ```shell
-uv sync --dev
+poetry install --with dev
 ```
 
 ### Unit Tests
