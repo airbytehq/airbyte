@@ -4,7 +4,6 @@
 
 import json
 from pathlib import Path
-from typing import Iterator
 
 from airbyte_protocol_dataclasses.models import ConfiguredAirbyteStream, DestinationSyncMode
 from pytest import fixture
@@ -12,7 +11,8 @@ from source_exact import SourceExact
 from source_exact.streams import SyncProjectProjects
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.test.entrypoint_wrapper import read, EntrypointOutput
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+
 
 HERE = Path(__file__).parent
 
@@ -35,6 +35,6 @@ def configured_catalog(config):
 
 def test_read_sync_project_projects(config, configured_catalog):
     source = SourceExact()
-    output : EntrypointOutput = read(source, config, configured_catalog)
+    output: EntrypointOutput = read(source, config, configured_catalog)
 
     assert len(output.records) > 0
