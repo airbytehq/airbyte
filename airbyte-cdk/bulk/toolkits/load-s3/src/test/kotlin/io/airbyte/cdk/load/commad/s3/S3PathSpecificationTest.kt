@@ -57,15 +57,15 @@ class S3PathSpecificationTest {
             every { this@mockk.syncId } returns 444L
             every { this@mockk.mappedDescriptor } returns
                 DestinationStream.Descriptor(
-                    "namespace/!_.*')(&\$@=;:+,?-^",
-                    "stream_name/!_.*')(&\$@=;:+,?-^",
+                    "namespace9/!_.*')(&\$@=;:+,?-^",
+                    "stream_name7/!_.*')(&\$@=;:+,?-^",
                 )
         }
 
         val pathToFile = objectStoragePathFactory.getPathToFile(stream, 123L)
 
         Assertions.assertEquals(
-            "this_is_my_bucket_path/namespace/!_.*')(&\$@=;:+,?-_/stream_name/!_.*')(&\$@=;:+,?-_/p_date=2020-01-02/p_hour=03/444_part_123",
+            "this_is_my_bucket_path/namespace9/!_.*')(&\$@=;:+,?-_/stream_name7/!_.*')(&\$@=;:+,?-_/p_date=2020-01-02/p_hour=03/444_part_123",
             pathToFile,
         )
     }
