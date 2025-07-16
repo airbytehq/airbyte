@@ -38,7 +38,7 @@ data class MySqlSourceConfiguration(
     override val namespaces: Set<String>,
     val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
-    override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
+    override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(200L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
