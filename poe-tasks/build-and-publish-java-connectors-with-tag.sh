@@ -74,7 +74,29 @@ is_in_whitelist() {
     destination-yellowbrick|\
     source-e2e-test|\
     source-postgres|\
-    source-mysql)
+    source-mysql|\
+    source-mssql|\
+    source-mongodb|\
+    source-db2-enterprise|\
+    source-sap-hana|\
+    source-netsuite|\
+    source-oracle-enterprise|\
+    source-bigquery|\
+    source-clickhouse|\
+    source-clickhouse-strict-encrypt|\
+    source-cockroachdb|\
+    source-db2|\
+    source-dynamodb|\
+    source-e2e-test-cloud|\
+    source-elasticsearch|\
+    source-kafka|\
+    source-oracle|\
+    source-oracle-strict-encrypt|\
+    source-scaffold-java-jdbc|\
+    source-sftp|\
+    source-snowflake|\
+    source-teradata|\
+    source-tidb)
       return 0
       ;;
     *)
