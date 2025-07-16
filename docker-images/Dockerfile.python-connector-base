@@ -12,7 +12,6 @@ RUN adduser --uid 1000 --system --group --home /airbyte/home airbyte
 
 # Create the cache airbyte directories and set the right permissions
 RUN mkdir --mode 755 /airbyte && \
-    mkdir --mode 755 /airbyte/home && \
     mkdir --mode 755 /custom_cache && \
     mkdir /secrets && \
     mkdir /config && \
