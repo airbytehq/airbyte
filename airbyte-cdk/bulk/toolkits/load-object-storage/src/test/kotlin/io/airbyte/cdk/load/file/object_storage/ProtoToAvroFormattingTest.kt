@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-class ProtoToAvroFormatterTest : ProtoFixtures(false) {
+class ProtoToAvroFormattingTest : ProtoFixtures(false) {
 
     private fun cfg(): AvroFormatConfiguration = mockk {
         every { avroCompressionConfiguration.compressionCodec } returns CodecFactory.nullCodec()
