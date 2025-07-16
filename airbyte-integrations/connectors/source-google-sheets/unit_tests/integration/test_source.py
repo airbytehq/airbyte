@@ -230,7 +230,10 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
         expected_log_message = AirbyteMessage(
             type=Type.LOG,
-            log=AirbyteLogMessage(level=Level.INFO, message="Duplicate headers found in sheet a_stream_name. Deduplicating them by appending cell position: ['header_2']"),
+            log=AirbyteLogMessage(
+                level=Level.INFO,
+                message="Duplicate headers found in sheet a_stream_name. Deduplicating them by appending cell position: ['header_2']",
+            ),
         )
 
         output = self._discover(self._config, expecting_exception=False)
@@ -406,7 +409,13 @@ class TestSourceRead(GoogleSheetsBaseTest):
                 record=AirbyteRecordMessage(
                     emitted_at=ANY,
                     stream=_STREAM_NAME,
-                    data={first_property: "value_11", second_property: "value_12", third_property: "value_13", fourth_property: "main", fifth_property: "main st"},
+                    data={
+                        first_property: "value_11",
+                        second_property: "value_12",
+                        third_property: "value_13",
+                        fourth_property: "main",
+                        fifth_property: "main st",
+                    },
                 ),
             ),
             AirbyteMessage(
@@ -414,7 +423,13 @@ class TestSourceRead(GoogleSheetsBaseTest):
                 record=AirbyteRecordMessage(
                     emitted_at=ANY,
                     stream=_STREAM_NAME,
-                    data={first_property: "value_21", second_property: "value_22", third_property: "value_23", fourth_property: "washington 3", fifth_property: "colonial"},
+                    data={
+                        first_property: "value_21",
+                        second_property: "value_22",
+                        third_property: "value_23",
+                        fourth_property: "washington 3",
+                        fifth_property: "colonial",
+                    },
                 ),
             ),
         ]
