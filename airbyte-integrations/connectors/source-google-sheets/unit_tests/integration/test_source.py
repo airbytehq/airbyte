@@ -199,10 +199,12 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
     def test_discover_with_duplicated_return_expected_schema(self, http_mocker: HttpMocker):
         """
         The response from headers (first row) has columns "header_1 | header_2 | header_2 | address | address2"  so header_2 will
-        be ignored from schema.
+        be deduplicated by appending cell position.
         """
         expected_schema_properties = {
             "header_1": {"type": ["null", "string"]},
+            "header_2_B1": {"type": ["null", "string"]},
+            "header_2_C1": {"type": ["null", "string"]},
             "address": {"type": ["null", "string"]},
             "address2": {"type": ["null", "string"]},
         }
@@ -228,7 +230,7 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
         expected_log_message = AirbyteMessage(
             type=Type.LOG,
-            log=AirbyteLogMessage(level=Level.INFO, message="Duplicate headers found in sheet a_stream_name. Ignoring them: ['header_2']"),
+            log=AirbyteLogMessage(level=Level.INFO, message="Duplicate headers found in sheet a_stream_name. Deduplicating them by appending cell position: ['header_2']"),
         )
 
         output = self._discover(self._config, expecting_exception=False)
@@ -360,7 +362,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_when_read_with_duplicated_headers_then_return_records(self, http_mocker: HttpMocker):
         """ "
-        header_2 will be ignored from records as column is duplicated.
+        header_2 will be deduplicated by appending cell position.
 
         header_1	header_2	header_2	address	        address2
         value_11	value_12	value_13	main	        main st
@@ -373,8 +375,10 @@ class TestSourceRead(GoogleSheetsBaseTest):
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
         GoogleSheetsBaseTest.get_stream_data(http_mocker, f"{test_file_base_name}_{GET_STREAM_DATA}")
         first_property = "header_1"
-        second_property = "address"
-        third_property = "address2"
+        second_property = "header_2_B1"
+        third_property = "header_2_C1"
+        fourth_property = "address"
+        fifth_property = "address2"
         configured_catalog = (
             CatalogBuilder()
             .with_stream(
@@ -386,6 +390,8 @@ class TestSourceRead(GoogleSheetsBaseTest):
                             first_property: {"type": ["null", "string"]},
                             second_property: {"type": ["null", "string"]},
                             third_property: {"type": ["null", "string"]},
+                            fourth_property: {"type": ["null", "string"]},
+                            fifth_property: {"type": ["null", "string"]},
                         }
                     }
                 )
@@ -400,7 +406,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
                 record=AirbyteRecordMessage(
                     emitted_at=ANY,
                     stream=_STREAM_NAME,
-                    data={first_property: "value_11", second_property: "main", third_property: "main st"},
+                    data={first_property: "value_11", second_property: "value_12", third_property: "value_13", fourth_property: "main", fifth_property: "main st"},
                 ),
             ),
             AirbyteMessage(
@@ -408,7 +414,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
                 record=AirbyteRecordMessage(
                     emitted_at=ANY,
                     stream=_STREAM_NAME,
-                    data={first_property: "value_21", second_property: "washington 3", third_property: "colonial"},
+                    data={first_property: "value_21", second_property: "value_22", third_property: "value_23", fourth_property: "washington 3", fifth_property: "colonial"},
                 ),
             ),
         ]
