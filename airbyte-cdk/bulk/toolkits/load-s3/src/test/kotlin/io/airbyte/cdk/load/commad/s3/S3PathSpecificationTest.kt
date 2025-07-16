@@ -45,13 +45,13 @@ class S3PathSpecificationTest {
         val epochMilli =
             dateTime.toInstant(ZoneId.of("UTC").rules.getOffset(dateTime)).toEpochMilli()
 
-        val mt: TimeProvider = mockk {
+        val timeProvider: TimeProvider = mockk {
             every { this@mockk.syncTimeMillis() } returns epochMilli
             every { this@mockk.currentTimeMillis() } returns (epochMilli + 1)
         }
 
         val objectStoragePathFactory =
-            ObjectStoragePathFactory(objectStoragePathConfigProvider, timeProvider = mt)
+            ObjectStoragePathFactory(objectStoragePathConfigProvider, timeProvider = timeProvider)
 
         val stream: DestinationStream = mockk {
             every { this@mockk.syncId } returns 444L
