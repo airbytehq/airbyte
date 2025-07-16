@@ -18,8 +18,10 @@ import io.airbyte.cdk.load.http.decoder.JsonDecoder
 class Retriever(
     private val requester: HttpRequester,
     private val selector: List<String>,
-    private val decoder: JsonDecoder
 ) {
+    // FIXME eventually generify decoders
+    val decoder: JsonDecoder = JsonDecoder()
+
     fun getAll(): List<JsonNode> {
         return requester.send().use {
             decoder.decode(it.getBodyOrEmpty()).extractArray(selector).asSequence().toList()
