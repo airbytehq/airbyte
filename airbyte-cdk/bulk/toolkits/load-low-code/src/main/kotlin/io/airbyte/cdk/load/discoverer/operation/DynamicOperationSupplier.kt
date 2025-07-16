@@ -27,7 +27,8 @@ class DynamicOperationSupplier(
     private val propertyFactoriesByImportType: Map<ImportType, PropertyFactory>,
     private val schemaRequester: HttpRequester?,
 ) : OperationSupplier {
-    // FIXME once we figure out the decoder interface, we should have this configurable and/or move in a retriever layer
+    // FIXME once we figure out the decoder interface, we should have this configurable and/or move
+    // in a retriever layer
     private val decoder = JsonDecoder()
 
     override fun get(): List<DestinationOperation> {
@@ -38,7 +39,9 @@ class DynamicOperationSupplier(
                     schemaRequester
                         ?.send(mapOf("object" to it.apiRepresentation.toInterpolationContext()))
                         ?.use { response -> decoder.decode(response.getBodyOrEmpty()) }
-                        ?: throw IllegalStateException("Object ${it.name} does not have properties but schemaRequester is not defined to fetch it")
+                        ?: throw IllegalStateException(
+                            "Object ${it.name} does not have properties but schemaRequester is not defined to fetch it"
+                        )
             propertyFactoriesByImportType.mapNotNull { (importType, propertyFactory) ->
                 createOperation(
                     it.apiRepresentation.extract(objectNamePath).asText(),
