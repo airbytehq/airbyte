@@ -17,7 +17,6 @@ RUN mkdir --mode 755 /airbyte && \
     mkdir /config && \
     mkdir /nonexistent && \
     chown airbyte:airbyte /airbyte && \
-    chown -R airbyte:airbyte /airbyte/home && \
     chown -R airbyte:airbyte /custom_cache && \
     chown -R airbyte:airbyte /secrets && \
     chown -R airbyte:airbyte /config && \
