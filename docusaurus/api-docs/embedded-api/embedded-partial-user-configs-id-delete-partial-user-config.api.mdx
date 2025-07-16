@@ -1,0 +1,71 @@
+---
+id: embedded-partial-user-configs-id-delete-partial-user-config
+title: "Delete Partial User Config"
+description: "Delete Partial User Config"
+sidebar_label: "Delete Partial User Config"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV8tu2zoQ/RVhVi3AxEl6u9HOTV00QIsbNMndGIYxFscxW4liyZFRQ+C/F0M96sRG0Rt06ZVFaR5HZw7lwxYYHwPkc3Do2WC5bAL5ZVHbtXmEhYLakUc2tb3RkANVK9Ka9NmR6HDWGh3PNJXEtDxWTkGgovGGd5DPW/h4f3/7jtCTh3y+iAslGLAiJh9SgMWKIAejQYGxkIND3oACT98b40lDzr4hBaHYUIWQt8A7JxmBvbHSb137ChlyaJpUhQ2XEnCjIUpDT8HVNlCQ5KuLC/nRFApvnLwz5HDXFAWFsG7K7EsfDAqK2jJZlnB0rjRFomjyNUhOuwfIeSGQTdfB6P8LUkHjNDLpJfJvcyXojE1FewUeutRsyhCjGnLr1Vcq+AmN847jvVaLX1Xep4HedvN8COSv0zRHNmKU4v8cI+8d6ky6UOCXk1ZRCPhIKc3u/l0naTzlIarxjm3KEuIe/M99elRA3te+GwRTFQ5brQ2V+qWNPqTkqP424GVR6xcXm0mF7FoqHJPAEDZ1JkXCrxj0HnfwrFIABZrW2JSc9uwflDzQyZtDnXyo/cpoTfakkpNKkkqurg5V8h+WRic1ZB2Mk1hOYokK3h7767mxTN5imd2R35I/KeakmEExUT3TSudwst7iZOJxsuvBslbEm1q8b2dsQXUuNIcJOjPZXk4GTzw55okn4omT8RUVdra28SXksGF2IZ9IlXM0frVjOkcDz7FNu0fZrO+STW9vErmDlb4TxXbK2TfU4zSkD/QeWdarLkBYMHZdp8iBrWO9/giQAnm7LuDi/OL8Umbo6sAVpm3VO/nfEv2kzQif6QdPXInGJjMs1LX9BOaATgjbXoIaTyZpPodzAAW50WJrN3UQ2UDbrjDQgy9jlNvfG/JyLFko2KI3uBJG5i1oE+RaQ77GMtABzPF7Aq++9H76dQbqOPxB1VY0vcWykRUo+Ea77pwTF1HBhlCnM1HbP5gWBTneSzn4cokgRqG+n32a3c9AATZC00hlP3k1XOxt4qeI2raLuK+/kY1xBMiyFowx/gRUNNvG
+sidebar_class_name: "delete api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Delete Partial User Config"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/api/v1/embedded/partial_user_configs/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Delete Partial User Config
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"updated_at":{"type":"string","format":"date-time","title":"Updated At"}},"type":"object","required":["id","updated_at"],"title":"DeletePartialUserConfigResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
