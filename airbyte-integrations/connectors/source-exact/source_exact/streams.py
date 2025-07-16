@@ -105,7 +105,6 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
         # Contains the full next page, so don't append new query params
         if next_page_token:
             return {}
-
         configured_properties = list(self.get_json_schema()["properties"].keys())
         params = {
             "$select": ",".join(configured_properties),
@@ -113,7 +112,6 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         division = str(stream_slice["division"])
         state = self._state_per_division.get(division, {})
-        # TODO: how to handle case if a division is removed from the config? Keep the state of that division or delete it?
         cursor_value = state.get(self.cursor_field)
 
         if cursor_value:
@@ -341,7 +339,7 @@ class FinancialGLAccountClassificationMappings(ExactOtherStream):
     """Stream to sync to the endpoint `financial/GLAccountClassificationMappings`"""
 
     endpoint = "financial/GLAccountClassificationMappings"
-    cursor_field = ""
+    cursor_field = "ID"
 
 
 class FinancialReceivablesList(ExactOtherStream):
@@ -349,11 +347,7 @@ class FinancialReceivablesList(ExactOtherStream):
 
     endpoint = "read/financial/ReceivablesList"
     primary_key = "HID"
-    # TODO Refactor so that a cursor field does not have to be set to "" on a subclass
-    # An empty cursor field as this stream has no cursor, will fail if set to None,
-    # Inspired by the Stream(ABC), perhaps refactor the ExactSyncStream or let this class
-    # Inherit from Exact stream so we do not have to redifine the cursor field here
-    cursor_field = ""
+    cursor_field = "HID"
 
 
 class FinancialReportingBalance(ExactOtherStream):
