@@ -3,6 +3,7 @@
 import json
 from unittest import TestCase, mock
 
+from freezegun import freeze_time
 from source_github import SourceGithub
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -66,7 +67,9 @@ class TestWorkflowRuns(TestCase):
     def teardown(self):
         self.r_mock.__exit__()
 
-    def test_read_raises_config_error_for_403_status_code(self):
+    @mock.patch("time.sleep")
+    @freeze_time("2025-01-01T00:00:00Z")
+    def test_read_403_status_code_when_wait_time_grt_max_seconds_between_messages(self, time_mock):
         self.r_mock.get(
             HttpRequest(
                 url="https://api.github.com/repos/airbytehq/integration-test/actions/runs?per_page=100",
@@ -74,12 +77,22 @@ class TestWorkflowRuns(TestCase):
                 headers={},
             ),
             HttpResponse(
-                json.dumps({"error": "permission denied"}),
-                403,
+                body=json.dumps({"error": "error message"}),
+                headers={
+                    "X-RateLimit-Resource": "core",
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": "1735725001",
+                    "X-RateLimit-Limit": "5000",
+                    "X-RateLimit-Used": "5000",
+                },
+                status_code=403,
             ),
         )
         source = SourceGithub()
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        assert actual_messages.errors[0].trace.error.message == "Please check your permissions for stream."
-        assert actual_messages.errors[0].trace.error.failure_type == FailureType.config_error
+        assert actual_messages.errors[0].trace.error.message == (
+            "The stream workflow_runs have faced rate limits, but waiting time is too long. "
+            "The stream will sync data in the next sync when rate limits are refreshed."
+        )
+        assert actual_messages.errors[0].trace.error.failure_type == FailureType.transient_error

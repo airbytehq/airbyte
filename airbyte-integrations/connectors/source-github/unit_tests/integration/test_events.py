@@ -191,7 +191,7 @@ class EventsTest(TestCase):
                 url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
                 query_params={"per_page": 100},
             ),
-            HttpResponse('{"message":"some_error_message"}', 404),
+            HttpResponse('{"message":"some_error_message"}', 403),
         )
         source = SourceGithub()
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
