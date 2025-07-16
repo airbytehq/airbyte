@@ -21,9 +21,9 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         error_message="Conflict.",
     ),
     403: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message="Please check your permissions for stream.",
     ),
     404: ErrorResolution(
         response_action=ResponseAction.RETRY,

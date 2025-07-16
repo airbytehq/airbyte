@@ -81,5 +81,5 @@ class TestWorkflowRuns(TestCase):
         source = SourceGithub()
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        assert actual_messages.errors[0].trace.error.message == "Please check your permissions for stream: workflow_runs"
+        assert actual_messages.errors[0].trace.error.message == "Please check your permissions for stream."
         assert actual_messages.errors[0].trace.error.failure_type == FailureType.config_error
