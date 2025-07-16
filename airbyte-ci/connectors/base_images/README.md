@@ -1,3 +1,6 @@
+# Note: This module is deprecated. 
+As of July 2025, we now define our connector base images using [these Dockerfiles](../../../docker-images/) and build them using Github Actions. [This workflow](../../../.github/workflows/docker-connector-base-image-tests.yml) runs on PRs to test changes to the base images and [this workflow](../../../.github/workflows/docker-connector-image-publishing.ymll) can be used to publish the base image on-demand, which we do for releases.
+
 # airbyte-connectors-base-images
 
 This python package contains the base images used by Airbyte connectors.
