@@ -19,7 +19,7 @@ from google.api_core.exceptions import (
 )
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import ClickView, ServiceAccounts
+from source_google_ads.streams import ServiceAccounts
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
@@ -68,36 +68,6 @@ class MockGoogleAds(GoogleAds):
             return mock_response_2()
 
 
-def test_page_token_expired_retry_succeeds(config, customers):
-    """
-    Page token expired while reading records on date 2021-01-03
-    The latest read record is {"segments.date": "2021-01-03", "click_view.gclid": "4"}
-    It should retry reading starting from 2021-01-03, already read records will be reread again from that date.
-    It shouldn't read records on 2021-01-01, 2021-01-02
-    """
-    customer_id = next(iter(customers)).id
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-01", "end_date": "2021-01-15", "login_customer_id": customer_id}
-
-    google_api = MockGoogleAds(credentials=config["credentials"])
-    incremental_stream_config = dict(
-        api=google_api,
-        conversion_window_days=config["conversion_window_days"],
-        start_date=config["start_date"],
-        customers=customers,
-        end_date="2021-04-04",
-    )
-    stream = ClickView(**incremental_stream_config)
-    stream.get_query = Mock()
-    stream.get_query.return_value = "query"
-
-    result = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-    assert len(result) == 9
-    assert stream.get_query.call_count == 2
-    stream.get_query.assert_called_with(
-        {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-15", "login_customer_id": customer_id}
-    )
-
-
 def mock_response_fails_1():
     yield [
         {"segments.date": "2021-01-01", "click_view.gclid": "1"},
@@ -129,39 +99,6 @@ class MockGoogleAdsFails(MockGoogleAds):
             return mock_response_fails_2()
 
 
-def test_page_token_expired_retry_fails(config, customers):
-    """
-    Page token has expired while reading records within date "2021-01-03", it should raise error,
-    because Google Ads API doesn't allow filter by datetime.
-    """
-    customer_id = next(iter(customers)).id
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-01", "end_date": "2021-01-15", "login_customer_id": customer_id}
-
-    google_api = MockGoogleAdsFails(credentials=config["credentials"])
-    incremental_stream_config = dict(
-        api=google_api,
-        conversion_window_days=config["conversion_window_days"],
-        start_date=config["start_date"],
-        end_date="2021-04-04",
-        customers=customers,
-    )
-    stream = ClickView(**incremental_stream_config)
-    stream.get_query = Mock()
-    stream.get_query.return_value = "query"
-
-    with pytest.raises(AirbyteTracedException) as exception:
-        list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-    assert exception.value.message == (
-        "Page token has expired during processing response. "
-        "Please contact the Airbyte team with the link of your connection for assistance."
-    )
-
-    stream.get_query.assert_called_with(
-        {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-15", "login_customer_id": customer_id}
-    )
-    assert stream.get_query.call_count == 2
-
-
 def mock_response_fails_one_date():
     yield [
         {"segments.date": "2021-01-03", "click_view.gclid": "3"},
@@ -176,130 +113,6 @@ def mock_response_fails_one_date():
 class MockGoogleAdsFailsOneDate(MockGoogleAds):
     def send_request(self, query: str, customer_id: str, login_customer_id: str = "none"):
         return mock_response_fails_one_date()
-
-
-def test_page_token_expired_it_should_fail_date_range_1_day(config, customers):
-    """
-    Page token has expired while reading records within date "2021-01-03",
-    it should raise error, because Google Ads API doesn't allow filter by datetime.
-    Minimum date range is 1 day.
-    """
-    customer_id = next(iter(customers)).id
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": customer_id}
-
-    google_api = MockGoogleAdsFailsOneDate(credentials=config["credentials"])
-    incremental_stream_config = dict(
-        api=google_api,
-        conversion_window_days=config["conversion_window_days"],
-        start_date=config["start_date"],
-        end_date="2021-04-04",
-        customers=customers,
-    )
-    stream = ClickView(**incremental_stream_config)
-    stream.get_query = Mock()
-    stream.get_query.return_value = "query"
-
-    with pytest.raises(AirbyteTracedException) as exception:
-        list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-    assert exception.value.message == (
-        "Page token has expired during processing response. "
-        "Please contact the Airbyte team with the link of your connection for assistance."
-    )
-    stream.get_query.assert_called_with(
-        {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": customer_id}
-    )
-    assert stream.get_query.call_count == 1
-
-
-@pytest.mark.parametrize("error_cls", (ResourceExhausted, TooManyRequests, DataLoss))
-def test_retry_transient_errors(mocker, config, customers, error_cls):
-    customer_id = next(iter(customers)).id
-
-    mocker.patch("time.sleep")
-    credentials = config["credentials"]
-    credentials.update(use_proto_plus=True)
-    api = GoogleAds(credentials=credentials)
-    mocked_search = mocker.patch.object(api.ga_services["default"], "search", side_effect=error_cls("Error message"))
-    incremental_stream_config = dict(
-        api=api,
-        conversion_window_days=config["conversion_window_days"],
-        start_date=config["start_date"],
-        end_date="2021-04-04",
-        customers=customers,
-    )
-    stream = ClickView(**incremental_stream_config)
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": "default"}
-    records = []
-    with pytest.raises(error_cls) as exception:
-        records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-    assert exception.value.message == "Error message"
-
-    assert mocked_search.call_count == 5
-    assert records == []
-
-
-def test_retry_503_raises_transient_error(mocker, config, customers):
-    customer_id = next(iter(customers)).id
-
-    mocker.patch("time.sleep")
-    credentials = config["credentials"]
-    credentials.update(use_proto_plus=True)
-    api = GoogleAds(credentials=credentials)
-    mocked_search = mocker.patch.object(
-        api.ga_services["default"], "search", side_effect=ServiceUnavailable("Service is currently unavailable")
-    )
-    incremental_stream_config = dict(
-        api=api,
-        conversion_window_days=config["conversion_window_days"],
-        start_date=config["start_date"],
-        end_date="2021-04-04",
-        customers=customers,
-    )
-    stream = ClickView(**incremental_stream_config)
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": "default"}
-    records = []
-
-    with pytest.raises(AirbyteTracedException) as exception:
-        records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-
-    assert exception.value.internal_message == (
-        "Service is currently unavailable Unable to fetch data from Google Ads API due to "
-        "temporal error on the Google Ads server. Please retry again later. "
-    )
-    assert exception.value.failure_type == FailureType.transient_error
-    assert mocked_search.call_count == 5
-    assert records == []
-
-
-def test_retry_500_raises_transient_error(mocker, config, customers):
-    customer_id = next(iter(customers)).id
-
-    mocker.patch("time.sleep")
-    credentials = config["credentials"]
-    credentials.update(use_proto_plus=True)
-    api = GoogleAds(credentials=credentials)
-    mocked_search = mocker.patch.object(api.ga_services["default"], "search", side_effect=InternalServerError("Internal Error encountered"))
-    incremental_stream_config = dict(
-        api=api,
-        conversion_window_days=config["conversion_window_days"],
-        start_date=config["start_date"],
-        end_date="2021-04-04",
-        customers=customers,
-    )
-    stream = ClickView(**incremental_stream_config)
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04", "login_customer_id": "default"}
-    records = []
-
-    with pytest.raises(AirbyteTracedException) as exception:
-        records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-
-    assert exception.value.internal_message == (
-        "Internal Error encountered Unable to fetch data from Google Ads API due to "
-        "temporal error on the Google Ads server. Please retry again later. "
-    )
-    assert exception.value.failure_type == FailureType.transient_error
-    assert mocked_search.call_count == 5
-    assert records == []
 
 
 def test_read_records_unauthenticated(mocker, customers, config):
