@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.commad.s3
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -21,7 +25,7 @@ class S3PathSpecificationTest {
             "\${NAMESPACE}/\${STREAM_NAME}/p_date=\${YEAR}-\${MONTH}-\${DAY}/p_hour=\${HOUR}/"
         val fileNamePattern = "{sync_id}_part_{part_number}{format_extension}"
 
-        val s3V2PathSpecification : S3PathSpecification = mockk {
+        val s3V2PathSpecification: S3PathSpecification = mockk {
             every { this@mockk.s3BucketPath } returns "this_is_my_bucket_path"
             every { this@mockk.s3PathFormat } returns pathFormat
             every { this@mockk.fileNamePattern } returns fileNamePattern
@@ -29,7 +33,8 @@ class S3PathSpecificationTest {
         }
 
         val objectStoragePathConfigProvider: ObjectStoragePathConfigurationProvider = mockk {
-            every { this@mockk.objectStoragePathConfiguration } returns s3V2PathSpecification.toObjectStoragePathConfiguration()
+            every { this@mockk.objectStoragePathConfiguration } returns
+                s3V2PathSpecification.toObjectStoragePathConfiguration()
         }
 
         val dateTime =
@@ -45,20 +50,22 @@ class S3PathSpecificationTest {
             every { this@mockk.currentTimeMillis() } returns (epochMilli + 1)
         }
 
-        val objectStoragePathFactory = ObjectStoragePathFactory(objectStoragePathConfigProvider, timeProvider = mt)
+        val objectStoragePathFactory =
+            ObjectStoragePathFactory(objectStoragePathConfigProvider, timeProvider = mt)
 
         val stream: DestinationStream = mockk {
             every { this@mockk.syncId } returns 444L
-            every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor(
-                "a/!_.*')(&\$@=;:+,?-^",
-                "b/!_.*')(&\$@=;:+,?-^",
-            )
+            every { this@mockk.mappedDescriptor } returns
+                DestinationStream.Descriptor(
+                    "namespace/!_.*')(&\$@=;:+,?-^",
+                    "stream_name/!_.*')(&\$@=;:+,?-^",
+                )
         }
 
         val pathToFile = objectStoragePathFactory.getPathToFile(stream, 123L)
 
         Assertions.assertEquals(
-            "this_is_my_bucket_path/a/!_.*')(&\$@=;:+,?-_/b/!_.*')(&\$@=;:+,?-_/p_date=2020-01-02/p_hour=03/444_part_123",
+            "this_is_my_bucket_path/namespace/!_.*')(&\$@=;:+,?-_/stream_name/!_.*')(&\$@=;:+,?-_/p_date=2020-01-02/p_hour=03/444_part_123",
             pathToFile,
         )
     }
