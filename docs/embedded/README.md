@@ -62,6 +62,8 @@ Once your Organization is enabled via Airbyte Embedded, you can begin onboarding
 
 ## Proxy Requests
 
+### API Sources
+
 Airbyte's Authentication Proxy enables you to submit authenticated requests to external APIs. It can be both to fetch and write data.
 
 Here's an example of how to query an external API with the proxy:
@@ -86,3 +88,24 @@ Airbyte's Authentication Proxy can be used to authenticate using a Source config
 
 The following integrations are currently supported. More will follow shortly:
 - Stripe
+
+### File Storage Sources
+
+Airbyte's File Storage Proxy enables you to submit authenticated requests to file storage sources. It can be used to list or fetch files.
+
+Here's an example of how to list files:
+```bash
+curl -X GET -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
+'https://api.airbyte.ai/api/v1/proxy/files_sources/{SOURCE_ID}/list/path/to/directory/or/file/prefix'
+```
+
+Here's an example of how to fetch a file:
+```bash
+curl -X GET -H 'Content-Type: application/octet-stream' \
+-H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
+-H 'Range: bytes=0-1048575' \
+'https://api.airbyte.ai/api/v1/proxy/files_sources/{SOURCE_ID}/get/path/to/file'
+```
+
+For small files, you may omit the `Range` header.
