@@ -10,7 +10,7 @@ from source_exact.auth import ExactOauth2Authenticator
 class ExactAPI:
     def __init__(self, config):
         self.config = config
-        self._authenticator = None
+        self._authenticator : None | ExactOauth2Authenticator = None
 
     @property
     def authenticator(self) -> ExactOauth2Authenticator:
@@ -25,13 +25,9 @@ class ExactAPI:
         return self._authenticator
 
     def check_connection(self) -> tuple[bool, Any]:
-        endpoint = "crm/AccountClassifications"
-        divisions = (self.config or {}).get("divisions", [])[0]
         response = requests.get(
-            url=f"{self.config['base_url']}/api/v1/{divisions}/{endpoint}",
+            url=f"{self.config['base_url']}/api/v1/current/Me?$select=CurrentDivision",
             headers=self.authenticator.get_auth_header(),
-            # Just want to test if we can access the API, don't care about any results. With $top=0 we get no results.
-            params={"$top": 0},
         )
         try:
             response.raise_for_status()
