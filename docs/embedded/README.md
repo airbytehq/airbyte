@@ -59,3 +59,30 @@ AIRBYTE_DESTINATION__SNOWFLAKE__WAREHOUSE=your_warehouse
 ## Embedded Workspaces & Widget
 
 Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embed Widget. The Get Started Guide walks you through how to configure a React.js serverless app for the onboarding app. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-sampleweb-reactjs). If you prefer to develop in Node.js, please use [this sample app](https://github.com/airbytehq/embedded-sampleweb-nodejs) instead. Regardless of web framework you choose, the pre-requisites required for initial set up are the same.
+
+## Proxy Requests
+
+Airbyte's Authentication Proxy enables you to submit authenticated requests to external APIs. It can be both to fetch and write data.
+
+Here's an example of how to query an external API with the proxy:
+
+```bash
+curl -X POST -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
+-d {"method": "GET", "url": "https://api.stripe.com/v1/balance", "headers": {"additional_header_key": "value"}}' \
+'https://api.airbyte.ai/api/v1/proxy/api_sources/{SOURCE_ID}/passthrough'
+```
+
+Here's an example of a POST:
+
+```bash
+curl -X POST -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
+-d {"method": "POST", "url": "https://api.stripe.com/v1/balance", "body": {"key": "value"}}' \
+'https://api.airbyte.ai/api/v1/proxy/api_sources/{SOURCE_ID}/passthrough'
+```
+
+Airbyte's Authentication Proxy can be used to authenticate using a Source configured through the Widget.
+
+The following integrations are currently supported. More will follow shortly:
+- Stripe
