@@ -26,7 +26,7 @@ class BigQueryDatabaseHandlerTest {
     fun `billing errors are wrapped as ConfigErrorException`() {
         val bqError = BigQueryError(BILLING_ERROR, "loc", BILLING_ERROR)
         val bq: BigQuery = mockk {
-            every { create(any(JobInfo::class)) } returns
+            every { create(any(JobInfo::class), *anyVararg()) } returns
                 mockk {
                     every { status } returns
                         mockk {
