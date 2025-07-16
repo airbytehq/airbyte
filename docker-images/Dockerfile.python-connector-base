@@ -8,15 +8,17 @@ FROM ${BASE_IMAGE}
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
 # Set-up groups, users, and directories
-RUN adduser --uid 1000 --system --group --no-create-home airbyte
+RUN adduser --uid 1000 --system --group --home /airbyte/home airbyte
 
 # Create the cache airbyte directories and set the right permissions
 RUN mkdir --mode 755 /airbyte && \
+    mkdir --mode 755 /airbyte/home && \
     mkdir --mode 755 /custom_cache && \
     mkdir /secrets && \
     mkdir /config && \
     mkdir /nonexistent && \
     chown airbyte:airbyte /airbyte && \
+    chown -R airbyte:airbyte /airbyte/home && \
     chown -R airbyte:airbyte /custom_cache && \
     chown -R airbyte:airbyte /secrets && \
     chown -R airbyte:airbyte /config && \
@@ -39,7 +41,7 @@ RUN pip install --upgrade \
       setuptools==78.1.1 \
       poetry==1.8.4
 
-# Install system dependencies 
+# Install system dependencies
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get dist-upgrade -y && \
