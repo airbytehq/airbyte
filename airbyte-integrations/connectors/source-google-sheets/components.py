@@ -24,9 +24,9 @@ from airbyte_cdk.sources.types import Config, StreamSlice
 logger = logging.getLogger("airbyte")
 
 
-def excel_column_label(col_index: int) -> str:
+def sheet_column_label(col_index: int) -> str:
     """
-    Convert a 0-based column index to an Excel-style column letter (A, B, ..., Z, AA, AB, ...).
+    Convert a 0-based column index to a Google Sheets-style column letter (A, B, ..., Z, AA, AB, ...).
     """
     label = ""
     col_index += 1  # Convert to 1-based index
@@ -140,7 +140,7 @@ class RawSchemaParser:
         for i in range(len(parsed_schema_values)):
             property_index, value, prop = parsed_schema_values[i]
             if value in duplicates:
-                col_letter = excel_column_label(property_index)
+                col_letter = sheet_column_label(property_index)
                 new_value = f"{value}_{col_letter}1"
                 parsed_schema_values[i] = (property_index, new_value, prop)
 
