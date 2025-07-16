@@ -7,8 +7,10 @@ This guide will help you set up your development environment to build a custom P
 Before starting, ensure you have the following installed and configured:
 
 - **Python 3.10 or higher** ([download here](https://python.org/downloads/))
-- **Poetry 2.0+** for dependency management ([installation guide](https://python-poetry.org/docs/#installation))
+- **uv** for installing Python CLI applications ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
+- **Poe the Poet** for task management ([installation guide](https://poethepoet.natn.io/installation.html))
 - **Docker** installed and running ([get Docker](https://docs.docker.com/get-docker/))
+- **Gradle** for Java/Kotlin connector development ([installation guide](https://gradle.org/install/))
 - **Git** configured with your credentials
 - Basic familiarity with Python development
 
@@ -18,8 +20,10 @@ Run these commands to verify your environment is ready:
 
 ```bash
 python --version  # Should show 3.10 or higher
-poetry --version  # Should show 2.0 or higher
+uv --version      # Should show uv is installed
+poe --version     # Should show Poe the Poet is installed
 docker --version  # Should show Docker is installed
+gradle --version  # Should show Gradle is installed
 git --version     # Should show Git is installed
 ```
 
@@ -40,22 +44,23 @@ If any of these commands fail, please install the missing prerequisites before c
 We'll create a standalone connector project for the Survey Monkey API. This approach is recommended over developing inside the main Airbyte repository.
 
 ```bash
+# Install the Airbyte CDK CLI
+uv tool install --upgrade 'airbyte-cdk[dev]'
+
 # Create a new directory for your connector
 mkdir source-survey-monkey-tutorial
 cd source-survey-monkey-tutorial
 
-# Initialize a new Poetry project
-poetry init --name "source-survey-monkey" --description "Survey Monkey API connector for Airbyte"
+# Initialize a new connector project using the CDK CLI
+airbyte-cdk generate source --name source-survey-monkey --description "Survey Monkey API connector for Airbyte"
 
-# Add the Airbyte CDK as a dependency
-poetry add airbyte-cdk
-
-# Create the basic project structure
-mkdir source_survey_monkey
-touch source_survey_monkey/__init__.py
-touch source_survey_monkey/source.py
-touch source_survey_monkey/spec.json
-touch source_survey_monkey/run.py
+# This creates the basic project structure:
+# - source_survey_monkey/
+# - source_survey_monkey/__init__.py
+# - source_survey_monkey/source.py
+# - source_survey_monkey/spec.json
+# - source_survey_monkey/run.py
+# - pyproject.toml
 ```
 
 ## Create a Minimal Working Connector
@@ -128,13 +133,13 @@ if __name__ == "__main__":
     launch(source, sys.argv[1:])
 ```
 
-### 4. Update your pyproject.toml
+### 4. Install dependencies
 
-Add this script entry to your `pyproject.toml` file:
+The CDK CLI automatically creates a proper `pyproject.toml` file with all necessary dependencies and scripts. Install the project dependencies:
 
-```toml
-[tool.poetry.scripts]
-source-survey-monkey = "source_survey_monkey.run:main"
+```bash
+# Install connector dependencies using Poe
+poe install
 ```
 
 ## Verify Your Setup
@@ -142,11 +147,11 @@ source-survey-monkey = "source_survey_monkey.run:main"
 Test that your connector is working correctly:
 
 ```bash
-# Install your connector in development mode
-poetry install
+# Test the spec command using airbyte-cdk CLI
+airbyte-cdk test spec
 
-# Test the spec command
-poetry run python -m source_survey_monkey.run spec
+# Alternative: Test using Poe tasks (recommended)
+poe test-spec
 ```
 
 You should see JSON output showing your connector's specification. If you see this output, congratulations! Your development environment is properly set up.
@@ -169,7 +174,11 @@ Note: The `secrets` directory is automatically ignored by git, so your credentia
 ### Test the check operation
 
 ```bash
-poetry run python -m source_survey_monkey.run check --config secrets/config.json
+# Using airbyte-cdk CLI
+airbyte-cdk test check --config secrets/config.json
+
+# Using Poe tasks (recommended)
+poe test-check --config secrets/config.json
 ```
 
 You should see output indicating a successful connection:
@@ -186,7 +195,11 @@ You should see output indicating a successful connection:
 ### Test the discover operation
 
 ```bash
-poetry run python -m source_survey_monkey.run discover --config secrets/config.json
+# Using airbyte-cdk CLI
+airbyte-cdk test discover --config secrets/config.json
+
+# Using Poe tasks (recommended)
+poe test-discover --config secrets/config.json
 ```
 
 You should see output with an empty catalog (since we haven't implemented streams yet):
@@ -199,6 +212,29 @@ You should see output with an empty catalog (since we haven't implemented stream
   }
 }
 ```
+
+### Additional Development Tasks
+
+The official Airbyte development workflow uses Poe tasks for common operations:
+
+```bash
+# Run fast tests
+poe test-fast
+
+# Run unit tests
+poe test-unit-tests
+
+# Run integration tests
+poe test-integration-tests
+
+# Lint your code
+poe lint
+
+# Format your code
+poe format
+```
+
+For a complete list of available tasks, run `poe --help` from your connector directory.
 
 ## What's Next?
 
@@ -216,7 +252,7 @@ In the [next section](./2-reading-a-page.md), we'll implement the surveys stream
 ### Common Issues
 
 **`ModuleNotFoundError` when running commands:**
-- Run `poetry install` to install all dependencies
+- Run `poe install` to install all dependencies
 - Make sure you're in the correct project directory
 
 **`Permission denied` errors with Docker:**
@@ -227,9 +263,17 @@ In the [next section](./2-reading-a-page.md), we'll implement the surveys stream
 - Verify you're using Python 3.10+: `python --version`
 - Consider using `pyenv` to manage multiple Python versions
 
-**`Poetry not found`:**
-- Install Poetry following the [official installation guide](https://python-poetry.org/docs/#installation)
+**`uv not found`:**
+- Install uv following the [official installation guide](https://docs.astral.sh/uv/getting-started/installation/)
 - Restart your terminal after installation
+
+**`poe not found`:**
+- Install Poe the Poet: `brew install poethepoet` or follow [installation guide](https://poethepoet.natn.io/installation.html)
+- Restart your terminal after installation
+
+**`airbyte-cdk command not found`:**
+- Install the CDK CLI: `uv tool install --upgrade 'airbyte-cdk[dev]'`
+- Ensure uv's tool bin directory is in your PATH
 
 **Import errors in your connector:**
 - Check that all files have the correct names and locations
@@ -237,6 +281,7 @@ In the [next section](./2-reading-a-page.md), we'll implement the surveys stream
 
 ### Getting Help
 
+- **Official Local Development Guide:** [Developing Connectors Locally](../../local-connector-development.md) - The authoritative guide for all connector development tooling
 - **CDK Documentation:** [Airbyte Python CDK docs](https://airbytehq.github.io/airbyte-python-cdk/)
 - **Contributing Guide:** [CDK Contributing Guide](https://github.com/airbytehq/airbyte-python-cdk/blob/main/docs/CONTRIBUTING.md)
 - **Community Support:** [Airbyte Community Slack](https://airbyte.com/community)
