@@ -65,6 +65,7 @@ def get_stream_by_name(stream_name, config):
                 },
             ],
         ),
+        ("2020-01-02T00:00:00Z", "2020-01-01T00:00:00Z", [], {}, []),
     ),
 )
 def test_threads_stream_slices(requests_mock, authenticator, token_config, start_date, end_date, messages, stream_state, expected_result):
@@ -82,34 +83,7 @@ def test_threads_stream_slices(requests_mock, authenticator, token_config, start
     )
 
     stream = get_stream_by_name("threads", token_config)
-    slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state))
-
-    assert len(slices) == len(expected_result)
-    for s in slices:
-        assert s in expected_result
-
-
-@pytest.mark.parametrize(
-    "start_date, end_date, messages, stream_state, expected_result",
-    (("2020-01-02T00:00:00Z", "2020-01-01T00:00:00Z", [], {}, []),),
-)
-def test_threads_stream_slices_empty_slices(
-    requests_mock, authenticator, token_config, start_date, end_date, messages, stream_state, expected_result
-):
-    token_config["channel_filter"] = []
-
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
-    )
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
-    )
-
-    stream = get_stream_by_name("threads", token_config)
+    stream.retriever.requester.use_cache == False
     slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state))
 
     assert len(slices) == len(expected_result)
