@@ -111,6 +111,42 @@ class MySqlSourceConfigurationTest {
             )
         }
     }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.concurrency", value = "5")
+    @Property(name = "airbyte.connector.config.max_db_connections", value = "2")
+    @Property(
+        name = "airbyte.connector.config.jdbc_url_params",
+        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+    )
+    fun testConcurrencySettingMigration() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        val config = factory.makeWithoutExceptionHandling(pojo)
+
+        Assertions.assertEquals(config.realHost, "localhost")
+        Assertions.assertEquals(config.realPort, 12345)
+        Assertions.assertEquals(config.namespaces, setOf("SYSTEM"))
+        Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
+
+        Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
+        Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
+
+        // Make sure we don't accidentally drop the following hardcoded settings for mysql.
+        Assertions.assertEquals(config.jdbcProperties["useCursorFetch"], "true")
+        Assertions.assertEquals(config.jdbcProperties["sessionVariables"], "autocommit=0")
+
+        Assertions.assertEquals(config.jdbcProperties["theAnswerToLiveAndEverything"], "42")
+        Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
+        // test default value
+        Assertions.assertEquals(config.jdbcProperties["sslMode"], "required")
+    }
+
     companion object {
 
         const val CONFIG_V1: String =
