@@ -2,6 +2,9 @@
 products: oss-community, oss-enterprise
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Custom components for the Connector Builder
 
 Use Custom Components to extend the Connector Builder with your own Python implementations when Airbyte's built-in components don't meet your specific needs.
@@ -56,16 +59,36 @@ If you deploy Airbyte with abctl, follow the steps below to update your values a
 
 1. Edit your existing `values.yaml` file or create a new override file with this configuration:
 
-   ```yaml title="values.yaml"
-   workload-launcher:
-     extraEnv:
-       - name: AIRBYTE_ENABLE_UNSAFE_CODE
-         value: "true"
-   connector-builder-server:
-     extraEnv:
-       - name: AIRBYTE_ENABLE_UNSAFE_CODE
-         value: "true"
-   ```
+    <Tabs groupId="helm-chart-version">
+    <TabItem value='helm-1' label='Helm chart V1' default>
+
+      ```yaml title="values.yaml"
+      workload-launcher:
+        extraEnv:
+          - name: AIRBYTE_ENABLE_UNSAFE_CODE
+            value: "true"
+      connector-builder-server:
+        extraEnv:
+          - name: AIRBYTE_ENABLE_UNSAFE_CODE
+            value: "true"
+      ```
+    </TabItem>
+    <TabItem value='helm-2' label='Helm chart V2' default>
+
+    ```yaml title="values.yaml"
+    workloadLauncher:
+      extraEnv:
+        - name: AIRBYTE_ENABLE_UNSAFE_CODE
+          value: "true"
+    connectorBuilderServer:
+      extraEnv:
+        - name: AIRBYTE_ENABLE_UNSAFE_CODE
+          value: "true"
+    ```
+
+    </TabItem>
+    </Tabs>
+
 
 2. Use this file during deployment with the abctl command:
 
@@ -79,22 +102,61 @@ If you're deploying Airbyte using public Helm charts without abctl, follow the s
 
 1. Edit your existing `values.yaml` file or create a new override file with this configuration:
 
-   ```yaml title="values.yaml"
-   workload-launcher:
-     extraEnv:
-       - name: AIRBYTE_ENABLE_UNSAFE_CODE
-         value: "true"
-   connector-builder-server:
-     extraEnv:
-       - name: AIRBYTE_ENABLE_UNSAFE_CODE
-         value: "true"
-   ```
+    <Tabs groupId="helm-chart-version">
+    <TabItem value='helm-1' label='Helm chart V1' default>
+
+      ```yaml title="values.yaml"
+      workload-launcher:
+        extraEnv:
+          - name: AIRBYTE_ENABLE_UNSAFE_CODE
+            value: "true"
+      connector-builder-server:
+        extraEnv:
+          - name: AIRBYTE_ENABLE_UNSAFE_CODE
+            value: "true"
+      ```
+    </TabItem>
+    <TabItem value='helm-2' label='Helm chart V2' default>
+
+    ```yaml title="values.yaml"
+    workloadLauncher:
+      extraEnv:
+        - name: AIRBYTE_ENABLE_UNSAFE_CODE
+          value: "true"
+    connectorBuilderServer:
+      extraEnv:
+        - name: AIRBYTE_ENABLE_UNSAFE_CODE
+          value: "true"
+    ```
+
+    </TabItem>
+    </Tabs>
 
 2. Apply the configuration during Helm installation or upgrade:
 
-   ```bash
-   helm upgrade --install airbyte airbyte/airbyte -f values.yaml -f values.yaml
-   ```
+    <Tabs groupId="helm-chart-version">
+    <TabItem value='helm-1' label='Helm chart V1' default>
+
+    ```bash
+    helm upgrade airbyte airbyte-v2/airbyte \
+      --namespace airbyte \       # Target Kubernetes namespace
+      --values ./values.yaml \    # Custom configuration values
+    ```
+
+    </TabItem>
+    <TabItem value='helm-2' label='Helm chart V2' default>
+
+    ```bash
+    helm upgrade airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.3 \              # Helm chart version to use
+      --set global.image.tag=1.7.0   # Airbyte version to use
+    ```
+
+    </TabItem>
+    </Tabs>
+
 
 :::caution
 Monitor your deployment for any security or performance issues. Remember that this feature allows execution of arbitrary code in your Airbyte environment.

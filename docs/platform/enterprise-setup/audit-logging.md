@@ -2,6 +2,9 @@
 products: oss-enterprise
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Audit logging
 
 Audit logging gives you visibility into data, environment, user, and permission changes. This data ensures you have records of any unauthorized changes and insider threats, making it easy to continue meeting your compliance obligations while using Airbyte.
@@ -58,22 +61,55 @@ Choose a new blob storage bucket with your chosen cloud provider (for example, A
 
 1. Configure Airbyte to read from and write to that bucket by modifying your values.yaml file.
 
+    <Tabs groupId="helm-chart-version">
+    <TabItem value='helm-1' label='Helm chart V1' default>
+
     ```yaml title="values.yaml"
     server:
-    env_vars:
+      env_vars:
         AUDIT_LOGGING_ENABLED: true
-        STORAGE_BUCKET_AUDIT_LOGGING: # your-audit-logging-bucket
+        STORAGE_BUCKET_AUDIT_LOGGING: your-audit-logging-bucket
     ```
+
+    </TabItem>
+    <TabItem value='helm-2' label='Helm chart V2' default>
+
+    ```yaml title="values.yaml"
+    server:
+      auditLoggingEnabled: true
+
+    storage:
+      bucket:
+        auditLogging: your-audit-logging-bucket-name-here
+    ```
+
+    </TabItem>
+    </Tabs>
 
 2. Redeploy Airbyte.
 
+    <Tabs groupId="helm-chart-version">
+    <TabItem value='helm-1' label='Helm chart V1' default>
+
     ```bash
-    helm upgrade \
-    --namespace airbyte \
-    --values ./values.yaml \
-    --install airbyte-enterprise \
-    airbyte/airbyte
+    helm upgrade airbyte airbyte/airbyte \
+      --namespace airbyte \   # Target Kubernetes namespace
+      --values ./values.yaml  # Custom configuration values
     ```
+
+    </TabItem>
+    <TabItem value='helm-2' label='Helm chart V2' default>
+
+    ```bash
+    helm upgrade airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.3 \              # Helm chart version to use
+      --set global.image.tag=1.7.0   # Airbyte version to use
+    ```
+
+    </TabItem>
+    </Tabs>
 
 ### Cloud
 
