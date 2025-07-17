@@ -9,11 +9,16 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.net.MalformedURLException
@@ -77,10 +82,16 @@ enum class InvalidCdcCursorPositionBehavior {
 }
 
 @Singleton
-class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
-    SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
+class MySqlSourceConfigurationFactory
+@Inject
+constructor(
+    val featureFlags: Set<FeatureFlag>,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
+    val socketPaths: List<String> = emptyList(),
+) : SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
 
-    constructor() : this(emptySet())
+    constructor() : this(emptySet(), STDIO.name, emptyList())
 
     override fun makeWithoutExceptionHandling(
         pojo: MySqlSourceConfigurationSpecification,
@@ -141,10 +152,24 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         if (!checkpointTargetInterval.isPositive) {
             throw ConfigErrorException("Checkpoint Target Interval should be positive")
         }
-        val maxConcurrency: Int = pojo.concurrency ?: 0
+        val maxConcurrencyLegacy: Int = pojo.concurrency ?: 0
         if ((pojo.concurrency ?: 0) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
+
+        val maxDBConnections: Int? = pojo.maxDBConnections
+
+        log.info {
+            "maxConcurrencyLegacy: $maxConcurrencyLegacy. maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}"
+        }
+        val maxConcurrency: Int =
+            when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                STDIO -> maxDBConnections ?: maxConcurrencyLegacy
+                SOCKET -> {
+                    maxDBConnections ?: maxConcurrencyLegacy.takeIf { it != 1 } ?: socketPaths.size
+                }
+            }
+        log.info { "Effective concurrency: $maxConcurrency" }
 
         return MySqlSourceConfiguration(
             realHost = realHost,
