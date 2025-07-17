@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import json
+from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
 import pendulum
@@ -209,19 +210,37 @@ def test_threads_parse_response(requests_mock, authenticator, token_config):
     assert actual_response[0].record.data["channel_id"] == "airbyte-for-beginners"
 
 
-@pytest.mark.parametrize("headers, expected_result", (({"Retry-After": 15}, 15),))
+@pytest.mark.parametrize("headers, expected_result", (({"Retry-After": "15"}, 1),))
 def test_backoff(requests_mock, token_config, authenticator, headers, expected_result):
-    requests_mock.get(
-        url="https://slack.com/api/conversations.replies?channel=airbyte-for-beginners&limit=1000&ts=1507866847",
-        status_code=429,
-        headers=headers,
-        json={"message": "rate limited"},
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.replies?channel=airbyte-for-beginners&limit=1000&ts=1507866847",
+        [
+            {"json": {"message": "rate limited"}, "headers": headers, "status_code": 429},
+            {
+                "status_code": 200,
+                "json": {
+                    "messages": [
+                        {
+                            "type": "message",
+                            "user": "U061F7AUR",
+                            "text": "island",
+                            "thread_ts": "1482960137.003543",
+                            "reply_count": 3,
+                            "subscribed": True,
+                            "last_read": "1484678597.521003",
+                            "unread_count": 0,
+                            "ts": "1482960137.003543",
+                        }
+                    ]
+                },
+            },
+        ],
     )
     requests_mock.get(
         url="https://slack.com/api/conversations.replies?channel=good-reads&limit=1000&ts=1507866847",
-        status_code=429,
-        headers=headers,
-        json={"message": "rate limited"},
+        status_code=200,
+        json={"json": {"messages": []}},
     )
     requests_mock.register_uri(
         "GET",
@@ -248,27 +267,49 @@ def test_backoff(requests_mock, token_config, authenticator, headers, expected_r
     state = StateBuilder().with_stream_state("threads", {}).build()
     source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
-    assert output.records == expected_result
+    assert len([log.log.message for log in output.logs if "Retrying. Sleeping for 15.0 seconds" == log.log.message]) == 1
+    assert len(output.records) == expected_result
 
 
-def test_channels_stream_with_autojoin(authenticator) -> None:
+def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
     """
     The test uses the `conversations_list` fixture(autouse=true) as API mocker.
     """
-    expected = [{"id": "airbyte-for-beginners", "is_member": True}, {"id": "good-reads", "is_member": True}]
-    stream = Channels(channel_filter=[], join_channels=True, authenticator=authenticator)
-    assert list(stream.read_records(None)) == expected
-
-
-def test_next_page_token(authenticator, token_config):
-    stream = Threads(
-        authenticator=authenticator,
-        default_start_date=pendulum.parse(token_config["start_date"]),
-        lookback_window=token_config["lookback_window"],
+    expected = [
+        {"id": "airbyte-for-beginners", "is_member": True, "name": "airbyte-for-beginners"},
+        {"id": "good-reads", "is_member": True, "name": "good-reads"},
+    ]
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
+        json={"channels": expected},
     )
+    state = StateBuilder().with_stream_state("channels", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channels", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    assert [record.record.data for record in output.records] == expected
+
+
+def test_next_page_token(token_config):
+    stream = get_stream_by_name("threads", token_config)
     mocked_response = Mock()
-    mocked_response.json.return_value = {"response_metadata": {"next_cursor": "next page"}}
-    assert stream.next_page_token(mocked_response) == {"cursor": "next page"}
+    mocked_response.status_code = 200
+    mocked_response.content = b'{"response_metadata": {"next_cursor": "next page"}}'
+    mocked_response.headers = {"Content-Type": "application/json"}
+    assert stream.retriever.paginator.next_page_token(response=mocked_response, last_page_size=100, last_record={"id": "some id"}) == {
+        "next_page_token": "next page"
+    }
 
 
 @pytest.mark.parametrize(
@@ -280,28 +321,28 @@ def test_next_page_token(authenticator, token_config):
         (500, ResponseAction.RETRY),
     ),
 )
-def test_should_retry(authenticator, token_config, status_code, expected):
-    stream = Threads(
-        authenticator=authenticator,
-        default_start_date=pendulum.parse(token_config["start_date"]),
-        lookback_window=token_config["lookback_window"],
-    )
+def test_should_retry(token_config, status_code, expected):
+    stream = get_stream_by_name("threads", token_config)
     mocked_response = MagicMock(spec=Response, status_code=status_code)
     mocked_response.ok = status_code == 200
-    assert stream.get_error_handler().interpret_response(mocked_response).response_action == expected
+    mocked_response.headers = {"Content-Type": "application/json"}
+    assert stream.retriever.requester.error_handler.interpret_response(mocked_response).response_action == expected
 
 
-def test_channels_stream_with_include_private_channels_false(authenticator) -> None:
-    stream = Channels(channel_filter=[], include_private_channels=False, authenticator=authenticator)
+def test_channels_stream_with_include_private_channels_false(token_config) -> None:
+    stream = get_stream_by_name("channels", token_config)
 
-    params = stream.request_params(stream_slice={}, stream_state={})
+    params = stream.retriever.requester.get_request_params()
 
     assert params.get("types") == "public_channel"
 
 
-def test_channels_stream_with_include_private_channels(authenticator) -> None:
-    stream = Channels(channel_filter=[], include_private_channels=True, authenticator=authenticator)
+def test_channels_stream_with_include_private_channels(token_config) -> None:
+    config = deepcopy(token_config)
+    config["include_private_channels"] = True
 
-    params = stream.request_params(stream_slice={}, stream_state={})
+    stream = get_stream_by_name("channels", config)
+
+    params = stream.retriever.requester.get_request_params()
 
     assert params.get("types") == "public_channel,private_channel"
