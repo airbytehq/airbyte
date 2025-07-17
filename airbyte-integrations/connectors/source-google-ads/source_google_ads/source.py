@@ -237,7 +237,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
             AdGroupAd(**incremental_config),
             AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),
-            AdGroupCriterion(**default_config),
             AdGroupCriterionLabel(**default_config),
             AdGroupLabel(**default_config),
             AdListingGroupCriterion(**default_config),
