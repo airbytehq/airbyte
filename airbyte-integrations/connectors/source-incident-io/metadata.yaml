@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7926da90-399e-4f9f-9833-52d8dc3fcb29
-  dockerImageTag: 0.0.29
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-incident-io
   githubIssueLabel: source-incident-io
   icon: icon.svg
