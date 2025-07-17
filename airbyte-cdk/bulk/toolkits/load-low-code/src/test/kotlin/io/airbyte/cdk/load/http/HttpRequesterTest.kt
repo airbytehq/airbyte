@@ -1,10 +1,11 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.http
 
-import io.airbyte.cdk.load.discoverer.operation.DiscoveredPropertyTest.Companion.FALSE_PREDICATE
-import io.airbyte.cdk.load.discoverer.operation.DiscoveredPropertyTest.Companion.TRUE_PREDICATE
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

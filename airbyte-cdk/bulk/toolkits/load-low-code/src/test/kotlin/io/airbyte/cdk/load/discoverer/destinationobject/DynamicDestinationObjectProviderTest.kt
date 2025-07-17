@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.discoverer.destinationobject
 
 import io.airbyte.cdk.load.http.Retriever
@@ -26,7 +30,11 @@ class DynamicDestinationObjectProviderTest {
 
     @Test
     internal fun `test when get then return all objects`() {
-        every { retriever.getAll() } returns listOf(Jsons.objectNode().put("name", "objectname1"), Jsons.objectNode().put("name", "objectname2"))
+        every { retriever.getAll() } returns
+            listOf(
+                Jsons.objectNode().put("name", "objectname1"),
+                Jsons.objectNode().put("name", "objectname2")
+            )
         val objects = provider.get()
         assertEquals(listOf("objectname1", "objectname2"), objects.map { it.name })
     }
@@ -34,6 +42,6 @@ class DynamicDestinationObjectProviderTest {
     @Test
     internal fun `test given name not found when get then throw illegal argument exception`() {
         every { retriever.getAll() } returns listOf(Jsons.objectNode().put("namenotfound", "-"))
-        assertFailsWith<IllegalArgumentException> { provider.get()  }
+        assertFailsWith<IllegalArgumentException> { provider.get() }
     }
 }

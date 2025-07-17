@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.discoverer.operation
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -12,7 +16,7 @@ import org.junit.jupiter.api.Test
 
 class DiscoveredPropertyTest {
 
-    companion object{
+    companion object {
         val NAME_PATH = "name"
         val A_NAME = "a-name"
         val TYPE_PATH = "name"
@@ -45,83 +49,84 @@ class DiscoveredPropertyTest {
 
     @Test
     internal fun `test given unknown type when getType then throw illegal argument exception`() {
-        val property = aProperty(
-            apiRepresentation = AN_API_REPRESENTATION.put(TYPE_PATH, "unknown type"),
-            typePath = listOf(TYPE_PATH),
-            typeMapper = mapOf(A_TYPE to StringType),
-        )
-        assertFailsWith<IllegalStateException> {
-            property.getType()
-        }
+        val property =
+            aProperty(
+                apiRepresentation = AN_API_REPRESENTATION.put(TYPE_PATH, "unknown type"),
+                typePath = listOf(TYPE_PATH),
+                typeMapper = mapOf(A_TYPE to StringType),
+            )
+        assertFailsWith<IllegalStateException> { property.getType() }
     }
 
     @Test
     internal fun `test given not a matching key when isMatchingKey then return false`() {
-        val property = aProperty(
-            matchingKeyPredicate = FALSE_PREDICATE
-        )
+        val property = aProperty(matchingKeyPredicate = FALSE_PREDICATE)
         assertFalse(property.isMatchingKey())
     }
 
     @Test
     internal fun `test given matching key when isMatchingKey then return true`() {
-        val property = aProperty(
-            matchingKeyPredicate = TRUE_PREDICATE
-        )
+        val property = aProperty(matchingKeyPredicate = TRUE_PREDICATE)
         assertTrue(property.isMatchingKey())
     }
 
     @Test
     internal fun `test given is matching key when isAvailable then return true`() {
-        val property = aProperty(
-            matchingKeyPredicate = TRUE_PREDICATE,
-            availabilityPredicate = FALSE_PREDICATE,
-        )
+        val property =
+            aProperty(
+                matchingKeyPredicate = TRUE_PREDICATE,
+                availabilityPredicate = FALSE_PREDICATE,
+            )
         assertTrue(property.isAvailable())
     }
 
     @Test
     internal fun `test given availability is true when isAvailable then return true`() {
-        val property = aProperty(
-            matchingKeyPredicate = FALSE_PREDICATE,
-            availabilityPredicate = TRUE_PREDICATE,
-        )
+        val property =
+            aProperty(
+                matchingKeyPredicate = FALSE_PREDICATE,
+                availabilityPredicate = TRUE_PREDICATE,
+            )
         assertTrue(property.isAvailable())
     }
 
     @Test
     internal fun `test given not matching key nor available when isAvailable then return false`() {
-        val property = aProperty(
-            matchingKeyPredicate = FALSE_PREDICATE,
-            availabilityPredicate = FALSE_PREDICATE,
-        )
+        val property =
+            aProperty(
+                matchingKeyPredicate = FALSE_PREDICATE,
+                availabilityPredicate = FALSE_PREDICATE,
+            )
         assertFalse(property.isAvailable())
     }
 
     @Test
     internal fun `test given matching key and required when isRequired then return false`() {
-        val property = aProperty(
-            matchingKeyPredicate = TRUE_PREDICATE,
-            requiredPredicate = TRUE_PREDICATE,
-        )
+        val property =
+            aProperty(
+                matchingKeyPredicate = TRUE_PREDICATE,
+                requiredPredicate = TRUE_PREDICATE,
+            )
         assertFalse(property.isRequired())
     }
 
     @Test
     internal fun `test given not matching key but not required when isRequired then return false`() {
-        val property = aProperty(
-            matchingKeyPredicate = FALSE_PREDICATE,
-            requiredPredicate = FALSE_PREDICATE,
-        )
+        val property =
+            aProperty(
+                matchingKeyPredicate = FALSE_PREDICATE,
+                requiredPredicate = FALSE_PREDICATE,
+            )
         assertFalse(property.isRequired())
     }
 
     @Test
     internal fun `test given not matching key and required when isRequired then return true`() {
-        val property = aProperty(
-            matchingKeyPredicate = FALSE_PREDICATE,
-            requiredPredicate = TRUE_PREDICATE,
-        )
+        val property =
+            aProperty(
+                matchingKeyPredicate = FALSE_PREDICATE,
+                requiredPredicate = TRUE_PREDICATE,
+            )
         assertTrue(property.isRequired())
     }
 
@@ -136,8 +141,12 @@ class DiscoveredPropertyTest {
     ): DiscoveredProperty {
         return DiscoveredProperty(
             apiRepresentation,
-            namePath,typePath,matchingKeyPredicate,availabilityPredicate,requiredPredicate, typeMapper
+            namePath,
+            typePath,
+            matchingKeyPredicate,
+            availabilityPredicate,
+            requiredPredicate,
+            typeMapper
         )
     }
-
 }
