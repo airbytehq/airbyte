@@ -1,0 +1,4 @@
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+    "${POE_GIT_DIR}/poe-tasks/global-connector-tasks.toml",
+]

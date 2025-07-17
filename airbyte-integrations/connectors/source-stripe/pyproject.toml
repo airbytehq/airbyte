@@ -28,12 +28,3 @@ requests-mock = "^1.11.0"
 freezegun = "==1.2.2"
 pytest-mock = "^3.6.1"
 pytest = "^8.0.0"
-
-
-[tool.poe]
-include = [
-    # Shared tasks definition file(s) can be imported here.
-    # Run `poe` or `poe --help` to see the list of available tasks.
-    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
-    "${POE_GIT_DIR}/poe-tasks/global-connector-tasks.toml",
-]
