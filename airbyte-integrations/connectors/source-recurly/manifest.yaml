@@ -1286,6 +1286,7 @@ spec:
         minimum: 1
         maximum: 20
         default: 10
+        order: 3
         examples:
         - 1
         - 2
@@ -1296,12 +1297,20 @@ spec:
         title: Days in length for each API call to get data
         minimum: 1
         maximum: 365
+        order: 4
         default: 30
         examples:
         - 7
         - 30
         - 90
         description: Days in length for each API call to get data from the accounts stream. Smaller values will result in more API calls but better concurrency.
+      is_sandbox:
+        type: boolean
+        description: >-
+          Set to true for sandbox accounts (400 requests/min, all types). Defaults to false for production accounts (1,000 GET requests/min).
+        default: false
+        order: 2
+        title: Use Sandbox Environment
     
     additionalProperties: true
 
@@ -1385,21 +1394,19 @@ metadata:
       primaryKeysAreUnique: true
   assist: {}
 
-#Rate Limits: https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits
-
-#In order to provide a fast response time to all our customers, we may rate limit excessive requests. By default, new Recurly sites have the following API rate limits:
+# Rate Limits: https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits
 #
-#Sandbox sites: 400 requests/min. All requests count towards the rate limit.
-#Production sites: 1,000 requests/min. Only GET requests count towards the rate limit.
-#Once your site moves into production mode, Recurly will only rate limit GET requests. New subscriptions, account modifications, and other requests using POST, PUT, or DELETE methods will not count against your rate limit.
+# In order to provide a fast response time to all our customers, we may rate limit excessive requests. By default, new Recurly sites have the following API rate limits:
 #
-#The rate limit is calculated over a sliding 5 minute window. This means a production site could make 4,000 requests within one minute and not hit the rate limit so long as the site made less than 1,000 requests during the prior 4 minutes.
+# Sandbox sites: 400 requests/min (all request types count), or 2,000 requests over a 5-minute sliding window.
+# Production sites: 1,000 GET requests/min, or 5,000 GET requests over a 5-minute sliding window. POST, PUT, DELETE requests are not rate-limited in production.
 #
-#If an API request exceeds the rate limit, the API will return a 429 Too Many Requests HTTP status. If your business needs a higher limit, please contact support.
+# The rate limit is calculated over a 5-minute sliding window. A production site could make 4,000 GET requests in one minute without hitting the limit if prior minutes have fewer than 1,000 requests.
 #
-#The rate limit applied to your client can be determined with the X-RateLimit-Limit header, and the number of remaining requests is sent in the X-RateLimit-Remaining header. Finally, the X-RateLimit-Reset header contains an integer value representing the time, measured in seconds since the UNIX Epoch, at which the request count will be reset.
-
-#We set this to 10 since 1,000 GET requests per minute, 10 concurrent streams at approximately 1 request per second per stream result in 10 requests per second (600 requests per minute), well within the 1,000 GET requests per minute limit.
+# If an API request exceeds the rate limit, the API returns a 429 Too Many Requests HTTP status. The rate limit is indicated by X-RateLimit-Limit, remaining requests by X-RateLimit-Remaining, and reset time by X-RateLimit-Reset (UNIX epoch seconds).
+#
+# We set default_concurrency to 10, assuming ~250ms per request (4 requests/sec per stream), resulting in 10 streams × 4 requests/sec = 2,400 requests/min. This exceeds the sandbox limit (400 requests/min) and production limit (1,000 GET requests/min),
+# but the api_budget throttles requests to stay within the 400 (sandbox) or 1,000 (production) requests per 5-minute window, with backoff handling for 429 errors.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
@@ -1413,7 +1420,7 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 1000
+        - limit: "{{ 400 if config.get('is_sandbox', false) else 1000 }}"
           interval: "PT5M"  # 5-minute sliding window
       matchers:
         - method: "GET"
