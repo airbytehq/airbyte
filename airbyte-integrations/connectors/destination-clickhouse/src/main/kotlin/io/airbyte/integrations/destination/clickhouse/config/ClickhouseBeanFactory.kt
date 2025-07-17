@@ -19,37 +19,39 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurati
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
-import java.util.*
 import org.apache.sshd.common.util.net.SshdSocketAddress
+
+// TODO this is super hacky - optional also doesn't work
+sealed interface Maybe<out T>
+
+@JvmInline value class Some<T>(val value: T) : Maybe<T>
+
+data object None : Maybe<Nothing>
 
 @Factory
 class ClickhouseBeanFactory {
     @Singleton
-    fun tunnel(
-        config: ClickhouseConfiguration
-    ): Optional<TunnelSession> { // Micronaut won't let me just do null with `?`
-        val tun =
-            when (val ssh = config.tunnelConfig) {
-                is SshKeyAuthTunnelMethod,
-                is SshPasswordAuthTunnelMethod -> {
-                    val remote = SshdSocketAddress(config.hostname, config.port.toInt())
-                    val sshConnectionOptions: SshConnectionOptions =
-                        SshConnectionOptions.fromAdditionalProperties(emptyMap())
-                    createTunnelSession(remote, ssh, sshConnectionOptions)
-                }
-                else -> null
+    fun tunnel(config: ClickhouseConfiguration): Maybe<TunnelSession> {
+        return when (val ssh = config.tunnelConfig) {
+            is SshKeyAuthTunnelMethod,
+            is SshPasswordAuthTunnelMethod -> {
+                val remote = SshdSocketAddress(config.hostname, config.port.toInt())
+                val sshConnectionOptions: SshConnectionOptions =
+                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                Some(createTunnelSession(remote, ssh, sshConnectionOptions))
             }
-
-        return Optional.ofNullable(tun)
+            else -> None
+        }
     }
 
     @Singleton
     fun clickhouseClient(
         config: ClickhouseConfiguration,
-        tunnel: Optional<TunnelSession>,
+        tunnel: Maybe<TunnelSession>,
     ): Client {
         val endpoint =
-            if (tunnel.isPresent) "${tunnel.get().address.hostName}:${tunnel.get().address.port}"
+            if (tunnel is Some)
+                "${config.protocol}://${tunnel.value.address.hostName}:${tunnel.value.address.port}"
             else config.endpoint
 
         val builder =
