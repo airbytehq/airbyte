@@ -291,6 +291,10 @@ definitions:
       - segments.ad_network_type
       - segments.device
     transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -343,6 +347,10 @@ definitions:
       - segments.date
       - segments.ad_network_type
     transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -350,6 +358,18 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ad_group_ad_legacy"
+
+  ad_group_bidding_strategy_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: ad_group_bidding_strategy
+    primary_key:
+      - ad_group.id
+      - bidding_strategy.id
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ad_group_bidding_strategy"
 
   ad_group_label_stream:
     $ref: "#/definitions/full_refresh_stream_base"
@@ -404,6 +424,18 @@ definitions:
       schema:
         $ref: "#/schemas/campaign"
 
+  campaign_bidding_strategy_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: campaign_bidding_strategy
+    primary_key:
+      - campaign.id
+      - bidding_strategy.id
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/campaign_bidding_strategy"
+
   campaign_budget_stream:
     $ref: "#/definitions/incremental_stream_base"
     name: campaign_budget
@@ -414,6 +446,10 @@ definitions:
       - segments.budget_campaign_association_status.campaign
       - segments.budget_campaign_association_status.status
     transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -432,6 +468,48 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_label"
+
+  click_view_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: click_view
+    primary_key:
+      - "click_view.gclid"
+      - "segments.date"
+      - "segments.ad_network_type"
+    retriever:
+      $ref: "#/definitions/incremental_stream_base/retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_google_ads.components.ClickViewHttpRequester"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/click_view"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: segments.date
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      lookback_window: "P{{ max(config.get('conversion_window_days', 1), 1) }}D"
+      step: P1D
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ max(config.get('start_date', day_delta(-90, format='%Y-%m-%d')), day_delta(-90, format='%Y-%m-%d')) }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/click_view"
 
   customer_stream:
     $ref: "#/definitions/incremental_stream_base"
@@ -587,13 +665,16 @@ streams:
   - "#/definitions/ad_group_ad_stream"
   - "#/definitions/ad_group_ad_label_stream"
   - "#/definitions/ad_group_ad_legacy_stream"
+  - "#/definitions/ad_group_bidding_strategy_stream"
   - "#/definitions/ad_group_label_stream"
   - "#/definitions/ad_group_criterion_label_stream"
   - "#/definitions/audience_stream"
   - "#/definitions/campaign_stream"
+  - "#/definitions/campaign_bidding_strategy_stream"
   - "#/definitions/campaign_budget_stream"
   - "#/definitions/campaign_label_stream"
   - "#/definitions/customer_stream"
+  - "#/definitions/click_view_stream"
   - "#/definitions/customer_label_stream"
   - "#/definitions/display_keyword_view_stream"
   - "#/definitions/geographic_view_stream"
@@ -780,6 +861,7 @@ schemas:
           - string
         format: date
     additionalProperties: true
+
   campaign:
     $schema: http://json-schema.org/schema#
     type: object
@@ -2906,6 +2988,7 @@ schemas:
           - "null"
           - integer
     additionalProperties: true
+
   customer:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3021,6 +3104,7 @@ schemas:
           - "null"
           - string
         format: date
+
   campaign_budget:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3293,6 +3377,7 @@ schemas:
         type:
           - "null"
           - integer
+
   account_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3586,6 +3671,7 @@ schemas:
         type:
           - "null"
           - integer
+
   ad_group_ad:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -4353,6 +4439,7 @@ schemas:
           - "null"
           - string
         format: date
+
   ad_group_ad_legacy:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5098,6 +5185,7 @@ schemas:
         type:
           - "null"
           - integer
+
   audience:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5147,6 +5235,7 @@ schemas:
         type:
           - "null"
           - string
+
   user_interest:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5190,6 +5279,7 @@ schemas:
         type:
           - "null"
           - string
+
   ad_group_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5224,6 +5314,7 @@ schemas:
         type:
           - "null"
           - string
+
   ad_group_ad_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5263,6 +5354,7 @@ schemas:
         type:
           - "null"
           - integer
+
   campaign_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5297,6 +5389,7 @@ schemas:
         type:
           - "null"
           - string
+
   label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5336,6 +5429,7 @@ schemas:
         type:
           - "null"
           - string
+
   ad_group_criterion_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5370,6 +5464,7 @@ schemas:
         type:
           - "null"
           - integer
+
   customer_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5400,3 +5495,432 @@ schemas:
         type:
           - "null"
           - string
+
+  click_view:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      ad_group.name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      click_view.gclid:
+        description: The Google Click Identifier for tracking purposes.
+        type:
+          - "null"
+          - string
+      click_view.ad_group_ad:
+        description: Details of the ad in the ad group that was clicked.
+        type:
+          - "null"
+          - string
+      click_view.keyword:
+        description: The keyword that triggered the ad click.
+        type:
+          - "null"
+          - string
+      click_view.keyword_info.match_type:
+        description: The match type of the keyword triggering the ad click.
+        type:
+          - "null"
+          - string
+      click_view.keyword_info.text:
+        description: The text of the keyword that triggered the ad click.
+        type:
+          - "null"
+          - string
+      campaign.id:
+        description: The unique identifier for the campaign.
+        type:
+          - "null"
+          - integer
+      ad_group.id:
+        description: The unique identifier for the ad group.
+        type:
+          - "null"
+          - integer
+      segments.date:
+        description: The date when the click occurred.
+        type:
+          - "null"
+          - string
+        format: date
+      customer.id:
+        description: The unique identifier for the customer account.
+        type:
+          - "null"
+          - integer
+      campaign.name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      segments.ad_network_type:
+        description: Type of ad network where the click originated.
+        type:
+          - "null"
+          - string
+      campaign.network_settings.target_content_network:
+        description: Boolean indicating if the campaign is targeting the content network.
+        type:
+          - "null"
+          - boolean
+      campaign.network_settings.target_google_search:
+        description: Boolean indicating if the campaign is targeting Google search.
+        type:
+          - "null"
+          - boolean
+      campaign.network_settings.target_partner_search_network:
+        description: Boolean indicating if the campaign is targeting partner search network.
+        type:
+          - "null"
+          - boolean
+      campaign.network_settings.target_search_network:
+        description: Boolean indicating if the campaign is targeting search network.
+        type:
+          - "null"
+          - boolean
+
+  campaign_bidding_strategy:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      customer.id:
+        description: The ID of the customer associated with the bidding strategy.
+        type:
+          - "null"
+          - integer
+      campaign.id:
+        description: The ID of the campaign associated with the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.aligned_campaign_budget_id:
+        description:
+          The ID of the campaign budget that this bidding strategy is aligned
+          with.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.campaign_count:
+        description: The total count of campaigns that are using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.currency_code:
+        description: The currency code used by the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.effective_currency_code:
+        description:
+          The effective currency code applied by the bidding strategy across
+          campaigns.
+        type:
+          - "null"
+          - string
+      bidding_strategy.enhanced_cpc:
+        description: Indicates if Enhanced CPC (ECPC) is enabled for this bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.id:
+        description: The unique ID of the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for Maximize Conversion Value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_floor_micros:
+        description:
+          The minimum CPC bid floor in micros for Maximize Conversion Value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.target_roas:
+        description:
+          The target Return on Ad Spend (ROAS) for Maximize Conversion Value
+          strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.maximize_conversions.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Maximize Conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for Maximize Conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.target_cpa_micros:
+        description:
+          The target Cost per Acquisition (CPA) in micros for Maximize Conversions
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.name:
+        description: The name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.non_removed_campaign_count:
+        description: The count of active campaigns that are using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.resource_name:
+        description: The resource name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.status:
+        description: The status of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_cpa.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for Target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.target_cpa_micros:
+        description: The target Cost per Acquisition (CPA) in micros for Target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for Target Impression Share
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.location:
+        description:
+          The targeted location for Impression Share in Target Impression Share
+          strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_impression_share.location_fraction_micros:
+        description:
+          The fraction of requested location's impressions targeted by Target
+          Impression Share.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for Target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.target_roas:
+        description: The target Return on Ad Spend (ROAS) for Target ROAS strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.target_spend.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Target Spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_spend.target_spend_micros:
+        description: The target spend in micros for Target Spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.type:
+        description: The type of bidding strategy used.
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: The date segment for the data.
+        type:
+          - "null"
+          - string
+        format: date
+
+  ad_group_bidding_strategy:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      ad_group.id:
+        description: The ID of the ad group to which the bidding strategy belongs.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.aligned_campaign_budget_id:
+        description: The ID of the campaign budget aligned with the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.campaign_count:
+        description: The count of campaigns using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.currency_code:
+        description: The currency code used for the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.effective_currency_code:
+        description: The effective currency code for the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.enhanced_cpc:
+        description: Flag indicating if Enhanced CPC is enabled for the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.id:
+        description: The ID of the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for maximize conversion value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_floor_micros:
+        description:
+          The minimum CPC bid floor in micros for maximize conversion value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.target_roas:
+        description: The target return on ad spend for maximize conversion value strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.maximize_conversions.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for maximize conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for maximize conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.target_cpa_micros:
+        description:
+          The target cost per acquisition in micros for maximize conversions
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.name:
+        description: The name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.non_removed_campaign_count:
+        description: The count of non-removed campaigns using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.resource_name:
+        description: The resource name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.status:
+        description: The status of the bidding strategy (e.g., enabled or paused).
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_cpa.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.target_cpa_micros:
+        description: The target cost per acquisition in micros for target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for target impression share
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.location:
+        description: The targeted location for the impression share strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_impression_share.location_fraction_micros:
+        description: The targeted impression share fraction in micros.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.target_roas:
+        description: The target return on ad spend for target ROAS strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.target_spend.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for target spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_spend.target_spend_micros:
+        description: The target spend in micros for target spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.type:
+        description: The type of bidding strategy (e.g., target CPA, target ROAS).
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: The date for which the data is segmented.
+        type:
+          - "null"
+          - string
+        format: date
