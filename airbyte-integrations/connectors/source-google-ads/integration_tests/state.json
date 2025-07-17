@@ -29,6 +29,19 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
+        "name": "click_view"
+      },
+      "stream_state": {
+        "4651612872": {
+          "segments.date": "2025-05-10"
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
         "name": "ad_group_criterion"
       },
       "stream_state": {
