@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4f755eb9-6e1a-4b0e-bc1e-26b9f5d3ca4c
-  dockerImageTag: 0.0.25
+  dockerImageTag: 0.0.26
   dockerRepository: airbyte/source-float
   githubIssueLabel: source-float
   icon: icon.svg
