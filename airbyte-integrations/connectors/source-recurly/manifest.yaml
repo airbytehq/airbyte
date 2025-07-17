@@ -1405,6 +1405,20 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 20
 
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_reset_header: "X-RateLimit-Reset"
+  ratelimit_remaining_header: "X-RateLimit-Remaining"
+  status_codes_for_ratelimit_hit: [429]
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1000
+          interval: "PT5M"  # 5-minute sliding window
+      matchers:
+        - method: "GET"
+          url_base: "{{ config['subdomain'] }}"
+          url_path_pattern: ".*"  # Match all paths
 schemas:
   accounts:
     type: object
