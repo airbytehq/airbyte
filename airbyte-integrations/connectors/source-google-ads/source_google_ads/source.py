@@ -18,9 +18,6 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AdGroupCriterion,
-    AdListingGroupCriterion,
-    CampaignCriterion,
     CustomerClient,
 )
 from .utils import GAQL, logger, traced_exception
