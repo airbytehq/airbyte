@@ -1,0 +1,35 @@
+# A shared set of tasks for all Airbyte connectors regardless of language.
+#
+# This file contains tasks that are identically defined across Python, Java, and
+# manifest-only connectors. It should be included alongside language-specific
+# task files in connector configurations.
+#
+# For Python connectors (pyproject.toml):
+# [tool.poe]
+# include = [
+#     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+#     "${POE_GIT_DIR}/poe-tasks/global-connector-tasks.toml",
+# ]
+#
+# For Java connectors (poe_tasks.toml):
+# include = [
+#     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
+#     "${POE_GIT_DIR}/poe-tasks/global-connector-tasks.toml",
+# ]
+
+[tasks]
+
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
+fetch-secrets = "airbyte-cdk secrets fetch"
+
+[tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' $PWD/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."

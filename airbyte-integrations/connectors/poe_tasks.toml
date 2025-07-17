@@ -2,4 +2,5 @@
 # to be a manifest-only connector. This is the most common connector type.
 include = [
     "${POE_GIT_DIR}/poe-tasks/manifest-only-connector-tasks.toml",
+    "${POE_GIT_DIR}/poe-tasks/global-connector-tasks.toml",
 ]
