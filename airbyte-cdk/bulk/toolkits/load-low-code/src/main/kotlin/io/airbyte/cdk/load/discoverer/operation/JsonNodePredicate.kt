@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.interpolation.StringInterpolator
 import io.airbyte.cdk.load.interpolation.toInterpolationContext
 import java.util.function.Predicate
 
+/** A convenient wrapper in order to evaluate DiscoveredProperties */
 class JsonNodePredicate(private val condition: String, private val nodeKey: String = "property") :
     Predicate<JsonNode> {
     val interpolator: StringInterpolator = StringInterpolator()

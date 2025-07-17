@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.AirbyteType
 import java.util.function.Predicate
 
-class PropertyFactory(
+class DiscoveredPropertyFactory(
     private val namePath: List<String>,
     private val typePath: List<String>,
     private val matchingKeyPredicate: Predicate<JsonNode>,
@@ -16,8 +16,8 @@ class PropertyFactory(
     private val requiredPredicate: Predicate<JsonNode>,
     private val typeMapper: Map<String, AirbyteType>,
 ) {
-    fun create(apiRepresentation: JsonNode): Property {
-        return Property(
+    fun create(apiRepresentation: JsonNode): DiscoveredProperty {
+        return DiscoveredProperty(
             apiRepresentation,
             namePath,
             typePath,

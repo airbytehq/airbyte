@@ -9,7 +9,14 @@ import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import java.util.function.Predicate
 
-class Property(
+/**
+ * Represents a property that was extracted from the API with the rules that defines the operation
+ * for a specific insertion method.
+ *
+ * Note that a DiscoveredProperty with be different depending on the insertion method because the
+ * rules to determine things like matchingKey and availability will be different.
+ */
+class DiscoveredProperty(
     private val apiRepresentation: JsonNode,
     namePath: List<String>,
     private val typePath: List<String>,

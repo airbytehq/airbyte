@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
- */
-
 package io.airbyte.cdk.load.discoverer.operation
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -10,7 +6,7 @@ import io.airbyte.cdk.load.command.DestinationOperation
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.discoverer.`object`.DestinationObjectSupplier
+import io.airbyte.cdk.load.discoverer.destinationobject.DestinationObject
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.load.http.getBodyOrEmpty
@@ -20,36 +16,38 @@ import java.lang.IllegalArgumentException
 
 private val logger = KotlinLogging.logger {}
 
-class DynamicOperationSupplier(
-    private val objectsSupplier: DestinationObjectSupplier,
-    private val objectNamePath: List<String>,
+/**
+ * Create all the DestinationOperations based on a DestinationObject. If properties are not defined
+ * in the DestinationObject, this class will require a schemaRequester in order to fetch the
+ * properties.
+ */
+class DestinationOperationAssembler(
     private val propertiesPath: List<String>,
-    private val propertyFactoriesByImportType: Map<ImportType, PropertyFactory>,
+    private val propertyFactoriesByImportType: Map<ImportType, DiscoveredPropertyFactory>,
     private val schemaRequester: HttpRequester?,
-) : OperationSupplier {
+) {
     // FIXME once we figure out the decoder interface, we should have this configurable and/or move
     // in a retriever layer
     private val decoder = JsonDecoder()
 
-    override fun get(): List<DestinationOperation> {
-        return objectsSupplier.get().flatMap {
-            val apiSchema: JsonNode =
-                if (hasProperties(it.apiRepresentation)) it.apiRepresentation
-                else
-                    schemaRequester
-                        ?.send(mapOf("object" to it.apiRepresentation.toInterpolationContext()))
-                        ?.use { response -> decoder.decode(response.getBodyOrEmpty()) }
+    fun assemble(destinationObject: DestinationObject): List<DestinationOperation> {
+        val apiSchema: JsonNode =
+            if (hasProperties(destinationObject.apiRepresentation))
+                destinationObject.apiRepresentation
+            else
+                (schemaRequester
                         ?: throw IllegalStateException(
-                            "Object ${it.name} does not have properties but schemaRequester is not defined to fetch it"
+                            "Object ${destinationObject.name} does not have properties but schemaRequester is not defined to fetch it"
+                        ))
+                    .send(
+                        mapOf(
+                            "object" to destinationObject.apiRepresentation.toInterpolationContext()
                         )
-            propertyFactoriesByImportType.mapNotNull { (importType, propertyFactory) ->
-                createOperation(
-                    it.apiRepresentation.extract(objectNamePath).asText(),
-                    apiSchema,
-                    importType,
-                    propertyFactory
-                )
-            }
+                    )
+                    .use { response -> decoder.decode(response.getBodyOrEmpty()) }
+
+        return propertyFactoriesByImportType.mapNotNull { (importType, propertyFactory) ->
+            createOperation(destinationObject.name, apiSchema, importType, propertyFactory)
         }
     }
 
@@ -67,7 +65,7 @@ class DynamicOperationSupplier(
         objectName: String,
         schemaFromApi: JsonNode,
         importType: ImportType,
-        propertyFactory: PropertyFactory
+        propertyFactory: DiscoveredPropertyFactory
     ): DestinationOperation? {
         val properties =
             schemaFromApi.extractArray(propertiesPath).map { propertyFactory.create(it) }
@@ -92,7 +90,7 @@ class DynamicOperationSupplier(
     }
 
     private fun getSchema(
-        propertiesForSyncMode: List<Property>,
+        propertiesForSyncMode: List<DiscoveredProperty>,
     ): AirbyteType {
         return ObjectType(
             properties =

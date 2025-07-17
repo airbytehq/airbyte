@@ -6,6 +6,6 @@ package io.airbyte.cdk.load.discoverer.operation
 
 import io.airbyte.cdk.load.command.DestinationOperation
 
-interface OperationSupplier {
+interface OperationProvider {
     fun get(): List<DestinationOperation>
 }
