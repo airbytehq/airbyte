@@ -112,3 +112,6 @@ curl -X GET -H 'Content-Type: application/octet-stream' \
 ```
 
 For small files, you may omit the `Range` header.
+
+The following integrations are currently supported. More will follow shortly:
+- S3
