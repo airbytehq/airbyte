@@ -52,6 +52,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P{{ config.get('accounts_step_days', 30) }}D"
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -119,6 +121,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
@@ -194,6 +197,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
@@ -336,6 +340,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
@@ -835,6 +840,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
@@ -1286,6 +1292,17 @@ spec:
         - 2
         - 3
         description: The number of worker threads to use for the sync.
+      accounts_step_days:
+        type: integer
+        title: Days in length for each API call to get data
+        minimum: 1
+        maximum: 365
+        default: 30
+        examples:
+        - 7
+        - 30
+        - 90
+        description: Days in length for each API call to get data from the accounts stream. Smaller values will result in more API calls but better concurrency.
     
     additionalProperties: true
 
