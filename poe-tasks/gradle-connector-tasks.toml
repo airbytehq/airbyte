@@ -119,7 +119,7 @@ if [ -d build/distributions ]; then
 fi
 
 # Generate registry JSON files
-${POE_GIT_DIR}/poe-tasks/create-connector-registry.sh "build/releases/${VERSION}"
+${POE_GIT_DIR}/poe-tasks/create-connector-registry-json.sh "build/releases/${VERSION}"
 '''
 help = "Create local registry artifacts for this connector version in build/releases/{version}/"
 
