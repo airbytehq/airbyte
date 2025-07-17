@@ -210,7 +210,7 @@ definitions:
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
-              path: [ "change_status.last_change_date_time" ]
+              path: ["change_status.last_change_date_time"]
               value: "{{ today_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
     incremental_stream:
       $ref: "#/definitions/incremental_stream_base"
@@ -252,7 +252,11 @@ definitions:
                   $ref: "#/definitions/change_status_stream"
                 parent_key: "change_status.{{ parameters['resource_name'] }}"
                 partition_field: "{{ parameters['resource_name'] }}.resource_name"
-                extra_fields: [ [ "change_status.last_change_date_time" ], [ "change_status.resource_status" ] ]
+                extra_fields:
+                  [
+                    ["change_status.last_change_date_time"],
+                    ["change_status.resource_status"],
+                  ]
                 incremental_dependency: true
         transformations:
           - type: CustomTransformation
@@ -793,7 +797,7 @@ definitions:
             stream: "#/definitions/customer_client"
             parent_key: "clientCustomer"
             partition_field: "customer_id"
-            extra_fields: [ [ "manager" ] ]
+            extra_fields: [["manager"]]
       transformations:
         - type: CustomTransformation
           class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
@@ -1112,377 +1116,385 @@ schemas:
       deleted_at:
         description: The date when the ad group criterion was deleted.
         type:
-          - 'null'
+          - "null"
           - string
       change_status.last_change_date_time:
         description: The date and time of the last change made to the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group.id:
         description: The ID of the ad group associated with the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.ad_group:
         description: The ad group to which the ad group criterion belongs.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.age_range.type:
         description: The age range targeting type for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.app_payment_model.type:
         description: The app payment model type for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.approval_status:
         description: The approval status of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.audience.audience:
         description: The audience targeting for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.bid_modifier:
         description: The bid modifier for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - number
       ad_group_criterion.combined_audience.combined_audience:
         description: The combined audience targeting for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.cpc_bid_micros:
         description: The CPC bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.cpm_bid_micros:
         description: The CPM bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.cpv_bid_micros:
         description: The CPV bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.criterion_id:
         description: The ID of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.custom_affinity.custom_affinity:
         description: The custom affinity targeting for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.custom_audience.custom_audience:
         description: The custom audience targeting for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.custom_intent.custom_intent:
         description: The custom intent targeting for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.disapproval_reasons:
         description: The reasons for disapproval of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.display_name:
         description: The display name of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.effective_cpc_bid_micros:
         description: The effective CPC bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.effective_cpc_bid_source:
         description: The source of the effective CPC bid for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.effective_cpm_bid_micros:
         description: The effective CPM bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.effective_cpm_bid_source:
         description: The source of the effective CPM bid for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.effective_cpv_bid_micros:
         description: The effective CPV bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.effective_cpv_bid_source:
         description: The source of the effective CPV bid for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.effective_percent_cpc_bid_micros:
-        description: The effective percent CPC bid amount in micros for the ad group
+        description:
+          The effective percent CPC bid amount in micros for the ad group
           criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.effective_percent_cpc_bid_source:
-        description: The source of the effective percent CPC bid for the ad group
+        description:
+          The source of the effective percent CPC bid for the ad group
           criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.final_mobile_urls:
         description: The final mobile URLs for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.final_url_suffix:
         description: The final URL suffix for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.final_urls:
         description: The final URLs for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.gender.type:
         description: The gender targeting type for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.income_range.type:
         description: The income range targeting type for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.keyword.match_type:
         description: The match type of the keyword for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.keyword.text:
         description: The text of the keyword for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.labels:
         description: The labels associated with the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.mobile_app_category.mobile_app_category_constant:
         description: The mobile app category constant for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.mobile_application.app_id:
         description: The application ID for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.mobile_application.name:
         description: The name of the mobile application for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.negative:
         description: Indicates if the ad group criterion is negative or not.
         type:
-          - 'null'
+          - "null"
           - boolean
       ad_group_criterion.parental_status.type:
         description: The parental status targeting type for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.percent_cpc_bid_micros:
         description: The percent CPC bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.placement.url:
         description: The URL placement for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.position_estimates.estimated_add_clicks_at_first_position_cpc:
-        description: The estimated additional clicks at the first position CPC for
+        description:
+          The estimated additional clicks at the first position CPC for
           the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.position_estimates.estimated_add_cost_at_first_position_cpc:
-        description: The estimated additional cost at the first position CPC for the
+        description:
+          The estimated additional cost at the first position CPC for the
           ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.position_estimates.first_page_cpc_micros:
         description: The first page CPC bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.position_estimates.first_position_cpc_micros:
-        description: The first position CPC bid amount in micros for the ad group
+        description:
+          The first position CPC bid amount in micros for the ad group
           criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.position_estimates.top_of_page_cpc_micros:
         description: The top of page CPC bid amount in micros for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.quality_info.creative_quality_score:
         description: The creative quality score for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.quality_info.post_click_quality_score:
         description: The post-click quality score for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.quality_info.quality_score:
         description: The quality score for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       ad_group_criterion.quality_info.search_predicted_ctr:
         description: The predicted click-through rate for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.resource_name:
         description: The resource name of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.status:
         description: The status of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.system_serving_status:
         description: The serving status of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.topic.path:
         description: The path of the topic targeting for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.topic.topic_constant:
         description: The topic constant for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.tracking_url_template:
         description: The tracking URL template for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.type:
         description: The type of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.url_custom_parameters:
         description: The custom parameters for the URLs of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.user_interest.user_interest_category:
         description: The user interest category for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.user_list.user_list:
         description: The user list targeting for the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.webpage.conditions:
         description: The conditions set for webpage targeting of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.webpage.coverage_percentage:
-        description: The coverage percentage for the webpage targeting of the ad group
+        description:
+          The coverage percentage for the webpage targeting of the ad group
           criterion.
         type:
-          - 'null'
+          - "null"
           - number
       ad_group_criterion.webpage.criterion_name:
-        description: The criterion name for the webpage targeting of the ad group
+        description:
+          The criterion name for the webpage targeting of the ad group
           criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.webpage.sample.sample_urls:
         description: The sample URLs for webpage targeting of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       ad_group_criterion.youtube_channel.channel_id:
-        description: The channel ID for YouTube channel targeting of the ad group
+        description:
+          The channel ID for YouTube channel targeting of the ad group
           criterion.
         type:
-          - 'null'
+          - "null"
           - string
       ad_group_criterion.youtube_video.video_id:
         description: The video ID for YouTube video targeting of the ad group criterion.
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
 
@@ -1491,145 +1503,155 @@ schemas:
     type: object
     properties:
       deleted_at:
-        description: The timestamp indicating when the ad group criterion was deleted,
+        description:
+          The timestamp indicating when the ad group criterion was deleted,
           if applicable.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       change_status.last_change_date_time:
         description: The date and time of the last change made to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.resource_name:
         description: The resource name of the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group.id:
         description: The ID of the ad group associated with the criterion.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ad_group_criterion.criterion_id:
         description: The ID of the criterion defining the ad group criterion.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ad_group_criterion.listing_group.case_value.activity_country.value:
-        description: The country where the activity related to the ad group criterion
+        description:
+          The country where the activity related to the ad group criterion
           takes place.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.activity_id.value:
         description: The ID of the activity related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.activity_rating.value:
         description: The rating of the activity related to the ad group criterion.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ad_group_criterion.listing_group.case_value.hotel_city.city_criterion:
-        description: The city where the hotel related to the ad group criterion is
+        description:
+          The city where the hotel related to the ad group criterion is
           located.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.hotel_class.value:
         description: The class of the hotel related to the ad group criterion.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ad_group_criterion.listing_group.case_value.hotel_country_region.country_region_criterion:
-        description: The country region where the hotel related to the ad group criterion
+        description:
+          The country region where the hotel related to the ad group criterion
           is located.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.hotel_id.value:
         description: The ID of the hotel related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.hotel_state.state_criterion:
-        description: The state where the hotel related to the ad group criterion is
+        description:
+          The state where the hotel related to the ad group criterion is
           located.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_category.category_id:
-        description: The ID of the category to which the product related to the ad
+        description:
+          The ID of the category to which the product related to the ad
           group criterion belongs.
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ad_group_criterion.listing_group.case_value.product_category.level:
         description: The category level of the product related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_brand.value:
         description: The brand of the product related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_channel.channel:
-        description: The channel where the product related to the ad group criterion
+        description:
+          The channel where the product related to the ad group criterion
           is sold.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity:
-        description: The exclusivity level of the product on its distribution channel
+        description:
+          The exclusivity level of the product on its distribution channel
           related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_condition.condition:
         description: The condition of the product related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_custom_attribute.index:
-        description: The custom attribute index of the product related to the ad group
+        description:
+          The custom attribute index of the product related to the ad group
           criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_custom_attribute.value:
-        description: The custom attribute value of the product related to the ad group
+        description:
+          The custom attribute value of the product related to the ad group
           criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_item_id.value:
         description: The ID of the product item related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_type.level:
         description: The level of product type related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.case_value.product_type.value:
         description: The value of the product type related to the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.parent_ad_group_criterion:
         description: The parent ad group criterion of the current ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ad_group_criterion.listing_group.type:
         description: The type of the listing group associated with the ad group criterion.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
 
   campaign:
@@ -2163,52 +2185,52 @@ schemas:
       deleted_at:
         description: Timestamp indicating when the criterion was deleted.
         type:
-          - 'null'
+          - "null"
           - string
       change_status.last_change_date_time:
         description: The date and time of the last change made to the criterion.
         type:
-          - 'null'
+          - "null"
           - string
       campaign.id:
         description: The unique identifier for the campaign associated with the criterion.
         type:
-          - 'null'
+          - "null"
           - integer
       campaign_criterion.resource_name:
         description: The resource name of the criterion.
         type:
-          - 'null'
+          - "null"
           - string
       campaign_criterion.campaign:
         description: The specific campaign this criterion is targeting.
         type:
-          - 'null'
+          - "null"
           - string
       campaign_criterion.age_range.type:
         description: The age range targeting type for the criterion.
         type:
-          - 'null'
+          - "null"
           - string
       campaign_criterion.mobile_application.name:
         description: The name of the mobile application targeted by the criterion.
         type:
-          - 'null'
+          - "null"
           - string
       campaign_criterion.negative:
         description: Indicates whether the criterion is a negative targeting criterion.
         type:
-          - 'null'
+          - "null"
           - boolean
       campaign_criterion.youtube_channel.channel_id:
         description: The YouTube channel ID targeted by the criterion.
         type:
-          - 'null'
+          - "null"
           - string
       campaign_criterion.youtube_video.video_id:
         description: The YouTube video ID targeted by the criterion.
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
 
@@ -2219,33 +2241,33 @@ schemas:
       change_status.last_change_date_time:
         description: The date and time when the last change was made.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       change_status.resource_type:
         description: The type of the resource that was changed.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       change_status.resource_status:
         description: The status of the resource after the change.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       change_status.resource_name:
         description: The name of the resource that was changed.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       change_status.ad_group_criterion:
         description: The status of the ad group criterion that was changed.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       change_status.campaign_criterion:
         description: The status of the campaign criterion that was changed.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
 
   display_keyword_view:

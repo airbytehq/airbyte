@@ -285,4 +285,3 @@ class ServiceAccounts(GoogleAdsStream):
 
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
     primary_key = ["customer.id"]
-

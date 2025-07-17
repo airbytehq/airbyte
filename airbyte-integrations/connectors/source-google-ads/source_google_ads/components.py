@@ -18,7 +18,12 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionWithGlobalCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    GlobalSubstreamCursor,
+    PerPartitionWithGlobalCursor,
+)
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
@@ -403,6 +408,7 @@ class ChangeStatusRetriever(SimpleRetriever):
     ChangeStatus stream requires custom retriever because Google Ads API requires limit for this stream to be set to 10,000.
     When the number of records exceeds this limit, we need to adjust the start date to the last record's cursor.
     """
+
     partition_router: SubstreamPartitionRouter = None
     transformations: List[RecordTransformation] = None
     QUERY_LIMIT = 10000
@@ -413,7 +419,7 @@ class ChangeStatusRetriever(SimpleRetriever):
         original_cursor: DatetimeBasedCursor = self.stream_slicer
 
         cursor_for_factory = copy.deepcopy(original_cursor)
-        cursor_for_stream  = copy.deepcopy(original_cursor)
+        cursor_for_stream = copy.deepcopy(original_cursor)
 
         self.stream_slicer = PerPartitionWithGlobalCursor(
             cursor_factory=CursorFactory(lambda: copy.deepcopy(cursor_for_factory)),
@@ -424,7 +430,6 @@ class ChangeStatusRetriever(SimpleRetriever):
         self.cursor = self.stream_slicer
 
         self.record_selector.transformations = self.transformations
-
 
     def _read_pages(
         self,
@@ -482,14 +487,14 @@ class ChangeStatusRequester(GoogleAdsHttpRequester):
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
         fields = list(schema.keys())
 
-        query = (f"SELECT {', '.join(fields)} FROM {self.name} "
-                 f"WHERE {self.CURSOR_FIELD} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' "
-                 f"AND change_status.resource_type = {self._resource_type} "
-                 f"ORDER BY {self.CURSOR_FIELD} ASC "
-                 f"LIMIT {self.LIMIT}")
-        return {
-            "query": query
-        }
+        query = (
+            f"SELECT {', '.join(fields)} FROM {self.name} "
+            f"WHERE {self.CURSOR_FIELD} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' "
+            f"AND change_status.resource_type = {self._resource_type} "
+            f"ORDER BY {self.CURSOR_FIELD} ASC "
+            f"LIMIT {self.LIMIT}"
+        )
+        return {"query": query}
 
 
 @dataclass
@@ -502,6 +507,7 @@ class CriterionRetriever(SimpleRetriever):
       2) Batches the remaining IDs into a single fetch.
       3) Attaches the original ChangeStatus timestamp to each returned record.
     """
+
     partition_router: SubstreamPartitionRouter = None
     transformations: List[RecordTransformation] = None
     cursor_field: str = "change_status.last_change_date_time"
@@ -511,7 +517,7 @@ class CriterionRetriever(SimpleRetriever):
 
         original_cursor: DatetimeBasedCursor = self.stream_slicer
 
-        cursor_for_stream  = copy.deepcopy(original_cursor)
+        cursor_for_stream = copy.deepcopy(original_cursor)
 
         self.stream_slicer = GlobalSubstreamCursor(
             partition_router=self.partition_router,
@@ -534,10 +540,10 @@ class CriterionRetriever(SimpleRetriever):
         - For each group, yield REMOVED records immediately, then perform one fetch for non-removed.
         - Attach the original ChangeStatus timestamp to each updated record.
         """
-        ids      = stream_slice.partition[self.primary_key[0]]
-        parents  = stream_slice.partition["parent_slice"]
+        ids = stream_slice.partition[self.primary_key[0]]
+        parents = stream_slice.partition["parent_slice"]
         statuses = stream_slice.extra_fields["change_status.resource_status"]
-        times    = stream_slice.extra_fields["change_status.last_change_date_time"]
+        times = stream_slice.extra_fields["change_status.last_change_date_time"]
 
         # Iterate grouped by parent
         for parent, group in groupby(
@@ -550,10 +556,13 @@ class CriterionRetriever(SimpleRetriever):
             updated_times = []
             for _id, _, status, ts in group_list:
                 if status == "REMOVED":
-                    yield Record(data={
-                        self.primary_key[0]: _id,
-                        "deleted_at": ts,
-                    }, stream_name=self.name)
+                    yield Record(
+                        data={
+                            self.primary_key[0]: _id,
+                            "deleted_at": ts,
+                        },
+                        stream_name=self.name,
+                    )
                 else:
                     updated_ids.append(_id)
                     updated_times.append(ts)
@@ -590,28 +599,23 @@ class CriterionIncrementalRequester(GoogleAdsHttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         props = self.schema_loader.get_json_schema()[self.name]["properties"]
-        select_fields = [
-            f for f in props.keys()
-            if f not in (self.CURSOR_FIELD, "deleted_at")
-        ]
+        select_fields = [f for f in props.keys() if f not in (self.CURSOR_FIELD, "deleted_at")]
 
         ids = stream_slice.partition.get(self._parameters["primary_key"][0], [])
         in_list = ", ".join(f"'{i}'" for i in ids)
 
         query = (
-            f"SELECT {', '.join(select_fields)}\n"
-            f"  FROM {self.name}\n"
-            f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
+            f"SELECT {', '.join(select_fields)}\n" f"  FROM {self.name}\n" f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
         )
 
         return {"query": query}
 
     def get_request_headers(
-            self,
-            *,
-            stream_state: Optional[StreamState] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, any]] = None,
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, any]] = None,
     ) -> Mapping[str, any]:
         return {
             "developer-token": self.config["credentials"]["developer_token"],
@@ -631,20 +635,16 @@ class CriterionFullRefreshRequester(GoogleAdsHttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         props = self.schema_loader.get_json_schema()[self.name]["properties"]
-        fields = [
-            f for f in props.keys()
-            if f not in (self.CURSOR_FIELD, "deleted_at")
-        ]
+        fields = [f for f in props.keys() if f not in (self.CURSOR_FIELD, "deleted_at")]
 
-        return {
-            "query": f"SELECT {', '.join(fields)} FROM {self.name}"
-        }
+        return {"query": f"SELECT {', '.join(fields)} FROM {self.name}"}
 
 
 class GoogleAdsCriterionParentStateMigration(StateMigration):
     """
     Migrates parent state from legacy format to the new format
     """
+
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state and "parent_state" not in stream_state
 
