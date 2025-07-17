@@ -1,0 +1,12 @@
+{
+  "site_urls": ["https://example.com/"],
+  "start_date": "2022-01-01",
+  "end_date": "2022-02-01",
+  "authorization": {
+    "auth_type": "Client",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "custom_reports": "[{\"name\": \"config_migration_test\", \"dimensions\": [\"date\", \"country\", \"device\"]}]"
+}

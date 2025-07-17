@@ -29,6 +29,7 @@ In order to use this source, you must first create a Shippo account. Once logged
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-06-28 | [62245](https://github.com/airbytehq/airbyte/pull/62245) | Update dependencies |
 | 0.0.22 | 2025-06-21 | [61456](https://github.com/airbytehq/airbyte/pull/61456) | Update dependencies |
 | 0.0.21 | 2025-05-24 | [60475](https://github.com/airbytehq/airbyte/pull/60475) | Update dependencies |
 | 0.0.20 | 2025-05-10 | [59616](https://github.com/airbytehq/airbyte/pull/59616) | Update dependencies |

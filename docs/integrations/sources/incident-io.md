@@ -46,6 +46,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 | severities | id | No pagination | ✅ |  ❌  |
 | schedules | id | DefaultPaginator | ✅ |  ❌  |
 | incidents | id | DefaultPaginator | ✅ |  ❌  |
+| alerts | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -54,6 +55,10 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0  | 2025-07-15 | [63304](https://github.com/airbytehq/airbyte/pull/63304) | Add new stream `alerts` |
+| 0.0.29 | 2025-07-12 | [63128](https://github.com/airbytehq/airbyte/pull/63128) | Update dependencies |
+| 0.0.28 | 2025-07-05 | [62591](https://github.com/airbytehq/airbyte/pull/62591) | Update dependencies |
+| 0.0.27 | 2025-06-28 | [62168](https://github.com/airbytehq/airbyte/pull/62168) | Update dependencies |
 | 0.0.26 | 2025-06-21 | [61830](https://github.com/airbytehq/airbyte/pull/61830) | Update dependencies |
 | 0.0.25 | 2025-06-14 | [61149](https://github.com/airbytehq/airbyte/pull/61149) | Update dependencies |
 | 0.0.24 | 2025-05-24 | [60668](https://github.com/airbytehq/airbyte/pull/60668) | Update dependencies |

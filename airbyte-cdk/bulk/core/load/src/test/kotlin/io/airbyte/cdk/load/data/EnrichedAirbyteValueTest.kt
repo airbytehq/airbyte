@@ -73,7 +73,7 @@ class EnrichedAirbyteValueTest {
         val truncatedValue = StringValue("This is a very...")
 
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
-        enriched.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, truncatedValue)
+        enriched.truncate(truncatedValue, Reason.DESTINATION_RECORD_SIZE_LIMITATION)
 
         assertEquals(truncatedValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
@@ -111,7 +111,7 @@ class EnrichedAirbyteValueTest {
         val truncatedValue = StringValue("This is a very...")
 
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
-        enriched.truncate(Reason.DESTINATION_SERIALIZATION_ERROR, truncatedValue)
+        enriched.truncate(truncatedValue, Reason.DESTINATION_SERIALIZATION_ERROR)
 
         assertEquals(truncatedValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
@@ -132,7 +132,7 @@ class EnrichedAirbyteValueTest {
 
         // First change - truncate
         val truncatedValue = StringValue("Init...")
-        enriched.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, truncatedValue)
+        enriched.truncate(truncatedValue, Reason.DESTINATION_RECORD_SIZE_LIMITATION)
 
         // Second change - nullify
         enriched.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)

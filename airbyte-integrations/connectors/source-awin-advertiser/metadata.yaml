@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 807cabe0-9c76-4132-8863-60f669dea534
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-awin-advertiser
   githubIssueLabel: source-awin-advertiser
   icon: icon.svg

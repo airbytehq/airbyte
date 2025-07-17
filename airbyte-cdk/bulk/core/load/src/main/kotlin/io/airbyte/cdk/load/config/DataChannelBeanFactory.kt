@@ -289,7 +289,7 @@ class DataChannelBeanFactory {
         @Named("_pipelineInputQueue")
         pipelineInputQueue: PartitionedQueue<PipelineInputEvent>? = null,
         config: DestinationConfiguration,
-        checkpointManager: CheckpointManager<*>,
+        checkpointManager: CheckpointManager,
     ): HeartbeatTask {
         check(pipelineInputQueue != null) {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."

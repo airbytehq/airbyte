@@ -36,7 +36,6 @@ set -euo pipefail
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
 
-# ── Rollout whitelist: only connectors listed here will be built/published
 # Function to check if a connector is in the whitelist
 is_in_whitelist() {
   local connector="$1"
@@ -56,12 +55,14 @@ is_in_whitelist() {
     destination-local-json|\
     destination-mongodb-strict-encrypt|\
     destination-mongodb|\
+    destination-mssql|\
     destination-mysql-strict-encrypt|\
     destination-mysql|\
     destination-oracle-strict-encrypt|\
     destination-oracle|\
     destination-postgres-strict-encrypt|\
     destination-postgres|\
+    destination-pubsub|\
     destination-redis|\
     destination-redshift|\
     destination-s3-data-lake|\
@@ -73,7 +74,29 @@ is_in_whitelist() {
     destination-yellowbrick|\
     source-e2e-test|\
     source-postgres|\
-    source-mysql)
+    source-mysql|\
+    source-mssql|\
+    source-mongodb|\
+    source-db2-enterprise|\
+    source-sap-hana|\
+    source-netsuite|\
+    source-oracle-enterprise|\
+    source-bigquery|\
+    source-clickhouse|\
+    source-clickhouse-strict-encrypt|\
+    source-cockroachdb|\
+    source-db2|\
+    source-dynamodb|\
+    source-e2e-test-cloud|\
+    source-elasticsearch|\
+    source-kafka|\
+    source-oracle|\
+    source-oracle-strict-encrypt|\
+    source-scaffold-java-jdbc|\
+    source-sftp|\
+    source-snowflake|\
+    source-teradata|\
+    source-tidb)
       return 0
       ;;
     *)

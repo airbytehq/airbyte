@@ -2,7 +2,7 @@
 products: embedded
 ---
 
-# Prerequisites & Setup
+# Get Started with Widget
 
 ## Airbyte Credentials
 
@@ -18,11 +18,11 @@ In addition to the Embedded keys above, you will require an external user id, `E
 
 ## Configure .env
 
-Clone the [sample app via Github](https://github.com/quintonwall/sonar-demoapp), and navigate to sonar-demoapp/server.
+Clone the [sample app via Github](https://github.com/airbytehq/embedded-sampleweb-reactjs), and navigate to embedded-sampleweb-reactjs/server.
 
 ```bash
 git clone <repository-url>
-cd sonar-demoapp/server
+cd embedded-sampleweb-reactjs/server
 ```
 
  Then, copy the .env.local.example to .env:
@@ -85,7 +85,7 @@ SONAR_S3_BUCKET_PREFIX=quinton-test
 Next, you need to create the S3 destination connector within your Airbyte Embedded instance. You can use the provided script within the sample app, which relies on the values in the .env file created above.
 
 ```bash
-sonar-demoapp/./setup-s3.sh
+./setup-s3.sh
 ```
 
 :::caution
