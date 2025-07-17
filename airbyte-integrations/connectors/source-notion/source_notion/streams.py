@@ -5,7 +5,7 @@
 import logging as Logger
 from abc import ABC
 from datetime import timedelta
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
 import requests
 from requests import HTTPError
@@ -86,7 +86,7 @@ class NotionStream(HttpStream, ABC):
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def backoff_time(self, response: requests.Response, attempt_count: int = 0) -> Optional[float]:
         """
         Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
         For a 429 response, we can use the retry-header to determine how long to wait before retrying.
@@ -100,7 +100,8 @@ class NotionStream(HttpStream, ABC):
             return 10
         # For 500+ errors, use exponential backoff
         if response.status_code >= 500:
-            return self.retry_factor * (2 ** (self.max_retries - 1))
+            backoff_time = self.retry_factor * (2 ** attempt_count)
+            return backoff_time
         return None
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -223,7 +224,6 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         # Get the current state value as a string
         current_state_value = (current_stream_state or {}).get(self.cursor_field, "")
 
-        # Get the record time
         record_time = latest_record.get(self.cursor_field, self.start_date)
 
         # Return the maximum of current state and record time as a string

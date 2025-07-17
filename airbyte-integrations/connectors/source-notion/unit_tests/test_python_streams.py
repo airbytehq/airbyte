@@ -171,7 +171,7 @@ def test_end_of_stream_state(blocks, requests_mock):
     for idx, app_slice in enumerate(stream.stream_slices(sync_mode, **MagicMock())):
         for record in stream.read_records(sync_mode=sync_mode, stream_slice=app_slice):
             state = stream.get_updated_state(state, record)
-            state_value = state["last_edited_time"].value
+            state_value = state["last_edited_time"]
             if idx == 2:  # the last slice
                 assert state_value == "2021-10-30T00:00:00.000Z"
             else:
@@ -187,18 +187,18 @@ def test_get_updated_state(stream):
     }
     expected_state = "2021-10-10T00:00:00.000Z"
     state = stream._get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+    assert state["last_edited_time"] == expected_state
 
     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-30T00:00:00.000Z"}}
     state = stream._get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+    assert state["last_edited_time"] == expected_state
 
     # after stream sync is finished, state should output the max cursor time
     stream.is_finished = True
     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-10T00:00:00.000Z"}}
     expected_state = "2021-10-30T00:00:00.000Z"
     state = stream._get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+    assert state["last_edited_time"] == expected_state
 
 
 def test_record_filter(blocks, requests_mock):
