@@ -11,7 +11,6 @@ import pytest
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupLabel, Label, ServiceAccounts
 
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -65,35 +64,6 @@ def test_expected_errors(mocker, config, exception, error_message):
     with pytest.raises(AirbyteTracedException) as exception:
         status_ok, error = source.check_connection(logging.getLogger("airbyte"), config)
     assert exception.value.message == error_message
-
-
-@pytest.mark.parametrize(
-    ("cls", "raise_expected"),
-    (
-        (AdGroupLabel, False),
-        (Label, False),
-        (ServiceAccounts, True),
-    ),
-)
-def test_read_record_error_handling(mocker, config, customers, cls, raise_expected):
-    mock_google_ads_request_failure(mocker, ["CUSTOMER_NOT_ENABLED"])
-    google_api = GoogleAds(credentials=config["credentials"])
-    stream = cls(api=google_api, customers=customers)
-
-    # Use nullcontext or pytest.raises based on raise_expected
-    context = pytest.raises(AirbyteTracedException) if raise_expected else does_not_raise()
-
-    with context as exception:
-        for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890", "login_customer_id": "default"}):
-            pass
-
-    if raise_expected:
-        assert exception.value.message == (
-            "The customer account '1234567890' hasn't finished signup or has been deactivated. "
-            "Sign in to the Google Ads UI to verify its status. "
-            "For reactivating deactivated accounts, refer to: "
-            "https://support.google.com/google-ads/answer/2375392."
-        )
 
 
 @pytest.mark.parametrize(
