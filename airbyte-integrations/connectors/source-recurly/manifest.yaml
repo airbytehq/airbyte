@@ -1309,7 +1309,7 @@ spec:
         description: >-
           Set to true for sandbox accounts (400 requests/min, all types). Defaults to false for production accounts (1,000 GET requests/min).
         default: false
-        order: 2
+        order: 5
         title: Use Sandbox Environment
     
     additionalProperties: true
