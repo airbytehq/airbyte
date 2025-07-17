@@ -13,7 +13,7 @@ data:
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   githubIssueLabel: source-faker
-  icon: faker.svg
+  icon: icon.svg
   license: MIT
   name: Sample Data
   registryOverrides:
