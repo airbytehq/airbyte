@@ -840,7 +840,6 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
-              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
