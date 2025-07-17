@@ -31,6 +31,16 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 logger = logging.getLogger("airbyte")
 
+REPORT_MAPPING = {
+    "account_performance_report": "customer",
+    "ad_group_ad_legacy": "ad_group_ad",
+    "ad_group_bidding_strategy": "ad_group",
+    "ad_listing_group_criterion": "ad_group_criterion",
+    "campaign_real_time_bidding_settings": "campaign",
+    "campaign_bidding_strategy": "campaign",
+    "service_accounts": "customer",
+}
+
 
 class AccessibleAccountsExtractor(RecordExtractor):
     """
@@ -272,15 +282,22 @@ class GoogleAdsHttpRequester(HttpRequester):
     ) -> MutableMapping[str, Any]:
         schema = self.schema_loader.get_json_schema()[self.name]["properties"]
         manager = stream_slice.extra_fields.get("manager", False)
+        resource_name = REPORT_MAPPING.get(self.name, self.name)
         fields = [
             field
             for field in schema.keys()
             # exclude metrics.* if this is a manager account
             if not (manager and field.startswith("metrics."))
         ]
-        return {
-            "query": f"SELECT {', '.join(fields)} FROM {self.name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
-        }
+
+        if "start_time" in stream_slice and "end_time" in stream_slice:
+            # For incremental streams
+            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE segments.date BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY segments.date ASC"
+        else:
+            # For full refresh streams
+            query = f"SELECT {', '.join(fields)} FROM {resource_name}"
+
+        return {"query": query}
 
     def get_request_headers(
         self,
@@ -293,6 +310,26 @@ class GoogleAdsHttpRequester(HttpRequester):
             "developer-token": self.config["credentials"]["developer_token"],
             "login-customer-id": stream_slice["parent_slice"]["customer_id"],
         }
+
+
+@dataclass
+class ClickViewHttpRequester(GoogleAdsHttpRequester):
+    """
+    Custom HTTP requester for ClickView stream.
+    """
+
+    schema_loader: InlineSchemaLoader = None
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        schema = self.schema_loader.get_json_schema()["properties"]
+        fields = [field for field in schema.keys()]
+        return {"query": f"SELECT {', '.join(fields)} FROM click_view WHERE segments.date = '{stream_slice['start_time']}'"}
 
 
 @dataclass
