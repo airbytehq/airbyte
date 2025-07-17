@@ -297,7 +297,6 @@ table {
   border-spacing: 0;
   border-collapse: separate;
   overflow-x: auto;
-  word-break: break-word; /* Prevents long words from causing tables to overflow their containing element */
 }
 
 /* Add these new styles */
