@@ -25,6 +25,7 @@ const config = {
   themes: [
     "@docusaurus/theme-mermaid",
     "@saucelabs/theme-github-codeblock",
+    "docusaurus-theme-openapi-docs",
   ],
   title: "Airbyte Docs",
   tagline:

@@ -6,23 +6,23 @@
 import logging
 import re
 from collections import namedtuple
-from unittest.mock import MagicMock, Mock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pendulum
 import pytest
 from pendulum import duration, today
 from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
-from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupAdLegacy, chunk_date_range
+from source_google_ads.streams import chunk_date_range
 from source_google_ads.utils import GAQL
 
-from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, StreamSlice
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
 
 from .common import MockGoogleAdsClient
+from .conftest import find_stream
 
 
 @pytest.fixture
@@ -31,19 +31,6 @@ def mock_get_customers(mocker):
         "source_google_ads.source.SourceGoogleAds.get_customers",
         Mock(return_value=[CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="8765")]),
     )
-
-
-@pytest.fixture()
-def stream_mock(mocker, config, customers):
-    def mock(latest_record):
-        mocker.patch("source_google_ads.streams.GoogleAdsStream.read_records", Mock(return_value=[latest_record]))
-        google_api = GoogleAds(credentials=config["credentials"])
-        client = AdGroupAdLegacy(
-            start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], customers=customers
-        )
-        return client
-
-    return mock
 
 
 @pytest.fixture()
@@ -121,7 +108,6 @@ def test_streams_count(config, mock_get_customers):
     source = SourceGoogleAds(config, None, None)
     streams = source.streams(config)
     expected_streams_number = 30
-    print(f"{config=} \n{streams=}")
     assert len(streams) == expected_streams_number
 
 
@@ -160,22 +146,6 @@ def test_read_missing_stream(config, mock_get_customers):
 def test_metrics_in_custom_query(config, query, is_metrics_in_query):
     source = SourceGoogleAds(config, None, None)
     assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
-
-
-@pytest.mark.parametrize(
-    ("latest_record", "current_state", "expected_state"),
-    (
-        ({"segments.date": "2020-01-01"}, {}, {"segments.date": "2020-01-01"}),
-        ({"segments.date": "2020-02-01"}, {"segments.date": "2020-01-01"}, {"segments.date": "2020-02-01"}),
-        ({"segments.date": "2021-03-03"}, {"1234567890": {"segments.date": "2020-02-01"}}, {"segments.date": "2021-03-03"}),
-    ),
-)
-def test_updated_state(stream_mock, latest_record, current_state, expected_state):
-    mocked_stream = stream_mock(latest_record=latest_record)
-    mocked_stream.state = current_state
-    for _ in mocked_stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890"}):
-        pass
-    assert mocked_stream.state["1234567890"] == expected_state
 
 
 def stream_instance(query, api_mock, **kwargs):
@@ -427,24 +397,6 @@ def test_end_date_is_not_in_the_future(config, customers):
         None, {"end_date": today().add(days=1).to_date_string(), "conversion_window_days": 14, "start_date": "2020-01-23"}, customers
     )
     assert config.get("end_date") == today().to_date_string()
-
-
-def test_stream_slices(config, customers):
-    google_api = GoogleAds(credentials=config["credentials"])
-    stream = AdGroupAdLegacy(
-        start_date=config["start_date"],
-        api=google_api,
-        conversion_window_days=config["conversion_window_days"],
-        customers=customers,
-        end_date="2021-02-10",
-    )
-    slices = list(stream.stream_slices())
-    assert slices == [
-        {"start_date": "2020-12-18", "end_date": "2021-01-01", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-01-02", "end_date": "2021-01-16", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-01-17", "end_date": "2021-01-31", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-02-01", "end_date": "2021-02-10", "customer_id": "123", "login_customer_id": None},
-    ]
 
 
 def mock_send_request(query: str, customer_id: str, login_customer_id: str = "default"):
