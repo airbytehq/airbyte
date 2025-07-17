@@ -287,6 +287,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.0 | 2025-07-15 | [63305](https://github.com/airbytehq/airbyte/pull/63305) | Promoting release candidate 0.12.0-rc.2 to a main version. |
+| 0.12.0-rc.2| 2025-07-11 | [62931](https://github.com/airbytehq/airbyte/pull/62931) | Fix: handle empty `propeties_to_match` in SchmemaMatchingExtractor |
 | 0.12.0-rc.1| 2025-07-02 | [62456](https://github.com/airbytehq/airbyte/pull/62456) | Feature: migrate connector to manifest-only format                                                                                                                     |
 | 0.11.0     | 2025-06-11 | [61489](https://github.com/airbytehq/airbyte/pull/61489) | Feature: Added Streeam Name Override Options                                                                                                                           |
 | 0.10.0     | 2025-06-09 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added additional sanitization flags when using Convert Column Names to SQL-Compliant Format (names_conversion)                                                |

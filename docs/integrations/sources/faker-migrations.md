@@ -1,4 +1,4 @@
-# Sample Data (Faker) Migration Guide
+# Sample Data Migration Guide
 
 ## Upgrading to 6.0.0
 

@@ -8,7 +8,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/source-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   githubIssueLabel: source-snowflake
@@ -17,7 +17,7 @@ data:
   maxSecondsBetweenMessages: 7200
   name: Snowflake
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
   registryOverrides:
     cloud:
       enabled: true
