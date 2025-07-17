@@ -2,11 +2,10 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.commad.s3
+package io.airbyte.cdk.load.command.s3
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
-import io.airbyte.cdk.load.command.s3.S3PathSpecification
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.mockk.every
