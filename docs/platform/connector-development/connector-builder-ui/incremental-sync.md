@@ -6,7 +6,7 @@ This is especially important if there are a large number of records to sync and/
 
 Incremental syncs are usually implemented using a cursor value (like a timestamp) that delineates which data was pulled and which data is new. A very common cursor value is an `updated_at` timestamp. This cursor means that records whose `updated_at` value is less than or equal than that cursor value have been synced already, and that the next sync should only export records whose `updated_at` value is greater than the cursor value.
 
-To use incremental syncs, the API endpoint needs to fullfil the following requirements:
+To use incremental syncs, the API endpoint needs to fulfill the following requirements:
 
 - Records contain a top-level date/time field that defines when this record was last updated (the "cursor field")
   - If the record's cursor field is nested, you can use an "Add Field" transformation to copy it to the top-level, and a Remove Field to remove it from the object. This will effectively move the field to the top-level of the record
