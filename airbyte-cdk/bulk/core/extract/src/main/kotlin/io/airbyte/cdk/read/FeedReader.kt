@@ -35,9 +35,9 @@ class FeedReader(
     val root: RootReader,
     val feed: Feed,
     val resourceAcquirer: ResourceAcquirer,
-    val dataChannelFormat: DataChannelFormat,
+    dataChannelFormat: DataChannelFormat,
     val dataChannelMedium: DataChannelMedium,
-    val bufferByteSizeThresholdForFlush: Int,
+    bufferByteSizeThresholdForFlush: Int,
     val clock: Clock,
 ) {
     private val log = KotlinLogging.logger {}
@@ -240,7 +240,7 @@ class FeedReader(
                     "for '${feed.label}' in round $partitionsCreatorID"
             }
             checkpoint = partitionReader.checkpoint()
-        } catch (e: TimeoutCancellationException) {
+        } catch (_: TimeoutCancellationException) {
             log.info {
                 "timed out reading partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"
