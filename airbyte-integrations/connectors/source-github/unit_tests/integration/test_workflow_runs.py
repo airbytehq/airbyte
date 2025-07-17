@@ -15,6 +15,8 @@ from .config import ConfigBuilder
 
 
 _CONFIG = ConfigBuilder().with_repositories(["airbytehq/integration-test"]).build()
+_FREEZE_TIME = "2025-01-01T00:00:00Z"
+_FREEZE_TIME_TIMESTAMP = 1735689600
 
 
 def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
@@ -68,7 +70,7 @@ class TestWorkflowRuns(TestCase):
         self.r_mock.__exit__()
 
     @mock.patch("time.sleep")
-    @freeze_time("2025-01-01T00:00:00Z")
+    @freeze_time(_FREEZE_TIME)
     def test_read_403_status_code_when_wait_time_grt_max_seconds_between_messages(self, time_mock):
         self.r_mock.get(
             HttpRequest(
@@ -81,7 +83,7 @@ class TestWorkflowRuns(TestCase):
                 headers={
                     "X-RateLimit-Resource": "core",
                     "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": "1735725001",
+                    "X-RateLimit-Reset": str(_FREEZE_TIME_TIMESTAMP + 36001),
                     "X-RateLimit-Limit": "5000",
                     "X-RateLimit-Used": "5000",
                 },
@@ -96,3 +98,61 @@ class TestWorkflowRuns(TestCase):
             "The stream will sync data in the next sync when rate limits are refreshed."
         )
         assert actual_messages.errors[0].trace.error.failure_type == FailureType.transient_error
+
+    @mock.patch("time.sleep")
+    @freeze_time(_FREEZE_TIME)
+    def test_read_403_status_code_when_wait_time_grt_default_10_minutes(self, time_mock):
+        self.r_mock.get(
+            HttpRequest(
+                url="https://api.github.com/repos/airbytehq/integration-test/actions/runs?per_page=100",
+                query_params={},
+                headers={},
+            ),
+            HttpResponse(
+                body=json.dumps({"error": "error message"}),
+                headers={
+                    "X-RateLimit-Resource": "core",
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(_FREEZE_TIME_TIMESTAMP + 610),
+                    "X-RateLimit-Limit": "5000",
+                    "X-RateLimit-Used": "5000",
+                },
+                status_code=403,
+            ),
+        )
+        source = SourceGithub()
+        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
+
+        assert len([log.log.message for log in actual_messages.logs if "Retrying. Sleeping for 600 seconds" == log.log.message]) == 5
+        assert len([log.log.message for log in actual_messages.logs if "Giving up _send(...) after 6 tries " in log.log.message]) == 1
+        assert actual_messages.errors[0].trace.error.message == "error message"
+        assert actual_messages.errors[0].trace.error.failure_type == FailureType.system_error
+
+    @mock.patch("time.sleep")
+    @freeze_time(_FREEZE_TIME)
+    def test_read_403_status_code_when_wait_time_from_header(self, time_mock):
+        self.r_mock.get(
+            HttpRequest(
+                url="https://api.github.com/repos/airbytehq/integration-test/actions/runs?per_page=100",
+                query_params={},
+                headers={},
+            ),
+            HttpResponse(
+                body=json.dumps({"error": "error message"}),
+                headers={
+                    "X-RateLimit-Resource": "core",
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(_FREEZE_TIME_TIMESTAMP + 100),
+                    "X-RateLimit-Limit": "5000",
+                    "X-RateLimit-Used": "5000",
+                },
+                status_code=403,
+            ),
+        )
+        source = SourceGithub()
+        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
+
+        assert len([log.log.message for log in actual_messages.logs if "Retrying. Sleeping for 100.0 seconds" == log.log.message]) == 5
+        assert len([log.log.message for log in actual_messages.logs if "Giving up _send(...) after 6 tries " in log.log.message]) == 1
+        assert actual_messages.errors[0].trace.error.message == "error message"
+        assert actual_messages.errors[0].trace.error.failure_type == FailureType.system_error

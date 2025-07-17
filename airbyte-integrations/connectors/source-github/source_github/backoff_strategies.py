@@ -15,6 +15,9 @@ from airbyte_protocol.models import FailureType
 
 class GithubStreamABCBackoffStrategy(BackoffStrategy):
     min_backoff_time = 60.0
+    min_backoff_time_when_refreshing_auth_token = 60.0 * 10  # 10 minutes as default and as default time for access token live period
+    # 3600 - max seconds between messages from metadata
+    max_seconds_between_messages = 3600.0
 
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
@@ -38,19 +41,18 @@ class GithubStreamABCBackoffStrategy(BackoffStrategy):
                 return self.get_waiting_time(backoff_time_in_seconds)
         return None
 
-    def get_waiting_time(self, backoff_time_in_seconds: Optional[float]) -> Optional[float]:
+    def get_waiting_time(self, backoff_time_in_seconds: float) -> Optional[float]:
         if backoff_time_in_seconds < 60 * 10:  # type: ignore[operator]
             return backoff_time_in_seconds
-        # 3600 - max seconds between messages from metadata
-        elif backoff_time_in_seconds > 3600:
+        elif backoff_time_in_seconds > self.max_seconds_between_messages:
             raise AirbyteTracedException(
                 internal_message="Waiting time from header is too long.",
                 message=f"The stream {self.stream.name} have faced rate limits, but waiting time is too long. The stream will sync data in the next sync when rate limits are refreshed.",
                 failure_type=FailureType.transient_error,
             )
         else:
-            self.stream._http_client._session.auth.update_token()  # New token will be used in next request
-            return self.min_backoff_time
+            self.stream._http_client._session.auth.update_token()  # New token will be used in the next request
+            return self.stream._http_client._session.auth.max_time or self.min_backoff_time_when_refreshing_auth_token
 
 
 class ContributorActivityBackoffStrategy(BackoffStrategy):
