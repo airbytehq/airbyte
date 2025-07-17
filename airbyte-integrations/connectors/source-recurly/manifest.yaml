@@ -1285,8 +1285,8 @@ spec:
         type: integer
         title: Number of concurrent workers
         minimum: 1
-        maximum: 40
-        default: 3
+        maximum: 20
+        default: 10
         examples:
         - 1
         - 2
@@ -1386,10 +1386,25 @@ metadata:
       primaryKeysAreUnique: true
   assist: {}
 
+#Rate Limits: https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits
+
+#In order to provide a fast response time to all our customers, we may rate limit excessive requests. By default, new Recurly sites have the following API rate limits:
+#
+#Sandbox sites: 400 requests/min. All requests count towards the rate limit.
+#Production sites: 1,000 requests/min. Only GET requests count towards the rate limit.
+#Once your site moves into production mode, Recurly will only rate limit GET requests. New subscriptions, account modifications, and other requests using POST, PUT, or DELETE methods will not count against your rate limit.
+#
+#The rate limit is calculated over a sliding 5 minute window. This means a production site could make 4,000 requests within one minute and not hit the rate limit so long as the site made less than 1,000 requests during the prior 4 minutes.
+#
+#If an API request exceeds the rate limit, the API will return a 429 Too Many Requests HTTP status. If your business needs a higher limit, please contact support.
+#
+#The rate limit applied to your client can be determined with the X-RateLimit-Limit header, and the number of remaining requests is sent in the X-RateLimit-Remaining header. Finally, the X-RateLimit-Reset header contains an integer value representing the time, measured in seconds since the UNIX Epoch, at which the request count will be reset.
+
+#We set this to 10 since 1,000 GET requests per minute, 10 concurrent streams at approximately 1 request per second per stream result in 10 requests per second (600 requests per minute), well within the 1,000 GET requests per minute limit.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
-  max_concurrency: 40
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 20
 
 schemas:
   accounts:
