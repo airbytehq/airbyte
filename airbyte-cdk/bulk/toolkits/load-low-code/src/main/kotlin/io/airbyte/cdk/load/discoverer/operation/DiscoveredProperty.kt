@@ -17,15 +17,16 @@ import java.util.function.Predicate
  * rules to determine things like matchingKey and availability will be different.
  */
 class DiscoveredProperty(
-    private val apiRepresentation: JsonNode,
+    apiRepresentation: JsonNode,
     namePath: List<String>,
-    private val typePath: List<String>,
+    typePath: List<String>,
     matchingKeyPredicate: Predicate<JsonNode>,
     availabilityPredicate: Predicate<JsonNode>,
     requiredPredicate: Predicate<JsonNode>,
     private val typeMapper: Map<String, AirbyteType>,
 ) {
     private val name: String = apiRepresentation.extract(namePath).asText()
+    private val apiType = apiRepresentation.extract(typePath).asText()
     private val matchingKey: Boolean = matchingKeyPredicate.test(apiRepresentation)
     private val availability: Boolean = availabilityPredicate.test(apiRepresentation)
     private val required: Boolean = requiredPredicate.test(apiRepresentation)
@@ -37,7 +38,6 @@ class DiscoveredProperty(
      * are no plans to move forward so we will consider everything as nullable for now
      */
     fun getType(): FieldType {
-        val apiType = apiRepresentation.extract(typePath).asText()
         return FieldType(
             typeMapper[apiType] ?: throw IllegalStateException("Unknown type $apiType"),
             nullable = true

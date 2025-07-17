@@ -27,7 +27,8 @@ class DestinationOperationAssembler(
     private val schemaRequester: HttpRequester?,
 ) {
     // FIXME once we figure out the decoder interface, we should have this configurable and/or move
-    // in a retriever layer
+    // in a retriever layer. Another trigger to migrate to retriever would be if we need to support
+    // pagination
     private val decoder = JsonDecoder()
 
     fun assemble(destinationObject: DestinationObject): List<DestinationOperation> {
@@ -45,6 +46,10 @@ class DestinationOperationAssembler(
                         )
                     )
                     .use { response -> decoder.decode(response.getBodyOrEmpty()) }
+
+        if (!hasProperties(apiSchema)) {
+            throw IllegalStateException("The schema returned by the API does not have properties")
+        }
 
         return propertyFactoriesByImportType.mapNotNull { (importType, propertyFactory) ->
             createOperation(destinationObject.name, apiSchema, importType, propertyFactory)
