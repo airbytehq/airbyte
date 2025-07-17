@@ -80,6 +80,49 @@ help = "Get the language of the connector from its metadata.yaml file. Use with 
 cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
 help = "Get the base image of the connector from its metadata.yaml file."
 
+[tasks.get-local-version]
+cmd = """yq eval '.data.dockerImageTag' $PWD/metadata.yaml"""
+help = "Get the version of the connector from its metadata.yaml file. Use with -qq to get just the version."
+
+[tasks.create-connector-registry-artifacts]
+shell = '''
+set -eu
+VERSION=$(poe -qq get-local-version)
+CONNECTOR_NAME=$(poe -qq get-connector-name)
+
+# Create build directory
+mkdir -p "build/releases/${VERSION}"
+
+# Clear existing contents
+rm -rf "build/releases/${VERSION}"/*
+
+# Copy metadata.yaml
+cp metadata.yaml "build/releases/${VERSION}/"
+
+# Copy icon if it exists
+if [ -f icon.svg ]; then
+  cp icon.svg "build/releases/${VERSION}/"
+fi
+
+# Copy Java-specific artifacts based on airbyte-ci analysis
+if [ -f build.gradle ]; then
+  cp build.gradle "build/releases/${VERSION}/"
+fi
+if [ -f build.gradle.kts ]; then
+  cp build.gradle.kts "build/releases/${VERSION}/"
+fi
+
+# Copy distribution tar files if they exist (from build/distributions)
+if [ -d build/distributions ]; then
+  mkdir -p "build/releases/${VERSION}/distributions"
+  cp build/distributions/*.tar "build/releases/${VERSION}/distributions/" 2>/dev/null || true
+fi
+
+# Generate registry JSON files
+${POE_GIT_DIR}/poe-tasks/create-connector-registry.sh "build/releases/${VERSION}"
+'''
+help = "Create local registry artifacts for this connector version in build/releases/{version}/"
+
 [tasks.run-cat-tests]
 shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
 help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
