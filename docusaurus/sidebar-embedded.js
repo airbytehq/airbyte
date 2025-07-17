@@ -9,8 +9,6 @@ export default {
         id: "README",
       },
       items: [
-        "data-hub",
-        "getting-started",
         "prerequisites-setup",
         "develop-your-app",
         "use-embedded",

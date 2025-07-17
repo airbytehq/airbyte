@@ -473,8 +473,13 @@ sealed interface CheckpointMessage : DestinationMessage {
     companion object {
         private const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
         private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
+        private const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
     }
-    data class Stats(val recordCount: Long)
+    data class Stats(
+        val recordCount: Long,
+        val rejectedRecordCount: Long = 0, // TODO should not have a default?
+    )
+
     data class Checkpoint(
         val unmappedNamespace: String?,
         val unmappedName: String,
@@ -500,19 +505,34 @@ sealed interface CheckpointMessage : DestinationMessage {
     val serializedSizeBytes: Long
     val totalRecords: Long?
     val totalBytes: Long?
+    val totalRejectedRecords: Long?
 
+    fun updateStats(
+        destinationStats: Stats? = null,
+        totalRecords: Long? = null,
+        totalBytes: Long? = null,
+        totalRejectedRecords: Long? = null,
+    )
     fun withDestinationStats(stats: Stats): CheckpointMessage
-    fun withTotalRecords(totalRecords: Long): CheckpointMessage
-    fun withTotalBytes(totalBytes: Long): CheckpointMessage
 
     fun decorateStateMessage(message: AirbyteStateMessage) {
-        if (sourceStats != null) {
+        sourceStats?.let {
             message.sourceStats =
-                AirbyteStateStats().withRecordCount(sourceStats!!.recordCount.toDouble())
+                AirbyteStateStats().apply {
+                    withRecordCount(it.recordCount.toDouble())
+                    if (it.rejectedRecordCount > 0) {
+                        withRejectedRecordCount(it.rejectedRecordCount.toDouble())
+                    }
+                }
         }
-        if (destinationStats != null) {
+        destinationStats?.let {
             message.destinationStats =
-                AirbyteStateStats().withRecordCount(destinationStats!!.recordCount.toDouble())
+                AirbyteStateStats().apply {
+                    withRecordCount(it.recordCount.toDouble())
+                    if (it.rejectedRecordCount > 0) {
+                        withRejectedRecordCount(it.rejectedRecordCount.toDouble())
+                    }
+                }
         }
         additionalProperties.forEach { (key, value) -> message.withAdditionalProperty(key, value) }
         checkpointKey?.let {
@@ -526,18 +546,24 @@ sealed interface CheckpointMessage : DestinationMessage {
         if (totalBytes != null) {
             message.additionalProperties[COMMITTED_BYTES_COUNT] = totalBytes
         }
+        totalRejectedRecords?.let {
+            if (it > 0) {
+                message.additionalProperties[REJECTED_RECORDS_COUNT] = totalRejectedRecords
+            }
+        }
     }
 }
 
 data class StreamCheckpoint(
     val checkpoint: Checkpoint,
     override val sourceStats: Stats?,
-    override val destinationStats: Stats? = null,
+    override var destinationStats: Stats? = null,
     override val additionalProperties: Map<String, Any> = emptyMap(),
     override val serializedSizeBytes: Long,
     override val checkpointKey: CheckpointKey? = null,
-    override val totalRecords: Long? = null,
-    override val totalBytes: Long? = null
+    override var totalRecords: Long? = null,
+    override var totalBytes: Long? = null,
+    override var totalRejectedRecords: Long? = null,
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
@@ -564,9 +590,18 @@ data class StreamCheckpoint(
         totalBytes = totalBytes
     )
 
+    override fun updateStats(
+        destinationStats: Stats?,
+        totalRecords: Long?,
+        totalBytes: Long?,
+        totalRejectedRecords: Long?
+    ) {
+        destinationStats?.let { this.destinationStats = it }
+        totalRecords?.let { this.totalRecords = it }
+        totalBytes?.let { this.totalBytes = it }
+        totalRejectedRecords?.let { this.totalRejectedRecords = it }
+    }
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
-    override fun withTotalRecords(totalRecords: Long) = copy(totalRecords = totalRecords)
-    override fun withTotalBytes(totalBytes: Long) = copy(totalBytes = totalBytes)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -581,15 +616,16 @@ data class StreamCheckpoint(
 data class GlobalCheckpoint(
     val state: JsonNode?,
     override val sourceStats: Stats?,
-    override val destinationStats: Stats? = null,
+    override var destinationStats: Stats? = null,
     val checkpoints: List<Checkpoint> = emptyList(),
     override val additionalProperties: Map<String, Any>,
     val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
         AirbyteStateMessage.AirbyteStateType.GLOBAL,
     override val serializedSizeBytes: Long,
     override val checkpointKey: CheckpointKey? = null,
-    override val totalRecords: Long? = null,
-    override val totalBytes: Long? = null,
+    override var totalRecords: Long? = null,
+    override var totalBytes: Long? = null,
+    override var totalRejectedRecords: Long? = null,
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -601,11 +637,19 @@ data class GlobalCheckpoint(
         additionalProperties = emptyMap(),
         serializedSizeBytes = 0L,
     )
-    override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
-    override fun withTotalRecords(totalRecords: Long): CheckpointMessage =
-        copy(totalRecords = totalRecords)
 
-    override fun withTotalBytes(totalBytes: Long): CheckpointMessage = copy(totalBytes = totalBytes)
+    override fun updateStats(
+        destinationStats: Stats?,
+        totalRecords: Long?,
+        totalBytes: Long?,
+        totalRejectedRecords: Long?
+    ) {
+        destinationStats?.let { this.destinationStats = it }
+        totalRecords?.let { this.totalRecords = it }
+        totalBytes?.let { this.totalBytes = it }
+        totalRejectedRecords?.let { this.totalRejectedRecords = it }
+    }
+    override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =

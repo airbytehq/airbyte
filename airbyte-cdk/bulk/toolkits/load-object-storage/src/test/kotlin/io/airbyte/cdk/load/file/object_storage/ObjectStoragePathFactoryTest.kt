@@ -55,7 +55,7 @@ class ObjectStoragePathFactoryTest {
             ObjectStoragePathConfiguration(
                 prefix = "prefix",
                 pathPattern =
-                    "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}/",
+                    "\${SYNC_ID}/\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}/",
                 fileNamePattern =
                     "{date}-{date:yyyy_MM}-{timestamp}-{part_number}-{sync_id}{format_extension}",
             )
@@ -118,7 +118,8 @@ class ObjectStoragePathFactoryTest {
             val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.mappedDescriptor
-            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
+            val syncId = stream1.syncId
+            val prefixOnly = "prefix/$syncId/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
             val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 prefixOnly,
