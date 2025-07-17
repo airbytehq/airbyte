@@ -80,6 +80,7 @@ class MongoDbSourceConfigTest {
     assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());
     assertEquals(DEFAULT_DISCOVER_SAMPLE_SIZE, sourceConfig.getSampleSize());
     assertEquals(null, sourceConfig.getUsername());
+    assertEquals(false, sourceConfig.getRenderUuidsFromBinary());
   }
 
 }
