@@ -18,26 +18,10 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AccountPerformanceReport,
-    AdGroupAd,
-    AdGroupAdLabel,
-    AdGroupAdLegacy,
-    AdGroupBiddingStrategy,
     AdGroupCriterion,
-    AdGroupCriterionLabel,
-    AdGroupLabel,
     AdListingGroupCriterion,
-    Audience,
-    CampaignBiddingStrategy,
-    CampaignBudget,
     CampaignCriterion,
-    CampaignLabel,
-    ClickView,
-    Customer,
     CustomerClient,
-    CustomerLabel,
-    Label,
-    UserInterest,
 )
 from .utils import GAQL, logger, traced_exception
 
@@ -234,33 +218,10 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            AdGroupAd(**incremental_config),
-            AdGroupAdLabel(**default_config),
-            AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
-            AdGroupCriterionLabel(**default_config),
-            AdGroupLabel(**default_config),
             AdListingGroupCriterion(**default_config),
-            Audience(**default_config),
-            CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
-            CampaignLabel(google_api, customers=customers),
-            ClickView(**incremental_config),
-            Customer(**incremental_config),
-            CustomerLabel(**default_config),
-            Label(**default_config),
-            UserInterest(**default_config),
         ]
-        # Metrics streams cannot be requested for a manager account.
-        if non_manager_accounts:
-            streams.extend(
-                [
-                    CampaignBudget(**non_manager_incremental_config),
-                    AccountPerformanceReport(**non_manager_incremental_config),
-                    AdGroupAdLegacy(**non_manager_incremental_config),
-                ]
-            )
-
         for single_query_config in config.get("custom_queries_array", []):
             query_stream = self.create_custom_query_stream(
                 google_api, single_query_config, customers, non_manager_accounts, incremental_config, non_manager_incremental_config

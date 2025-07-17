@@ -222,20 +222,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
         return query
 
 
-class Customer(IncrementalGoogleAdsStream):
-    """
-    Customer stream: https://developers.google.com/google-ads/api/fields/v18/customer
-    """
-
-    primary_key = ["customer.id", "segments.date"]
-
-    def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
-        for record in super().parse_response(response):
-            if isinstance(record.get("customer.optimization_score_weight"), int):
-                record["customer.optimization_score_weight"] = float(record["customer.optimization_score_weight"])
-            yield record
-
-
 class CustomerClient(GoogleAdsStream):
     """
     Customer Client stream: https://developers.google.com/google-ads/api/fields/v18/customer_client
@@ -292,14 +278,6 @@ class CustomerClient(GoogleAdsStream):
             yield record
 
 
-class CustomerLabel(GoogleAdsStream):
-    """
-    Customer Label stream: https://developers.google.com/google-ads/api/fields/v18/customer_label
-    """
-
-    primary_key = ["customer_label.resource_name"]
-
-
 class ServiceAccounts(GoogleAdsStream):
     """
     This stream is intended to be used as a service class, not exposed to a user
@@ -307,136 +285,6 @@ class ServiceAccounts(GoogleAdsStream):
 
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
     primary_key = ["customer.id"]
-
-
-class CampaignBudget(IncrementalGoogleAdsStream):
-    """
-    Campaigns stream: https://developers.google.com/google-ads/api/fields/v18/campaign_budget
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = [
-        "customer.id",
-        "campaign_budget.id",
-        "segments.date",
-        "segments.budget_campaign_association_status.campaign",
-        "segments.budget_campaign_association_status.status",
-    ]
-
-
-class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
-    """
-    Campaign Bidding Strategy stream: https://developers.google.com/google-ads/api/fields/v18/campaign
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
-
-
-class CampaignLabel(GoogleAdsStream):
-    """
-    Campaign labels stream: https://developers.google.com/google-ads/api/fields/v18/campaign_label
-    """
-
-    # Note that this is a string type. Google doesn't return a more convenient identifier.
-    primary_key = ["campaign.id", "label.id"]
-
-
-class AdGroupLabel(GoogleAdsStream):
-    """
-    Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_label
-    """
-
-    # Note that this is a string type. Google doesn't return a more convenient identifier.
-    primary_key = ["ad_group.id", "label.id"]
-
-
-class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
-    """
-    Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v18/ad_group
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
-
-
-class AdGroupCriterionLabel(GoogleAdsStream):
-    """
-    Ad Group Criterion Label stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_criterion_label
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group_criterion_label.resource_name"]
-
-
-class AdGroupAd(IncrementalGoogleAdsStream):
-    """
-    Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad
-    """
-
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
-
-
-class AdGroupAdLabel(GoogleAdsStream):
-    """
-    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad_label
-    """
-
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "label.id"]
-
-
-class AccountPerformanceReport(IncrementalGoogleAdsStream):
-    """
-    AccountPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v18/customer
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
-    """
-
-    primary_key = ["customer.id", "segments.date", "segments.ad_network_type", "segments.device"]
-
-
-class AdGroupAdLegacy(IncrementalGoogleAdsStream):
-    """
-    AdGroupAdReport stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad
-    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
-    """
-
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date", "segments.ad_network_type"]
-
-
-class ClickView(IncrementalGoogleAdsStream):
-    """
-    ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v18/ClickView
-    """
-
-    primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
-    days_of_data_storage = 90
-    # where clause for cursor is inclusive from both sides, duration 0 will result in - '"2022-01-01" <= cursor AND "2022-01-01" >= cursor'
-    # Queries including ClickView must have a filter limiting the results to one day
-    slice_duration = pendulum.duration(days=0)
-
-
-class UserInterest(GoogleAdsStream):
-    """
-    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad_label
-    """
-
-    primary_key = ["user_interest.user_interest_id"]
-
-
-class Audience(GoogleAdsStream):
-    """
-    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v18/ad_group_ad_label
-    """
-
-    primary_key = ["customer.id", "audience.id"]
-
-
-class Label(GoogleAdsStream):
-    """
-    Label stream: https://developers.google.com/google-ads/api/fields/v18/label
-    """
-
-    primary_key = ["label.id"]
 
 
 class ChangeStatus(IncrementalGoogleAdsStream):

@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,8 +11,8 @@ The Airbyte platform is a sophisticated data integration platform that enables y
 To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart) guide.
 If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../using-airbyte/pyairbyte/getting-started) documentation useful. 
 
-:::tip
-Enterprise Customers should follow the steps outlined in our docs on [Airbyte Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
+:::info Self-Managed Enterprise customers
+If you're a Self-Managed Enterprise customer, skip this guide. Instead, follow the steps outlined in [Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
 :::
 
 ## Understanding the Airbyte Deployment
@@ -37,14 +37,34 @@ This guide assumes that you already have a running kubernetes cluster. If you're
 
 The deployment will use a Helm chart which is a package for Kubernetes applications, acting like a blueprint or template that defines the resources needed to deploy an application on a Kubernetes cluster. Charts are stored in `helm-repo`.
 
-To add a remote helm repo:
-1. Run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`. In this example, `airbyte` is being used to represent the name of the repository that will be indexed locally.
+Add a remote helm repo:
 
-2. After adding the repo, perform the repo indexing process by running `helm repo update`.
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
 
-3. You can now browse all charts uploaded to repository by running `helm search repo airbyte`
+```bash
+helm repo add airbyte https://airbytehq.github.io/helm-charts
+helm repo update
+```
 
-An example of the chart output: 
+In this example, `airbyte` is the name of the repository that will be indexed locally.
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```bash
+helm repo add airbyte-v2 https://airbytehq.github.io/helm-charts
+helm repo update
+```
+
+In this example, `airbyte-v2` is the name of the repository that will be indexed locally.
+
+</TabItem>
+</Tabs>
+
+To browse all charts uploaded to the repository, run `helm search repo airbyte`.
+
+An example of the chart output:
 
 ```text
 NAME                               	CHART VERSION	APP VERSION	DESCRIPTION                                       
@@ -68,7 +88,6 @@ airbyte/workload-api-server        	0.290.0      	0.63.6     	Helm chart to depl
 airbyte/workload-launcher          	0.290.0      	0.63.6     	Helm chart to deploy airbyte-workload-launcher    
 ```
 
-
 ### 2. Create a Namespace for Airbyte
 
 While it is not strictly necessary to isolate the Airbyte installation into its own namespace, it is good practice and recommended as a part of the installation.
@@ -87,7 +106,7 @@ The documentation has been created to "build up" a values.yaml, so there is no n
 
 Each [Integration](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file may look like the following: 
 
-```yaml
+```yaml title="values.yaml"
 global:
   airbyteUrl: https://airbyte.company.example
 ```
@@ -117,13 +136,28 @@ After your policies are set up, here's a list of customizations.
 After you have applied your Secret values to the Cluster and you have filled out a values.yaml file appropriately for your specific configuration, you can begin a Helm Install. To do this, make sure that you have the [Helm Client](https://helm.sh/docs/intro/install/) installed and on your path.
 Then you can run:
 
-```sh
-helm install \
-airbyte \
-airbyte/airbyte \
---namespace airbyte \
---values ./values.yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```bash
+helm install airbyte airbyte/airbyte \
+  --namespace airbyte \   # Target Kubernetes namespace
+  --values ./values.yaml  # Custom configuration values
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```bash
+helm install airbyte airbyte-v2/airbyte \
+  --namespace airbyte-v2 \          # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.0.3 \              # Helm chart version to use
+  --set global.image.tag=1.7.0   # Airbyte version to use
+```
+
+</TabItem>
+</Tabs>
 
 After the installation has completed, you can configure your [Ingress](./integrations/ingress) by following the directions for your specific Ingress provider.
 
