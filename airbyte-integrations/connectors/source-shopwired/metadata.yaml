@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-shopwired
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.56.7@sha256:41be3ac5f569004b6a25507cd40f5152e3691aecd2a9a3f873eb4c559903412d
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
   connectorSubtype: api
   connectorType: source
   definitionId: 41b34d94-1704-48b0-b921-cb3009ae69c1
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-shopwired
   githubIssueLabel: source-shopwired
   icon: icon.svg

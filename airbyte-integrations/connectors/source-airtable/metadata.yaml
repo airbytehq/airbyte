@@ -7,19 +7,19 @@ data:
       - api.airtable.com
       - airtable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.54.5@sha256:5b8f4596a135164653317b88c841c9caacc4673b8a77f87344bd1f9b24680fc1
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.6.3
+  dockerImageTag: 4.6.5
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   resourceRequirements:
     jobSpecific:
       - jobType: discover_schema
         resourceRequirements:
-          memory_limit: 1536Mi
-          memory_request: 1536Mi
+          memory_limit: 2048Mi
+          memory_request: 2048Mi
   githubIssueLabel: source-airtable
   icon: airtable.svg
   license: MIT

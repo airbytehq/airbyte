@@ -69,7 +69,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                     logger.error(e) {
                         "Caught exception while executing SQL (attempt $attemptNumber/$numAttempts). Not retrying."
                     }
-                    throw e
+                    throw wrapWithConfigExceptionIfNeeded(e)
                 }
             }
         }
@@ -102,7 +102,9 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
             job = job.reload()
         }
         job.status.error?.let {
-            throw BigQueryException(listOf(job.status.error) + job.status.executionErrors)
+            throw wrapWithConfigExceptionIfNeeded(
+                BigQueryException(listOf(job.status.error) + job.status.executionErrors)
+            )
         }
 
         val statistics = job.getStatistics<JobStatistics.QueryStatistics>()
@@ -167,5 +169,20 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                 }
             }
         }
+    }
+
+    private fun wrapWithConfigExceptionIfNeeded(e: Exception): Exception {
+        when (e) {
+            is BigQueryException -> {
+                if (e.reason.contains(BILLING_CONFIG_ERROR)) {
+                    return ConfigErrorException(e.reason, e)
+                }
+            }
+        }
+        return e
+    }
+
+    companion object {
+        private const val BILLING_CONFIG_ERROR = "Billing has not been enabled for this project"
     }
 }

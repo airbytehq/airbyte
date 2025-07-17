@@ -33,6 +33,7 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2025-07-12 | [63232](https://github.com/airbytehq/airbyte/pull/63232) | Update dependencies |
 | 0.0.30 | 2025-07-05 | [62635](https://github.com/airbytehq/airbyte/pull/62635) | Update dependencies |
 | 0.0.29 | 2025-06-28 | [62411](https://github.com/airbytehq/airbyte/pull/62411) | Update dependencies |
 | 0.0.28 | 2025-06-21 | [61926](https://github.com/airbytehq/airbyte/pull/61926) | Update dependencies |
