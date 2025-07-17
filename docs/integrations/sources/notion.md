@@ -119,6 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.15-rc.1 | 2025-07-18 | [63368](https://github.com/airbytehq/airbyte/pull/63368) | Migrate to CDK V6 |
 | 3.0.14 | 2025-07-12 | [63213](https://github.com/airbytehq/airbyte/pull/63213) | Update dependencies |
 | 3.0.13 | 2025-07-05 | [62609](https://github.com/airbytehq/airbyte/pull/62609) | Update dependencies |
 | 3.0.12 | 2025-06-24 | [62033](https://github.com/airbytehq/airbyte/pull/62033) | Add "in_trash" field in Notion "Pages" endpoint schema |
