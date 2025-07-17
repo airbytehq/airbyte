@@ -1275,6 +1275,18 @@ spec:
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2021-12-01T00:00:00Z"
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 40
+        default: 3
+        examples:
+        - 1
+        - 2
+        - 3
+        description: The number of worker threads to use for the sync.
+    
     additionalProperties: true
 
 metadata:
@@ -1357,6 +1369,11 @@ metadata:
       primaryKeysAreUnique: true
   assist: {}
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 40
+
 schemas:
   accounts:
     type: object
@@ -1407,6 +1424,35 @@ schemas:
             description: Second line of the street address
             maxLength: 256
             title: Street 2
+      acquisition:
+        type: object
+        description: Acquisition details of the account
+        properties:
+          acquired_at:
+            type: string
+            description: The date and time when the account was acquired
+            format: date-time
+          campaign:
+            type: string
+            description: The campaign associated with the acquisition
+            maxLength: 256
+          channel:
+            type: string
+            description: The channel through which the account was acquired
+          cost:
+            type: object
+            description: Cost details associated with the acquisition
+            properties:
+              amount:
+                type: number
+                description: The amount of the cost
+              currency:
+                type: string
+                description: The currency of the cost amount
+                maxLength: 3
+          subchannel:
+            type: string
+            description: The subchannel associated with the acquisition
       bill_to:
         type:
           - "null"
@@ -1717,6 +1763,11 @@ schemas:
           - string
         description: Email address of the account holder
         maxLength: 256
+      entity_use_code:
+        type:
+          - "null"
+          - string
+        description: Entity use code for tax exemption
       exemption_certificate:
         type:
           - "null"
@@ -1830,6 +1881,12 @@ schemas:
           - string
         description: ID of the parent account
         maxLength: 13
+      parent_account_code:
+        type:
+          - "null"
+          - string
+        description: Code of the parent account
+        maxLength: 50
       preferred_locale:
         type:
           - "null"
@@ -1933,6 +1990,11 @@ schemas:
           - "null"
           - boolean
         description: Flag indicating if the account is tax exempt
+      transaction_type:
+        type:
+          - "null"
+          - string
+        description: Type of transaction associated with the account
       updated_at:
         type:
           - "null"
