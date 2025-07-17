@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
 

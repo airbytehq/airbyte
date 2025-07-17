@@ -1,11 +1,14 @@
 data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.2@sha256:f8e47304842a2c4d75ac223cf4b3c4117aa1c5c9207149369d296616815fe5b0
   ab_internal:
     ql: 200
     sl: 100
+    requireVersionIncrementsInPullRequests: false
   connectorSubtype: database
   connectorType: destination
   definitionId: 1f7bac7e-53ff-4e0b-b6df-b74aa85cf703
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/destination-yellowbrick
   documentationUrl: https://docs.airbyte.com/integrations/destinations/yellowbrick
   githubIssueLabel: destination-yellowbrick

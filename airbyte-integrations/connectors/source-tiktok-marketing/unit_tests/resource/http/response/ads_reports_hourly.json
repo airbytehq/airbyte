@@ -73,7 +73,21 @@
           "video_views_p100": 92,
           "clicks_on_music_disc": 0,
           "adgroup_id": 1714125049901106,
-          "campaign_name": "Website Traffic20211020010104"
+          "campaign_name": "Website Traffic20211020010104",
+          "profile_visits_rate": 0.075,
+          "purchase": 128,
+          "purchase_rate": 0.015,
+          "registration": 340,
+          "registration_rate": 0.028,
+          "sales_lead": 87,
+          "sales_lead_rate": 0.021,
+          "cost_per_app_install": 2.45,
+          "cost_per_purchase": 12.3,
+          "cost_per_registration": 3.1,
+          "cost_per_sales_lead": 7.85,
+          "cost_per_total_sales_lead": 6.95,
+          "cost_per_total_app_event_add_to_cart": 1.8,
+          "total_app_event_add_to_cart": 212
         },
         "advertiser_id": 872746382648
       },
@@ -147,7 +161,21 @@
           "video_views_p100": 92,
           "clicks_on_music_disc": 0,
           "adgroup_id": 1714125049901106,
-          "campaign_name": "Website Traffic20211020010104"
+          "campaign_name": "Website Traffic20211020010104",
+          "profile_visits_rate": 0.075,
+          "purchase": 128,
+          "purchase_rate": 0.015,
+          "registration": 340,
+          "registration_rate": 0.028,
+          "sales_lead": 87,
+          "sales_lead_rate": 0.021,
+          "cost_per_app_install": 2.45,
+          "cost_per_purchase": 12.3,
+          "cost_per_registration": 3.1,
+          "cost_per_sales_lead": 7.85,
+          "cost_per_total_sales_lead": 6.95,
+          "cost_per_total_app_event_add_to_cart": 1.8,
+          "total_app_event_add_to_cart": 212
         },
         "advertiser_id": 872746382648
       }

@@ -31,7 +31,7 @@ runs:
       shell: bash
       id: determine-install-mode
       run: |
-        echo "install-mode=source" >> $GITHUB_OUTPUT
+        echo "install-mode=binary" >> $GITHUB_OUTPUT
         echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
 
       # When the PR is from a fork, we always install from binary
@@ -48,8 +48,7 @@ runs:
 
     - name: Install Airbyte CI from binary
       id: install-airbyte-ci-binary
-      if: false
-      # if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
+      if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
       shell: bash
       run: |
         curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
@@ -59,7 +58,7 @@ runs:
     - name: Install Python 3.11
       id: install-python-3-11
       uses: actions/setup-python@v4
-      # if: steps.determine-install-mode.outputs.install-mode == 'source'
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
       with:
         python-version: "3.11"
         token: ${{ inputs.github_token }}
@@ -67,16 +66,30 @@ runs:
         check-latest: true
         update-environment: true
 
+    - name: Install the latest version of uv
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
+      uses: astral-sh/setup-uv@v6
     - name: Install Airbyte CI from source
       id: install-airbyte-ci-source
-      if: true
-      # if: steps.determine-install-mode.outputs.install-mode == 'source'
+      if: steps.determine-install-mode.outputs.install-mode == 'source'
       shell: bash
       run: |
-        pip install --upgrade pip
-        pip install pipx
-        pipx ensurepath
-        pipx install ${{ inputs.path_to_airbyte_ci_source }}
+        uv tool install ${{ inputs.path_to_airbyte_ci_source }}
+
+    - name: Upload uv logs as artifacts on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: uv-logs
+        path: /opt/uv/logs/
+
+    - name: Upload pipx logs as artifacts on failure
+      # E.g. /opt/pipx/logs/cmd_2025-05-01_16.46.50_1_pip_errors.log
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pipx-logs
+        path: /opt/pipx/logs/
 
     - name: Print installed `airbyte-ci` version
       shell: bash

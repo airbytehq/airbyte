@@ -23,8 +23,8 @@ import java.io.OutputStream
  * compression (csv, jsonl) and does not need to be added to the destination spec directly. The
  * [ObjectStorageCompressionConfigurationProvider] can be added to the top-level
  * [io.airbyte.cdk.load.command.DestinationConfiguration] and initialized directly with
- * [ObjectStorageFormatSpecificationProvider.toObjectStorageFormatConfiguration]. (See the comments
- * on [io.airbyte.cdk.load.command.DestinationConfiguration] for more details.)
+ * [DeprecatedObjectStorageFormatSpecificationProvider.toObjectStorageFormatConfiguration]. (See the
+ * comments on [io.airbyte.cdk.load.command.DestinationConfiguration] for more details.)
  */
 interface ObjectStorageCompressionSpecificationProvider {
     @get:JsonSchemaTitle("Compression")

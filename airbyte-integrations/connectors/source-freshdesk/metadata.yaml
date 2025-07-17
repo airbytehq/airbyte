@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.freshdesk.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.2@sha256:fda118585769dba6abccd6dc72c05a993ecd53790cbbe8cf6253b79ce7079db2
   connectorSubtype: api
   connectorType: source
   definitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
-  dockerImageTag: 3.1.2
+  dockerImageTag: 3.2.0-rc.1
   dockerRepository: airbyte/source-freshdesk
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   githubIssueLabel: source-freshdesk
@@ -20,17 +20,20 @@ data:
   name: Freshdesk
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-freshdesk
   registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

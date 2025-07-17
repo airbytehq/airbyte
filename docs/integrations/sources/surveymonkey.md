@@ -65,7 +65,7 @@ You may want to review SurveyMonkey's [API docs](https://developer.surveymonkey.
 
 ## Supported streams and sync modes
 
-You can stream the following data from SurveyMonkey using the [sync modes](/using-airbyte/core-concepts/sync-modes/) indicated.
+You can stream the following data from SurveyMonkey using the [sync modes](/platform/using-airbyte/core-concepts/sync-modes/) indicated.
 
 | Stream | Sync mode |
 | :------ | :--------- |
@@ -87,6 +87,7 @@ SurveyMonkey's API has [default rate limits](https://developer.surveymonkey.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.37 | 2025-07-16 | [63345](https://github.com/airbytehq/airbyte/pull/63345) | Update CDK version to fix tests and allow for bumping version for metadata updates. |
 | 0.3.36 | 2025-02-01 | [53050](https://github.com/airbytehq/airbyte/pull/53050) | Update dependencies |
 | 0.3.35 | 2025-01-25 | [51993](https://github.com/airbytehq/airbyte/pull/51993) | Update dependencies |
 | 0.3.34 | 2025-01-11 | [51412](https://github.com/airbytehq/airbyte/pull/51412) | Update dependencies |

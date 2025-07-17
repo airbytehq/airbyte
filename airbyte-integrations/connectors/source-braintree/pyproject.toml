@@ -24,7 +24,7 @@ braintree = "^4.28.0"
 source-braintree = "source_braintree.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2"
+pytest = "^8.0.0"
 pytest-mock = "^3.6.1"
 
 

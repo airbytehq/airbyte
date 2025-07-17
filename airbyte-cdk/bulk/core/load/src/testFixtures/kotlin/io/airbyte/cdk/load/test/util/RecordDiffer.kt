@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.UnknownValue
-import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import kotlin.reflect.jvm.jvmName
 
 class RecordDiffer(
@@ -292,21 +290,6 @@ class RecordDiffer(
         }
 
         private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {
-            if (v1 is UnknownValue) {
-                return compare(
-                    JsonToAirbyteValue().convert(v1.value),
-                    v2,
-                    nullEqualsUnset,
-                )
-            }
-            if (v2 is UnknownValue) {
-                return compare(
-                    v1,
-                    JsonToAirbyteValue().convert(v2.value),
-                    nullEqualsUnset,
-                )
-            }
-
             // when comparing values of different types, just sort by their class name.
             // in theory, we could check for numeric types and handle them smartly...
             // that's a lot of work though

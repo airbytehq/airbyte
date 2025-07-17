@@ -1,0 +1,128 @@
+name: Internal CI Tooling Checks
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      airbyte_ci_subcommand:
+        description: "Subcommand to pass to the 'airbyte-ci test' command"
+        default: "--poetry-package-path=airbyte-ci/connectors/pipelines"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-24.04
+    outputs:
+      internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
+
+    steps:
+      - name: Checkout Airbyte
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            # This list is duplicated in `pipelines/airbyte_ci/test/__init__.py`
+            internal_poetry_packages:
+            - airbyte-ci/connectors/pipelines/**
+            - airbyte-ci/connectors/base_images/**
+            - airbyte-ci/connectors/connectors_insights/**
+            - airbyte-ci/connectors/connector_ops/**
+            - airbyte-ci/connectors/connectors_qa/**
+            - airbyte-ci/connectors/ci_credentials/**
+            - airbyte-ci/connectors/erd/**
+            - airbyte-ci/connectors/metadata_service/lib/**
+            - airbyte-ci/connectors/metadata_service/orchestrator/**
+            - airbyte-integrations/bases/connector-acceptance-test/**
+
+  run-tests:
+    needs: changes
+    # We only run the Internal Poetry packages CI job if there are changes to the packages on a non-forked PR
+    if: needs.changes.outputs.internal_poetry_packages == 'true' && github.event.pull_request.head.repo.fork != true
+    name: Internal Poetry packages CI
+    runs-on: tooling-test-large
+    permissions:
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Checkout Airbyte Python CDK
+        uses: actions/checkout@v4
+        with:
+          repository: airbytehq/airbyte-python-cdk
+          ref: main
+          # We can't clone into a parent directory of the repo, so we clone into
+          # a subdirectory and then move it over as a sibling directory.
+          # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
+          path: airbyte-python-cdk
+      - name: Move airbyte-python-cdk to sibling directory path
+        shell: bash
+        run: mv ./airbyte-python-cdk ../airbyte-python-cdk
+      - name: Show local paths checked out
+        shell: bash
+        run: |
+          set -x
+          echo "Current directory: $(pwd)"
+          ls -la
+          ls -la ../airbyte-python-cdk || echo "No airbyte-python-cdk directory"
+
+      - name: Extract branch name [WORKFLOW DISPATCH]
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Fetch last commit id from remote branch [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
+        id: fetch_last_commit_id_pr
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_last_commit_id_wd
+        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
+
+      - name: Run poe tasks for modified internal packages [PULL REQUEST]
+        if: github.event_name == 'pull_request'
+        id: run-airbyte-ci-test-pr
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          subcommand: "test --modified"
+
+      - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
+        id: run-airbyte-ci-test-workflow-dispatch
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          subcommand: "test ${{ inputs.airbyte_ci_subcommand}}"

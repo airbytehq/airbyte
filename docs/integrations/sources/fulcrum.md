@@ -36,6 +36,21 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-07-12 | [62992](https://github.com/airbytehq/airbyte/pull/62992) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62764](https://github.com/airbytehq/airbyte/pull/62764) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62346](https://github.com/airbytehq/airbyte/pull/62346) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61950](https://github.com/airbytehq/airbyte/pull/61950) | Update dependencies |
+| 0.0.24 | 2025-06-14 | [61268](https://github.com/airbytehq/airbyte/pull/61268) | Update dependencies |
+| 0.0.23 | 2025-05-24 | [59957](https://github.com/airbytehq/airbyte/pull/59957) | Update dependencies |
+| 0.0.22 | 2025-05-03 | [59419](https://github.com/airbytehq/airbyte/pull/59419) | Update dependencies |
+| 0.0.21 | 2025-04-26 | [58860](https://github.com/airbytehq/airbyte/pull/58860) | Update dependencies |
+| 0.0.20 | 2025-04-19 | [58325](https://github.com/airbytehq/airbyte/pull/58325) | Update dependencies |
+| 0.0.19 | 2025-04-12 | [57761](https://github.com/airbytehq/airbyte/pull/57761) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57236](https://github.com/airbytehq/airbyte/pull/57236) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56480](https://github.com/airbytehq/airbyte/pull/56480) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [55933](https://github.com/airbytehq/airbyte/pull/55933) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55312](https://github.com/airbytehq/airbyte/pull/55312) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54409](https://github.com/airbytehq/airbyte/pull/54409) | Update dependencies |
 | 0.0.13 | 2025-02-15 | [53769](https://github.com/airbytehq/airbyte/pull/53769) | Update dependencies |
 | 0.0.12 | 2025-02-08 | [53319](https://github.com/airbytehq/airbyte/pull/53319) | Update dependencies |
 | 0.0.11 | 2025-02-01 | [52839](https://github.com/airbytehq/airbyte/pull/52839) | Update dependencies |

@@ -137,11 +137,10 @@ class MySqlSourceOperations :
             MysqlType.BIGINT -> LongFieldType
             MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
             MysqlType.FLOAT,
-            MysqlType.FLOAT_UNSIGNED,
-            MysqlType.DOUBLE,
-            MysqlType.DOUBLE_UNSIGNED -> {
+            MysqlType.FLOAT_UNSIGNED, ->
                 if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
-            }
+            MysqlType.DOUBLE,
+            MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType
             MysqlType.DECIMAL,
             MysqlType.DECIMAL_UNSIGNED -> {
                 if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
@@ -201,27 +200,8 @@ class MySqlSourceOperations :
         when (this) {
             NoFrom -> ""
             is From -> if (this.namespace == null) "FROM `$name`" else "FROM `$namespace`.`$name`"
-            is FromSample -> {
-                val from: String = From(name, namespace).sql()
-                // On a table that is very big we limit sampling to no less than 0.05%
-                // chance of a row getting picked. This comes at a price of bias to the beginning
-                // of table on very large tables ( > 100s million of rows)
-                val greatestRate: String = 0.00005.toString()
-                // We only do a full count in case information schema contains no row count.
-                // This is the case for views.
-                val fullCount = "SELECT COUNT(*) FROM `$namespace`.`$name`"
-                // Quick approximation to "select count(*) from table" which doesn't require
-                // full table scan. However, note this could give delayed summary info about a table
-                // and thus a new table could be treated as empty despite we recently added rows.
-                // To prevent that from happening and resulted for skipping the table altogether,
-                // the minimum count is set to 10.
-                val quickCount =
-                    "SELECT GREATEST(10, COALESCE(table_rows, ($fullCount))) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
-                val greatest = "GREATEST($greatestRate, $sampleSize / ($quickCount))"
-                // Rand returns a value between 0 and 1
-                val where = "WHERE RAND() < $greatest "
-                "$from $where"
-            }
+            // just return the first sample_size of rows from the table for the best performance
+            is FromSample -> From(name, namespace).sql()
         }
 
     fun WhereNode.sql(): String =

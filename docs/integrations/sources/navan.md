@@ -28,6 +28,17 @@ The Navan connector supports travel booking data such as hotels and flights.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-07-12 | [63208](https://github.com/airbytehq/airbyte/pull/63208) | Update dependencies |
+| 0.0.22 | 2025-07-05 | [62545](https://github.com/airbytehq/airbyte/pull/62545) | Update dependencies |
+| 0.0.21 | 2025-06-28 | [62308](https://github.com/airbytehq/airbyte/pull/62308) | Update dependencies |
+| 0.0.20 | 2025-06-21 | [61069](https://github.com/airbytehq/airbyte/pull/61069) | Update dependencies |
+| 0.0.19 | 2025-05-24 | [60511](https://github.com/airbytehq/airbyte/pull/60511) | Update dependencies |
+| 0.0.18 | 2025-05-10 | [57894](https://github.com/airbytehq/airbyte/pull/57894) | Update dependencies |
+| 0.0.17 | 2025-04-05 | [57297](https://github.com/airbytehq/airbyte/pull/57297) | Update dependencies |
+| 0.0.16 | 2025-03-29 | [56691](https://github.com/airbytehq/airbyte/pull/56691) | Update dependencies |
+| 0.0.15 | 2025-03-22 | [56027](https://github.com/airbytehq/airbyte/pull/56027) | Update dependencies |
+| 0.0.14 | 2025-03-08 | [55457](https://github.com/airbytehq/airbyte/pull/55457) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54765](https://github.com/airbytehq/airbyte/pull/54765) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54310](https://github.com/airbytehq/airbyte/pull/54310) | Update dependencies |
 | 0.0.11 | 2025-02-15 | [53857](https://github.com/airbytehq/airbyte/pull/53857) | Update dependencies |
 | 0.0.10 | 2025-02-08 | [53252](https://github.com/airbytehq/airbyte/pull/53252) | Update dependencies |

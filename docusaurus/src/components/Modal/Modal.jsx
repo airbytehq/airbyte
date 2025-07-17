@@ -32,11 +32,8 @@ export const Modal = ({ title, isOpen, description, onClose, children }) => {
       <div className={styles.modalContainer}>
         <DialogPanel className={styles.modalPanel}>
           <div className={styles.modalHeader}>
-
-          <DialogTitle className={styles.modalTitle}>{title}
-            
-          </DialogTitle>
-          <CloseButton onClose={onClose} />
+            <DialogTitle className={styles.modalTitle}>{title}</DialogTitle>
+            <CloseButton onClose={onClose} />
           </div>
           <Description>{description}</Description>
           {children}

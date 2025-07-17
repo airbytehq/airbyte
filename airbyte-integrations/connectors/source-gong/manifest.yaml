@@ -139,6 +139,15 @@ definitions:
                   personInteractionStats: true
                 collaboration:
                   publicComments: true
+                metaData:
+                  id: true
+                  calendarEventId: true
+                  clientUniqueId: true
+                  customData: true
+                  direction: true
+                  duration: true
+                  isPrivate: true
+                  started: true
         record_selector:
           type: RecordSelector
           extractor:
@@ -160,12 +169,32 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: startdatetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDateTime
       transformations:
         - type: AddFields
           fields:
             - path:
                 - id
               value: "{{ record['metaData']['id'] }}"
+            - path:
+                - startdatetime
+              value: "{{ record['metaData']['started'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -568,6 +597,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      startdatetime:
+        type:
+          - "null"
+          - string
+        description: Datetime for extensive calls.
+        format: date-time
       collaboration:
         type:
           - object

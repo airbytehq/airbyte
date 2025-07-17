@@ -1,0 +1,923 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://console.partnerize.com/
+  Documentation: https://api-docs.partnerize.com/partner/#section/Introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - countries
+
+definitions:
+  streams:
+    countries:
+      type: DeclarativeStream
+      name: countries
+      primary_key:
+        - ref_country_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/country
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - countries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref_country_id
+              value: "{{record['country']['ref_country_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - country
+              - ref_country_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/countries"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      primary_key:
+        - currency_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/currency
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - currencies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - currency_id
+              value: "{{record['currency']['currency_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - currency
+              - currency_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    devices:
+      type: DeclarativeStream
+      name: devices
+      primary_key:
+        - ref_device_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/device
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - devices
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref_device_id
+              value: "{{record['device']['ref_device_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - device
+              - ref_device_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/devices"
+    timezones:
+      type: DeclarativeStream
+      name: timezones
+      primary_key:
+        - ref_timezone_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/timezone
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timezones
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref_timezone_id
+              value: "{{record['timezone']['ref_timezone_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - timezone
+              - ref_timezone_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timezones"
+    traffic_sources:
+      type: DeclarativeStream
+      name: traffic_sources
+      primary_key:
+        - ref_traffic_source_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/traffic_source
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - traffic_sources
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref_traffic_source_id
+              value: "{{record['traffic_source']['ref_traffic_source_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - traffic_source
+              - ref_traffic_source_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/traffic_sources"
+    user_context:
+      type: DeclarativeStream
+      name: user_context
+      primary_key:
+        - ref_user_context_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/user_context
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - user_contexts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref_user_context_id
+              value: "{{record['user_context']['ref_user_context_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - user_context
+              - ref_user_context_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_context"
+    conversion_type:
+      type: DeclarativeStream
+      name: conversion_type
+      primary_key:
+        - conversion_type_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/conversion_type
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversion_types
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - conversion_type_id
+              value: "{{record['conversion_type']['conversion_type_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - conversion_type
+              - conversion_type_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversion_type"
+    conversion_metrics:
+      type: DeclarativeStream
+      name: conversion_metrics
+      primary_key:
+        - ref_conversion_metric_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/conversion_metric
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversion_metrics
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref_conversion_metric_id
+              value: "{{record['conversion_metric']['ref_conversion_metric_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - conversion_metric
+              - ref_conversion_metric_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversion_metrics"
+    partnership_model:
+      type: DeclarativeStream
+      name: partnership_model
+      primary_key:
+        - ref_partnership_model_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reference/partnership_model
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - partnership_models
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') or response.get('cursor_id') }}
+            stop_condition: >-
+              {{ not response.get('hypermedia', {}).get('pagination',
+              {}).get('next_page') and not response.get('cursor_id') }}
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ref_partnership_model_id
+              value: "{{record['partnership_model']['ref_partnership_model_id']}}"
+        - type: RemoveFields
+          field_pointers:
+            - - partnership_model
+              - ref_partnership_model_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/partnership_model"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.partnerize.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"user_api_key\"] }}"
+      username: "{{ config[\"application_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/devices"
+  - $ref: "#/definitions/streams/timezones"
+  - $ref: "#/definitions/streams/traffic_sources"
+  - $ref: "#/definitions/streams/user_context"
+  - $ref: "#/definitions/streams/conversion_type"
+  - $ref: "#/definitions/streams/conversion_metrics"
+  - $ref: "#/definitions/streams/partnership_model"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - user_api_key
+      - application_key
+    properties:
+      user_api_key:
+        type: string
+        description: >-
+          The user API key identifies the user on whose behalf the request is
+          made. Find it in your account settings under 'User API Key' at
+          https://console.partnerize.com.
+        name: user_api_key
+        title: User API Key
+        airbyte_secret: true
+        order: 0
+      application_key:
+        type: string
+        description: >-
+          The application key identifies the network you are making the request
+          against. Find it in your account settings under 'User Application Key'
+          at https://console.partnerize.com.
+        name: application_key
+        title: Application Key
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    countries: true
+    currencies: true
+    devices: true
+    timezones: true
+    traffic_sources: true
+    user_context: true
+    conversion_type: true
+    conversion_metrics: true
+    partnership_model: true
+  testedStreams:
+    countries:
+      streamHash: de0042dc36447f7acadec1bbfcc013c7ac2ff625
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      streamHash: fa505b1b9d0def87353294e2f2a69b15ac719e35
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    devices:
+      streamHash: a90ae37afc987ccd7320db19010c5d7552393404
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timezones:
+      streamHash: bcf28b983dfdff248cd4da1e939ff2bf91f2b21f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    traffic_sources:
+      streamHash: 0b8c6f1427ce1711b28505ab7914928ef9b86e1b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_context:
+      streamHash: ae4da737b6ef58d5aa76f0010b631318612c04e2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversion_type:
+      streamHash: 857c4e5c943311bbfc4d437a298335ca240b7bd8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversion_metrics:
+      streamHash: 4fda2da8f6cfd16e2e025a0091aba71b2b0edc45
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    partnership_model:
+      streamHash: 67752818a8e7c8b3e29479437bf69b8146d9c4e7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://api-docs.partnerize.com/partner/
+
+schemas:
+  countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - object
+          - "null"
+        properties:
+          area_sq_km:
+            type:
+              - number
+              - string
+              - "null"
+          capital:
+            type:
+              - string
+              - "null"
+          continent_iso:
+            type:
+              - string
+              - "null"
+          continent_name:
+            type:
+              - string
+              - "null"
+          currency_iso:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - number
+              - "null"
+          east:
+            type:
+              - number
+              - string
+              - "null"
+          fips_code:
+            type:
+              - string
+              - "null"
+          geoname_id:
+            type:
+              - number
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          iso3:
+            type:
+              - string
+              - "null"
+          iso_numeric:
+            type:
+              - number
+              - string
+              - "null"
+          languages:
+            type:
+              - string
+              - "null"
+          north:
+            type:
+              - number
+              - string
+              - "null"
+          population:
+            type:
+              - number
+              - "null"
+          printable_name:
+            type:
+              - string
+              - "null"
+          south:
+            type:
+              - number
+              - string
+              - "null"
+          west:
+            type:
+              - number
+              - string
+              - "null"
+          zone:
+            type:
+              - string
+              - "null"
+      ref_country_id:
+        type: number
+    required:
+      - ref_country_id
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          minor_unit:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      currency_id:
+        type: number
+    required:
+      - currency_id
+  devices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      device:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+          skip_invoice:
+            type:
+              - number
+              - "null"
+          skip_override:
+            type:
+              - number
+              - "null"
+          skip_selfbill:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      ref_device_id:
+        type: number
+    required:
+      - ref_device_id
+  timezones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ref_timezone_id:
+        type: number
+      timezone:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          local_time:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          utc_offset:
+            type:
+              - number
+              - string
+              - "null"
+    required:
+      - ref_timezone_id
+  traffic_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ref_traffic_source_id:
+        type: number
+      traffic_source:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          skip_invoice:
+            type:
+              - number
+              - "null"
+          skip_override:
+            type:
+              - number
+              - "null"
+          skip_selfbill:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+    required:
+      - ref_traffic_source_id
+  user_context:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ref_user_context_id:
+        type: number
+      user_context:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+          skip_invoice:
+            type:
+              - number
+              - "null"
+          skip_override:
+            type:
+              - number
+              - "null"
+          skip_selfbill:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+    required:
+      - ref_user_context_id
+  conversion_type:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      conversion_type:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          available_to_invoice:
+            type:
+              - string
+              - "null"
+          available_to_selfbill:
+            type:
+              - string
+              - "null"
+          conversion_type:
+            type:
+              - string
+              - "null"
+          exclude_from_override_rules:
+            type:
+              - string
+              - "null"
+      conversion_type_id:
+        type: number
+    required:
+      - conversion_type_id
+  conversion_metrics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      conversion_metric:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          skip_invoice:
+            type:
+              - number
+              - "null"
+          skip_override:
+            type:
+              - number
+              - "null"
+          skip_selfbill:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      ref_conversion_metric_id:
+        type: number
+    required:
+      - ref_conversion_metric_id
+  partnership_model:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      partnership_model:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          skip_invoice:
+            type:
+              - number
+              - "null"
+          skip_override:
+            type:
+              - number
+              - "null"
+          skip_selfbill:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      ref_partnership_model_id:
+        type: number
+    required:
+      - ref_partnership_model_id

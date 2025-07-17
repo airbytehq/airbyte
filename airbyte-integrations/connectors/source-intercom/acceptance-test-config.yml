@@ -22,7 +22,9 @@ acceptance_tests:
       - config_path: "secrets/config_sandbox.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        empty_streams: []
+        empty_streams:
+          - name: tickets
+            bypass_reason: "no data for this stream in our sandbox account (premium)"
   incremental:
     tests:
       - config_path: "secrets/config.json"

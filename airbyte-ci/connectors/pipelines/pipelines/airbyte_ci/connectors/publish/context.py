@@ -160,5 +160,5 @@ class PublishConnectorContext(ConnectorContext):
             assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!subteam^S077U1TH43D>"
+            message += "\ncc. <!subteam^S08SQDL2RS9>"
         return message

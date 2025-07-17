@@ -1,0 +1,50 @@
+{
+  "Accounts": [
+    {
+      "TaxCertificate": {
+        "Status": "Active",
+        "TaxCertificateBlobContainerName": "Test Container Name",
+        "TaxCertificates": [{ "key": "test_key", "value": "test_value" }]
+      },
+      "BillToCustomerId": "987654321",
+      "CurrencyCode": "USD",
+      "AccountFinancialStatus": "ClearFinancialStatus",
+      "Id": "180535609",
+      "Language": "English",
+      "LastModifiedByUserId": "0",
+      "LastModifiedTime": "2023-08-11T08:24:26.603",
+      "Name": "DEMO-ACCOUNT",
+      "Number": "F149W3B6",
+      "ParentCustomerId": "987654321",
+      "PaymentMethodId": null,
+      "PaymentMethodType": null,
+      "PrimaryUserId": "123456789",
+      "AccountLifeCycleStatus": "Pause",
+      "TimeStamp": "AAAAAH10c1A=",
+      "TimeZone": "Santiago",
+      "PauseReason": 2,
+      "ForwardCompatibilityMap": null,
+      "LinkedAgencies": [],
+      "SalesHouseCustomerId": null,
+      "TaxInformation": [],
+      "BackUpPaymentInstrumentId": null,
+      "BillingThresholdAmount": null,
+      "BusinessAddress": {
+        "City": "San Pancho",
+        "CountryCode": "US",
+        "Id": "149694999",
+        "Line1": "789 Test Blvd",
+        "Line2": null,
+        "Line3": null,
+        "Line4": null,
+        "PostalCode": "54321",
+        "StateOrProvince": "CA",
+        "TimeStamp": null,
+        "BusinessName": "Demo Inc."
+      },
+      "AutoTagType": "Inactive",
+      "SoldToPaymentInstrumentId": null,
+      "AccountMode": "Expert"
+    }
+  ]
+}

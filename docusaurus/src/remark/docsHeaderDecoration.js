@@ -19,6 +19,7 @@ const plugin = () => {
     if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
+
     const latestPythonCdkVersion = await getLatestPythonCDKVersion();
 
     if (!registryEntry) return;
@@ -32,24 +33,24 @@ const plugin = () => {
 
         const rawCDKVersion = getFromPaths(
           registryEntry,
-          "packageInfo_[oss|cloud].cdk_version"
+          "packageInfo_[oss|cloud].cdk_version",
         );
         const syncSuccessRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate"
+          "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate",
         );
         const usageRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].usage"
+          "generated_[oss|cloud].metrics.[all|cloud|oss].usage",
         );
         const lastUpdated = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].source_file_info.metadata_last_modified"
+          "generated_[oss|cloud].source_file_info.metadata_last_modified",
         );
 
         const { version, isLatest, url } = parseCDKVersion(
           rawCDKVersion,
-          latestPythonCdkVersion
+          latestPythonCdkVersion,
         );
 
         const attrDict = {
@@ -68,6 +69,7 @@ const plugin = () => {
           syncSuccessRate,
           usageRate,
           lastUpdated,
+          definitionId: registryEntry.definitionId,
         };
 
         firstHeading = false;

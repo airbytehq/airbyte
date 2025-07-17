@@ -16,10 +16,13 @@ acceptance_tests:
         status: failed
       - config_path: secrets/config_oauth.json
         status: succeed
+      - config_path: secrets/config_account_id.json
+        status: succeed
   discovery:
     tests:
       - config_path: secrets/config.json
       - config_path: secrets/config_oauth.json
+      - config_path: secrets/config_account_id.json
   basic_read:
     tests:
       - config_path: secrets/config.json

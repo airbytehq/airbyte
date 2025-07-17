@@ -73,7 +73,7 @@ abstract class SpecTest(
             destinationProcessFactory.createDestinationProcess(
                 "spec",
                 featureFlags = featureFlags,
-                micronautProperties = micronautProperties,
+                micronautProperties = micronautProperties
             )
         runBlocking { process.run() }
         val messages = process.readMessages()

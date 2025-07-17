@@ -121,6 +121,18 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.28 | 2025-07-12 | [63152](https://github.com/airbytehq/airbyte/pull/63152) | Update dependencies |
+| 1.4.27 | 2025-07-05 | [61142](https://github.com/airbytehq/airbyte/pull/61142) | Update dependencies |
+| 1.4.26 | 2025-05-28 | [60823](https://github.com/airbytehq/airbyte/pull/60823) | Fix Attribute Errors on `Leads` stream |
+| 1.4.25 | 2025-05-24 | [60693](https://github.com/airbytehq/airbyte/pull/60693) | Update dependencies |
+| 1.4.24 | 2025-05-10 | [59770](https://github.com/airbytehq/airbyte/pull/59770) | Update dependencies |
+| 1.4.23 | 2025-05-03 | [58788](https://github.com/airbytehq/airbyte/pull/58788) | Update dependencies |
+| 1.4.22 | 2025-04-12 | [57702](https://github.com/airbytehq/airbyte/pull/57702) | Update dependencies |
+| 1.4.21 | 2025-04-05 | [57071](https://github.com/airbytehq/airbyte/pull/57071) | Update dependencies |
+| 1.4.20 | 2025-03-29 | [56674](https://github.com/airbytehq/airbyte/pull/56674) | Update dependencies |
+| 1.4.19 | 2025-03-22 | [56016](https://github.com/airbytehq/airbyte/pull/56016) | Update dependencies |
+| 1.4.18 | 2025-03-08 | [55426](https://github.com/airbytehq/airbyte/pull/55426) | Update dependencies |
+| 1.4.17 | 2025-03-01 | [54761](https://github.com/airbytehq/airbyte/pull/54761) | Update dependencies |
 | 1.4.16 | 2025-02-22 | [54321](https://github.com/airbytehq/airbyte/pull/54321) | Update dependencies |
 | 1.4.15 | 2025-02-15 | [53790](https://github.com/airbytehq/airbyte/pull/53790) | Update dependencies |
 | 1.4.14 | 2025-02-01 | [52711](https://github.com/airbytehq/airbyte/pull/52711) | Update dependencies |

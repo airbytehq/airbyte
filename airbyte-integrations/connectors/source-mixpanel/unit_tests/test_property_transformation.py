@@ -14,8 +14,9 @@ import pytest
 from source_mixpanel.streams import Export
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
-from .utils import get_url_to_mock, setup_response
+from .utils import get_url_to_mock, init_stream, setup_response
 
 
 @pytest.fixture

@@ -33,6 +33,21 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-07-12 | [63240](https://github.com/airbytehq/airbyte/pull/63240) | Update dependencies |
+| 0.0.24 | 2025-07-05 | [62715](https://github.com/airbytehq/airbyte/pull/62715) | Update dependencies |
+| 0.0.23 | 2025-06-28 | [62218](https://github.com/airbytehq/airbyte/pull/62218) | Update dependencies |
+| 0.0.22 | 2025-06-21 | [61749](https://github.com/airbytehq/airbyte/pull/61749) | Update dependencies |
+| 0.0.21 | 2025-06-15 | [61245](https://github.com/airbytehq/airbyte/pull/61245) | Update dependencies |
+| 0.0.20 | 2025-05-24 | [60742](https://github.com/airbytehq/airbyte/pull/60742) | Update dependencies |
+| 0.0.19 | 2025-05-10 | [59542](https://github.com/airbytehq/airbyte/pull/59542) | Update dependencies |
+| 0.0.18 | 2025-04-26 | [58937](https://github.com/airbytehq/airbyte/pull/58937) | Update dependencies |
+| 0.0.17 | 2025-04-19 | [58548](https://github.com/airbytehq/airbyte/pull/58548) | Update dependencies |
+| 0.0.16 | 2025-04-12 | [58025](https://github.com/airbytehq/airbyte/pull/58025) | Update dependencies |
+| 0.0.15 | 2025-04-05 | [57401](https://github.com/airbytehq/airbyte/pull/57401) | Update dependencies |
+| 0.0.14 | 2025-03-29 | [56815](https://github.com/airbytehq/airbyte/pull/56815) | Update dependencies |
+| 0.0.13 | 2025-03-22 | [56332](https://github.com/airbytehq/airbyte/pull/56332) | Update dependencies |
+| 0.0.12 | 2025-03-09 | [55667](https://github.com/airbytehq/airbyte/pull/55667) | Update dependencies |
+| 0.0.11 | 2025-03-01 | [54640](https://github.com/airbytehq/airbyte/pull/54640) | Update dependencies |
 | 0.0.10 | 2025-02-15 | [54117](https://github.com/airbytehq/airbyte/pull/54117) | Update dependencies |
 | 0.0.9 | 2025-02-08 | [53591](https://github.com/airbytehq/airbyte/pull/53591) | Update dependencies |
 | 0.0.8 | 2025-02-01 | [53125](https://github.com/airbytehq/airbyte/pull/53125) | Update dependencies |

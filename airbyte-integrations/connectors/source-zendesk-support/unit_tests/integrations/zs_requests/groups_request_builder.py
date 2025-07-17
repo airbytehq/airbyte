@@ -2,8 +2,6 @@
 
 import calendar
 
-import pendulum
-
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
 
@@ -24,6 +22,6 @@ class GroupsRequestBuilder(ZendeskSupportBaseRequestBuilder):
             params["per_page"] = self._page_size
         return params
 
-    def with_page_size(self, page_size: int) -> "PostCommentVotesRequestBuilder":
+    def with_page_size(self, page_size: int) -> "GroupsRequestBuilder":
         self._page_size: int = page_size
         return self

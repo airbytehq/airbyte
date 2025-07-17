@@ -29,8 +29,7 @@ See `sample_files/sample_config.json` for a sample config file.
 ```
 poetry run destination-google-sheets spec
 poetry run destination-google-sheets check --config secrets/config.json
-poetry run destination-google-sheets discover --config secrets/config.json
-poetry run destination-google-sheets read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run destination-google-sheets write --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Running unit tests
@@ -89,3 +88,4 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
 8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
+

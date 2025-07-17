@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
@@ -20,16 +18,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface UpdateCheckpointsTask : Task
-
 @Singleton
 @Secondary
-class DefaultUpdateCheckpointsTask(
+class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
-    private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>,
+    private val checkpointManager: CheckpointManager,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
-) : UpdateCheckpointsTask {
+) : Task {
     val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = SelfTerminating
@@ -39,16 +34,27 @@ class DefaultUpdateCheckpointsTask(
         checkpointMessageQueue.consume().collect {
             when (it.value) {
                 is StreamCheckpointWrapped -> {
-                    val (_, stream, index, message) = it.value
-                    log.info { "Updating checkpoint for stream $stream with index $index" }
-                    checkpointManager.addStreamCheckpoint(stream, index, it.replace(message))
+                    val (stream, checkpointKey, message) = it.value
+                    log.info {
+                        "Updating stream checkpoint $stream:$checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
+                    checkpointManager.addStreamCheckpoint(
+                        stream,
+                        checkpointKey,
+                        it.replace(message)
+                    )
                 }
                 is GlobalCheckpointWrapped -> {
-                    val (_, streamIndexes, message) = it.value
-                    log.info { "Updating global checkpoint for streams $streamIndexes" }
-                    checkpointManager.addGlobalCheckpoint(streamIndexes, it.replace(message))
+                    val (checkpointKey, message) = it.value
+                    log.info {
+                        "Updating global checkpoint with $checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
+                    checkpointManager.addGlobalCheckpoint(checkpointKey, it.replace(message))
                 }
             }
+            // If its corresponding data was processed before this checkpoint was added,
+            // then it's possible it's already data-sufficient.
+            checkpointManager.flushReadyCheckpointMessages()
         }
         syncManager.markCheckpointsProcessed()
         log.info { "All checkpoints (state) updated" }
