@@ -1,0 +1,71 @@
+---
+id: embedded-config-templates-sources-id-get-source-config-template
+title: "Get Source Config Template"
+description: "Get Source Config Template"
+sidebar_label: "Get Source Config Template"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWEtv2zgQ/ivCoIddgImT7u5FtzSPbrDYNmjcXoxAoMWRzVYSVZJK1zX03xdDUrJk2U7q9piTZWke38x8HI1mDZYvDMQzMKrWKSapKjO5SCwWVc4twgMDVaHmVqryVkAMWMxRCBQnW5LmxFswJ2spmpMF2mSPSQYG01pLu4J4toa/p9O7N8g1aohnD80Dg4prXqBFbZxAyQuEGKQABrKEGCpul8BA49daahQQW10jA5MuseAQr8GuKtIwVstyAQwypQtuIYa6dlastDkJ3ApoyKFGU6nSoCHl12dn9CPQpFpWFDfEcF+nKRqT1Xn0IQgDg1SVFktL4ryqcpm6NE0+G9JZ9wBVmpJopfcgxY+CZCEJY61W6h09bxjI1Pvm5ep95tI31GhYd6es8xwo/M4T6TaspYLATJaSIkp+DPG904+uOv3Ix1Ab1C0bTIXpODNCpXWBpXV5/KjzYyO56tupdU7eU1WWmNKN+wpTmYVqjUFseLUGabEw49gb1t7gWvNVL/YPrXLDtswGBTX/jKntadxtpBo2pN2RwfdMNAy4EK4IPL8b4BmZniuVIy8P2r7ojFUD2OH5fn5O3W+XtwOCdL9h8Gpzeo5Jwqt7r95sStVlflPgWb9GrXJQ6Bm73EMdOit1VSltzTs6C7n8zvdW7jnpvQ/WyoG1npurN9OfNi7m1vPikZcpioTXdjk0OiQuPU+yXH1LnqrdRW2X0U2uvkVtFSuNgrKFyRdcDZ0882gdiuiutR79g6uhu0ee13gseTZ2PzkzDQPlstBrXgcaiJd13U6WVW2TTKsiCf1H6b1WRlADYw9BfU++oo8GdXRLvqIbrYrosvVFV5lcRCPedvEETB7oL4S0geBxjRCkqqhytJh4KKq2OxHsa5uXQT3y7t479S0v1E4zXuf0hm7GLg3qR9wb+jMd3zsjO4N8nvufDDz4f0b8OzphVzI6uZ4qW3V6on1u9YaD52TwGvG9h9zu4NJTXve9ysctW+kR7yqureR5ElITsB58Q3sNGmhII5ypJ3PjZiI3t4WxbM9ktWMw2ouyF+FbtH7Q8nCmYbzuxtPGVfzPXdPsGy4iQorGHj/FFmgMXxzdY/8N6g0D1FppMxi3hq4yibk41tGNU27YrwacpEocbeyaLESXZOHQubyopJM8MHBe++T1jvps5/nZNjniyR9jntwoPZdCYPnCkheWOJa8fj1mySeeS+HYEHkYL2R5IUvD4K9dr57b0qIued7OLS+MeWFMYMz29oMmnCjsksJnzHSzQyzQLhUtJBdo3bxEH7Ew4ZWcPJ5P2i3lZHtLOQlbygltKd0qkmjoF420KIphaW1l4glZOuVSz1cWT7mEbXAX/lF0HTxFF3e3LrvtctMtIDx1+ivOrhzkB8LW0n3CewFKgywz5STbdO3y9SxADCg6L3B2enZ67iZgZWzB3bkKu9WDmd5aSQX4Fv+zkyrn0g3Vtd/V+SrMgFeUsMdzYN2+2J/xQS26gZiuYiloul0qQ+yB9XrODX7UedPQ7a81aloXPzB45FryOeVltgYhDV0LiDOeGxyB7doK/NZu5n6PgO0OoiV3SdQOCwQABm51QeN889AwWCIXble9Dg8u0hQr21MZNTCiRcfXt9dTYNAuXdr9jS8+ay96B3kIZ732ElP1Bcum6dBZ+u8+nZr/ATUfSGk=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Source Config Template"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/config_templates/sources/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get Source Config Template
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"name":{"type":"string","title":"Name"},"icon":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Icon"},"source_definition_id":{"type":"string","format":"uuid","title":"Source Definition Id"},"user_config_spec":{"properties":{"documentationUrl":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Documentationurl"},"connectionSpecification":{"properties":{"required":{"items":{"type":"string"},"type":"array","title":"Required"},"properties":{"type":"object","title":"Properties"},"description":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Description"},"additionalProperties":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Additionalproperties"},"title":{"type":"string","title":"Title"},"type":{"type":"string","title":"Type"},"$schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"$Schema"}},"type":"object","required":["properties","title","type"],"title":"ConnectionSpecification"},"supportsNormalization":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Supportsnormalization"},"supportsDBT":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Supportsdbt"},"advanced_auth":{"anyOf":[{"properties":{"auth_flow_type":{"type":"string","title":"Auth Flow Type"},"predicate_key":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"title":"Predicate Key"},"predicate_value":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Predicate Value"},"oauth_config_specification":{"properties":{"oauth_user_input_from_connector_config_specification":{"anyOf":[{"type":"object"},{"type":"null"}],"title":"Oauth User Input From Connector Config Specification"},"oauth_connector_input_specification":{"anyOf":[{"type":"object"},{"type":"null"}],"title":"Oauth Connector Input Specification"},"complete_oauth_output_specification":{"type":"object","title":"Complete Oauth Output Specification","default":{}},"complete_oauth_server_input_specification":{"type":"object","title":"Complete Oauth Server Input Specification","default":{}},"complete_oauth_server_output_specification":{"type":"object","title":"Complete Oauth Server Output Specification","default":{}}},"type":"object","title":"OAuthConfigSpecification"}},"type":"object","required":["auth_flow_type","oauth_config_specification"],"title":"AdvancedAuth"},{"type":"null"}]}},"type":"object","required":["connectionSpecification"],"title":"ConnectorSpecification"},"partial_default_config":{"type":"object","title":"Partial Default Config"}},"type":"object","required":["id","name","icon","source_definition_id","user_config_spec","partial_default_config"],"title":"GetSourceConfigTemplateResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
