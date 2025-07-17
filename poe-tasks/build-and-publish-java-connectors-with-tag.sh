@@ -92,8 +92,10 @@ is_in_whitelist() {
     source-kafka|\
     source-oracle|\
     source-oracle-strict-encrypt|\
+    source-redshift|\
     source-scaffold-java-jdbc|\
     source-sftp|\
+    source-singlestore|\
     source-snowflake|\
     source-teradata|\
     source-tidb)
