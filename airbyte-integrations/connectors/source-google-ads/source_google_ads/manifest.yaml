@@ -175,6 +175,102 @@ definitions:
             parent_key: "clientCustomer"
             partition_field: "customer_id"
 
+  template_criterion_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/incremental_stream_base"
+      retriever:
+        $ref: "#/definitions/incremental_stream_base/retriever"
+        requester:
+          type: CustomRequester
+          class_name: "source_google_ads.components.CriterionFullRefreshRequester"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $ref: "#/schemas"
+          authenticator:
+            $ref: "#/definitions/authenticator"
+          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+          http_method: POST
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: change_status.last_change_date_time
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: [ "change_status.last_change_date_time" ]
+              value: "{{ today_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
+    incremental_stream:
+      $ref: "#/definitions/incremental_stream_base"
+      retriever:
+        type: CustomRetriever
+        class_name: "source_google_ads.components.CriterionRetriever"
+        requester:
+          type: CustomRequester
+          class_name: "source_google_ads.components.CriterionIncrementalRequester"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $ref: "#/schemas"
+          authenticator:
+            $ref: "#/definitions/authenticator"
+          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
+          http_method: POST
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+          name: ad_group_criterion
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+        partition_router:
+          type: GroupingPartitionRouter
+          group_size: 10000
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/change_status_stream"
+                parent_key: "change_status.{{ parameters['resource_name'] }}"
+                partition_field: "{{ parameters['resource_name'] }}.resource_name"
+                extra_fields: [ [ "change_status.last_change_date_time" ], [ "change_status.resource_status" ] ]
+                incremental_dependency: true
+        transformations:
+          - type: CustomTransformation
+            class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+          - type: CustomTransformation
+            class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: change_status.last_change_date_time
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+
   accessible_accounts:
     $ref: "#/definitions/stream_base"
     name: accessible_accounts
@@ -668,7 +764,6 @@ definitions:
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.ChangeStatusRequester"
-        resource_type: "{{ parameters['resource_type'] }}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -743,113 +838,62 @@ definitions:
 
   ad_group_criterion_stream:
     type: StateDelegatingStream
-    name: ad_group_criterion
+    $parameters:
+      name: "ad_group_criterion"
+      resource_name: "ad_group_criterion"
+      primary_key:
+        - ad_group_criterion.resource_name
+      resource_type: AD_GROUP_CRITERION
     full_refresh_stream:
-      name: ad_group_criterion
-      $ref: "#/definitions/incremental_stream_base"
-      retriever:
-        $ref: "#/definitions/incremental_stream_base/retriever"
-        requester:
-          type: CustomRequester
-          class_name: "source_google_ads.components.CriterionFullRefreshRequester"
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              $ref: "#/schemas"
-          authenticator:
-            $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
-          http_method: POST
-          error_handler:
-            $ref: "#/definitions/base_error_handler"
-          name: ad_group_criterion
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: change_status.last_change_date_time
-        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
-          datetime_format: "%Y-%m-%d"
-      transformations:
-        - type: CustomTransformation
-          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
-        - type: CustomTransformation
-          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path: [ "change_status.last_change_date_time" ]
-              value: "{{ today_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
+      $ref: "#/definitions/template_criterion_stream/full_refresh_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ad_group_criterion"
     incremental_stream:
-      $ref: "#/definitions/incremental_stream_base"
-      name: ad_group_criterion
+      $ref: "#/definitions/template_criterion_stream/incremental_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_group_criterion"
+
+  ad_listing_group_criterion_stream:
+    type: StateDelegatingStream
+    $parameters:
+      name: "ad_listing_group_criterion"
+      resource_name: "ad_group_criterion"
       primary_key:
         - ad_group_criterion.resource_name
-      retriever:
-        type: CustomRetriever
-        class_name: "source_google_ads.components.CriterionRetriever"
-        requester:
-          type: CustomRequester
-          class_name: "source_google_ads.components.CriterionIncrementalRequester"
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              $ref: "#/schemas"
-          authenticator:
-            $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
-          http_method: POST
-          error_handler:
-            $ref: "#/definitions/base_error_handler"
-          name: ad_group_criterion
-        record_selector:
-          type: RecordSelector
-          $parameters:
-            name: "ad_group_criterion"
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-          schema_normalization:
-            type: CustomSchemaNormalization
-            class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 10000
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                stream:
-                  $ref: "#/definitions/change_status_stream"
-                  $parameters:
-                    resource_type: AD_GROUP_CRITERION
-                parent_key: "change_status.ad_group_criterion"
-                partition_field: "ad_group_criterion.resource_name"
-                extra_fields: [["change_status.last_change_date_time"], ["change_status.resource_status"]]
-                incremental_dependency: true
-        transformations:
-          - type: CustomTransformation
-            class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
-          - type: CustomTransformation
-            class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: change_status.last_change_date_time
-        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
-          datetime_format: "%Y-%m-%d"
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+      resource_type: AD_GROUP_CRITERION
+    full_refresh_stream:
+      $ref: "#/definitions/template_criterion_stream/full_refresh_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_group_criterion"
+    incremental_stream:
+      $ref: "#/definitions/template_criterion_stream/incremental_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_group_criterion"
+
+  campaign_criterion_stream:
+    type: StateDelegatingStream
+    $parameters:
+      name: "campaign_criterion"
+      resource_name: "campaign_criterion"
+      primary_key:
+        - campaign_criterion.resource_name
+      resource_type: CAMPAIGN_CRITERION
+    full_refresh_stream:
+      $ref: "#/definitions/template_criterion_stream/full_refresh_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_group_criterion"
+    incremental_stream:
+      $ref: "#/definitions/template_criterion_stream/incremental_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -862,12 +906,15 @@ streams:
   - "#/definitions/ad_group_ad_label_stream"
   - "#/definitions/ad_group_ad_legacy_stream"
   - "#/definitions/ad_group_bidding_strategy_stream"
+  - "#/definitions/ad_group_criterion_stream"
   - "#/definitions/ad_group_label_stream"
   - "#/definitions/ad_group_criterion_label_stream"
+  - "#/definitions/ad_listing_group_criterion_stream"
   - "#/definitions/audience_stream"
   - "#/definitions/campaign_stream"
   - "#/definitions/campaign_bidding_strategy_stream"
   - "#/definitions/campaign_budget_stream"
+  - "#/definitions/campaign_criterion_stream"
   - "#/definitions/campaign_label_stream"
   - "#/definitions/customer_stream"
   - "#/definitions/click_view_stream"
@@ -880,7 +927,6 @@ streams:
   - "#/definitions/topic_view_stream"
   - "#/definitions/user_interest_stream"
   - "#/definitions/user_location_view_stream"
-  - "#/definitions/ad_group_criterion_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -1440,6 +1486,152 @@ schemas:
           - string
     additionalProperties: true
 
+  ad_listing_group_criterion:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      deleted_at:
+        description: The timestamp indicating when the ad group criterion was deleted,
+          if applicable.
+        type:
+        - 'null'
+        - string
+      change_status.last_change_date_time:
+        description: The date and time of the last change made to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.resource_name:
+        description: The resource name of the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group.id:
+        description: The ID of the ad group associated with the criterion.
+        type:
+        - 'null'
+        - integer
+      ad_group_criterion.criterion_id:
+        description: The ID of the criterion defining the ad group criterion.
+        type:
+        - 'null'
+        - integer
+      ad_group_criterion.listing_group.case_value.activity_country.value:
+        description: The country where the activity related to the ad group criterion
+          takes place.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.activity_id.value:
+        description: The ID of the activity related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.activity_rating.value:
+        description: The rating of the activity related to the ad group criterion.
+        type:
+        - 'null'
+        - integer
+      ad_group_criterion.listing_group.case_value.hotel_city.city_criterion:
+        description: The city where the hotel related to the ad group criterion is
+          located.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.hotel_class.value:
+        description: The class of the hotel related to the ad group criterion.
+        type:
+        - 'null'
+        - integer
+      ad_group_criterion.listing_group.case_value.hotel_country_region.country_region_criterion:
+        description: The country region where the hotel related to the ad group criterion
+          is located.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.hotel_id.value:
+        description: The ID of the hotel related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.hotel_state.state_criterion:
+        description: The state where the hotel related to the ad group criterion is
+          located.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_category.category_id:
+        description: The ID of the category to which the product related to the ad
+          group criterion belongs.
+        type:
+        - 'null'
+        - integer
+      ad_group_criterion.listing_group.case_value.product_category.level:
+        description: The category level of the product related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_brand.value:
+        description: The brand of the product related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_channel.channel:
+        description: The channel where the product related to the ad group criterion
+          is sold.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity:
+        description: The exclusivity level of the product on its distribution channel
+          related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_condition.condition:
+        description: The condition of the product related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_custom_attribute.index:
+        description: The custom attribute index of the product related to the ad group
+          criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_custom_attribute.value:
+        description: The custom attribute value of the product related to the ad group
+          criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_item_id.value:
+        description: The ID of the product item related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_type.level:
+        description: The level of product type related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.case_value.product_type.value:
+        description: The value of the product type related to the ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.parent_ad_group_criterion:
+        description: The parent ad group criterion of the current ad group criterion.
+        type:
+        - 'null'
+        - string
+      ad_group_criterion.listing_group.type:
+        description: The type of the listing group associated with the ad group criterion.
+        type:
+        - 'null'
+        - string
+    additionalProperties: true
+
   campaign:
     $schema: http://json-schema.org/schema#
     type: object
@@ -1961,6 +2153,62 @@ schemas:
         description: The type of ad network used for segmentation.
         type:
           - "null"
+          - string
+    additionalProperties: true
+
+  campaign_criterion:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      deleted_at:
+        description: Timestamp indicating when the criterion was deleted.
+        type:
+          - 'null'
+          - string
+      change_status.last_change_date_time:
+        description: The date and time of the last change made to the criterion.
+        type:
+          - 'null'
+          - string
+      campaign.id:
+        description: The unique identifier for the campaign associated with the criterion.
+        type:
+          - 'null'
+          - integer
+      campaign_criterion.resource_name:
+        description: The resource name of the criterion.
+        type:
+          - 'null'
+          - string
+      campaign_criterion.campaign:
+        description: The specific campaign this criterion is targeting.
+        type:
+          - 'null'
+          - string
+      campaign_criterion.age_range.type:
+        description: The age range targeting type for the criterion.
+        type:
+          - 'null'
+          - string
+      campaign_criterion.mobile_application.name:
+        description: The name of the mobile application targeted by the criterion.
+        type:
+          - 'null'
+          - string
+      campaign_criterion.negative:
+        description: Indicates whether the criterion is a negative targeting criterion.
+        type:
+          - 'null'
+          - boolean
+      campaign_criterion.youtube_channel.channel_id:
+        description: The YouTube channel ID targeted by the criterion.
+        type:
+          - 'null'
+          - string
+      campaign_criterion.youtube_video.video_id:
+        description: The YouTube video ID targeted by the criterion.
+        type:
+          - 'null'
           - string
     additionalProperties: true
 

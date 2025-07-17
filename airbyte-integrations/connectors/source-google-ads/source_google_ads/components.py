@@ -410,7 +410,6 @@ class ChangeStatusRetriever(SimpleRetriever):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-
         original_cursor: DatetimeBasedCursor = self.stream_slicer
 
         cursor_for_factory = copy.deepcopy(original_cursor)
@@ -535,7 +534,7 @@ class CriterionRetriever(SimpleRetriever):
         - For each group, yield REMOVED records immediately, then perform one fetch for non-removed.
         - Attach the original ChangeStatus timestamp to each updated record.
         """
-        ids      = stream_slice.partition["ad_group_criterion.resource_name"]
+        ids      = stream_slice.partition[self.primary_key[0]]
         parents  = stream_slice.partition["parent_slice"]
         statuses = stream_slice.extra_fields["change_status.resource_status"]
         times    = stream_slice.extra_fields["change_status.last_change_date_time"]
@@ -552,7 +551,7 @@ class CriterionRetriever(SimpleRetriever):
             for _id, _, status, ts in group_list:
                 if status == "REMOVED":
                     yield Record(data={
-                        "ad_group_criterion.resource_name": _id,
+                        self.primary_key[0]: _id,
                         "deleted_at": ts,
                     }, stream_name=self.name)
                 else:
@@ -566,7 +565,7 @@ class CriterionRetriever(SimpleRetriever):
             time_map = dict(zip(updated_ids, updated_times))
             new_slice = StreamSlice(
                 partition={
-                    "ad_group_criterion.resource_name": updated_ids,
+                    self.primary_key[0]: updated_ids,
                     "parent_slice": parent,
                 },
                 cursor_slice=stream_slice.cursor_slice,
@@ -575,14 +574,13 @@ class CriterionRetriever(SimpleRetriever):
             response = self._fetch_next_page(stream_state, new_slice)
             for rec in records_generator_fn(response):
                 # attach timestamp from ChangeStatus
-                rec.data[self.cursor_field] = time_map.get(rec.data.get("ad_group_criterion.resource_name"))
+                rec.data[self.cursor_field] = time_map.get(rec.data.get(self.primary_key[0]))
                 yield rec
 
 
 @dataclass
 class CriterionIncrementalRequester(GoogleAdsHttpRequester):
     CURSOR_FIELD: str = "change_status.last_change_date_time"
-    ID_FIELD: str = "ad_group_criterion.resource_name"
 
     def get_request_body_json(
         self,
@@ -597,13 +595,13 @@ class CriterionIncrementalRequester(GoogleAdsHttpRequester):
             if f not in (self.CURSOR_FIELD, "deleted_at")
         ]
 
-        ids = stream_slice.partition.get(self.ID_FIELD, [])
+        ids = stream_slice.partition.get(self._parameters["primary_key"][0], [])
         in_list = ", ".join(f"'{i}'" for i in ids)
 
         query = (
             f"SELECT {', '.join(select_fields)}\n"
             f"  FROM {self.name}\n"
-            f" WHERE {self.ID_FIELD} IN ({in_list})\n"
+            f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
         )
 
         return {"query": query}
@@ -624,7 +622,6 @@ class CriterionIncrementalRequester(GoogleAdsHttpRequester):
 @dataclass
 class CriterionFullRefreshRequester(GoogleAdsHttpRequester):
     CURSOR_FIELD: str = "change_status.last_change_date_time"
-    ID_FIELD: str = "ad_group_criterion.resource_name"
 
     def get_request_body_json(
         self,
