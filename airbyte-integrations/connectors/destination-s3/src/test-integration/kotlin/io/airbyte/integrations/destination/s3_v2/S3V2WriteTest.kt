@@ -414,6 +414,57 @@ class S3V2WriteTestCsvGzip :
         allTypesBehavior = Untyped,
     )
 
+class S3V2WriteTestAvroUncompressedProto :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        preserveUndeclaredFields = false,
+        // this is technically false. Avro + parquet do have limits on numbers.
+        // But float64 is weird, in that the actual _limits_ are unreasonably large -
+        // but at that size, you have very little precision.
+        // This is actually covered by the nested/topLevelFloatLosesPrecision test cases.
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
+
+class S3V2WriteTestAvroBzip2Proto :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
+
 class S3V2WriteTestCsvUncompressedProtoSocket :
     S3V2WriteTest(
         S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
