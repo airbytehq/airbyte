@@ -248,7 +248,7 @@ definitions:
         Unable to read the schema of sheet. Error: Unexpected return
         result: Sheet was
         expected to contain data on exactly 1 sheet.
-    ignore_duplicate_headers:
+    deduplicate_headers:
       type: HttpResponseFilter
       action: IGNORE
       predicate: >-
@@ -269,9 +269,9 @@ definitions:
             {%- endif -%}
         {%- endfor -%}
         Duplicate headers found in sheet {{ response["sheets"][0]["properties"]["title"] }}.
-        Ignoring them: {{ duplicate_fields }}
+        Deduplicating them by appending cell position: {{ duplicate_fields }}
     fail_duplicate_headers:
-      $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+      $ref: "#/definitions/response_filters/deduplicate_headers"
       action: FAIL
       error_message: >-
         {%- set headers_found = response["sheets"][0]["data"][0]["rowData"][0]["values"] | map(attribute="formattedValue") | list -%}
@@ -327,7 +327,7 @@ definitions:
         reached. Please try later or request a higher quota for your account.
     single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
-      - $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+      - $ref: "#/definitions/response_filters/deduplicate_headers"
       - $ref: "#/definitions/response_filters/rate_limit"
     check_operation_single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
