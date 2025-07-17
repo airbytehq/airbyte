@@ -63,6 +63,9 @@ Once your Organization is enabled via Airbyte Embedded, you can begin onboarding
 ## Proxy Requests
 
 ### API Sources
+:::warning
+The Airbyte Proxy feature is in alpha, which means it' still in active development and may include backward-incompatbile changes. [Share feedback and requests directly with us](mailto:sonar@airbyte.io).
+:::
 
 Airbyte's Authentication Proxy enables you to submit authenticated requests to external APIs. It can be both to fetch and write data.
 

@@ -34,6 +34,7 @@ Docs : https://api-docs.invoicing.co/#overview--introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-07-12 | [63132](https://github.com/airbytehq/airbyte/pull/63132) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62632](https://github.com/airbytehq/airbyte/pull/62632) | Update dependencies |
 | 0.0.26 | 2025-06-21 | [61861](https://github.com/airbytehq/airbyte/pull/61861) | Update dependencies |
 | 0.0.25 | 2025-06-14 | [61104](https://github.com/airbytehq/airbyte/pull/61104) | Update dependencies |

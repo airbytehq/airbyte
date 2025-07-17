@@ -5,51 +5,41 @@ data:
   allowedHosts:
     hosts:
       - ${host}
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: database
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - fileName: config_auth.json
-          name: SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config.json
-          name: SECRET_SOURCE-SNOWFLAKE__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-    - suite: acceptanceTests
-      testSecrets:
-        - fileName: config_auth.json
-          name: SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config.json
-          name: SECRET_SOURCE-SNOWFLAKE__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 0.3.6
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/source-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   githubIssueLabel: source-snowflake
-  icon: snowflake.svg
+  icon: icon.svg
   license: ELv2
+  maxSecondsBetweenMessages: 7200
   name: Snowflake
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
   registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          "**Important: This version introduces Airbyte certified source connector to replace community supported connector.**
+
+          **What to expect when upgrading:**
+
+          1. The certified connector configuration spec should be compatible with community version.
+          2. Full refresh sync mode should remain the same.
+          3. For incremental sync mode, a full refresh will be triggered for next sync because the connection state will not be compatible.
+          New state will be populated after full refresh is completed."
+        upgradeDeadline: "2025-09-30"
+  supportLevel: certified
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
 metadataSpecVersion: "1.0"

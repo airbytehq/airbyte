@@ -40,6 +40,7 @@ The Airbyte connector for Clockodo enables seamless data integration between Clo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-07-12 | [63016](https://github.com/airbytehq/airbyte/pull/63016) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62756](https://github.com/airbytehq/airbyte/pull/62756) | Update dependencies |
 | 0.0.26 | 2025-06-28 | [62361](https://github.com/airbytehq/airbyte/pull/62361) | Update dependencies |
 | 0.0.25 | 2025-06-21 | [61956](https://github.com/airbytehq/airbyte/pull/61956) | Update dependencies |
