@@ -256,9 +256,8 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
 
         try:
             for record in super().read_records(sync_mode, stream_state=stream_state, **kwargs):
-                if isinstance(record, Mapping):
-                    self.state = self._get_updated_state(self.state, record)
-                    yield record
+                self.state = self._get_updated_state(self.state, record)
+                yield record
         except UserDefinedBackoffException as e:
             message = self.check_invalid_start_cursor(e.response)
             if message:
@@ -338,8 +337,6 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
         self.is_finished = False
         for page in slices:
-            if page is None:
-                continue
             page_id = page["parent"]["id"]
             self.block_id_stack.append(page_id)
 
@@ -381,12 +378,11 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
         records = super().read_records(**kwargs)
         for record in records:
-            if isinstance(record, Mapping):
-                if record.get("has_children", False):
-                    # do the depth first traversal recursive call, get children blocks
-                    self.block_id_stack.append(record["id"])
-                    yield from self.read_records(**kwargs)
-                yield record
+            if record.get("has_children", False):
+                # do the depth first traversal recursive call, get children blocks
+                self.block_id_stack.append(record["id"])
+                yield from self.read_records(**kwargs)
+            yield record
 
         self.block_id_stack.pop()
 
