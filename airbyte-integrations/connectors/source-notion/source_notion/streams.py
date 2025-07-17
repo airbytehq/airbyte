@@ -4,7 +4,7 @@
 
 import logging as Logger
 from abc import ABC
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -18,7 +18,6 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
-from datetime import timezone
 
 
 # maximum block hierarchy recursive request depth
@@ -98,6 +97,7 @@ class NotionStream(HttpStream, ABC):
         # If start_date is not found in config, set it to 2 years ago and update value in config for use in next stream
         if not self.start_date:
             from datetime import datetime
+
             two_years_ago = datetime.now(timezone.utc) - timedelta(days=730)  # 2 years = 730 days
             self.start_date = self._format_datetime_for_notion(two_years_ago)
             config["start_date"] = self.start_date
@@ -108,7 +108,7 @@ class NotionStream(HttpStream, ABC):
         Notion expects UTC datetimes in format 'YYYY-MM-DDTHH:MM:SS.000Z' (with 'Z' suffix).
         This maintains backward compatibility with existing state that uses 'Z' format.
         """
-        if hasattr(dt, 'isoformat'):
+        if hasattr(dt, "isoformat"):
             # Convert to UTC if needed and format consistently
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
