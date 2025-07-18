@@ -135,18 +135,18 @@ The Download tab configures how to retrieve the results once the job is complete
 
 #### Key Components:
 
-- **URL** (`retriever.download_requester.url`): The full URL for downloading results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor (required)
-- **HTTP Method** (`retriever.download_requester.http_method`): HTTP method for downloading, typically GET but can vary by API
-- **HTTP Response Format** (`retriever.download_decoder`): Format of the downloaded data (JSON, CSV, XML, etc.)
-- **Record Selector** (`retriever.record_selector`): Configuration for identifying and extracting individual records from the response, including the extractor field path
-- **Primary Key** (`primary_key`): Unique identifier field(s) for records in the stream
-- **Request Parameters** (`retriever.download_requester.request_parameters`): Query parameters for download requests
-- **Request Headers** (`retriever.download_requester.request_headers`): HTTP headers for download requests
-- **Request Body** (`retriever.download_requester.request_body`): Request body for download requests (if needed)
-- **Authentication** (`retriever.download_requester.authenticator`): Authentication method for download requests
-- **Download Paginator** (`retriever.download_paginator`): Pagination configuration if the download response is paginated
-- **Transformations** (`transformations`): Data transformation rules to apply to downloaded records
-- **Error Handler** (`retriever.download_requester.error_handler`): Error handling configuration for download requests
+- **API Endpoint URL** (required): The full URL for downloading results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor
+- **HTTP Method**: HTTP method for downloading, typically GET but can vary by API
+- **Download HTTP Response Format**: Format of the downloaded data (JSON, CSV, XML, etc.)
+- **Record Selector**: Configuration for identifying and extracting individual records from the response, including the extractor field path
+- **Primary Key**: Unique identifier field(s) for records in the stream
+- **Authenticator**: Authentication method for download requests
+- **Query Parameters**: Query parameters for download requests
+- **Request Headers**: HTTP headers for download requests
+- **Request Body**: Request body for download requests
+- **Download Paginator**: Pagination configuration if the download response is paginated
+- **Transformations**: Data transformation rules to apply to downloaded records
+- **Error Handler**: Error handling configuration for download requests
 
 #### Example Configuration (SendGrid):
 
