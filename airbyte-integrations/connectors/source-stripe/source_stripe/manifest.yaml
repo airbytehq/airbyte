@@ -273,26 +273,46 @@ definitions:
   streams:
     events:
       $ref: "#/definitions/created_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
       $parameters:
         path: events
         name: events
     shipping_rates:
       $ref: "#/definitions/created_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipping_rates"
       $parameters:
         path: shipping_rates
         name: shipping_rates
     balance_transactions:
       $ref: "#/definitions/created_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balance_transactions"
       $parameters:
         path: balance_transactions
         name: balance_transactions
     files:
       $ref: "#/definitions/created_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
       $parameters:
         path: files
         name: files
     file_links:
       $ref: "#/definitions/created_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/file_links"
       $parameters:
         path: file_links
         name: file_links
@@ -303,12 +323,20 @@ definitions:
         name: customers
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/customers"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: customers
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/customers"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -321,6 +349,10 @@ definitions:
         name: subscriptions
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscriptions"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
@@ -331,6 +363,10 @@ definitions:
               status: "all"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscriptions"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -343,6 +379,10 @@ definitions:
         name: invoices
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoices"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
@@ -353,6 +393,10 @@ definitions:
               expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoices"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -365,12 +409,19 @@ definitions:
         name: transfers
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/transfers"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: transfers
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          $ref: "#/schemas/transfers"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -383,12 +434,20 @@ definitions:
         name: refunds
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/refunds"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: refunds
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/refunds"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -401,12 +460,20 @@ definitions:
         name: authorizations
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/authorizations"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/authorizations
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/authorizations"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -419,12 +486,20 @@ definitions:
         name: cardholders
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cardholders"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/cardholders
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cardholders"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -437,6 +512,10 @@ definitions:
         name: charges
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/charges"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
@@ -447,6 +526,10 @@ definitions:
               expand[]: '{{["data.refunds"]}}'
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/charges"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -459,12 +542,20 @@ definitions:
         name: coupons
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/coupons"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: coupons
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/coupons"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -477,12 +568,20 @@ definitions:
         name: disputes
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/disputes"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: disputes
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/disputes"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -495,12 +594,20 @@ definitions:
         name: application_fees
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/application_fees"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: application_fees
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/application_fees"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -513,12 +620,20 @@ definitions:
         name: invoice_items
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_items"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: invoiceitems
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_items"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -531,12 +646,20 @@ definitions:
         name: payouts
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payouts"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payouts
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payouts"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -549,6 +672,10 @@ definitions:
         name: plans
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/plans"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
@@ -559,6 +686,10 @@ definitions:
               expand[]: '{{["data.tiers"]}}'
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/plans"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -571,12 +702,20 @@ definitions:
         name: prices
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/prices"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: prices
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/prices"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -589,12 +728,20 @@ definitions:
         name: products
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/products"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: products
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/products"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -607,12 +754,19 @@ definitions:
         name: reviews
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/reviews"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: reviews
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          $ref: "#/schemas/reviews"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -625,12 +779,20 @@ definitions:
         name: subscription_schedule
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscription_schedule"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: subscription_schedules
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscription_schedule"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -643,12 +805,20 @@ definitions:
         name: payment_intents
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payment_intents"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payment_intents
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payment_intents"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -661,12 +831,20 @@ definitions:
         name: promotion_codes
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/promotion_codes"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: promotion_codes
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/promotion_codes"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -679,12 +857,20 @@ definitions:
         name: setup_intents
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/setup_intents"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: setup_intents
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/setup_intents"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -697,12 +883,20 @@ definitions:
         name: cards
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cards"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/cards
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cards"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -715,12 +909,20 @@ definitions:
         name: transactions
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/transactions"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/transactions
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/transactions"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -733,12 +935,20 @@ definitions:
         name: top_ups
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/top_ups"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: topups
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/top_ups"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -751,12 +961,20 @@ definitions:
         name: accounts
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/accounts"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: accounts
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/accounts"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -769,12 +987,20 @@ definitions:
         name: checkout_sessions
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/checkout_sessions"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: checkout/sessions
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/checkout_sessions"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -787,6 +1013,10 @@ definitions:
         name: external_account_cards
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_cards"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
@@ -797,6 +1027,10 @@ definitions:
               object: "card"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_cards"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -811,6 +1045,10 @@ definitions:
         name: external_account_bank_accounts
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_bank_accounts"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
@@ -821,6 +1059,10 @@ definitions:
               object: "bank_account"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_bank_accounts"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -835,12 +1077,20 @@ definitions:
         name: credit_notes
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/credit_notes"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: credit_notes
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/credit_notes"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -853,12 +1103,20 @@ definitions:
         name: early_fraud_warnings
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/early_fraud_warnings"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: radar/early_fraud_warnings
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/early_fraud_warnings"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -869,6 +1127,10 @@ definitions:
       $ref: "#/definitions/entity_stream"
       $parameters:
         name: customer_balance_transactions
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_balance_transactions"
       retriever:
         $ref: "#/definitions/base_retriever"
         $parameters:
@@ -898,6 +1160,10 @@ definitions:
       $ref: "#/definitions/entity_stream"
       $parameters:
         name: payout_balance_transactions
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payout_balance_transactions"
       retriever:
         $ref: "#/definitions/base_retriever"
         requester:
@@ -939,6 +1205,10 @@ definitions:
       $ref: "#/definitions/entity_stream"
       $parameters:
         name: checkout_sessions_line_items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/checkout_sessions_line_items"
       retriever:
         $ref: "#/definitions/base_retriever"
         requester:
@@ -987,6 +1257,10 @@ definitions:
       $ref: "#/definitions/entity_stream"
       $parameters:
         name: transfer_reversals
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transfer_reversals"
       retriever:
         $ref: "#/definitions/base_retriever"
         partition_router:
@@ -1018,6 +1292,10 @@ definitions:
         name: payment_methods
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payment_methods"
         retriever:
           $ref: "#/definitions/base_retriever"
           partition_router:
@@ -1047,6 +1325,10 @@ definitions:
         name: persons
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/persons"
         retriever:
           $ref: "#/definitions/base_retriever"
           partition_router:
@@ -1080,7 +1362,8 @@ definitions:
           - id
         schema_loader:
           type: InlineSchemaLoader
-          $ref: "#/definitions/schemas/invoice_line_items"
+          schema:
+            $ref: "#/schemas/invoice_line_items"
         retriever:
           type: SimpleRetriever
           requester:
@@ -1176,7 +1459,8 @@ definitions:
           - id
         schema_loader:
           type: InlineSchemaLoader
-          $ref: "#/definitions/schemas/application_fees_refunds"
+          schema:
+            $ref: "#/schemas/application_fees_refunds"
         retriever:
           type: SimpleRetriever
           requester:
@@ -1231,7 +1515,8 @@ definitions:
           - id
         schema_loader:
           type: InlineSchemaLoader
-          $ref: "#/definitions/schemas/subscription_items"
+          schema:
+            $ref: "#/schemas/subscription_items"
         retriever:
           type: SimpleRetriever
           requester:
@@ -1315,7 +1600,8 @@ definitions:
           - id
         schema_loader:
           type: InlineSchemaLoader
-          $ref: "#/definitions/schemas/bank_accounts"
+          schema:
+            $ref: "#/schemas/bank_accounts"
         retriever:
           type: SimpleRetriever
           requester:
@@ -1386,6 +1672,10 @@ definitions:
 
     setup_attempts:
       $ref: "#/definitions/created_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/setup_attempts"
       $parameters:
         path: setup_attempts
         name: setup_attempts
@@ -1413,6 +1703,10 @@ definitions:
 
     usage_records:
       $ref: "#/definitions/base_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/usage_records"
       $parameters:
         name: usage_records
       retriever:
