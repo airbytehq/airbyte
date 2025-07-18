@@ -4,7 +4,7 @@ products: all
 
 import DocCardList from '@theme/DocCardList';
 
-# Move data
+# Moving data
 
 In Airbyte, you move data from **sources** to **destinations** using **connectors**. These connectors form **connections**, which contain **streams** of data.
 

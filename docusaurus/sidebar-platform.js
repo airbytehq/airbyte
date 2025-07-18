@@ -295,9 +295,10 @@ module.exports = {
           type: "doc",
           id: "using-airbyte/getting-started/academy",
         },
+        sectionHeader("Moving and managing data"),
         {
           type: "category",
-          label: "Move data",
+          label: "Moving data",
           link: {
             type: "doc",
             id: "move-data/readme",
@@ -316,16 +317,20 @@ module.exports = {
                 "using-airbyte/oauth",
               ],
             },
-            "using-airbyte/getting-started/set-up-a-connection",
+            {
+              type: "category",
+              label: "Connections and streams",
+              link: {
+                type: "doc",
+                id: "using-airbyte/getting-started/set-up-a-connection",
+              },
+              items: [
+                "move-data/add-connection",
+              ],
+            },
             "move-data/elt-data-activation"
           ],
-        },
-        sectionHeader("Airbyte Connectors"),
-        {
-          type: "link",
-          label: "Connector Catalog",
-          href: "/integrations/",
-        },
+        },        
         buildAConnector,
         sectionHeader("Using Airbyte"),
         connectionConfigurations,
