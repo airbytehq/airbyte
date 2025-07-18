@@ -47,7 +47,7 @@ The Assistant supports various documentation formats and will attempt to extract
 ### Automatic Configuration
 
 The AI Assistant will analyze the provided documentation and automatically configure:
-- **Base URL**: Extracts the API's root endpoint
+- **API Endpoint URL**: Extracts the URL of the API endpoint for the stream
 - **Authentication**: Identifies and configures supported authentication methods (API keys, OAuth flows, basic authentication)
 - **Pagination**: Detects pagination patterns and configures appropriate pagination strategies
 - **Request Options**: Sets up common headers, query parameters, and request formatting
