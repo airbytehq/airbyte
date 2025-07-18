@@ -143,7 +143,7 @@ Multiple response filters can be configured for a single error handler. When usi
 The following conditions can be specified on response filters to determine if attributes of the response match the filter. When more than one condition is specified, the filter will take action if the response satisfies any of the conditions:
 
 - [Error Message Substring](#error-message-substring)
-- [Predicate evaluation](#predicate-evaluation)
+- [Predicate](#predicate)
 - [HTTP status codes](#http-status-codes)
 
 #### Error message contains
