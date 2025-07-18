@@ -145,13 +145,54 @@ class MySqlSourceConfigurationTest {
     )
     @Property(name = MEDIUM_PROPERTY, value = "SOCKET")
     @Property(name = SOCKET_PATHS_PROPERTY, value = "a,b,c")
-
-
+    @Property(name = "airbyte.connector.config.concurrency", value = "1")
     fun testConcurrencySettingMigrationSocketMode() {
         val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
 
         val config = factory.makeWithoutExceptionHandling(pojo)
         Assertions.assertEquals(3, config.maxConcurrency)
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(
+        name = "airbyte.connector.config.jdbc_url_params",
+        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+    )
+    @Property(name = MEDIUM_PROPERTY, value = "SOCKET")
+    @Property(name = SOCKET_PATHS_PROPERTY, value = "a,b,c")
+    @Property(name = "airbyte.connector.config.concurrency", value = "5")
+    //    @Property(name = "airbyte.connector.config.max_db_connections", value = "2")
+    fun testConcurrencySettingMigrationSocketModeBackwardCompatibility() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        val config = factory.makeWithoutExceptionHandling(pojo)
+        Assertions.assertEquals(5, config.maxConcurrency)
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(
+        name = "airbyte.connector.config.jdbc_url_params",
+        value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
+    )
+    @Property(name = MEDIUM_PROPERTY, value = "SOCKET")
+    @Property(name = SOCKET_PATHS_PROPERTY, value = "a,b,c")
+    @Property(name = "airbyte.connector.config.concurrency", value = "5")
+    @Property(name = "airbyte.connector.config.max_db_connections", value = "4")
+    fun testConcurrencySettingMigrationSocketModeOverride() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        val config = factory.makeWithoutExceptionHandling(pojo)
+        Assertions.assertEquals(4, config.maxConcurrency)
     }
     companion object {
 

@@ -162,6 +162,13 @@ constructor(
         log.info {
             "maxConcurrencyLegacy: $maxConcurrencyLegacy. maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}"
         }
+
+        // In legacy mode (STDIO), maxConcurrency is taken from the new setting max_db_connections
+        // if set,
+        // otherwise from the old setting concurrency.
+        // In SOCKET mode, if max_db_connections is set, we use it.
+        // Otherwise, if concurrency is set to something other than the default 1, we use it.
+        // Otherwise, we use the number of socket paths provided.
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
                 STDIO -> maxDBConnections ?: maxConcurrencyLegacy

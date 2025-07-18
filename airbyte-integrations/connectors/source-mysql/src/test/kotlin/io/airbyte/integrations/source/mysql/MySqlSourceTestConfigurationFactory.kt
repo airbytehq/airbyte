@@ -15,11 +15,12 @@ import java.time.Duration
 @Singleton
 @Requires(env = [Environment.TEST])
 @Primary
-class MySqlSourceTestConfigurationFactory(val featureFlags: Set<FeatureFlag>,
+class MySqlSourceTestConfigurationFactory(
+    val featureFlags: Set<FeatureFlag>,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
-    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}") val socketPaths: List<String> = emptyList(),
-) :
-    SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
+    val socketPaths: List<String> = emptyList(),
+) : SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
         pojo: MySqlSourceConfigurationSpecification,
     ): MySqlSourceConfiguration =
