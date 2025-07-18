@@ -93,7 +93,7 @@ class DestinationOperationAssembler(
         return DestinationOperation(
             objectName,
             importType,
-            getSchema(propertiesForSyncMode),
+            getSchema((propertiesForSyncMode + matchingKeys).distinct()),
             matchingKeys.map { listOf(it.getName()) },
         )
     }
