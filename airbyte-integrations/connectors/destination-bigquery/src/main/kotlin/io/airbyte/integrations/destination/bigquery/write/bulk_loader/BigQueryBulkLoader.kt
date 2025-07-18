@@ -111,11 +111,7 @@ class BigQueryBulkLoader(
 
     private suspend fun copyBadRecords(srcKey: String, destKey: String) {
         try {
-            val fileContent = storageClient.get(srcKey) { ins -> ins.readAllBytes() }
-            if (fileContent == null) {
-                logger.warn { "No content found in $srcKey, skipping bad records upload." }
-                return
-            }
+            val fileContent = storageClient.get(srcKey) { ins -> ins.use { it.readBytes() } }
             storageClient.put(destKey, fileContent)
         } catch (e: Exception) {
             logger.warn(e) {
