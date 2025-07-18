@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 85999b05-fae0-4312-a3ae-f4987f50d434
-  dockerImageTag: 0.0.29
+  dockerImageTag: 0.0.30
   dockerRepository: airbyte/source-coassemble
   githubIssueLabel: source-coassemble
   icon: icon.svg

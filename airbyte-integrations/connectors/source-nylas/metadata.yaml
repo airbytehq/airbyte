@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 136a1ee6-5b95-4e09-9f3f-5c8df35df690
-  dockerImageTag: 0.0.30
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-nylas
   githubIssueLabel: source-nylas
   icon: icon.svg

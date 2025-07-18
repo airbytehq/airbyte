@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a2e34f7c-7de1-422c-b909-ce12f3e051af
-  dockerImageTag: 0.1.25
+  dockerImageTag: 0.1.26
   dockerRepository: airbyte/source-hoorayhr
   githubIssueLabel: source-hoorayhr
   icon: icon.svg
