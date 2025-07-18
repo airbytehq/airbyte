@@ -92,12 +92,16 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent / "docker-images"
         dockerfile_path = docker_images_dir / "Dockerfile.python-connector-base"
         
+        pip_cache_volume: dagger.CacheVolume = self.dagger_client.cache_volume(self.pip_cache_name)
+        
         return (
             self.dagger_client.container(platform=platform)
             .build(
                 context=self.dagger_client.host().directory(str(docker_images_dir)),
                 dockerfile=dockerfile_path.name
             )
+            .with_mounted_cache(self.pip_cache_path, pip_cache_volume, owner=self.USER)
+            .with_env_variable("PIP_CACHE_DIR", self.pip_cache_path)
         )
 
     async def run_sanity_checks(self, platform: dagger.Platform):
