@@ -10,7 +10,7 @@ Check out our [Hands-on Tutorial](https://airbyte.com/blog/hands-on-with-the-new
 ## Key Features
 
 1. **Pre-fill and Configure Connectors**: When starting a new connector, AI Assistant can automatically prefill and configure a number of fields and sections in the Airbyte Connector Builder, drastically reducing setup time. This currently includes:
-    - Base URL configuration
+    - API Endpoint URL
     - Authentication methods (API keys, OAuth, basic auth)
     - Pagination schemes (offset-limit, cursor-based, page-based)
     - Primary key identification
