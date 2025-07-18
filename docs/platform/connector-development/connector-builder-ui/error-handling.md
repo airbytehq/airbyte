@@ -146,7 +146,7 @@ The following conditions can be specified on response filters to determine if at
 - [Predicate](#predicate)
 - [HTTP Codes](#http-codes)
 
-#### Error message contains
+#### Error Message Substring
 
 For a response filter that defines the "Error message contains" field, the connector will check if the provided text exists within the text body of the API response. If the text is present, the response filter will carry out the specified action.
 
