@@ -144,7 +144,7 @@ The following conditions can be specified on response filters to determine if at
 
 - [Error Message Substring](#error-message-substring)
 - [Predicate](#predicate)
-- [HTTP status codes](#http-status-codes)
+- [HTTP Codes](#http-codes)
 
 #### Error message contains
 
