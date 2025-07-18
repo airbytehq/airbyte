@@ -55,6 +55,23 @@ class DestinationOperationAssemblerTest {
     }
 
     @Test
+    internal fun `test given object has matching key but not available properties when assemble then return factory result`() {
+        every { property.isAvailable() } returns false
+        every { property.isMatchingKey() } returns true
+        val assembler =
+            DestinationOperationAssembler(
+                listOf(PROPERTY_PATH),
+                mapOf(SoftDelete to factory),
+                NO_SCHEMA_REQUESTER,
+            )
+
+        val operations =
+            assembler.assemble(DestinationObject(OBJECT_NAME, apiRepresentationWithOneProperty()))
+
+        assertEquals(1, operations.size)
+    }
+
+    @Test
     internal fun `test given no available properties when assemble then return no operation`() {
         every { property.isAvailable() } returns false
         val assembler =
