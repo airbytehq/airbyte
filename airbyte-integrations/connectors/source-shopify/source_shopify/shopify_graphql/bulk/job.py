@@ -5,6 +5,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from json import loads
 from time import sleep, time
 from typing import Any, Final, Iterable, List, Mapping, Optional
 
@@ -65,7 +66,7 @@ class ShopifyBulkManager:
 
     # currents: _job_id, _job_state, _job_created_at, _job_self_canceled
     _job_id: Optional[str] = field(init=False, default=None)
-    _job_state: str | None = field(init=False, default=None)  # this string is based on ShopifyBulkJobStatus
+    _job_state: Optional[str] = field(init=False, default=None)  # this string is based on ShopifyBulkJobStatus
     # completed and saved Bulk Job result filename
     _job_result_filename: Optional[str] = field(init=False, default=None)
     # date-time when the Bulk Job was created on the server
@@ -83,7 +84,9 @@ class ShopifyBulkManager:
     # the flag to adjust the next slice from the checkpointed cursor vaue
     _job_adjust_slice_from_checkpoint: bool = field(init=False, default=False)
     # keeps the last checkpointed cursor value for supported streams
-    _job_last_checkpoint_cursor_value: str | None = field(init=False, default=None)
+    _job_last_checkpoint_cursor_value: Optional[str] = field(init=False, default=None)
+    # stores extracted cursor from INTERNAL_SERVER_ERROR recovery (temporary storage)
+    _job_extracted_checkpoint_cursor: Optional[str] = field(init=False, default=None)
 
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
@@ -214,6 +217,8 @@ class ShopifyBulkManager:
         self._log_job_msg_count = 0
         # set the running job object count to default
         self._job_last_rec_count = 0
+        # clear any extracted cursor from INTERNAL_SERVER_ERROR recovery
+        self._job_extracted_checkpoint_cursor = None
 
     def _set_checkpointing(self) -> None:
         # set the flag to adjust the next slice from the checkpointed cursor value
@@ -313,6 +318,24 @@ class ShopifyBulkManager:
             # fetch the collected records from CANCELED Job on checkpointing
             self._job_result_filename = self._job_get_result(response)
 
+            # Special handling: For FAILED jobs with INTERNAL_SERVER_ERROR, extract the last processed cursor
+            if response:
+                parsed_response = response.json().get("data", {}).get("node", {}) if response else {}
+                error_code = parsed_response.get("errorCode")
+                if error_code == "INTERNAL_SERVER_ERROR":
+                    last_cursor = self._extract_last_cursor_from_partial_data(response)
+                    if last_cursor:
+                        # Check if this cursor would cause a collision before storing it
+                        if self._checkpoint_cursor_has_collision(last_cursor):
+                            # Skip cursor extraction to avoid collision
+                            pass
+                        else:
+                            # Store the extracted cursor for later use (don't set it yet to avoid collision)
+                            self._job_extracted_checkpoint_cursor = last_cursor
+        else:
+            # Not processing data due to insufficient records or checkpointing disabled
+            pass
+
     def _job_update_state(self, response: Optional[requests.Response] = None) -> None:
         if response:
             self._job_state = response.json().get("data", {}).get("node", {}).get("status")
@@ -363,7 +386,26 @@ class ShopifyBulkManager:
     def _on_completed_job(self, response: Optional[requests.Response] = None) -> None:
         self._job_result_filename = self._job_get_result(response)
 
-    def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException | None:
+    def _on_failed_job(self, response: requests.Response) -> Optional[AirbyteTracedException]:
+        # Special handling for FAILED jobs with INTERNAL_SERVER_ERROR that support checkpointing
+        parsed_response = response.json().get("data", {}).get("node", {}) if response else {}
+        error_code = parsed_response.get("errorCode")
+
+        if error_code == "INTERNAL_SERVER_ERROR" and self._supports_checkpointing:
+            LOGGER.info(
+                f"Stream: `{self.http_client.name}`, BULK Job: `{self._job_id}` failed with INTERNAL_SERVER_ERROR. Waiting for partial data availability..."
+            )
+            # For INTERNAL_SERVER_ERROR specifically, wait and retry to check if partial data becomes available
+            partial_response = self._wait_for_partial_data_on_failure()
+            if partial_response:
+                # Use the updated response that may contain partialDataUrl
+                response = partial_response
+                # Update the job state with the new response to ensure _job_last_rec_count is set correctly
+                self._job_update_state(response)
+                # For INTERNAL_SERVER_ERROR with partial data, extract cursor and treat as checkpointable
+                self._job_get_checkpointed_result(response)
+                return None  # Don't raise exception, we recovered the data
+
         if not self._supports_checkpointing:
             raise ShopifyBulkExceptions.BulkJobFailed(
                 f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
@@ -372,6 +414,102 @@ class ShopifyBulkManager:
             # when the Bulk Job fails, usually there is a `partialDataUrl` available,
             # we leverage the checkpointing in this case.
             self._job_get_checkpointed_result(response)
+
+    def _wait_for_partial_data_on_failure(self) -> Optional[requests.Response]:
+        """
+        Wait for partial data to become available when a BULK job fails with INTERNAL_SERVER_ERROR.
+
+        This method is specifically designed for INTERNAL_SERVER_ERROR cases where
+        Shopify's BULK API may make partial data available (via partialDataUrl)
+        after a short wait, even though the job initially failed.
+
+        Returns:
+            Optional[requests.Response]: Updated response with potential partialDataUrl, or None if no data
+        """
+        max_wait_attempts = 10  # Maximum number of wait attempts
+        wait_interval = 10  # Wait 10 seconds between checks
+
+        for attempt in range(max_wait_attempts):
+            sleep(wait_interval)
+
+            # Check job status again to see if partial data is now available
+            try:
+                _, response = self.http_client.send_request(
+                    http_method="POST",
+                    url=self.base_url,
+                    json={"query": ShopifyBulkTemplates.status(self._job_id)},
+                    request_kwargs={},
+                )
+
+                parsed_response = response.json().get("data", {}).get("node", {}) if response else {}
+                partial_data_url = parsed_response.get("partialDataUrl")
+                object_count = parsed_response.get("objectCount", "0")
+
+                # Only stop waiting if we actually have a partialDataUrl - objectCount alone is not sufficient
+                if partial_data_url and int(object_count) > 0:
+                    LOGGER.info(f"Stream: `{self.http_client.name}`, partial data available after wait. Object count: {object_count}")
+                    return response
+                elif int(object_count) > 0:
+                    # objectCount available but no partialDataUrl yet - continue waiting
+                    continue
+
+            except Exception as e:
+                # Error during partial data check - continue waiting
+                continue
+
+        LOGGER.warning(f"Stream: `{self.http_client.name}`, no partial data became available after {max_wait_attempts} attempts")
+        return None
+
+    def _extract_last_cursor_from_partial_data(self, response: Optional[requests.Response]) -> Optional[str]:
+        """
+        Extract the last processed cursor value from partial data for INTERNAL_SERVER_ERROR recovery.
+
+        This method retrieves partial data from a failed INTERNAL_SERVER_ERROR job and extracts
+        the updatedAt value of the last record, which can be used to resume processing from that point.
+        Only used in INTERNAL_SERVER_ERROR scenarios with checkpointing support.
+
+        Args:
+            response: The response containing partial data information
+
+        Returns:
+            Optional[str]: The cursor value of the last processed record, or None if unavailable
+        """
+        if not response:
+            return None
+
+        try:
+            parsed_response = response.json().get("data", {}).get("node", {})
+            partial_data_url = parsed_response.get("partialDataUrl")
+
+            if not partial_data_url:
+                return None
+
+            # Download the partial data
+            _, partial_response = self.http_client.send_request(http_method="GET", url=partial_data_url, request_kwargs={"stream": True})
+            partial_response.raise_for_status()
+
+            last_record = None
+            # Read through the JSONL data to find the last record
+            for line in partial_response.iter_lines(decode_unicode=True):
+                if line and line.strip() and line.strip() != END_OF_FILE:
+                    try:
+                        record = loads(line)
+                        # Look for the main record types (Order, Product, etc.)
+                        if record.get("__typename") in ["Order", "Product", "Customer", "FulfillmentOrder"]:
+                            last_record = record
+                    except Exception:
+                        continue
+
+            # Extract the updatedAt cursor from the last record
+            if last_record and "updatedAt" in last_record:
+                cursor_value = last_record["updatedAt"]
+                return cursor_value
+
+        except Exception as e:
+            # Failed to extract cursor from partial data
+            pass
+
+        return None
 
     def _on_timeout_job(self, **kwargs) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobTimout(
@@ -535,9 +673,15 @@ class ShopifyBulkManager:
         """
 
         if checkpointed_cursor:
+            # Check for collision and provide more context in the error
             if self._checkpoint_cursor_has_collision(checkpointed_cursor):
+                # For INTERNAL_SERVER_ERROR recovery, if the cursor is the same, we might need to skip ahead slightly
+                # This can happen if the failure occurred right at the boundary of what was already processed
+                if hasattr(self, "_job_extracted_checkpoint_cursor") and self._job_extracted_checkpoint_cursor == checkpointed_cursor:
+                    pass  # Collision from INTERNAL_SERVER_ERROR recovery at boundary
+
                 raise ShopifyBulkExceptions.BulkJobCheckpointCollisionError(
-                    f"The stream: `{self.http_client.name}` checkpoint collision is detected. Try to increase the `BULK Job checkpoint (rows collected)` to the bigger value. The stream will be synced again during the next sync attempt."
+                    f"The stream: `{self.http_client.name}` checkpoint collision is detected. Current cursor: {self._job_last_checkpoint_cursor_value}, New cursor: {checkpointed_cursor}. Try to increase the `BULK Job checkpoint (rows collected)` to the bigger value. The stream will be synced again during the next sync attempt."
                 )
             # set the checkpointed cursor value
             self._set_last_checkpoint_cursor_value(checkpointed_cursor)
@@ -549,7 +693,14 @@ class ShopifyBulkManager:
         if self._job_adjust_slice_from_checkpoint:
             # set the checkpointing to default, before the next slice is emitted, to avoid inf.loop
             self._reset_checkpointing()
-            return self._adjust_slice_end(slice_end, checkpointed_cursor)
+            # Clear the extracted cursor after use to avoid reusing it
+            if self._job_extracted_checkpoint_cursor:
+                extracted_cursor = self._job_extracted_checkpoint_cursor
+                self._job_extracted_checkpoint_cursor = None
+                cursor_to_use = extracted_cursor
+            else:
+                cursor_to_use = checkpointed_cursor or self._job_last_checkpoint_cursor_value
+            return self._adjust_slice_end(slice_end, cursor_to_use)
 
         if self._is_long_running_job:
             self._job_size_reduce_next()
