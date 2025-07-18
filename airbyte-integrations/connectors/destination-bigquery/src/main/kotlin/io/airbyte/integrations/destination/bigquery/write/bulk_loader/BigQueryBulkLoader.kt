@@ -52,8 +52,9 @@ class BigQueryBulkLoader(
                 .setAllowQuotedNewLines(true) // safe for long JSON strings
                 .setAllowJaggedRows(true)
                 .build()
-        val maxBadRecords = (bigQueryConfiguration.loadingMethod as GcsStagingConfiguration).maxBadRecords
-        val shouldKeepBadRecords = (bigQueryConfiguration.loadingMethod).shouldKeepBadRecords
+        val maxBadRecords =
+            (bigQueryConfiguration.loadingMethod as GcsStagingConfiguration).maxBadRecords
+        val shouldKeepBadRecords = bigQueryConfiguration.loadingMethod.shouldKeepBadRecords
         val configuration =
             LoadJobConfiguration.builder(tableId, gcsUri)
                 .setFormatOptions(csvOptions)
@@ -87,7 +88,8 @@ class BigQueryBulkLoader(
                 }
 
                 if (shouldKeepBadRecords) {
-                    val badRecordsKey = "${bigQueryConfiguration.loadingMethod.gcsBucketPathBadRecords}/${remoteObject.key}"
+                    val badRecordsKey =
+                        "${bigQueryConfiguration.loadingMethod.gcsBucketPathBadRecords}/${remoteObject.key}"
                     copyBadRecords(remoteObject.key, badRecordsKey)
                 }
             }
@@ -97,9 +99,7 @@ class BigQueryBulkLoader(
             }
         }
 
-
-        val loadingMethodPostProcessing =
-            (bigQueryConfiguration.loadingMethod as GcsStagingConfiguration).filePostProcessing
+        val loadingMethodPostProcessing = bigQueryConfiguration.loadingMethod.filePostProcessing
         if (loadingMethodPostProcessing == GcsFilePostProcessing.DELETE) {
             storageClient.delete(remoteObject)
         }
@@ -112,13 +112,15 @@ class BigQueryBulkLoader(
     private suspend fun copyBadRecords(srcKey: String, destKey: String) {
         try {
             val fileContent = storageClient.get(srcKey) { ins -> ins.readAllBytes() }
-                if (fileContent == null) {
-                    logger.warn { "No content found in $srcKey, skipping bad records upload." }
-                    return
-                }
-                storageClient.put(destKey, fileContent)
+            if (fileContent == null) {
+                logger.warn { "No content found in $srcKey, skipping bad records upload." }
+                return
+            }
+            storageClient.put(destKey, fileContent)
         } catch (e: Exception) {
-            logger.warn(e) { "Error while trying to copy bad records from $srcKey, to $destKey skipping bad records upload." }
+            logger.warn(e) {
+                "Error while trying to copy bad records from $srcKey, to $destKey skipping bad records upload."
+            }
             return
         }
         logger.info { "Copied bad records from $srcKey to $destKey" }
