@@ -413,7 +413,6 @@ class CustomGAQueryHttpRequester(HttpRequester):
     """
 
     query: str = ""
-    primary_key: Optional[List[str]] = None
     cursor_field: Union[str, InterpolatedString] = ""
 
     def __post_init__(self, parameters: Mapping[str, Any]):

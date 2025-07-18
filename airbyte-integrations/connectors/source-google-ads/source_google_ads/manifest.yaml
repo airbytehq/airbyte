@@ -732,22 +732,10 @@ definitions:
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
-            - primary_key
-          value: "{{ components_values.get('primary_key', None) }}"
-          create_or_update: true
-        - type: ComponentMappingDefinition
-          field_path:
             - retriever
             - requester
             - query
           value: "{{ components_values.get('query', None) }}"
-          create_or_update: true
-        - type: ComponentMappingDefinition
-          field_path:
-            - retriever
-            - requester
-            - primary_key
-          value: "{{ components_values.get('primary_key', None) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
