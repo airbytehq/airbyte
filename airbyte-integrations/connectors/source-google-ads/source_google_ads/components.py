@@ -605,7 +605,9 @@ class CriterionIncrementalRequester(GoogleAdsHttpRequester):
         in_list = ", ".join(f"'{i}'" for i in ids)
 
         query = (
-            f"SELECT {', '.join(select_fields)}\n" f"  FROM {self._parameters['resource_name']}\n" f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
+            f"SELECT {', '.join(select_fields)}\n"
+            f"  FROM {self._parameters['resource_name']}\n"
+            f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
         )
 
         return {"query": query}
