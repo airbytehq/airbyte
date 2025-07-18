@@ -8,10 +8,6 @@ from pathlib import Path
 from typing import Any
 
 import dagger
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dagger import Container, Platform
 
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -28,7 +24,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: "Platform", *args: Any) -> "Container":
+    async def _build_connector(self, platform, *args: Any):
         if (
             "connectorBuildOptions" in self.context.connector.metadata
             and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]
@@ -37,10 +33,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         else:
             return await self._build_from_dockerfile(platform)
 
-    def _get_base_container(self, platform: "Platform") -> "Container":
+    def _get_base_container(self, platform):
         return self.context.connector.base_image_version.get_container(platform)
 
-    async def _create_builder_container(self, platform: "Platform") -> "Container":
+    async def _create_builder_container(self, platform):
         base_container = self._get_base_container(platform)
         user = await self.get_image_user(base_container)
         builder_container = with_python_connector_installed(
@@ -48,7 +44,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         )
         return builder_container
 
-    async def _build_from_base_image(self, platform: "Platform") -> "Container":
+    async def _build_from_base_image(self, platform):
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
 
         Returns:
@@ -73,7 +69,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         connector_container = await apply_python_development_overrides(self.context, base_container, user)
         return connector_container
 
-    async def _build_from_dockerfile(self, platform: "Platform") -> "Container":
+    async def _build_from_dockerfile(self, platform):
         """Build the connector container using the Dockerfile in the connector directory.
 
         Returns:

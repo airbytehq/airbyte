@@ -6,10 +6,6 @@ import subprocess
 from pathlib import Path
 
 import dagger
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dagger import Container, Platform
 
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -52,7 +48,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         return await super()._run(dist_tar_path)
 
-    async def _build_connector(self, platform: "Platform", dist_tar_path: str) -> "Container":
+    async def _build_connector(self, platform, dist_tar_path: str):
         """
         Build a Java connector image using Dagger.
         """
