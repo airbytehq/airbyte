@@ -199,6 +199,7 @@ class CheckpointManager(
             catalog.streams.all { stream ->
                 val manager = syncManager.getStreamManager(stream.mappedDescriptor)
                 val streamCheckpoints = snapshotStreamCheckpoints[stream.mappedDescriptor]
+                val persistedResults = mutableListOf<Boolean>()
 
                 streamCheckpoints?.let {
                     /*
@@ -209,15 +210,23 @@ class CheckpointManager(
                      * by the manager, return true so that the flush will continue as there is
                      * nothing for that stream to ensure that it has been persisted.
                      */
-                    streamCheckpoints
-                        .takeUnless { it.isEmpty() }
-                        ?.map { (nextCheckpointKey, _) ->
+                    while (streamCheckpoints.isNotEmpty()) {
+                        val (nextCheckpointKey, _) = streamCheckpoints.firstEntry() ?: break
+                        val persisted =
                             manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
+                        persistedResults.add(persisted)
+                        if (persisted) {
+                            // If the stream has been persisted to the checkpoint ID, remove it from
+                            // the list so that we don't scan it again.
+                            streamCheckpoints.remove(nextCheckpointKey)
+                        } else {
+                            // If any stream has not been persisted, immediately break the loop
+                            break
                         }
-                        ?.all { it }
-                        ?: true
+                    }
                 }
-                    ?: true
+
+                persistedResults.all { it }
             }
 
         while (globalCheckpoints.isNotEmpty()) {
