@@ -48,16 +48,16 @@ The Creation tab configures how to request that a job be created on the server. 
 
 #### Key Components:
 
-- **URL** (`retriever.creation_requester.url`): The full URL that the request should be sent to create the job (required)
-- **HTTP Method** (`retriever.creation_requester.http_method`): The HTTP method for job creation, typically POST but can vary by API
-- **HTTP Response Format** (`retriever.decoder`): Format of the response from the job creation request, which will also be used for polling responses
-- **Authentication** (`retriever.creation_requester.authenticator`): Authentication method for the creation request, with support for various authentication types
-- **Request Parameters** (`retriever.creation_requester.request_parameters`): Query parameters to include in the creation request
-- **Request Headers** (`retriever.creation_requester.request_headers`): HTTP headers to include in the creation request  
-- **Request Body** (`retriever.creation_requester.request_body`): Request body content for the creation request
-- **Incremental Sync** (`incremental_sync`): Configuration for incremental synchronization if the stream supports it
-- **Partition Router** (`retriever.partition_router`): Configuration for partitioning the stream into multiple requests
-- **Error Handler** (`retriever.creation_requester.error_handler`): Error handling configuration for creation requests
+- **API Endpoint URL** (required): The full URL that the request should be sent to create the job
+- **HTTP Method**: The HTTP method for job creation, typically POST but can vary by API
+- **HTTP Response Format**: Format of the response from the job creation request, which will also be used for polling responses
+- **Authenticator**: Authentication method for the creation request, with support for various authentication types
+- **Query Parameters**: Query parameters to include in the creation request
+- **Request Headers**: HTTP headers to include in the creation request  
+- **Request Body**: Request body content for the creation request
+- **Incremental Sync**: Configuration for incremental synchronization if the stream supports it
+- **Partition Router**: Configuration for partitioning the stream into multiple requests
+- **Error Handler**: Error handling configuration for creation requests
 
 #### Advanced Configuration
 
