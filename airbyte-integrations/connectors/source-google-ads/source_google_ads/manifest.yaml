@@ -281,6 +281,61 @@ definitions:
              | map('replace','NONE','5')
              | list }}
 
+  dynamic_stream_template:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        url: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client_non_manager"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
+      paginator:
+        type: NoPagination
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
+        condition: "{{ record.get('metrics.interaction_event_types', False) }}"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        customer_client_stream: "#/definitions/customer_client"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url_base: "https://googleads.googleapis.com/v18/googleAdsFields"
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+        $parameters:
+          name: dynamic_schema_loader_requester
+
   # Stream Definitions
   account_performance_report_stream:
     $ref: "#/definitions/incremental_non_manager_stream_base"
@@ -659,6 +714,85 @@ definitions:
       schema:
         $ref: "#/schemas/user_location_view"
 
+  custom_ga_query_stream:
+    type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/dynamic_stream_template"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        - type: StreamConfig
+          configs_pointer:
+            - custom_queries_array
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - name
+          value: "{{ components_values['table_name'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - primary_key
+          value: "{{ components_values.get('primary_key', None) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - query
+          value: "{{ components_values.get('query', None) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - primary_key
+          value: "{{ components_values.get('primary_key', None) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - cursor_field
+          value: "{{ components_values.get('cursor_field', None) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - query
+          value: "{{ components_values.get('query', None) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - cursor_field
+          value: "{{ components_values.get('cursor_field', None) }}"
+          create_or_update: true
+        # This is a workaround to "conditionally" add the incremental_sync component if the user provided a cursor_field in the custom query object.
+        - type: ComponentMappingDefinition
+          field_path:
+            - "{{ 'incremental_sync' if components_values.get('cursor_field', None) else '$parameters' }}"
+          value: >-
+            {
+              "type": "DatetimeBasedCursor",
+              "cursor_field": "{{ components_values.get('cursor_field') if components_values.get('cursor_field') else None }}",
+              "datetime_format": "%Y-%m-%d",
+              "lookback_window": "P{{ config.get('conversion_window_days', 14) }}D",
+              "cursor_granularity": "P1D",
+              "step": "P14D",
+              "start_datetime": {
+                "type": "MinMaxDatetime",
+                "datetime": "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}",
+                "datetime_format": "%Y-%m-%d"
+              },
+              "end_datetime": {
+                "type": "MinMaxDatetime",
+                "datetime": "{{ config.get('end_date', today_utc()) }}",
+                "datetime_format": "%Y-%m-%d"
+              }
+            }
+          create_or_update: true
+
 streams:
   - "#/definitions/account_performance_report_stream"
   - "#/definitions/ad_group_stream"
@@ -684,6 +818,8 @@ streams:
   - "#/definitions/topic_view_stream"
   - "#/definitions/user_interest_stream"
   - "#/definitions/user_location_view_stream"
+dynamic_streams:
+  - "#/definitions/custom_ga_query_stream"
 
 concurrency_level:
   type: ConcurrencyLevel

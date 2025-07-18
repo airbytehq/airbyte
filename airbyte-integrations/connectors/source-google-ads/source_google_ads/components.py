@@ -6,17 +6,20 @@ import json
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from functools import lru_cache
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import anyascii
 import requests
 
+from airbyte_cdk import InterpolatedString
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.schema import DynamicSchemaLoader, SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
@@ -33,6 +36,20 @@ REPORT_MAPPING = {
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
     "service_accounts": "customer",
+}
+
+DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
+
+
+GOOGLE_ADS_DATATYPE_MAPPING = {
+    "INT64": "integer",
+    "INT32": "integer",
+    "DOUBLE": "number",
+    "STRING": "string",
+    "BOOLEAN": "boolean",
+    "DATE": "string",
+    "MESSAGE": "string",
+    "ENUM": "string",
 }
 
 
@@ -387,3 +404,159 @@ class KeysToSnakeCaseGoogleAdsTransformation(RecordTransformation):
 
     def tokens_to_snake_case(self, tokens: List[str]) -> str:
         return "_".join(token.lower() for token in tokens)
+
+
+@dataclass
+class CustomGAQueryHttpRequester(HttpRequester):
+    """
+    Custom HTTP requester for custom query streams.
+    """
+
+    query: str = ""
+    primary_key: Optional[List[str]] = None
+    cursor_field: Union[str, InterpolatedString] = ""
+
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        super().__post_init__(parameters=parameters)
+        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={})
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        query = self._build_query(stream_slice)
+        return {"query": query}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {
+            "developer-token": self.config["credentials"]["developer_token"],
+            "login-customer-id": stream_slice["parent_slice"]["customer_id"],
+        }
+
+    def _build_query(self, stream_slice: StreamSlice) -> str:
+        fields = self._get_list_of_fields()
+        resource_name = self._get_resource_name()
+
+        cursor_field = self._cursor_field.eval(self.config)
+
+        if cursor_field:
+            fields.append(cursor_field)
+
+        if "start_time" in stream_slice and "end_time" in stream_slice and cursor_field:
+            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE {cursor_field} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY {self.cursor_field} ASC"
+        else:
+            query = f"SELECT {', '.join(fields)} FROM {resource_name}"
+        return query
+
+    def _get_list_of_fields(self) -> List[str]:
+        """
+        Extract field names from the `SELECT` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
+        """
+        query_upper = self.query.upper()
+        select_index = query_upper.find("SELECT")
+        from_index = query_upper.find("FROM")
+
+        fields_portion = self.query[select_index + 6 : from_index].strip()
+
+        fields = [field.strip() for field in fields_portion.split(",")]
+
+        return fields
+
+    def _get_resource_name(self) -> str:
+        """
+        Extract the resource name from the `FROM` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns "table".
+        """
+        query_upper = self.query.upper()
+        from_index = query_upper.find("FROM")
+        return self.query[from_index + 4 :].strip()
+
+
+@dataclass()
+class CustomGAQuerySchemaLoader(SchemaLoader):
+    """
+    Custom schema loader for custom query streams. Parses the user-provided query to extract the fields and then queries the Google Ads API for each field to retreive field metadata.
+    """
+
+    requester: HttpRequester
+    config: Config
+
+    query: str = ""
+    cursor_field: Union[str, InterpolatedString] = ""
+
+    def __post_init__(self):
+        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={})
+
+    def get_json_schema(self) -> Dict[str, Any]:
+        local_json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {},
+            "additionalProperties": True,
+        }
+
+        fields = self._get_list_of_fields()
+        cursor_field = self._cursor_field.eval(self.config)
+        if cursor_field:
+            fields.append(cursor_field)
+
+        for field in fields:
+            response = requests.get(
+                url=f"https://googleads.googleapis.com/v18/googleAdsFields/{field}",
+                headers=self._get_request_headers(),
+            )
+            response.raise_for_status()
+            response_json = response.json()
+
+            field_value = self._build_field_value(field, response_json)
+            local_json_schema["properties"][field] = field_value
+
+        return local_json_schema
+
+    def _build_field_value(self, field: str, response_json: Dict[str, Any]) -> Any:
+        field_value = {"type": [GOOGLE_ADS_DATATYPE_MAPPING.get(response_json["dataType"], response_json["dataType"]), "null"]}
+
+        if response_json["dataType"] == "DATE" and field in DATE_TYPES:
+            field_value["format"] = "date"
+
+        if response_json["dataType"] == "ENUM":
+            field_value["enum"] = [value for value in response_json["enumValues"]]
+
+        if response_json["isRepeated"]:
+            field_value = {"type": ["null", "array"], "items": field_value}
+
+        return field_value
+
+    def _get_list_of_fields(self) -> List[str]:
+        """
+        Extract field names from the `SELECT` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
+        """
+        query_upper = self.query.upper()
+        select_index = query_upper.find("SELECT")
+        from_index = query_upper.find("FROM")
+
+        fields_portion = self.query[select_index + 6 : from_index].strip()
+
+        fields = [field.strip() for field in fields_portion.split(",")]
+
+        return fields
+
+    def _get_request_headers(self) -> Mapping[str, Any]:
+        headers = {}
+        auth_headers = self.requester.authenticator.get_auth_header()
+        if auth_headers:
+            headers.update(auth_headers)
+
+        headers["developer-token"] = self.config["credentials"]["developer_token"]
+        return headers
