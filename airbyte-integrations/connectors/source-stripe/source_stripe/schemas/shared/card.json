@@ -8,7 +8,165 @@
       "type": ["null", "string"]
     },
     "cardholder": {
-      "$ref": "cardholder.json"
+      "type": ["null", "object"],
+      "properties": {
+        "billing": {
+          "type": ["null", "object"],
+          "properties": {
+            "address": {
+              "type": ["null", "object"],
+              "properties": {
+                "city": {
+                  "type": ["null", "string"]
+                },
+                "country": {
+                  "type": ["null", "string"]
+                },
+                "line1": {
+                  "type": ["null", "string"]
+                },
+                "line2": {
+                  "type": ["null", "string"]
+                },
+                "postal_code": {
+                  "type": ["null", "string"]
+                },
+                "state": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "company": {
+          "type": ["null", "object"],
+          "properties": {
+            "tax_id_provided": {
+              "type": "boolean"
+            }
+          }
+        },
+        "created": {
+          "type": ["null", "integer"]
+        },
+        "updated": {
+          "type": ["null", "integer"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "individual": {
+          "type": ["null", "object"],
+          "properties": {
+            "dob": {
+              "type": ["null", "object"],
+              "properties": {
+                "day": {
+                  "type": ["null", "integer"]
+                },
+                "month": {
+                  "type": ["null", "integer"]
+                },
+                "year": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "first_name": {
+              "type": ["null", "string"]
+            },
+            "last_name": {
+              "type": ["null", "string"]
+            },
+            "verification": {
+              "type": ["null", "object"],
+              "properties": {
+                "document": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "back": {
+                      "type": ["null", "string"]
+                    },
+                    "front": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "livemode": {
+          "type": ["null", "boolean"]
+        },
+        "metadata": {
+          "type": ["null", "object"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "object": {
+          "type": ["null", "string"]
+        },
+        "phone_number": {
+          "type": ["null", "string"]
+        },
+        "requirements": {
+          "type": ["null", "object"],
+          "properties": {
+            "disabled_reason": {
+              "type": ["null", "string"]
+            },
+            "past_due": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "spending_controls": {
+          "type": ["null", "object"],
+          "properties": {
+            "allowed_categories": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "blocked_categories": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "spending_limits": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"]
+              }
+            },
+            "spending_limits_currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "status": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "preferred_locales": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "created": {
       "type": ["null", "integer"]
@@ -63,7 +221,27 @@
       "additionalProperties": true,
       "properties": {
         "address": {
-          "$ref": "address.json"
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "carrier": {
           "type": ["null", "string"]
@@ -92,7 +270,30 @@
       }
     },
     "spending_controls": {
-      "$ref": "spending_controls.json"
+      "type": ["null", "object"],
+      "properties": {
+        "allowed_categories": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "blocked_categories": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "spending_limits": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"]
+          }
+        },
+        "spending_limits_currency": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "status": {
       "type": ["null", "string"]

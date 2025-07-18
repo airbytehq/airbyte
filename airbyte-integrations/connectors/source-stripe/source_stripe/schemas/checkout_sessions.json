@@ -288,7 +288,27 @@
       "properties": {
         "address": {
           "description": "Shipping address.",
-          "$ref": "address.json"
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "name": {
           "description": "Recipient name.",
@@ -729,7 +749,54 @@
               },
               "rate": {
                 "description": "Tax rate details.",
-                "$ref": "tax_rate.json"
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  },
+                  "active": {
+                    "type": ["null", "boolean"]
+                  },
+                  "country": {
+                    "type": ["null", "string"]
+                  },
+                  "created": {
+                    "type": ["null", "integer"]
+                  },
+                  "description": {
+                    "type": ["null", "string"]
+                  },
+                  "display_name": {
+                    "type": ["null", "string"]
+                  },
+                  "effective_percentage": {
+                    "type": ["null", "number"]
+                  },
+                  "inclusive": {
+                    "type": ["null", "boolean"]
+                  },
+                  "jurisdiction": {
+                    "type": ["null", "string"]
+                  },
+                  "livemode": {
+                    "type": ["null", "boolean"]
+                  },
+                  "metadata": {
+                    "type": ["null", "object"]
+                  },
+                  "percentage": {
+                    "type": ["null", "number"]
+                  },
+                  "state": {
+                    "type": ["null", "string"]
+                  },
+                  "tax_type": {
+                    "type": ["null", "string"]
+                  }
+                }
               },
               "taxability_reason": {
                 "description": "Reason for taxability.",
@@ -750,7 +817,27 @@
       "properties": {
         "address": {
           "description": "Shipping address.",
-          "$ref": "address.json"
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "name": {
           "description": "Recipient name.",
@@ -781,7 +868,15 @@
     },
     "payment_method_configuration_details": {
       "description": "Details of payment method configuration.",
-      "$ref": "payment_method_configuration_details.json"
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "parent": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "client_secret": {
       "description": "Client secret used for authentication.",

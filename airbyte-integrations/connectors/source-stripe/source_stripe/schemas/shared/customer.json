@@ -44,13 +44,53 @@
       "type": ["null", "string"]
     },
     "address": {
-      "$ref": "address.json"
+      "type": ["null", "object"],
+      "properties": {
+        "city": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "line1": {
+          "type": ["null", "string"]
+        },
+        "line2": {
+          "type": ["null", "string"]
+        },
+        "postal_code": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "shipping": {
       "type": ["null", "object"],
       "properties": {
         "address": {
-          "$ref": "address.json"
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "name": {
           "type": ["null", "string"]
@@ -188,7 +228,27 @@
                     "type": ["null", "string"]
                   },
                   "address": {
-                    "$ref": "address.json"
+                    "type": ["null", "object"],
+                    "properties": {
+                      "city": {
+                        "type": ["null", "string"]
+                      },
+                      "country": {
+                        "type": ["null", "string"]
+                      },
+                      "line1": {
+                        "type": ["null", "string"]
+                      },
+                      "line2": {
+                        "type": ["null", "string"]
+                      },
+                      "postal_code": {
+                        "type": ["null", "string"]
+                      },
+                      "state": {
+                        "type": ["null", "string"]
+                      }
+                    }
                   },
                   "verified_email": {
                     "type": ["null", "string"]
@@ -465,7 +525,27 @@
                   "type": ["null", "string"]
                 },
                 "address": {
-                  "$ref": "address.json"
+                  "type": ["null", "object"],
+                  "properties": {
+                    "city": {
+                      "type": ["null", "string"]
+                    },
+                    "country": {
+                      "type": ["null", "string"]
+                    },
+                    "line1": {
+                      "type": ["null", "string"]
+                    },
+                    "line2": {
+                      "type": ["null", "string"]
+                    },
+                    "postal_code": {
+                      "type": ["null", "string"]
+                    },
+                    "state": {
+                      "type": ["null", "string"]
+                    }
+                  }
                 },
                 "verified_email": {
                   "type": ["null", "string"]

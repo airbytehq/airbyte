@@ -1,5 +1,70 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "additionalProperties": true,
-  "$ref": "balance_transactions.json"
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the object.",
+      "type": ["null", "string"]
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "description": "Gross amount of this transaction (in cents (or local equivalent)). A positive value represents funds charged to another party, and a negative value represents funds sent to another party.",
+      "type": ["null", "integer"]
+    },
+    "available_on": {
+      "description": "The date that the transaction's net funds become available in the Stripe balance.",
+      "type": ["null", "integer"]
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "description": "Three-letter ISO currency code, in lowercase. Must be a supported currency.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
+      "type": ["null", "string"]
+    },
+    "exchange_rate": {
+      "description": "If applicable, this transaction uses an exchange rate.",
+      "type": ["null", "number"]
+    },
+    "fee": {
+      "description": "Fees (in cents (or local equivalent)) paid for this transaction. Represented as a positive integer when assessed.",
+      "type": ["null", "integer"]
+    },
+    "fee_details": {
+      "description": "Detailed breakdown of fees (in cents (or local equivalent)) paid for this transaction.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "net": {
+      "description": "Net impact to a Stripe balance (in cents (or local equivalent)). A positive value represents incrementing a Stripe balance, and a negative value decrementing a Stripe balance.",
+      "type": ["null", "integer"]
+    },
+    "reporting_category": {
+      "description": "Learn more about how reporting categories can help you understand balance transactions from an accounting perspective.",
+      "type": ["null", "string"]
+    },
+    "source": {
+      "description": "This transaction relates to the Stripe object.",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "The transaction's net funds status in the Stripe balance, which are either `available` or `pending`.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "Transaction type.",
+      "type": ["null", "string"]
+    }
+  }
 }

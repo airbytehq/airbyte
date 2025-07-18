@@ -140,7 +140,57 @@
                 },
                 "tax_rates": {
                   "description": "Tax rates applied to the item.",
-                  "$ref": "tax_rates.json"
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "object": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": ["null", "boolean"]
+                      },
+                      "country": {
+                        "type": ["null", "string"]
+                      },
+                      "created": {
+                        "type": ["null", "integer"]
+                      },
+                      "description": {
+                        "type": ["null", "string"]
+                      },
+                      "display_name": {
+                        "type": ["null", "string"]
+                      },
+                      "effective_percentage": {
+                        "type": ["null", "number"]
+                      },
+                      "inclusive": {
+                        "type": ["null", "boolean"]
+                      },
+                      "jurisdiction": {
+                        "type": ["null", "string"]
+                      },
+                      "livemode": {
+                        "type": ["null", "boolean"]
+                      },
+                      "metadata": {
+                        "type": ["null", "object"]
+                      },
+                      "percentage": {
+                        "type": ["null", "number"]
+                      },
+                      "state": {
+                        "type": ["null", "string"]
+                      },
+                      "tax_type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -175,7 +225,57 @@
           },
           "default_tax_rates": {
             "description": "Default tax rates applied in this phase.",
-            "$ref": "tax_rates.json"
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "active": {
+                  "type": ["null", "boolean"]
+                },
+                "country": {
+                  "type": ["null", "string"]
+                },
+                "created": {
+                  "type": ["null", "integer"]
+                },
+                "description": {
+                  "type": ["null", "string"]
+                },
+                "display_name": {
+                  "type": ["null", "string"]
+                },
+                "effective_percentage": {
+                  "type": ["null", "number"]
+                },
+                "inclusive": {
+                  "type": ["null", "boolean"]
+                },
+                "jurisdiction": {
+                  "type": ["null", "string"]
+                },
+                "livemode": {
+                  "type": ["null", "boolean"]
+                },
+                "metadata": {
+                  "type": ["null", "object"]
+                },
+                "percentage": {
+                  "type": ["null", "number"]
+                },
+                "state": {
+                  "type": ["null", "string"]
+                },
+                "tax_type": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
           },
           "description": {
             "description": "A description for this phase.",

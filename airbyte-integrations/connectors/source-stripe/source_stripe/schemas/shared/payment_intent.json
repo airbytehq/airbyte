@@ -166,7 +166,27 @@
               "type": ["null", "object"],
               "properties": {
                 "address": {
-                  "$ref": "address.json"
+                  "type": ["null", "object"],
+                  "properties": {
+                    "city": {
+                      "type": ["null", "string"]
+                    },
+                    "country": {
+                      "type": ["null", "string"]
+                    },
+                    "line1": {
+                      "type": ["null", "string"]
+                    },
+                    "line2": {
+                      "type": ["null", "string"]
+                    },
+                    "postal_code": {
+                      "type": ["null", "string"]
+                    },
+                    "state": {
+                      "type": ["null", "string"]
+                    }
+                  }
                 },
                 "email": {
                   "type": ["null", "string"]
@@ -361,7 +381,27 @@
                       "type": ["null", "object"],
                       "properties": {
                         "billing_address": {
-                          "$ref": "address.json"
+                          "type": ["null", "object"],
+                          "properties": {
+                            "city": {
+                              "type": ["null", "string"]
+                            },
+                            "country": {
+                              "type": ["null", "string"]
+                            },
+                            "line1": {
+                              "type": ["null", "string"]
+                            },
+                            "line2": {
+                              "type": ["null", "string"]
+                            },
+                            "postal_code": {
+                              "type": ["null", "string"]
+                            },
+                            "state": {
+                              "type": ["null", "string"]
+                            }
+                          }
                         },
                         "email": {
                           "type": ["null", "string"]
@@ -370,7 +410,27 @@
                           "type": ["null", "string"]
                         },
                         "shipping_address": {
-                          "$ref": "address.json"
+                          "type": ["null", "object"],
+                          "properties": {
+                            "city": {
+                              "type": ["null", "string"]
+                            },
+                            "country": {
+                              "type": ["null", "string"]
+                            },
+                            "line1": {
+                              "type": ["null", "string"]
+                            },
+                            "line2": {
+                              "type": ["null", "string"]
+                            },
+                            "postal_code": {
+                              "type": ["null", "string"]
+                            },
+                            "state": {
+                              "type": ["null", "string"]
+                            }
+                          }
                         }
                       }
                     },
@@ -384,7 +444,27 @@
                       "type": ["null", "object"],
                       "properties": {
                         "billing_address": {
-                          "$ref": "address.json"
+                          "type": ["null", "object"],
+                          "properties": {
+                            "city": {
+                              "type": ["null", "string"]
+                            },
+                            "country": {
+                              "type": ["null", "string"]
+                            },
+                            "line1": {
+                              "type": ["null", "string"]
+                            },
+                            "line2": {
+                              "type": ["null", "string"]
+                            },
+                            "postal_code": {
+                              "type": ["null", "string"]
+                            },
+                            "state": {
+                              "type": ["null", "string"]
+                            }
+                          }
                         },
                         "email": {
                           "type": ["null", "string"]
@@ -393,7 +473,27 @@
                           "type": ["null", "string"]
                         },
                         "shipping_address": {
-                          "$ref": "address.json"
+                          "type": ["null", "object"],
+                          "properties": {
+                            "city": {
+                              "type": ["null", "string"]
+                            },
+                            "country": {
+                              "type": ["null", "string"]
+                            },
+                            "line1": {
+                              "type": ["null", "string"]
+                            },
+                            "line2": {
+                              "type": ["null", "string"]
+                            },
+                            "postal_code": {
+                              "type": ["null", "string"]
+                            },
+                            "state": {
+                              "type": ["null", "string"]
+                            }
+                          }
                         }
                       }
                     }
@@ -685,7 +785,27 @@
       "type": ["null", "object"],
       "properties": {
         "address": {
-          "$ref": "address.json"
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "carrier": {
           "type": ["null", "string"]
@@ -782,7 +902,15 @@
       }
     },
     "payment_method_configuration_details": {
-      "$ref": "payment_method_configuration_details.json"
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "parent": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

@@ -1,5 +1,103 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "additionalProperties": true,
-  "$ref": "card.json"
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the object.",
+      "type": ["null", "string"]
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "type": ["null", "string"]
+    },
+    "account": {
+      "description": "The account this card belongs to.",
+      "type": ["null", "string"]
+    },
+    "address_city": {
+      "description": "City/District/Suburb/Town/Village.",
+      "type": ["null", "string"]
+    },
+    "address_country": {
+      "description": "Billing address country, if provided when creating card.",
+      "type": ["null", "string"]
+    },
+    "address_line1": {
+      "description": "Address line 1 (Street address/PO Box/Company name).",
+      "type": ["null", "string"]
+    },
+    "address_line1_check": {
+      "description": "If `address_line1` was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`.",
+      "type": ["null", "string"]
+    },
+    "address_line2": {
+      "description": "Address line 2 (Apartment/Suite/Unit/Building).",
+      "type": ["null", "string"]
+    },
+    "address_state": {
+      "description": "State/County/Province/Region.",
+      "type": ["null", "string"]
+    },
+    "address_zip": {
+      "description": "ZIP or postal code.",
+      "type": ["null", "string"]
+    },
+    "address_zip_check": {
+      "description": "If `address_zip` was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`.",
+      "type": ["null", "string"]
+    },
+    "brand": {
+      "description": "Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.",
+      "type": ["null", "string"]
+    },
+    "country": {
+      "description": "Two-letter ISO code representing the country of the card.",
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "description": "The customer that this card belongs to.",
+      "type": ["null", "string"]
+    },
+    "cvc_check": {
+      "description": "If a CVC was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`.",
+      "type": ["null", "string"]
+    },
+    "dynamic_last4": {
+      "description": "The last four digits of the device account number.",
+      "type": ["null", "string"]
+    },
+    "exp_month": {
+      "description": "Two-digit number representing the card's expiration month.",
+      "type": ["null", "integer"]
+    },
+    "exp_year": {
+      "description": "Four-digit number representing the card's expiration year.",
+      "type": ["null", "integer"]
+    },
+    "fingerprint": {
+      "description": "Uniquely identifies this particular card number.",
+      "type": ["null", "string"]
+    },
+    "funding": {
+      "description": "Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.",
+      "type": ["null", "string"]
+    },
+    "last4": {
+      "description": "The last four digits of the card.",
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "description": "Set of key-value pairs that you can attach to an object.",
+      "type": ["null", "object"]
+    },
+    "name": {
+      "description": "Cardholder name.",
+      "type": ["null", "string"]
+    },
+    "tokenization_method": {
+      "description": "If the card number is tokenized, this is the method that was used.",
+      "type": ["null", "string"]
+    }
+  }
 }

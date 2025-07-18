@@ -5,7 +5,27 @@
       "type": ["null", "object"],
       "properties": {
         "address": {
-          "$ref": "address.json"
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
         }
       }
     },
@@ -100,7 +120,30 @@
       }
     },
     "spending_controls": {
-      "$ref": "spending_controls.json"
+      "type": ["null", "object"],
+      "properties": {
+        "allowed_categories": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "blocked_categories": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "spending_limits": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"]
+          }
+        },
+        "spending_limits_currency": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "status": {
       "type": ["null", "string"]

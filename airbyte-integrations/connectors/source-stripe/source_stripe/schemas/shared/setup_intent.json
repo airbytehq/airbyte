@@ -91,7 +91,15 @@
       }
     },
     "payment_method_configuration_details": {
-      "$ref": "payment_method_configuration_details.json"
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "parent": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

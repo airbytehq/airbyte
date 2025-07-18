@@ -530,7 +530,54 @@
             "type": ["null", "boolean"]
           },
           "tax_rate": {
-            "$ref": "tax_rate.json"
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "object": {
+                "type": ["null", "string"]
+              },
+              "active": {
+                "type": ["null", "boolean"]
+              },
+              "country": {
+                "type": ["null", "string"]
+              },
+              "created": {
+                "type": ["null", "integer"]
+              },
+              "description": {
+                "type": ["null", "string"]
+              },
+              "display_name": {
+                "type": ["null", "string"]
+              },
+              "effective_percentage": {
+                "type": ["null", "number"]
+              },
+              "inclusive": {
+                "type": ["null", "boolean"]
+              },
+              "jurisdiction": {
+                "type": ["null", "string"]
+              },
+              "livemode": {
+                "type": ["null", "boolean"]
+              },
+              "metadata": {
+                "type": ["null", "object"]
+              },
+              "percentage": {
+                "type": ["null", "number"]
+              },
+              "state": {
+                "type": ["null", "string"]
+              },
+              "tax_type": {
+                "type": ["null", "string"]
+              }
+            }
           },
           "taxability_reason": {
             "type": ["null", "string"]
@@ -636,7 +683,57 @@
     },
     "default_tax_rates": {
       "description": "The default tax rates applied to the invoice",
-      "$ref": "tax_rates.json"
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "object": {
+            "type": ["null", "string"]
+          },
+          "active": {
+            "type": ["null", "boolean"]
+          },
+          "country": {
+            "type": ["null", "string"]
+          },
+          "created": {
+            "type": ["null", "integer"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "display_name": {
+            "type": ["null", "string"]
+          },
+          "effective_percentage": {
+            "type": ["null", "number"]
+          },
+          "inclusive": {
+            "type": ["null", "boolean"]
+          },
+          "jurisdiction": {
+            "type": ["null", "string"]
+          },
+          "livemode": {
+            "type": ["null", "boolean"]
+          },
+          "metadata": {
+            "type": ["null", "object"]
+          },
+          "percentage": {
+            "type": ["null", "number"]
+          },
+          "state": {
+            "type": ["null", "string"]
+          },
+          "tax_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "total_excluding_tax": {
       "description": "The total amount excluding tax",

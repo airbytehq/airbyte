@@ -1,5 +1,71 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "additionalProperties": true,
-  "$ref": "cardholder.json"
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the object.",
+      "type": ["null", "string"]
+    },
+    "object": {
+      "description": "String representing the object's type. Objects of the same type share the same value.",
+      "type": ["null", "string"]
+    },
+    "billing": {
+      "description": "The cardholder's billing address.",
+      "type": ["null", "object"]
+    },
+    "company": {
+      "description": "Additional information about a `company` cardholder.",
+      "type": ["null", "object"]
+    },
+    "created": {
+      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+      "type": ["null", "integer"]
+    },
+    "email": {
+      "description": "The cardholder's email address.",
+      "type": ["null", "string"]
+    },
+    "individual": {
+      "description": "Additional information about an `individual` cardholder.",
+      "type": ["null", "object"]
+    },
+    "livemode": {
+      "description": "Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+      "type": ["null", "boolean"]
+    },
+    "metadata": {
+      "description": "Set of key-value pairs that you can attach to an object.",
+      "type": ["null", "object"]
+    },
+    "name": {
+      "description": "The cardholder's name.",
+      "type": ["null", "string"]
+    },
+    "phone_number": {
+      "description": "The cardholder's phone number.",
+      "type": ["null", "string"]
+    },
+    "preferences": {
+      "description": "The cardholder's preferences.",
+      "type": ["null", "object"]
+    },
+    "requirements": {
+      "description": "The cardholder's requirements.",
+      "type": ["null", "object"]
+    },
+    "shipping": {
+      "description": "The cardholder's shipping address.",
+      "type": ["null", "object"]
+    },
+    "status": {
+      "description": "Specifies whether to permit authorizations on this cardholder's cards.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "One of `individual` or `company`.",
+      "type": ["null", "string"]
+    }
+  }
 }

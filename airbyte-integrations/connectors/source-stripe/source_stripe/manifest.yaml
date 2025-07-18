@@ -13,9 +13,6 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/base_retriever"
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
 
   base_retriever:
     type: SimpleRetriever
@@ -1082,8 +1079,8 @@ definitions:
         primary_key:
           - id
         schema_loader:
-          type: JsonFileSchemaLoader
-          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+          type: InlineSchemaLoader
+          $ref: "#/definitions/schemas/invoice_line_items"
         retriever:
           type: SimpleRetriever
           requester:
@@ -1178,8 +1175,8 @@ definitions:
         primary_key:
           - id
         schema_loader:
-          type: JsonFileSchemaLoader
-          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+          type: InlineSchemaLoader
+          $ref: "#/definitions/schemas/application_fees_refunds"
         retriever:
           type: SimpleRetriever
           requester:
@@ -1233,8 +1230,8 @@ definitions:
         primary_key:
           - id
         schema_loader:
-          type: JsonFileSchemaLoader
-          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+          type: InlineSchemaLoader
+          $ref: "#/definitions/schemas/subscription_items"
         retriever:
           type: SimpleRetriever
           requester:
@@ -1317,8 +1314,8 @@ definitions:
         primary_key:
           - id
         schema_loader:
-          type: JsonFileSchemaLoader
-          file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
+          type: InlineSchemaLoader
+          $ref: "#/definitions/schemas/bank_accounts"
         retriever:
           type: SimpleRetriever
           requester:
