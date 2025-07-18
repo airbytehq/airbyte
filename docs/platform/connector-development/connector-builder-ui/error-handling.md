@@ -108,7 +108,7 @@ The [Chargebee API](https://apidocs.chargebee.com/docs/api/error-handling) docum
 
 When running a sync, the connector receives from the Chargebee API a response with a 429 status code and the `Retry-After` header set to 60. The connector interprets the response retrieving that value from the `Retry-After` header and will pause the sync for 60 seconds before retrying.
 
-### Wait until time from header
+### Wait Until Time Defined in Response Header
 
 The "Wait until time from header" backoff strategy allows the connector to wait until a specific time before retrying a request according to the API response header. This strategy extracts a timestamp from the response header and waits until that time before retrying.
 
