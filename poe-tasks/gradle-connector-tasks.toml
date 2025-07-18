@@ -120,11 +120,22 @@ for file in "${OPTIONAL_FILES[@]}"; do
   fi
 done
 
-# Copy distribution tar files if they exist (from build/distributions)
-if [ -d build/distributions ]; then
-  mkdir -p "build/releases/${VERSION}/distributions"
-  cp build/distributions/*.tar "build/releases/${VERSION}/distributions/" 2>/dev/null || true
+# Build and copy distribution tar files for Java connectors
+rm -rf build/distributions
+poe gradle distTar
+
+# Ensure tar files were created
+if [ ! -d build/distributions ] || [ -z "$(ls build/distributions/*.tar 2>/dev/null)" ]; then
+  echo "Error: No .tar files found in build/distributions after running distTar"
+  exit 1
 fi
+
+# Copy tar files and generate SHA256 hashes
+mkdir -p "build/releases/${VERSION}/distributions"
+for tar_file in build/distributions/*.tar; do
+  cp "$tar_file" "build/releases/${VERSION}/distributions/"
+  sha256sum "$tar_file" | cut -d' ' -f1 > "build/releases/${VERSION}/distributions/$(basename "$tar_file").sha256"
+done
 
 # Generate registry JSON files
 ${POE_GIT_DIR}/poe-tasks/create-connector-registry-json.sh "build/releases/${VERSION}"
