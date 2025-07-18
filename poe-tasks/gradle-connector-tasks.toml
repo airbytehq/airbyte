@@ -96,21 +96,19 @@ mkdir -p "build/releases/${VERSION}"
 # Clear existing contents
 rm -rf "build/releases/${VERSION}"/*
 
-# Copy metadata.yaml
-cp metadata.yaml "build/releases/${VERSION}/"
+# Copy required files
+REQUIRED_FILES=("metadata.yaml")
+for file in "${REQUIRED_FILES[@]}"; do
+  cp "$file" "build/releases/${VERSION}/"
+done
 
-# Copy icon if it exists
-if [ -f icon.svg ]; then
-  cp icon.svg "build/releases/${VERSION}/"
-fi
-
-# Copy Java-specific artifacts based on airbyte-ci analysis
-if [ -f build.gradle ]; then
-  cp build.gradle "build/releases/${VERSION}/"
-fi
-if [ -f build.gradle.kts ]; then
-  cp build.gradle.kts "build/releases/${VERSION}/"
-fi
+# Copy optional files if they exist
+OPTIONAL_FILES=("icon.svg" "build.gradle" "build.gradle.kts")
+for file in "${OPTIONAL_FILES[@]}"; do
+  if [ -f "$file" ]; then
+    cp "$file" "build/releases/${VERSION}/"
+  fi
+done
 
 # Copy distribution tar files if they exist (from build/distributions)
 if [ -d build/distributions ]; then

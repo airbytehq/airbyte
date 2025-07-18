@@ -85,23 +85,19 @@ mkdir -p "build/releases/${VERSION}"
 # Clear existing contents
 rm -rf "build/releases/${VERSION}"/*
 
-# Copy metadata.yaml
-cp metadata.yaml "build/releases/${VERSION}/"
+# Copy required files
+REQUIRED_FILES=("metadata.yaml")
+for file in "${REQUIRED_FILES[@]}"; do
+  cp "$file" "build/releases/${VERSION}/"
+done
 
-# Copy icon if it exists
-if [ -f icon.svg ]; then
-  cp icon.svg "build/releases/${VERSION}/"
-fi
-
-# Copy manifest-specific artifacts based on airbyte-ci analysis
-if [ -f manifest.yaml ]; then
-  cp manifest.yaml "build/releases/${VERSION}/"
-fi
-
-# Copy components.py if it exists (will be zipped by registry script)
-if [ -f components.py ]; then
-  cp components.py "build/releases/${VERSION}/"
-fi
+# Copy optional files if they exist
+OPTIONAL_FILES=("icon.svg" "manifest.yaml" "components.py")
+for file in "${OPTIONAL_FILES[@]}"; do
+  if [ -f "$file" ]; then
+    cp "$file" "build/releases/${VERSION}/"
+  fi
+done
 
 # Generate registry JSON files
 ${POE_GIT_DIR}/poe-tasks/create-connector-registry-json.sh "build/releases/${VERSION}"
