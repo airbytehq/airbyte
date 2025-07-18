@@ -9,19 +9,54 @@ import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
+import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
+import io.airbyte.cdk.ssh.TunnelSession
+import io.airbyte.cdk.ssh.createTunnelSession
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
+import org.apache.sshd.common.util.net.SshdSocketAddress
+
+// TODO this is super hacky - optional also doesn't work
+sealed interface Maybe<out T>
+
+@JvmInline value class Some<T>(val value: T) : Maybe<T>
+
+data object None : Maybe<Nothing>
 
 @Factory
 class ClickhouseBeanFactory {
     @Singleton
-    fun clickhouseClient(config: ClickhouseConfiguration): Client {
+    fun tunnel(config: ClickhouseConfiguration): Maybe<TunnelSession> {
+        return when (val ssh = config.tunnelConfig) {
+            is SshKeyAuthTunnelMethod,
+            is SshPasswordAuthTunnelMethod -> {
+                val remote = SshdSocketAddress(config.hostname, config.port.toInt())
+                val sshConnectionOptions: SshConnectionOptions =
+                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                Some(createTunnelSession(remote, ssh, sshConnectionOptions))
+            }
+            else -> None
+        }
+    }
+
+    @Singleton
+    fun clickhouseClient(
+        config: ClickhouseConfiguration,
+        tunnel: Maybe<TunnelSession>,
+    ): Client {
+        val endpoint =
+            if (tunnel is Some)
+                "${config.protocol}://${tunnel.value.address.hostName}:${tunnel.value.address.port}"
+            else config.endpoint
+
         val builder =
             Client.Builder()
-                .addEndpoint(config.endpoint)
+                .addEndpoint(endpoint)
                 .setUsername(config.username)
                 .setPassword(config.password)
                 .compressClientRequest(true)
