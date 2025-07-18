@@ -110,6 +110,14 @@ for file in "${OPTIONAL_FILES[@]}"; do
   fi
 done
 
+# Generate checksum files for components.py if it was copied
+if [ -f "build/releases/${VERSION}/components.py" ]; then
+  cd "build/releases/${VERSION}"
+  md5sum components.py | cut -d' ' -f1 > components.py.md5
+  sha256sum components.py | cut -d' ' -f1 > components.py.sha256
+  cd - > /dev/null
+fi
+
 # Generate registry JSON files
 ${POE_GIT_DIR}/poe-tasks/create-connector-registry-json.sh "build/releases/${VERSION}"
 '''
