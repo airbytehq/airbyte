@@ -17,7 +17,7 @@ Check the documentation of the API you want to integrate for the used authentica
 - [Basic HTTP](#basic-http)
 - [Bearer Token](#bearer-token)
 - [API Key](#api-key)
-- [JWT](#jwt)
+- [JWT Authenticator](#jwt)
 - [OAuth 2.0 (Declarative)](#oauth-20-declarative)
 - [OAuth (Legacy)](#oauth-legacy)
 - [Session Token](#session-token)
