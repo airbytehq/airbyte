@@ -78,17 +78,17 @@ The Polling tab defines how to check the status of a running job.
 
 #### Key Components:
 
-- **URL** (`retriever.polling_requester.url`): The full URL for checking job status. Use the `{{ creation_response }}` variable to reference the creation request response when constructing this URL (required)
-- **HTTP Method** (`retriever.polling_requester.http_method`): HTTP method for status checking, typically GET but can vary by API
-- **Status Extractor** (`retriever.status_extractor`): Extracts the job status value from the polling response using a field path
-- **Status Mapping** (`retriever.status_mapping`): Maps API-specific status values to standard connector statuses (completed, failed, running, timeout)
-- **Download Target Extractor** (`retriever.download_target_extractor`): Extracts the URL or identifier for downloading results from the polling response
-- **Polling Job Timeout** (`retriever.polling_job_timeout`): Maximum time to wait for job completion before timing out
-- **Request Parameters** (`retriever.polling_requester.request_parameters`): Query parameters for polling requests
-- **Request Headers** (`retriever.polling_requester.request_headers`): HTTP headers for polling requests
-- **Request Body** (`retriever.polling_requester.request_body`): Request body for polling requests (if needed)
-- **Authentication** (`retriever.polling_requester.authenticator`): Authentication method for polling requests
-- **Error Handler** (`retriever.polling_requester.error_handler`): Error handling configuration for polling requests
+- **API Endpoint URL** (required): The full URL for checking job status. Use the `{{ creation_response }}` variable to reference the creation request response when constructing this URL
+- **HTTP Method**: HTTP method for status checking, typically GET but can vary by API
+- **Authenticator**: Authentication method for polling requests
+- **Status Extractor**: Extracts the job status value from the polling response using a field path
+- **Status Mapping**: Maps API-specific status values to standard connector statuses (completed, failed, running, timeout)
+- **Download Target Extractor**: Extracts the URL or identifier for downloading results from the polling response
+- **Polling Job Timeout**: Maximum time to wait for job completion before timing out
+- **Query Parameters**: Query parameters for polling requests
+- **Request Headers**: HTTP headers for polling requests
+- **Request Body**: Request body for polling requests
+- **Error Handler**: Error handling configuration for polling requests
 
 #### Status Extractor and Status Mapping Explained
 
