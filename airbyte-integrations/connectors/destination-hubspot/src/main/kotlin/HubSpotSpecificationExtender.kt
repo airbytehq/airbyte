@@ -16,23 +16,20 @@ import jakarta.inject.Singleton
 
 private const val oauthConnectorInputSpecification: String =
     """{
-    "type": "object",
-    "properties": {
-        "consent_url": "https://app.hubspot.com/oauth/authorize?{{ client_id_key }}={{ client_id_value }}&{{ redirect_uri_key }}={{ redirect_uri_value | urlencode }}&{{ scope_key }}={{ scope_value | urlencode }}&optional_scope={{ optional_scope | urlencode }}&{{ state_key }}={{ state_value }}&code_challenge={{ state_value | codechallengeS256 }}",
-        "scope": "crm.schemas.contacts.read crm.schemas.companies.read crm.schemas.deals.read crm.schemas.custom.read",
-        "optional_scope": "crm.objects.contacts.write crm.objects.companies.write crm.objects.deals.write crm.objects.custom.write",
-        "access_token_url": "https://api.hubapi.com/oauth/v1/token",
-        "extract_output":  ["access_token", "refresh_token", "expires_in"],
-        "access_token_headers": {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        "access_token_params": {
-          "client_id": "{{ client_id_value }}",
-          "client_secret": "{{ client_secret_value }}",
-          "code": "{{ auth_code_value }}",
-          "grant_type": "authorization_code",
-          "redirect_uri": "{{ redirect_uri_value }}"
-        }
+    "consent_url": "https://app.hubspot.com/oauth/authorize?{{ client_id_key }}={{ client_id_value }}&{{ redirect_uri_key }}={{ redirect_uri_value | urlencode }}&{{ scope_key }}={{ scope_value | urlencode }}&optional_scope={{ optional_scope | urlencode }}&{{ state_key }}={{ state_value }}&code_challenge={{ state_value | codechallengeS256 }}",
+    "scope": "crm.schemas.contacts.read crm.schemas.companies.read crm.schemas.deals.read crm.schemas.custom.read",
+    "optional_scope": "crm.objects.contacts.write crm.objects.companies.write crm.objects.deals.write crm.objects.custom.write",
+    "access_token_url": "https://api.hubapi.com/oauth/v1/token",
+    "extract_output":  ["access_token", "refresh_token", "expires_in"],
+    "access_token_headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "access_token_params": {
+      "client_id": "{{ client_id_value }}",
+      "client_secret": "{{ client_secret_value }}",
+      "code": "{{ auth_code_value }}",
+      "grant_type": "authorization_code",
+      "redirect_uri": "{{ redirect_uri_value }}"
     }
 }"""
 
