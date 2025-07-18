@@ -605,7 +605,7 @@ class CriterionIncrementalRequester(GoogleAdsHttpRequester):
         in_list = ", ".join(f"'{i}'" for i in ids)
 
         query = (
-            f"SELECT {', '.join(select_fields)}\n" f"  FROM {self.name}\n" f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
+            f"SELECT {', '.join(select_fields)}\n" f"  FROM {self._parameters['resource_name']}\n" f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
         )
 
         return {"query": query}
@@ -637,7 +637,7 @@ class CriterionFullRefreshRequester(GoogleAdsHttpRequester):
         props = self.schema_loader.get_json_schema()[self.name]["properties"]
         fields = [f for f in props.keys() if f not in (self.CURSOR_FIELD, "deleted_at")]
 
-        return {"query": f"SELECT {', '.join(fields)} FROM {self.name}"}
+        return {"query": f"SELECT {', '.join(fields)} FROM {self._parameters['resource_name']}"}
 
 
 class GoogleAdsCriterionParentStateMigration(StateMigration):

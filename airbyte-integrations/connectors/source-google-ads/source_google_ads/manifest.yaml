@@ -230,7 +230,6 @@ definitions:
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
-          name: ad_group_criterion
         record_selector:
           type: RecordSelector
           extractor:
@@ -874,13 +873,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_group_criterion"
+          $ref: "#/schemas/ad_listing_group_criterion"
     incremental_stream:
       $ref: "#/definitions/template_criterion_stream/incremental_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_group_criterion"
+          $ref: "#/schemas/ad_listing_group_criterion"
 
   campaign_criterion_stream:
     type: StateDelegatingStream
@@ -895,13 +894,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_group_criterion"
+          $ref: "#/schemas/campaign_criterion"
     incremental_stream:
       $ref: "#/definitions/template_criterion_stream/incremental_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ad_group_criterion"
+          $ref: "#/schemas/campaign_criterion"
 
 streams:
   - "#/definitions/account_performance_report_stream"
