@@ -15,9 +15,9 @@ This page guides you through the process of setting up the [HubSpot](https://www
 
 ### Step 1: Set up the HubSpot connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. Log into your Airbyte account.
 2. Click Destination and then click + New destination.
-3. On the Set up the source page, select HubSpot from the Destination type dropdown.
+3. On the Set up the destination page, select HubSpot from the Destination tiles.
 4. Enter a name for the HubSpot connector.
 5. From the **Authentication** dropdown, OAuth authentication is available so click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
    
