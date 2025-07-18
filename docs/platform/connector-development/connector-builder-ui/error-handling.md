@@ -267,7 +267,7 @@ For advanced use cases that cannot be handled through configuration, you can imp
 Most APIs implement rate limiting. Here's a recommended approach:
 
 1. **Use appropriate backoff strategy**: 
-   - "Wait time from header" if the API provides `Retry-After` header
+   - "Wait Until Time Defined in Response Header" if the API provides `Retry-After` header
    - "Exponential backoff" for APIs without specific guidance
 2. **Configure response filter**:
    - HTTP codes: `[429]`
