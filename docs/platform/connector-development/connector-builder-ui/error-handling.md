@@ -192,7 +192,7 @@ A response filter can specify a set of numeric HTTP status codes to match agains
 
 The Pocket API emits API responses for rate limiting errors using a 403 error status code. The default error handler interprets 403 errors as non-retryable and will fail the sync when they are encountered. The connector can configure a response filter with HTTP status codes that contains 403. When a 403 error response from the API is encountered, the connector proceeds based on the configured action.
 
-### Response Actions
+### Action
 
 If a response from the API matches the conditions of the response filter, the connector will continue the sync according to the configured action. The following actions are available:
 
