@@ -241,17 +241,6 @@ The "Max retry count" field allows you to configure the maximum number of times 
 - `0` (no retries)
 - `10` (retry up to 10 times for persistent issues)
 
-### Multiple Error Handlers
-
-In the "Error handlers" section of a stream, one or more handlers can be defined. When multiple error handlers are specified, the response will be evaluated against each error handler in the order they are defined. The connector will take the action of the first error handler that matches the response and ignore subsequent handlers.
-
-This is particularly useful when you need different handling logic for different types of errors:
-
-**Example scenarios:**
-- Handle rate limiting (429) differently from server errors (5XX)
-- Apply different retry strategies for different error codes
-- Use custom error messages for specific API error responses
-
 ### Composite Error Handler Usage
 
 When using a Composite Error Handler, you can chain multiple error handlers together. Each error handler in the list is evaluated in sequence until one matches the response. This allows for sophisticated error handling workflows:
