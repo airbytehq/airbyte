@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-from source_stripe import SourceStripe
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.source import TState
@@ -63,10 +63,6 @@ def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
 
-def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[TState]) -> SourceStripe:
-    return SourceStripe(catalog, config, state)
-
-
 def _an_event() -> RecordBuilder:
     return create_record_builder(
         find_template("events", __file__),
@@ -104,7 +100,7 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(catalog, config, state), config, catalog, state, expecting_exception)
+    return read(get_source(config, state), config, catalog, state, expecting_exception)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
