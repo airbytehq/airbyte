@@ -3,11 +3,10 @@
 #
 
 
-import subprocess
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import dagger
+if TYPE_CHECKING:
+    import dagger
 from pydash.objects import get  # type: ignore
 
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
@@ -26,19 +25,19 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform, *args: Any):
+    async def _build_connector(self, platform: "dagger.Platform", *args: Any) -> "dagger.Container":
         baseImage = get(self.context.connector.metadata, "connectorBuildOptions.baseImage")
         if not baseImage:
             raise ValueError("connectorBuildOptions.baseImage is required to build a manifest only connector.")
 
         return await self._build_from_base_image(platform)
 
-    def _get_base_container(self, platform):
+    def _get_base_container(self, platform: "dagger.Platform") -> "dagger.Container":
         base_image_name = get(self.context.connector.metadata, "connectorBuildOptions.baseImage")
         self.logger.info(f"Building manifest connector from base image {base_image_name}")
         return self.dagger_client.container(platform=platform).from_(base_image_name)
 
-    async def _build_from_base_image(self, platform):
+    async def _build_from_base_image(self, platform: "dagger.Platform") -> "dagger.Container":
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
 
         Returns:
