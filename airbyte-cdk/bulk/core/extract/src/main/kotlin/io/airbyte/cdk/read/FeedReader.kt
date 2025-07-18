@@ -47,6 +47,7 @@ class FeedReader(
     // Global state ID is unique for each state emitted regardless of the feed it originates from.
     companion object {
         private val globalStateId: AtomicInteger = AtomicInteger(1)
+        var tmpPartitionId: Any? = null
     }
 
     private val feedBootstrap: FeedBootstrap<*> =
@@ -394,6 +395,13 @@ class FeedReader(
         for (stateMessage in stateMessages) {
             if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
                 stateMessage.setAdditionalProperty("id", globalStateId.getAndIncrement())
+                if (FeedReader.tmpPartitionId != null) {
+                    stateMessage.setAdditionalProperty("partition_id", tmpPartitionId)
+                } else {
+                    stateMessage.additionalProperties.get("partition_id")?.let {
+                        tmpPartitionId = it
+                    }
+                }
             }
             // checkpoint state messages to stdout
             root.outputConsumer.accept(stateMessage)
