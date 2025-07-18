@@ -2,8 +2,6 @@
 
 In the Connector Builder UI, you can create two types of streams: **Synchronous Request** and **Asynchronous Job**. Understanding the difference is important for efficiently extracting data from APIs that use asynchronous processing.
 
-The Connector Builder UI uses a schema-driven architecture that dynamically generates form fields based on the declarative component schema. This ensures that all available configuration options are automatically reflected in the interface, providing a comprehensive and up-to-date configuration experience.
-
 ## Synchronous Streams
 
 Synchronous streams operate in real-time, where:
