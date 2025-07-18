@@ -235,7 +235,7 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
    - Verify that status is at the expected place with the expected values in the polling response 
    - Ensure the download target is correctly extracted by checking the main Request tab URL
 
-2. **Configure Status Mapping Properly**: Include all possible API status values in your status mapping. The schema-driven forms will validate that you've provided mappings for all required states.
+2. **Configure Status Mapping Properly**: Include all possible API status values in your status mapping.
 
 3. **Use the Right HTTP Response Format**: Make sure you select the correct HTTP Response Format (JSON, CSV, XML, etc.) for both creation and download phases.
 
