@@ -110,7 +110,7 @@ When running a sync, the connector receives from the Chargebee API a response wi
 
 ### Wait Until Time Defined in Response Header
 
-The "Wait until time from header" backoff strategy allows the connector to wait until a specific time before retrying a request according to the API response header. This strategy extracts a timestamp from the response header and waits until that time before retrying.
+The "Wait Until Time Defined in Response Header" backoff strategy allows the connector to wait until a specific time before retrying a request according to the API response header. This strategy extracts a timestamp from the response header and waits until that time before retrying.
 
 **Configuration:**
 - **Response header** (required): The name of the response header that contains the timestamp when retrying is allowed
