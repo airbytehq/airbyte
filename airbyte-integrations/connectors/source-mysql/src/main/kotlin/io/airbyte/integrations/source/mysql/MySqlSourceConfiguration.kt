@@ -157,7 +157,7 @@ constructor(
             throw ConfigErrorException("Concurrency setting should be positive")
         }
 
-        val maxDBConnections: Int? = pojo.maxDBConnections
+        val maxDBConnections: Int? = pojo.max_db_connections
 
         log.info {
             "maxConcurrencyLegacy: $maxConcurrencyLegacy. maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}"

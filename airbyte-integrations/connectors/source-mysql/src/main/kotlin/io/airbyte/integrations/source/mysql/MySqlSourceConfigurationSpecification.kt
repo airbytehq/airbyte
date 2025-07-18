@@ -162,7 +162,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
     )
-    var maxDBConnections: Int? = null
+    var max_db_connections: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
