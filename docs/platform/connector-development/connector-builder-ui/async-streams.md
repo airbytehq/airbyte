@@ -243,7 +243,7 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
 
 5. **Handle Rate Limits**: Many APIs limit how frequently you can poll for job status. Configure appropriate error handling and retry strategies.
 
-6. **Test Thoroughly**: Use the comprehensive testing features to verify each phase of the asynchronous process works correctly.
+6. **Test Thoroughly**: Test the stream verify each phase of the asynchronous process works correctly.
 
 7. **Leverage Schema Validation**: The schema-driven forms provide real-time validation feedback to help you catch configuration errors early.
 
