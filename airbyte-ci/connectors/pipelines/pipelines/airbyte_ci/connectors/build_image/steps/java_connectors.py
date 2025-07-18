@@ -5,6 +5,12 @@
 import subprocess
 from pathlib import Path
 
+import dagger
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dagger import Container, Platform
+
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.gradle import GradleTask
@@ -46,32 +52,12 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         return await super()._run(dist_tar_path)
 
-    async def _build_connector(self, platform: str, dist_tar_path: str) -> str:
+    async def _build_connector(self, platform: "Platform", dist_tar_path: str) -> "Container":
         """
-        Build a Java connector image using Docker.
+        Build a Java connector image using Dagger.
         """
-        base_image_name = f"airbyte/java-connector-base:dev-{platform.replace('/', '-')}"
-        
-        docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent / "docker-images"
-        dockerfile_path = docker_images_dir / "Dockerfile.java-connector"
-        
-        image_name = f"airbyte/{self.context.connector.technical_name}:dev-{platform.replace('/', '-')}"
-        
-        cmd = [
-            "docker", "build",
-            "--platform", f"linux/{platform}",
-            "--file", str(dockerfile_path),
-            "--build-arg", f"BASE_IMAGE={base_image_name}",
-            "--build-arg", f"CONNECTOR_NAME={self.context.connector.technical_name}",
-            "--tag", image_name,
-            str(self.context.connector.code_directory)
-        ]
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise RuntimeError(f"Failed to build Java connector: {result.stderr}")
-            
-        return image_name
+        dist_tar_file = self.dagger_client.host().file(dist_tar_path)
+        return await java.with_airbyte_java_connector(self.context, dist_tar_file, platform)
 
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:

@@ -7,6 +7,12 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+import dagger
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dagger import Container, Platform
+
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
@@ -22,7 +28,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: str, *args: Any) -> str:
+    async def _build_connector(self, platform: "Platform", *args: Any) -> "Container":
         if (
             "connectorBuildOptions" in self.context.connector.metadata
             and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]
@@ -31,81 +37,63 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         else:
             return await self._build_from_dockerfile(platform)
 
-    def _get_base_container(self, platform: str) -> str:
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
-        self.logger.info(f"Building connector from base image {base_image_name}")
-        return base_image_name
+    def _get_base_container(self, platform: "Platform") -> "Container":
+        return self.context.connector.base_image_version.get_container(platform)
 
-    async def _create_builder_container(self, base_image_name: str, user: str) -> str:
-        """Pre install the connector dependencies in a builder container.
+    async def _create_builder_container(self, platform: "Platform") -> "Container":
+        base_container = self._get_base_container(platform)
+        user = await self.get_image_user(base_container)
+        builder_container = with_python_connector_installed(
+            self.context, base_container, str(self.context.connector.code_directory), user
+        )
+        return builder_container
 
-        Args:
-            base_image_name (str): The base image name to use to build the connector.
-            user (str): The user to use in the container.
-        Returns:
-            str: The builder image name, with installed dependencies.
-        """
-        return base_image_name
-
-    async def _build_from_base_image(self, platform: str) -> str:
+    async def _build_from_base_image(self, platform: "Platform") -> "Container":
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
 
         Returns:
-            str: The connector image name built from the base image.
+            Container: The connector container built from the base image.
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
-        base_image_name = self._get_base_container(platform)
-        
-        docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent / "docker-images"
-        dockerfile_path = docker_images_dir / "Dockerfile.python-connector"
-        
-        image_name = f"airbyte/{self.context.connector.technical_name}:dev-{platform.replace('/', '-')}"
-        
-        cmd = [
-            "docker", "build",
-            "--platform", f"linux/{platform}",
-            "--file", str(dockerfile_path),
-            "--build-arg", f"BASE_IMAGE={base_image_name}",
-            "--build-arg", f"CONNECTOR_NAME={self.context.connector.technical_name}",
-            "--build-arg", "EXTRA_PREREQS_SCRIPT=",
-            "--tag", image_name,
-            str(self.context.connector.code_directory)
-        ]
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise RuntimeError(f"Failed to build Python connector: {result.stderr}")
-            
-        return image_name
 
-    async def _build_from_dockerfile(self, platform: str) -> str:
-        """Build the connector container using its Dockerfile.
+        base_container = self.dagger_client.container(platform=platform).from_(
+            self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
+        )
+        user = await self.get_image_user(base_container)
+        base_container = base_container.with_file(
+            f"{self.PATH_TO_INTEGRATION_CODE}/main.py",
+            (await self.context.get_connector_dir(include=["main.py"])).file("main.py"),
+            owner=user,
+        )
+        base_container = base_container.with_directory(
+            f"{self.PATH_TO_INTEGRATION_CODE}/{self.context.connector.technical_name.replace('-', '_')}",
+            (await self.context.get_connector_dir()).directory(self.context.connector.technical_name.replace("-", "_")),
+            owner=user,
+        )
+        connector_container = await apply_python_development_overrides(self.context, base_container, user)
+        return connector_container
+
+    async def _build_from_dockerfile(self, platform: "Platform") -> "Container":
+        """Build the connector container using the Dockerfile in the connector directory.
 
         Returns:
-            str: The connector image name built from its Dockerfile.
+            Container: The connector container built from the Dockerfile.
         """
-        self.logger.warn(
-            "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use our new build process."
-        )
+        self.logger.info(f"Building connector from Dockerfile for {platform}")
         
         dockerfile_path = self.context.connector.code_directory / "Dockerfile"
         if not dockerfile_path.exists():
             raise FileNotFoundError(f"Dockerfile not found at {dockerfile_path}")
-
-        image_name = f"airbyte/{self.context.connector.technical_name}:dev-{platform.replace('/', '-')}"
         
-        cmd = [
-            "docker", "build",
-            "--platform", f"linux/{platform}",
-            "--tag", image_name,
-            str(self.context.connector.code_directory)
-        ]
+        context_dir = await self.context.get_connector_dir()
         
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise RuntimeError(f"Failed to build connector from Dockerfile: {result.stderr}")
-            
-        return image_name
+        return (
+            self.dagger_client.container(platform=platform)
+            .build(
+                context=context_dir,
+                dockerfile="Dockerfile"
+            )
+        )
 
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:
