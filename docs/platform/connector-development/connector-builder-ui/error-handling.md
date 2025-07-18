@@ -176,7 +176,7 @@ This field allows for more granular control over how the response filter matches
 
 For the Zoom API, the response text body can include a special non-error status codes under the `code` field. An example response text body would look like `{"code": 300}`. The "Error message contains" condition is too broad because there could be record data containing the text "300". Instead, for a response filter defining the predicate as `{{ response.code == 300 }}`, during a sync, the predicate expression will be evaluated to true and the connector proceeds based on the configured action.
 
-#### HTTP status codes
+#### HTTP Codes
 
 A response filter can specify a set of numeric HTTP status codes to match against. When receiving an API response, the connector will check if the status code of the response is in the provided set of HTTP status codes.
 
