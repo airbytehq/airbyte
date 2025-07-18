@@ -86,7 +86,7 @@ The [Delighted API](https://app.delighted.com/docs/api#rate-limits) is an API th
 
 Although a lot of API documentation does not call out using an exponential backoff, some APIs like the [Posthog API](https://posthog.com/docs/api) mention rate limits that are advantageous to use an exponential backoff. In this case, the rate limit of 240 requests/min should work for most syncs. However, if there is a spike in traffic, then the exponential backoff allows the connector to avoid sending more requests than the endpoint can support.
 
-### Wait time from header
+### Wait Time Extracted from Response Header
 
 The "Wait time from header" backoff strategy allows the connector to wait before retrying a request based on the value specified in the API response header.
 
