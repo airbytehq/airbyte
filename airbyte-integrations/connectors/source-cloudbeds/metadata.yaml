@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 021d2bd7-40de-43b8-8a93-21e8b731eceb
-  dockerImageTag: 0.0.28
+  dockerImageTag: 0.0.29
   dockerRepository: airbyte/source-cloudbeds
   githubIssueLabel: source-cloudbeds
   icon: icon.svg

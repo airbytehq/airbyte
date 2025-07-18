@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 100640bc-c2f3-42b2-a91a-8164f7499ec3
-  dockerImageTag: 0.0.19
+  dockerImageTag: 0.0.20
   dockerRepository: airbyte/source-freshchat
   githubIssueLabel: source-freshchat
   icon: icon.svg

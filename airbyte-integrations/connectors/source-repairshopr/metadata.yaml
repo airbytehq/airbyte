@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d12ba86d-e393-4269-a6b7-4eddcba98eb4
-  dockerImageTag: 0.0.25
+  dockerImageTag: 0.0.26
   dockerRepository: airbyte/source-repairshopr
   githubIssueLabel: source-repairshopr
   icon: icon.svg

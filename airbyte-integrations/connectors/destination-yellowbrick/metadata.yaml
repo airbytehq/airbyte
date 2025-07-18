@@ -8,7 +8,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 1f7bac7e-53ff-4e0b-b6df-b74aa85cf703
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/destination-yellowbrick
   documentationUrl: https://docs.airbyte.com/integrations/destinations/yellowbrick
   githubIssueLabel: destination-yellowbrick

@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7e55429a-a1ea-43c2-81c2-4fc3cf88f81f
-  dockerImageTag: 0.0.29
+  dockerImageTag: 0.0.30
   dockerRepository: airbyte/source-persona
   githubIssueLabel: source-persona
   icon: icon.svg

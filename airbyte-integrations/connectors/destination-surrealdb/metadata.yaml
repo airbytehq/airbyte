@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: de8c3498-80d9-468b-88a1-d4ebb729c3f6
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-surrealdb
   githubIssueLabel: destination-surrealdb
   icon: icon.svg

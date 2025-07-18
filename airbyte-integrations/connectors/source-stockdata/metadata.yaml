@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ca58f75d-3929-4fd3-a5b0-4dd92d275c8d
-  dockerImageTag: 0.0.27
+  dockerImageTag: 0.0.28
   dockerRepository: airbyte/source-stockdata
   githubIssueLabel: source-stockdata
   icon: icon.svg

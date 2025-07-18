@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bc2c2e4f-41a1-40e3-9e82-eea19cf958ff
-  dockerImageTag: 0.0.26
+  dockerImageTag: 0.0.27
   dockerRepository: airbyte/source-breezy-hr
   githubIssueLabel: source-breezy-hr
   icon: icon.svg

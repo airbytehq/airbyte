@@ -230,6 +230,7 @@ To read more, please check the official [Snowflake documentation](https://docs.s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.3   | 2025-07-18 | [63371](https://github.com/airbytehq/airbyte/pull/63371) | Update connector icon                                                                      |
 | 1.0.2   | 2025-07-14 | [62939](https://github.com/airbytehq/airbyte/pull/62939) | Update base image to 2.0.3                                                                      |
 | 1.0.1   | 2025-07-11 | [62929](https://github.com/airbytehq/airbyte/pull/62929) | Update test dependencies |
 | 1.0.0   | 2025-06-24 | [61535](https://github.com/airbytehq/airbyte/pull/61535) | Replace community support connector with Airbyte certified connector                                                                      |
