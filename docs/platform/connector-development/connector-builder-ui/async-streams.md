@@ -246,4 +246,4 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
 6. **Test Thoroughly**: Test the stream verify each phase of the asynchronous process works correctly.
 
 
-Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs. The schema-driven UI provides comprehensive feedback during testing to help you understand what's happening at each stage.     
+Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs.
