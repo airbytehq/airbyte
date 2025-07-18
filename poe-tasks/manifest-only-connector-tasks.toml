@@ -86,13 +86,13 @@ mkdir -p "build/releases/${VERSION}"
 rm -rf "build/releases/${VERSION}"/*
 
 # Copy required files
-REQUIRED_FILES=("metadata.yaml")
+REQUIRED_FILES=("metadata.yaml" "icon.svg" "manifest.yaml")
 for file in "${REQUIRED_FILES[@]}"; do
   cp "$file" "build/releases/${VERSION}/"
 done
 
 # Copy optional files if they exist
-OPTIONAL_FILES=("icon.svg" "manifest.yaml" "components.py")
+OPTIONAL_FILES=("components.py")
 for file in "${OPTIONAL_FILES[@]}"; do
   if [ -f "$file" ]; then
     cp "$file" "build/releases/${VERSION}/"
