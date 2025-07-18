@@ -160,7 +160,7 @@ For a response filter that defines the "Error Message Substring" field, the conn
 
 For the Chargebee API, some endpoints are only available for a specific API version and if an endpoint is unavailable, the response text will contain `"This API operation is not enabled for this site"`. The Airbyte Chargebee integration allows customers to configure which API version to use when retrieving data for a stream. When the connector makes requests to Chargebee using an unsupported version, the response filter will match according to the response text and proceeds based on the configured action.
 
-#### Predicate evaluation
+#### Predicate
 
 This field allows for more granular control over how the response filter matches against attributes of an API response. The predicate is an interpolation expression that is evaluated against the API response's text body or headers.
 
