@@ -140,6 +140,7 @@ cmd = """yq eval '.data.dockerImageTag' $PWD/metadata.yaml"""
 help = "Get the version of the connector from its metadata.yaml file. Use with -qq to get just the version."
 
 [tool.poe.tasks.create-connector-registry-artifacts]
+help = "Create local registry artifacts for this connector version in build/releases/{version}/"
 shell = '''
 set -eu
 
@@ -182,7 +183,6 @@ done
 # Generate registry JSON files
 ${POE_GIT_DIR}/poe-tasks/create-connector-registry-json.sh "build/releases/${VERSION}"
 '''
-help = "Create local registry artifacts for this connector version in build/releases/{version}/"
 
 [tool.poe.tasks.run-cat-tests]
 shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
