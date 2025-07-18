@@ -1,21 +1,22 @@
 # Connector Builder tutorial
 
-In tis tutorial, you'll create an Airbyte connector using the Connector Builder UI to read and extract data from an API called the Exchange Rates API. The steps apply to other APIs you might be interested in integrating with in the future.
+In tis tutorial, you'll create an Airbyte connector using the Connector Builder UI to read and extract data from an API called the Exchange Rates API. The steps here are a foundation you can use to build connectors for any API you might be interested in. You can complete this tutorial in 30-45 minutes.
 
-[Here's the API documentation](https://apilayer.com/marketplace/exchangerates_data-api). In this tutorial, you'll read data from the following endpoints:
+[Here's the API documentation](https://apilayer.com/marketplace/exchangerates_data-api) for the Exchange Rates API. Feel free to review it, but you don't need to know it well. In this tutorial, you'll read data from the following endpoints:
 
-- `Latest Rates Endpoint`
-- `Historical Rates Endpoint`
+- Latest Rates
+- Historical Rates
 
-Your goal is to implement a source connector with two streams containing exchange rates from a base currency to many other currencies. The output schema of our streams will look like this:
+Your goal is to build and publish a source connector with two streams containing exchange rates from a base currency to many other currencies. The output schema of our streams will look like this:
 
-```json
+```json title="JSON response schema"
 {
   "base": "USD",
   "date": "2022-07-15",
   "rates": {
     "CAD": 1.28,
     "EUR": 0.98
+    // ...
   }
 }
 ```
@@ -30,13 +31,13 @@ Generate a free API access key for the Exchange Rates API.
 
 2. Sign into an existing account or sign up for a new account.
 
-3. Once you're signed in, visit https://apilayer.com/marketplace/exchangerates_data-api and sign up for the Free tier.
+3. Once you're signed in, visit the [Exchange Rates API](https://apilayer.com/marketplace/exchangerates_data-api) and sign up for the Free tier. After signing up, an API key appears on the page.
 
-4. Copy the API key on the page.
+4. Copy or save that API key.
 
 ### Set up Airbyte
 
-If you don't already, you need access to Airbyte. **Do one of the following**:
+You need access to Airbyte, if you don't already have it. Do one of the following:
 
 - Sign up for [Airbyte Cloud](https://cloud.airbyte.com/)
 
@@ -49,8 +50,6 @@ If you don't already, you need access to Airbyte. **Do one of the following**:
 <Arcade id="pHZZYzww0smsCHN9wuuS" title="Use the Connection Dashboard to diagnose unhealthy syncs" paddingBottom="calc(50% + 0px)" />
 
 When developing a connector using the Connector Builder UI, Airbyte saves the current state of your work as a connector builder project. These projects are saved as part of your Airbyte workspace and are separate from your sources, destinations, and connections.
-
-To get started, follow these steps:
 
 1. Visit the Airbyte UI in your browser.
 
@@ -88,9 +87,7 @@ On the **Inputs** page, you manage inputs that users of your connector have to f
 
 4. Click **Create**.
 
-5. Enter your API key.
-
-This API Key is not part of the connector itself. Instead, it will be set as part of the source configuration when configuring a connection based on your connector in a later step. You can find more information about authentication method on the [authentication concept page](./authentication).
+5. Enter your API key for testing purposes. This API Key is not part of the connector itself. Instead, users of your connector will enter their own API key as part of the source configuration.
 
 ### Setting up and testing a stream
 
@@ -195,6 +192,10 @@ Currently, your connector only reads the latest data, but it doesn't collect his
 
 3. Set the **API Endpoint URL** to `https://api.apilayer.com/exchangerates_data/{{ config['start_date'] }}?base={{ config['base'] }}`.
 
+    :::tip
+    Notice how, unlike step 2, you're setting the `base` query parameter on the URL itself rather than creating a query parameter in the form below. Both options are fine, but the query parameter form feature is more powerful at scale.
+    :::
+
 4. Set up your Authenticator so it's identical to the `Rates` stream.
 
     ![Authentication settings](assets/tutorial-authentication.png)
@@ -239,15 +240,15 @@ Congratulations! You now have a production-ready Exchange Rates connector.
 
 You, or someone in your organizaton, can set up your connector [as a source](/platform/using-airbyte/getting-started/add-a-source) and start syncing data with it at any time.
 
-This tutorial only glosses over the many features of the Connector Builder. Learn more on the following pages:
+This tutorial only covers some basic concepts, but there are many more features in the Connector Builder. Learn more on the following pages:
 
-* [Authentication](/platform/connector-development/connector-builder-ui/authentication/)
-* [Record processing](/platform/connector-development/connector-builder-ui/record-processing/)
-* [Pagination](/platform/connector-development/connector-builder-ui/pagination/)
-* [Incremental sync](/platform/connector-development/connector-builder-ui/incremental-sync/)
-* [Partitioning](/platform/connector-development/connector-builder-ui/partitioning/)
-* [Error handling](/platform/connector-development/connector-builder-ui/error-handling/)
-* [Stream templates](/platform/connector-development/connector-builder-ui/stream-templates/)
-* [Asynchronous job streams](/platform/connector-development/connector-builder-ui/async-streams/)
+- [Authentication](/platform/connector-development/connector-builder-ui/authentication/)
+- [Record processing](/platform/connector-development/connector-builder-ui/record-processing/)
+- [Pagination](/platform/connector-development/connector-builder-ui/pagination/)
+- [Incremental sync](/platform/connector-development/connector-builder-ui/incremental-sync/)
+- [Partitioning](/platform/connector-development/connector-builder-ui/partitioning/)
+- [Error handling](/platform/connector-development/connector-builder-ui/error-handling/)
+- [Stream templates](/platform/connector-development/connector-builder-ui/stream-templates/)
+- [Asynchronous job streams](/platform/connector-development/connector-builder-ui/async-streams/)
 
-The Connector Builder supports a broad set of APIs, but not every API can be consumed by connectors configured in the Connector Builder. If you need more flexibility, consider using the [Low Code CDK](/platform/connector-development/config-based/low-code-cdk-overview) or the [Python CDK](/platform/connector-development/cdk-python/) to build a connector with additional features.
+The Connector Builder supports a broad range of APIs, but not every API can be consumed by the Connector Builder. If you need more flexibility, consider using the [Python CDK](/platform/connector-development/cdk-python/) to build a connector with additional features.
