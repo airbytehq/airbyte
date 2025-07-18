@@ -806,28 +806,15 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: change_status.last_change_date_time
       datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-      lookback_window: P{{ config.get('conversion_window_days', 14) }}D
       cursor_granularity: PT0.000001S
       step: P14D
       start_datetime:
         type: MinMaxDatetime
-        datetime: >-
-          {{ max(
-              (config.get('start_date')
-                 and (config.get('start_date') + ' 00:00:00.000000')
-               )
-               or day_delta(-90, format='%Y-%m-%d %H:%M:%S.%f'),
-              day_delta(-90, format='%Y-%m-%d %H:%M:%S.%f')
-            )
-          }}
+        datetime: "{{ day_delta(-90, format='%Y-%m-%d %H:%M:%S.%f') }}"
         datetime_format: "%Y-%m-%d %H:%M:%S.%f"
       end_datetime:
         type: MinMaxDatetime
-        datetime: >-
-          {%- set retention = day_delta(-90, format='%Y-%m-%d %H:%M:%S.%f') -%}
-          {%- set raw = config.get('end_date') and (config.get('end_date') ~ ' 23:59:59.999999') -%}
-          {%- set initial = raw or now_utc().strftime('%Y-%m-%d %H:%M:%S.%f') -%}
-          {{ max(min(initial, now_utc().strftime('%Y-%m-%d %H:%M:%S.%f')), retention) }}
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
         datetime_format: "%Y-%m-%d %H:%M:%S.%f"
     state_migrations:
       - type: CustomStateMigration
