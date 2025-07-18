@@ -87,6 +87,18 @@ help = "Get the version of the connector from its metadata.yaml file. Use with -
 [tasks.create-connector-registry-artifacts]
 shell = '''
 set -eu
+
+# Define required and optional files
+REQUIRED_FILES=(
+  "metadata.yaml"
+  "icon.svg"
+)
+
+OPTIONAL_FILES=(
+  "build.gradle"
+  "build.gradle.kts"
+)
+
 VERSION=$(poe -qq get-local-version)
 CONNECTOR_NAME=$(poe -qq get-connector-name)
 
@@ -97,13 +109,11 @@ mkdir -p "build/releases/${VERSION}"
 rm -rf "build/releases/${VERSION}"/*
 
 # Copy required files
-REQUIRED_FILES=("metadata.yaml" "icon.svg")
 for file in "${REQUIRED_FILES[@]}"; do
   cp "$file" "build/releases/${VERSION}/"
 done
 
 # Copy optional files if they exist
-OPTIONAL_FILES=("build.gradle" "build.gradle.kts")
 for file in "${OPTIONAL_FILES[@]}"; do
   if [ -f "$file" ]; then
     cp "$file" "build/releases/${VERSION}/"
