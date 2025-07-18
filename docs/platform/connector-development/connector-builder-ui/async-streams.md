@@ -72,7 +72,7 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
 
 ### 2. Polling Tab
 
-The Polling tab defines how to check the status of a running job. This tab provides schema-driven form controls for configuring all aspects of the polling process.
+The Polling tab defines how to check the status of a running job.
 
 ![Polling Tab](./assets/connector_builder_async_polling_tab.png)
 
