@@ -8,9 +8,10 @@ from unittest import mock
 import pendulum
 import pytest
 import responses
+from source_iterable.source import SourceIterable
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from source_iterable.source import SourceIterable
 
 
 @pytest.fixture
@@ -30,7 +31,7 @@ def test_stream_correct(config):
     end_date = pendulum.parse("2021-01-01 00:00:00+00:00")
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": start_date, "end_time": end_date})
     record_js = {"profileUpdatedAt": "2020-01-01 00:00:00 +00:00"}
-    number_of_records = 10 ** 2
+    number_of_records = 10**2
     resp_body = "\n".join([json.dumps(record_js)] * number_of_records)
 
     responses.add("GET", "https://api.iterable.com/api/export/data.json", body=resp_body)

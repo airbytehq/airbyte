@@ -6,9 +6,10 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 import freezegun
+
+from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_protocol.models import Level as LogLevel
-from airbyte_protocol.models import SyncMode
 
 from .ad_requests import AttributionReportRequestBuilder, OAuthRequestBuilder, ProfilesRequestBuilder
 from .ad_responses import AttributionReportResponseBuilder, ErrorResponseBuilder, OAuthResponseBuilder, ProfilesResponseBuilder
@@ -16,6 +17,7 @@ from .ad_responses.pagination_strategies import CursorBasedPaginationStrategy
 from .ad_responses.records import AttributionReportRecordBuilder, ErrorRecordBuilder, ProfilesRecordBuilder
 from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
+
 
 REPORTING_PERIOD = 90
 _NOW = datetime.now(timezone.utc)
@@ -31,12 +33,14 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
     def _given_oauth_and_profiles(self, http_mocker: HttpMocker, config: dict) -> None:
         http_mocker.post(
-            OAuthRequestBuilder.oauth_endpoint(client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]).build(),
-            OAuthResponseBuilder.token_response().build()
+            OAuthRequestBuilder.oauth_endpoint(
+                client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]
+            ).build(),
+            OAuthResponseBuilder.token_response().build(),
         )
         http_mocker.get(
             ProfilesRequestBuilder.profiles_endpoint(client_id=config["client_id"], client_access_token=config["access_token"]).build(),
-            ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build()
+            ProfilesResponseBuilder.profiles_response().with_record(ProfilesRecordBuilder.profiles_record()).build(),
         )
 
     @HttpMocker()
@@ -56,17 +60,17 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
         )
 
         output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
+
     @HttpMocker()
     def test_given_breaking_error_when_read_products_then_stream_is_ignored(self, http_mocker):
         """
@@ -83,12 +87,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
@@ -110,9 +114,9 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.products_response().with_record(AttributionReportRecordBuilder.products_record()).build()
+            AttributionReportResponseBuilder.products_response().with_record(AttributionReportRecordBuilder.products_record()).build(),
         )
 
         output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
@@ -133,12 +137,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.products_response(CursorBasedPaginationStrategy()) \
-                .with_record(AttributionReportRecordBuilder.products_record()) \
-                .with_pagination() \
-                .build()
+            AttributionReportResponseBuilder.products_response(CursorBasedPaginationStrategy())
+            .with_record(AttributionReportRecordBuilder.products_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.post(
             AttributionReportRequestBuilder.products_endpoint(
@@ -146,9 +150,11 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
-            ).with_cursor_field("next-page-token").build(),
-            AttributionReportResponseBuilder.products_response().with_record(AttributionReportRecordBuilder.products_record()).build()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            )
+            .with_cursor_field("next-page-token")
+            .build(),
+            AttributionReportResponseBuilder.products_response().with_record(AttributionReportRecordBuilder.products_record()).build(),
         )
 
         output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
@@ -171,17 +177,17 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
         )
 
         output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
+
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_adgroup_then_stream_is_ignored(self, http_mocker):
         """
@@ -198,12 +204,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
@@ -225,14 +231,16 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.performance_adgroup_response().with_record(AttributionReportRecordBuilder.performance_adgroup_record()).build()
+            AttributionReportResponseBuilder.performance_adgroup_response()
+            .with_record(AttributionReportRecordBuilder.performance_adgroup_record())
+            .build(),
         )
 
         output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
-    
+
     @HttpMocker()
     def test_given_many_pages_when_read_performance_adgroup_then_return_records(self, http_mocker):
         """
@@ -248,12 +256,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.performance_adgroup_response(CursorBasedPaginationStrategy()) \
-                .with_record(AttributionReportRecordBuilder.performance_adgroup_record()) \
-                .with_pagination() \
-                .build()
+            AttributionReportResponseBuilder.performance_adgroup_response(CursorBasedPaginationStrategy())
+            .with_record(AttributionReportRecordBuilder.performance_adgroup_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.post(
             AttributionReportRequestBuilder.performance_adgroup_endpoint(
@@ -261,14 +269,18 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
-            ).with_cursor_field("next-page-token").build(),
-            AttributionReportResponseBuilder.performance_adgroup_response().with_record(AttributionReportRecordBuilder.performance_adgroup_record()).build()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            )
+            .with_cursor_field("next-page-token")
+            .build(),
+            AttributionReportResponseBuilder.performance_adgroup_response()
+            .with_record(AttributionReportRecordBuilder.performance_adgroup_record())
+            .build(),
         )
 
         output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
         assert len(output.records) == 2
-    
+
     @HttpMocker()
     def test_given_non_breaking_error_when_read_performance_campaign_then_stream_is_ignored(self, http_mocker):
         """
@@ -286,17 +298,17 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
         )
 
         output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
+
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_campaign_then_stream_is_ignored(self, http_mocker):
         """
@@ -313,12 +325,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
@@ -340,14 +352,16 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.performance_campaign_response().with_record(AttributionReportRecordBuilder.performance_campaign_record()).build()
+            AttributionReportResponseBuilder.performance_campaign_response()
+            .with_record(AttributionReportRecordBuilder.performance_campaign_record())
+            .build(),
         )
 
         output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
-    
+
     @HttpMocker()
     def test_given_many_pages_when_read_performance_campaign_then_return_records(self, http_mocker):
         """
@@ -363,12 +377,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.performance_campaign_response(CursorBasedPaginationStrategy()) \
-                .with_record(AttributionReportRecordBuilder.performance_campaign_record()) \
-                .with_pagination() \
-                .build()
+            AttributionReportResponseBuilder.performance_campaign_response(CursorBasedPaginationStrategy())
+            .with_record(AttributionReportRecordBuilder.performance_campaign_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.post(
             AttributionReportRequestBuilder.performance_campaign_endpoint(
@@ -376,9 +390,13 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
-            ).with_cursor_field("next-page-token").build(),
-            AttributionReportResponseBuilder.performance_campaign_response().with_record(AttributionReportRecordBuilder.performance_campaign_record()).build()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            )
+            .with_cursor_field("next-page-token")
+            .build(),
+            AttributionReportResponseBuilder.performance_campaign_response()
+            .with_record(AttributionReportRecordBuilder.performance_campaign_record())
+            .build(),
         )
 
         output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
@@ -401,17 +419,17 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
         )
 
         output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
+
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_creative_then_stream_is_ignored(self, http_mocker):
         """
@@ -428,12 +446,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
@@ -455,9 +473,11 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.performance_creative_response().with_record(AttributionReportRecordBuilder.performance_creative_record()).build()
+            AttributionReportResponseBuilder.performance_creative_response()
+            .with_record(AttributionReportRecordBuilder.performance_creative_record())
+            .build(),
         )
 
         output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
@@ -478,12 +498,12 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             ).build(),
-            AttributionReportResponseBuilder.performance_creative_response(CursorBasedPaginationStrategy()) \
-                .with_record(AttributionReportRecordBuilder.performance_creative_record()) \
-                .with_pagination() \
-                .build()
+            AttributionReportResponseBuilder.performance_creative_response(CursorBasedPaginationStrategy())
+            .with_record(AttributionReportRecordBuilder.performance_creative_record())
+            .with_pagination()
+            .build(),
         )
         http_mocker.post(
             AttributionReportRequestBuilder.performance_creative_endpoint(
@@ -491,9 +511,13 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 self._config["access_token"],
                 self._config["profiles"][0],
                 start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
-                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date()
-            ).with_cursor_field("next-page-token").build(),
-            AttributionReportResponseBuilder.performance_creative_response().with_record(AttributionReportRecordBuilder.performance_creative_record()).build()
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            )
+            .with_cursor_field("next-page-token")
+            .build(),
+            AttributionReportResponseBuilder.performance_creative_response()
+            .with_record(AttributionReportRecordBuilder.performance_creative_record())
+            .build(),
         )
 
         output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)

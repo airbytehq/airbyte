@@ -6,6 +6,7 @@ import shutil
 from typing import Dict, List
 
 import asyncclick as click
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -26,9 +27,6 @@ from pipelines.models.steps import STEP_PARAMS
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
 GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
 REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT = "Regression Test Results Reviewed and Approved"
-TESTS_SKIPPED_BY_DEFAULT = [
-    CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS,
-]
 
 
 @click.command(
@@ -120,7 +118,6 @@ async def test(
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
         skip_steps = list(skip_steps)
-        skip_steps += TESTS_SKIPPED_BY_DEFAULT
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
 
@@ -160,6 +157,7 @@ async def test(
             ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
+            use_cdk_ref=ctx.obj.get("use_cdk_ref"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
             docker_hub_username=ctx.obj.get("docker_hub_username"),
@@ -168,6 +166,7 @@ async def test(
             run_step_options=run_step_options,
             targeted_platforms=[LOCAL_BUILD_PLATFORM],
             secret_stores=ctx.obj["secret_stores"],
+            enable_report_auto_open=ctx.obj.get("enable_report_auto_open", True),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

@@ -1,6 +1,8 @@
 plugins {
     id 'application'
     id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {
@@ -40,6 +42,6 @@ dependencies {
 
     // MIT
     // https://www.testcontainers.org/
-    testImplementation libs.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.testcontainers.elasticsearch
+    testImplementation 'org.testcontainers:elasticsearch:1.19.0'
+    integrationTestJavaImplementation 'org.testcontainers:elasticsearch:1.19.0'
 }

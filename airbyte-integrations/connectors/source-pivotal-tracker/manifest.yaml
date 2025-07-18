@@ -1,0 +1,4250 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.pivotaltracker.com/services/v5/
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-TrackerToken
+              inject_into: header
+          path: projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+            show_priority_icon:
+              type:
+                - "null"
+                - boolean
+            show_priority_icon_in_all_panels:
+              type:
+                - "null"
+                - boolean
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            account_id:
+              type:
+                - "null"
+                - integer
+            version:
+              type:
+                - "null"
+                - integer
+            iteration_length:
+              type:
+                - "null"
+                - integer
+            current_iteration_number:
+              type:
+                - "null"
+                - integer
+            week_start_day:
+              type:
+                - "null"
+                - string
+            point_scale:
+              type:
+                - "null"
+                - string
+            point_scale_is_custom:
+              type:
+                - "null"
+                - boolean
+            bugs_and_chores_are_estimatable:
+              type:
+                - "null"
+                - boolean
+            automatic_planning:
+              type:
+                - "null"
+                - boolean
+            enable_tasks:
+              type:
+                - "null"
+                - boolean
+            time_zone:
+              type:
+                - "null"
+                - object
+            velocity_averaged_over:
+              type:
+                - "null"
+                - integer
+            number_of_done_iterations_to_show:
+              type:
+                - "null"
+                - integer
+            has_google_domain:
+              type:
+                - "null"
+                - boolean
+            enable_incoming_emails:
+              type:
+                - "null"
+                - boolean
+            initial_velocity:
+              type:
+                - "null"
+                - integer
+            public:
+              type:
+                - "null"
+                - boolean
+            atom_enabled:
+              type:
+                - "null"
+                - boolean
+            enable_following:
+              type:
+                - "null"
+                - boolean
+            show_story_priority:
+              type:
+                - "null"
+                - boolean
+            project_type:
+              type:
+                - "null"
+                - string
+            start_time:
+              type:
+                - "null"
+                - string
+              format: date-time
+    stories:
+      type: DeclarativeStream
+      name: stories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.pivotaltracker.com/services/v5/
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-TrackerToken
+              inject_into: header
+          path: projects/{{ stream_slice['project_id'] }}/stories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://www.pivotaltracker.com/services/v5/
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['api_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: X-TrackerToken
+                          inject_into: header
+                      path: projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: http://json-schema.org/draft-07/schema#
+                      type: object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - integer
+                        kind:
+                          type:
+                            - "null"
+                            - string
+                        show_priority_icon:
+                          type:
+                            - "null"
+                            - boolean
+                        show_priority_icon_in_all_panels:
+                          type:
+                            - "null"
+                            - boolean
+                        created_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        updated_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        project_id:
+                          type:
+                            - "null"
+                            - integer
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        account_id:
+                          type:
+                            - "null"
+                            - integer
+                        version:
+                          type:
+                            - "null"
+                            - integer
+                        iteration_length:
+                          type:
+                            - "null"
+                            - integer
+                        current_iteration_number:
+                          type:
+                            - "null"
+                            - integer
+                        week_start_day:
+                          type:
+                            - "null"
+                            - string
+                        point_scale:
+                          type:
+                            - "null"
+                            - string
+                        point_scale_is_custom:
+                          type:
+                            - "null"
+                            - boolean
+                        bugs_and_chores_are_estimatable:
+                          type:
+                            - "null"
+                            - boolean
+                        automatic_planning:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_tasks:
+                          type:
+                            - "null"
+                            - boolean
+                        time_zone:
+                          type:
+                            - "null"
+                            - object
+                        velocity_averaged_over:
+                          type:
+                            - "null"
+                            - integer
+                        number_of_done_iterations_to_show:
+                          type:
+                            - "null"
+                            - integer
+                        has_google_domain:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_incoming_emails:
+                          type:
+                            - "null"
+                            - boolean
+                        initial_velocity:
+                          type:
+                            - "null"
+                            - integer
+                        public:
+                          type:
+                            - "null"
+                            - boolean
+                        atom_enabled:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_following:
+                          type:
+                            - "null"
+                            - boolean
+                        show_story_priority:
+                          type:
+                            - "null"
+                            - boolean
+                        project_type:
+                          type:
+                            - "null"
+                            - string
+                        start_time:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            url:
+              type:
+                - "null"
+                - string
+            kind:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            labels:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  kind:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  created_at:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  project_id:
+                    type:
+                      - "null"
+                      - integer
+                  updated_at:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+            deadline:
+              type:
+                - "null"
+                - string
+              format: date-time
+            estimate:
+              type:
+                - "null"
+                - integer
+            owner_ids:
+              type: array
+              items:
+                type: integer
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            story_type:
+              type:
+                - "null"
+                - string
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            accepted_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            description:
+              type:
+                - "null"
+                - string
+            owned_by_id:
+              type:
+                - "null"
+                - integer
+            current_state:
+              type:
+                - "null"
+                - string
+            story_priority:
+              type:
+                - "null"
+                - string
+            requested_by_id:
+              type:
+                - "null"
+                - integer
+          additionalProperties: true
+    project_memberships:
+      type: DeclarativeStream
+      name: project_memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.pivotaltracker.com/services/v5/
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-TrackerToken
+              inject_into: header
+          path: projects/{{ stream_slice['project_id'] }}/memberships
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://www.pivotaltracker.com/services/v5/
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['api_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: X-TrackerToken
+                          inject_into: header
+                      path: projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: http://json-schema.org/draft-07/schema#
+                      type: object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - integer
+                        kind:
+                          type:
+                            - "null"
+                            - string
+                        show_priority_icon:
+                          type:
+                            - "null"
+                            - boolean
+                        show_priority_icon_in_all_panels:
+                          type:
+                            - "null"
+                            - boolean
+                        created_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        updated_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        project_id:
+                          type:
+                            - "null"
+                            - integer
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        account_id:
+                          type:
+                            - "null"
+                            - integer
+                        version:
+                          type:
+                            - "null"
+                            - integer
+                        iteration_length:
+                          type:
+                            - "null"
+                            - integer
+                        current_iteration_number:
+                          type:
+                            - "null"
+                            - integer
+                        week_start_day:
+                          type:
+                            - "null"
+                            - string
+                        point_scale:
+                          type:
+                            - "null"
+                            - string
+                        point_scale_is_custom:
+                          type:
+                            - "null"
+                            - boolean
+                        bugs_and_chores_are_estimatable:
+                          type:
+                            - "null"
+                            - boolean
+                        automatic_planning:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_tasks:
+                          type:
+                            - "null"
+                            - boolean
+                        time_zone:
+                          type:
+                            - "null"
+                            - object
+                        velocity_averaged_over:
+                          type:
+                            - "null"
+                            - integer
+                        number_of_done_iterations_to_show:
+                          type:
+                            - "null"
+                            - integer
+                        has_google_domain:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_incoming_emails:
+                          type:
+                            - "null"
+                            - boolean
+                        initial_velocity:
+                          type:
+                            - "null"
+                            - integer
+                        public:
+                          type:
+                            - "null"
+                            - boolean
+                        atom_enabled:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_following:
+                          type:
+                            - "null"
+                            - boolean
+                        show_story_priority:
+                          type:
+                            - "null"
+                            - boolean
+                        project_type:
+                          type:
+                            - "null"
+                            - string
+                        start_time:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+            role:
+              type:
+                - "null"
+                - string
+            person:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                kind:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                email:
+                  type:
+                    - "null"
+                    - string
+                initials:
+                  type:
+                    - "null"
+                    - string
+                username:
+                  type:
+                    - "null"
+                    - string
+            favorite:
+              type:
+                - "null"
+                - boolean
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_color:
+              type:
+                - "null"
+                - string
+            last_viewed_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            wants_comment_notification_emails:
+              type:
+                - "null"
+                - boolean
+            will_receive_mention_notifications_or_emails:
+              type:
+                - "null"
+                - boolean
+          additionalProperties: true
+    labels:
+      type: DeclarativeStream
+      name: labels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.pivotaltracker.com/services/v5/
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-TrackerToken
+              inject_into: header
+          path: projects/{{ stream_slice['project_id'] }}/labels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://www.pivotaltracker.com/services/v5/
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['api_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: X-TrackerToken
+                          inject_into: header
+                      path: projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: http://json-schema.org/draft-07/schema#
+                      type: object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - integer
+                        kind:
+                          type:
+                            - "null"
+                            - string
+                        show_priority_icon:
+                          type:
+                            - "null"
+                            - boolean
+                        show_priority_icon_in_all_panels:
+                          type:
+                            - "null"
+                            - boolean
+                        created_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        updated_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        project_id:
+                          type:
+                            - "null"
+                            - integer
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        account_id:
+                          type:
+                            - "null"
+                            - integer
+                        version:
+                          type:
+                            - "null"
+                            - integer
+                        iteration_length:
+                          type:
+                            - "null"
+                            - integer
+                        current_iteration_number:
+                          type:
+                            - "null"
+                            - integer
+                        week_start_day:
+                          type:
+                            - "null"
+                            - string
+                        point_scale:
+                          type:
+                            - "null"
+                            - string
+                        point_scale_is_custom:
+                          type:
+                            - "null"
+                            - boolean
+                        bugs_and_chores_are_estimatable:
+                          type:
+                            - "null"
+                            - boolean
+                        automatic_planning:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_tasks:
+                          type:
+                            - "null"
+                            - boolean
+                        time_zone:
+                          type:
+                            - "null"
+                            - object
+                        velocity_averaged_over:
+                          type:
+                            - "null"
+                            - integer
+                        number_of_done_iterations_to_show:
+                          type:
+                            - "null"
+                            - integer
+                        has_google_domain:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_incoming_emails:
+                          type:
+                            - "null"
+                            - boolean
+                        initial_velocity:
+                          type:
+                            - "null"
+                            - integer
+                        public:
+                          type:
+                            - "null"
+                            - boolean
+                        atom_enabled:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_following:
+                          type:
+                            - "null"
+                            - boolean
+                        show_story_priority:
+                          type:
+                            - "null"
+                            - boolean
+                        project_type:
+                          type:
+                            - "null"
+                            - string
+                        start_time:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+          additionalProperties: true
+    releases:
+      type: DeclarativeStream
+      name: releases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.pivotaltracker.com/services/v5/
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-TrackerToken
+              inject_into: header
+          path: projects/{{ stream_slice['project_id'] }}/releases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://www.pivotaltracker.com/services/v5/
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['api_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: X-TrackerToken
+                          inject_into: header
+                      path: projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: http://json-schema.org/draft-07/schema#
+                      type: object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - integer
+                        kind:
+                          type:
+                            - "null"
+                            - string
+                        show_priority_icon:
+                          type:
+                            - "null"
+                            - boolean
+                        show_priority_icon_in_all_panels:
+                          type:
+                            - "null"
+                            - boolean
+                        created_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        updated_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        project_id:
+                          type:
+                            - "null"
+                            - integer
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        account_id:
+                          type:
+                            - "null"
+                            - integer
+                        version:
+                          type:
+                            - "null"
+                            - integer
+                        iteration_length:
+                          type:
+                            - "null"
+                            - integer
+                        current_iteration_number:
+                          type:
+                            - "null"
+                            - integer
+                        week_start_day:
+                          type:
+                            - "null"
+                            - string
+                        point_scale:
+                          type:
+                            - "null"
+                            - string
+                        point_scale_is_custom:
+                          type:
+                            - "null"
+                            - boolean
+                        bugs_and_chores_are_estimatable:
+                          type:
+                            - "null"
+                            - boolean
+                        automatic_planning:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_tasks:
+                          type:
+                            - "null"
+                            - boolean
+                        time_zone:
+                          type:
+                            - "null"
+                            - object
+                        velocity_averaged_over:
+                          type:
+                            - "null"
+                            - integer
+                        number_of_done_iterations_to_show:
+                          type:
+                            - "null"
+                            - integer
+                        has_google_domain:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_incoming_emails:
+                          type:
+                            - "null"
+                            - boolean
+                        initial_velocity:
+                          type:
+                            - "null"
+                            - integer
+                        public:
+                          type:
+                            - "null"
+                            - boolean
+                        atom_enabled:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_following:
+                          type:
+                            - "null"
+                            - boolean
+                        show_story_priority:
+                          type:
+                            - "null"
+                            - boolean
+                        project_type:
+                          type:
+                            - "null"
+                            - string
+                        start_time:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            url:
+              type:
+                - "null"
+                - string
+            kind:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            labels:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  kind:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  created_at:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  project_id:
+                    type:
+                      - "null"
+                      - integer
+                  updated_at:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+            deadline:
+              type:
+                - "null"
+                - string
+              format: date-time
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            accepted_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            current_state:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    epics:
+      type: DeclarativeStream
+      name: epics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.pivotaltracker.com/services/v5/
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-TrackerToken
+              inject_into: header
+          path: projects/{{ stream_slice['project_id'] }}/epics
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://www.pivotaltracker.com/services/v5/
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['api_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: X-TrackerToken
+                          inject_into: header
+                      path: projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: http://json-schema.org/draft-07/schema#
+                      type: object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - integer
+                        kind:
+                          type:
+                            - "null"
+                            - string
+                        show_priority_icon:
+                          type:
+                            - "null"
+                            - boolean
+                        show_priority_icon_in_all_panels:
+                          type:
+                            - "null"
+                            - boolean
+                        created_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        updated_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        project_id:
+                          type:
+                            - "null"
+                            - integer
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        account_id:
+                          type:
+                            - "null"
+                            - integer
+                        version:
+                          type:
+                            - "null"
+                            - integer
+                        iteration_length:
+                          type:
+                            - "null"
+                            - integer
+                        current_iteration_number:
+                          type:
+                            - "null"
+                            - integer
+                        week_start_day:
+                          type:
+                            - "null"
+                            - string
+                        point_scale:
+                          type:
+                            - "null"
+                            - string
+                        point_scale_is_custom:
+                          type:
+                            - "null"
+                            - boolean
+                        bugs_and_chores_are_estimatable:
+                          type:
+                            - "null"
+                            - boolean
+                        automatic_planning:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_tasks:
+                          type:
+                            - "null"
+                            - boolean
+                        time_zone:
+                          type:
+                            - "null"
+                            - object
+                        velocity_averaged_over:
+                          type:
+                            - "null"
+                            - integer
+                        number_of_done_iterations_to_show:
+                          type:
+                            - "null"
+                            - integer
+                        has_google_domain:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_incoming_emails:
+                          type:
+                            - "null"
+                            - boolean
+                        initial_velocity:
+                          type:
+                            - "null"
+                            - integer
+                        public:
+                          type:
+                            - "null"
+                            - boolean
+                        atom_enabled:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_following:
+                          type:
+                            - "null"
+                            - boolean
+                        show_story_priority:
+                          type:
+                            - "null"
+                            - boolean
+                        project_type:
+                          type:
+                            - "null"
+                            - string
+                        start_time:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            url:
+              type:
+                - "null"
+                - string
+            kind:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            label:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                kind:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                project_id:
+                  type:
+                    - "null"
+                    - integer
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            description:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    activity:
+      type: DeclarativeStream
+      name: activity
+      primary_key:
+        - guid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://www.pivotaltracker.com/services/v5/
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-TrackerToken
+              inject_into: header
+          path: projects/{{ stream_slice['project_id'] }}/activity
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://www.pivotaltracker.com/services/v5/
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['api_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: X-TrackerToken
+                          inject_into: header
+                      path: projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: http://json-schema.org/draft-07/schema#
+                      type: object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - integer
+                        kind:
+                          type:
+                            - "null"
+                            - string
+                        show_priority_icon:
+                          type:
+                            - "null"
+                            - boolean
+                        show_priority_icon_in_all_panels:
+                          type:
+                            - "null"
+                            - boolean
+                        created_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        updated_at:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+                        project_id:
+                          type:
+                            - "null"
+                            - integer
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        account_id:
+                          type:
+                            - "null"
+                            - integer
+                        version:
+                          type:
+                            - "null"
+                            - integer
+                        iteration_length:
+                          type:
+                            - "null"
+                            - integer
+                        current_iteration_number:
+                          type:
+                            - "null"
+                            - integer
+                        week_start_day:
+                          type:
+                            - "null"
+                            - string
+                        point_scale:
+                          type:
+                            - "null"
+                            - string
+                        point_scale_is_custom:
+                          type:
+                            - "null"
+                            - boolean
+                        bugs_and_chores_are_estimatable:
+                          type:
+                            - "null"
+                            - boolean
+                        automatic_planning:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_tasks:
+                          type:
+                            - "null"
+                            - boolean
+                        time_zone:
+                          type:
+                            - "null"
+                            - object
+                        velocity_averaged_over:
+                          type:
+                            - "null"
+                            - integer
+                        number_of_done_iterations_to_show:
+                          type:
+                            - "null"
+                            - integer
+                        has_google_domain:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_incoming_emails:
+                          type:
+                            - "null"
+                            - boolean
+                        initial_velocity:
+                          type:
+                            - "null"
+                            - integer
+                        public:
+                          type:
+                            - "null"
+                            - boolean
+                        atom_enabled:
+                          type:
+                            - "null"
+                            - boolean
+                        enable_following:
+                          type:
+                            - "null"
+                            - boolean
+                        show_story_priority:
+                          type:
+                            - "null"
+                            - boolean
+                        project_type:
+                          type:
+                            - "null"
+                            - string
+                        start_time:
+                          type:
+                            - "null"
+                            - string
+                          format: date-time
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ record['project']['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          properties:
+            guid:
+              type:
+                - "null"
+                - string
+            kind:
+              type:
+                - "null"
+                - string
+            project:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+            secondary_resources:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            project_id:
+              type:
+                - "null"
+                - integer
+            occurred_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            performed_by:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                kind:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                initials:
+                  type:
+                    - "null"
+                    - string
+                email:
+                  type:
+                    - "null"
+                    - string
+                username:
+                  type:
+                    - "null"
+                    - string
+            message:
+              type:
+                - "null"
+                - string
+            highlight:
+              type:
+                - "null"
+                - string
+            project_version:
+              type:
+                - "null"
+                - integer
+            changes:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  kind:
+                    type:
+                      - "null"
+                      - string
+                  change_type:
+                    type:
+                      - "null"
+                      - string
+                  original_values:
+                    type:
+                      - "null"
+                      - object
+                  new_values:
+                    type:
+                      - "null"
+                      - object
+            primary_resources:
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  kind:
+                    type:
+                      - "null"
+                      - string
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.pivotaltracker.com/services/v5/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_token'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-TrackerToken
+        inject_into: header
+streams:
+  - type: DeclarativeStream
+    name: projects
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-TrackerToken
+            inject_into: header
+        path: projects
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          kind:
+            type:
+              - "null"
+              - string
+          show_priority_icon:
+            type:
+              - "null"
+              - boolean
+          show_priority_icon_in_all_panels:
+            type:
+              - "null"
+              - boolean
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          account_id:
+            type:
+              - "null"
+              - integer
+          version:
+            type:
+              - "null"
+              - integer
+          iteration_length:
+            type:
+              - "null"
+              - integer
+          current_iteration_number:
+            type:
+              - "null"
+              - integer
+          week_start_day:
+            type:
+              - "null"
+              - string
+          point_scale:
+            type:
+              - "null"
+              - string
+          point_scale_is_custom:
+            type:
+              - "null"
+              - boolean
+          bugs_and_chores_are_estimatable:
+            type:
+              - "null"
+              - boolean
+          automatic_planning:
+            type:
+              - "null"
+              - boolean
+          enable_tasks:
+            type:
+              - "null"
+              - boolean
+          time_zone:
+            type:
+              - "null"
+              - object
+          velocity_averaged_over:
+            type:
+              - "null"
+              - integer
+          number_of_done_iterations_to_show:
+            type:
+              - "null"
+              - integer
+          has_google_domain:
+            type:
+              - "null"
+              - boolean
+          enable_incoming_emails:
+            type:
+              - "null"
+              - boolean
+          initial_velocity:
+            type:
+              - "null"
+              - integer
+          public:
+            type:
+              - "null"
+              - boolean
+          atom_enabled:
+            type:
+              - "null"
+              - boolean
+          enable_following:
+            type:
+              - "null"
+              - boolean
+          show_story_priority:
+            type:
+              - "null"
+              - boolean
+          project_type:
+            type:
+              - "null"
+              - string
+          start_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+  - type: DeclarativeStream
+    name: stories
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-TrackerToken
+            inject_into: header
+        path: projects/{{ stream_slice['project_id'] }}/stories
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 10
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-TrackerToken
+                        inject_into: header
+                    path: projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - integer
+                      kind:
+                        type:
+                          - "null"
+                          - string
+                      show_priority_icon:
+                        type:
+                          - "null"
+                          - boolean
+                      show_priority_icon_in_all_panels:
+                        type:
+                          - "null"
+                          - boolean
+                      created_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      updated_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      project_id:
+                        type:
+                          - "null"
+                          - integer
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      account_id:
+                        type:
+                          - "null"
+                          - integer
+                      version:
+                        type:
+                          - "null"
+                          - integer
+                      iteration_length:
+                        type:
+                          - "null"
+                          - integer
+                      current_iteration_number:
+                        type:
+                          - "null"
+                          - integer
+                      week_start_day:
+                        type:
+                          - "null"
+                          - string
+                      point_scale:
+                        type:
+                          - "null"
+                          - string
+                      point_scale_is_custom:
+                        type:
+                          - "null"
+                          - boolean
+                      bugs_and_chores_are_estimatable:
+                        type:
+                          - "null"
+                          - boolean
+                      automatic_planning:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_tasks:
+                        type:
+                          - "null"
+                          - boolean
+                      time_zone:
+                        type:
+                          - "null"
+                          - object
+                      velocity_averaged_over:
+                        type:
+                          - "null"
+                          - integer
+                      number_of_done_iterations_to_show:
+                        type:
+                          - "null"
+                          - integer
+                      has_google_domain:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_incoming_emails:
+                        type:
+                          - "null"
+                          - boolean
+                      initial_velocity:
+                        type:
+                          - "null"
+                          - integer
+                      public:
+                        type:
+                          - "null"
+                          - boolean
+                      atom_enabled:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_following:
+                        type:
+                          - "null"
+                          - boolean
+                      show_story_priority:
+                        type:
+                          - "null"
+                          - boolean
+                      project_type:
+                        type:
+                          - "null"
+                          - string
+                      start_time:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          url:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          labels:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                kind:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                project_id:
+                  type:
+                    - "null"
+                    - integer
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          deadline:
+            type:
+              - "null"
+              - string
+            format: date-time
+          estimate:
+            type:
+              - "null"
+              - integer
+          owner_ids:
+            type: array
+            items:
+              type: integer
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_id:
+            type:
+              - "null"
+              - integer
+          story_type:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          accepted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            type:
+              - "null"
+              - string
+          owned_by_id:
+            type:
+              - "null"
+              - integer
+          current_state:
+            type:
+              - "null"
+              - string
+          story_priority:
+            type:
+              - "null"
+              - string
+          requested_by_id:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: project_memberships
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-TrackerToken
+            inject_into: header
+        path: projects/{{ stream_slice['project_id'] }}/memberships
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-TrackerToken
+                        inject_into: header
+                    path: projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - integer
+                      kind:
+                        type:
+                          - "null"
+                          - string
+                      show_priority_icon:
+                        type:
+                          - "null"
+                          - boolean
+                      show_priority_icon_in_all_panels:
+                        type:
+                          - "null"
+                          - boolean
+                      created_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      updated_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      project_id:
+                        type:
+                          - "null"
+                          - integer
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      account_id:
+                        type:
+                          - "null"
+                          - integer
+                      version:
+                        type:
+                          - "null"
+                          - integer
+                      iteration_length:
+                        type:
+                          - "null"
+                          - integer
+                      current_iteration_number:
+                        type:
+                          - "null"
+                          - integer
+                      week_start_day:
+                        type:
+                          - "null"
+                          - string
+                      point_scale:
+                        type:
+                          - "null"
+                          - string
+                      point_scale_is_custom:
+                        type:
+                          - "null"
+                          - boolean
+                      bugs_and_chores_are_estimatable:
+                        type:
+                          - "null"
+                          - boolean
+                      automatic_planning:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_tasks:
+                        type:
+                          - "null"
+                          - boolean
+                      time_zone:
+                        type:
+                          - "null"
+                          - object
+                      velocity_averaged_over:
+                        type:
+                          - "null"
+                          - integer
+                      number_of_done_iterations_to_show:
+                        type:
+                          - "null"
+                          - integer
+                      has_google_domain:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_incoming_emails:
+                        type:
+                          - "null"
+                          - boolean
+                      initial_velocity:
+                        type:
+                          - "null"
+                          - integer
+                      public:
+                        type:
+                          - "null"
+                          - boolean
+                      atom_enabled:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_following:
+                        type:
+                          - "null"
+                          - boolean
+                      show_story_priority:
+                        type:
+                          - "null"
+                          - boolean
+                      project_type:
+                        type:
+                          - "null"
+                          - string
+                      start_time:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          kind:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+          person:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+              kind:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              initials:
+                type:
+                  - "null"
+                  - string
+              username:
+                type:
+                  - "null"
+                  - string
+          favorite:
+            type:
+              - "null"
+              - boolean
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_id:
+            type:
+              - "null"
+              - integer
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_color:
+            type:
+              - "null"
+              - string
+          last_viewed_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          wants_comment_notification_emails:
+            type:
+              - "null"
+              - boolean
+          will_receive_mention_notifications_or_emails:
+            type:
+              - "null"
+              - boolean
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: labels
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-TrackerToken
+            inject_into: header
+        path: projects/{{ stream_slice['project_id'] }}/labels
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-TrackerToken
+                        inject_into: header
+                    path: projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - integer
+                      kind:
+                        type:
+                          - "null"
+                          - string
+                      show_priority_icon:
+                        type:
+                          - "null"
+                          - boolean
+                      show_priority_icon_in_all_panels:
+                        type:
+                          - "null"
+                          - boolean
+                      created_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      updated_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      project_id:
+                        type:
+                          - "null"
+                          - integer
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      account_id:
+                        type:
+                          - "null"
+                          - integer
+                      version:
+                        type:
+                          - "null"
+                          - integer
+                      iteration_length:
+                        type:
+                          - "null"
+                          - integer
+                      current_iteration_number:
+                        type:
+                          - "null"
+                          - integer
+                      week_start_day:
+                        type:
+                          - "null"
+                          - string
+                      point_scale:
+                        type:
+                          - "null"
+                          - string
+                      point_scale_is_custom:
+                        type:
+                          - "null"
+                          - boolean
+                      bugs_and_chores_are_estimatable:
+                        type:
+                          - "null"
+                          - boolean
+                      automatic_planning:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_tasks:
+                        type:
+                          - "null"
+                          - boolean
+                      time_zone:
+                        type:
+                          - "null"
+                          - object
+                      velocity_averaged_over:
+                        type:
+                          - "null"
+                          - integer
+                      number_of_done_iterations_to_show:
+                        type:
+                          - "null"
+                          - integer
+                      has_google_domain:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_incoming_emails:
+                        type:
+                          - "null"
+                          - boolean
+                      initial_velocity:
+                        type:
+                          - "null"
+                          - integer
+                      public:
+                        type:
+                          - "null"
+                          - boolean
+                      atom_enabled:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_following:
+                        type:
+                          - "null"
+                          - boolean
+                      show_story_priority:
+                        type:
+                          - "null"
+                          - boolean
+                      project_type:
+                        type:
+                          - "null"
+                          - string
+                      start_time:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_id:
+            type:
+              - "null"
+              - integer
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: releases
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-TrackerToken
+            inject_into: header
+        path: projects/{{ stream_slice['project_id'] }}/releases
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 10
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-TrackerToken
+                        inject_into: header
+                    path: projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - integer
+                      kind:
+                        type:
+                          - "null"
+                          - string
+                      show_priority_icon:
+                        type:
+                          - "null"
+                          - boolean
+                      show_priority_icon_in_all_panels:
+                        type:
+                          - "null"
+                          - boolean
+                      created_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      updated_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      project_id:
+                        type:
+                          - "null"
+                          - integer
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      account_id:
+                        type:
+                          - "null"
+                          - integer
+                      version:
+                        type:
+                          - "null"
+                          - integer
+                      iteration_length:
+                        type:
+                          - "null"
+                          - integer
+                      current_iteration_number:
+                        type:
+                          - "null"
+                          - integer
+                      week_start_day:
+                        type:
+                          - "null"
+                          - string
+                      point_scale:
+                        type:
+                          - "null"
+                          - string
+                      point_scale_is_custom:
+                        type:
+                          - "null"
+                          - boolean
+                      bugs_and_chores_are_estimatable:
+                        type:
+                          - "null"
+                          - boolean
+                      automatic_planning:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_tasks:
+                        type:
+                          - "null"
+                          - boolean
+                      time_zone:
+                        type:
+                          - "null"
+                          - object
+                      velocity_averaged_over:
+                        type:
+                          - "null"
+                          - integer
+                      number_of_done_iterations_to_show:
+                        type:
+                          - "null"
+                          - integer
+                      has_google_domain:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_incoming_emails:
+                        type:
+                          - "null"
+                          - boolean
+                      initial_velocity:
+                        type:
+                          - "null"
+                          - integer
+                      public:
+                        type:
+                          - "null"
+                          - boolean
+                      atom_enabled:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_following:
+                        type:
+                          - "null"
+                          - boolean
+                      show_story_priority:
+                        type:
+                          - "null"
+                          - boolean
+                      project_type:
+                        type:
+                          - "null"
+                          - string
+                      start_time:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          url:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          labels:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                kind:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                project_id:
+                  type:
+                    - "null"
+                    - integer
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          deadline:
+            type:
+              - "null"
+              - string
+            format: date-time
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_id:
+            type:
+              - "null"
+              - integer
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          accepted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          current_state:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: epics
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-TrackerToken
+            inject_into: header
+        path: projects/{{ stream_slice['project_id'] }}/epics
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-TrackerToken
+                        inject_into: header
+                    path: projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - integer
+                      kind:
+                        type:
+                          - "null"
+                          - string
+                      show_priority_icon:
+                        type:
+                          - "null"
+                          - boolean
+                      show_priority_icon_in_all_panels:
+                        type:
+                          - "null"
+                          - boolean
+                      created_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      updated_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      project_id:
+                        type:
+                          - "null"
+                          - integer
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      account_id:
+                        type:
+                          - "null"
+                          - integer
+                      version:
+                        type:
+                          - "null"
+                          - integer
+                      iteration_length:
+                        type:
+                          - "null"
+                          - integer
+                      current_iteration_number:
+                        type:
+                          - "null"
+                          - integer
+                      week_start_day:
+                        type:
+                          - "null"
+                          - string
+                      point_scale:
+                        type:
+                          - "null"
+                          - string
+                      point_scale_is_custom:
+                        type:
+                          - "null"
+                          - boolean
+                      bugs_and_chores_are_estimatable:
+                        type:
+                          - "null"
+                          - boolean
+                      automatic_planning:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_tasks:
+                        type:
+                          - "null"
+                          - boolean
+                      time_zone:
+                        type:
+                          - "null"
+                          - object
+                      velocity_averaged_over:
+                        type:
+                          - "null"
+                          - integer
+                      number_of_done_iterations_to_show:
+                        type:
+                          - "null"
+                          - integer
+                      has_google_domain:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_incoming_emails:
+                        type:
+                          - "null"
+                          - boolean
+                      initial_velocity:
+                        type:
+                          - "null"
+                          - integer
+                      public:
+                        type:
+                          - "null"
+                          - boolean
+                      atom_enabled:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_following:
+                        type:
+                          - "null"
+                          - boolean
+                      show_story_priority:
+                        type:
+                          - "null"
+                          - boolean
+                      project_type:
+                        type:
+                          - "null"
+                          - string
+                      start_time:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          url:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          label:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+              kind:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              created_at:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              project_id:
+                type:
+                  - "null"
+                  - integer
+              updated_at:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_id:
+            type:
+              - "null"
+              - integer
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: activity
+    primary_key:
+      - guid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-TrackerToken
+            inject_into: header
+        path: projects/{{ stream_slice['project_id'] }}/activity
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 10
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-TrackerToken
+                        inject_into: header
+                    path: projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/draft-07/schema#
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - integer
+                      kind:
+                        type:
+                          - "null"
+                          - string
+                      show_priority_icon:
+                        type:
+                          - "null"
+                          - boolean
+                      show_priority_icon_in_all_panels:
+                        type:
+                          - "null"
+                          - boolean
+                      created_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      updated_at:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      project_id:
+                        type:
+                          - "null"
+                          - integer
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      account_id:
+                        type:
+                          - "null"
+                          - integer
+                      version:
+                        type:
+                          - "null"
+                          - integer
+                      iteration_length:
+                        type:
+                          - "null"
+                          - integer
+                      current_iteration_number:
+                        type:
+                          - "null"
+                          - integer
+                      week_start_day:
+                        type:
+                          - "null"
+                          - string
+                      point_scale:
+                        type:
+                          - "null"
+                          - string
+                      point_scale_is_custom:
+                        type:
+                          - "null"
+                          - boolean
+                      bugs_and_chores_are_estimatable:
+                        type:
+                          - "null"
+                          - boolean
+                      automatic_planning:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_tasks:
+                        type:
+                          - "null"
+                          - boolean
+                      time_zone:
+                        type:
+                          - "null"
+                          - object
+                      velocity_averaged_over:
+                        type:
+                          - "null"
+                          - integer
+                      number_of_done_iterations_to_show:
+                        type:
+                          - "null"
+                          - integer
+                      has_google_domain:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_incoming_emails:
+                        type:
+                          - "null"
+                          - boolean
+                      initial_velocity:
+                        type:
+                          - "null"
+                          - integer
+                      public:
+                        type:
+                          - "null"
+                          - boolean
+                      atom_enabled:
+                        type:
+                          - "null"
+                          - boolean
+                      enable_following:
+                        type:
+                          - "null"
+                          - boolean
+                      show_story_priority:
+                        type:
+                          - "null"
+                          - boolean
+                      project_type:
+                        type:
+                          - "null"
+                          - string
+                      start_time:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - project_id
+            value: "{{ record['project']['id'] }}"
+            type: AddedFieldDefinition
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          guid:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          project:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          secondary_resources:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          project_id:
+            type:
+              - "null"
+              - integer
+          occurred_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          performed_by:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+              kind:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              initials:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              username:
+                type:
+                  - "null"
+                  - string
+          message:
+            type:
+              - "null"
+              - string
+          highlight:
+            type:
+              - "null"
+              - string
+          project_version:
+            type:
+              - "null"
+              - integer
+          changes:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                kind:
+                  type:
+                    - "null"
+                    - string
+                change_type:
+                  type:
+                    - "null"
+                    - string
+                original_values:
+                  type:
+                    - "null"
+                    - object
+                new_values:
+                  type:
+                    - "null"
+                    - object
+          primary_resources:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                kind:
+                  type:
+                    - "null"
+                    - string
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/pivotal-tracker
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Pivotal Tracker Spec
+    type: object
+    required:
+      - api_token
+    additionalProperties: true
+    properties:
+      api_token:
+        type: string
+        description: Pivotal Tracker API token
+        examples:
+          - 5c054d0de3440452190fdc5d5a04d871
+        airbyte_secret: true
+metadata:
+  autoImportSchema:
+    projects: true
+    stories: true
+    project_memberships: true
+    labels: true
+    releases: true
+    epics: true
+    activity: true
+schemas:
+  person:
+    type: object
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      initials:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      username:
+        type:
+          - "null"
+          - string
+  epics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      label:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          project_id:
+            type:
+              - "null"
+              - integer
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      project_id:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      description:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  labels:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      project_id:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    additionalProperties: true
+  stories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      labels:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+      deadline:
+        type:
+          - "null"
+          - string
+        format: date-time
+      estimate:
+        type:
+          - "null"
+          - integer
+      owner_ids:
+        type: array
+        items:
+          type: integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      project_id:
+        type:
+          - "null"
+          - integer
+      story_type:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      accepted_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      description:
+        type:
+          - "null"
+          - string
+      owned_by_id:
+        type:
+          - "null"
+          - integer
+      current_state:
+        type:
+          - "null"
+          - string
+      story_priority:
+        type:
+          - "null"
+          - string
+      requested_by_id:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  activity:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      guid:
+        type:
+          - "null"
+          - string
+      kind:
+        type:
+          - "null"
+          - string
+      project:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      secondary_resources:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      project_id:
+        type:
+          - "null"
+          - integer
+      occurred_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      performed_by:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          initials:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          username:
+            type:
+              - "null"
+              - string
+      message:
+        type:
+          - "null"
+          - string
+      highlight:
+        type:
+          - "null"
+          - string
+      project_version:
+        type:
+          - "null"
+          - integer
+      changes:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+            change_type:
+              type:
+                - "null"
+                - string
+            original_values:
+              type:
+                - "null"
+                - object
+            new_values:
+              type:
+                - "null"
+                - object
+      primary_resources:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+  projects:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      kind:
+        type:
+          - "null"
+          - string
+      show_priority_icon:
+        type:
+          - "null"
+          - boolean
+      show_priority_icon_in_all_panels:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      project_id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      account_id:
+        type:
+          - "null"
+          - integer
+      version:
+        type:
+          - "null"
+          - integer
+      iteration_length:
+        type:
+          - "null"
+          - integer
+      current_iteration_number:
+        type:
+          - "null"
+          - integer
+      week_start_day:
+        type:
+          - "null"
+          - string
+      point_scale:
+        type:
+          - "null"
+          - string
+      point_scale_is_custom:
+        type:
+          - "null"
+          - boolean
+      bugs_and_chores_are_estimatable:
+        type:
+          - "null"
+          - boolean
+      automatic_planning:
+        type:
+          - "null"
+          - boolean
+      enable_tasks:
+        type:
+          - "null"
+          - boolean
+      time_zone:
+        type:
+          - "null"
+          - object
+      velocity_averaged_over:
+        type:
+          - "null"
+          - integer
+      number_of_done_iterations_to_show:
+        type:
+          - "null"
+          - integer
+      has_google_domain:
+        type:
+          - "null"
+          - boolean
+      enable_incoming_emails:
+        type:
+          - "null"
+          - boolean
+      initial_velocity:
+        type:
+          - "null"
+          - integer
+      public:
+        type:
+          - "null"
+          - boolean
+      atom_enabled:
+        type:
+          - "null"
+          - boolean
+      enable_following:
+        type:
+          - "null"
+          - boolean
+      show_story_priority:
+        type:
+          - "null"
+          - boolean
+      project_type:
+        type:
+          - "null"
+          - string
+      start_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+  releases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      labels:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            project_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+      deadline:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      project_id:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      accepted_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      current_state:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  project_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      kind:
+        type:
+          - "null"
+          - string
+      role:
+        type:
+          - "null"
+          - string
+      person:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          initials:
+            type:
+              - "null"
+              - string
+          username:
+            type:
+              - "null"
+              - string
+      favorite:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      project_id:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      project_color:
+        type:
+          - "null"
+          - string
+      last_viewed_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      wants_comment_notification_emails:
+        type:
+          - "null"
+          - boolean
+      will_receive_mention_notifications_or_emails:
+        type:
+          - "null"
+          - boolean
+    additionalProperties: true

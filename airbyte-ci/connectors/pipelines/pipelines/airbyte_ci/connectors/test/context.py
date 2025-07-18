@@ -8,17 +8,19 @@ from copy import deepcopy
 from logging import Logger
 from typing import Any, Dict, List, Optional
 
+from pydash import find  # type: ignore
+
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.models.secrets import Secret, SecretNotFoundError, SecretStore
-from pydash import find  # type: ignore
 
 # These test suite names are declared in metadata.yaml files
 TEST_SUITE_NAME_TO_STEP_ID = {
     "unitTests": CONNECTOR_TEST_STEP_ID.UNIT,
     "integrationTests": CONNECTOR_TEST_STEP_ID.INTEGRATION,
     "acceptanceTests": CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+    "liveTests": CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS,
 }
 
 

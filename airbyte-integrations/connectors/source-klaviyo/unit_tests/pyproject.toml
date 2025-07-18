@@ -1,0 +1,20 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-klaviyo-tests"
+version = "2.14.0"
+description = "Unit tests for source-klaviyo"
+authors = ["Airbyte <contact@airbyte.io>"]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = "^6"
+pytest = "^8"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]
+

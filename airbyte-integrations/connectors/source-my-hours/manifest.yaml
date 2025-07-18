@@ -1,0 +1,1136 @@
+version: 5.12.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+  - users
+streams:
+- type: DeclarativeStream
+  name: users
+  primary_key:
+  - id
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type:
+          - "null"
+          - number
+        name:
+          type:
+          - "null"
+          - string
+        archived:
+          type:
+          - "null"
+          - boolean
+        dateArchived:
+          type:
+          - "null"
+          - string
+        active:
+          type:
+          - "null"
+          - boolean
+        accountOwner:
+          type:
+          - "null"
+          - boolean
+        email:
+          type:
+          - "null"
+          - string
+        rate:
+          type:
+          - "null"
+          - number
+        billableRate:
+          type:
+          - "null"
+          - number
+        admin:
+          type:
+          - "null"
+          - boolean
+        isProjectManager:
+          type:
+          - "null"
+          - boolean
+        roleType:
+          type:
+          - "null"
+          - integer
+        customId:
+          type:
+          - "null"
+          - string
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api2.myhours.com/api
+      path: Users/getAll
+      http_method: GET
+      authenticator:
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        email: "{{ config['email'] }}"
+        password: "{{ config['password'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: NoPagination
+- type: DeclarativeStream
+  name: time_logs
+  primary_key:
+  - logId
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        logId:
+          type:
+          - "null"
+          - number
+        userId:
+          type:
+          - "null"
+          - number
+        date:
+          type:
+          - "null"
+          - string
+        userName:
+          type:
+          - "null"
+          - string
+        clientId:
+          type:
+          - "null"
+          - number
+        clientName:
+          type:
+          - "null"
+          - string
+        projectId:
+          type:
+          - "null"
+          - number
+        projectName:
+          type:
+          - "null"
+          - string
+        projectInvoiceMethod:
+          type:
+          - "null"
+          - number
+        taskId:
+          type:
+          - "null"
+          - number
+        taskName:
+          type:
+          - "null"
+          - string
+        tags:
+          type:
+          - "null"
+          - string
+        rate:
+          type:
+          - "null"
+          - number
+        billable:
+          type:
+          - "null"
+          - boolean
+        inLockedPeriod:
+          type:
+          - "null"
+          - boolean
+        billableAmount:
+          type:
+          - "null"
+          - number
+        amount:
+          type:
+          - "null"
+          - number
+        laborCost:
+          type:
+          - "null"
+          - number
+        laborRate:
+          type:
+          - "null"
+          - number
+        laborDuration:
+          type:
+          - "null"
+          - number
+        logDuration:
+          type:
+          - "null"
+          - number
+        expense:
+          type:
+          - "null"
+          - number
+        cost:
+          type:
+          - "null"
+          - number
+        note:
+          type:
+          - "null"
+          - string
+        status:
+          type:
+          - "null"
+          - number
+        invoiceId:
+          type:
+          - "null"
+          - number
+        invoiced:
+          type:
+          - "null"
+          - boolean
+        billableHours:
+          type:
+          - "null"
+          - number
+        laborHours:
+          type:
+          - "null"
+          - number
+        customField1:
+          type:
+          - "null"
+          - number
+        customField2:
+          type:
+          - "null"
+          - number
+        customField3:
+          type:
+          - "null"
+          - number
+        monthOfYear:
+          type:
+          - "null"
+          - string
+        weekNo:
+          type:
+          - "null"
+          - number
+        weekOfYear:
+          type:
+          - "null"
+          - string
+        times:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - object
+            properties:
+              id:
+                type:
+                - "null"
+                - number
+              duration:
+                type:
+                - "null"
+                - number
+              startTime:
+                type:
+                - "null"
+                - string
+              endTime:
+                type:
+                - "null"
+                - string
+              running:
+                type:
+                - "null"
+                - boolean
+              deleted:
+                type:
+                - "null"
+                - boolean
+        roundtype:
+          type:
+          - "null"
+          - number
+        attachments:
+          type:
+          - "null"
+          - array
+        balance:
+          type:
+          - "null"
+          - number
+        billableExpense:
+          type:
+          - "null"
+          - number
+        billableHoursLogBillable:
+          type:
+          - "null"
+          - number
+        clientCustomId:
+          type:
+          - "null"
+          - string
+        endTime:
+          type:
+          - "null"
+          - string
+        invoicedAmount:
+          type:
+          - "null"
+          - number
+        logDurationBillable:
+          type:
+          - "null"
+          - number
+        startTime:
+          type:
+          - "null"
+          - string
+          format: date-time
+        startEndTime:
+          type:
+          - "null"
+          - string
+        teams:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - string
+        teamsNames:
+          type:
+          - "null"
+          - string
+        taskListName:
+          type:
+          - "null"
+          - string
+        taskDueDate:
+          type:
+          - "null"
+          - string
+        taskStartDate:
+          type:
+          - "null"
+          - string
+        tagsData:
+          type:
+          - "null"
+          - array
+        uninvoicedAmount:
+          type:
+          - "null"
+          - number
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api2.myhours.com/api
+      path: Reports/activity
+      http_method: GET
+      request_parameters:
+        DateFrom: "{{ config['start_date'] }}"
+        DateTo: "{{ today_utc() }}"
+      authenticator:
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        email: "{{ config['email'] }}"
+        password: "{{ config['password'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: NoPagination
+- type: DeclarativeStream
+  name: tags
+  primary_key:
+  - id
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type:
+          - "null"
+          - number
+        name:
+          type:
+          - "null"
+          - string
+        hexColor:
+          type:
+          - "null"
+          - string
+        archived:
+          type:
+          - "null"
+          - boolean
+        dateArchived:
+          type:
+          - "null"
+          - string
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api2.myhours.com/api
+      path: Tags
+      http_method: GET
+      authenticator:
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        email: "{{ config['email'] }}"
+        password: "{{ config['password'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: NoPagination
+- type: DeclarativeStream
+  name: projects
+  primary_key:
+  - id
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type:
+          - "null"
+          - number
+        name:
+          type:
+          - "null"
+          - string
+        archived:
+          type:
+          - "null"
+          - boolean
+        dateArchived:
+          type:
+          - "null"
+          - string
+        dateCreated:
+          type:
+          - "null"
+          - string
+        clientName:
+          type:
+          - "null"
+          - string
+        clientId:
+          type:
+          - "null"
+          - integer
+        customId:
+          type:
+          - "null"
+          - string
+        budgetAlertPercent:
+          type:
+          - "null"
+          - number
+        budgetType:
+          type:
+          - "null"
+          - number
+        laborCost:
+          type:
+          - "null"
+          - number
+        totalTimeLogged:
+          type:
+          - "null"
+          - number
+        budgetValue:
+          type:
+          - "null"
+          - number
+        totalAmount:
+          type:
+          - "null"
+          - number
+        totalExpense:
+          type:
+          - "null"
+          - number
+        totalCost:
+          type:
+          - "null"
+          - number
+        billableTimeLogged:
+          type:
+          - "null"
+          - number
+        totalBillableAmount:
+          type:
+          - "null"
+          - number
+        billable:
+          type:
+          - "null"
+          - boolean
+        roundType:
+          type:
+          - "null"
+          - number
+        roundInterval:
+          type:
+          - "null"
+          - number
+        budgetSpentPercentage:
+          type:
+          - "null"
+          - number
+        budgetTarget:
+          type:
+          - "null"
+          - number
+        budgetPeriodType:
+          type:
+          - "null"
+          - number
+        budgetSpent:
+          type:
+          - "null"
+          - number
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api2.myhours.com/api
+      path: Projects/getAll
+      http_method: GET
+      authenticator:
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        email: "{{ config['email'] }}"
+        password: "{{ config['password'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: NoPagination
+- type: DeclarativeStream
+  name: clients
+  primary_key:
+  - id
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type:
+          - "null"
+          - number
+        customId:
+          type:
+          - "null"
+          - string
+        contactName:
+          type:
+          - "null"
+          - string
+        contactEmail:
+          type:
+          - "null"
+          - string
+        name:
+          type:
+          - "null"
+          - string
+        archived:
+          type:
+          - "null"
+          - boolean
+        dateArchived:
+          type:
+          - "null"
+          - string
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api2.myhours.com/api
+      path: Clients
+      http_method: GET
+      authenticator:
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        email: "{{ config['email'] }}"
+        password: "{{ config['password'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: NoPagination
+definitions:
+  custom_authenticator:
+    type: CustomAuthenticator
+    class_name: source_declarative_manifest.components.CustomAuthenticator
+    email: "{{ config['email'] }}"
+    password: "{{ config['password'] }}"
+  users_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - "null"
+        - number
+      name:
+        type:
+        - "null"
+        - string
+      archived:
+        type:
+        - "null"
+        - boolean
+      dateArchived:
+        type:
+        - "null"
+        - string
+      active:
+        type:
+        - "null"
+        - boolean
+      accountOwner:
+        type:
+        - "null"
+        - boolean
+      email:
+        type:
+        - "null"
+        - string
+      rate:
+        type:
+        - "null"
+        - number
+      billableRate:
+        type:
+        - "null"
+        - number
+      admin:
+        type:
+        - "null"
+        - boolean
+      isProjectManager:
+        type:
+        - "null"
+        - boolean
+      roleType:
+        type:
+        - "null"
+        - integer
+      customId:
+        type:
+        - "null"
+        - string
+  clients_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - "null"
+        - number
+      customId:
+        type:
+        - "null"
+        - string
+      contactName:
+        type:
+        - "null"
+        - string
+      contactEmail:
+        type:
+        - "null"
+        - string
+      name:
+        type:
+        - "null"
+        - string
+      archived:
+        type:
+        - "null"
+        - boolean
+      dateArchived:
+        type:
+        - "null"
+        - string
+  projects_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - "null"
+        - number
+      name:
+        type:
+        - "null"
+        - string
+      archived:
+        type:
+        - "null"
+        - boolean
+      dateArchived:
+        type:
+        - "null"
+        - string
+      dateCreated:
+        type:
+        - "null"
+        - string
+      clientName:
+        type:
+        - "null"
+        - string
+      clientId:
+        type:
+        - "null"
+        - integer
+      customId:
+        type:
+        - "null"
+        - string
+      budgetAlertPercent:
+        type:
+        - "null"
+        - number
+      budgetType:
+        type:
+        - "null"
+        - number
+      laborCost:
+        type:
+        - "null"
+        - number
+      totalTimeLogged:
+        type:
+        - "null"
+        - number
+      budgetValue:
+        type:
+        - "null"
+        - number
+      totalAmount:
+        type:
+        - "null"
+        - number
+      totalExpense:
+        type:
+        - "null"
+        - number
+      totalCost:
+        type:
+        - "null"
+        - number
+      billableTimeLogged:
+        type:
+        - "null"
+        - number
+      totalBillableAmount:
+        type:
+        - "null"
+        - number
+      billable:
+        type:
+        - "null"
+        - boolean
+      roundType:
+        type:
+        - "null"
+        - number
+      roundInterval:
+        type:
+        - "null"
+        - number
+      budgetSpentPercentage:
+        type:
+        - "null"
+        - number
+      budgetTarget:
+        type:
+        - "null"
+        - number
+      budgetPeriodType:
+        type:
+        - "null"
+        - number
+      budgetSpent:
+        type:
+        - "null"
+        - number
+  tags_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - "null"
+        - number
+      name:
+        type:
+        - "null"
+        - string
+      hexColor:
+        type:
+        - "null"
+        - string
+      archived:
+        type:
+        - "null"
+        - boolean
+      dateArchived:
+        type:
+        - "null"
+        - string
+  time_logs_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      logId:
+        type:
+        - "null"
+        - number
+      userId:
+        type:
+        - "null"
+        - number
+      date:
+        type:
+        - "null"
+        - string
+      userName:
+        type:
+        - "null"
+        - string
+      clientId:
+        type:
+        - "null"
+        - number
+      clientName:
+        type:
+        - "null"
+        - string
+      projectId:
+        type:
+        - "null"
+        - number
+      projectName:
+        type:
+        - "null"
+        - string
+      projectInvoiceMethod:
+        type:
+        - "null"
+        - number
+      taskId:
+        type:
+        - "null"
+        - number
+      taskName:
+        type:
+        - "null"
+        - string
+      tags:
+        type:
+        - "null"
+        - string
+      rate:
+        type:
+        - "null"
+        - number
+      billable:
+        type:
+        - "null"
+        - boolean
+      inLockedPeriod:
+        type:
+        - "null"
+        - boolean
+      billableAmount:
+        type:
+        - "null"
+        - number
+      amount:
+        type:
+        - "null"
+        - number
+      laborCost:
+        type:
+        - "null"
+        - number
+      laborRate:
+        type:
+        - "null"
+        - number
+      laborDuration:
+        type:
+        - "null"
+        - number
+      logDuration:
+        type:
+        - "null"
+        - number
+      expense:
+        type:
+        - "null"
+        - number
+      cost:
+        type:
+        - "null"
+        - number
+      note:
+        type:
+        - "null"
+        - string
+      status:
+        type:
+        - "null"
+        - number
+      invoiceId:
+        type:
+        - "null"
+        - number
+      invoiced:
+        type:
+        - "null"
+        - boolean
+      billableHours:
+        type:
+        - "null"
+        - number
+      laborHours:
+        type:
+        - "null"
+        - number
+      customField1:
+        type:
+        - "null"
+        - number
+      customField2:
+        type:
+        - "null"
+        - number
+      customField3:
+        type:
+        - "null"
+        - number
+      monthOfYear:
+        type:
+        - "null"
+        - string
+      weekNo:
+        type:
+        - "null"
+        - number
+      weekOfYear:
+        type:
+        - "null"
+        - string
+      times:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - object
+          properties:
+            id:
+              type:
+              - "null"
+              - number
+            duration:
+              type:
+              - "null"
+              - number
+            startTime:
+              type:
+              - "null"
+              - string
+            endTime:
+              type:
+              - "null"
+              - string
+            running:
+              type:
+              - "null"
+              - boolean
+            deleted:
+              type:
+              - "null"
+              - boolean
+      roundtype:
+        type:
+        - "null"
+        - number
+      attachments:
+        type:
+        - "null"
+        - array
+      balance:
+        type:
+        - "null"
+        - number
+      billableExpense:
+        type:
+        - "null"
+        - number
+      billableHoursLogBillable:
+        type:
+        - "null"
+        - number
+      clientCustomId:
+        type:
+        - "null"
+        - string
+      endTime:
+        type:
+        - "null"
+        - string
+      invoicedAmount:
+        type:
+        - "null"
+        - number
+      logDurationBillable:
+        type:
+        - "null"
+        - number
+      startTime:
+        type:
+        - "null"
+        - string
+        format: date-time
+      startEndTime:
+        type:
+        - "null"
+        - string
+      teams:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - string
+      teamsNames:
+        type:
+        - "null"
+        - string
+      taskListName:
+        type:
+        - "null"
+        - string
+      taskDueDate:
+        type:
+        - "null"
+        - string
+      taskStartDate:
+        type:
+        - "null"
+        - string
+      tagsData:
+        type:
+        - "null"
+        - array
+      uninvoicedAmount:
+        type:
+        - "null"
+        - number
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/my-hours
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: My Hours Spec
+    type: object
+    required:
+    - email
+    - password
+    - start_date
+    additionalProperties: true
+    properties:
+      email:
+        title: Email
+        type: string
+        description: Your My Hours username
+        example: john@doe.com
+      password:
+        title: Password
+        type: string
+        description: The password associated to the username
+        airbyte_secret: true
+      start_date:
+        title: Start Date
+        description: Start date for collecting time logs
+        examples:
+        - "%Y-%m-%d"
+        - "2016-01-01"
+        type: string
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      logs_batch_size:
+        title: Time logs batch size
+        description: Pagination size used for retrieving logs in days
+        examples:
+        - 30
+        type: integer
+        minimum: 1
+        maximum: 365
+        default: 30
+  type: Spec
+metadata:
+  autoImportSchema:
+    users: false
+    time_logs: false
+    tags: false
+    projects: false
+    clients: false

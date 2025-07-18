@@ -45,6 +45,18 @@ The New York Times connector should not run into limitations under normal usage.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.7 | 2025-07-12 | [63247](https://github.com/airbytehq/airbyte/pull/63247) | Update dependencies |
+| 0.2.6 | 2025-07-05 | [62604](https://github.com/airbytehq/airbyte/pull/62604) | Update dependencies |
+| 0.2.5 | 2025-06-28 | [62397](https://github.com/airbytehq/airbyte/pull/62397) | Update dependencies |
+| 0.2.4 | 2025-06-21 | [61918](https://github.com/airbytehq/airbyte/pull/61918) | Update dependencies |
+| 0.2.3 | 2025-06-14 | [48172](https://github.com/airbytehq/airbyte/pull/48172) | Update dependencies |
+| 0.2.2 | 2024-10-29 | [47728](https://github.com/airbytehq/airbyte/pull/47728) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47634](https://github.com/airbytehq/airbyte/pull/47634) | Update dependencies |
+| 0.2.0 | 2024-08-22 | [44555](https://github.com/airbytehq/airbyte/pull/44555) | Refactor connector to manifest-only format |
+| 0.1.18 | 2024-08-17 | [44349](https://github.com/airbytehq/airbyte/pull/44349) | Update dependencies |
+| 0.1.17 | 2024-08-10 | [43577](https://github.com/airbytehq/airbyte/pull/43577) | Update dependencies |
+| 0.1.16 | 2024-08-03 | [43257](https://github.com/airbytehq/airbyte/pull/43257) | Update dependencies |
+| 0.1.15 | 2024-07-27 | [42733](https://github.com/airbytehq/airbyte/pull/42733) | Update dependencies |
 | 0.1.14 | 2024-07-20 | [42234](https://github.com/airbytehq/airbyte/pull/42234) | Update dependencies |
 | 0.1.13 | 2024-07-13 | [41912](https://github.com/airbytehq/airbyte/pull/41912) | Update dependencies |
 | 0.1.12 | 2024-07-10 | [41580](https://github.com/airbytehq/airbyte/pull/41580) | Update dependencies |

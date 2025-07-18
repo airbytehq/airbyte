@@ -32,31 +32,42 @@ access to the database.
 1. Log in to the MongoDB Atlas dashboard.
 2. From the dashboard, click on "Database Access" under "Security"
 
-![Security Database Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
+![Security Database Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
 
 3. Click on the "+ ADD NEW DATABASE USER" button.
 
-![Add New Database User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
+![Add New Database User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
 
 4. On the "Add new Database User" modal dialog, choose "Password" for the "Authentication Method".
 
-![Authentication Method](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
+![Authentication Method](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
 
 5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` in the first text box and set a password in the second text box.
 
-![Username and Password](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
+![Username and Password](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
 6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
 
-![Database User Privileges](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
+![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
-7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
+7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`. 
 
-![Restrict Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
+:::info
+Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
+This allows you to sync multiple collections across different databases using a single source.
 
-8. Click on "Add User" at the bottom to save the user.
+The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
+:::
 
-![Add User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
+![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
+
+8. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
+
+![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
+
+9. Click on "Add User" at the bottom to save the user.
+
+![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
 ##### Self Hosted
 
@@ -112,15 +123,15 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
 
-![Connect to Source Cluster](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
+![Connect to Source Cluster](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
 
 3. On the "Connect to &lt;cluster name&gt;" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-![Shell Connect](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
+![Shell Connect](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
 
 4. Copy the connection string from the entry labeled "2. Run your connection string in your command line" on the modal dialog, removing/avoiding the quotation marks.
 
-![Copy Connection String](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
+![Copy Connection String](/.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
 
 ##### Self Hosted Cluster
 
@@ -138,7 +149,7 @@ The source will test the connection to the MongoDB instance upon creation.
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
-In addtion MongoDB source now allows for syncing in a full refresh mode.
+In addition, MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
@@ -147,12 +158,12 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 ### Full Refresh
 
 The Full refresh sync mode added in v4.0.0 allows for reading a the entire contents of a collection, repeatedly.
-The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for netwrok error for example,
+The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for network error for example,
 Rather than starting over it will continue its full refresh read from a last known point.
 
 ### Schema Enforcement
 
-By default the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configureable number of docuemnts and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
+By default, the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configurable number of documents and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
 
 When the schema enforced option is disabled, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
 This allows for greater flexibility in reading data that is unstructured or vary a lot in between documents in a single collection.
@@ -180,7 +191,7 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 | :----------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                                                                                          |
 | Connection String                          | The connection string of the source MongoDB cluster. For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string. For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
-| Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                                                                                                   |
+| Database Names                             | The names of the MongoDB databases that contain the source collection(s) to sync. Allows specifying multiple databases to discover and sync collections from.                                                                                                                                                                                                                                                                                |
 | Username                                   | The username which is used to access the database. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                    |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                           |
 | Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                            |
@@ -198,7 +209,30 @@ For more information regarding configuration parameters, please see [MongoDb Doc
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 2.0.2   | 2025-07-14 | [62938](https://github.com/airbytehq/airbyte/pull/62938) | Only require a single database read permission when configured to sync a single database.                 |
+| 2.0.1   | 2025-06-04 | [61369](https://github.com/airbytehq/airbyte/pull/61369) | Do not pin on 1.5.17                                                                                      |
+| 2.0.0   | 2025-05-27 | [60252](https://github.com/airbytehq/airbyte/pull/60252) | Add support for multiple databases                                                                        |
+| 1.5.19  | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311) | Migrate to new Gradle flow                                                                                |
+| 1.5.18  | 2025-04-24 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies.                                                                      |
+| 1.5.17  | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111) | Implement timeout for document discovery                                                                  |
+| 1.5.16  | 2025-04-02 | [56973](https://github.com/airbytehq/airbyte/pull/56973) | Update logging configuration.                                                                             |
+| 1.5.15  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors                                              |
+| 1.5.14  | 2025-01-10 | [51491](https://github.com/airbytehq/airbyte/pull/51491) | Use a non root base image                                                                                 |
+| 1.5.13  | 2024-12-18 | [49868](https://github.com/airbytehq/airbyte/pull/49868) | Use a base image: airbyte/java-connector-base:1.0.0                                                       |
+| 1.5.12  | 2024-11-01 | [48115](https://github.com/airbytehq/airbyte/pull/48115) | Remove database name check.                                                                               |
+| 1.5.11  | 2024-09-24 | [45883](https://github.com/airbytehq/airbyte/pull/45883) | Lazy init mongocursor to prevent timeout.                                                                 |
+| 1.5.10  | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639) | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests.                      |
+| 1.5.9   | 2024-08-28 | [42927](https://github.com/airbytehq/airbyte/pull/42927) | Support binary subtype.                                                                                   |
+| 1.5.8   | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841) | Adopt latest CDK.                                                                                         |
+| 1.5.7   | 2024-08-27 | [44846](https://github.com/airbytehq/airbyte/pull/44846) | DBZ filters in related streams only.                                                                      |
+| 1.5.6   | 2024-08-27 | [44839](https://github.com/airbytehq/airbyte/pull/44839) | DBZ filters in related streams only.                                                                      |
+| 1.5.5   | 2024-08-26 | [44779](https://github.com/airbytehq/airbyte/pull/44779) | Revert permission check on oplog.rs.                                                                      |
+| 1.5.4   | 2024-08-20 | [44490](https://github.com/airbytehq/airbyte/pull/44490) | Add read permission check on oplog.rs collection used by CDC.                                             |
+| 1.5.3   | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410) | Adopt latest CDK.                                                                                         |
+| 1.5.2   | 2024-08-06 | [42869](https://github.com/airbytehq/airbyte/pull/42869) | Adopt latest CDK.                                                                                         |
+| 1.5.1   | 2024-08-01 | [42549](https://github.com/airbytehq/airbyte/pull/42549) | Centered the connector icon.                                                                              |
+| 1.5.0   | 2024-07-26 | [42561](https://github.com/airbytehq/airbyte/pull/42561) | Implement WASS algorithm.                                                                                 |
 | 1.4.3   | 2024-07-22 | [39145](https://github.com/airbytehq/airbyte/pull/39145) | Warn (vs fail) on different \_id types in collection.                                                     |
 | 1.4.2   | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat.                                                                                      |
 | 1.4.1   | 2024-06-11 | [39530](https://github.com/airbytehq/airbyte/pull/39530) | Adopt new CDK.                                                                                            |

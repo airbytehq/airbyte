@@ -11,14 +11,16 @@ from typing import Any, Mapping
 import azure
 import docker
 import pytest
-from airbyte_protocol.models import ConfiguredAirbyteCatalog
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from azure.storage.blob._shared.authentication import SharedKeyCredentialPolicy
 from fastavro import parse_schema, writer
 from pandas import read_csv
 from source_azure_blob_storage import SourceAzureBlobStorage
 
+from airbyte_protocol.models import ConfiguredAirbyteCatalog
+
 from .utils import get_docker_ip, load_config
+
 
 logger = logging.getLogger("airbyte")
 

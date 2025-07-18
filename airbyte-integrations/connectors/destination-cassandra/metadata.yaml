@@ -8,7 +8,7 @@ data:
   icon: cassandra.svg
   license: MIT
   name: Cassandra
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

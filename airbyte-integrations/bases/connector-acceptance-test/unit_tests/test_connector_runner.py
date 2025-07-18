@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 
 import pytest
+from connector_acceptance_test.utils import connector_runner
+
 from airbyte_protocol.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
@@ -16,7 +18,7 @@ from airbyte_protocol.models import (
     OrchestratorType,
 )
 from airbyte_protocol.models import Type as AirbyteMessageType
-from connector_acceptance_test.utils import connector_runner
+
 
 pytestmark = pytest.mark.anyio
 
@@ -121,7 +123,6 @@ class TestContainerRunner:
 
 
 async def test_get_connector_container(mocker):
-
     dagger_client = mocker.AsyncMock()
     os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"] = "test_tarball_path"
 

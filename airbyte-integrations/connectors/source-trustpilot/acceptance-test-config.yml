@@ -1,10 +1,13 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-trustpilot:dev
+test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_trustpilot/spec.yaml"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.0
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -14,6 +17,8 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.0
   basic_read:
     tests:
       - config_path: "secrets/config.json"

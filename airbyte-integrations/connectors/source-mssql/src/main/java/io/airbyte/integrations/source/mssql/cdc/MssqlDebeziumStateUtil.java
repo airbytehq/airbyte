@@ -80,6 +80,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
     // There is no need to construct an initial state after it was already constructed in this run
     // Starting and stopping mssql debezium too many times causes it to hang during shutdown
     if (initialState.get() == null) {
+      LOGGER.info("No initial state was found. Running Debezium state initialization...");
       properties.setProperty("heartbeat.interval.ms", "0");
       final JsonNode highWaterMark = constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText());
       final AirbyteFileOffsetBackingStore emptyOffsetManager = AirbyteFileOffsetBackingStore.initializeState(null,

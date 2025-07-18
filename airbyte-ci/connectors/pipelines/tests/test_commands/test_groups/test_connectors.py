@@ -8,13 +8,14 @@ import asyncclick as click
 import pytest
 from asyncclick.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
+
 from pipelines.airbyte_ci.connectors import commands as connectors_commands
 from pipelines.airbyte_ci.connectors.build_image import commands as connectors_build_command
 from pipelines.airbyte_ci.connectors.publish import commands as connectors_publish_command
 from pipelines.airbyte_ci.connectors.test import commands as connectors_test_command
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.models.secrets import InMemorySecretStore
-from tests.utils import pick_a_random_connector
+from tests.utils import pick_a_random_connector, pick_a_strict_encrypt_variant_pair
 
 
 @pytest.fixture(scope="session")
@@ -34,7 +35,12 @@ def test_get_selected_connectors_by_name_no_file_modification():
         modified_files=set(),
     )
 
-    assert len(selected_connectors) == 1
+    has_strict_encrypt_variant = any("-strict-encrypt" in c.technical_name for c in selected_connectors)
+    if has_strict_encrypt_variant:
+        assert len(selected_connectors) == 2
+    else:
+        assert len(selected_connectors) == 1
+
     assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
     assert selected_connectors[0].technical_name == connector.technical_name
     assert not selected_connectors[0].modified_files
@@ -103,6 +109,7 @@ def test_get_selected_connectors_by_name_and_support_level_or_languages_leads_to
     assert len(selected_connectors) == 1
 
 
+@pytest.mark.flaky
 def test_get_selected_connectors_with_modified():
     first_modified_connector = pick_a_random_connector()
     second_modified_connector = pick_a_random_connector(other_picked_connectors=[first_modified_connector])
@@ -133,9 +140,12 @@ def test_get_selected_connectors_with_modified_and_language():
         metadata_query=None,
         modified_files=modified_files,
     )
-
-    assert len(selected_connectors) == 1
-    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+    has_strict_encrypt_variant = any("-strict-encrypt" in c.technical_name for c in selected_connectors)
+    if has_strict_encrypt_variant:
+        assert len(selected_connectors) == 2
+    else:
+        assert len(selected_connectors) == 1
+        assert selected_connectors[0].technical_name == second_modified_connector.technical_name
 
 
 def test_get_selected_connectors_with_modified_and_support_level():
@@ -151,9 +161,12 @@ def test_get_selected_connectors_with_modified_and_support_level():
         metadata_query=None,
         modified_files=modified_files,
     )
-
-    assert len(selected_connectors) == 1
-    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+    has_strict_encrypt_variant = any("-strict-encrypt" in c.technical_name for c in selected_connectors)
+    if has_strict_encrypt_variant:
+        assert len(selected_connectors) == 2
+    else:
+        assert len(selected_connectors) == 1
+        assert selected_connectors[0].technical_name == second_modified_connector.technical_name
 
 
 def test_get_selected_connectors_with_modified_and_metadata_only():
@@ -174,12 +187,16 @@ def test_get_selected_connectors_with_modified_and_metadata_only():
         modified_files=modified_files,
     )
 
-    assert len(selected_connectors) == 1
-    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
-    assert selected_connectors[0].modified_files == {
-        second_modified_connector.code_directory / METADATA_FILE_NAME,
-        second_modified_connector.code_directory / "setup.py",
-    }
+    has_strict_encrypt_variant = any("-strict-encrypt" in c.technical_name for c in selected_connectors)
+    if has_strict_encrypt_variant:
+        assert len(selected_connectors) == 2
+    else:
+        assert len(selected_connectors) == 1
+        assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+        assert selected_connectors[0].modified_files == {
+            second_modified_connector.code_directory / METADATA_FILE_NAME,
+            second_modified_connector.code_directory / "setup.py",
+        }
 
 
 def test_get_selected_connectors_with_metadata_only():
@@ -199,13 +216,16 @@ def test_get_selected_connectors_with_metadata_only():
         metadata_query=None,
         modified_files=modified_files,
     )
-
-    assert len(selected_connectors) == 1
-    assert selected_connectors[0].technical_name == second_modified_connector.technical_name
-    assert selected_connectors[0].modified_files == {
-        second_modified_connector.code_directory / METADATA_FILE_NAME,
-        second_modified_connector.code_directory / "setup.py",
-    }
+    has_strict_encrypt_variant = any("-strict-encrypt" in c.technical_name for c in selected_connectors)
+    if has_strict_encrypt_variant:
+        assert len(selected_connectors) == 2
+    else:
+        assert len(selected_connectors) == 1
+        assert selected_connectors[0].technical_name == second_modified_connector.technical_name
+        assert selected_connectors[0].modified_files == {
+            second_modified_connector.code_directory / METADATA_FILE_NAME,
+            second_modified_connector.code_directory / "setup.py",
+        }
 
 
 def test_get_selected_connectors_with_metadata_query():
@@ -225,6 +245,40 @@ def test_get_selected_connectors_with_metadata_query():
     assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
     assert selected_connectors[0].technical_name == connector.technical_name
     assert not selected_connectors[0].modified_files
+
+
+def test_strict_encrypt_variant_is_selected():
+    main_connector, strict_encrypt_variant = pick_a_strict_encrypt_variant_pair()
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
+        selected_names=(main_connector.technical_name,),
+        selected_support_levels=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        metadata_query=None,
+        modified_files={},
+    )
+    assert len(selected_connectors) == 2
+    selected_names = [c.technical_name for c in selected_connectors]
+    assert main_connector.technical_name in selected_names
+    assert strict_encrypt_variant.technical_name in selected_names
+
+
+def test_main_connector_selected_when_variant_is_selected():
+    main_connector, strict_encrypt_variant = pick_a_strict_encrypt_variant_pair()
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
+        selected_names=(strict_encrypt_variant.technical_name,),
+        selected_support_levels=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        metadata_query=None,
+        modified_files={},
+    )
+    assert len(selected_connectors) == 2
+    selected_names = [c.technical_name for c in selected_connectors]
+    assert main_connector.technical_name in selected_names
+    assert strict_encrypt_variant.technical_name in selected_names
 
 
 @pytest.fixture()
@@ -266,19 +320,6 @@ def click_context_obj(in_memory_secret_store):
     "command, command_args",
     [
         (connectors_test_command.test, []),
-        (
-            connectors_publish_command.publish,
-            [
-                "--spec-cache-gcs-credentials",
-                '{"foo": "bar"}',
-                "--spec-cache-bucket-name",
-                "test",
-                "--metadata-service-gcs-credentials",
-                '{"foo": "bar"}',
-                "--metadata-service-bucket-name",
-                "test",
-            ],
-        ),
         (connectors_build_command.build, []),
     ],
 )

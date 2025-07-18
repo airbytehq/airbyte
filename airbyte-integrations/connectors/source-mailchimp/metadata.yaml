@@ -7,11 +7,11 @@ data:
       - "*.api.mailchimp.com"
       - "login.mailchimp.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.59.0@sha256:383b0fc136ecf8b89947e9a7a36ded64172efa5f763c86ead35266174dfda0c0
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 2.0.12
+  dockerImageTag: 2.1.0-rc.1
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   githubIssueLabel: source-mailchimp
@@ -21,9 +21,9 @@ data:
   name: Mailchimp
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-mailchimp
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -39,6 +39,8 @@ data:
       1.0.0:
         message: Version 1.0.0 introduces schema changes to all incremental streams. A full schema refresh and data reset are required to upgrade to this version. For more details, see our <a href='https://docs.airbyte.io/integrations/sources/mailchimp-migrations'>migration guide</a>.
         upgradeDeadline: "2024-01-10"
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   releaseStage: generally_available
   suggestedStreams:
     streams:
@@ -48,9 +50,15 @@ data:
       - reports
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mailchimp_config_oauth_dev_null
+          id: 46a5be1e-a798-407b-a7ae-00184e04b690
+        - name: mailchimp_config_dev_null
+          id: 7da811da-0320-407a-8d6e-7120eeead385
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

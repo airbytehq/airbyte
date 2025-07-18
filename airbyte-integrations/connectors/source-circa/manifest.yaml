@@ -1,0 +1,1065 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector for Circa.com would enable seamless data extraction from
+  Circa's platform, facilitating automated data integration into your data
+  warehouse or analytics systems. This connector would pull key metrics, user
+  engagement data, and content performance insights, offering streamlined
+  reporting and analysis workflows. Ideal for organizations looking to
+  consolidate Circa’s data with other sources for comprehensive business
+  intelligence.
+
+check:
+  type: CheckStream
+  stream_names:
+    - events
+
+definitions:
+  streams:
+    teams:
+      type: DeclarativeStream
+      name: teams
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: body_json
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    events:
+      type: DeclarativeStream
+      name: events
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: body_json
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_at[max]
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at[min]
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: body_json
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_at[max]
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at[min]
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: body_json
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_at[max]
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at[min]
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+    event_fields:
+      type: DeclarativeStream
+      name: event_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fields
+          http_method: GET
+          request_parameters:
+            fields_for: Event
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_fields"
+    company_fields:
+      type: DeclarativeStream
+      name: company_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fields
+          http_method: GET
+          request_parameters:
+            fields_for: Company
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_fields"
+    contact_fields:
+      type: DeclarativeStream
+      name: contact_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fields
+          http_method: GET
+          request_parameters:
+            fields_for: Contact
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contact_fields"
+    event_contacts:
+      type: DeclarativeStream
+      name: event_contacts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: body_json
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/{{ stream_partition.event_id }}/contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/events"
+              parent_key: id
+              partition_field: event_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_contacts"
+    company_contacts:
+      type: DeclarativeStream
+      name: company_contacts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: body_json
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/{{ stream_partition.company_id }}/contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/companies"
+              parent_key: id
+              partition_field: company_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_contacts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.circa.co/api/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/company_contacts"
+  - $ref: "#/definitions/streams/event_fields"
+  - $ref: "#/definitions/streams/contact_fields"
+  - $ref: "#/definitions/streams/company_fields"
+  - $ref: "#/definitions/streams/event_contacts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it at
+          https://app.circa.co/settings/integrations/api
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://docs.circa.co/
+  testedStreams:
+    teams:
+      hasRecords: true
+      streamHash: 3a333dca6eb202b626d5807858c9cb70c580636c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events:
+      hasRecords: true
+      streamHash: e819947a5a8c1bc9759c82397024bd83cfb469b1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts:
+      hasRecords: true
+      streamHash: 497d37a0e403270401c202685588af80ed0e9f11
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      hasRecords: true
+      streamHash: 216768eb9e27c528ff4d46f339eaef671b7f1e5a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    event_fields:
+      hasRecords: true
+      streamHash: 6d9b721f9f31fbdb46af0f0b90e5fb7a796ae16f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    company_fields:
+      hasRecords: true
+      streamHash: 40d227270ec88a6e2fdd397292a6e55c843a215b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contact_fields:
+      hasRecords: true
+      streamHash: a00fdf4f6fbfe317353c876fc88e5ff49de42241
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    event_contacts:
+      hasRecords: true
+      streamHash: 6d9d71beb8ff08a57680d4ebf85abe59bbc1114c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    company_contacts:
+      hasRecords: true
+      streamHash: 18ddfafe76ae6aa6b4538b8703e88293e3f8c6c2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    teams: true
+    events: true
+    contacts: false
+    companies: true
+    event_fields: true
+    company_fields: true
+    contact_fields: true
+    event_contacts: true
+    company_contacts: true
+
+schemas:
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      roles:
+        type:
+          - array
+          - "null"
+      types:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      brief_url:
+        type:
+          - string
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      paid_total:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+      updated_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      actual_total:
+        type:
+          - number
+          - "null"
+      planned_total:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      hot_lead:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      updated_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      sync_status:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+      email_opt_in:
+        type:
+          - boolean
+          - "null"
+      created_method:
+        type:
+          - string
+          - "null"
+      updated_method:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - updated_at
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    additionalProperties: true
+  event_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      section:
+        type:
+          - string
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      field_for:
+        type:
+          - string
+          - "null"
+      field_name:
+        type:
+          - string
+          - "null"
+      field_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  company_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      field_for:
+        type:
+          - string
+          - "null"
+      field_name:
+        type:
+          - string
+          - "null"
+      field_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  contact_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      field_for:
+        type:
+          - string
+          - "null"
+      field_name:
+        type:
+          - string
+          - "null"
+      field_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  event_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      hot_lead:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      sync_status:
+        type:
+          - object
+          - "null"
+        properties:
+          status:
+            type:
+              - string
+              - "null"
+      email_opt_in:
+        type:
+          - boolean
+          - "null"
+      created_method:
+        type:
+          - string
+          - "null"
+      updated_method:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  company_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      hot_lead:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      email_opt_in:
+        type:
+          - boolean
+          - "null"
+      created_method:
+        type:
+          - string
+          - "null"
+      updated_method:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

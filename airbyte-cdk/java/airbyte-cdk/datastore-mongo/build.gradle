@@ -28,5 +28,5 @@ dependencies {
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
-    testFixturesApi 'org.testcontainers:mongodb:1.19.0'
+    testFixturesApi 'org.testcontainers:mongodb:1.20.1'
 }

@@ -1,0 +1,834 @@
+{
+  "streams": [
+    {
+      "name": "sites",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "siteUrl": {
+            "description": "The URL of the site data being fetched",
+            "type": ["null", "string"]
+          },
+          "permissionLevel": {
+            "description": "The user's permission level for the site (owner, full, restricted, etc.)",
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "is_resumable": false
+    },
+    {
+      "name": "sitemaps",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "Path to the sitemap file",
+            "type": ["null", "string"]
+          },
+          "lastSubmitted": {
+            "description": "Timestamp when the sitemap was last submitted",
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "isPending": {
+            "description": "Flag indicating if the sitemap is pending for processing",
+            "type": ["null", "boolean"]
+          },
+          "isSitemapsIndex": {
+            "description": "Flag indicating if the data represents a sitemap index",
+            "type": ["null", "boolean"]
+          },
+          "type": {
+            "description": "Type of the sitemap",
+            "type": ["null", "string"]
+          },
+          "lastDownloaded": {
+            "description": "Timestamp when the sitemap was last downloaded",
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "warnings": {
+            "description": "Warnings encountered while processing the sitemaps",
+            "type": ["null", "string"]
+          },
+          "errors": {
+            "description": "Errors encountered while processing the sitemaps",
+            "type": ["null", "string"]
+          },
+          "contents": {
+            "description": "Data related to the sitemap contents",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "description": "Type of the sitemap content",
+                  "type": ["null", "string"]
+                },
+                "submitted": {
+                  "description": "Number of submitted sitemap URLs",
+                  "type": ["null", "string"]
+                },
+                "indexed": {
+                  "description": "Number of indexed sitemap URLs",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "is_resumable": false
+    },
+    {
+      "name": "search_analytics_by_country",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site for which the search analytics data is being reported.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search (web search, image search, video search, etc.) for which the data is being reported.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date for which the search analytics data is being reported.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country for which the search analytics data is being reported.",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of times users clicked on the search result for a specific country.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The total number of times a search result was shown in search results for a specific country.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "The click-through rate, i.e., the ratio of clicks to impressions for a specific country.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position at which the site's search result appeared for a specific country.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_by_device",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site for which search analytics data is being provided.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search performed (e.g., web search, image search, video search).",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date for which the search analytics data is provided.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "device": {
+            "description": "The type of device used by the user for the search query (e.g., desktop, mobile).",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The total number of times a user clicked on a search result linking to the target site.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The total number of times a user saw a link to the target site in search results.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate represents the ratio of clicks to impressions, showing the effectiveness of your site in attracting clicks from search results.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position of the site's URLs in search results for the given query or queries.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["device"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_by_date",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site for which the search analytics data is being reported.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search query (e.g., web, image, video) that generated the search analytics data.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date for which the search analytics data is being reported.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "clicks": {
+            "description": "The total number of times users clicked on the search result for the site URL on the specific date.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times the site URL was displayed in the search results to users on the specific date.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "The click-through rate (CTR) represents the percentage of total impressions that resulted in a click to the site URL.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position of the site URL in the search results pages for the specific date.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [["site_url"], ["date"], ["search_type"]],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_by_query",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site for which the search analytics data is captured.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search result (e.g., web, image, video) for the specific query.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date for which the search analytics data is recorded.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "query": {
+            "description": "The search query for which the search analytics data is recorded.",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of times users clicked on the search result for the specific query.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times the search result was displayed for the specific query.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "The click-through rate (percentage) for the specific query, calculated as clicks divided by impressions.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position at which the search result appeared for the specific query.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["query"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_by_page",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site for which the search analytics data is being reported.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search query that led to the page being displayed in search results.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date for which the search analytics data is reported.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "page": {
+            "description": "The URL of the specific page being analyzed for search analytics data.",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of times a user clicked on the search result linking to the page.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times a page from the site appeared in the search results viewed by users.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate (CTR) is the ratio of clicks to impressions, indicating the effectiveness of the page in generating clicks.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position at which the page appeared in search results.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["page"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_all_fields",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site from which the data originates.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search (e.g., web, image, video) that triggered the search result.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date when the search query occurred.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country from which the search query originated.",
+            "type": ["null", "string"]
+          },
+          "device": {
+            "description": "The type of device used by the user (e.g., desktop, mobile).",
+            "type": ["null", "string"]
+          },
+          "page": {
+            "description": "The page URL that appeared in the search results.",
+            "type": ["null", "string"]
+          },
+          "query": {
+            "description": "The search query entered by the user.",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of times users clicked on the search result for a specific query.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times a search result appeared in response to a query.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate, calculated as clicks divided by impressions.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position of the search result on the search engine results page.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["device"],
+        ["query"],
+        ["page"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_keyword_page_report",
+      "json_schema": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "site_url": {
+            "description": "The URL of the website being monitored.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search (e.g., web, image, video).",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date of the search data collected.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country where the search is made.",
+            "type": ["null", "string"]
+          },
+          "device": {
+            "description": "The device type used for the search (e.g., desktop, mobile).",
+            "type": ["null", "string"]
+          },
+          "page": {
+            "description": "The page URL on which the keyword appears in search results.",
+            "type": ["null", "string"]
+          },
+          "query": {
+            "description": "The search query used to find the site.",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of clicks for the keyword on a specific page.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times the keyword appeared in search results.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate which is the percentage of clicks divided by impressions.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position of the keyword on search results pages.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["device"],
+        ["query"],
+        ["page"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_page_report",
+      "json_schema": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "site_url": {
+            "description": "The URL of the website for which the search analytics data is being reported.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search (e.g., web, image, video) that led users to the website.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date when the search data was recorded.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country from which the search originated.",
+            "type": ["null", "string"]
+          },
+          "page": {
+            "description": "The specific page URL within the website that appeared in search results.",
+            "type": ["null", "string"]
+          },
+          "device": {
+            "description": "The type of device used by the user for the search query (e.g., desktop, mobile).",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The total number of times users clicked on search results that led to the linked website.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The total number of times a search result from the linked website was shown to users.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate: The percentage of clicks out of the total impressions for a given search query.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position at which the website's search results appeared to users.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["device"],
+        ["search_type"],
+        ["page"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_site_report_by_site",
+      "json_schema": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site being analyzed",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search (e.g., web, image, video)",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date of the search analytics data",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country where the search took place",
+            "type": ["null", "string"]
+          },
+          "device": {
+            "description": "The type of device used for the search (e.g., mobile, desktop)",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of times users clicked on a search result linking to the site",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times the site appeared in search results",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate calculated as clicks divided by impressions",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position of the site in search results",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["device"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_site_report_by_page",
+      "json_schema": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "site_url": {
+            "description": "The URL of the page on the site that is being reported.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search query that led to the page being shown.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date for which the data is being reported.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country from which the search traffic originated.",
+            "type": ["null", "string"]
+          },
+          "device": {
+            "description": "The type of device used by the searcher (e.g., desktop, mobile).",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The total number of clicks received by the page from search results.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The total number of times the page appeared in search results.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "The click-through rate, i.e., the percentage of total impressions that resulted in clicks.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position at which the page appeared in search results.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["device"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_keyword_site_report_by_page",
+      "json_schema": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "site_url": {
+            "description": "The URL of the website for which the search analytics data is retrieved.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search conducted (e.g., web, image, video).",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date when the search data was recorded.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country from which the search query originated.",
+            "type": ["null", "string"]
+          },
+          "device": {
+            "description": "The device type used for the search query (e.g., desktop, mobile).",
+            "type": ["null", "string"]
+          },
+          "query": {
+            "description": "The search query used by the user.",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of times users clicked on your website link in search results.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times your website link appeared in search results.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate: Number of clicks divided by the number of impressions.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average position of your website link in search results.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["device"],
+        ["query"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "search_analytics_keyword_site_report_by_site",
+      "json_schema": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "site_url": {
+            "description": "The URL of the site for which the search analytics data is recorded.",
+            "type": ["null", "string"]
+          },
+          "search_type": {
+            "description": "The type of search (e.g., web search, image search) that generated the analytics data.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date for which the search analytics data is recorded.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "country": {
+            "description": "The country from which the search originated.",
+            "type": ["null", "string"]
+          },
+          "device": {
+            "description": "The type of device used by the user during the search (e.g., desktop, mobile).",
+            "type": ["null", "string"]
+          },
+          "query": {
+            "description": "The search query used by the user to find the site in search results.",
+            "type": ["null", "string"]
+          },
+          "clicks": {
+            "description": "The number of times users clicked on the search result linking to the site.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The number of times the site was shown in search results to users.",
+            "type": ["null", "integer"]
+          },
+          "ctr": {
+            "description": "Click-through rate represents the percentage of users who clicked on the site's link after seeing it in search results.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          },
+          "position": {
+            "description": "The average ranking position of the site in search results.",
+            "type": ["null", "number"],
+            "multipleOf": 1e-25
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["site_url"],
+        ["date"],
+        ["country"],
+        ["device"],
+        ["query"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    },
+    {
+      "name": "custom_dimensions",
+      "json_schema": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "clicks": { "type": ["null", "integer"] },
+          "ctr": { "type": ["null", "number"], "multipleOf": 1e-25 },
+          "impressions": { "type": ["null", "integer"] },
+          "position": { "type": ["null", "number"], "multipleOf": 1e-25 },
+          "search_type": { "type": ["null", "string"] },
+          "site_url": { "type": ["null", "string"] },
+          "country": { "type": ["null", "string"] },
+          "date": { "type": ["null", "string"], "format": "date" },
+          "device": { "type": ["null", "string"] }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [
+        ["date"],
+        ["country"],
+        ["device"],
+        ["site_url"],
+        ["search_type"]
+      ],
+      "is_resumable": true
+    }
+  ]
+}

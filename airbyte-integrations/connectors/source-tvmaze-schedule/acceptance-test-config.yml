@@ -3,7 +3,7 @@
 connector_image: airbyte/source-tvmaze-schedule:dev
 tests:
   spec:
-    - spec_path: "source_tvmaze_schedule/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

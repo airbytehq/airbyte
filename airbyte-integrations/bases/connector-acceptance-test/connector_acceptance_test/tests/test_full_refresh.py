@@ -37,6 +37,7 @@ def primary_keys_only(record, pks):
 
 
 @pytest.mark.default_timeout(TWENTY_MINUTES)
+@pytest.mark.usefixtures("final_teardown")
 class TestFullRefresh(BaseTest):
     def assert_emitted_at_increase_on_subsequent_runs(self, first_read_records, second_read_records):
         first_read_records_data = [record.data for record in first_read_records]

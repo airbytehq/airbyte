@@ -9,7 +9,7 @@ The resources are listed [here](https://developers.google.com/google-ads/api/ref
 When querying data, there are three categories of information that can be fetched:
 
 - **Attributes**: These are properties of the various entities in the API e.g: the title or ID of an ad campaign.
-- **Metrics**: metrics are statistics related to entities in the API. For example, the number of impressions for an ad or an ad campaign. All available metrics can be found [here](https://developers.google.com/google-ads/api/fields/v15/metrics).
+- **Metrics**: metrics are statistics related to entities in the API. For example, the number of impressions for an ad or an ad campaign. All available metrics can be found [here](https://developers.google.com/google-ads/api/fields/v17/metrics).
 - **Segments**: These are ways to partition metrics returned in the query by particular attributes. For example, one could query for the number of impressions (views of an ad) by running SELECT
   metrics.impressions FROM campaigns which would return the number of impressions for each campaign e.g: 10k impressions. Or you could query for impressions segmented by device type e.g; SELECT
   metrics.impressions, segments.device FROM campaigns which would return the number of impressions broken down by device type e.g: 3k iOS and 7k Android. When summing the result across all segments,

@@ -1,6 +1,7 @@
 plugins {
     id 'airbyte-java-connector'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.23'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {

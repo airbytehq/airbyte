@@ -55,7 +55,8 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
    either ACTIVE or PAUSED.
 9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. Click **Set up source**.
+10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+11. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -83,7 +84,8 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
    either ACTIVE or PAUSED.
 9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. Click **Set up source**.
+10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+11. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -203,6 +205,41 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.8 | 2025-06-21 | [61920](https://github.com/airbytehq/airbyte/pull/61920) | Update dependencies |
+| 2.1.7 | 2025-06-14 | [61067](https://github.com/airbytehq/airbyte/pull/61067) | Update dependencies |
+| 2.1.6 | 2025-05-24 | [60136](https://github.com/airbytehq/airbyte/pull/60136) | Update dependencies |
+| 2.1.5 | 2025-05-04 | [59069](https://github.com/airbytehq/airbyte/pull/59069) | Update dependencies |
+| 2.1.4 | 2025-04-19 | [58524](https://github.com/airbytehq/airbyte/pull/58524) | Update dependencies |
+| 2.1.3 | 2025-04-12 | [57926](https://github.com/airbytehq/airbyte/pull/57926) | Update dependencies |
+| 2.1.2 | 2025-04-05 | [57337](https://github.com/airbytehq/airbyte/pull/57337) | Update dependencies |
+| 2.1.1 | 2025-03-29 | [56721](https://github.com/airbytehq/airbyte/pull/56721) | Update dependencies |
+| 2.1.0 | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) | Added Account Id filter to allow retrieving data for a specific ad account |
+| 2.0.32 | 2025-03-22 | [55055](https://github.com/airbytehq/airbyte/pull/55055) | Update dependencies |
+| 2.0.31 | 2025-02-23 | [54581](https://github.com/airbytehq/airbyte/pull/54581) | Update dependencies |
+| 2.0.30 | 2025-02-15 | [53977](https://github.com/airbytehq/airbyte/pull/53977) | Update dependencies |
+| 2.0.29 | 2025-02-01 | [53001](https://github.com/airbytehq/airbyte/pull/53001) | Update dependencies |
+| 2.0.28 | 2025-01-25 | [52502](https://github.com/airbytehq/airbyte/pull/52502) | Update dependencies |
+| 2.0.27 | 2025-01-11 | [51377](https://github.com/airbytehq/airbyte/pull/51377) | Update dependencies |
+| 2.0.26 | 2025-01-04 | [50933](https://github.com/airbytehq/airbyte/pull/50933) | Update dependencies |
+| 2.0.25 | 2024-12-28 | [50710](https://github.com/airbytehq/airbyte/pull/50710) | Update dependencies |
+| 2.0.24 | 2024-12-21 | [50302](https://github.com/airbytehq/airbyte/pull/50302) | Update dependencies |
+| 2.0.23 | 2024-12-14 | [49040](https://github.com/airbytehq/airbyte/pull/49040) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.0.22 | 2024-11-04 | [48280](https://github.com/airbytehq/airbyte/pull/48280) | Update dependencies |
+| 2.0.21 | 2024-10-29 | [47074](https://github.com/airbytehq/airbyte/pull/47074) | Update dependencies |
+| 2.0.20 | 2024-10-12 | [46815](https://github.com/airbytehq/airbyte/pull/46815) | Update dependencies |
+| 2.0.19 | 2024-10-05 | [46482](https://github.com/airbytehq/airbyte/pull/46482) | Update dependencies |
+| 2.0.18 | 2024-09-28 | [46104](https://github.com/airbytehq/airbyte/pull/46104) | Update dependencies |
+| 2.0.17 | 2024-09-21 | [45838](https://github.com/airbytehq/airbyte/pull/45838) | Update dependencies |
+| 2.0.16 | 2024-09-14 | [45566](https://github.com/airbytehq/airbyte/pull/45566) | Update dependencies |
+| 2.0.15 | 2024-09-07 | [45283](https://github.com/airbytehq/airbyte/pull/45283) | Update dependencies |
+| 2.0.14 | 2024-08-31 | [45060](https://github.com/airbytehq/airbyte/pull/45060) | Update dependencies |
+| 2.0.13 | 2024-08-24 | [44752](https://github.com/airbytehq/airbyte/pull/44752) | Update dependencies |
+| 2.0.12 | 2024-08-17 | [44346](https://github.com/airbytehq/airbyte/pull/44346) | Update dependencies |
+| 2.0.11 | 2024-08-12 | [43838](https://github.com/airbytehq/airbyte/pull/43838) | Update dependencies |
+| 2.0.10 | 2024-08-10 | [43642](https://github.com/airbytehq/airbyte/pull/43642) | Update dependencies |
+| 2.0.9 | 2024-08-03 | [43280](https://github.com/airbytehq/airbyte/pull/43280) | Update dependencies |
+| 2.0.8 | 2024-07-30 | [39559](https://github.com/airbytehq/airbyte/pull/39559) | Ensure config_error when state has improper format and update CDK version |
+| 2.0.7 | 2024-07-27 | [42603](https://github.com/airbytehq/airbyte/pull/42603) | Update dependencies |
 | 2.0.6 | 2024-07-20 | [42343](https://github.com/airbytehq/airbyte/pull/42343) | Update dependencies |
 | 2.0.5 | 2024-07-13 | [41765](https://github.com/airbytehq/airbyte/pull/41765) | Update dependencies |
 | 2.0.4 | 2024-07-10 | [41449](https://github.com/airbytehq/airbyte/pull/41449) | Update dependencies |
@@ -248,5 +285,4 @@ The connector is restricted by the Pinterest
 | 0.1.2 | 2021-12-22 | [10223](https://github.com/airbytehq/airbyte/pull/10223) | Fix naming of `AD_ID` and `AD_ACCOUNT_ID` fields |
 | 0.1.1 | 2021-12-22 | [9043](https://github.com/airbytehq/airbyte/pull/9043) | Update connector fields title/description |
 | 0.1.0 | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493) | Release Pinterest CDK Connector |
-
 </details>

@@ -35,6 +35,7 @@ class RedshiftStagingStorageOperation(
     private val s3StorageOperations: S3StorageOperations,
     private val sqlGenerator: RedshiftSqlGenerator,
     private val destinationHandler: RedshiftDestinationHandler,
+    private val dropCascade: Boolean,
 ) : StorageOperation<SerializableBuffer> {
     private val connectionId: UUID = UUID.randomUUID()
     private val writeDatetime: ZonedDateTime = Instant.now().atZone(ZoneOffset.UTC)
@@ -51,9 +52,10 @@ class RedshiftStagingStorageOperation(
     }
 
     override fun overwriteStage(streamId: StreamId, suffix: String) {
+        val cascadeClause = if (dropCascade) "CASCADE" else ""
         destinationHandler.execute(
             Sql.transactionally(
-                """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}" """,
+                """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}" $cascadeClause""",
                 """ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}$suffix" RENAME TO "${streamId.rawName}" """
             )
         )
@@ -77,6 +79,8 @@ class RedshiftStagingStorageOperation(
                 ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}"
                 APPEND FROM "${streamId.rawNamespace}"."${streamId.rawName}$suffix"
                 """.trimIndent(),
+                // No need to drop cascade. If the user created a view on top of the temp raw table,
+                // that would be pretty weird, and we should fail loudly.
                 """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}$suffix" """,
             ),
             // Skip the case-sensitivity thing - ALTER TABLE ... APPEND can't be run in a
@@ -96,7 +100,7 @@ class RedshiftStagingStorageOperation(
             return null
         }
 
-        return generation.first()[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID].asLong()
+        return generation.first()[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID]?.asLong() ?: 0
     }
 
     override fun writeToStage(
@@ -110,7 +114,12 @@ class RedshiftStagingStorageOperation(
             "Uploading records to for ${streamId.rawNamespace}.${streamId.rawName} to path $objectPath"
         }
         val filename =
-            s3StorageOperations.uploadRecordsToBucket(data, streamId.rawNamespace, objectPath)
+            s3StorageOperations.uploadRecordsToBucket(
+                data,
+                streamId.rawNamespace,
+                objectPath,
+                streamConfig.generationId
+            )
 
         log.info {
             "Starting copy to target table from stage: ${streamId.rawName}$suffix in destination from stage: $objectPath/$filename."

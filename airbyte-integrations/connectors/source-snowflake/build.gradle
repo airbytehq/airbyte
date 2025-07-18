@@ -1,21 +1,41 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.20.4'
-    features = ['db-sources']
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+    cdk = '0.409'
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.snowflake.SnowflakeSourceRunner'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.source.snowflake.SnowflakeSource'
+    applicationDefaultJvmArgs = [
+            '--add-opens=java.base/java.lang=ALL-UNNAMED',
+            '--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED',
+            '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+            '--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED',
+            '-Dnet.snowflake.jdbc.enableBouncyCastle=TRUE'
+    ]
 }
 
 dependencies {
-    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.14.1'
+    implementation 'net.snowflake:snowflake-jdbc:3.23.1'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
 
-    testImplementation 'org.testcontainers:jdbc:1.19.4'
-    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    testImplementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform() // Ensure this is set if not globally
+    jvmArgs(
+            '--add-opens=java.base/java.nio=ALL-UNNAMED',
+            '--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED',
+            '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+    )
 }

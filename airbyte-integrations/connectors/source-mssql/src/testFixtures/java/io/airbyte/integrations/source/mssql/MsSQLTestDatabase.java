@@ -17,6 +17,7 @@ import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -312,11 +313,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public Stream<String> mssqlCmd(final Stream<String> sql) {
-    return Stream.of("/opt/mssql-tools/bin/sqlcmd",
+    return Stream.of("/opt/mssql-tools18/bin/sqlcmd",
         "-U", getContainer().getUsername(),
         "-P", getContainer().getPassword(),
         "-Q", sql.collect(Collectors.joining("; ")),
-        "-b", "-e");
+        "-b", "-e", "-C");
   }
 
   @Override
@@ -384,7 +385,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       return with("is_test", true)
           .with("replication_method", Map.of(
               "method", "CDC",
-              "initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
+              "initial_waiting_seconds", Duration.ofSeconds(20).getSeconds(),
               INVALID_CDC_CURSOR_POSITION_PROPERTY, RESYNC_DATA_OPTION));
     }
 

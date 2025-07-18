@@ -1,0 +1,4 @@
+{
+  "destination_path": "/local/destination.duckdb",
+  "motherduck_api_key": "dummy"
+}

@@ -1,0 +1,1075 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - current_weather
+definitions:
+  streams:
+    current_weather:
+      type: DeclarativeStream
+      name: current_weather
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.weatherstack.com/
+          path: current
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+            access_key: "{{ config['access_key'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            "request":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "type":
+                  "type": "string"
+                "query":
+                  "type": "string"
+                "language":
+                  "type": "string"
+                "unit":
+                  "type": "string"
+            "location":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "name":
+                  "type": "string"
+                "country":
+                  "type": "string"
+                "region":
+                  "type": "string"
+                "lat":
+                  "type": "string"
+                "lon":
+                  "type": "string"
+                "timezone_id":
+                  "type": "string"
+                "localtime":
+                  "type": "string"
+                "localtime_epoch":
+                  "type": "number"
+                "utc_offset":
+                  "type": "string"
+            "current":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "observation_time":
+                  "type": "string"
+                "temperature":
+                  "type": "number"
+                "weather_code":
+                  "type": "number"
+                "weather_icons":
+                  "type": "array"
+                "weather_descriptions":
+                  "type": "array"
+                "wind_speed":
+                  "type": "number"
+                "wind_degree":
+                  "type": "number"
+                "wind_dir":
+                  "type": "string"
+                "pressure":
+                  "type": "number"
+                "precip":
+                  "type": "number"
+                "humidity":
+                  "type": "number"
+                "cloudcover":
+                  "type": "number"
+                "feelslike":
+                  "type": "number"
+                "uv_index":
+                  "type": "number"
+                "visibility":
+                  "type": "number"
+    forecast:
+      type: DeclarativeStream
+      name: forecast
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.weatherstack.com/
+          path: forecast
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+            access_key: "{{ config['access_key'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            "request":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "type":
+                  "type": "string"
+                "query":
+                  "type": "string"
+                "language":
+                  "type": "string"
+                "unit":
+                  "type": "string"
+            "location":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "name":
+                  "type": "string"
+                "country":
+                  "type": "string"
+                "region":
+                  "type": "string"
+                "lat":
+                  "type": "string"
+                "lon":
+                  "type": "string"
+                "timezone_id":
+                  "type": "string"
+                "localtime":
+                  "type": "string"
+                "localtime_epoch":
+                  "type": "number"
+                "utc_offset":
+                  "type": "string"
+            "current":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "observation_time":
+                  "type": "string"
+                "temperature":
+                  "type": "number"
+                "weather_code":
+                  "type": "number"
+                "weather_icons":
+                  "type": "array"
+                "weather_descriptions":
+                  "type": "array"
+                "wind_speed":
+                  "type": "number"
+                "wind_degree":
+                  "type": "number"
+                "wind_dir":
+                  "type": "string"
+                "pressure":
+                  "type": "number"
+                "precip":
+                  "type": "number"
+                "humidity":
+                  "type": "number"
+                "cloudcover":
+                  "type": "number"
+                "feelslike":
+                  "type": "number"
+                "uv_index":
+                  "type": "number"
+                "visibility":
+                  "type": "number"
+            "forecast":
+              "type":
+                - "null"
+                - "object"
+    historical:
+      type: DeclarativeStream
+      name: historical
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.weatherstack.com/
+          path: historical
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+            access_key: "{{ config['access_key'] }}"
+            historical_date: "{{ config['historical_date'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            "request":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "type":
+                  "type": "string"
+                "query":
+                  "type": "string"
+                "language":
+                  "type": "string"
+                "unit":
+                  "type": "string"
+            "location":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "name":
+                  "type": "string"
+                "country":
+                  "type": "string"
+                "region":
+                  "type": "string"
+                "lat":
+                  "type": "string"
+                "lon":
+                  "type": "string"
+                "timezone_id":
+                  "type": "string"
+                "localtime":
+                  "type": "string"
+                "localtime_epoch":
+                  "type": "number"
+                "utc_offset":
+                  "type": "string"
+            "current":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "observation_time":
+                  "type": "string"
+                "temperature":
+                  "type": "number"
+                "weather_code":
+                  "type": "number"
+                "weather_icons":
+                  "type": "array"
+                "weather_descriptions":
+                  "type": "array"
+                "wind_speed":
+                  "type": "number"
+                "wind_degree":
+                  "type": "number"
+                "wind_dir":
+                  "type": "string"
+                "pressure":
+                  "type": "number"
+                "precip":
+                  "type": "number"
+                "humidity":
+                  "type": "number"
+                "cloudcover":
+                  "type": "number"
+                "feelslike":
+                  "type": "number"
+                "uv_index":
+                  "type": "number"
+                "visibility":
+                  "type": "number"
+            "historical":
+              "type":
+                - "null"
+                - "object"
+    location_lookup:
+      type: DeclarativeStream
+      name: location_lookup
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.weatherstack.com/
+          path: autocomplete
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+            access_key: "{{ config['access_key'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            "request":
+              "type":
+                - "null"
+                - "object"
+              "properties":
+                "query":
+                  "type": "string"
+                "results":
+                  "type": "number"
+            "results":
+              "type":
+                - "null"
+                - "array"
+              "properties":
+                "name":
+                  "type": "string"
+                "country":
+                  "type": "string"
+                "region":
+                  "type": "string"
+                "lon":
+                  "type": "string"
+                "lat":
+                  "type": "string"
+                "timezone_id":
+                  "type": "string"
+                "utc_offset":
+                  "type": "string"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.weatherstack.com/
+streams:
+  - type: DeclarativeStream
+    name: current_weather
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.weatherstack.com/
+        path: current
+        http_method: GET
+        request_parameters:
+          query: "{{ config['query'] }}"
+          access_key: "{{ config['access_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          "request":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "type":
+                "type": "string"
+              "query":
+                "type": "string"
+              "language":
+                "type": "string"
+              "unit":
+                "type": "string"
+          "location":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "name":
+                "type": "string"
+              "country":
+                "type": "string"
+              "region":
+                "type": "string"
+              "lat":
+                "type": "string"
+              "lon":
+                "type": "string"
+              "timezone_id":
+                "type": "string"
+              "localtime":
+                "type": "string"
+              "localtime_epoch":
+                "type": "number"
+              "utc_offset":
+                "type": "string"
+          "current":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "observation_time":
+                "type": "string"
+              "temperature":
+                "type": "number"
+              "weather_code":
+                "type": "number"
+              "weather_icons":
+                "type": "array"
+              "weather_descriptions":
+                "type": "array"
+              "wind_speed":
+                "type": "number"
+              "wind_degree":
+                "type": "number"
+              "wind_dir":
+                "type": "string"
+              "pressure":
+                "type": "number"
+              "precip":
+                "type": "number"
+              "humidity":
+                "type": "number"
+              "cloudcover":
+                "type": "number"
+              "feelslike":
+                "type": "number"
+              "uv_index":
+                "type": "number"
+              "visibility":
+                "type": "number"
+  - type: DeclarativeStream
+    name: forecast
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.weatherstack.com/
+        path: forecast
+        http_method: GET
+        request_parameters:
+          query: "{{ config['query'] }}"
+          access_key: "{{ config['access_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          "request":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "type":
+                "type": "string"
+              "query":
+                "type": "string"
+              "language":
+                "type": "string"
+              "unit":
+                "type": "string"
+          "location":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "name":
+                "type": "string"
+              "country":
+                "type": "string"
+              "region":
+                "type": "string"
+              "lat":
+                "type": "string"
+              "lon":
+                "type": "string"
+              "timezone_id":
+                "type": "string"
+              "localtime":
+                "type": "string"
+              "localtime_epoch":
+                "type": "number"
+              "utc_offset":
+                "type": "string"
+          "current":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "observation_time":
+                "type": "string"
+              "temperature":
+                "type": "number"
+              "weather_code":
+                "type": "number"
+              "weather_icons":
+                "type": "array"
+              "weather_descriptions":
+                "type": "array"
+              "wind_speed":
+                "type": "number"
+              "wind_degree":
+                "type": "number"
+              "wind_dir":
+                "type": "string"
+              "pressure":
+                "type": "number"
+              "precip":
+                "type": "number"
+              "humidity":
+                "type": "number"
+              "cloudcover":
+                "type": "number"
+              "feelslike":
+                "type": "number"
+              "uv_index":
+                "type": "number"
+              "visibility":
+                "type": "number"
+          "forecast":
+            "type":
+              - "null"
+              - "object"
+  - type: DeclarativeStream
+    name: historical
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.weatherstack.com/
+        path: historical
+        http_method: GET
+        request_parameters:
+          query: "{{ config['query'] }}"
+          access_key: "{{ config['access_key'] }}"
+          historical_date: "{{ config['historical_date'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          "request":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "type":
+                "type": "string"
+              "query":
+                "type": "string"
+              "language":
+                "type": "string"
+              "unit":
+                "type": "string"
+          "location":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "name":
+                "type": "string"
+              "country":
+                "type": "string"
+              "region":
+                "type": "string"
+              "lat":
+                "type": "string"
+              "lon":
+                "type": "string"
+              "timezone_id":
+                "type": "string"
+              "localtime":
+                "type": "string"
+              "localtime_epoch":
+                "type": "number"
+              "utc_offset":
+                "type": "string"
+          "current":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "observation_time":
+                "type": "string"
+              "temperature":
+                "type": "number"
+              "weather_code":
+                "type": "number"
+              "weather_icons":
+                "type": "array"
+              "weather_descriptions":
+                "type": "array"
+              "wind_speed":
+                "type": "number"
+              "wind_degree":
+                "type": "number"
+              "wind_dir":
+                "type": "string"
+              "pressure":
+                "type": "number"
+              "precip":
+                "type": "number"
+              "humidity":
+                "type": "number"
+              "cloudcover":
+                "type": "number"
+              "feelslike":
+                "type": "number"
+              "uv_index":
+                "type": "number"
+              "visibility":
+                "type": "number"
+          "historical":
+            "type":
+              - "null"
+              - "object"
+  - type: DeclarativeStream
+    name: location_lookup
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.weatherstack.com/
+        path: autocomplete
+        http_method: GET
+        request_parameters:
+          query: "{{ config['query'] }}"
+          access_key: "{{ config['access_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          "request":
+            "type":
+              - "null"
+              - "object"
+            "properties":
+              "query":
+                "type": "string"
+              "results":
+                "type": "number"
+          "results":
+            "type":
+              - "null"
+              - "array"
+            "properties":
+              "name":
+                "type": "string"
+              "country":
+                "type": "string"
+              "region":
+                "type": "string"
+              "lon":
+                "type": "string"
+              "lat":
+                "type": "string"
+              "timezone_id":
+                "type": "string"
+              "utc_offset":
+                "type": "string"
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_key
+      - query
+      - historical_date
+    properties:
+      access_key:
+        type: string
+        description: >-
+          API access key used to retrieve data from the Weatherstack
+          API.(https://weatherstack.com/product)
+        order: 1
+        airbyte_secret: true
+      query:
+        type: string
+        description: >-
+          A location to query such as city, IP, latitudeLongitude, or zipcode.
+          Multiple locations with semicolon seperated if using a professional
+          plan or higher. For more info-
+          (https://weatherstack.com/documentation#query_parameter)
+        order: 2
+        examples:
+          - New York
+          - London
+          - "98101"
+      historical_date:
+        type: string
+        description: >-
+          This is required for enabling the Historical date API with format-
+          (YYYY-MM-DD). * Note, only supported by paid accounts
+        order: 3
+        pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2}"
+        default": "2000-01-01"
+        examples:
+          - "2015-01-21"
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    current_weather: false
+    forecast: false
+    historical: false
+    location_lookup: false
+  testedStreams: {}
+schemas:
+  current_weather:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      "request":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "type":
+            "type": "string"
+          "query":
+            "type": "string"
+          "language":
+            "type": "string"
+          "unit":
+            "type": "string"
+      "location":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "name":
+            "type": "string"
+          "country":
+            "type": "string"
+          "region":
+            "type": "string"
+          "lat":
+            "type": "string"
+          "lon":
+            "type": "string"
+          "timezone_id":
+            "type": "string"
+          "localtime":
+            "type": "string"
+          "localtime_epoch":
+            "type": "number"
+          "utc_offset":
+            "type": "string"
+      "current":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "observation_time":
+            "type": "string"
+          "temperature":
+            "type": "number"
+          "weather_code":
+            "type": "number"
+          "weather_icons":
+            "type": "array"
+          "weather_descriptions":
+            "type": "array"
+          "wind_speed":
+            "type": "number"
+          "wind_degree":
+            "type": "number"
+          "wind_dir":
+            "type": "string"
+          "pressure":
+            "type": "number"
+          "precip":
+            "type": "number"
+          "humidity":
+            "type": "number"
+          "cloudcover":
+            "type": "number"
+          "feelslike":
+            "type": "number"
+          "uv_index":
+            "type": "number"
+          "visibility":
+            "type": "number"
+  forecast:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      "request":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "type":
+            "type": "string"
+          "query":
+            "type": "string"
+          "language":
+            "type": "string"
+          "unit":
+            "type": "string"
+      "location":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "name":
+            "type": "string"
+          "country":
+            "type": "string"
+          "region":
+            "type": "string"
+          "lat":
+            "type": "string"
+          "lon":
+            "type": "string"
+          "timezone_id":
+            "type": "string"
+          "localtime":
+            "type": "string"
+          "localtime_epoch":
+            "type": "number"
+          "utc_offset":
+            "type": "string"
+      "current":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "observation_time":
+            "type": "string"
+          "temperature":
+            "type": "number"
+          "weather_code":
+            "type": "number"
+          "weather_icons":
+            "type": "array"
+          "weather_descriptions":
+            "type": "array"
+          "wind_speed":
+            "type": "number"
+          "wind_degree":
+            "type": "number"
+          "wind_dir":
+            "type": "string"
+          "pressure":
+            "type": "number"
+          "precip":
+            "type": "number"
+          "humidity":
+            "type": "number"
+          "cloudcover":
+            "type": "number"
+          "feelslike":
+            "type": "number"
+          "uv_index":
+            "type": "number"
+          "visibility":
+            "type": "number"
+      "forecast":
+        "type":
+          - "null"
+          - "object"
+  historical:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "request":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "type":
+            "type": "string"
+          "query":
+            "type": "string"
+          "language":
+            "type": "string"
+          "unit":
+            "type": "string"
+      "location":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "name":
+            "type": "string"
+          "country":
+            "type": "string"
+          "region":
+            "type": "string"
+          "lat":
+            "type": "string"
+          "lon":
+            "type": "string"
+          "timezone_id":
+            "type": "string"
+          "localtime":
+            "type": "string"
+          "localtime_epoch":
+            "type": "number"
+          "utc_offset":
+            "type": "string"
+      "current":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "observation_time":
+            "type": "string"
+          "temperature":
+            "type": "number"
+          "weather_code":
+            "type": "number"
+          "weather_icons":
+            "type": "array"
+          "weather_descriptions":
+            "type": "array"
+          "wind_speed":
+            "type": "number"
+          "wind_degree":
+            "type": "number"
+          "wind_dir":
+            "type": "string"
+          "pressure":
+            "type": "number"
+          "precip":
+            "type": "number"
+          "humidity":
+            "type": "number"
+          "cloudcover":
+            "type": "number"
+          "feelslike":
+            "type": "number"
+          "uv_index":
+            "type": "number"
+          "visibility":
+            "type": "number"
+      "historical":
+        "type":
+          - "null"
+          - "object"
+  location_lookup:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "request":
+        "type":
+          - "null"
+          - "object"
+        "properties":
+          "query":
+            "type": "string"
+          "results":
+            "type": "number"
+      "results":
+        "type":
+          - "null"
+          - "array"
+        "properties":
+          "name":
+            "type": "string"
+          "country":
+            "type": "string"
+          "region":
+            "type": "string"
+          "lon":
+            "type": "string"
+          "lat":
+            "type": "string"
+          "timezone_id":
+            "type": "string"
+          "utc_offset":
+            "type": "string"

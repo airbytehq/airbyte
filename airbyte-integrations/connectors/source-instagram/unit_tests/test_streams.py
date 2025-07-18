@@ -1,99 +1,161 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
+from typing import Any, Mapping, Optional
 
-from datetime import datetime
-from unittest.mock import MagicMock
-
+import freezegun
 import pytest
+
+from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import SyncMode
-from facebook_business import FacebookAdsApi, FacebookSession
-from source_instagram.streams import DatetimeTransformerMixin, InstagramStream, UserInsights
-from utils import read_full_refresh, read_incremental
 
-FB_API_VERSION = FacebookAdsApi.API_VERSION
+from .conftest import GRAPH_URL, account_url, find_stream, mock_fb_account_response
+from .utils import read_full_refresh
 
 
-def test_clear_url(config):
-    media_url = "https://google.com?_nc_rid=123"
-    profile_picture_url = "https://google.com?ccb=123"
+# can we make this only initialized once
+def mock_accounts_request(requests_mock, some_config):
+    fb_account_response = mock_fb_account_response("unknown_account", some_config, requests_mock)
 
-    expected = {"media_url": "https://google.com", "profile_picture_url": "https://google.com"}
-    assert InstagramStream._clear_url({"media_url": media_url, "profile_picture_url": profile_picture_url}) == expected
-
-
-def test_state_outdated(api, config):
-    assert UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": MagicMock()})
-
-
-def test_state_is_not_outdated(api, config):
-    assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": {}})
+    requests_mock.register_uri(
+        "GET",
+        account_url,
+        json=[fb_account_response],
+    )
 
 
+def mock_user_insights_day_request(requests_mock, values, error_response: Optional[Mapping[str, Any]] = None):
+    responses = []
+    if error_response:
+        responses.append(error_response)
 
-def test_user_insights_read(api, config, user_insight_data, requests_mock):
-    test_id = "test_id"
+    responses.append(
+        {
+            "json": {
+                "data": [
+                    {
+                        "description": "test_insight",
+                        "id": "123",
+                        "name": "test_insight_metric",
+                        "period": "day",
+                        "title": "Test Insight",
+                        "values": [values],
+                    }
+                ]
+            },
+            "status_code": 200,
+        }
+    )
 
-    stream = UserInsights(api=api, start_date=config["start_date"])
+    requests_mock.register_uri(
+        "GET",
+        f"{GRAPH_URL}/instagram_business_account_id/insights?"
+        f"period=day&metric=follower_count%2Creach&since=2025-07-01T00%3A00%3A00%2B00%3A00&until=2025-07-01T23%3A59%3A59%2B00%3A00",
+        responses,
+    )
 
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_insight_data}])
 
-    records = read_incremental(stream, {})
-    assert records
+def mock_user_insights_requests(requests_mock, values):
+    period_to_metrics = {
+        "week": "reach",
+        "days_28": "reach",
+        "lifetime": "online_followers",
+    }
+    for period, metrics in period_to_metrics.items():
+        response = {
+            "data": [
+                {
+                    "description": "test_insight",
+                    "id": "123",
+                    "name": "test_insight_metric",
+                    "period": period,
+                    "title": "Test Insight",
+                    "values": [values],
+                }
+            ]
+        }
 
+        requests_mock.register_uri(
+            "GET",
+            f"{GRAPH_URL}/instagram_business_account_id/insights?"
+            f"period={period}&metric={metrics}&since=2025-07-01T00%3A00%3A00%2B00%3A00&until=2025-07-01T23%3A59%3A59%2B00%3A00",
+            json=response,
+        )
 
 
 @pytest.mark.parametrize(
     "values,slice_dates,expected",
     [
         # the state is updated to the value of `end_time`
-        (
-            {"end_time": "2023-01-01 00:01:00", "value": {"one": 1}},
-            {"since": "2023-01-01 00:01:00", "until": "2023-01-02 00:01:00"},
-            {"123": {"date": "2023-01-01T00:01:00+00:00"}},
+        pytest.param(
+            {"end_time": "2025-07-01 07:00:00+0000", "value": {"one": 1}},
+            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
+            {
+                "lookback_window": 0,
+                "state": {"date": "2025-07-01T07:00:00+00:00"},
+                "states": [
+                    {"cursor": {"date": "2025-07-01T07:00:00+00:00"}, "partition": {"business_account_id": "instagram_business_account_id"}}
+                ],
+                "use_global_cursor": False,
+            },
+            id="test_normal_state_flow",
         ),
         # the state is taken from `start_date`
-        (
+        pytest.param(
             {"end_time": None, "value": {"two": 2}},
-            {"since": "2023-01-01 00:00:00", "until": "2023-01-02 00:01:00"},
+            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
             # state from `start_date` is expected
-            {"123": {"date": "2023-01-01T01:01:01+00:00"}},
+            {"lookback_window": 0, "state": {}, "states": [], "use_global_cursor": False},
+            id="test_no_end_time_value_in_record",
         ),
         # the state is updated to the value of `end_time`
-        (
-            {"end_time": "2023-02-02 00:02:00", "value": None},
-            {"since": "2023-06-01 21:00:00", "until": "2023-06-02 22:00:00"},
-            {"123": {"date": "2023-02-02T00:02:00+00:00"}},
+        pytest.param(
+            {"end_time": "2025-07-01T07:00:00+00:00", "value": None},
+            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
+            {
+                "lookback_window": 0,
+                "state": {"date": "2025-07-01T07:00:00+00:00"},
+                "states": [
+                    {"cursor": {"date": "2025-07-01T07:00:00+00:00"}, "partition": {"business_account_id": "instagram_business_account_id"}}
+                ],
+                "use_global_cursor": False,
+            },
+            id="test_no_value_in_record",
         ),
         # the state is taken from `start_date`
-        (
+        pytest.param(
             {"end_time": None, "value": None},
-            {"since": "2023-06-01 21:00:00", "until": "2023-06-02 22:00:00"},
-            {"123": {"date": "2023-01-01T01:01:01+00:00"}},
+            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
+            {"lookback_window": 0, "state": {}, "states": [], "use_global_cursor": False},
+            id="test_no_end_time_and_no_value_in_record",
         ),
     ],
-    ids=[
-        "Normal state flow",
-        "No `end_time` value in record",
-        "No `value` in record",
-        "No `end_time` and no `value` in record",
-    ],
 )
-def test_user_insights_state(api, user_insights, values, slice_dates, expected):
+@freezegun.freeze_time("2025-07-01T23:59:59Z")
+def test_user_insights_state(requests_mock, values, slice_dates, expected):
     """
     This test shows how `STATE` is managed based on the scenario for Incremental Read.
     """
-    import pendulum
+    logger = init_logger("airbyte")
+    logger.setLevel(logging.DEBUG)
+
+    config = {"start_date": "2025-07-01T00:00:00Z", "access_token": "unknown_token"}
+
+    mock_accounts_request(requests_mock=requests_mock, some_config=config)
+    mock_user_insights_day_request(requests_mock=requests_mock, values=values)
+    mock_user_insights_requests(requests_mock=requests_mock, values=values)
 
     # UserInsights stream
-    stream = UserInsights(api=api, start_date="2023-01-01T01:01:01Z")
-    # Populate the fixute with `values`
-    user_insights(values)
-    # simulate `read_recods` generator job
+    stream = find_stream(stream_name="user_insights", config=config)
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state={}))
+
+    assert len(stream_slices) == 1
+
     list(
         stream.read_records(
             sync_mode=SyncMode.incremental,
-            stream_slice={"account": {"page_id": 1, "instagram_business_account": user_insights}, **slice_dates},
+            stream_slice=stream_slices[0],
         )
     )
     assert stream.state == expected
@@ -102,74 +164,38 @@ def test_user_insights_state(api, user_insights, values, slice_dates, expected):
 @pytest.mark.parametrize(
     "error_response",
     [
-        {"json": {"error": {"type": "OAuthException", "code": 1}}},
-        {"json": {"error": {"code": 4}}},
-        {"json": {}, "status_code": 429},
-        {
-            "json": {"error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"}},
-            "status_code": 500,
-        },
-        {"json": {"error": {"code": 1, "message": "An unknown error occurred"}}, "status_code": 500},
-        {"json": {"error": {"type": "OAuthException", "message": "(#10) Not enough viewers for the media to show insights", "code": 10}}},
-        {"json": {"error": {"code": 100, "error_subcode": 33}}, "status_code": 400},
-        {"json": {"error": {"is_transient": True}}},
-        {"json": {"error": {"code": 4, "error_subcode": 2108006}}},
-    ],
-    ids=[
-        "oauth_error",
-        "rate_limit_error",
-        "too_many_request_error",
-        "reduce_amount_of_data_error",
-        "unknown_error",
-        "viewers_insights_error",
-        "4028_issue_error",
-        "transient_error",
-        "user_media_creation_time_error",
+        pytest.param({"json": {"error": {"type": "OAuthException", "code": 1}}}, id="test_oauth_error"),
+        pytest.param({"json": {"error": {"code": 4}}}, id="test_rate_limit_error"),
+        pytest.param({"json": {}, "status_code": 429}, id="test_too_many_request_error"),
+        pytest.param(
+            {
+                "json": {"error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"}},
+                "status_code": 500,
+            },
+            id="test_reduce_amount_of_data_error",
+        ),
+        pytest.param({"json": {"error": {"code": 1, "message": "An unknown error occurred"}}, "status_code": 500}, id="test_unknown_error"),
+        pytest.param(
+            {
+                "json": {
+                    "error": {"type": "OAuthException", "message": "(#10) Not enough viewers for the media to show insights", "code": 10}
+                }
+            },
+            id="test_viewers_insights_error",
+        ),
+        pytest.param({"json": {"error": {"code": 100, "error_subcode": 33}}, "status_code": 400}, id="test_4028_issue_error"),
+        pytest.param({"json": {"error": {"is_transient": True}}}, id="test_transient_error"),
+        pytest.param({"json": {"error": {"code": 4, "error_subcode": 2108006}}}, id="test_user_media_creation_time_error"),
     ],
 )
-def test_common_error_retry(config, error_response, requests_mock, api, account_id, user_insight_data):
-    """Error once, check that we retry and not fail"""
-    # response = {"business_account_id": "test_id", "page_id": "act_unknown_account"}
-    responses = [
-        error_response,
-        {
-            "json": user_insight_data,
-            "status_code": 200,
-        },
-    ]
-    test_id = "test_id"
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", responses)
+@freezegun.freeze_time("2025-07-01T23:59:59Z")
+def test_common_error_retry(components_module, error_response, requests_mock, account_id):
+    config = {"start_date": "2025-07-01T00:00:00Z", "access_token": "unknown_token"}
+    mock_accounts_request(requests_mock=requests_mock, some_config=config)
+    mock_user_insights_day_request(requests_mock, {"end_time": "2025-07-01 07:00:00+0000", "value": 4}, error_response)
+    mock_user_insights_requests(requests_mock, {"end_time": "2025-07-01 07:00:00+0000", "value": 4})
 
-    stream = UserInsights(api=api, start_date=config["start_date"])
+    stream = find_stream(stream_name="user_insights", config=config)
     records = read_full_refresh(stream)
 
     assert records
-
-
-def test_exit_gracefully(api, config, requests_mock, caplog):
-    test_id = "test_id"
-    stream = UserInsights(api=api, start_date=config["start_date"])
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", json={"data": []})
-    records = read_incremental(stream, {})
-    assert not records
-    assert requests_mock.call_count == 6  # 4 * 1 per `metric_to_period` map + 1 `summary` request + 1 `business_account_id` request
-    assert "Stopping syncing stream 'user_insights'" in caplog.text
-
-
-@pytest.mark.parametrize(
-    "original_value, field_schema, expected",
-    [
-        ("2020-01-01T12:00:00Z", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-01-01T12:00:00+00:00"),
-        ("2020-05-04T07:00:00+0000", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-05-04T07:00:00+00:00"),
-        (None, {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, None),
-        ("2020-01-01T12:00:00", {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}, "2020-01-01T12:00:00"),
-        ("2020-01-01T14:00:00", {"format": "date-time"}, "2020-01-01T14:00:00"),
-        ("2020-02-03T12:00:00", {"type": "string"}, "2020-02-03T12:00:00"),
-    ],
-)
-def test_custom_transform_datetime_rfc3339(original_value, field_schema, expected):
-    # Call the static method
-    result = DatetimeTransformerMixin.custom_transform_datetime_rfc3339(original_value, field_schema)
-
-    # Assert the result matches the expected output
-    assert result == expected

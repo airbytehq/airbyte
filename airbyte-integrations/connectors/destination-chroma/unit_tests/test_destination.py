@@ -6,9 +6,10 @@ import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_chroma.config import ConfigModel
 from destination_chroma.destination import DestinationChroma
+
+from airbyte_cdk.models import ConnectorSpecification, Status
 
 
 class TestDestinationChroma(unittest.TestCase):

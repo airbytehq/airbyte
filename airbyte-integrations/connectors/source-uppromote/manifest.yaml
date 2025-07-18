@@ -1,0 +1,338 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  The Uppromote Connector for Airbyte enables seamless data integration between
+  Uppromote, an affiliate and influencer marketing platform, and your data
+  warehouses or analytics tools.
+
+check:
+  type: CheckStream
+  stream_names:
+    - affiliates
+
+definitions:
+  streams:
+    affiliates:
+      type: DeclarativeStream
+      name: affiliates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: affiliates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/affiliates"
+    coupons:
+      type: DeclarativeStream
+      name: coupons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: coupons
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/coupons"
+    referrals:
+      type: DeclarativeStream
+      name: referrals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: referrals
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from_date
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/referrals"
+  base_requester:
+    type: HttpRequester
+    url_base: https://aff-api.uppromote.com/api/v1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/affiliates"
+  - $ref: "#/definitions/streams/coupons"
+  - $ref: "#/definitions/streams/referrals"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          For developing your own custom integration with UpPromote, you can
+          create an API key. This is available from Professional plan.  Simply
+          go to Settings > Integration > API > Create API Key. 
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: Data before this date will not be fetched.
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    affiliates: true
+    coupons: true
+    referrals: true
+  testedStreams:
+    affiliates:
+      hasRecords: true
+      streamHash: b73f2aace3f852d8b10efa62f7aaea2aafac737d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    coupons:
+      hasRecords: true
+      streamHash: 4b330869ddba310b9b0e054176dea819d9dab7f6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    referrals:
+      hasRecords: true
+      streamHash: 2044e4e30bda35382092aac486ead90556ccbd3a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  affiliates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      affiliate_link:
+        type:
+          - string
+          - "null"
+      affiliate_setting:
+        type:
+          - object
+          - "null"
+        properties: {}
+      coupons:
+        type:
+          - array
+          - "null"
+      created_at_timestamp:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      email_verified:
+        type:
+          - number
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      last_name:
+        type:
+          - string
+          - "null"
+      parent_email:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      program_id:
+        type:
+          - number
+          - "null"
+      program_name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  coupons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      affiliate_id:
+        type:
+          - number
+          - "null"
+      coupon:
+        type:
+          - string
+          - "null"
+      created_timestamp:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+    required:
+      - id
+  referrals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      affiliate:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+      affiliate_id:
+        type:
+          - number
+          - "null"
+      commission:
+        type:
+          - string
+          - "null"
+      commission_adjustment:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      id:
+        type: number
+      status:
+        type:
+          - string
+          - "null"
+      total_sales:
+        type:
+          - string
+          - "null"
+      tracking_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at

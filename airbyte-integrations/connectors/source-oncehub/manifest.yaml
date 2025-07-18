@@ -1,0 +1,706 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the Oncehub source that ingests data from the Oncehub API.
+
+
+  Oncehub is a no-code conversational journeys builder, integrating AI,
+  chatbots, live chat, instant calls, and scheduled meetings
+  https://oncehub.com/.
+
+
+  To use this source you must first create an account. Once logged in head over
+  to Settings -> API & Webhooks and copy your API Key.
+
+  You can learn more about the API here
+  https://developers.oncehub.com/reference/introduction
+
+check:
+  type: CheckStream
+  stream_names:
+    - bookings
+
+definitions:
+  streams:
+    bookings:
+      type: DeclarativeStream
+      name: bookings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/bookings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_updated_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: last_updated_time.gt
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bookings"
+    booking_pages:
+      type: DeclarativeStream
+      name: booking_pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/booking-pages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/booking_pages"
+    event_types:
+      type: DeclarativeStream
+      name: event_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/event-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_types"
+    master_pages:
+      type: DeclarativeStream
+      name: master_pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/master-pages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/master_pages"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.oncehub.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: API-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/bookings"
+  - $ref: "#/definitions/streams/booking_pages"
+  - $ref: "#/definitions/streams/event_types"
+  - $ref: "#/definitions/streams/master_pages"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/contacts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it in your OnceHub account under the API &
+          Webhooks Integration page.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    bookings: true
+    booking_pages: true
+    event_types: true
+    master_pages: true
+    users: true
+    teams: true
+    contacts: true
+  testedStreams:
+    bookings:
+      streamHash: b4534fe52430a16dd1749313c416c3aae3afa1fd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    booking_pages:
+      streamHash: a5a0c1642c867aa24c640bd35cfe09e4dd7208da
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    event_types:
+      streamHash: 6915cf4ab58a9e3d09d7207939c6503c7d7ad93b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    master_pages:
+      streamHash: ee2a4a22dff22bcb7cacff32ac8568e4a02855d6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 69a6491af772e323c874c16583464f4a0d410fe1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      hasRecords: true
+      streamHash: 731b8cb9bc9b1d0465c1f22c09baf2ef5d851fc0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts:
+      hasRecords: true
+      streamHash: 2681d6726d862fae187bbd97b96efebe52ea2856
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.oncehub.com/docs/introduction-to-the-scheduleonce-api
+
+schemas:
+  bookings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attendees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      booking_page:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - string
+          - "null"
+      creation_time:
+        type:
+          - string
+          - "null"
+      customer_timezone:
+        type:
+          - string
+          - "null"
+      duration_minutes:
+        type:
+          - number
+          - "null"
+      event_type:
+        type:
+          - string
+          - "null"
+      external_calendar:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          event_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      form_submission:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          guests:
+            type:
+              - array
+              - "null"
+          mobile_phone:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      in_trash:
+        type:
+          - boolean
+          - "null"
+      last_updated_time:
+        type: string
+      location_description:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      starting_time:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      tracking_id:
+        type:
+          - string
+          - "null"
+      virtual_conferencing:
+        type:
+          - object
+          - "null"
+        properties:
+          join_url:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - last_updated_time
+  booking_pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  event_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  master_pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      role_name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      creation_time:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_updated_time:
+        type:
+          - string
+          - "null"
+      mobile_phone:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id

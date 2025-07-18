@@ -1,10 +1,95 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-mysql:dev
-tests:
+connector_image: airbyte/source-mysql-v2:dev
+custom_environment_variables:
+  USE_STREAM_CAPABLE_STATE: true
+acceptance_tests:
+  client_container_config:
+    client_container_dockerfile_path: "integration_tests/Dockerfile"
+    final_teardown_command:
+      - "python"
+      - "./hook.py"
+      - "final_teardown"
   spec:
-    - spec_path: "src/test-integration/resources/expected_oss_spec.json"
-      config_path: "src/test-integration/resources/dummy_config.json"
-    - deployment_mode: cloud
-      spec_path: "src/test-integration/resources/expected_cloud_spec.json"
-      config_path: "src/test-integration/resources/dummy_config.json"
+    tests:
+      - spec_path: "src/test/resources/expected-spec.json"
+        config_path: "secrets/cat-config.json"
+  connection:
+    tests:
+      - config_path: "secrets/cat-config.json"
+        status: "succeed"
+  discovery:
+    tests:
+      - config_path: "secrets/cat-config.json"
+  basic_read:
+    tests:
+      - config_path: "integration_tests/temp/config_active.json"
+        configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/cat-config.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
+  full_refresh:
+    tests:
+      - config_path: "integration_tests/temp/config_active.json"
+        configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/cat-config.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
+  incremental:
+    tests:
+      - config_path: "integration_tests/temp/config_active.json"
+        configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/cat-config.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
+          between_syncs_command:
+            - "python"
+            - "./hook.py"
+            - "insert"
+        future_state:
+          future_state_path: "integration_tests/temp/abnormal_state_copy.json"
+      - config_path: "integration_tests/temp/config_cdc_active.json"
+        configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/cat-config-cdc.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup_cdc"
+          between_syncs_command:
+            - "python"
+            - "./hook.py"
+            - "insert"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
+        future_state:
+          bypass_reason: "CDC does not have a future state as LSN will be absent from DB, triggering a full refresh"

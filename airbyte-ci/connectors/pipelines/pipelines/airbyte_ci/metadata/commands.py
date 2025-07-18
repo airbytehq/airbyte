@@ -3,6 +3,7 @@
 #
 
 import asyncclick as click
+
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 

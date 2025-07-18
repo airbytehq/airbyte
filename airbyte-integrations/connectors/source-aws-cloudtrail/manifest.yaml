@@ -1,0 +1,422 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - "{{ parameters.extractor_path }}"
+  requester:
+    type: HttpRequester
+    url_base: "https://cloudtrail.{{ config['aws_region_name'] }}.amazonaws.com"
+    http_method: "POST"
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_declarative_manifest.components.CustomAuthenticator
+      aws_key_id: "{{config['aws_key_id']}}"
+      aws_secret_key: "{{config['aws_secret_key']}}"
+      aws_region_name: "{{config['aws_region_name']}}"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+      - type: DefaultErrorHandler
+        backoff_strategies:
+        - type: ExponentialBackoffStrategy
+        response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+          - 400
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    datetime_format: "%s"
+    cursor_field: "EventTime"
+    start_time_option:
+      inject_into: body_json
+      field_name: StartTime
+      type: RequestOption
+    end_time_option:
+      inject_into: body_json
+      field_name: EndTime
+      type: RequestOption
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] or now_utc().strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%s') }}"
+      datetime_format: "%s"
+  paginator_base:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: "NextToken"
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("NextToken", {}) }}'
+      stop_condition: '{{ not response.get("NextToken", {}) }}'
+  management_events_stream:
+    type: DeclarativeStream
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          AccessKeyId:
+            type:
+            - "null"
+            - string
+          CloudTrailEvent:
+            type:
+            - "null"
+            - string
+          EventId:
+            type:
+            - "null"
+            - string
+          EventName:
+            type:
+            - "null"
+            - string
+          EventSource:
+            type:
+            - "null"
+            - string
+          EventTime:
+            type:
+            - "null"
+            - number
+          ReadOnly:
+            type:
+            - "null"
+            - string
+          Resources:
+            type:
+            - "null"
+            - array
+            items:
+              type:
+              - "null"
+              - object
+              properties:
+                ResourceName:
+                  type:
+                  - "null"
+                  - string
+                ResourceType:
+                  type:
+                  - "null"
+                  - string
+          Username:
+            type:
+            - "null"
+            - string
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - "{{ parameters.extractor_path }}"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: "NextToken"
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("NextToken", {}) }}'
+          stop_condition: '{{ not response.get("NextToken", {}) }}'
+      requester:
+        type: HttpRequester
+        url_base: "https://cloudtrail.{{ config['aws_region_name'] }}.amazonaws.com"
+        http_method: "POST"
+        authenticator:
+          type: CustomAuthenticator
+          class_name: source_declarative_manifest.components.CustomAuthenticator
+          aws_key_id: "{{config['aws_key_id']}}"
+          aws_secret_key: "{{config['aws_secret_key']}}"
+          aws_region_name: "{{config['aws_region_name']}}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+          - type: DefaultErrorHandler
+            backoff_strategies:
+            - type: ExponentialBackoffStrategy
+            response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+              - 400
+        request_headers:
+          x-amz-target: "com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101.LookupEvents"
+        request_body_json:
+          MaxResults: 50
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%s"
+      cursor_field: "EventTime"
+      start_time_option:
+        inject_into: body_json
+        field_name: StartTime
+        type: RequestOption
+      end_time_option:
+        inject_into: body_json
+        field_name: EndTime
+        type: RequestOption
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] or now_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%s') }}"
+        datetime_format: "%s"
+  management_events_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      AccessKeyId:
+        type:
+        - "null"
+        - string
+      CloudTrailEvent:
+        type:
+        - "null"
+        - string
+      EventId:
+        type:
+        - "null"
+        - string
+      EventName:
+        type:
+        - "null"
+        - string
+      EventSource:
+        type:
+        - "null"
+        - string
+      EventTime:
+        type:
+        - "null"
+        - number
+      ReadOnly:
+        type:
+        - "null"
+        - string
+      Resources:
+        type:
+        - "null"
+        - array
+        items:
+          type:
+          - "null"
+          - object
+          properties:
+            ResourceName:
+              type:
+              - "null"
+              - string
+            ResourceType:
+              type:
+              - "null"
+              - string
+      Username:
+        type:
+        - "null"
+        - string
+streams:
+- type: DeclarativeStream
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        AccessKeyId:
+          type:
+          - "null"
+          - string
+        CloudTrailEvent:
+          type:
+          - "null"
+          - string
+        EventId:
+          type:
+          - "null"
+          - string
+        EventName:
+          type:
+          - "null"
+          - string
+        EventSource:
+          type:
+          - "null"
+          - string
+        EventTime:
+          type:
+          - "null"
+          - number
+        ReadOnly:
+          type:
+          - "null"
+          - string
+        Resources:
+          type:
+          - "null"
+          - array
+          items:
+            type:
+            - "null"
+            - object
+            properties:
+              ResourceName:
+                type:
+                - "null"
+                - string
+              ResourceType:
+                type:
+                - "null"
+                - string
+        Username:
+          type:
+          - "null"
+          - string
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "{{ parameters.extractor_path }}"
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: body_json
+        field_name: "NextToken"
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: '{{ response.get("NextToken", {}) }}'
+        stop_condition: '{{ not response.get("NextToken", {}) }}'
+    requester:
+      type: HttpRequester
+      url_base: "https://cloudtrail.{{ config['aws_region_name'] }}.amazonaws.com"
+      http_method: "POST"
+      authenticator:
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.CustomAuthenticator
+        aws_key_id: "{{config['aws_key_id']}}"
+        aws_secret_key: "{{config['aws_secret_key']}}"
+        aws_region_name: "{{config['aws_region_name']}}"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+          - type: ExponentialBackoffStrategy
+          response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+            - 400
+      request_headers:
+        x-amz-target: "com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101.LookupEvents"
+      request_body_json:
+        MaxResults: 50
+      path: "/"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    datetime_format: "%s"
+    cursor_field: "EventTime"
+    start_time_option:
+      inject_into: body_json
+      field_name: StartTime
+      type: RequestOption
+    end_time_option:
+      inject_into: body_json
+      field_name: EndTime
+      type: RequestOption
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] or now_utc().strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%s') }}"
+      datetime_format: "%s"
+  name: "management_events"
+  primary_key: "EventId"
+check:
+  type: CheckStream
+  stream_names:
+  - "management_events"
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Aws CloudTrail Spec
+    type: object
+    required:
+    - aws_key_id
+    - aws_secret_key
+    - aws_region_name
+    additionalProperties: true
+    properties:
+      aws_key_id:
+        type: string
+        title: Key ID
+        description: AWS CloudTrail Access Key ID. See the <a href="https://docs.airbyte.com/integrations/sources/aws-cloudtrail">docs</a>
+          for more information on how to obtain this key.
+        airbyte_secret: true
+      aws_secret_key:
+        type: string
+        title: Secret Key
+        description: AWS CloudTrail Access Key ID. See the <a href="https://docs.airbyte.com/integrations/sources/aws-cloudtrail">docs</a>
+          for more information on how to obtain this key.
+        airbyte_secret: true
+      aws_region_name:
+        type: string
+        title: Region Name
+        description: The default AWS Region to use, for example, us-west-1 or us-west-2.
+          When specifying a Region inline during client initialization, this property
+          is named region_name.
+        default: "us-east-1"
+      start_date:
+        type: string
+        title: Start Date
+        description: "The date you would like to replicate data. Data in AWS CloudTrail
+          is available for last 90 days only. Format: YYYY-MM-DD."
+        examples:
+        - "2021-01-01"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        format: date
+      lookup_attributes_filter:
+        title: Filter applied while fetching records based on AttributeKey and AttributeValue
+          which will be appended on the request body
+        type: object
+        required:
+        - attribute_key
+        - attribute_value
+        properties:
+          attribute_key:
+            type: string
+            title: Attribute Key from the response to filter
+            examples:
+            - "EventName"
+            default: "EventName"
+          attribute_value:
+            type: string
+            title: Corresponding value to the given attribute key
+            examples:
+            - "ListInstanceAssociations"
+            - "ConsoleLogin"
+            default: "ListInstanceAssociations"
+type: DeclarativeSource

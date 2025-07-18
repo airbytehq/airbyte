@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import AirbyteCatalog, SyncMode
 from source_azure_table.streams import AzureTableStream
+
+from airbyte_cdk.models import AirbyteCatalog, SyncMode
 
 
 # Tests

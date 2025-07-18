@@ -5,7 +5,6 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import com.amazonaws.services.s3.model.S3Object
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.commons.json.Jsons
 import java.io.BufferedReader
@@ -17,7 +16,7 @@ import kotlin.collections.List
 import kotlin.collections.MutableList
 
 abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
-    S3DestinationAcceptanceTest(FileUploadFormat.JSONL) {
+    S3DestinationAcceptanceTest(FileUploadFormat.JSONL, supportsChangeCapture = false) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(
@@ -43,7 +42,7 @@ abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
             getReader(`object`).use { reader ->
                 var line: String?
                 while ((reader.readLine().also { line = it }) != null) {
-                    jsonRecords.add(Jsons.deserialize(line)[JavaBaseConstants.COLUMN_NAME_DATA])
+                    jsonRecords.add(Jsons.deserialize(line))
                 }
             }
         }

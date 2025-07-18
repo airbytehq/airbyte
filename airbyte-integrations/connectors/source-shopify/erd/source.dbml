@@ -1,0 +1,1220 @@
+Table "abandoned_checkouts" {
+    "note_attributes" array
+    "location_id" integer
+    "buyer_accepts_marketing" boolean
+    "currency" string
+    "completed_at" string
+    "token" string
+    "billing_address" object
+    "email" string
+    "discount_codes" array
+    "customer_locale" string
+    "created_at" string
+    "updated_at" string
+    "gateway" string
+    "referring_site" string
+    "source_identifier" string
+    "total_weight" integer
+    "tax_lines" array
+    "total_line_items_price" number
+    "closed_at" string
+    "device_id" integer
+    "phone" string
+    "source_name" string
+    "id" integer [pk]
+    "name" string
+    "total_tax" number
+    "subtotal_price" number
+    "line_items" array
+    "source_url" string
+    "shop_url" string
+    "total_discounts" number
+    "note" string
+    "presentment_currency" string
+    "shipping_lines" array
+    "user_id" integer
+    "source" string
+    "shipping_address" object
+    "abandoned_checkout_url" string
+    "landing_site" string
+    "customer" object
+    "total_price" number
+    "cart_token" string
+    "taxes_included" boolean
+}
+
+Table "articles" {
+    "id" integer [pk]
+    "title" string
+    "created_at" string
+    "body_html" string
+    "blog_id" integer
+    "author" string
+    "user_id" string
+    "published_at" string
+    "updated_at" string
+    "summary_html" string
+    "template_suffix" string
+    "handle" string
+    "tags" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+    "deleted_at" string
+    "deleted_message" string
+    "deleted_description" string
+}
+
+Table "balance_transactions" {
+    "id" integer [pk]
+    "type" string
+    "test" boolean
+    "payout_id" integer
+    "payout_status" string
+    "payoucurrencyt_status" string
+    "amount" number
+    "fee" number
+    "net" number
+    "source_id" integer
+    "source_type" string
+    "source_order_transaction_id" integer
+    "source_order_id" integer
+    "processed_at" string
+    "shop_url" string
+}
+
+Table "blogs" {
+    "commentable" string
+    "created_at" string
+    "feedburner" string
+    "feedburner_location" integer
+    "handle" string
+    "id" integer [pk]
+    "tags" string
+    "template_suffix" string
+    "title" string
+    "updated_at" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+    "deleted_at" string
+    "deleted_message" string
+    "deleted_description" string
+}
+
+Table "collections" {
+    "id" integer [pk]
+    "handle" string
+    "title" string
+    "updated_at" string
+    "body_html" string
+    "published_at" string
+    "sort_order" string
+    "template_suffix" string
+    "products_count" integer
+    "collection_type" string
+    "published_scope" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "collects" {
+    "id" integer [pk]
+    "collection_id" integer
+    "created_at" string
+    "position" integer
+    "product_id" integer
+    "sort_value" string
+    "shop_url" string
+    "updated_at" string
+}
+
+Table "custom_collections" {
+    "handle" string
+    "sort_order" string
+    "body_html" string
+    "title" string
+    "id" integer [pk]
+    "published_scope" string
+    "admin_graphql_api_id" string
+    "updated_at" string
+    "image" object
+    "published_at" string
+    "template_suffix" string
+    "shop_url" string
+    "deleted_at" string
+    "deleted_message" string
+    "deleted_description" string
+}
+
+Table "customer_journey_summary" {
+    "order_id" integer [pk]
+    "created_at" string
+    "updated_at" string
+    "customer_journey_summary" object
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "customers" {
+    "last_order_name" string
+    "currency" string
+    "email" string
+    "multipass_identifier" string
+    "shop_url" string
+    "default_address" object
+    "email_marketing_consent" object
+    "orders_count" integer
+    "state" string
+    "verified_email" boolean
+    "total_spent" number
+    "last_order_id" integer
+    "first_name" string
+    "updated_at" string
+    "note" string
+    "phone" string
+    "admin_graphql_api_id" string
+    "addresses" array
+    "last_name" string
+    "tags" string
+    "tax_exempt" boolean
+    "id" integer [pk]
+    "accepts_marketing" boolean
+    "created_at" string
+    "sms_marketing_consent" object
+    "tax_exemptions" string
+    "marketing_opt_in_level" string
+}
+
+Table "discount_codes" {
+    "id" integer [pk]
+    "price_rule_id" integer
+    "code" string
+    "usage_count" integer
+    "created_at" string
+    "createdBy" object
+    "updated_at" string
+    "summary" string
+    "discount_type" string
+    "typename" string
+    "starts_at" string
+    "ends_at" string
+    "status" string
+    "title" string
+    "usage_limit" integer
+    "applies_once_per_customer" boolean
+    "async_usage_count" integer
+    "codes_count" object
+    "total_sales" object
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "disputes" {
+    "id" integer [pk]
+    "order_id" integer
+    "type" string
+    "currency" string
+    "amount" string
+    "reason" string
+    "network_reason_code" string
+    "status" string
+    "initiated_at" string
+    "evidence_due_by" string
+    "evidence_sent_on" string
+    "finalized_on" string
+}
+
+Table "draft_orders" {
+    "id" integer [pk]
+    "note" string
+    "email" string
+    "taxes_included" boolean
+    "currency" string
+    "invoice_sent_at" string
+    "created_at" string
+    "updated_at" string
+    "tax_exempt" boolean
+    "completed_at" string
+    "name" string
+    "status" string
+    "line_items" array
+    "shipping_address" object
+    "billing_address" object
+    "invoice_url" string
+    "applied_discount" object
+    "order_id" integer
+    "payment_terms" string
+    "po_number" string
+    "shipping_line" object
+    "tax_lines" array
+    "tags" string
+    "note_attributes" array
+    "total_price" string
+    "subtotal_price" string
+    "total_tax" string
+    "admin_graphql_api_id" string
+    "customer" object
+    "shop_url" string
+}
+
+Table "fulfillment_orders" {
+    "assigned_location_id" integer
+    "channel_id" string
+    "destination" object
+    "delivery_method" object
+    "fulfilled_at" string
+    "fulfill_at" string
+    "fulfill_by" string
+    "international_duties" string
+    "fulfillment_holds" array
+    "id" integer [pk]
+    "line_items" array
+    "order_id" integer
+    "request_status" string
+    "shop_id" integer
+    "status" string
+    "supported_actions" array
+    "merchant_requests" array
+    "assigned_location" object
+    "shop_url" string
+    "created_at" string
+    "updated_at" string
+    "admin_graphql_api_id" string
+}
+
+Table "fulfillments" {
+    "admin_graphql_api_id" string
+    "created_at" string
+    "id" integer [pk]
+    "location_id" integer
+    "name" string
+    "notify_customer" boolean
+    "order_id" integer
+    "origin_address" object
+    "receipt" object
+    "service" string
+    "shipment_status" string
+    "status" string
+    "tracking_company" string
+    "tracking_numbers" array
+    "tracking_urls" array
+    "tracking_url" string
+    "tracking_number" string
+    "updated_at" string
+    "variant_inventory_management" string
+    "line_items" array
+    "duties" array
+    "shop_url" string
+}
+
+Table "inventory_items" {
+    "id" integer [pk]
+    "admin_graphql_api_id" string
+    "cost" number
+    "currency_code" string
+    "country_code_of_origin" string
+    "country_harmonized_system_codes" array
+    "duplicate_sku_count" integer
+    "harmonized_system_code" string
+    "province_code_of_origin" string
+    "updated_at" string
+    "created_at" string
+    "sku" string
+    "tracked" boolean
+    "requires_shipping" boolean
+    "shop_url" string
+}
+
+Table "inventory_levels" {
+    "id" string [pk]
+    "admin_graphql_api_id" string
+    "available" integer
+    "can_deactivate" boolean
+    "created_at" string
+    "inventory_history_url" string
+    "locations_count" object
+    "deactivation_alert" string
+    "inventory_item_id" integer
+    "location_id" integer
+    "updated_at" string
+    "shop_url" string
+    "quantities" array
+}
+
+Table "locations" {
+    "active" boolean
+    "address1" string
+    "address2" string
+    "admin_graphql_api_id" string
+    "city" string
+    "country" string
+    "country_code" string
+    "country_name" string
+    "created_at" string
+    "id" integer [pk]
+    "legacy" boolean
+    "name" string
+    "phone" string
+    "province" string
+    "province_code" string
+    "updated_at" string
+    "zip" string
+    "localized_country_name" string
+    "localized_province_name" string
+    "shop_url" string
+}
+
+Table "metafield_articles" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_blogs" {
+    "owner_id" integer
+    "admin_graphql_api_id" string
+    "owner_resource" string
+    "value_type" string
+    "key" string
+    "created_at" string
+    "id" integer [pk]
+    "namespace" string
+    "description" string
+    "value" string
+    "updated_at" string
+    "shop_url" string
+    "type" string
+}
+
+Table "metafield_collections" {
+    "owner_id" integer
+    "admin_graphql_api_id" string
+    "owner_resource" string
+    "value_type" string
+    "key" string
+    "created_at" string
+    "id" integer [pk]
+    "namespace" string
+    "description" string
+    "value" string
+    "updated_at" string
+    "shop_url" string
+    "type" string
+}
+
+Table "metafield_customers" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_draft_orders" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_locations" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_orders" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_pages" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_product_images" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_products" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_product_variants" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_shops" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "metafield_smart_collections" {
+    "id" integer [pk]
+    "namespace" string
+    "key" string
+    "value" string
+    "value_type" string
+    "description" string
+    "owner_id" integer
+    "created_at" string
+    "updated_at" string
+    "owner_resource" string
+    "type" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "order_agreements" {
+    "id" integer [pk]
+    "created_at" string
+    "updated_at" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+    "agreements" array
+}
+
+Table "order_refunds" {
+    "order_id" integer
+    "restock" boolean
+    "order_adjustments" array
+    "processed_at" string
+    "user_id" integer
+    "note" string
+    "id" integer [pk]
+    "created_at" string
+    "admin_graphql_api_id" string
+    "duties" string
+    "refund_line_items" array
+    "return" object
+    "transactions" array
+    "shop_url" string
+    "total_duties_set" object
+}
+
+Table "order_risks" {
+    "id" integer [pk]
+    "order_id" integer
+    "checkout_id" integer
+    "source" string
+    "score" number
+    "recommendation" string
+    "display" boolean
+    "cause_cancel" boolean
+    "message" string
+    "merchant_message" string
+    "admin_graphql_api_id" string
+    "updated_at" string
+    "assessments" array
+    "shop_url" string
+}
+
+Table "orders" {
+    "id" integer [pk]
+    "admin_graphql_api_id" string
+    "app_id" integer
+    "browser_ip" string
+    "buyer_accepts_marketing" boolean
+    "cancel_reason" string
+    "cancelled_at" string
+    "cart_token" string
+    "checkout_id" integer
+    "checkout_token" string
+    "client_details" object
+    "closed_at" string
+    "company" string
+    "confirmed" boolean
+    "confirmation_number" string
+    "contact_email" string
+    "created_at" string
+    "currency" string
+    "current_subtotal_price" number
+    "current_subtotal_price_set" object
+    "current_total_discounts" number
+    "current_total_discounts_set" object
+    "current_total_duties_set" string
+    "current_total_price" number
+    "current_total_price_set" object
+    "current_total_tax" number
+    "current_total_tax_set" object
+    "current_total_additional_fees_set" object
+    "customer_locale" string
+    "device_id" string
+    "discount_applications" array
+    "discount_codes" array
+    "email" string
+    "estimated_taxes" boolean
+    "financial_status" string
+    "fulfillment_status" string
+    "landing_site" string
+    "landing_site_ref" string
+    "location_id" integer
+    "merchant_of_record_app_id" string
+    "name" string
+    "note" string
+    "note_attributes" array
+    "number" integer
+    "order_number" integer
+    "order_status_url" string
+    "original_total_duties_set" string
+    "original_total_additional_fees_set" object
+    "payment_gateway_names" array
+    "payment_terms" string
+    "phone" string
+    "presentment_currency" string
+    "processed_at" string
+    "po_number" string
+    "reference" string
+    "referring_site" string
+    "source_identifier" string
+    "source_name" string
+    "source_url" string
+    "shop_url" string
+    "subtotal_price" number
+    "subtotal_price_set" object
+    "tags" string
+    "tax_exempt" boolean
+    "tax_lines" array
+    "taxes_included" boolean
+    "test" boolean
+    "token" string
+    "total_discounts" number
+    "total_discounts_set" object
+    "total_line_items_price" number
+    "total_line_items_price_set" object
+    "total_outstanding" number
+    "total_price" number
+    "total_price_set" object
+    "total_price_usd" number
+    "total_shipping_price_set" object
+    "total_tax" number
+    "total_tax_set" object
+    "total_tip_received" number
+    "total_weight" integer
+    "updated_at" string
+    "user_id" number
+    "billing_address" object
+    "customer" object
+    "discount_allocations" array
+    "fulfillments" array
+    "line_items" array
+    "refunds" array
+    "shipping_address" object
+    "shipping_lines" array
+    "deleted_at" string
+    "deleted_message" string
+    "deleted_description" string
+}
+
+Table "pages" {
+    "author" string
+    "admin_graphql_api_id" string
+    "created_at" string
+    "handle" string
+    "id" integer [pk]
+    "published_at" string
+    "shop_id" integer
+    "template_suffix" string
+    "title" string
+    "updated_at" string
+    "shop_url" string
+    "deleted_at" string
+    "deleted_message" string
+    "deleted_description" string
+}
+
+Table "price_rules" {
+    "allocation_method" string
+    "admin_graphql_api_id" string
+    "created_at" string
+    "customer_segment_prerequisite_ids" array
+    "updated_at" string
+    "customer_selection" string
+    "ends_at" string
+    "entitled_collection_ids" array
+    "entitled_country_ids" array
+    "entitled_product_ids" array
+    "entitled_variant_ids" array
+    "id" integer [pk]
+    "once_per_customer" boolean
+    "prerequisite_customer_ids" array
+    "prerequisite_quantity_range" object
+    "prerequisite_saved_search_ids" array
+    "prerequisite_shipping_price_range" object
+    "prerequisite_subtotal_range" object
+    "prerequisite_to_entitlement_purchase" object
+    "starts_at" string
+    "target_selection" string
+    "target_type" string
+    "title" string
+    "usage_limit" integer
+    "prerequisite_product_ids" array
+    "prerequisite_variant_ids" array
+    "prerequisite_collection_ids" array
+    "value" string
+    "value_type" string
+    "prerequisite_to_entitlement_quantity_ratio" object
+    "allocation_limit" integer
+    "shop_url" string
+    "deleted_at" string
+    "deleted_message" string
+    "deleted_description" string
+}
+
+Table "product_images" {
+    "created_at" string
+    "id" integer [pk]
+    "position" integer
+    "product_id" integer
+    "variant_ids" array
+    "src" string
+    "width" integer
+    "height" integer
+    "updated_at" string
+    "admin_graphql_api_id" string
+    "alt" string
+    "shop_url" string
+}
+
+Table "products" {
+    "published_at" string
+    "created_at" string
+    "published_scope" string
+    "status" string
+    "vendor" string
+    "updated_at" string
+    "body_html" string
+    "product_type" string
+    "tags" string
+    "options" array
+    "image" object
+    "handle" string
+    "images" array
+    "template_suffix" string
+    "title" string
+    "variants" array
+    "admin_graphql_api_id" string
+    "id" integer [pk]
+    "shop_url" string
+    "deleted_at" string
+    "deleted_message" string
+    "deleted_description" string
+    "description" string
+    "description_html" string
+    "is_gift_card" boolean
+    "legacy_resource_id" string
+    "media_count" integer
+    "online_store_preview_url" string
+    "online_store_url" string
+    "total_inventory" integer
+    "total_variants" integer
+    "tracks_inventory" boolean
+    "has_only_default_variant" boolean
+    "has_out_of_stock_variants" boolean
+    "requires_sellin_plan" boolean
+    "price_range_v2" object
+    "featured_image" object
+    "seo" object
+    "featured_media" object
+    "feedback" object
+}
+
+Table "product_variants" {
+    "id" integer [pk]
+    "product_id" integer
+    "title" string
+    "price" number
+    "sku" string
+    "position" integer
+    "inventory_policy" string
+    "compare_at_price" string
+    "fulfillment_service" string
+    "inventory_management" string
+    "option1" string
+    "option2" string
+    "option3" string
+    "options" array
+    "created_at" string
+    "updated_at" string
+    "taxable" boolean
+    "barcode" string
+    "grams" integer
+    "image_id" integer
+    "weight" number
+    "weight_unit" string
+    "inventory_item_id" integer
+    "inventory_quantity" integer
+    "old_inventory_quantity" integer
+    "presentment_prices" array
+    "requires_shipping" boolean
+    "admin_graphql_api_id" string
+    "shop_url" string
+    "available_for_sale" boolean
+    "display_name" string
+    "tax_code" string
+}
+
+Table "shop" {
+    "address1" string
+    "address2" string
+    "auto_configure_tax_inclusivity" string
+    "checkout_api_supported" boolean
+    "city" string
+    "country" string
+    "country_code" string
+    "country_name" string
+    "county_taxes" boolean
+    "created_at" string
+    "customer_email" string
+    "currency" string
+    "domain" string
+    "enabled_presentment_currencies" array
+    "eligible_for_card_reader_giveaway" boolean
+    "eligible_for_payments" boolean
+    "email" string
+    "finances" boolean
+    "force_ssl" boolean
+    "google_apps_domain" string
+    "google_apps_login_enabled" boolean
+    "has_discounts" boolean
+    "has_gift_cards" boolean
+    "has_storefront" boolean
+    "iana_timezone" string
+    "id" integer [pk]
+    "latitude" number
+    "longitude" number
+    "marketing_sms_consent_enabled_at_checkout" boolean
+    "money_format" string
+    "money_in_emails_format" string
+    "money_with_currency_format" string
+    "money_with_currency_in_emails_format" string
+    "multi_location_enabled" boolean
+    "myshopify_domain" string
+    "name" string
+    "password_enabled" boolean
+    "phone" string
+    "plan_display_name" string
+    "pre_launch_enabled" boolean
+    "cookie_consent_level" string
+    "plan_name" string
+    "primary_locale" string
+    "primary_location_id" integer
+    "province" string
+    "province_code" string
+    "requires_extra_payments_agreement" boolean
+    "setup_required" boolean
+    "shop_owner" string
+    "source" string
+    "taxes_included" boolean
+    "tax_shipping" boolean
+    "timezone" string
+    "transactional_sms_disabled" boolean
+    "updated_at" string
+    "visitor_tracking_consent_preference" string
+    "weight_unit" string
+    "zip" string
+    "shop_url" string
+}
+
+Table "smart_collections" {
+    "id" integer [pk]
+    "handle" string
+    "title" string
+    "updated_at" string
+    "body_html" string
+    "published_at" string
+    "sort_order" string
+    "template_suffix" string
+    "disjunctive" boolean
+    "rules" array
+    "published_scope" string
+    "admin_graphql_api_id" string
+    "shop_url" string
+}
+
+Table "tender_transactions" {
+    "id" integer [pk]
+    "order_id" integer
+    "amount" string
+    "currency" string
+    "user_id" integer
+    "test" boolean
+    "processed_at" string
+    "remote_reference" string
+    "payment_details" object
+    "payment_method" string
+    "shop_url" string
+}
+
+Table "transactions" {
+    "error_code" string
+    "device_id" integer
+    "user_id" integer
+    "parent_id" integer
+    "test" boolean
+    "kind" string
+    "order_id" integer
+    "amount" number
+    "amount_set" object
+    "fees" array
+    "authorization" string
+    "currency" string
+    "source_name" string
+    "message" string
+    "id" integer [pk]
+    "created_at" string
+    "status" string
+    "total_unsettled_set" object
+    "payment_id" string
+    "payment_details" object
+    "processed_at" string
+    "gateway" string
+    "admin_graphql_api_id" string
+    "location_id" integer
+    "accountNumber" integer
+    "formattedGateway" string
+    "manuallyCapturable" boolean
+    "shop_url" string
+}
+
+Table "customer_address" {
+    "address1" string
+    "address2" string
+    "city" string
+    "country" string
+    "country_code" string
+    "country_name" string
+    "company" string
+    "customer_id" integer
+    "first_name" string
+    "id" integer [pk]
+    "last_name" string
+    "name" string
+    "phone" string
+    "province" string
+    "province_code" string
+    "zip" string
+    "default" boolean
+    "shop_url" string
+    "updated_at" string
+}
+
+Table "countries" {
+    "code" string
+    "id" integer [pk]
+    "name" string
+    "provinces" array
+    "tax" number
+    "tax_name" string
+    "shop_url" string
+}
+
+Ref {
+    "abandoned_checkouts"."location_id" <> "locations"."id"
+}
+
+Ref {
+    "abandoned_checkouts"."user_id" <> "customers"."id"
+}
+
+Ref {
+    "articles"."blog_id" <> "blogs"."id"
+}
+
+Ref {
+    "articles"."user_id" <> "customers"."id"
+}
+
+Ref {
+    "collects"."collection_id" <> "collections"."id"
+}
+
+Ref {
+    "collects"."product_id" <> "products"."id"
+}
+
+Ref {
+    "customer_journey_summary"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "customers"."last_order_id" <> "orders"."id"
+}
+
+Ref {
+    "discount_codes"."price_rule_id" <> "price_rules"."id"
+}
+
+Ref {
+    "disputes"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "draft_orders"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "fulfillment_orders"."assigned_location_id" <> "locations"."id"
+}
+
+Ref {
+    "fulfillment_orders"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "fulfillment_orders"."shop_id" <> "shop"."id"
+}
+
+Ref {
+    "fulfillments"."location_id" <> "locations"."id"
+}
+
+Ref {
+    "fulfillments"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "inventory_levels"."inventory_item_id" <> "inventory_items"."id"
+}
+
+Ref {
+    "inventory_levels"."location_id" <> "locations"."id"
+}
+
+Ref {
+    "metafield_articles"."owner_id" <> "articles"."id"
+}
+
+Ref {
+    "metafield_blogs"."owner_id" <> "blogs"."id"
+}
+
+Ref {
+    "metafield_collections"."owner_id" <> "collections"."id"
+}
+
+Ref {
+    "metafield_customers"."owner_id" <> "customers"."id"
+}
+
+Ref {
+    "metafield_draft_orders"."owner_id" <> "draft_orders"."id"
+}
+
+Ref {
+    "metafield_locations"."owner_id" <> "locations"."id"
+}
+
+Ref {
+    "metafield_orders"."owner_id" <> "orders"."id"
+}
+
+Ref {
+    "metafield_pages"."owner_id" <> "pages"."id"
+}
+
+Ref {
+    "metafield_product_images"."owner_id" <> "product_images"."id"
+}
+
+Ref {
+    "metafield_products"."owner_id" <> "products"."id"
+}
+
+Ref {
+    "metafield_product_variants"."owner_id" <> "product_variants"."id"
+}
+
+Ref {
+    "metafield_shops"."owner_id" <> "shop"."id"
+}
+
+Ref {
+    "metafield_smart_collections"."owner_id" <> "smart_collections"."id"
+}
+
+Ref {
+    "order_agreements"."id" <> "orders"."id"
+}
+
+Ref {
+    "order_refunds"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "order_refunds"."user_id" <> "customers"."id"
+}
+
+Ref {
+    "order_risks"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "order_risks"."checkout_id" <> "abandoned_checkouts"."id"
+}
+
+Ref {
+    "orders"."checkout_id" <> "abandoned_checkouts"."id"
+}
+
+Ref {
+    "orders"."location_id" <> "locations"."id"
+}
+
+Ref {
+    "orders"."user_id" <> "customers"."id"
+}
+
+Ref {
+    "pages"."shop_id" <> "shop"."id"
+}
+
+Ref {
+    "product_images"."product_id" <> "products"."id"
+}
+
+Ref {
+    "product_variants"."product_id" <> "products"."id"
+}
+
+Ref {
+    "product_variants"."inventory_item_id" <> "inventory_items"."id"
+}
+
+Ref {
+    "shop"."primary_location_id" <> "locations"."id"
+}
+
+Ref {
+    "tender_transactions"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "tender_transactions"."user_id" <> "customers"."id"
+}
+
+Ref {
+    "transactions"."order_id" <> "orders"."id"
+}
+
+Ref {
+    "transactions"."user_id" <> "customers"."id"
+}
+
+Ref {
+    "transactions"."parent_id" <> "transactions"."id"
+}
+
+Ref {
+    "transactions"."location_id" <> "locations"."id"
+}
+
+Ref {
+    "customer_address"."customer_id" <> "customers"."id"
+}

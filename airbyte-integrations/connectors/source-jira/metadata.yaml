@@ -6,23 +6,24 @@ data:
     hosts:
       - ${domain}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 3.0.10
+  dockerImageTag: 4.1.6
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
+  erdUrl: https://dbdocs.io/airbyteio/source-jira?view=relationships
   githubIssueLabel: source-jira
   icon: jira.svg
   license: MIT
-  maxSecondsBetweenMessages: 5400
+  maxSecondsBetweenMessages: 10800
   name: Jira
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-jira
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -30,6 +31,13 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      4.0.0:
+        deadlineAction: "auto_upgrade"
+        message: "The `pull_requests` stream has been fully deprecated. This change constitutes a breaking change. For more information, see our migration documentation for source Jira."
+        upgradeDeadline: "2025-05-04"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["pull_requests"]
       3.0.0:
         message: "Primary key for Workflows stream has been changed from `Id` to [`entityId`, `name`]. This change of pk makes the stream compatible with more types of destinations."
         upgradeDeadline: "2024-07-02"
@@ -48,6 +56,8 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["board_issues"]
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   suggestedStreams:
     streams:
       - issues
@@ -56,9 +66,15 @@ data:
       - issue_fields
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: jira_config_dev_null
+          id: 28344f6b-d2c9-4671-a5e2-81374985156e
+        - name: jira_config_empty_projects_dev_null
+          id: 8f0c8c2b-8bc4-4d13-a2ef-ce234370dbd8
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

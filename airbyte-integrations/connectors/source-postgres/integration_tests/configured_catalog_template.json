@@ -1,0 +1,28 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "id_and_name_cat",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "%s"
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "cursor_field": ["id"],
+      "user_defined_primary_key": ["id"]
+    }
+  ]
+}

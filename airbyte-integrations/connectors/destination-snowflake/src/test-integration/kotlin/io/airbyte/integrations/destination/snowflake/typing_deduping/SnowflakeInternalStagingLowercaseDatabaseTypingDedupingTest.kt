@@ -38,4 +38,9 @@ class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest :
     override fun testV1V2Migration() {
         super.testV1V2Migration()
     }
+
+    @Test
+    override fun identicalNameSimultaneousSync() {
+        super.identicalNameSimultaneousSync()
+    }
 }

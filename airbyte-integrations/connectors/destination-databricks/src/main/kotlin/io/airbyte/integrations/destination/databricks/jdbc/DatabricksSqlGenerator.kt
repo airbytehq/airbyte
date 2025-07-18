@@ -15,6 +15,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
@@ -24,7 +25,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.time.Instant
 import java.util.Optional
 
@@ -82,11 +82,14 @@ class DatabricksSqlGenerator(
         name: String,
         rawNamespaceOverride: String
     ): StreamId {
+        // Databricks downcases all object names, so handle that here
         return StreamId(
-            namingTransformer.getNamespace(namespace),
-            namingTransformer.getIdentifier(name),
-            namingTransformer.getNamespace(rawNamespaceOverride),
-            namingTransformer.getIdentifier(StreamId.concatenateRawTableName(namespace, name)),
+            namingTransformer.getNamespace(namespace).lowercase(),
+            namingTransformer.getIdentifier(name).lowercase(),
+            namingTransformer.getNamespace(rawNamespaceOverride).lowercase(),
+            namingTransformer
+                .getIdentifier(StreamId.concatenateRawTableName(namespace, name))
+                .lowercase(),
             namespace,
             name,
         )
@@ -94,6 +97,7 @@ class DatabricksSqlGenerator(
 
     override fun buildColumnId(name: String, suffix: String?): ColumnId {
         val nameWithSuffix = name + suffix
+        // Databricks preserves column name casing, so do _not_ downcase here.
         return ColumnId(
             namingTransformer.getIdentifier(nameWithSuffix),
             name,
@@ -102,10 +106,16 @@ class DatabricksSqlGenerator(
     }
 
     // Start: Functions scattered over other classes needed for T+D
-    fun createRawTable(streamId: StreamId): Sql {
+    fun createRawTable(streamId: StreamId, suffix: String, replace: Boolean): Sql {
+        val createStatement =
+            if (replace) {
+                "CREATE OR REPLACE TABLE"
+            } else {
+                "CREATE TABLE IF NOT EXISTS"
+            }
         return Sql.of(
             """
-                CREATE TABLE IF NOT EXISTS $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName} (
+                $createStatement $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName}$suffix (
                     $AB_RAW_ID STRING,
                     $AB_EXTRACTED_AT TIMESTAMP,
                     $AB_LOADED_AT TIMESTAMP,
@@ -168,7 +178,7 @@ class DatabricksSqlGenerator(
     ): Sql {
 
         val addRecordsToFinalTable =
-            if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+            if (stream.postImportAction == ImportType.DEDUPE) {
                 upsertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
             } else {
                 insertNewRecordsNoDedupe(

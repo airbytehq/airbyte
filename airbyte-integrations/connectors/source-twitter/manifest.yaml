@@ -1,0 +1,756 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - tweets
+
+definitions:
+  streams:
+    tweets:
+      type: DeclarativeStream
+      name: tweets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /search/recent
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+            tweet.fields: >-
+              attachments,author_id,context_annotations,conversation_id,created_at,edit_controls,entities,geo,in_reply_to_user_id,lang,possibly_sensitive,referenced_tweets,reply_settings,source,withheld
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          page_size_option:
+            type: RequestOption
+            field_name: max_results
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.meta.next_token }}"
+            stop_condition: "{{ 'next_token' not in response['meta'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.000Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.000Z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P6DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.end_date or (now_utc() -
+            duration('PT10S')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P7D
+        cursor_granularity: PT0S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tweets"
+    authors:
+      type: DeclarativeStream
+      name: authors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /search/recent
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+            tweet.fields: >-
+              attachments,author_id,context_annotations,conversation_id,created_at,edit_controls,entities,geo,in_reply_to_user_id,lang,possibly_sensitive,referenced_tweets,reply_settings,source,withheld
+            user.fields: >-
+              created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,verified_type,withheld
+            expansions: author_id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - includes
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          page_size_option:
+            type: RequestOption
+            field_name: max_results
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.meta.next_token }}"
+            stop_condition: "{{ 'next_token' not in response['meta'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.000Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P6DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.end_date or (now_utc() -
+            duration('PT10S')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P7D
+        cursor_granularity: PT0S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/authors"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.twitter.com/2/tweets
+    authenticator:
+      type: BearerAuthenticator
+      header: apikey
+      api_token: "{{ config.api_key }}"
+
+streams:
+  - $ref: "#/definitions/streams/tweets"
+  - $ref: "#/definitions/streams/authors"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - query
+    properties:
+      api_key:
+        type: string
+        description: >-
+          App only Bearer Token. See the <a
+          href="https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens">docs</a>
+          for more information on how to obtain this token.
+        title: Access Token
+        airbyte_secret: true
+        order: 0
+      query:
+        type: string
+        description: >-
+          Query for matching Tweets. You can learn how to build this query by
+          reading <a
+          href="https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query">
+          build a query guide </a>.
+        title: Search Query
+        order: 1
+      start_date:
+        type: string
+        description: >-
+          The start date for retrieving tweets cannot be more than 7 days in the
+          past.
+        title: Start Date
+        format: date-time
+        order: 2
+      end_date:
+        type: string
+        description: >-
+          The end date for retrieving tweets must be a minimum of 10 seconds
+          prior to the request time.
+        title: End Date
+        format: date-time
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    tweets: false
+    authors: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    tweets:
+      streamHash: 33940de7966cc9fc2f189374afff4aa44ab61057
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    authors:
+      streamHash: b5ef309c4d613dfba7083039bb6049dd9a52fec3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: false
+  assist: {}
+
+schemas:
+  tweets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - object
+          - "null"
+        properties:
+          media_keys:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          poll_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      author_id:
+        type:
+          - string
+          - "null"
+      context_annotations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            domain:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            entity:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      conversation_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      edit_controls:
+        type:
+          - object
+          - "null"
+        properties:
+          editable_until:
+            type:
+              - string
+              - "null"
+          edits_remaining:
+            type:
+              - number
+              - "null"
+          is_edit_eligible:
+            type:
+              - boolean
+              - "null"
+      edit_history_tweet_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      entities:
+        type:
+          - object
+          - "null"
+        properties:
+          annotations:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                end:
+                  type:
+                    - number
+                    - "null"
+                normalized_text:
+                  type:
+                    - string
+                    - "null"
+                probability:
+                  type:
+                    - number
+                    - "null"
+                start:
+                  type:
+                    - number
+                    - "null"
+          cashtags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                end:
+                  type:
+                    - number
+                    - "null"
+                start:
+                  type:
+                    - number
+                    - "null"
+                tag:
+                  type:
+                    - string
+                    - "null"
+          hashtags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                end:
+                  type:
+                    - number
+                    - "null"
+                start:
+                  type:
+                    - number
+                    - "null"
+                tag:
+                  type:
+                    - string
+                    - "null"
+          mentions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                end:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                start:
+                  type:
+                    - number
+                    - "null"
+                username:
+                  type:
+                    - string
+                    - "null"
+          urls:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                display_url:
+                  type:
+                    - string
+                    - "null"
+                end:
+                  type:
+                    - number
+                    - "null"
+                expanded_url:
+                  type:
+                    - string
+                    - "null"
+                images:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - number
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - number
+                          - "null"
+                media_key:
+                  type:
+                    - string
+                    - "null"
+                start:
+                  type:
+                    - number
+                    - "null"
+                status:
+                  type:
+                    - number
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                unwound_url:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+      geo:
+        type:
+          - object
+          - "null"
+        properties:
+          place_id:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      in_reply_to_user_id:
+        type:
+          - string
+          - "null"
+      lang:
+        type:
+          - string
+          - "null"
+      possibly_sensitive:
+        type:
+          - boolean
+          - "null"
+      referenced_tweets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+      reply_settings:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  authors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      entities:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - object
+              - "null"
+            properties:
+              hashtags:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    end:
+                      type:
+                        - number
+                        - "null"
+                    start:
+                      type:
+                        - number
+                        - "null"
+                    tag:
+                      type:
+                        - string
+                        - "null"
+              mentions:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    end:
+                      type:
+                        - number
+                        - "null"
+                    start:
+                      type:
+                        - number
+                        - "null"
+                    username:
+                      type:
+                        - string
+                        - "null"
+              urls:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    display_url:
+                      type:
+                        - string
+                        - "null"
+                    end:
+                      type:
+                        - number
+                        - "null"
+                    expanded_url:
+                      type:
+                        - string
+                        - "null"
+                    start:
+                      type:
+                        - number
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
+          url:
+            type:
+              - object
+              - "null"
+            properties:
+              urls:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    display_url:
+                      type:
+                        - string
+                        - "null"
+                    end:
+                      type:
+                        - number
+                        - "null"
+                    expanded_url:
+                      type:
+                        - string
+                        - "null"
+                    start:
+                      type:
+                        - number
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
+      id:
+        type: string
+      location:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pinned_tweet_id:
+        type:
+          - string
+          - "null"
+      profile_image_url:
+        type:
+          - string
+          - "null"
+      protected:
+        type:
+          - boolean
+          - "null"
+      public_metrics:
+        type:
+          - object
+          - "null"
+        properties:
+          followers_count:
+            type:
+              - number
+              - "null"
+          following_count:
+            type:
+              - number
+              - "null"
+          like_count:
+            type:
+              - number
+              - "null"
+          listed_count:
+            type:
+              - number
+              - "null"
+          media_count:
+            type:
+              - number
+              - "null"
+          tweet_count:
+            type:
+              - number
+              - "null"
+      url:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      verified:
+        type:
+          - boolean
+          - "null"
+      verified_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at

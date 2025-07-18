@@ -22,8 +22,6 @@ import io.airbyte.cdk.integrations.util.ApmTraceUtils.addExceptionToTrace
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
-import io.airbyte.commons.features.EnvVariableFeatureFlags
-import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.stream.AirbyteStreamUtils
@@ -49,8 +47,6 @@ private val LOGGER = KotlinLogging.logger {}
 abstract class AbstractDbSource<DataType, Database : AbstractDatabase?>
 protected constructor(driverClassName: String) :
     JdbcConnector(driverClassName), Source, AutoCloseable {
-    // TODO: Remove when the flag is not use anymore
-    var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
 
     @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
@@ -135,7 +131,7 @@ protected constructor(driverClassName: String) :
         logPreSyncDebugData(database, catalog)
 
         val fullyQualifiedTableNameToInfo =
-            discoverWithoutSystemTables(database).associateBy {
+            discoverWithoutSystemTables(database, catalog).associateBy {
                 String.format("%s.%s", it.nameSpace, it.name)
             }
 
@@ -154,7 +150,7 @@ protected constructor(driverClassName: String) :
                 catalog,
                 fullyQualifiedTableNameToInfo,
                 stateManager,
-                emittedAt
+                emittedAt,
             )
         val fullRefreshIterators =
             getFullRefreshIterators(
@@ -295,6 +291,22 @@ protected constructor(driverClassName: String) :
 
     @Throws(Exception::class)
     protected fun discoverWithoutSystemTables(
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog,
+    ): List<TableInfo<CommonField<DataType>>> {
+        var result = mutableListOf<TableInfo<CommonField<DataType>>>()
+        catalog.streams.forEach { airbyteStream: ConfiguredAirbyteStream ->
+            val stream = airbyteStream.stream
+            discoverTable(database, stream.namespace, stream.name)?.let {
+                LOGGER.info { "Discovered table: ${it.nameSpace}.${it.name}: $it" }
+                result.add(it)
+            }
+        }
+        return result
+    }
+
+    @Throws(Exception::class)
+    protected fun discoverWithoutSystemTables(
         database: Database
     ): List<TableInfo<CommonField<DataType>>> {
         val systemNameSpaces = excludedInternalNameSpaces
@@ -320,7 +332,7 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.FULL_REFRESH
+            SyncMode.FULL_REFRESH,
         )
     }
 
@@ -329,7 +341,7 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
             database,
@@ -337,7 +349,7 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.INCREMENTAL
+            SyncMode.INCREMENTAL,
         )
     }
 
@@ -359,7 +371,7 @@ protected constructor(driverClassName: String) :
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
         emittedAt: Instant,
-        syncMode: SyncMode
+        syncMode: SyncMode,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         val iteratorList: MutableList<AutoCloseableIterator<AirbyteMessage>> = ArrayList()
         for (airbyteStream in catalog!!.streams) {
@@ -382,7 +394,7 @@ protected constructor(driverClassName: String) :
                         catalog,
                         table,
                         stateManager,
-                        emittedAt
+                        emittedAt,
                     )
                 iteratorList.add(tableReadIterator)
             }
@@ -407,7 +419,7 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog?,
         table: TableInfo<CommonField<DataType>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -435,7 +447,7 @@ protected constructor(driverClassName: String) :
                         selectedDatabaseFields,
                         table,
                         cursorInfo.get(),
-                        emittedAt
+                        emittedAt,
                     )
             } else {
                 // if no cursor is present then this is the first read for is the same as doing a
@@ -531,7 +543,7 @@ protected constructor(driverClassName: String) :
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<DataType>>,
         cursorInfo: CursorInfo,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -554,7 +566,7 @@ protected constructor(driverClassName: String) :
                 table.nameSpace,
                 table.name,
                 cursorInfo,
-                cursorType
+                cursorType,
             )
 
         return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli())
@@ -727,6 +739,23 @@ protected constructor(driverClassName: String) :
         tableInfos: List<TableInfo<CommonField<DataType>>>
     ): Map<String, MutableList<String>>
 
+    /**
+     * Discovers a table in the source database.
+     *
+     * @param database
+     * - source database
+     * @param schema
+     * - source schema
+     * @param tableName
+     * - source table name
+     * @return table information
+     */
+    protected abstract fun discoverTable(
+        database: Database,
+        schema: String,
+        tableName: String
+    ): TableInfo<CommonField<DataType>>?
+
     protected abstract val quoteString: String?
 
     /**
@@ -762,7 +791,7 @@ protected constructor(driverClassName: String) :
         schemaName: String?,
         tableName: String,
         cursorInfo: CursorInfo,
-        cursorFieldType: DataType
+        cursorFieldType: DataType,
     ): AutoCloseableIterator<AirbyteRecordData>
 
     protected open val stateEmissionFrequency: Int

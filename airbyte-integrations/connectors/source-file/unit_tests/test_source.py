@@ -8,6 +8,8 @@ from copy import deepcopy
 
 import jsonschema
 import pytest
+from source_file.source import SourceFile
+
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -22,7 +24,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
-from source_file.source import SourceFile
+
 
 logger = logging.getLogger("airbyte")
 
@@ -60,6 +62,31 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
     }
 
     catalog = SourceFile().discover(logger=logger, config=config_local_csv_utf16)
+    stream = next(iter(catalog.streams))
+    assert stream.json_schema == expected_schema
+
+
+def test_zipped_csv_with_utf16_encoding(absolute_path, test_files):
+    config_local_zipped_csv_utf16 = {
+        "dataset_name": "AAA",
+        "format": "csv",
+        "reader_options": '{"encoding":"utf_16", "parse_dates": ["header5"]}',
+        "url": f"{absolute_path}/{test_files}/test_utf16.csv.zip",
+        "provider": {"storage": "local"},
+    }
+    expected_schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+            "header1": {"type": ["string", "null"]},
+            "header2": {"type": ["number", "null"]},
+            "header3": {"type": ["number", "null"]},
+            "header4": {"type": ["boolean", "null"]},
+            "header5": {"type": ["string", "null"], "format": "date-time"},
+        },
+        "type": "object",
+    }
+
+    catalog = SourceFile().discover(logger=logger, config=config_local_zipped_csv_utf16)
     stream = next(iter(catalog.streams))
     assert stream.json_schema == expected_schema
 

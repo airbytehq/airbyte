@@ -48,9 +48,9 @@ object DatabricksConnectorClientsFactory {
             "jdbc:databricks://${config.hostname}:${config.port}/${config.database};transportMode=http;httpPath=${config.httpPath};EnableArrow=0"
         when (config.authentication) {
             is BasicAuthentication -> {
-                datasource.userID = config.authentication.username
-                datasource.password = config.authentication.password
-                datasource.setURL("$jdbcUrl;AuthMech=3")
+                datasource.setURL(
+                    "$jdbcUrl;AuthMech=3;UID=token;PWD=${config.authentication.personalAccessToken}"
+                )
             }
             is OAuth2Authentication -> {
                 datasource.setURL(

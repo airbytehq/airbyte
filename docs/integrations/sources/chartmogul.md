@@ -65,6 +65,38 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.26 | 2025-07-12 | [62959](https://github.com/airbytehq/airbyte/pull/62959) | Update dependencies |
+| 1.1.25 | 2025-07-05 | [62758](https://github.com/airbytehq/airbyte/pull/62758) | Update dependencies |
+| 1.1.24 | 2025-06-28 | [62433](https://github.com/airbytehq/airbyte/pull/62433) | Update dependencies |
+| 1.1.23 | 2025-06-21 | [61967](https://github.com/airbytehq/airbyte/pull/61967) | Update dependencies |
+| 1.1.22 | 2025-06-14 | [61279](https://github.com/airbytehq/airbyte/pull/61279) | Update dependencies |
+| 1.1.21 | 2025-05-24 | [60353](https://github.com/airbytehq/airbyte/pull/60353) | Update dependencies |
+| 1.1.20 | 2025-05-10 | [60032](https://github.com/airbytehq/airbyte/pull/60032) | Update dependencies |
+| 1.1.19 | 2025-05-03 | [59408](https://github.com/airbytehq/airbyte/pull/59408) | Update dependencies |
+| 1.1.18 | 2025-04-26 | [58843](https://github.com/airbytehq/airbyte/pull/58843) | Update dependencies |
+| 1.1.17 | 2025-04-19 | [58297](https://github.com/airbytehq/airbyte/pull/58297) | Update dependencies |
+| 1.1.16 | 2025-04-12 | [57790](https://github.com/airbytehq/airbyte/pull/57790) | Update dependencies |
+| 1.1.15 | 2025-04-05 | [56570](https://github.com/airbytehq/airbyte/pull/56570) | Update dependencies |
+| 1.1.14 | 2025-03-22 | [56095](https://github.com/airbytehq/airbyte/pull/56095) | Update dependencies |
+| 1.1.13 | 2025-03-08 | [55405](https://github.com/airbytehq/airbyte/pull/55405) | Update dependencies |
+| 1.1.12 | 2025-03-01 | [54250](https://github.com/airbytehq/airbyte/pull/54250) | Update dependencies |
+| 1.1.11 | 2025-02-15 | [53932](https://github.com/airbytehq/airbyte/pull/53932) | Update dependencies |
+| 1.1.10 | 2025-02-08 | [53411](https://github.com/airbytehq/airbyte/pull/53411) | Update dependencies |
+| 1.1.9 | 2025-02-01 | [52933](https://github.com/airbytehq/airbyte/pull/52933) | Update dependencies |
+| 1.1.8 | 2025-01-25 | [52202](https://github.com/airbytehq/airbyte/pull/52202) | Update dependencies |
+| 1.1.7 | 2025-01-18 | [51709](https://github.com/airbytehq/airbyte/pull/51709) | Update dependencies |
+| 1.1.6 | 2025-01-11 | [51276](https://github.com/airbytehq/airbyte/pull/51276) | Update dependencies |
+| 1.1.5 | 2024-12-28 | [50503](https://github.com/airbytehq/airbyte/pull/50503) | Update dependencies |
+| 1.1.4 | 2024-12-21 | [50210](https://github.com/airbytehq/airbyte/pull/50210) | Update dependencies |
+| 1.1.3 | 2024-12-14 | [49563](https://github.com/airbytehq/airbyte/pull/49563) | Update dependencies |
+| 1.1.2 | 2024-12-12 | [48951](https://github.com/airbytehq/airbyte/pull/48951) | Update dependencies |
+| 1.1.1 | 2024-10-28 | [47637](https://github.com/airbytehq/airbyte/pull/47637) | Update dependencies |
+| 1.1.0 | 2024-08-19 | [44418](https://github.com/airbytehq/airbyte/pull/44418) | Refactor connector to manifest-only format |
+| 1.0.13 | 2024-08-17 | [44342](https://github.com/airbytehq/airbyte/pull/44342) | Update dependencies |
+| 1.0.12 | 2024-08-12 | [43847](https://github.com/airbytehq/airbyte/pull/43847) | Update dependencies |
+| 1.0.11 | 2024-08-10 | [43660](https://github.com/airbytehq/airbyte/pull/43660) | Update dependencies |
+| 1.0.10 | 2024-08-03 | [43231](https://github.com/airbytehq/airbyte/pull/43231) | Update dependencies |
+| 1.0.9 | 2024-07-27 | [42589](https://github.com/airbytehq/airbyte/pull/42589) | Update dependencies |
 | 1.0.8 | 2024-07-20 | [42349](https://github.com/airbytehq/airbyte/pull/42349) | Update dependencies |
 | 1.0.7 | 2024-07-13 | [41854](https://github.com/airbytehq/airbyte/pull/41854) | Update dependencies |
 | 1.0.6 | 2024-07-10 | [41259](https://github.com/airbytehq/airbyte/pull/41259) | Update dependencies |

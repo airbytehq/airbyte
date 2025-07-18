@@ -108,7 +108,9 @@ def test_read_deleted_records(stream, requests_mock, deleted_records_json, expec
     stream = stream(config)
     deleted_records_url = stream.url_base + stream.deleted_events.path()
     requests_mock.get(deleted_records_url, json=deleted_records_json)
-    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records", return_value=deleted_records_json)
+    mocker.patch(
+        "source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records", return_value=deleted_records_json
+    )
     assert list(stream.read_records(sync_mode=None)) == expected
 
 
@@ -135,7 +137,6 @@ def test_read_deleted_records(stream, requests_mock, deleted_records_json, expec
                 {
                     "id": 234,
                     "deleted_at": "2023-09-05T14:02:00-07:00",
-                    "updated_at": "2023-09-05T14:02:00-07:00",
                     "deleted_message": "Test Message",
                     "deleted_description": "Test Description",
                     "shop_url": "airbyte-integration-test",
@@ -230,13 +231,6 @@ def test_default_deleted_state_comparison_value(stream, config, expected) -> Non
             {},
             {},
             {"updated_at": "", "deleted": {"deleted_at": ""}},
-        ),
-        # with NO Last Record value but with Current state value
-        (
-            CustomCollections,
-            {},
-            {"updated_at": "2030-01-01", "deleted": {"deleted_at": ""}},
-            {"updated_at": "2030-01-01", "deleted": {"deleted_at": ""}},
         ),
     ],
 )

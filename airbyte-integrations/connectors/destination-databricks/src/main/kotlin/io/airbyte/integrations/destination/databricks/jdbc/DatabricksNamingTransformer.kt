@@ -40,7 +40,9 @@ class DatabricksNamingTransformer : NamingConventionTransformer {
     }
 
     override fun applyDefaultCase(input: String): String {
-        // Preserve casing as we are using quoted strings for all identifiers.
+        // Databricks preserves casing for column names.
+        // Object names (tables/schemas/catalogs) are downcased,
+        // which we handle in DatabricksSqlGenerator.
         return input
     }
 }

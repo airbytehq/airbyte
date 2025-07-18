@@ -1,0 +1,2086 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  FreshBooks connector  seamlessly syncs invoicing, expenses, and client data
+  from FreshBooks into data warehouses or analytics platforms. 
+
+check:
+  type: CheckStream
+  stream_names:
+    - user
+
+definitions:
+  streams:
+    user:
+      type: DeclarativeStream
+      name: user
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /auth/api/v1/users/me
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user"
+    clients:
+      type: DeclarativeStream
+      name: clients
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/account/{{ config["account_id"] }}/users/clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - clients
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+        - invoiceid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/account/{{ config['account_id'] }}/invoices/invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - invoices
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    expenses:
+      type: DeclarativeStream
+      name: expenses
+      primary_key:
+        - id
+        - expenseid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/account/{{ config['account_id'] }}/expenses/expenses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - expenses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expenses"
+    expense_summaries:
+      type: DeclarativeStream
+      name: expense_summaries
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/account/{{ config["account_id"] }}/expenses/summaries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - summaries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expense_summaries"
+    expense_categories:
+      type: DeclarativeStream
+      name: expense_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/account/{{ config["account_id"] }}/expenses/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expense_categories"
+    invoice_details:
+      type: DeclarativeStream
+      name: invoice_details
+      primary_key:
+        - invoiceid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /accounting/account/{{ config["account_id"]
+            }}/reports/accounting/invoice_details
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - invoice_details
+              - clients
+              - "*"
+              - invoices
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoice_details"
+    expense_details:
+      type: DeclarativeStream
+      name: expense_details
+      primary_key:
+        - expenseid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /accounting/account/{{ config['account_id']
+            }}/reports/accounting/expense_details
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - expense_details
+              - data
+              - "*"
+              - expenses
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expense_details"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /accounting/businesses/{{ config['business_uuid']
+            }}/ledger_accounts/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    taxes:
+      type: DeclarativeStream
+      name: taxes
+      primary_key:
+        - taxid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/account/{{ config["account_id"] }}/taxes/taxes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - result
+              - taxes
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.freshbooks.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body:
+        redirect_uri: "{{ config[\"redirect_uri\"] }}"
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - oauth_access_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+        refresh_token_config_path:
+          - client_refresh_token
+      token_refresh_endpoint: https://api.freshbooks.com/auth/oauth/token
+
+streams:
+  - $ref: "#/definitions/streams/user"
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/expenses"
+  - $ref: "#/definitions/streams/expense_summaries"
+  - $ref: "#/definitions/streams/expense_categories"
+  - $ref: "#/definitions/streams/invoice_details"
+  - $ref: "#/definitions/streams/expense_details"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/taxes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - redirect_uri
+      - account_id
+      - client_refresh_token
+      - business_uuid
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      redirect_uri:
+        type: string
+        order: 2
+        title: Redirect Uri
+        airbyte_secret: true
+      account_id:
+        type: string
+        order: 3
+        title: Account Id
+      client_refresh_token:
+        type: string
+        order: 4
+        title: Refresh token
+        airbyte_secret: true
+      oauth_access_token:
+        type: string
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        order: 5
+        title: Access token
+        airbyte_secret: true
+      oauth_token_expiry_date:
+        type: string
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        order: 6
+        title: Token expiry date
+        format: date-time
+      business_uuid:
+        type: string
+        order: 7
+        title: Business uuid
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    user: true
+    clients: true
+    invoices: true
+    expenses: true
+    expense_summaries: true
+    expense_categories: true
+    invoice_details: true
+    expense_details: true
+    accounts: true
+    taxes: true
+  testedStreams:
+    user:
+      hasRecords: true
+      streamHash: 084154685fd57ba95fed5b9a5e68c697a9a98fcc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    clients:
+      hasRecords: true
+      streamHash: 35e9f0487bda5713e6b688ebca713409e707eaf5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices:
+      hasRecords: true
+      streamHash: c583e59892652200fda6b7b0672278b0a859550d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    expenses:
+      hasRecords: true
+      streamHash: 2b5c12602f5d15f916ccbcb17749332488e7ff45
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    expense_summaries:
+      hasRecords: true
+      streamHash: 958e28c6ad13fef3a7ca192cce4d007217744dfa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    expense_categories:
+      hasRecords: true
+      streamHash: 175f129069e1b76a1aa4e4cc09c720b2432e58f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoice_details:
+      hasRecords: true
+      streamHash: b2ea5342d54bed63b89a45a85024677a999f5171
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    expense_details:
+      hasRecords: true
+      streamHash: 9b667c02b8aab2f4c21c39b4b7a8d7bc6377f78a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accounts:
+      hasRecords: true
+      streamHash: e393f445f6fa6f1161556aca19e5a9a4dd75bbf2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    taxes:
+      streamHash: 12b2752c45f9d92bcc1e51161a53bf54fa9962d2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.freshbooks.com/api/start
+
+schemas:
+  user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      response:
+        type:
+          - object
+          - "null"
+        properties:
+          addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+                - "null"
+          business_memberships:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                business:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    account_id:
+                      type:
+                        - string
+                        - "null"
+                    active:
+                      type:
+                        - boolean
+                        - "null"
+                    address:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        city:
+                          type:
+                            - string
+                            - "null"
+                        country:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - number
+                            - "null"
+                        postal_code:
+                          type:
+                            - string
+                            - "null"
+                        province:
+                          type:
+                            - string
+                            - "null"
+                        street:
+                          type:
+                            - string
+                            - "null"
+                        street2:
+                          type:
+                            - string
+                            - "null"
+                    advanced_accounting_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    business_clients:
+                      type:
+                        - array
+                        - "null"
+                    business_uuid:
+                      type:
+                        - string
+                        - "null"
+                    date_format:
+                      type:
+                        - string
+                        - "null"
+                    first_day_of_week:
+                      type:
+                        - number
+                        - "null"
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    industry:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    phone_number:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - number
+                            - "null"
+                        phone_number:
+                          type:
+                            - string
+                            - "null"
+                    status:
+                      type:
+                        - string
+                        - "null"
+                    timezone:
+                      type:
+                        - string
+                        - "null"
+                fasttrack_token:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                role:
+                  type:
+                    - string
+                    - "null"
+                unacknowledged_change:
+                  type:
+                    - boolean
+                    - "null"
+          business_statuses:
+            type:
+              - object
+              - "null"
+            properties:
+              YpZK5G:
+                type:
+                  - string
+                  - "null"
+          confirmed_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          groups:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                active:
+                  type:
+                    - boolean
+                    - "null"
+                business_id:
+                  type:
+                    - number
+                    - "null"
+                group_id:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                identity_id:
+                  type:
+                    - number
+                    - "null"
+                identity_uuid:
+                  type:
+                    - string
+                    - "null"
+                role:
+                  type:
+                    - string
+                    - "null"
+          id:
+            type:
+              - number
+              - "null"
+          identity_id:
+            type:
+              - number
+              - "null"
+          identity_origin:
+            type:
+              - string
+              - "null"
+          identity_uuid:
+            type:
+              - string
+              - "null"
+          integrations:
+            type:
+              - object
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              me:
+                type:
+                  - string
+                  - "null"
+              roles:
+                type:
+                  - string
+                  - "null"
+          permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              YpZK5G:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  BankReconciliation.access:
+                    type:
+                      - boolean
+                      - "null"
+                  BetaHeliosAsyncExpenses.access:
+                    type:
+                      - boolean
+                      - "null"
+                  accountant_partner.limit:
+                    type:
+                      - number
+                      - "null"
+                  accounting_reports_v2_general_ledger.access:
+                    type:
+                      - boolean
+                      - "null"
+                  accounts_payable.access:
+                    type:
+                      - boolean
+                      - "null"
+                  accounts_payable_beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  accounts_payable_reports.access:
+                    type:
+                      - boolean
+                      - "null"
+                  acss_direct_debit.access:
+                    type:
+                      - boolean
+                      - "null"
+                  advanced_accounting.access:
+                    type:
+                      - boolean
+                      - "null"
+                  andromeda_manual_mileage_tracking.access:
+                    type:
+                      - boolean
+                      - "null"
+                  andromeda_mileage_tracker.dev.access:
+                    type:
+                      - boolean
+                      - "null"
+                  attachments.access:
+                    type:
+                      - boolean
+                      - "null"
+                  audit_log.access:
+                    type:
+                      - boolean
+                      - "null"
+                  audit_log_backend.access:
+                    type:
+                      - boolean
+                      - "null"
+                  audit_log_expense.access:
+                    type:
+                      - boolean
+                      - "null"
+                  auto_bank_import.access:
+                    type:
+                      - boolean
+                      - "null"
+                  bacs_direct_debit.access:
+                    type:
+                      - boolean
+                      - "null"
+                  bacs_direct_debit_mandate.access:
+                    type:
+                      - boolean
+                      - "null"
+                  bacs_fee_cap.limit:
+                    type:
+                      - number
+                      - "null"
+                  bank_import_failure_notifications.access:
+                    type:
+                      - boolean
+                      - "null"
+                  bank_rec_smart_match.access:
+                    type:
+                      - boolean
+                      - "null"
+                  beta_mobile_create_expense_subcategory.access:
+                    type:
+                      - boolean
+                      - "null"
+                  bill_payment_reconciliation.access:
+                    type:
+                      - boolean
+                      - "null"
+                  business_accountant.limit:
+                    type:
+                      - number
+                      - "null"
+                  cardapp_new_payment_methods.access:
+                    type:
+                      - boolean
+                      - "null"
+                  client.limit:
+                    type:
+                      - number
+                      - "null"
+                  core_data_from_es.access:
+                    type:
+                      - boolean
+                      - "null"
+                  credit_notes_payment_method.access:
+                    type:
+                      - boolean
+                      - "null"
+                  credit_reconciliation.access:
+                    type:
+                      - boolean
+                      - "null"
+                  customizable_dashboard.access:
+                    type:
+                      - boolean
+                      - "null"
+                  display_credits_plan_summary.access:
+                    type:
+                      - boolean
+                      - "null"
+                  documents_ocr.access:
+                    type:
+                      - boolean
+                      - "null"
+                  documents_ocr_bill.access:
+                    type:
+                      - boolean
+                      - "null"
+                  documents_ocr_bill_complete.access:
+                    type:
+                      - boolean
+                      - "null"
+                  documents_ocr_bill_plan.access:
+                    type:
+                      - boolean
+                      - "null"
+                  documents_ocr_complete_plan.access:
+                    type:
+                      - boolean
+                      - "null"
+                  documents_ocr_match_expenses.access:
+                    type:
+                      - boolean
+                      - "null"
+                  documents_ocr_plan.access:
+                    type:
+                      - boolean
+                      - "null"
+                  email_verification_with_code_page.access:
+                    type:
+                      - boolean
+                      - "null"
+                  emails_page.access:
+                    type:
+                      - boolean
+                      - "null"
+                  embedded_payroll.access:
+                    type:
+                      - boolean
+                      - "null"
+                  embedded_payroll_journal_entries.access:
+                    type:
+                      - boolean
+                      - "null"
+                  enhanced_project_client_typeahead.access:
+                    type:
+                      - boolean
+                      - "null"
+                  es_migrations.access:
+                    type:
+                      - boolean
+                      - "null"
+                  estimate_convert_to_project.access:
+                    type:
+                      - boolean
+                      - "null"
+                  fiscal_year.access:
+                    type:
+                      - boolean
+                      - "null"
+                  flexcoa_advanced_accounting.access:
+                    type:
+                      - boolean
+                      - "null"
+                  flexcoa_beta_rollout.access:
+                    type:
+                      - boolean
+                      - "null"
+                  flexible_chart_of_accounts.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_bulk_actions_invoices.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_company_taxes.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_dashboard.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_expense_rebilling.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_invoice_archive.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_late_fee_reminder.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_manual_mileage_tracking.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_push_resource_to_use_execute.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_pushnotifications.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_rebill_time.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_remote_search.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_stripe_virtual_terminal.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_sync_throttle.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_virtual_terminal.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_virtual_terminal_advertising.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  helios_virtual_terminal_tutorial.beta.access:
+                    type:
+                      - boolean
+                      - "null"
+                  historical_payroll_minimum.access:
+                    type:
+                      - boolean
+                      - "null"
+                  improved_bank_transfer_education_for_clients.access:
+                    type:
+                      - boolean
+                      - "null"
+                  invoice_pdf_email.access:
+                    type:
+                      - boolean
+                      - "null"
+                  ios_beta_payment_schedules.access:
+                    type:
+                      - boolean
+                      - "null"
+                  ios_beta_zendesk_widget.access:
+                    type:
+                      - boolean
+                      - "null"
+                  latest_released_api_version.access:
+                    type:
+                      - boolean
+                      - "null"
+                  launchpad_cards_version.access:
+                    type:
+                      - boolean
+                      - "null"
+                  launchpad_cards_version_with_personalization.access:
+                    type:
+                      - boolean
+                      - "null"
+                  limit_add_businesses.access:
+                    type:
+                      - boolean
+                      - "null"
+                  manual_journal_entries_feature.access:
+                    type:
+                      - boolean
+                      - "null"
+                  metapane_payment_methods_improvement.access:
+                    type:
+                      - boolean
+                      - "null"
+                  mobile_receipt_rebilling.access:
+                    type:
+                      - boolean
+                      - "null"
+                  modern_friendbuy.access:
+                    type:
+                      - boolean
+                      - "null"
+                  mtd_enhancements.access:
+                    type:
+                      - boolean
+                      - "null"
+                  new_payments_page:
+                    type:
+                      - boolean
+                      - "null"
+                  new_setup_quiz.access:
+                    type:
+                      - boolean
+                      - "null"
+                  no_seat_employee.access:
+                    type:
+                      - boolean
+                      - "null"
+                  opus_items_services_page.access:
+                    type:
+                      - boolean
+                      - "null"
+                  opus_my_team_page.access:
+                    type:
+                      - boolean
+                      - "null"
+                  outstanding_invoices_summary.access:
+                    type:
+                      - boolean
+                      - "null"
+                  partial_payments.access:
+                    type:
+                      - boolean
+                      - "null"
+                  payment_links.access:
+                    type:
+                      - boolean
+                      - "null"
+                  payments_withdrawal_report.access:
+                    type:
+                      - boolean
+                      - "null"
+                  paypal_gateway.access:
+                    type:
+                      - boolean
+                      - "null"
+                  paypal_tiered_pricing.access:
+                    type:
+                      - boolean
+                      - "null"
+                  payroll_notifications.access:
+                    type:
+                      - boolean
+                      - "null"
+                  payroll_user_invite.access:
+                    type:
+                      - boolean
+                      - "null"
+                  plaid_integration.access:
+                    type:
+                      - boolean
+                      - "null"
+                  premium_contractor_role.access:
+                    type:
+                      - boolean
+                      - "null"
+                  project_line_items.access:
+                    type:
+                      - boolean
+                      - "null"
+                  project_profitability.access:
+                    type:
+                      - boolean
+                      - "null"
+                  project_service_estimates.access:
+                    type:
+                      - boolean
+                      - "null"
+                  project_widget_updates.access:
+                    type:
+                      - boolean
+                      - "null"
+                  proposals_candidate.access:
+                    type:
+                      - boolean
+                      - "null"
+                  recurring_ach.access:
+                    type:
+                      - boolean
+                      - "null"
+                  recurring_paypal.access:
+                    type:
+                      - boolean
+                      - "null"
+                  recurring_revenue_monarch_updates.access:
+                    type:
+                      - boolean
+                      - "null"
+                  refunds.access:
+                    type:
+                      - boolean
+                      - "null"
+                  retained_earnings.access:
+                    type:
+                      - boolean
+                      - "null"
+                  retainers.limit:
+                    type:
+                      - number
+                      - "null"
+                  retainers_feature.access:
+                    type:
+                      - boolean
+                      - "null"
+                  rich_proposals.access:
+                    type:
+                      - boolean
+                      - "null"
+                  rounded_time_tracking.access:
+                    type:
+                      - boolean
+                      - "null"
+                  sales_managed_receipt.access:
+                    type:
+                      - boolean
+                      - "null"
+                  saltedge_integration.access:
+                    type:
+                      - boolean
+                      - "null"
+                  save_emails.access:
+                    type:
+                      - boolean
+                      - "null"
+                  scopes_ui_phase1.access:
+                    type:
+                      - boolean
+                      - "null"
+                  sepa_direct_debit.access:
+                    type:
+                      - boolean
+                      - "null"
+                  sepa_direct_debit_mandate.access:
+                    type:
+                      - boolean
+                      - "null"
+                  sepa_fee_cap.limit:
+                    type:
+                      - number
+                      - "null"
+                  solvvy_support_chat.access:
+                    type:
+                      - boolean
+                      - "null"
+                  staff.limit:
+                    type:
+                      - number
+                      - "null"
+                  stripe_ach.access:
+                    type:
+                      - boolean
+                      - "null"
+                  stripe_advanced_payments.access:
+                    type:
+                      - boolean
+                      - "null"
+                  stripe_payments_intent.access:
+                    type:
+                      - boolean
+                      - "null"
+                  stripe_unified_account.access:
+                    type:
+                      - boolean
+                      - "null"
+                  team_members.access:
+                    type:
+                      - boolean
+                      - "null"
+                  team_utilization_report.access:
+                    type:
+                      - boolean
+                      - "null"
+                  ted_report_refactor.access:
+                    type:
+                      - boolean
+                      - "null"
+                  time_entry_billed_amount.access:
+                    type:
+                      - boolean
+                      - "null"
+                  time_zone_enhancement.access:
+                    type:
+                      - boolean
+                      - "null"
+                  wepay_kyc_redirect.access:
+                    type:
+                      - boolean
+                      - "null"
+                  yodlee_fastlink_upgrade.access:
+                    type:
+                      - boolean
+                      - "null"
+          phone_numbers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                title:
+                  type:
+                    - string
+                    - "null"
+          profile:
+            type:
+              - object
+              - "null"
+            properties:
+              first_name:
+                type:
+                  - string
+                  - "null"
+              has_password:
+                type:
+                  - boolean
+                  - "null"
+              is_email_confirmed:
+                type:
+                  - boolean
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              professions:
+                type:
+                  - array
+                  - "null"
+              setup_complete:
+                type:
+                  - boolean
+                  - "null"
+              time_format:
+                type:
+                  - number
+                  - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+          roles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                accountid:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    destroy:
+                      type:
+                        - string
+                        - "null"
+                role:
+                  type:
+                    - string
+                    - "null"
+                systemid:
+                  type:
+                    - number
+                    - "null"
+                userid:
+                  type:
+                    - number
+                    - "null"
+          setup_complete:
+            type:
+              - boolean
+              - "null"
+          subscription_statuses:
+            type:
+              - object
+              - "null"
+            properties:
+              YpZK5G:
+                type:
+                  - string
+                  - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+  clients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accounting_systemid:
+        type:
+          - string
+          - "null"
+      allow_email_include_pdf:
+        type:
+          - boolean
+          - "null"
+      allow_late_fees:
+        type:
+          - boolean
+          - "null"
+      allow_late_notifications:
+        type:
+          - boolean
+          - "null"
+      bus_phone:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      exceeds_client_limit:
+        type:
+          - number
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      fname:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      level:
+        type:
+          - number
+          - "null"
+      lname:
+        type:
+          - string
+          - "null"
+      mob_phone:
+        type:
+          - string
+          - "null"
+      notified:
+        type:
+          - boolean
+          - "null"
+      num_logins:
+        type:
+          - number
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      p_city:
+        type:
+          - string
+          - "null"
+      p_code:
+        type:
+          - string
+          - "null"
+      p_country:
+        type:
+          - string
+          - "null"
+      p_province:
+        type:
+          - string
+          - "null"
+      p_street:
+        type:
+          - string
+          - "null"
+      p_street2:
+        type:
+          - string
+          - "null"
+      pref_email:
+        type:
+          - boolean
+          - "null"
+      pref_gmail:
+        type:
+          - boolean
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      s_city:
+        type:
+          - string
+          - "null"
+      s_code:
+        type:
+          - string
+          - "null"
+      s_country:
+        type:
+          - string
+          - "null"
+      s_province:
+        type:
+          - string
+          - "null"
+      s_street:
+        type:
+          - string
+          - "null"
+      s_street2:
+        type:
+          - string
+          - "null"
+      signup_date:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      userid:
+        type:
+          - number
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+      vis_state:
+        type:
+          - number
+          - "null"
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  expenses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      account_name:
+        type:
+          - string
+          - "null"
+      accounting_systemid:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      bank_name:
+        type:
+          - string
+          - "null"
+      bill_matches:
+        type:
+          - array
+          - "null"
+      billable:
+        type:
+          - boolean
+          - "null"
+      categoryid:
+        type:
+          - number
+          - "null"
+      clientid:
+        type:
+          - number
+          - "null"
+      compounded_tax:
+        type:
+          - boolean
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      expenseid:
+        type: number
+      ext_invoiceid:
+        type:
+          - number
+          - "null"
+      ext_systemid:
+        type:
+          - number
+          - "null"
+      from_bulk_import:
+        type:
+          - boolean
+          - "null"
+      has_receipt:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      include_receipt:
+        type:
+          - boolean
+          - "null"
+      is_cogs:
+        type:
+          - boolean
+          - "null"
+      isduplicate:
+        type:
+          - boolean
+          - "null"
+      markup_percent:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      potential_bill_payment:
+        type:
+          - boolean
+          - "null"
+      projectid:
+        type:
+          - number
+          - "null"
+      staffid:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      vis_state:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - expenseid
+  expense_summaries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amounts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - string
+                - "null"
+            code:
+              type:
+                - string
+                - "null"
+            count:
+              type:
+                - number
+                - "null"
+      counts:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+  expense_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - string
+          - "null"
+      categoryid:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_cogs:
+        type:
+          - boolean
+          - "null"
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      parentid:
+        type:
+          - number
+          - "null"
+      transaction_posted:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      vis_state:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  invoice_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      create_date:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      discount_total:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      due_offset_days:
+        type:
+          - number
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      invoiceid:
+        type: number
+      lines:
+        type:
+          - array
+          - "null"
+      outstanding:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      paid:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      subtotal:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      tax:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      tax_summaries:
+        type:
+          - array
+          - "null"
+      total:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      v3_status:
+        type:
+          - string
+          - "null"
+    required:
+      - invoiceid
+  expense_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_name:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      authorid:
+        type:
+          - string
+          - "null"
+      categoryid:
+        type:
+          - string
+          - "null"
+      clientid:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      expenseid:
+        type: number
+      imported_from_csv:
+        type:
+          - boolean
+          - "null"
+      is_cogs:
+        type:
+          - boolean
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      taxAmount1:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      taxAmount2:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      vendor:
+        type:
+          - string
+          - "null"
+      vendorid:
+        type:
+          - string
+          - "null"
+    required:
+      - expenseid
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            auto_created:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            number:
+              type:
+                - string
+                - "null"
+            parent_account:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            sub_accounts:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            sub_type:
+              type:
+                - string
+                - "null"
+            system_account_name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            uuid:
+              type:
+                - string
+                - "null"
+  taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accounting_systemid:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      compound:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      taxid:
+        type: number
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - taxid

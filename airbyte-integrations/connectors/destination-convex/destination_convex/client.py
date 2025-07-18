@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping
 
 import requests
+
 from destination_convex.config import ConvexConfig
 
 
@@ -59,5 +60,6 @@ class ConvexClient:
         response = requests.request(method=http_method, url=url, headers=headers, json=json)
 
         if response.status_code != 200:
-            raise Exception(f"Request to {url} failed with: {response.status_code}: {response.json()}")
+            raise Exception(f"Request to `{url}` failed with status code {response.status_code}: {response.text}")
+
         return response

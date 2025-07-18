@@ -1,0 +1,90 @@
+{
+  "streams": [
+    {
+      "name": "sites",
+      "relations": {}
+    },
+    {
+      "name": "sitemaps",
+      "relations": {}
+    },
+    {
+      "name": "search_analytics_by_country",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_by_device",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_by_date",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_by_query",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_by_page",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_all_fields",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_keyword_page_report",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_page_report",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_site_report_by_site",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_site_report_by_page",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_keyword_site_report_by_page",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "search_analytics_keyword_site_report_by_site",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    },
+    {
+      "name": "custom_dimensions",
+      "relations": {
+        "site_url": "sites.siteUrl"
+      }
+    }
+  ]
+}

@@ -7,6 +7,8 @@ from typing import Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
+
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -18,13 +20,13 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, NOW, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import error_reduce_amount_of_data_response, get_account_response
 from .utils import config, read_output
+
 
 _STREAM_NAME = "videos"
 _CURSOR_FIELD = "updated_time"
@@ -96,7 +98,7 @@ class TestFullRefresh(TestCase):
             stream_name=_STREAM_NAME,
             sync_mode=SyncMode.full_refresh,
             expecting_exception=expecting_exception,
-            json_schema=json_schema
+            json_schema=json_schema,
         )
 
     @HttpMocker()
@@ -244,7 +246,9 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id]))
-        cursor_value_from_state_message = output.most_recent_state.stream_state.dict().get(account_id, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_message = (
+            AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
+        )
         assert cursor_value_from_state_message == max_cursor_value
 
     @HttpMocker()
@@ -276,8 +280,12 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id_1, account_id_2]))
-        cursor_value_from_state_account_1 = output.most_recent_state.stream_state.dict().get(account_id_1, {}).get(_CURSOR_FIELD)
-        cursor_value_from_state_account_2 = output.most_recent_state.stream_state.dict().get(account_id_2, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_account_1 = (
+            AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id_1, {}).get(_CURSOR_FIELD)
+        )
+        cursor_value_from_state_account_2 = (
+            AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id_2, {}).get(_CURSOR_FIELD)
+        )
         assert cursor_value_from_state_account_1 == max_cursor_value_account_id_1
         assert cursor_value_from_state_account_2 == max_cursor_value_account_id_2
 

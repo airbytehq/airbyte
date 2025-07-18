@@ -35,8 +35,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
 
   @Override
   public AirbyteMessage toAirbyteMessage(ChangeEventWithMetadata event) {
-    final JsonNode debeziumEventKey = event.eventKeyAsJson();
-    final JsonNode debeziumEvent = event.eventValueAsJson();
+    final JsonNode debeziumEventKey = event.getEventKeyAsJson();
+    final JsonNode debeziumEvent = event.getEventValueAsJson();
     final JsonNode before = debeziumEvent.get(DebeziumEventConverter.BEFORE_EVENT);
     final JsonNode after = debeziumEvent.get(DebeziumEventConverter.AFTER_EVENT);
     final JsonNode source = debeziumEvent.get(DebeziumEventConverter.SOURCE_EVENT);

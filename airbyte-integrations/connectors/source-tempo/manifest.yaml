@@ -1,0 +1,1097 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - workload-schemes
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.tempo.io/4/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: accounts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 403
+                    action: IGNORE
+              - type: DefaultErrorHandler
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            category:
+              type: object
+              properties:
+                type:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                id:
+                  type: integer
+                key:
+                  type: string
+                name:
+                  type: string
+                self:
+                  type: string
+            contact:
+              type: object
+              properties:
+                type:
+                  type: string
+                accountId:
+                  type: string
+                self:
+                  type: string
+            customer:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type: integer
+                key:
+                  type: string
+                name:
+                  type: string
+                self:
+                  type: string
+            global:
+              type: boolean
+            id:
+              type: integer
+            key:
+              type: string
+            lead:
+              type: object
+              properties:
+                accountId:
+                  type: string
+                self:
+                  type:
+                    - "null"
+                    - string
+            links:
+              type: object
+              properties:
+                self:
+                  type: string
+            monthlyBudget:
+              type:
+                - "null"
+                - integer
+            name:
+              type: string
+            self:
+              type: string
+            status:
+              type: string
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.tempo.io/4/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: customers
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 403
+                    action: IGNORE
+              - type: DefaultErrorHandler
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            id:
+              type: integer
+            key:
+              type: string
+            name:
+              type: string
+            self:
+              type: string
+    worklogs:
+      type: DeclarativeStream
+      name: worklogs
+      primary_key:
+        - tempoWorklogId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.tempo.io/4/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: worklogs
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 403
+                    action: IGNORE
+              - type: DefaultErrorHandler
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: startDate
+        name: worklogs
+        path: worklogs
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2020-01-01"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1W
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            attributes:
+              type: object
+              description: Additional attribute of the worklog
+              properties:
+                self:
+                  type: string
+                values:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: object
+                    properties:
+                      key:
+                        type: string
+                      value:
+                        type:
+                          - "null"
+                          - string
+              readOnly: true
+            author:
+              type: object
+              description: Author of the worklog
+              properties:
+                accountId:
+                  type: string
+                self:
+                  type:
+                    - "null"
+                    - string
+              readOnly: true
+            billableSeconds:
+              type:
+                - "null"
+                - integer
+              description: Billable time spent working
+            createdAt:
+              type: string
+              description: Created at date of the worklog
+              readOnly: true
+            description:
+              type:
+                - "null"
+                - string
+              description: Description of the worklog
+              readOnly: true
+            issue:
+              type: object
+              description: Details of the issue
+              properties:
+                id:
+                  type: integer
+                self:
+                  type: string
+              readOnly: true
+            self:
+              type: string
+              description: The URL of the worklog
+              format: uri
+              readOnly: true
+            startDate:
+              type: string
+              description: Start Date of the worklog
+              readOnly: true
+            startTime:
+              type:
+                - "null"
+                - string
+              description: Start time of the worklog
+              readOnly: true
+            tempoWorklogId:
+              type: integer
+              description: The ID of the tempo worklog.
+              readOnly: true
+            timeSpentSeconds:
+              type: integer
+              description: Time spend in seconds of the worklog
+              readOnly: true
+            updatedAt:
+              type: string
+              description: Updated at date of the worklog
+              readOnly: true
+    workload-schemes:
+      type: DeclarativeStream
+      name: workload-schemes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.tempo.io/4/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_token'] }}"
+          path: workload-schemes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 403
+                    action: IGNORE
+              - type: DefaultErrorHandler
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response['metadata']['next'] }}"
+            stop_condition: "{{ 'next' not in response['metadata'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            days:
+              type: array
+              description: The days of the tempo Workload Scheme.
+              items:
+                type: object
+                properties:
+                  day:
+                    type: string
+                  requiredSeconds:
+                    type: integer
+              readOnly: true
+            defaultScheme:
+              type: boolean
+              description: The defaultScheme of the tempo Workload Scheme.
+              readOnly: true
+            description:
+              type: string
+              description: The description of the tempo Workload Scheme.
+              readOnly: true
+            id:
+              type: integer
+              description: The ID of the tempo Workload Scheme.
+              readOnly: true
+            memberCount:
+              type: integer
+              description: The memberCount of the tempo Workload Scheme.
+              readOnly: true
+            name:
+              type: string
+              description: The name of the tempo Workload Scheme.
+              readOnly: true
+            self:
+              type: string
+              description: The URL of the Workload Scheme
+              format: uri
+              readOnly: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.tempo.io/4/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_token'] }}"
+streams:
+  - type: DeclarativeStream
+    name: accounts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.tempo.io/4/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: accounts
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes:
+                    - 403
+                  action: IGNORE
+            - type: DefaultErrorHandler
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: "{{ response['metadata']['next'] }}"
+          stop_condition: "{{ 'next' not in response['metadata'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          category:
+            type: object
+            properties:
+              type:
+                type: object
+                properties:
+                  name:
+                    type: string
+              id:
+                type: integer
+              key:
+                type: string
+              name:
+                type: string
+              self:
+                type: string
+          contact:
+            type: object
+            properties:
+              type:
+                type: string
+              accountId:
+                type: string
+              self:
+                type: string
+          customer:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type: integer
+              key:
+                type: string
+              name:
+                type: string
+              self:
+                type: string
+          global:
+            type: boolean
+          id:
+            type: integer
+          key:
+            type: string
+          lead:
+            type: object
+            properties:
+              accountId:
+                type: string
+              self:
+                type:
+                  - "null"
+                  - string
+          links:
+            type: object
+            properties:
+              self:
+                type: string
+          monthlyBudget:
+            type:
+              - "null"
+              - integer
+          name:
+            type: string
+          self:
+            type: string
+          status:
+            type: string
+  - type: DeclarativeStream
+    name: customers
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.tempo.io/4/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: customers
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes:
+                    - 403
+                  action: IGNORE
+            - type: DefaultErrorHandler
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: "{{ response['metadata']['next'] }}"
+          stop_condition: "{{ 'next' not in response['metadata'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          key:
+            type: string
+          name:
+            type: string
+          self:
+            type: string
+  - type: DeclarativeStream
+    name: worklogs
+    primary_key:
+      - tempoWorklogId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.tempo.io/4/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: worklogs
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes:
+                    - 403
+                  action: IGNORE
+            - type: DefaultErrorHandler
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: "{{ response['metadata']['next'] }}"
+          stop_condition: "{{ 'next' not in response['metadata'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: startDate
+      name: worklogs
+      path: worklogs
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2020-01-01"
+        datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1W
+      cursor_granularity: P1D
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          attributes:
+            type: object
+            description: Additional attribute of the worklog
+            properties:
+              self:
+                type: string
+              values:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                    value:
+                      type:
+                        - "null"
+                        - string
+            readOnly: true
+          author:
+            type: object
+            description: Author of the worklog
+            properties:
+              accountId:
+                type: string
+              self:
+                type:
+                  - "null"
+                  - string
+            readOnly: true
+          billableSeconds:
+            type:
+              - "null"
+              - integer
+            description: Billable time spent working
+          createdAt:
+            type: string
+            description: Created at date of the worklog
+            readOnly: true
+          description:
+            type:
+              - "null"
+              - string
+            description: Description of the worklog
+            readOnly: true
+          issue:
+            type: object
+            description: Details of the issue
+            properties:
+              id:
+                type: integer
+              self:
+                type: string
+            readOnly: true
+          self:
+            type: string
+            description: The URL of the worklog
+            format: uri
+            readOnly: true
+          startDate:
+            type: string
+            description: Start Date of the worklog
+            readOnly: true
+          startTime:
+            type:
+              - "null"
+              - string
+            description: Start time of the worklog
+            readOnly: true
+          tempoWorklogId:
+            type: integer
+            description: The ID of the tempo worklog.
+            readOnly: true
+          timeSpentSeconds:
+            type: integer
+            description: Time spend in seconds of the worklog
+            readOnly: true
+          updatedAt:
+            type: string
+            description: Updated at date of the worklog
+            readOnly: true
+  - type: DeclarativeStream
+    name: workload-schemes
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.tempo.io/4/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: workload-schemes
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes:
+                    - 403
+                  action: IGNORE
+            - type: DefaultErrorHandler
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: "{{ response['metadata']['next'] }}"
+          stop_condition: "{{ 'next' not in response['metadata'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          days:
+            type: array
+            description: The days of the tempo Workload Scheme.
+            items:
+              type: object
+              properties:
+                day:
+                  type: string
+                requiredSeconds:
+                  type: integer
+            readOnly: true
+          defaultScheme:
+            type: boolean
+            description: The defaultScheme of the tempo Workload Scheme.
+            readOnly: true
+          description:
+            type: string
+            description: The description of the tempo Workload Scheme.
+            readOnly: true
+          id:
+            type: integer
+            description: The ID of the tempo Workload Scheme.
+            readOnly: true
+          memberCount:
+            type: integer
+            description: The memberCount of the tempo Workload Scheme.
+            readOnly: true
+          name:
+            type: string
+            description: The name of the tempo Workload Scheme.
+            readOnly: true
+          self:
+            type: string
+            description: The URL of the Workload Scheme
+            format: uri
+            readOnly: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        title: API token
+        description: >-
+          Tempo API Token. Go to Tempo>Settings, scroll down to Data Access and
+          select API integration.
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    accounts: false
+    customers: false
+    worklogs: false
+    workload-schemes: false
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type: object
+        properties:
+          type:
+            type: object
+            properties:
+              name:
+                type: string
+          id:
+            type: integer
+          key:
+            type: string
+          name:
+            type: string
+          self:
+            type: string
+      contact:
+        type: object
+        properties:
+          type:
+            type: string
+          accountId:
+            type: string
+          self:
+            type: string
+      customer:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type: integer
+          key:
+            type: string
+          name:
+            type: string
+          self:
+            type: string
+      global:
+        type: boolean
+      id:
+        type: integer
+      key:
+        type: string
+      lead:
+        type: object
+        properties:
+          accountId:
+            type: string
+          self:
+            type:
+              - "null"
+              - string
+      links:
+        type: object
+        properties:
+          self:
+            type: string
+      monthlyBudget:
+        type:
+          - "null"
+          - integer
+      name:
+        type: string
+      self:
+        type: string
+      status:
+        type: string
+  customers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      key:
+        type: string
+      name:
+        type: string
+      self:
+        type: string
+  worklogs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type: object
+        description: Additional attribute of the worklog
+        properties:
+          self:
+            type: string
+          values:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                key:
+                  type: string
+                value:
+                  type:
+                    - "null"
+                    - string
+        readOnly: true
+      author:
+        type: object
+        description: Author of the worklog
+        properties:
+          accountId:
+            type: string
+          self:
+            type:
+              - "null"
+              - string
+        readOnly: true
+      billableSeconds:
+        type:
+          - "null"
+          - integer
+        description: Billable time spent working
+      createdAt:
+        type: string
+        description: Created at date of the worklog
+        readOnly: true
+      description:
+        type:
+          - "null"
+          - string
+        description: Description of the worklog
+        readOnly: true
+      issue:
+        type: object
+        description: Details of the issue
+        properties:
+          id:
+            type: integer
+          self:
+            type: string
+        readOnly: true
+      self:
+        type: string
+        description: The URL of the worklog
+        format: uri
+        readOnly: true
+      startDate:
+        type: string
+        description: Start Date of the worklog
+        readOnly: true
+      startTime:
+        type:
+          - "null"
+          - string
+        description: Start time of the worklog
+        readOnly: true
+      tempoWorklogId:
+        type: integer
+        description: The ID of the tempo worklog.
+        readOnly: true
+      timeSpentSeconds:
+        type: integer
+        description: Time spend in seconds of the worklog
+        readOnly: true
+      updatedAt:
+        type: string
+        description: Updated at date of the worklog
+        readOnly: true
+  workload-schemes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      days:
+        type: array
+        description: The days of the tempo Workload Scheme.
+        items:
+          type: object
+          properties:
+            day:
+              type: string
+            requiredSeconds:
+              type: integer
+        readOnly: true
+      defaultScheme:
+        type: boolean
+        description: The defaultScheme of the tempo Workload Scheme.
+        readOnly: true
+      description:
+        type: string
+        description: The description of the tempo Workload Scheme.
+        readOnly: true
+      id:
+        type: integer
+        description: The ID of the tempo Workload Scheme.
+        readOnly: true
+      memberCount:
+        type: integer
+        description: The memberCount of the tempo Workload Scheme.
+        readOnly: true
+      name:
+        type: string
+        description: The name of the tempo Workload Scheme.
+        readOnly: true
+      self:
+        type: string
+        description: The URL of the Workload Scheme
+        format: uri
+        readOnly: true

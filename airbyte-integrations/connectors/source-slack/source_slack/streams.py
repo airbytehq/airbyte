@@ -8,12 +8,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+from pendulum import DateTime
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from pendulum import DateTime
 from source_slack.components.slack_backoff_strategy import SlackBackoffStrategy
 
 from .components.join_channels import JoinChannelsStream
@@ -105,6 +106,7 @@ class ChanneledStream(SlackStream, ABC):
 
 class Channels(ChanneledStream):
     data_field = "channels"
+    is_resumable = False
 
     @property
     def use_cache(self) -> bool:
@@ -144,7 +146,7 @@ class Channels(ChanneledStream):
 
 
 # Incremental Streams
-class IncrementalMessageStream(CheckpointMixin, ChanneledStream, ABC):
+class IncrementalMessageStream(ChanneledStream, CheckpointMixin, ABC):
     data_field = "messages"
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
@@ -230,6 +232,8 @@ class ChannelMessages(HttpSubStream, IncrementalMessageStream):
 
 
 class Threads(IncrementalMessageStream):
+    is_resumable = False
+
     def __init__(self, lookback_window: Mapping[str, int], **kwargs):
         self.messages_lookback_window = lookback_window
         super().__init__(**kwargs)

@@ -10,9 +10,11 @@ from typing import Any
 
 import backoff
 import pendulum
+from facebook_business.exceptions import FacebookRequestError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookRequestError
+
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
@@ -69,7 +71,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             # reduce the existing request `limit` param by a half and retry
             details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
             # set the flag to the api class that the last api call failed
-            details.get("args")[0].last_api_call_is_successfull = False
+            details.get("args")[0].last_api_call_is_successful = True
             # set the flag to the api class that the `limit` param was reduced
             details.get("args")[0].request_record_limit_is_reduced = True
 
@@ -81,7 +83,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         """
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
         # set the flag to the api class that the last api call was successful
-        details.get("args")[0].last_api_call_is_successfull = True
+        details.get("args")[0].last_api_call_is_successful = False
         # set the flag to the api class that the `limit` param is restored
         details.get("args")[0].request_record_limit_is_reduced = False
 
@@ -181,7 +183,15 @@ def traced_exception(fb_exception: FacebookRequestError):
                 "Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh "
                 "access token with all required permissions."
             )
-
+    elif "reduce the amount of data" in msg:
+        failure_type = FailureType.config_error
+        friendly_msg = (
+            "Please reduce the number of fields requested. Go to the schema tab, select your source, "
+            "and unselect the fields you do not need."
+        )
+    elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
+        failure_type = FailureType.config_error
+        friendly_msg = "Please set the start date of your sync to be within the last 3 years."
     elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
         return AirbyteTracedException(
             message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",

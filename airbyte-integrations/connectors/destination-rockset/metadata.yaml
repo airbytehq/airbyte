@@ -7,7 +7,7 @@ data:
   githubIssueLabel: destination-rockset
   license: MIT
   name: Rockset
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

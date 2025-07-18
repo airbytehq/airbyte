@@ -4,8 +4,8 @@
 
 The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
-- [Airbyte Quickstart: An Introduction to Deploying and Syncing](../../using-airbyte/getting-started/readme.md)
-- [Airbyte CDK Speedrun: A Quick Primer on Building Source Connectors](../../connector-development/tutorials/cdk-speedrun.md)
+- [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
+- [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
 - [How to Build ETL Sources in Under 30 Minutes: A Video Tutorial](https://www.youtube.com/watch?v=kJ3hLoNfz_E&t=13s&ab_channel=Airbyte)
 
 ## Features
@@ -39,6 +39,43 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.30 | 2025-07-12 | [63262](https://github.com/airbytehq/airbyte/pull/63262) | Update dependencies |
+| 0.3.29 | 2025-07-05 | [62562](https://github.com/airbytehq/airbyte/pull/62562) | Update dependencies |
+| 0.3.28 | 2025-06-28 | [62408](https://github.com/airbytehq/airbyte/pull/62408) | Update dependencies |
+| 0.3.27 | 2025-06-26 | [62103](https://github.com/airbytehq/airbyte/pull/62103) | Fix `nidoran` names |
+| 0.3.26 | 2025-06-21 | [61935](https://github.com/airbytehq/airbyte/pull/61935) | Update dependencies |
+| 0.3.25 | 2025-06-14 | [61063](https://github.com/airbytehq/airbyte/pull/61063) | Update dependencies |
+| 0.3.24 | 2025-05-24 | [60437](https://github.com/airbytehq/airbyte/pull/60437) | Update dependencies |
+| 0.3.23 | 2025-05-10 | [60084](https://github.com/airbytehq/airbyte/pull/60084) | Update dependencies |
+| 0.3.22 | 2025-05-03 | [59486](https://github.com/airbytehq/airbyte/pull/59486) | Update dependencies |
+| 0.3.21 | 2025-04-27 | [59102](https://github.com/airbytehq/airbyte/pull/59102) | Update dependencies |
+| 0.3.20 | 2025-04-19 | [58517](https://github.com/airbytehq/airbyte/pull/58517) | Update dependencies |
+| 0.3.19 | 2025-04-12 | [57849](https://github.com/airbytehq/airbyte/pull/57849) | Update dependencies |
+| 0.3.18 | 2025-04-05 | [57292](https://github.com/airbytehq/airbyte/pull/57292) | Update dependencies |
+| 0.3.17 | 2025-03-29 | [56733](https://github.com/airbytehq/airbyte/pull/56733) | Update dependencies |
+| 0.3.16 | 2025-03-22 | [56172](https://github.com/airbytehq/airbyte/pull/56172) | Update dependencies |
+| 0.3.15 | 2025-03-08 | [55569](https://github.com/airbytehq/airbyte/pull/55569) | Update dependencies |
+| 0.3.14 | 2025-03-01 | [55073](https://github.com/airbytehq/airbyte/pull/55073) | Update dependencies |
+| 0.3.13 | 2025-02-23 | [54598](https://github.com/airbytehq/airbyte/pull/54598) | Update dependencies |
+| 0.3.12 | 2025-02-15 | [54015](https://github.com/airbytehq/airbyte/pull/54015) | Update dependencies |
+| 0.3.11 | 2025-02-08 | [53472](https://github.com/airbytehq/airbyte/pull/53472) | Update dependencies |
+| 0.3.10 | 2025-02-01 | [52980](https://github.com/airbytehq/airbyte/pull/52980) | Update dependencies |
+| 0.3.9 | 2025-01-25 | [51878](https://github.com/airbytehq/airbyte/pull/51878) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51308](https://github.com/airbytehq/airbyte/pull/51308) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50708](https://github.com/airbytehq/airbyte/pull/50708) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50261](https://github.com/airbytehq/airbyte/pull/50261) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49689](https://github.com/airbytehq/airbyte/pull/49689) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [49337](https://github.com/airbytehq/airbyte/pull/49337) | Update dependencies |
+| 0.3.3 | 2024-12-09 | [48220](https://github.com/airbytehq/airbyte/pull/48220) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47927](https://github.com/airbytehq/airbyte/pull/47927) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47461](https://github.com/airbytehq/airbyte/pull/47461) | Update dependencies |
+| 0.3.0 | 2024-08-26 | [44791](https://github.com/airbytehq/airbyte/pull/44791) | Refactor connector to manifest-only format |
+| 0.2.15 | 2024-08-24 | [44749](https://github.com/airbytehq/airbyte/pull/44749) | Update dependencies |
+| 0.2.14 | 2024-08-17 | [44348](https://github.com/airbytehq/airbyte/pull/44348) | Update dependencies |
+| 0.2.13 | 2024-08-12 | [43760](https://github.com/airbytehq/airbyte/pull/43760) | Update dependencies |
+| 0.2.12 | 2024-08-10 | [43576](https://github.com/airbytehq/airbyte/pull/43576) | Update dependencies |
+| 0.2.11 | 2024-08-03 | [43262](https://github.com/airbytehq/airbyte/pull/43262) | Update dependencies |
+| 0.2.10 | 2024-07-27 | [42738](https://github.com/airbytehq/airbyte/pull/42738) | Update dependencies |
 | 0.2.9 | 2024-07-20 | [42180](https://github.com/airbytehq/airbyte/pull/42180) | Update dependencies |
 | 0.2.8 | 2024-07-13 | [41762](https://github.com/airbytehq/airbyte/pull/41762) | Update dependencies |
 | 0.2.7 | 2024-07-10 | [41446](https://github.com/airbytehq/airbyte/pull/41446) | Update dependencies |

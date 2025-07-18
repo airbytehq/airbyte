@@ -1,0 +1,601 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - sessions
+
+definitions:
+  streams:
+    sessions:
+      type: DeclarativeStream
+      name: sessions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sessions/v2?{{ 'uid=' ~ config['uid'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sessions
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sessions"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /segments/v1
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    operations:
+      type: DeclarativeStream
+      name: operations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /operations/v1
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - operations
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/operations"
+    blockrules:
+      type: DeclarativeStream
+      name: blockrules
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/recording/v1/blocking
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - blockrules
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/blockrules"
+    domainsettings:
+      type: DeclarativeStream
+      name: domainsettings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/recording/v1/domain
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - domainsettings
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/domainsettings"
+    geosettings:
+      type: DeclarativeStream
+      name: geosettings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/recording/v1/geo
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - geosettings
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/geosettings"
+    recordingfeatures:
+      type: DeclarativeStream
+      name: recordingfeatures
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/recording/v1/features
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recordingfeatures
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recordingfeatures"
+    sessionTargetingRules:
+      type: DeclarativeStream
+      name: sessionTargetingRules
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/recording/v1/targeting
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sessionTargetingRules
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sessionTargetingRules"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks/v1/endpoints
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    eventDefs:
+      type: DeclarativeStream
+      name: eventDefs
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks/v1/event-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - eventDefs
+          paginator:
+            type: DefaultPaginator
+            pagination_strategy:
+              type: TokenBased
+              token_field: nextPaginationToken
+              token_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: pagination_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/eventDefs"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.fullstory.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/sessions"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/operations"
+  - $ref: "#/definitions/streams/blockrules"
+  - $ref: "#/definitions/streams/domainsettings"
+  - $ref: "#/definitions/streams/geosettings"
+  - $ref: "#/definitions/streams/recordingfeatures"
+  - $ref: "#/definitions/streams/sessionTargetingRules"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/eventDefs"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - uid
+    properties:
+      api_key:
+        type: string
+        description: API Key for the fullstory.com API.
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      uid:
+        type: string
+        description: User ID for the fullstory.com API.
+        title: User ID
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+
+schemas:
+  sessions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdTime:
+        type:
+          - "null"
+          - integer
+          - string
+      fsUrl:
+        type:
+          - "null"
+          - string
+      sessionId:
+        type:
+          - "null"
+          - integer
+          - string
+      userId:
+        type:
+          - "null"
+          - integer
+          - string
+    title: Sessions Schema
+  segments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - "null"
+          - string
+      creator:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+    title: Segments Schema
+  operations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      details:
+        type:
+          - "null"
+          - object
+      errorDetails:
+        type:
+          - "null"
+          - string
+      estimatePctComplete:
+        type:
+          - "null"
+          - integer
+      finishedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - string
+      results:
+        type:
+          - "null"
+          - object
+      state:
+        type:
+          - "null"
+          - string
+      step:
+        type:
+          - "null"
+          - string
+    title: Operations Schema
+  blockrules:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      blockedAppIds:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      blockedIps:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      blockedUas:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+    title: BlockRules Schema
+  domainsettings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      domains:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            disabled:
+              type:
+                - "null"
+                - boolean
+            domain:
+              type:
+                - "null"
+                - string
+      onlyRecordKnownDomains:
+        type:
+          - "null"
+          - boolean
+    title: DomainSettings Schema
+  geosettings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      record_geo_mode:
+        type:
+          - "null"
+          - string
+      record_geo_zones:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+    title: GeoSettings Schema
+  recordingfeatures:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ajaxWatcher:
+        type:
+          - "null"
+          - boolean
+      consoleWatcher:
+        type:
+          - "null"
+          - boolean
+      enabled:
+        type:
+          - "null"
+          - boolean
+      recordingShutoff:
+        type:
+          - "null"
+          - boolean
+      resourceUploading:
+        type:
+          - "null"
+          - boolean
+    title: RecordingFeatures Schema
+  sessionTargetingRules:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      endpoints:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            created:
+              type:
+                - "null"
+                - string
+            enabled:
+              type:
+                - "null"
+                - boolean
+            event_types:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  event_name:
+                    type:
+                      - "null"
+                      - string
+                  subcategory:
+                    type:
+                      - "null"
+                      - string
+            id:
+              type:
+                - "null"
+                - string
+            modified:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+    title: Webhooks Schema
+  eventDefs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      displayName:
+        type:
+          - "null"
+          - string
+      eventName:
+        type:
+          - "null"
+          - string
+      hasSubcategories:
+        type:
+          - "null"
+          - boolean
+    title: EventTypes Schema

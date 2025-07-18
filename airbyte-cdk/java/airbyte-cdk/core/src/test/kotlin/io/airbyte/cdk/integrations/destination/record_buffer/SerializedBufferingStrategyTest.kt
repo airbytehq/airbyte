@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 class SerializedBufferingStrategyTest {
     private val catalog: ConfiguredAirbyteCatalog =
@@ -37,7 +38,7 @@ class SerializedBufferingStrategyTest {
 
     @Throws(Exception::class)
     private fun setupMock(mockObject: SerializableBuffer) {
-        Mockito.`when`(mockObject.accept(any())).thenReturn(10L)
+        Mockito.`when`(mockObject.accept(any(), eq(0L), eq(0L))).thenReturn(10L)
         Mockito.`when`(mockObject.byteCount).thenReturn(10L)
         Mockito.`when`(mockObject.maxTotalBufferSizeInBytes).thenReturn(MAX_TOTAL_BUFFER_SIZE_BYTES)
         Mockito.`when`(mockObject.maxPerStreamBufferSizeInBytes)

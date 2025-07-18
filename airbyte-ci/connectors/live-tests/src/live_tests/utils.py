@@ -7,15 +7,13 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
-import docker  # type: ignore
 import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, ConnectorSpecification, Status, Type  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
+
 from live_tests import stash_keys
 from live_tests.commons.models import ExecutionResult
 from live_tests.consts import MAX_LINES_IN_REPORT
-from mitmproxy import http, io  # type: ignore
-from mitmproxy.addons.savehar import SaveHar  # type: ignore
 
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
@@ -34,6 +32,8 @@ def filter_records(messages: Iterable[AirbyteMessage]) -> Iterable[AirbyteMessag
 
 
 def write_string_to_test_artifact(request: SubRequest, content: str, filename: str, subdir: Optional[Path] = None) -> Path:
+    # StashKey (in this case TEST_ARTIFACT_DIRECTORY) defines the output class of this,
+    # so this is already a Path.
     test_artifact_directory = request.config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY]
     if subdir:
         test_artifact_directory = test_artifact_directory / subdir
@@ -69,13 +69,13 @@ def get_and_write_diff(
             request,
             formatted_diff_json,
             f"{filepath}_text.txt",
-            subdir=request.node.name,
+            subdir=Path(request.node.name),
         )
         diff_path_pretty = write_string_to_test_artifact(
             request,
             str(diff.pretty()),
             f"{filepath}_pretty.txt",
-            subdir=request.node.name,
+            subdir=Path(request.node.name),
         )
 
         logger.info(f"Diff file are stored in {diff_path_tree}, {diff_path_text}, and {diff_path_pretty}.")
@@ -128,7 +128,7 @@ def tail_file(file_path: Path, n: int = MAX_LINES_IN_REPORT) -> list[str]:
 
 def is_successful_check(execution_result: ExecutionResult) -> bool:
     for message in execution_result.airbyte_messages:
-        if message.type is Type.CONNECTION_STATUS and message.connectionStatus.status is Status.SUCCEEDED:
+        if message.type is Type.CONNECTION_STATUS and message.connectionStatus and message.connectionStatus.status is Status.SUCCEEDED:
             return True
     return False
 

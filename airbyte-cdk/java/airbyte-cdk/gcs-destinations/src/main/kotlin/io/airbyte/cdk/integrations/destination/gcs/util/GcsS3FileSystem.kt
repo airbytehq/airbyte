@@ -15,7 +15,7 @@ class GcsS3FileSystem : S3AFileSystem() {
      */
     @Retries.RetryTranslated
     @Throws(IOException::class)
-    override fun verifyBucketExistsV2() {
+    /*override*/ fun verifyBucketExistsV2() {
         super.verifyBucketExists()
     }
 }

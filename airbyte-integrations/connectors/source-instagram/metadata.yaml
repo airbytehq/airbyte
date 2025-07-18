@@ -3,11 +3,11 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.0@sha256:4ee59c9d62c18191ab9b27dabc7de1ed89c519d54680e764ac055695f6cd2d1f
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 3.0.21
+  dockerImageTag: 4.2.0
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
@@ -16,16 +16,25 @@ data:
   name: Instagram
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-instagram
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
+      4.0.0:
+        message: "This release removes deprecated metrics - `clips_replays_count`, `ig_reels_aggregated_all_plays_count`, `impressions`, and `plays` from `media_insights` stream, and `impressions` from `user_insights` and `story_insights` streams. Customers who these streams must take action with their connections. For more details, see our <a href='https://docs.airbyte.com/integrations/sources/instagram-migrations'>migration guide</a>."
+        upgradeDeadline: "2025-04-21"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["media_insights", "user_insights", "story_insights"]
       3.0.0:
         message: "The existing Instagram API (v11) has been deprecated. Customers who use streams `Media Insights`, `Story Insights` or `User Lifetime Insights` must take action with their connections. Please follow the to update to the latest Instagram API (v18). For more details, see our <a href='https://docs.airbyte.com/integrations/sources/instagram-migrations'>migration guide</a>."
         upgradeDeadline: "2024-01-05"
@@ -46,14 +55,19 @@ data:
       - users
       - user_lifetime_insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
+  erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   ab_internal:
-    sl: 200
+    sl: 300
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: instagram_config_dev_null
+          id: 39208d11-8b6f-4b0c-bee1-cddcb857e5fd
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

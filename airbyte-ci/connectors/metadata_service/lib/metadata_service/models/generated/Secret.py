@@ -13,8 +13,13 @@ class SecretStore(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    alias: Optional[str] = Field(None, description="The alias of the secret store which can map to its actual secret address")
-    type: Optional[Literal["GSM"]] = Field(None, description="The type of the secret store")
+    alias: Optional[str] = Field(
+        None,
+        description="The alias of the secret store which can map to its actual secret address",
+    )
+    type: Optional[Literal["GSM"]] = Field(
+        None, description="The type of the secret store"
+    )
 
 
 class Secret(BaseModel):
@@ -22,5 +27,8 @@ class Secret(BaseModel):
         extra = Extra.forbid
 
     name: str = Field(..., description="The secret name in the secret store")
-    fileName: Optional[str] = Field(None, description="The name of the file to which the secret value would be persisted")
+    fileName: Optional[str] = Field(
+        None,
+        description="The name of the file to which the secret value would be persisted",
+    )
     secretStore: SecretStore

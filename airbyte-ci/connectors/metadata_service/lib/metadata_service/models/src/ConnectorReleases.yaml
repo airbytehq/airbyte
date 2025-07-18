@@ -5,68 +5,12 @@ title: ConnectorReleases
 description: Contains information about different types of releases for a connector.
 type: object
 additionalProperties: false
-required:
-  - breakingChanges
 properties:
+  rolloutConfiguration:
+    $ref: RolloutConfiguration.yaml
   breakingChanges:
-    $ref: "#/definitions/ConnectorBreakingChanges"
+    $ref: ConnectorBreakingChanges.yaml
   migrationDocumentationUrl:
     description: URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations
     type: string
     format: uri
-definitions:
-  ConnectorBreakingChanges:
-    description: Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.
-    type: object
-    additionalProperties: false
-    minProperties: 1
-    patternProperties:
-      "^\\d+\\.\\d+\\.\\d+$":
-        $ref: "#/definitions/VersionBreakingChange"
-  VersionBreakingChange:
-    description: Contains information about a breaking change, including the deadline to upgrade and a message detailing the change.
-    type: object
-    additionalProperties: false
-    required:
-      - upgradeDeadline
-      - message
-    properties:
-      upgradeDeadline:
-        description: The deadline by which to upgrade before the breaking change takes effect.
-        type: string
-        format: date
-      message:
-        description: Descriptive message detailing the breaking change.
-        type: string
-      migrationDocumentationUrl:
-        description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}
-        type: string
-        format: uri
-      scopedImpact:
-        description: List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.
-        type: array
-        minItems: 1
-        items:
-          $ref: "#/definitions/BreakingChangeScope"
-  BreakingChangeScope:
-    description: A scope that can be used to limit the impact of a breaking change.
-    type: object
-    oneOf:
-      - $ref: "#/definitions/StreamBreakingChangeScope"
-  StreamBreakingChangeScope:
-    description: A scope that can be used to limit the impact of a breaking change to specific streams.
-    type: object
-    additionalProperties: false
-    required:
-      - scopeType
-      - impactedScopes
-    properties:
-      scopeType:
-        type: const
-        const: stream
-      impactedScopes:
-        description: List of streams that are impacted by the breaking change.
-        type: array
-        minItems: 1
-        items:
-          type: string

@@ -1,15 +1,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import os
 
 import pytest
+
 from connectors_qa import consts
 from connectors_qa.checks import metadata
 from connectors_qa.models import CheckStatus
 
 
 class TestValidateMetadata:
-
     def test_fail_when_deserialization_fails(self, mocker, tmp_path):
         # Arrange
         mocker.patch.object(metadata, "validate_and_load", return_value=(None, "error"))
@@ -37,6 +38,19 @@ class TestValidateMetadata:
         # Assert
         assert result.status == CheckStatus.PASSED
         assert result.message == "Metadata file valid."
+
+    def test_checks_apply_to_manifest_only_connectors(self, mocker, tmp_path):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"tags": ["language:manifest-only"]}, code_directory=tmp_path)
+        code_directory = tmp_path
+        (code_directory / consts.MANIFEST_FILE_NAME).touch()
+
+        # Act
+        result = metadata.CheckConnectorLanguageTag()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert result.message == "Language tag language:manifest-only is present in the metadata file"
 
 
 class TestCheckConnectorLanguageTag:
@@ -118,7 +132,6 @@ class TestCheckConnectorLanguageTag:
 
 
 class TestCheckConnectorCDKTag:
-
     def test_fail_when_no_cdk_tags(self, mocker):
         # Arrange
         connector = mocker.MagicMock(metadata={"tags": []})
@@ -160,7 +173,7 @@ class TestCheckConnectorCDKTag:
         connector = mocker.MagicMock(technical_name="source-test", metadata={"tags": ["cdk:python"]}, code_directory=tmp_path)
         code_directory = tmp_path
         (code_directory / "source_test").mkdir()
-        (code_directory / "source_test"/ consts.LOW_CODE_MANIFEST_FILE_NAME).touch()
+        (code_directory / "source_test" / consts.LOW_CODE_MANIFEST_FILE_NAME).touch()
 
         # Act
         result = metadata.CheckConnectorCDKTag()._run(connector)

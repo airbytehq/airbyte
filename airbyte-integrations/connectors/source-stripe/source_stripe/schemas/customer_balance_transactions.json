@@ -18,6 +18,10 @@
       "description": "The date and time when the transaction was created",
       "type": ["null", "integer"]
     },
+    "updated": {
+      "description": "The date and time when the transaction was created",
+      "type": ["null", "integer"]
+    },
     "credit_note": {
       "description": "Credit note related to the balance transaction",
       "type": ["null", "string"]

@@ -21,18 +21,25 @@ import io.airbyte.workers.exception.TestHarnessException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.sql.SQLException
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
-import kotlin.concurrent.Volatile
+import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 private val LOGGER = KotlinLogging.logger {}
 
-abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
-    private var databaseName: String? = null
+abstract class AbstractSnowflakeTypingDedupingTest(
+    private val forceUppercaseIdentifiers: Boolean = false,
+) : BaseTypingDedupingTest() {
+    private lateinit var databaseName: String
     private var database: JdbcDatabase? = null
     // not super happy with this one, but our test classes are not super kotlin-friendly
     private lateinit var dataSource: DataSource
@@ -98,12 +105,19 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         database!!.execute(
             String.format(
                 """
-            DROP TABLE IF EXISTS "%s"."%s";
-            DROP SCHEMA IF EXISTS "%s" CASCADE
-            
-            """.trimIndent(),
-                rawSchema, // Raw table is still lowercase.
-                StreamId.concatenateRawTableName(namespaceOrDefault, streamName),
+                DROP TABLE IF EXISTS "%s"."%s";
+                DROP SCHEMA IF EXISTS "%s" CASCADE
+                
+                """.trimIndent(),
+                // Raw table is still lowercase by default
+                if (forceUppercaseIdentifiers) {
+                    rawSchema.uppercase()
+                } else {
+                    rawSchema
+                },
+                StreamId.concatenateRawTableName(namespaceOrDefault, streamName).let {
+                    if (forceUppercaseIdentifiers) it.uppercase() else it
+                },
                 namespaceOrDefault.uppercase(Locale.getDefault()),
             ),
         )
@@ -382,10 +396,103 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
+    @Test
+    @Throws(Exception::class)
+    open fun testLargeRecord() {
+        val catalog1 =
+            io.airbyte.protocol.models.v0
+                .ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(43)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
+
+        val messagesFromFile = readMessages("dat/sync1_messages.jsonl")
+        val largeValue1 = RandomStringUtils.randomAlphanumeric(8 * 1024 * 1024 + 100)
+        val largeValue2 = RandomStringUtils.randomAlphanumeric(8 * 1024 * 1024 + 200)
+        // only the address field should be cleared on 1st record
+        (messagesFromFile[0].record.data as ObjectNode).put("name", largeValue1)
+        (messagesFromFile[0].record.data.get("address") as ObjectNode).put("city", largeValue2)
+
+        // only the name field should be cleared on 1st record
+        (messagesFromFile[1].record.data as ObjectNode).put("name", largeValue2)
+        (messagesFromFile[1].record.data.get("address") as ObjectNode).put("city", largeValue1)
+
+        runSync(catalog1, listOf(messagesFromFile[0], messagesFromFile[1]))
+
+        val rawTableRecords = dumpRawTableRecords(streamNamespace, streamName)
+        assertEquals(rawTableRecords.size, 2)
+        for (rawTableRecord in rawTableRecords) {
+            val rawTableRecordUpdatedAt = rawTableRecord.get("_airbyte_data").get("updated_at")
+            val rawTableAddressFieldValue = rawTableRecord.get("_airbyte_data").get("address")
+            val rawTableNameFieldValue = rawTableRecord.get("_airbyte_data").get("name")
+            val changesFieldValue = rawTableRecord.get("_airbyte_meta").get("changes").get(0)
+            if (rawTableRecordUpdatedAt == messagesFromFile[0].record.data.get("updated_at")) {
+                val originalNameFieldValue = messagesFromFile[0].record.data.get("name")
+                assert(rawTableAddressFieldValue == null) {
+                    "\"address\" field should be null. " +
+                        "Instead was ${rawTableAddressFieldValue?.toString()?.length} chars long"
+                }
+                assertEquals(
+                    originalNameFieldValue,
+                    rawTableNameFieldValue,
+                    "\"name\" field should have contained ${originalNameFieldValue?.toString()?.length} chars. " +
+                        "Instead was ${rawTableNameFieldValue?.toString()?.length} chars long"
+                )
+                assertEquals("address", changesFieldValue.get("field").asText())
+            } else if (
+                rawTableRecordUpdatedAt == messagesFromFile[1].record.data.get("updated_at")
+            ) {
+                val originalAddressFieldValue = messagesFromFile[1].record.data.get("address")
+                assertEquals(
+                    originalAddressFieldValue,
+                    rawTableAddressFieldValue,
+                    "\"address\" field should have contained ${originalAddressFieldValue?.toString()?.length} chars. " +
+                        "Instead was ${rawTableAddressFieldValue?.toString()?.length} chars long"
+                )
+                assert(rawTableNameFieldValue == null) {
+                    "\"name\" field should be null. " +
+                        "Instead was ${rawTableNameFieldValue?.toString()?.length} chars long"
+                }
+                assertEquals("name", changesFieldValue.get("field").asText())
+            } else {
+                throw RuntimeException("unexpected raw record $rawTableRecord")
+            }
+            assertEquals(
+                changesFieldValue.get("change").asText(),
+                AirbyteRecordMessageMetaChange.Change.NULLED.value()
+            )
+            assertEquals(
+                changesFieldValue.get("reason").asText(),
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_RECORD_SIZE_LIMITATION.value()
+            )
+        }
+    }
+
+    // Disabling until we can safely fetch generation ID
+    @Test
+    @Disabled
+    override fun interruptedOverwriteWithoutPriorData() {
+        super.interruptedOverwriteWithoutPriorData()
+    }
+
     private val defaultSchema: String
         get() = config!!["schema"].asText()
 
     companion object {
+        const val _8mb = 8 * 1_241_24
         @JvmStatic
         val FINAL_METADATA_COLUMN_NAMES: Map<String, String> =
             java.util.Map.of(
@@ -399,19 +506,102 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 "_AIRBYTE_DATA",
                 "_airbyte_meta",
                 "_AIRBYTE_META",
+                "_airbyte_generation_id",
+                "_AIRBYTE_GENERATION_ID",
             )
 
-        @Volatile private var cleanedAirbyteInternalTable = false
+        private val cleanedAirbyteInternalTable = AtomicBoolean(false)
+        private val threadId = AtomicInteger(0)
 
         @Throws(SQLException::class)
         private fun cleanAirbyteInternalTable(database: JdbcDatabase?) {
-            if (!cleanedAirbyteInternalTable) {
-                synchronized(AbstractSnowflakeTypingDedupingTest::class.java) {
-                    if (!cleanedAirbyteInternalTable) {
-                        database!!.execute(
-                            "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < current_date() - 7",
+            if (
+                database!!
+                    .queryJsons("SHOW PARAMETERS LIKE 'QUOTED_IDENTIFIERS_IGNORE_CASE';")
+                    .first()
+                    .get("value")
+                    .asText()
+                    .toBoolean()
+            ) {
+                return
+            }
+
+            if (!cleanedAirbyteInternalTable.getAndSet(true)) {
+                val cleanupCutoffHours = 6
+                LOGGER.info { "tableCleaner running" }
+                val executor =
+                    Executors.newSingleThreadExecutor {
+                        val thread = Executors.defaultThreadFactory().newThread(it)
+                        thread.name =
+                            "airbyteInternalTableCleanupThread-${threadId.incrementAndGet()}"
+                        thread.isDaemon = true
+                        thread
+                    }
+                executor.execute {
+                    database.execute(
+                        "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())",
+                    )
+                }
+                executor.execute {
+                    database.execute(
+                        "DELETE FROM \"AIRBYTE_INTERNAL\".\"_AIRBYTE_DESTINATION_STATE\" WHERE \"UPDATED_AT\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())",
+                    )
+                }
+                executor.execute {
+                    val schemaList =
+                        database.queryJsons(
+                            "SHOW SCHEMAS IN DATABASE INTEGRATION_TEST_DESTINATION;",
                         )
-                        cleanedAirbyteInternalTable = true
+                    LOGGER.info(
+                        "tableCleaner found ${schemaList.size} schemas in database INTEGRATION_TEST_DESTINATION"
+                    )
+                    schemaList
+                        .associate {
+                            it.get("name").asText() to Instant.parse(it.get("created_on").asText())
+                        }
+                        .filter {
+                            it.value.isBefore(
+                                Instant.now().minus(cleanupCutoffHours.toLong(), ChronoUnit.HOURS)
+                            )
+                        }
+                        .filter {
+                            it.key.startsWith("SQL_GENERATOR", ignoreCase = true) ||
+                                it.key.startsWith("TDTEST", ignoreCase = true) ||
+                                it.key.startsWith("TYPING_DEDUPING", ignoreCase = true)
+                        }
+                        .forEach {
+                            executor.execute {
+                                database.execute(
+                                    "DROP SCHEMA INTEGRATION_TEST_DESTINATION.\"${it.key}\" /* created at ${it.value} */;"
+                                )
+                            }
+                        }
+                }
+                for (schemaName in
+                    listOf("AIRBYTE_INTERNAL", "airbyte_internal", "overridden_raw_dataset")) {
+                    executor.execute {
+                        val sql =
+                            "SHOW TABLES IN schema INTEGRATION_TEST_DESTINATION.\"$schemaName\";"
+                        val tableList = database.queryJsons(sql)
+                        LOGGER.info {
+                            "tableCleaner found ${tableList.size} tables in schema $schemaName"
+                        }
+                        tableList
+                            .associate {
+                                it.get("name").asText() to
+                                    Instant.parse(it.get("created_on").asText())
+                            }
+                            .filter {
+                                it.value.isBefore(Instant.now().minus(6, ChronoUnit.HOURS)) &&
+                                    it.key.startsWith("TDTEST", ignoreCase = true)
+                            }
+                            .forEach {
+                                executor.execute {
+                                    database.execute(
+                                        "DROP TABLE INTEGRATION_TEST_DESTINATION.\"$schemaName\".\"${it.key}\" /* created at ${it.value} */;"
+                                    )
+                                }
+                            }
                     }
                 }
             }

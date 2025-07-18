@@ -46,13 +46,16 @@ class SerializedBufferingStrategy
     @Throws(Exception::class)
     override fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
-        message: AirbyteMessage
+        message: AirbyteMessage,
+        generationId: Long,
+        syncId: Long
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
         val buffer = getOrCreateBuffer(stream)
 
-        @Suppress("DEPRECATION") val actualMessageSizeInBytes = buffer.accept(message.record)
+        @Suppress("DEPRECATION")
+        val actualMessageSizeInBytes = buffer.accept(message.record, generationId, syncId)
         totalBufferSizeInBytes += actualMessageSizeInBytes
         // Flushes buffer when either the buffer was completely filled or only a single stream was
         // filled
@@ -102,8 +105,7 @@ class SerializedBufferingStrategy
         }
     }
 
-    @Throws(Exception::class)
-    override fun flushSingleBuffer(
+    private fun flushSingleBuffer(
         stream: AirbyteStreamNameNamespacePair,
         buffer: SerializableBuffer
     ) {
@@ -114,6 +116,11 @@ class SerializedBufferingStrategy
         totalBufferSizeInBytes -= buffer.byteCount
         allBuffers.remove(stream)
         LOGGER.info { "Flushing completed for ${stream.name}" }
+    }
+
+    @Throws(Exception::class)
+    override fun flushSingleStream(stream: AirbyteStreamNameNamespacePair) {
+        allBuffers[stream]?.let { flushSingleBuffer(stream, it) }
     }
 
     @Throws(Exception::class)

@@ -6,9 +6,6 @@ from dataclasses import dataclass
 from typing import List, Union
 
 import requests
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from braintree.attribute_getter import AttributeGetter
 from braintree.customer import Customer as BCustomer
 from braintree.discount import Discount as BDiscount
@@ -18,7 +15,12 @@ from braintree.plan import Plan as BPlan
 from braintree.subscription import Subscription as BSubscription
 from braintree.transaction import Transaction as BTransaction
 from braintree.util.xml_util import XmlUtil
+
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from source_braintree.schemas import Customer, Discount, Dispute, MerchantAccount, Plan, Subscription, Transaction
+
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into

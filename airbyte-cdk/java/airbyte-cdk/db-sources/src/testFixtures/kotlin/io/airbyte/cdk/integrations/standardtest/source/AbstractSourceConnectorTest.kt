@@ -117,6 +117,7 @@ abstract class AbstractSourceConnectorTest {
                 workspaceRoot,
                 workspaceRoot.toString(),
                 localRoot.toString(),
+                fileTransferMountSource = null,
                 "host",
                 envMap
             )

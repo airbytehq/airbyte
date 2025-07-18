@@ -1,10 +1,10 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import json
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 from .base_request_builder import AmazonAdsBaseRequestBuilder
 
@@ -12,15 +12,23 @@ from .base_request_builder import AmazonAdsBaseRequestBuilder
 class SponsoredProductsReportRequestBuilder(AmazonAdsBaseRequestBuilder):
     @classmethod
     def _init_report_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, report_type: str, metrics: List[str], report_date: Optional[str] = None
+        cls,
+        client_id: str,
+        client_access_token: str,
+        profile_id: str,
+        report_type: str,
+        metrics: List[str],
+        report_date: Optional[str] = None,
     ) -> "SponsoredProductsReportRequestBuilder":
-        return cls(f"reporting/reports") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_metrics(metrics) \
-            .with_report_date(report_date) \
+        return (
+            cls(f"reporting/reports")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_metrics(metrics)
+            .with_report_date(report_date)
             .with_report_type(report_type)
+        )
 
     @classmethod
     def init_campaigns_report_endpoint(
@@ -111,7 +119,7 @@ class SponsoredProductsReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         return None
 
     @property
-    def request_body(self) ->Optional[str]:
+    def request_body(self) -> Optional[str]:
         body: dict = OrderedDict()
         if self._report_type and self._report_date:
             body["name"] = f"{self._report_type} report {self._report_date}"
@@ -121,10 +129,7 @@ class SponsoredProductsReportRequestBuilder(AmazonAdsBaseRequestBuilder):
             body["endDate"] = self._report_date
 
         if self._report_type:
-            body["configuration"] = {
-                "adProduct": "SPONSORED_PRODUCTS",
-                "groupBy": self._report_config_group_by
-            }
+            body["configuration"] = {"adProduct": "SPONSORED_PRODUCTS", "groupBy": self._report_config_group_by}
 
         if self._metrics:
             body["configuration"]["columns"] = self._metrics
@@ -138,8 +143,8 @@ class SponsoredProductsReportRequestBuilder(AmazonAdsBaseRequestBuilder):
 
         return json.dumps(body)
 
-    def with_report_date(self, report_date: pendulum.date) -> "SponsoredProductsReportRequestBuilder":
-        self._report_date = report_date.format("YYYY-MM-DD")
+    def with_report_date(self, report_date: AirbyteDateTime) -> "SponsoredProductsReportRequestBuilder":
+        self._report_date = report_date.strftime("%Y-%m-%d")
         return self
 
     def with_report_type(self, report_type: str) -> "SponsoredProductsReportRequestBuilder":

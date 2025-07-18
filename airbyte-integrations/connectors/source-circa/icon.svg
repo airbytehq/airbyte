@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="286.6941 195.5577 113 113" width="113px" height="113px">
+  <g id="Standard-Logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="matrix(1, 0, 0, 1, 286.694091796875, 190.59010314941403)">
+    <g id="Circa-Logo" transform="translate(0.000000, 0.852234)" fill-rule="nonzero">
+      <g id="Circa-Icon" transform="translate(0.000000, 4.115330)">
+        <polygon id="Path" fill="#59BBB4" points="66.814747 113 97.6049157 113 113 86.0771812 97.6049157 59.1543624 66.814747 59.1543624 51.4294872 86.0771812"/>
+        <polygon id="Path" fill="#172D67" points="66.8221154 0 51.4294872 26.9228188 66.8221154 53.8456376 97.6073718 53.8456376 113 26.9228188 97.6073718 0"/>
+        <polygon id="Path" fill="#685BC7" points="46.1754285 84.1812081 61.5705128 57.2633502 46.1754285 30.3355705 15.3950843 30.3355705 0 57.2633502 15.3950843 84.1812081"/>
+      </g>
+    </g>
+  </g>
+</svg>

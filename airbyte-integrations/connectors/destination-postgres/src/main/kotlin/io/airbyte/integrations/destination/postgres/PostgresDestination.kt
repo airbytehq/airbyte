@@ -34,11 +34,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class PostgresDestination :
-    AbstractJdbcDestination<PostgresState>(
-        DRIVER_CLASS,
-        PostgresSQLNameTransformer(),
-        PostgresSqlOperations()
-    ),
+    AbstractJdbcDestination<PostgresState>(DRIVER_CLASS, PostgresSQLNameTransformer()),
     Destination {
     override fun modifyDataSourceBuilder(
         builder: DataSourceFactory.DataSourceBuilder
@@ -148,17 +144,42 @@ class PostgresDestination :
     }
 
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
+        return PostgresSqlGenerator(
+            PostgresSQLNameTransformer(),
+            hasDropCascadeMode(config),
+            hasUnconstrainedNumber(config),
+        )
+    }
+    override fun getSqlOperations(config: JsonNode): PostgresSqlOperations {
+        return PostgresSqlOperations(hasDropCascadeMode(config))
+    }
+
+    override fun getGenerationHandler(): PostgresGenerationHandler {
+        return PostgresGenerationHandler()
+    }
+
+    private fun hasDropCascadeMode(config: JsonNode): Boolean {
         val dropCascadeNode = config[DROP_CASCADE_OPTION]
-        val dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean()
-        return PostgresSqlGenerator(PostgresSQLNameTransformer(), dropCascade)
+        return dropCascadeNode != null && dropCascadeNode.asBoolean()
+    }
+
+    private fun hasUnconstrainedNumber(config: JsonNode): Boolean {
+        val unconstrainedNumberNode = config[UNCONSTRAINED_NUMBER_OPTION]
+        return unconstrainedNumberNode != null && unconstrainedNumberNode.asBoolean()
     }
 
     override fun getDestinationHandler(
+        config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
         rawTableSchema: String
     ): JdbcDestinationHandler<PostgresState> {
-        return PostgresDestinationHandler(databaseName, database, rawTableSchema)
+        return PostgresDestinationHandler(
+            databaseName,
+            database,
+            rawTableSchema,
+            getGenerationHandler(),
+        )
     }
 
     protected override fun getMigrations(
@@ -188,7 +209,8 @@ class PostgresDestination :
 
         val DRIVER_CLASS: String = DatabaseDriver.POSTGRESQL.driverClassName
 
-        private const val DROP_CASCADE_OPTION = "drop_cascade"
+        const val DROP_CASCADE_OPTION = "drop_cascade"
+        const val UNCONSTRAINED_NUMBER_OPTION = "unconstrained_number"
 
         @JvmStatic
         fun sshWrappedDestination(): Destination {

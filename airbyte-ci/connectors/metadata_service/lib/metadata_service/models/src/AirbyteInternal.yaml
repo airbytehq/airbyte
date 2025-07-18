@@ -9,15 +9,24 @@ properties:
   sl:
     type: integer
     enum:
+      - 0
       - 100
       - 200
       - 300
   ql:
     type: integer
     enum:
+      - 0
       - 100
       - 200
       - 300
       - 400
       - 500
       - 600
+  isEnterprise:
+    type: boolean
+    default: false
+  requireVersionIncrementsInPullRequests:
+    type: boolean
+    default: true
+    description: When false, version increment checks will be skipped for this connector

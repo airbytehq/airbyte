@@ -4,5 +4,6 @@
 
 from source_commcare.run import run
 
+
 if __name__ == "__main__":
     run()

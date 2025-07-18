@@ -9,13 +9,15 @@ from logging import getLogger
 from typing import Any, Dict, Iterable, Mapping, Optional
 from uuid import uuid4
 
-from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from firebolt.client import DEFAULT_API_URL
 from firebolt.client.auth import Auth, ClientCredentials, UsernamePassword
 from firebolt.db import Connection, connect
 
+from airbyte_cdk.destinations import Destination
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+
 from .writer import create_firebolt_wirter
+
 
 logger = getLogger("airbyte")
 
@@ -26,9 +28,9 @@ def _determine_auth(key: str, secret: str) -> Auth:
     """
     if "@" in key:
         # email auth can only be used with UsernamePassword
-        return UsernamePassword(key, secret)
+        return UsernamePassword(key, secret, use_token_cache=False)
     else:
-        return ClientCredentials(key, secret)
+        return ClientCredentials(key, secret, use_token_cache=False)
 
 
 def parse_config(config: json, logger: Optional[logging.Logger] = None) -> Dict[str, Any]:
@@ -75,7 +77,6 @@ class DestinationFirebolt(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 

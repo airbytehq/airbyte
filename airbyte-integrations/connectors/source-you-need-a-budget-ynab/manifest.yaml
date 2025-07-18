@@ -1,0 +1,837 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Replicates the budgets, accounts, categories, payees, transactions, and
+  category groups from the You Need A Budget (YNAB) API. Requires personal
+  access token from https://api.ynab.com/#personal-access-tokens
+
+check:
+  type: CheckStream
+  stream_names:
+    - Budgets
+
+definitions:
+  streams:
+    Budgets:
+      type: DeclarativeStream
+      name: Budgets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: https://api.ynab.com/v1/budgets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - budgets
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Budgets"
+    Accounts:
+      type: DeclarativeStream
+      name: Accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /budgets/{{ stream_partition.budget }}/accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - accounts
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: budget
+              stream:
+                $ref: "#/definitions/streams/Budgets"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - budget_id
+              value: "{{ stream_partition.budget }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Accounts"
+    Categories:
+      type: DeclarativeStream
+      name: Categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /budgets/{{ stream_partition.budget }}/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - category_groups
+              - "*"
+              - categories
+              - "*"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: budget
+              stream:
+                $ref: "#/definitions/streams/Budgets"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - budget_id
+              value: "{{ stream_partition.budget }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Categories"
+    Payees:
+      type: DeclarativeStream
+      name: Payees
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /budgets/{{ stream_partition.budget }}/payees
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - payees
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: budget
+              stream:
+                $ref: "#/definitions/streams/Budgets"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - budget_id
+              value: "{{ stream_partition.budget }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Payees"
+    Transactions:
+      type: DeclarativeStream
+      name: Transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /budgets/{{ stream_partition.budget }}/transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - transactions
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: budget
+              stream:
+                $ref: "#/definitions/streams/Budgets"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - budget_id
+              value: "{{ stream_partition.budget }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Transactions"
+    Category Groups:
+      type: DeclarativeStream
+      name: Category Groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /budgets/{{ stream_partition.budget
+            }}/categories/{{stream_partition.category_id}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - category_groups
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: budget
+              stream:
+                $ref: "#/definitions/streams/Budgets"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - budget_id
+              value: "{{ stream_partition.budget }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Category Groups"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.ynab.com/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/Budgets"
+  - $ref: "#/definitions/streams/Accounts"
+  - $ref: "#/definitions/streams/Categories"
+  - $ref: "#/definitions/streams/Payees"
+  - $ref: "#/definitions/streams/Transactions"
+  - $ref: "#/definitions/streams/Category Groups"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Budgets: true
+    Accounts: true
+    Categories: true
+    Payees: true
+    Transactions: true
+    Category Groups: true
+  testedStreams:
+    Budgets:
+      streamHash: dceac63526f39a6e8521b0ea57fac024ce2c08fe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Accounts:
+      streamHash: ebc5abe9613b3c00ee02aa1de59d9e3233c6d8c4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Categories:
+      streamHash: 4ae5d5336cdfa4f9fc9760f8c979f1033ee937c0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Payees:
+      streamHash: 5407742525d46b3f338e0a23ccc8db9bdb7e873f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Transactions:
+      streamHash: 4955b146c35d326b9ec76678b1f225400c980c03
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Category Groups:
+      streamHash: be2fb37e75598fb52caaf09329a5797e261026bb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Budgets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency_format:
+        type:
+          - object
+          - "null"
+        properties:
+          currency_symbol:
+            type:
+              - string
+              - "null"
+          decimal_digits:
+            type:
+              - number
+              - "null"
+          decimal_separator:
+            type:
+              - string
+              - "null"
+          display_symbol:
+            type:
+              - boolean
+              - "null"
+          example_format:
+            type:
+              - string
+              - "null"
+          group_separator:
+            type:
+              - string
+              - "null"
+          iso_code:
+            type:
+              - string
+              - "null"
+          symbol_first:
+            type:
+              - boolean
+              - "null"
+      date_format:
+        type:
+          - object
+          - "null"
+        properties:
+          format:
+            type:
+              - string
+              - "null"
+      first_month:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_modified_on:
+        type:
+          - string
+          - "null"
+      last_month:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  Accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      budget_id:
+        type:
+          - string
+          - "null"
+      cleared_balance:
+        type:
+          - number
+          - "null"
+      closed:
+        type:
+          - boolean
+          - "null"
+      debt_escrow_amounts:
+        type:
+          - object
+          - "null"
+      debt_interest_rates:
+        type:
+          - object
+          - "null"
+        properties:
+          "2022-07-01":
+            type:
+              - number
+              - "null"
+      debt_minimum_payments:
+        type:
+          - object
+          - "null"
+        properties:
+          "2022-07-01":
+            type:
+              - number
+              - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      direct_import_in_error:
+        type:
+          - boolean
+          - "null"
+      direct_import_linked:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      last_reconciled_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      on_budget:
+        type:
+          - boolean
+          - "null"
+      transfer_payee_id:
+        type:
+          - string
+          - "null"
+      uncleared_balance:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  Categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activity:
+        type:
+          - number
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      budget_id:
+        type:
+          - string
+          - "null"
+      budgeted:
+        type:
+          - number
+          - "null"
+      category_group_id:
+        type:
+          - string
+          - "null"
+      category_group_name:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      goal_cadence:
+        type:
+          - number
+          - "null"
+      goal_cadence_frequency:
+        type:
+          - number
+          - "null"
+      goal_creation_month:
+        type:
+          - string
+          - "null"
+      goal_day:
+        type:
+          - number
+          - "null"
+      goal_months_to_budget:
+        type:
+          - number
+          - "null"
+      goal_needs_whole_amount:
+        type:
+          - boolean
+          - "null"
+      goal_overall_funded:
+        type:
+          - number
+          - "null"
+      goal_overall_left:
+        type:
+          - number
+          - "null"
+      goal_percentage_complete:
+        type:
+          - number
+          - "null"
+      goal_target:
+        type:
+          - number
+          - "null"
+      goal_target_month:
+        type:
+          - string
+          - "null"
+      goal_type:
+        type:
+          - string
+          - "null"
+      goal_under_funded:
+        type:
+          - number
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+  Payees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      budget_id:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      transfer_account_id:
+        type:
+          - string
+          - "null"
+  Transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - string
+          - "null"
+      account_name:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      approved:
+        type:
+          - boolean
+          - "null"
+      budget_id:
+        type:
+          - string
+          - "null"
+      category_id:
+        type:
+          - string
+          - "null"
+      category_name:
+        type:
+          - string
+          - "null"
+      cleared:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      flag_color:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      import_id:
+        type:
+          - string
+          - "null"
+      import_payee_name:
+        type:
+          - string
+          - "null"
+      import_payee_name_original:
+        type:
+          - string
+          - "null"
+      matched_transaction_id:
+        type:
+          - string
+          - "null"
+      memo:
+        type:
+          - string
+          - "null"
+      payee_id:
+        type:
+          - string
+          - "null"
+      payee_name:
+        type:
+          - string
+          - "null"
+      subtransactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - number
+                - "null"
+            category_id:
+              type:
+                - string
+                - "null"
+            category_name:
+              type:
+                - string
+                - "null"
+            deleted:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            memo:
+              type:
+                - string
+                - "null"
+            transaction_id:
+              type:
+                - string
+                - "null"
+      transfer_account_id:
+        type:
+          - string
+          - "null"
+      transfer_transaction_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  Category Groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      budget_id:
+        type:
+          - string
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            activity:
+              type:
+                - number
+                - "null"
+            balance:
+              type:
+                - number
+                - "null"
+            budgeted:
+              type:
+                - number
+                - "null"
+            category_group_id:
+              type:
+                - string
+                - "null"
+            category_group_name:
+              type:
+                - string
+                - "null"
+            deleted:
+              type:
+                - boolean
+                - "null"
+            goal_cadence:
+              type:
+                - number
+                - "null"
+            goal_cadence_frequency:
+              type:
+                - number
+                - "null"
+            goal_creation_month:
+              type:
+                - string
+                - "null"
+            goal_day:
+              type:
+                - number
+                - "null"
+            goal_months_to_budget:
+              type:
+                - number
+                - "null"
+            goal_needs_whole_amount:
+              type:
+                - boolean
+                - "null"
+            goal_overall_funded:
+              type:
+                - number
+                - "null"
+            goal_overall_left:
+              type:
+                - number
+                - "null"
+            goal_percentage_complete:
+              type:
+                - number
+                - "null"
+            goal_target:
+              type:
+                - number
+                - "null"
+            goal_target_month:
+              type:
+                - string
+                - "null"
+            goal_type:
+              type:
+                - string
+                - "null"
+            goal_under_funded:
+              type:
+                - number
+                - "null"
+            hidden:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            note:
+              type:
+                - string
+                - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"

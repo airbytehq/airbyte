@@ -3,21 +3,23 @@
 #
 
 import logging
-from functools import cache
+from functools import cache, cached_property
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-import airbyte_cdk.sources.utils.casing as casing
 import pendulum
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
+
+import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
 
 from .base_streams import FBMarketingIncrementalStream
+
 
 logger = logging.getLogger("airbyte")
 
@@ -70,7 +72,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
         action_breakdowns_allow_empty: bool = False,
-        action_report_time: str = "mixed",
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
         insights_job_timeout: int = 60,
@@ -90,7 +91,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         if breakdowns is not None:
             self.breakdowns = breakdowns
         self.time_increment = time_increment or self.time_increment
-        self.action_report_time = action_report_time
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
         self._insights_job_timeout = insights_job_timeout
@@ -102,7 +102,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._next_cursor_values = self._get_start_date()
         self._completed_slices = {account_id: set() for account_id in self._account_ids}
 
-    @property
+    @cached_property
     def name(self) -> str:
         """We override stream name to let the user change it via configuration."""
         name = self._new_class_name or self.__class__.__name__
@@ -189,13 +189,13 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = {d.isoformat() for d in self._completed_slices[account_id]}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
             new_state["time_increment"] = self.time_increment
             return new_state
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = {d.isoformat() for d in self._completed_slices[account_id]}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
 
             new_state["time_increment"] = self.time_increment
             return new_state
@@ -363,7 +363,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         req_params = {
             "level": self.level,
             "action_breakdowns": self.action_breakdowns,
-            "action_report_time": self.action_report_time,
             "breakdowns": self.breakdowns,
             "fields": self.fields(),
             "time_increment": self.time_increment,

@@ -28,9 +28,9 @@ def dagger_write_file(directory: Directory, path: Path | str, new_content: str) 
     return directory
 
 
-async def dagger_export_file(dir: Directory, path: Path | str) -> bool:
-    success = await dir.file(str(path)).export(str(path))
-    return success
+async def dagger_export_file(directory: Directory, path: Path | str) -> bool:
+    await directory.file(str(path)).export(str(path))
+    return True
 
 
 async def dagger_dir_exists(dir: Directory, path: Path | str) -> bool:

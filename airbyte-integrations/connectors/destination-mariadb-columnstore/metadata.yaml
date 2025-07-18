@@ -8,7 +8,7 @@ data:
   icon: mariadb.svg
   license: MIT
   name: MariaDB ColumnStore
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

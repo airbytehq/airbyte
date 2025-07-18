@@ -6,12 +6,12 @@
 | :---------------------------- | :---------- | :----------------- |
 | Full Refresh Sync             | Yes         |                    |
 | Incremental - Append Sync     | Yes         |                    |
-| Replicate Incremental Deletes | Coming soon |                    |
-| Logical Replication \(WAL\)   | Coming soon |                    |
-| SSL Support                   | Coming soon |                    |
+| Replicate Incremental Deletes | No          |                    |
+| Logical Replication \(WAL\)   | No          |                    |
+| TLS Support                   | Yes         |                    |
 | SSH Tunnel Connection         | Yes         |                    |
-| LogMiner                      | Coming soon |                    |
-| Flashback                     | Coming soon |                    |
+| LogMiner                      | No          |                    |
+| Flashback                     | No          |                    |
 | Namespaces                    | Yes         | Enabled by default |
 
 The Oracle source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
@@ -24,7 +24,7 @@ On Airbyte Cloud, only TLS connections to your Oracle instance are supported. Ot
 
 #### Requirements
 
-1. Oracle `11g` or above
+1. Oracle Database `11g` or above (tested with Oracle 11g, 12c, 18c, 19c, and 21c)
 2. Allow connections from Airbyte to your Oracle database \(if they exist in separate VPCs\)
 3. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
@@ -58,9 +58,26 @@ GRANT SELECT ON "<schema_b>"."<table_2>" TO airbyte;
 
 Your database user should now be ready for use with Airbyte.
 
-#### 3. Include the schemas Airbyte should look at when configuring the Airbyte Oracle Source.
+#### 3. Configure connection type and schemas
 
-Case sensitive. Defaults to the upper-cased user if empty. If the user does not have access to the configured schemas, no tables will be discovered.
+**Connection Type**: Choose between Service Name and System ID (SID):
+- **Service Name**: Recommended for modern Oracle installations (Oracle 8i and later). A service name is a logical representation of a database and can be used for connection load balancing and failover.
+- **System ID (SID)**: Used for legacy Oracle instances. A SID uniquely identifies a specific Oracle database instance on a server.
+
+**Schemas**: Specify the schemas Airbyte should sync from. Case sensitive. Defaults to the upper-cased username if empty. If the user does not have access to the configured schemas, no tables will be discovered.
+
+#### 4. Additional JDBC Configuration (Optional)
+
+You can provide additional JDBC URL parameters in the `JDBC URL Params` field to customize the connection behavior. Parameters should be formatted as `key=value` pairs separated by `&`. For example:
+
+```
+defaultRowPrefetch=20&oracle.net.CONNECT_TIMEOUT=10000&oracle.net.READ_TIMEOUT=30000
+```
+
+Common useful parameters:
+- `defaultRowPrefetch`: Number of rows to prefetch (default: 10)
+- `oracle.net.CONNECT_TIMEOUT`: Connection timeout in milliseconds
+- `oracle.net.READ_TIMEOUT`: Socket read timeout in milliseconds
 
 ## Connection via SSH Tunnel
 
@@ -77,7 +94,7 @@ Using this feature requires additional configuration, when creating the source. 
 3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
 4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
 5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the Oracle username.
-6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Oracle password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
+6. If you are using `Password Authentication`, then `Password` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the Oracle password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ### Generating an SSH Key Pair
@@ -92,7 +109,9 @@ This produces the private key in pem format, and the public key remains in the s
 
 ## Data Type Mapping
 
-Oracle data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-oracle/src/test-integration/java/io/airbyte/integrations/source/oracle/OracleSourceComprehensiveTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+Oracle data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-oracle/src/test-integration/java/io/airbyte/integrations/source/oracle/OracleSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+
+**Note**: The connector automatically handles LONG and LONG RAW columns by setting the Oracle JDBC property `oracle.jdbc.useFetchSizeWithLongColumn=true`. Oracle recommends avoiding LONG and LONG RAW columns in favor of LOB types (CLOB, BLOB) for new applications.
 
 | Oracle Type                      | Resulting Type | Notes |
 | :------------------------------- | :------------- | :---- |
@@ -124,9 +143,17 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 ## Encryption Options
 
-Airbyte has the ability to connect to the Oracle source with 3 network connectivity options:
+Airbyte supports three network connectivity options for connecting to Oracle:
 
-1.`Unencrypted` the connection will be made using the TCP protocol. In this case, all data over the network will be transmitted in unencrypted form. 2.`Native network encryption` gives you the ability to encrypt database connections, without the configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on different ports. In this case, the _SQLNET.ENCRYPTION_CLIENT_ option will always be set as _REQUIRED_ by default: The client or server will only accept encrypted traffic, but the user has the opportunity to choose an `Encryption algorithm` according to the security policies he needs. 3.`TLS Encrypted` \(verify certificate\) - if this option is selected, data transfer will be transfered using the TLS protocol, taking into account the handshake procedure and certificate verification. To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
+1. **Unencrypted** (Self-Managed only): The connection uses the TCP protocol without encryption. All data transmitted over the network will be in plain text. Only use this option in secure, trusted network environments. Note: This option is only available in Self-Managed Airbyte deployments, not in Airbyte Cloud.
+
+2. **Native Network Encryption (NNE)**: Provides database connection encryption without the configuration overhead of TLS and without requiring different ports. The connector sets `SQLNET.ENCRYPTION_CLIENT=REQUIRED`, meaning only encrypted traffic is accepted. Choose from these encryption algorithms:
+   - **AES256**: Advanced Encryption Standard with 256-bit keys (recommended for highest security)
+   - **RC4_56**: RC4 stream cipher with 56-bit keys (legacy, less secure)
+   - **3DES168**: Triple DES with 168-bit keys (legacy, less secure)
+
+3. **TLS Encrypted (verify certificate)**: Uses the TLS protocol with certificate verification for maximum security. Requires you to provide the server's SSL certificate in PEM format in the `SSL PEM file` field. The certificate must be valid and trusted.
+
 
 ## Changelog
 
@@ -134,7 +161,11 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.7   | 2025-07-15 | [63326](https://github.com/airbytehq/airbyte/pull/63326) | Fix publishing flow.                                                                                                                      |
+| 0.5.6   | 2025-07-10 | [62920](https://github.com/airbytehq/airbyte/pull/62920) | Convert to new gradle build flow                                                                                                          |
+| 0.5.5   | 2025-07-10 | [62921](https://github.com/airbytehq/airbyte/pull/62921) | Convert to new gradle build flow                                                                                                          |
+| 0.5.3   | 2024-12-18 | [49883](https://github.com/airbytehq/airbyte/pull/49883) | Use a base image: airbyte/java-connector-base:1.0.0                                                                                       |
 | 0.5.2   | 2024-02-13 | [35225](https://github.com/airbytehq/airbyte/pull/35225) | Adopt CDK 0.20.4                                                                                                                          |
 | 0.5.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.5.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state                                                                                                                       |

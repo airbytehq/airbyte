@@ -1,0 +1,50 @@
+{
+  "Accounts": [
+    {
+      "TaxCertificate": {
+        "Status": "Active",
+        "TaxCertificateBlobContainerName": "Test Container Name",
+        "TaxCertificates": [{ "key": "test_key", "value": "test_value" }]
+      },
+      "BillToCustomerId": "251186883",
+      "CurrencyCode": "USD",
+      "AccountFinancialStatus": "ClearFinancialStatus",
+      "Id": "180519267",
+      "Language": "English",
+      "LastModifiedByUserId": "138225488",
+      "LastModifiedTime": "2021-07-09T13:16:43.337000",
+      "Name": "Airbyte",
+      "Number": "F149MJ18",
+      "ParentCustomerId": "251186883",
+      "PaymentMethodId": null,
+      "PaymentMethodType": null,
+      "PrimaryUserId": "138225488",
+      "AccountLifeCycleStatus": "Pending",
+      "TimeStamp": "AAAAAEpme9E=",
+      "TimeZone": "CentralTimeUSCanada",
+      "PauseReason": null,
+      "ForwardCompatibilityMap": null,
+      "LinkedAgencies": null,
+      "SalesHouseCustomerId": null,
+      "TaxInformation": null,
+      "BackUpPaymentInstrumentId": null,
+      "BillingThresholdAmount": null,
+      "BusinessAddress": {
+        "City": "San Francisco",
+        "CountryCode": "US",
+        "Id": "149649761",
+        "Line1": "350 29th Ave",
+        "Line2": null,
+        "Line3": null,
+        "Line4": null,
+        "PostalCode": "94121-1703",
+        "StateOrProvince": "CA",
+        "TimeStamp": null,
+        "BusinessName": "Airbyte"
+      },
+      "AutoTagType": "Preserve",
+      "SoldToPaymentInstrumentId": null,
+      "AccountMode": "Expert"
+    }
+  ]
+}

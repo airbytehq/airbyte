@@ -332,6 +332,10 @@
       "description": "The timestamp when the account was created.",
       "type": ["null", "integer"]
     },
+    "updated": {
+      "description": "The timestamp when the account was updated.",
+      "type": ["null", "integer"]
+    },
     "default_currency": {
       "description": "The default currency used for transactions.",
       "type": ["null", "string"]

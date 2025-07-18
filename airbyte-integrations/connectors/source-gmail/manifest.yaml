@@ -1,0 +1,808 @@
+version: 5.11.1
+
+type: DeclarativeSource
+
+description: Gmail is the email service provided by Google.
+
+check:
+  type: CheckStream
+  stream_names:
+    - messages
+
+definitions:
+  streams:
+    profile:
+      type: DeclarativeStream
+      name: profile
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: profile
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profile"
+    drafts:
+      type: DeclarativeStream
+      name: drafts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: drafts
+          http_method: GET
+          request_parameters:
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - drafts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/drafts"
+    labels:
+      type: DeclarativeStream
+      name: labels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: labels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - labels
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels"
+    labels_details:
+      type: DeclarativeStream
+      name: labels_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: labels/{{ stream_partition['label_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: label_id
+              stream:
+                $ref: "#/definitions/streams/labels"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels_details"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: messages
+          http_method: GET
+          request_parameters:
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+    messages_details:
+      type: DeclarativeStream
+      name: messages_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: messages/{{ stream_partition['message_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: message_id
+              stream:
+                $ref: "#/definitions/streams/messages"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages_details"
+    threads:
+      type: DeclarativeStream
+      name: threads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: threads
+          http_method: GET
+          request_parameters:
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - threads
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/threads"
+    threads_details:
+      type: DeclarativeStream
+      name: threads_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: threads/{{ stream_partition['thread_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: thread_id
+              stream:
+                $ref: "#/definitions/streams/threads"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/threads_details"
+  base_requester:
+    type: HttpRequester
+    url_base: https://gmail.googleapis.com/gmail/v1/users/me/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: https://accounts.google.com/o/oauth2/token
+
+streams:
+  - $ref: "#/definitions/streams/profile"
+  - $ref: "#/definitions/streams/drafts"
+  - $ref: "#/definitions/streams/labels"
+  - $ref: "#/definitions/streams/labels_details"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/messages_details"
+  - $ref: "#/definitions/streams/threads"
+  - $ref: "#/definitions/streams/threads_details"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      client_id:
+        type: string
+        name: client_id
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        name: client_secret
+        order: 1
+        title: OAuth Client Secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      include_spam_and_trash:
+        type: boolean
+        description: >-
+          Include drafts/messages from SPAM and TRASH in the results. Defaults
+          to false.
+        title: Include Spam & Trash
+        default: false
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    profile: true
+    drafts: true
+    labels: true
+    labels_details: true
+    messages: true
+    messages_details: true
+    threads: true
+    threads_details: true
+  testedStreams:
+    profile:
+      streamHash: de8ec9652feea6f68ec8f01e4eaf55d9eedd699c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    drafts:
+      streamHash: db71b4ac2b1257ae7b4ca3b6c497cb4c8e07c4a0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    labels:
+      streamHash: 6f0d1bfff4c347b58286ac9aab4122ac4a311081
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    labels_details:
+      streamHash: 0b603b9937e45f8c2f5db4bbbc137a85cde47131
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    messages:
+      streamHash: fa1bd97935f082f221bf5a6f167cf70d1179300a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    messages_details:
+      streamHash: fc9ca9148f1ec7f8275d492984ee2e4c2bb0448a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    threads:
+      streamHash: 163d9e70bdd06a96992a53995e564a761af1237f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    threads_details:
+      streamHash: ff2949698e82fb5b0a7ae89ee4e19c06d39b6702
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/gmail/api/guides
+
+schemas:
+  profile:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      emailAddress:
+        type:
+          - string
+          - "null"
+      historyId:
+        type:
+          - string
+          - "null"
+      messagesTotal:
+        type:
+          - number
+          - "null"
+      threadsTotal:
+        type:
+          - number
+          - "null"
+  drafts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      message:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          threadId:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      labelListVisibility:
+        type:
+          - string
+          - "null"
+      messageListVisibility:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  labels_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      labelListVisibility:
+        type:
+          - string
+          - "null"
+      messageListVisibility:
+        type:
+          - string
+          - "null"
+      messagesTotal:
+        type:
+          - number
+          - "null"
+      messagesUnread:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      threadsTotal:
+        type:
+          - number
+          - "null"
+      threadsUnread:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      threadId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  messages_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      historyId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      internalDate:
+        type:
+          - string
+          - "null"
+      labelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      payload:
+        type:
+          - object
+          - "null"
+        properties:
+          body:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - number
+                  - "null"
+          filename:
+            type:
+              - string
+              - "null"
+          headers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          mimeType:
+            type:
+              - string
+              - "null"
+          partId:
+            type:
+              - string
+              - "null"
+          parts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                body:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    data:
+                      type:
+                        - string
+                        - "null"
+                    size:
+                      type:
+                        - number
+                        - "null"
+                filename:
+                  type:
+                    - string
+                    - "null"
+                headers:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                mimeType:
+                  type:
+                    - string
+                    - "null"
+                partId:
+                  type:
+                    - string
+                    - "null"
+      sizeEstimate:
+        type:
+          - number
+          - "null"
+      snippet:
+        type:
+          - string
+          - "null"
+      threadId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  threads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      historyId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      snippet:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  threads_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      historyId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      messages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            historyId:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            internalDate:
+              type:
+                - string
+                - "null"
+            labelIds:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            payload:
+              type:
+                - object
+                - "null"
+              properties:
+                body:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    data:
+                      type:
+                        - string
+                        - "null"
+                    size:
+                      type:
+                        - number
+                        - "null"
+                filename:
+                  type:
+                    - string
+                    - "null"
+                headers:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                mimeType:
+                  type:
+                    - string
+                    - "null"
+                partId:
+                  type:
+                    - string
+                    - "null"
+                parts:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      body:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - string
+                              - "null"
+                          size:
+                            type:
+                              - number
+                              - "null"
+                      filename:
+                        type:
+                          - string
+                          - "null"
+                      headers:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            name:
+                              type:
+                                - string
+                                - "null"
+                            value:
+                              type:
+                                - string
+                                - "null"
+                      mimeType:
+                        type:
+                          - string
+                          - "null"
+                      partId:
+                        type:
+                          - string
+                          - "null"
+            sizeEstimate:
+              type:
+                - number
+                - "null"
+            snippet:
+              type:
+                - string
+                - "null"
+            threadId:
+              type:
+                - string
+                - "null"
+    required:
+      - id

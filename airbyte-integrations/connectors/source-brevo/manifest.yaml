@@ -1,0 +1,5129 @@
+version: 6.33.4
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.brevo.com/
+  Auth page: https://app.brevo.com/settings/keys/api
+  API Docs: https://developers.brevo.com/reference/getting-started-1
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+
+definitions:
+  streams:
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedSince
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    contacts_attributes:
+      type: DeclarativeStream
+      name: contacts_attributes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/attributes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_attributes"
+    contacts_folders_lists:
+      type: DeclarativeStream
+      name: contacts_folders_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/folders/{{ stream_partition.folderId }}/lists
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: folderId
+              stream:
+                $ref: "#/definitions/streams/contacts_folders"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_folders_lists"
+    contacts_folders:
+      type: DeclarativeStream
+      name: contacts_folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/folders
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - folders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_folders"
+    contacts_segments:
+      type: DeclarativeStream
+      name: contacts_segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/segments
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_segments"
+    contacts_lists_contacts:
+      type: DeclarativeStream
+      name: contacts_lists_contacts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/lists/{{ stream_partition.listId }}/contacts
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: listId
+              stream:
+                $ref: "#/definitions/streams/contacts_lists"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedSince
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_lists_contacts"
+    contacts_lists:
+      type: DeclarativeStream
+      name: contacts_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/lists
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_lists"
+    senders:
+      type: DeclarativeStream
+      name: senders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: senders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - senders
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/senders"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            inject_on_first_request: true
+            start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedSince
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - last_updated_at
+              value: "{{ record['attributes']['last_updated_at'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    companies_attributes:
+      type: DeclarativeStream
+      name: companies_attributes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/attributes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies_attributes"
+    crm_pipeline_stages:
+      type: DeclarativeStream
+      name: crm_pipeline_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/pipeline/details
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - stages
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_pipeline_stages"
+    crm_pipeline_details_all:
+      type: DeclarativeStream
+      name: crm_pipeline_details_all
+      primary_key:
+        - pipeline
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/pipeline/details/all
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_pipeline_details_all"
+    crm_attributes_deals:
+      type: DeclarativeStream
+      name: crm_attributes_deals
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/attributes/deals
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_attributes_deals"
+    crm_deals:
+      type: DeclarativeStream
+      name: crm_deals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/deals
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedSince
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - last_updated_at
+              value: "{{ record['attributes']['last_updated_date'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_deals"
+    crm_tasktypes:
+      type: DeclarativeStream
+      name: crm_tasktypes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/tasktypes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_tasktypes"
+    crm_tasks:
+      type: DeclarativeStream
+      name: crm_tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/tasks
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: dateFrom
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: dateTo
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_tasks"
+    crm_notes:
+      type: DeclarativeStream
+      name: crm_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/notes
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: dateFrom
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: dateTo
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_notes"
+    domains:
+      type: DeclarativeStream
+      name: domains
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: senders/domains
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - domains
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/domains"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: webhooks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    account:
+      type: DeclarativeStream
+      name: account
+      primary_key:
+        - organization_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: account
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account"
+    organization_invited_users:
+      type: DeclarativeStream
+      name: organization_invited_users
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organization/invited/users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_invited_users"
+    emailCampaigns:
+      type: DeclarativeStream
+      name: emailCampaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: emailCampaigns
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/emailCampaigns"
+    smsCampaigns:
+      type: DeclarativeStream
+      name: smsCampaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: smsCampaigns
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/smsCampaigns"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.brevo.com/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/contacts_attributes"
+  - $ref: "#/definitions/streams/contacts_folders_lists"
+  - $ref: "#/definitions/streams/contacts_folders"
+  - $ref: "#/definitions/streams/contacts_segments"
+  - $ref: "#/definitions/streams/contacts_lists_contacts"
+  - $ref: "#/definitions/streams/contacts_lists"
+  - $ref: "#/definitions/streams/senders"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/companies_attributes"
+  - $ref: "#/definitions/streams/crm_pipeline_stages"
+  - $ref: "#/definitions/streams/crm_pipeline_details_all"
+  - $ref: "#/definitions/streams/crm_attributes_deals"
+  - $ref: "#/definitions/streams/crm_deals"
+  - $ref: "#/definitions/streams/crm_tasktypes"
+  - $ref: "#/definitions/streams/crm_tasks"
+  - $ref: "#/definitions/streams/crm_notes"
+  - $ref: "#/definitions/streams/domains"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/organization_invited_users"
+  - $ref: "#/definitions/streams/emailCampaigns"
+  - $ref: "#/definitions/streams/smsCampaigns"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    contacts: true
+    contacts_attributes: true
+    contacts_folders_lists: true
+    contacts_folders: true
+    contacts_segments: true
+    contacts_lists_contacts: true
+    contacts_lists: true
+    senders: true
+    companies: true
+    companies_attributes: true
+    crm_pipeline_stages: true
+    crm_pipeline_details_all: true
+    crm_attributes_deals: true
+    crm_deals: true
+    crm_tasktypes: true
+    crm_tasks: true
+    crm_notes: true
+    domains: true
+    webhooks: true
+    account: true
+    organization_invited_users: true
+    emailCampaigns: true
+    smsCampaigns: true
+  testedStreams:
+    contacts:
+      streamHash: 2828507a390461ed45801e954d30b147696ced08
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts_attributes:
+      hasRecords: true
+      streamHash: e902481da7ba2f81f01e27ba292d9127e1cf4f66
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_folders_lists:
+      hasRecords: true
+      streamHash: 8712455091b8fd4830dd8025ec63db0c46b5ac1a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_folders:
+      hasRecords: true
+      streamHash: f2ba43d4b7ed98243967541a8de810ee9bcbfcfa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_segments:
+      hasRecords: true
+      streamHash: e590face6ace78400f22272f0d810117172ac0b6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_lists_contacts:
+      hasRecords: true
+      streamHash: e230da95e8334f3b305a7ddce25aca44d7044fcd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_lists:
+      hasRecords: true
+      streamHash: 5d919412ca890c5b23e42a19a43a6231dd87b86a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    senders:
+      hasRecords: true
+      streamHash: 4679a5b572ce4bca2838555fe6e2e3f1a2cab361
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      streamHash: fee6ad396129b34f76f812d1c46f10170ee47609
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    companies_attributes:
+      hasRecords: true
+      streamHash: 6a8097c5d8e7ed5ad19d69e55620ab6b9999c1bc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crm_pipeline_stages:
+      hasRecords: true
+      streamHash: b7242b917c570947f24aabb82e3e8b890cd49837
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crm_pipeline_details_all:
+      hasRecords: true
+      streamHash: 644b712a546e281e3798d2dd44b8e2d69eba4dbf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crm_attributes_deals:
+      hasRecords: true
+      streamHash: 606fb33bf2b76c33b4f523cfa93fee7372053ab5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crm_deals:
+      streamHash: 1665b14b43c4ed93321560e0f4c6e74e34bf5d82
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_tasktypes:
+      hasRecords: true
+      streamHash: 25647bfa5703ffed8e4d8d926009fbfb085724b9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crm_tasks:
+      hasRecords: true
+      streamHash: 686b893af13d4701ef3ff058cb8ef3a41c107ece
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    crm_notes:
+      hasRecords: true
+      streamHash: 5c07bbe53fbc3bbc7f7b8c466d62f10cf3ee6292
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    domains:
+      hasRecords: true
+      streamHash: 80c10b88e330d3f06b1720b1d9d6b71bed93b070
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhooks:
+      hasRecords: true
+      streamHash: a0a68907bff3556e642c54c9256ee90dd30234bf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    account:
+      hasRecords: true
+      streamHash: 99bad8d15f8ad4369cfe3f5b19f18d88962c8eee
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_invited_users:
+      hasRecords: true
+      streamHash: 24b547c81dc2de34c1b9f395911b1024ca4f1942
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    emailCampaigns:
+      hasRecords: true
+      streamHash: 950459f995b54d26c3636b5ccbe67940a63eedca
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    smsCampaigns:
+      hasRecords: false
+      streamHash: 0361456084e91bf912c0f2baa9c30e5bd37f0c57
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          ACADEMY_COURSE_ID:
+            type:
+              - string
+              - "null"
+          ACADEMY_NAME:
+            type:
+              - string
+              - "null"
+          ACADEMY_OPTIN:
+            type:
+              - boolean
+              - "null"
+          ACCOUNT_SUB_SOURCE_NAME:
+            type:
+              - string
+              - "null"
+          ALL_PLAN_DETAILS:
+            type:
+              - string
+              - "null"
+          ARCHIVED_DATE:
+            type:
+              - string
+              - "null"
+          AVG_DECLARATIVE_NB_CONTACTS:
+            type:
+              - number
+              - "null"
+          BUSINESS_ACTIVITY:
+            type:
+              - string
+              - "null"
+          BUSINESS_SECTOR:
+            type:
+              - string
+              - "null"
+          CALCUL:
+            type:
+              - number
+              - "null"
+          CAMPAIGNS_SENT_MORE_200_CONTACTS:
+            type:
+              - number
+              - "null"
+          CLEANED_CAMPAIGN_NAME:
+            type:
+              - string
+              - "null"
+          CLIENT_ID:
+            type:
+              - number
+              - "null"
+          COMPANY_NAME:
+            type:
+              - string
+              - "null"
+          COMPANY_SIZE:
+            type:
+              - number
+              - "null"
+          COMPANY_SIZE_STRING:
+            type:
+              - string
+              - "null"
+          COMPANY_WEBSITE:
+            type:
+              - string
+              - "null"
+          CONTINENT:
+            type:
+              - string
+              - "null"
+          COUNTRIES:
+            type:
+              - string
+              - "null"
+          COUNTRY_LIST:
+            type:
+              - string
+              - "null"
+          DE-RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          DE-RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          DOUBLE_OPT-IN:
+            type:
+              - string
+              - "null"
+          ENT_ACCOUNT_FIT_SCORE:
+            type:
+              - number
+              - "null"
+          ENT_ANONYMOUS_ID:
+            type:
+              - string
+              - "null"
+          ENT_CLIENT_CSM:
+            type:
+              - string
+              - "null"
+          ENT_COMPANY_ID:
+            type:
+              - string
+              - "null"
+          ENT_COMPANY_NAME:
+            type:
+              - string
+              - "null"
+          ENT_COUNTRY:
+            type:
+              - string
+              - "null"
+          ENT_DRIFT_STAGE:
+            type:
+              - string
+              - "null"
+          ENT_ENRICHMENT_DATE:
+            type:
+              - string
+              - "null"
+          ENT_FIRST_ENGAGEMENT_DATE:
+            type:
+              - string
+              - "null"
+          ENT_FIRST_LEAD_SOURCE:
+            type:
+              - string
+              - "null"
+          ENT_FIRST_NAME:
+            type:
+              - string
+              - "null"
+          ENT_GLOBAL_SCORE:
+            type:
+              - number
+              - "null"
+          ENT_JOB_TITLE:
+            type:
+              - string
+              - "null"
+          ENT_LANGUAGE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_ENGAGEMENT_DATE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_EVENT_WEBINAR_DATE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_FIELD_EVENT_NAME:
+            type:
+              - string
+              - "null"
+          ENT_LAST_FIELD_EVENT_TYPE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_LEAD_SOURCE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_NAME:
+            type:
+              - string
+              - "null"
+          ENT_LINKEDIN_URL:
+            type:
+              - string
+              - "null"
+          ENT_MP_ANONYMOUS_ID:
+            type:
+              - string
+              - "null"
+          ENT_NEXT_ACTION:
+            type:
+              - string
+              - "null"
+          ENT_PERSONAL_FIT_SCORE:
+            type:
+              - number
+              - "null"
+          ENT_PHONE_NUMBERS:
+            type:
+              - string
+              - "null"
+          ENT_SALESFORCE_CONTACT_ID:
+            type:
+              - string
+              - "null"
+          ENT_SALES_ASSIGNMENT:
+            type:
+              - string
+              - "null"
+          ES-RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          ES-RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          FIRST_INTEGRATION_CREATED_AT:
+            type:
+              - string
+              - "null"
+          FIRST_NAME:
+            type:
+              - string
+              - "null"
+          FIRST_ORDER_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_PAYMENT_KYC_STARTED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_PAYMENT_KYC_SUBMITTED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_PAYMENT_KYC_VALIDATED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_WHATSAPP_ONBOARDING_COMPLETED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_WHATSAPP_ONBOARDING_START_DATE:
+            type:
+              - string
+              - "null"
+          FR-RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          FR-RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          FREE_PLAN_LIMIT_60_REACHED_DATE:
+            type:
+              - string
+              - "null"
+          FREE_PLAN_LIMIT_80_REACHED_DATE:
+            type:
+              - string
+              - "null"
+          HAS_ANY_INTEGRATION_ENABLED:
+            type:
+              - number
+              - "null"
+          HAS_PAID_PLAN:
+            type:
+              - number
+              - "null"
+          ID:
+            type:
+              - number
+              - "null"
+          INDUSTRY_NAME:
+            type:
+              - string
+              - "null"
+          INTEGRATION_DETAILS:
+            type:
+              - string
+              - "null"
+          IS_ACCOUNT_VALIDATED:
+            type:
+              - string
+              - "null"
+          IS_ARCHIVED:
+            type:
+              - number
+              - "null"
+          IS_BOT:
+            type:
+              - number
+              - "null"
+          IS_CHURNED:
+            type:
+              - number
+              - "null"
+          IS_CHURNED_PLANHAT:
+            type:
+              - number
+              - "null"
+          IS_CONTACT_IN_PLANHAT:
+            type:
+              - number
+              - "null"
+          IS_CONVERSATIONS_TO_BE_BILLED:
+            type:
+              - number
+              - "null"
+          IS_DELETED:
+            type:
+              - number
+              - "null"
+          IS_ENTERPRISE:
+            type:
+              - number
+              - "null"
+          IS_FREE_PLAN_LIMIT_60_REACHED:
+            type:
+              - number
+              - "null"
+          IS_FREE_PLAN_LIMIT_80_REACHED:
+            type:
+              - number
+              - "null"
+          IS_IDLE:
+            type:
+              - number
+              - "null"
+          IS_INTERNAL:
+            type:
+              - number
+              - "null"
+          IS_LOCKED:
+            type:
+              - number
+              - "null"
+          IS_ORG_IN_PLANHAT:
+            type:
+              - number
+              - "null"
+          IS_PROFILE_COMPLETED:
+            type:
+              - number
+              - "null"
+          IS_SELL_ONLINE:
+            type:
+              - number
+              - "null"
+          IS_TRANSACTIONAL_EMAIL_VALIDATED:
+            type:
+              - number
+              - "null"
+          IS_VIP_CUSTOMER:
+            type:
+              - number
+              - "null"
+          IT_RECEIVE_COMPANY_NEWS:
+            type:
+              - boolean
+              - "null"
+          IT_RECEIVE_PRODUCT_NEWS:
+            type:
+              - boolean
+              - "null"
+          LANGUAGE:
+            type:
+              - string
+              - "null"
+          LAST_ACTIVITY_DATE:
+            type:
+              - string
+              - "null"
+          LAST_AUTOMATION_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CHURN_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CHURN_REASONS:
+            type:
+              - string
+              - "null"
+          LAST_CONVERSATION_ONBOARDING_STARTED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CONVERSATION_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CRM_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_EMAIL_CAMPAIGN_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_EMAIL_TRANSAC_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_EVENT_DATE:
+            type:
+              - string
+              - "null"
+          LAST_INTEGRATION_CREATED_AT:
+            type:
+              - string
+              - "null"
+          LAST_MEETING_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            type:
+              - string
+              - "null"
+          LAST_ORDER_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PAYMENT_LINKS_CREATED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PAYMENT_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PROFILE_COMPLETED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PUSH_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_REGISTRATION_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SEEN_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SMS_MARKETING_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SMS_TRANSAC_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SMS_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_WHATSAPP_USED_DATE:
+            type:
+              - string
+              - "null"
+          LEADS_OPT_IN:
+            type:
+              - boolean
+              - "null"
+          MAX_CURRENT_MRR_EURO:
+            type:
+              - number
+              - "null"
+          MAX_HEALTH_SCORE_PLANHAT:
+            type:
+              - number
+              - "null"
+          MAX_MONTHLY_AVG_NB_EMAIL_MARKETING_LAST_3_MONTHS:
+            type:
+              - number
+              - "null"
+          MAX_MONTHLY_AVG_NB_EMAIL_TRANSAC_LAST_3_MONTHS:
+            type:
+              - number
+              - "null"
+          MAX_NB_USERS:
+            type:
+              - number
+              - "null"
+          MA_ANNIVERSARY_REGISTRATION_DATE:
+            type:
+              - string
+              - "null"
+          MEETINGS_SLUG:
+            type:
+              - string
+              - "null"
+          MIN_CONTACTS_COUNT:
+            type:
+              - number
+              - "null"
+          MIN_NB_CAMPAIGNS_SENT_LAST_60_DAYS:
+            type:
+              - number
+              - "null"
+          MIN_NUMBER_SMTP_SENT_LAST_30_DAYS:
+            type:
+              - number
+              - "null"
+          MP_HISTORICAL_NURTURING_FLOWS:
+            type:
+              - string
+              - "null"
+          MP_MARKETING_OPTIN_2024:
+            type:
+              - boolean
+              - "null"
+          NB_CAMPAIGNS_SENT_MORE_100_CONTACTS:
+            type:
+              - number
+              - "null"
+          NB_CAMPAIGNS_SENT_MORE_200_CONTACTS:
+            type:
+              - number
+              - "null"
+          NB_FREE_PLAN_LIMIT_60_REACHED:
+            type:
+              - number
+              - "null"
+          NB_FREE_PLAN_LIMIT_80_REACHED:
+            type:
+              - number
+              - "null"
+          NEXT_PAYMENT_DATE:
+            type:
+              - string
+              - "null"
+          NOM:
+            type:
+              - string
+              - "null"
+          NPS_IN_APP_SENTIMENT:
+            type:
+              - string
+              - "null"
+          NPS_IN_APP_SENTIMENT_DATE:
+            type:
+              - string
+              - "null"
+          NPS_IN_APP_SENTIMENT_TOPIC:
+            type:
+              - string
+              - "null"
+          NPS_SCORE_IN_APP:
+            type:
+              - number
+              - "null"
+          NPS_SCORE_IN_APP_DATE:
+            type:
+              - string
+              - "null"
+          OLD_ACCOUNT_LIST_ATTR_TEXT:
+            type:
+              - string
+              - "null"
+          OLD_ID:
+            type:
+              - number
+              - "null"
+          ORGANIZATION_IDS:
+            type:
+              - string
+              - "null"
+          PAYMENT_EMAIL:
+            type:
+              - string
+              - "null"
+          PHONE_NUMBER:
+            type:
+              - string
+              - "null"
+          PRENOM:
+            type:
+              - string
+              - "null"
+          PROFILE_COMPLETED_DATE:
+            type:
+              - string
+              - "null"
+          RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          REGIONS:
+            type:
+              - string
+              - "null"
+          REGISTRATION_DATE:
+            type:
+              - string
+              - "null"
+          RENEWAL_PROBABILITIES:
+            type:
+              - string
+              - "null"
+          REVIEW_PLATFORM:
+            type:
+              - string
+              - "null"
+          SMS:
+            type:
+              - string
+              - "null"
+          SUM_ACTIVE_MA_SCENARIOS_COUNT:
+            type:
+              - number
+              - "null"
+          SUM_NB_CONVERSATION_EVENTS:
+            type:
+              - number
+              - "null"
+          SUM_NB_EMAIL_CAMPAIGN:
+            type:
+              - number
+              - "null"
+          SUM_NB_EMAIL_TRANSAC:
+            type:
+              - number
+              - "null"
+          SUM_NB_MEETING_BOOKED:
+            type:
+              - number
+              - "null"
+          SUM_NB_PAYMENT_LINKS_CREATED:
+            type:
+              - number
+              - "null"
+          SUM_NB_PHONE_COMPLETED:
+            type:
+              - number
+              - "null"
+          SUM_NB_SMS:
+            type:
+              - number
+              - "null"
+          SUM_NB_WEBPUSH_EVENTS:
+            type:
+              - number
+              - "null"
+          SUM_NB_WHATSAPP_MARKETING:
+            type:
+              - number
+              - "null"
+          SUM_NB_WHATSAPP_TRANSAC:
+            type:
+              - number
+              - "null"
+          SUM_TOTAL_ORDER_AMOUNT:
+            type:
+              - number
+              - "null"
+          TEMPLATE_ID:
+            type:
+              - string
+              - "null"
+          TEMP_ANTICHURN_COUPON_PAYING:
+            type:
+              - string
+              - "null"
+          USER_TYPES:
+            type:
+              - string
+              - "null"
+          UTM_CAMPAIGN:
+            type:
+              - string
+              - "null"
+          UTM_MEDIUM:
+            type:
+              - string
+              - "null"
+          UTM_TERM:
+            type:
+              - string
+              - "null"
+          VIA_SALES_ACOUNT_MIGRATION:
+            type:
+              - boolean
+              - "null"
+          WORKFLOW_ID:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emailBlacklisted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      listIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      modifiedAt:
+        type: string
+      smsBlacklisted:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - modifiedAt
+  contacts_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      calculatedValue:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      enumeration:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+      field_key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+  contacts_folders_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      totalBlacklisted:
+        type:
+          - number
+          - "null"
+      totalSubscribers:
+        type:
+          - number
+          - "null"
+      uniqueSubscribers:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  contacts_folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      totalBlacklisted:
+        type:
+          - number
+          - "null"
+      totalSubscribers:
+        type:
+          - number
+          - "null"
+      uniqueSubscribers:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  contacts_segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      categoryName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      segmentName:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  contacts_lists_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          ACADEMY_COURSE_ID:
+            type:
+              - string
+              - "null"
+          ACADEMY_EMM_CERTIFICATE:
+            type:
+              - boolean
+              - "null"
+          ACADEMY_NAME:
+            type:
+              - string
+              - "null"
+          ACADEMY_OPTIN:
+            type:
+              - boolean
+              - "null"
+          ACCOUNT_SUB_SOURCE_NAME:
+            type:
+              - string
+              - "null"
+          ALL_PLAN_DETAILS:
+            type:
+              - string
+              - "null"
+          ARCHIVED_DATE:
+            type:
+              - string
+              - "null"
+          AVG_DECLARATIVE_NB_CONTACTS:
+            type:
+              - number
+              - "null"
+          BUSINESS_ACTIVITY:
+            type:
+              - string
+              - "null"
+          BUSINESS_SECTOR:
+            type:
+              - string
+              - "null"
+          CALCUL:
+            type:
+              - number
+              - "null"
+          CAMPAIGNS_SENT_MORE_200_CONTACTS:
+            type:
+              - number
+              - "null"
+          CLEANED_CAMPAIGN_NAME:
+            type:
+              - string
+              - "null"
+          COMPANY_NAME:
+            type:
+              - string
+              - "null"
+          COMPANY_SIZE:
+            type:
+              - number
+              - "null"
+          COMPANY_SIZE_STRING:
+            type:
+              - string
+              - "null"
+          COMPANY_WEBSITE:
+            type:
+              - string
+              - "null"
+          CONTINENT:
+            type:
+              - string
+              - "null"
+          COUNTRIES:
+            type:
+              - string
+              - "null"
+          COUNTRY_LIST:
+            type:
+              - string
+              - "null"
+          DE-RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          DE-RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          DE_DATAPRIVACY:
+            type:
+              - boolean
+              - "null"
+          DOUBLE_OPT-IN:
+            type:
+              - string
+              - "null"
+          ENT_ACCOUNT_FIT_SCORE:
+            type:
+              - number
+              - "null"
+          ENT_ANONYMOUS_ID:
+            type:
+              - string
+              - "null"
+          ENT_CLIENT_CSM:
+            type:
+              - string
+              - "null"
+          ENT_COMPANY_ID:
+            type:
+              - string
+              - "null"
+          ENT_COMPANY_NAME:
+            type:
+              - string
+              - "null"
+          ENT_COUNTRY:
+            type:
+              - string
+              - "null"
+          ENT_DRIFT_STAGE:
+            type:
+              - string
+              - "null"
+          ENT_ENRICHMENT_DATE:
+            type:
+              - string
+              - "null"
+          ENT_FIRST_ENGAGEMENT_DATE:
+            type:
+              - string
+              - "null"
+          ENT_FIRST_LEAD_SOURCE:
+            type:
+              - string
+              - "null"
+          ENT_FIRST_NAME:
+            type:
+              - string
+              - "null"
+          ENT_GLOBAL_SCORE:
+            type:
+              - number
+              - "null"
+          ENT_HUBSPOT_ID:
+            type:
+              - string
+              - "null"
+          ENT_JOB_TITLE:
+            type:
+              - string
+              - "null"
+          ENT_LANGUAGE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_ENGAGEMENT_DATE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_EVENT_WEBINAR_DATE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_FIELD_EVENT_NAME:
+            type:
+              - string
+              - "null"
+          ENT_LAST_FIELD_EVENT_TYPE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_LEAD_SOURCE:
+            type:
+              - string
+              - "null"
+          ENT_LAST_NAME:
+            type:
+              - string
+              - "null"
+          ENT_LINKEDIN_URL:
+            type:
+              - string
+              - "null"
+          ENT_MP_ANONYMOUS_ID:
+            type:
+              - string
+              - "null"
+          ENT_NEXT_ACTION:
+            type:
+              - string
+              - "null"
+          ENT_PERSONAL_FIT_SCORE:
+            type:
+              - number
+              - "null"
+          ENT_PHONE_NUMBERS:
+            type:
+              - string
+              - "null"
+          ENT_SALESFORCE_CONTACT_ID:
+            type:
+              - string
+              - "null"
+          ES-RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          ES-RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          FIRST_INTEGRATION_CREATED_AT:
+            type:
+              - string
+              - "null"
+          FIRST_NAME:
+            type:
+              - string
+              - "null"
+          FIRST_ORDER_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_PAYMENT_KYC_STARTED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_PAYMENT_KYC_SUBMITTED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_PAYMENT_KYC_VALIDATED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_WHATSAPP_ONBOARDING_COMPLETED_DATE:
+            type:
+              - string
+              - "null"
+          FIRST_WHATSAPP_ONBOARDING_START_DATE:
+            type:
+              - string
+              - "null"
+          FR-RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          FR-RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          FREE_PLAN_LIMIT_60_REACHED_DATE:
+            type:
+              - string
+              - "null"
+          FREE_PLAN_LIMIT_80_REACHED_DATE:
+            type:
+              - string
+              - "null"
+          HAS_ANY_INTEGRATION_ENABLED:
+            type:
+              - number
+              - "null"
+          HAS_PAID_PLAN:
+            type:
+              - number
+              - "null"
+          ID:
+            type:
+              - number
+              - "null"
+          INDUSTRY_NAME:
+            type:
+              - string
+              - "null"
+          INTEGRATION_DETAILS:
+            type:
+              - string
+              - "null"
+          IS_ACCOUNT_VALIDATED:
+            type:
+              - string
+              - "null"
+          IS_ARCHIVED:
+            type:
+              - number
+              - "null"
+          IS_BOT:
+            type:
+              - number
+              - "null"
+          IS_CHURNED:
+            type:
+              - number
+              - "null"
+          IS_CHURNED_PLANHAT:
+            type:
+              - number
+              - "null"
+          IS_CONTACT_IN_PLANHAT:
+            type:
+              - number
+              - "null"
+          IS_CONVERSATIONS_TO_BE_BILLED:
+            type:
+              - number
+              - "null"
+          IS_DELETED:
+            type:
+              - number
+              - "null"
+          IS_ENTERPRISE:
+            type:
+              - number
+              - "null"
+          IS_FREE_PLAN_LIMIT_60_REACHED:
+            type:
+              - number
+              - "null"
+          IS_FREE_PLAN_LIMIT_80_REACHED:
+            type:
+              - number
+              - "null"
+          IS_IDLE:
+            type:
+              - number
+              - "null"
+          IS_INTERNAL:
+            type:
+              - number
+              - "null"
+          IS_LOCKED:
+            type:
+              - number
+              - "null"
+          IS_ORG_IN_PLANHAT:
+            type:
+              - number
+              - "null"
+          IS_PROFILE_COMPLETED:
+            type:
+              - number
+              - "null"
+          IS_SELL_ONLINE:
+            type:
+              - number
+              - "null"
+          IS_TRANSACTIONAL_EMAIL_VALIDATED:
+            type:
+              - number
+              - "null"
+          IS_VIP_CUSTOMER:
+            type:
+              - number
+              - "null"
+          LANGUAGE:
+            type:
+              - string
+              - "null"
+          LAST_ACTIVITY_DATE:
+            type:
+              - string
+              - "null"
+          LAST_AUTOMATION_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CHURN_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CHURN_REASONS:
+            type:
+              - string
+              - "null"
+          LAST_CONVERSATION_ONBOARDING_STARTED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CONVERSATION_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_CRM_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_EMAIL_CAMPAIGN_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_EMAIL_TRANSAC_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_EVENT_DATE:
+            type:
+              - string
+              - "null"
+          LAST_EVENT_NAME:
+            type:
+              - string
+              - "null"
+          LAST_INTEGRATION_CREATED_AT:
+            type:
+              - string
+              - "null"
+          LAST_MEETING_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            type:
+              - string
+              - "null"
+          LAST_ORDER_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PAYMENT_LINKS_CREATED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PAYMENT_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PROFILE_COMPLETED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_PUSH_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_REGISTRATION_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SEEN_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SMS_MARKETING_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SMS_TRANSAC_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_SMS_USED_DATE:
+            type:
+              - string
+              - "null"
+          LAST_WHATSAPP_USED_DATE:
+            type:
+              - string
+              - "null"
+          LEADS_OPT_IN:
+            type:
+              - boolean
+              - "null"
+          MAX_CURRENT_MRR_EURO:
+            type:
+              - number
+              - "null"
+          MAX_HEALTH_SCORE_PLANHAT:
+            type:
+              - number
+              - "null"
+          MAX_MONTHLY_AVG_NB_EMAIL_MARKETING_LAST_3_MONTHS:
+            type:
+              - number
+              - "null"
+          MAX_MONTHLY_AVG_NB_EMAIL_TRANSAC_LAST_3_MONTHS:
+            type:
+              - number
+              - "null"
+          MAX_NB_USERS:
+            type:
+              - number
+              - "null"
+          MA_ANNIVERSARY_REGISTRATION_DATE:
+            type:
+              - string
+              - "null"
+          MEETINGS_SLUG:
+            type:
+              - string
+              - "null"
+          MIN_CONTACTS_COUNT:
+            type:
+              - number
+              - "null"
+          MIN_NB_CAMPAIGNS_SENT_LAST_60_DAYS:
+            type:
+              - number
+              - "null"
+          MIN_NUMBER_SMTP_SENT_LAST_30_DAYS:
+            type:
+              - number
+              - "null"
+          MP_CURRENT_NURTURING_FLOW:
+            type:
+              - string
+              - "null"
+          MP_HISTORICAL_NURTURING_FLOWS:
+            type:
+              - string
+              - "null"
+          MP_MARKETING_OPTIN_2024:
+            type:
+              - boolean
+              - "null"
+          MP_NURTURING_STATUS:
+            type:
+              - string
+              - "null"
+          NB_CAMPAIGNS_SENT_MORE_100_CONTACTS:
+            type:
+              - number
+              - "null"
+          NB_CAMPAIGNS_SENT_MORE_200_CONTACTS:
+            type:
+              - number
+              - "null"
+          NB_FREE_PLAN_LIMIT_60_REACHED:
+            type:
+              - number
+              - "null"
+          NB_FREE_PLAN_LIMIT_80_REACHED:
+            type:
+              - number
+              - "null"
+          NEXT_PAYMENT_DATE:
+            type:
+              - string
+              - "null"
+          NOM:
+            type:
+              - string
+              - "null"
+          NPS_IN_APP_SENTIMENT_DATE:
+            type:
+              - string
+              - "null"
+          NPS_IN_APP_SENTIMENT_TOPIC:
+            type:
+              - string
+              - "null"
+          NPS_SCORE_IN_APP:
+            type:
+              - number
+              - "null"
+          NPS_SCORE_IN_APP_DATE:
+            type:
+              - string
+              - "null"
+          OLD_ACCOUNT_LIST_ATTR_TEXT:
+            type:
+              - string
+              - "null"
+          OLD_ID:
+            type:
+              - number
+              - "null"
+          ORGANIZATION_IDS:
+            type:
+              - string
+              - "null"
+          PAYMENT_EMAIL:
+            type:
+              - string
+              - "null"
+          PHONE_NUMBER:
+            type:
+              - string
+              - "null"
+          PRENOM:
+            type:
+              - string
+              - "null"
+          PROFILE_COMPLETED_DATE:
+            type:
+              - string
+              - "null"
+          RECEIVE-COMPANY-NEWS:
+            type:
+              - boolean
+              - "null"
+          RECEIVE-PRODUCT-NEWS:
+            type:
+              - boolean
+              - "null"
+          REGIONS:
+            type:
+              - string
+              - "null"
+          REGISTRATION_DATE:
+            type:
+              - string
+              - "null"
+          RENEWAL_PROBABILITIES:
+            type:
+              - string
+              - "null"
+          REVIEW_PLATFORM:
+            type:
+              - string
+              - "null"
+          SMS:
+            type:
+              - string
+              - "null"
+          SUM_ACTIVE_MA_SCENARIOS_COUNT:
+            type:
+              - number
+              - "null"
+          SUM_NB_CONVERSATION_EVENTS:
+            type:
+              - number
+              - "null"
+          SUM_NB_EMAIL_CAMPAIGN:
+            type:
+              - number
+              - "null"
+          SUM_NB_EMAIL_TRANSAC:
+            type:
+              - number
+              - "null"
+          SUM_NB_MEETING_BOOKED:
+            type:
+              - number
+              - "null"
+          SUM_NB_PAYMENT_LINKS_CREATED:
+            type:
+              - number
+              - "null"
+          SUM_NB_PHONE_COMPLETED:
+            type:
+              - number
+              - "null"
+          SUM_NB_SMS:
+            type:
+              - number
+              - "null"
+          SUM_NB_WEBPUSH_EVENTS:
+            type:
+              - number
+              - "null"
+          SUM_NB_WHATSAPP_MARKETING:
+            type:
+              - number
+              - "null"
+          SUM_NB_WHATSAPP_TRANSAC:
+            type:
+              - number
+              - "null"
+          SUM_TOTAL_ORDER_AMOUNT:
+            type:
+              - number
+              - "null"
+          USER_TYPES:
+            type:
+              - string
+              - "null"
+          UTM_CAMPAIGN:
+            type:
+              - string
+              - "null"
+          UTM_MEDIUM:
+            type:
+              - string
+              - "null"
+          UTM_TERM:
+            type:
+              - string
+              - "null"
+          VIA_SALES_ACOUNT_MIGRATION:
+            type:
+              - boolean
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emailBlacklisted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      listIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      modifiedAt:
+        type: string
+      smsBlacklisted:
+        type:
+          - boolean
+          - "null"
+    required:
+      - modifiedAt
+  contacts_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      folderId:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      totalBlacklisted:
+        type:
+          - number
+          - "null"
+      totalSubscribers:
+        type:
+          - number
+          - "null"
+      uniqueSubscribers:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  senders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      ips:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          account_type:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          ent_account_fit_score:
+            type:
+              - number
+              - "null"
+          ent_annual_revenue:
+            type:
+              - string
+              - "null"
+          ent_country:
+            type:
+              - string
+              - "null"
+          ent_hubspot_id:
+            type:
+              - string
+              - "null"
+          ent_industry_tags:
+            type:
+              - string
+              - "null"
+          ent_language:
+            type:
+              - string
+              - "null"
+          ent_linkedin_url:
+            type:
+              - string
+              - "null"
+          ent_number_of_employees_range:
+            type:
+              - string
+              - "null"
+          ent_salesforce_account_id:
+            type:
+              - string
+              - "null"
+          ent_website_traffic:
+            type:
+              - number
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          last_updated_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          next_activity_date:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+          number_of_activities:
+            type:
+              - number
+              - "null"
+          number_of_contacts:
+            type:
+              - number
+              - "null"
+          number_of_employees:
+            type:
+              - string
+              - "null"
+          owner:
+            type:
+              - string
+              - "null"
+          owner_assign_date:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          revenue:
+            type:
+              - number
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_updated_at:
+        type: string
+      linkedContactsIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      linkedDealsIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+      - last_updated_at
+  companies_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributeOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      attributeTypeName:
+        type:
+          - string
+          - "null"
+      internalName:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+  crm_pipeline_stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  crm_pipeline_details_all:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      pipeline:
+        type: string
+      pipeline_name:
+        type:
+          - string
+          - "null"
+      stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+    required:
+      - pipeline
+  crm_attributes_deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributeOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      attributeTypeName:
+        type:
+          - string
+          - "null"
+      internalName:
+        type:
+          - string
+          - "null"
+      isRequired:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+  crm_deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          actual_close_date:
+            type:
+              - string
+              - "null"
+          amount:
+            type:
+              - number
+              - "null"
+          amount_in_base_currency:
+            type:
+              - number
+              - "null"
+          close_date:
+            type:
+              - string
+              - "null"
+          closed_lost_reason:
+            type:
+              - string
+              - "null"
+          closed_reason:
+            type:
+              - string
+              - "null"
+          closed_won_reason:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          deal_description:
+            type:
+              - string
+              - "null"
+          deal_name:
+            type:
+              - string
+              - "null"
+          deal_owner:
+            type:
+              - string
+              - "null"
+          deal_stage:
+            type:
+              - string
+              - "null"
+          ent_anonymous_id:
+            type:
+              - string
+              - "null"
+          ent_company_domain:
+            type:
+              - string
+              - "null"
+          ent_contract_details:
+            type:
+              - string
+              - "null"
+          ent_contract_start_date:
+            type:
+              - string
+              - "null"
+          ent_country:
+            type:
+              - string
+              - "null"
+          ent_current_tool:
+            type:
+              - string
+              - "null"
+          ent_deal_source:
+            type:
+              - string
+              - "null"
+          ent_deal_type:
+            type:
+              - string
+              - "null"
+          ent_discovery_date:
+            type:
+              - string
+              - "null"
+          ent_drift_meeting_id:
+            type:
+              - string
+              - "null"
+          ent_first_meeting_booked_date:
+            type:
+              - string
+              - "null"
+          ent_forecast_category:
+            type:
+              - string
+              - "null"
+          ent_hubspot_id:
+            type:
+              - string
+              - "null"
+          ent_language:
+            type:
+              - string
+              - "null"
+          ent_last_touchpoint:
+            type:
+              - string
+              - "null"
+          ent_lost_to:
+            type:
+              - string
+              - "null"
+          ent_lost_type:
+            type:
+              - string
+              - "null"
+          ent_modules:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          ent_mql_date:
+            type:
+              - string
+              - "null"
+          ent_mrr_margin:
+            type:
+              - number
+              - string
+              - "null"
+          ent_mrr_without_sms:
+            type:
+              - number
+              - "null"
+          ent_pipeline_source:
+            type:
+              - string
+              - "null"
+          ent_pro_services:
+            type:
+              - number
+              - "null"
+          ent_product_details:
+            type:
+              - string
+              - "null"
+          ent_recycling_date:
+            type:
+              - string
+              - "null"
+          ent_salesforce_opportunity_id:
+            type:
+              - string
+              - "null"
+          ent_sbdr_owner:
+            type:
+              - string
+              - "null"
+          ent_se_owner:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          ent_second_owner:
+            type:
+              - string
+              - "null"
+          ent_sql_date:
+            type:
+              - string
+              - "null"
+          ent_sqo_date:
+            type:
+              - string
+              - "null"
+          ent_tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          ent_tier_sales:
+            type:
+              - string
+              - "null"
+          ent_uid:
+            type:
+              - string
+              - "null"
+          ent_win_against:
+            type:
+              - string
+              - "null"
+          entleadsource:
+            type:
+              - string
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          last_activity_date:
+            type:
+              - string
+              - "null"
+          last_updated_at:
+            type:
+              - string
+              - "null"
+          last_updated_date:
+            type:
+              - string
+              - "null"
+          lost_reason:
+            type:
+              - string
+              - "null"
+          number_of_activities:
+            type:
+              - number
+              - "null"
+          number_of_contacts:
+            type:
+              - number
+              - "null"
+          pipeline:
+            type:
+              - string
+              - "null"
+          stage_updated_at:
+            type:
+              - string
+              - "null"
+          total_revenue:
+            type:
+              - number
+              - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_updated_at:
+        type: string
+      linkedCompaniesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      linkedContactsIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      refs:
+        type:
+          - object
+          - "null"
+    required:
+      - id
+      - last_updated_at
+  crm_tasktypes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  crm_tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assignToId:
+        type:
+          - string
+          - "null"
+      companiesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      contactsIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      dealsIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      done:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - boolean
+          - "null"
+      taskTypeId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  crm_notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          locale:
+            type:
+              - string
+              - "null"
+          memberships:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                organization:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    mongoId:
+                      type:
+                        - string
+                        - "null"
+                    mySqlId:
+                      type:
+                        - number
+                        - "null"
+                rank:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              fullName:
+                type:
+                  - string
+                  - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      authorId:
+        type:
+          - string
+          - "null"
+      companyIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      contactIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      dealIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      pinnedAt:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  domains:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      authenticated:
+        type:
+          - boolean
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          creationDate:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      dc_status:
+        type:
+          - string
+          - "null"
+      domain_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      provider:
+        type:
+          - string
+          - "null"
+      verified:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      events:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: number
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+          zipCode:
+            type:
+              - string
+              - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      enterprise:
+        type:
+          - boolean
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      marketingAutomation:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+      organization_id:
+        type: string
+      plan:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            credits:
+              type:
+                - number
+                - "null"
+            creditsType:
+              type:
+                - string
+                - "null"
+            endDate:
+              type:
+                - string
+                - "null"
+            startDate:
+              type:
+                - string
+                - "null"
+      planVerticals:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            credits:
+              type:
+                - string
+                - "null"
+            endDate:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            planCategory:
+              type:
+                - string
+                - "null"
+            planType:
+              type:
+                - string
+                - "null"
+            startDate:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            users:
+              type:
+                - object
+                - "null"
+              properties:
+                purchasedSeats:
+                  type:
+                    - string
+                    - "null"
+                usedSeats:
+                  type:
+                    - string
+                    - "null"
+      relay:
+        type:
+          - object
+          - "null"
+        properties:
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              port:
+                type:
+                  - number
+                  - "null"
+              relay:
+                type:
+                  - string
+                  - "null"
+              userName:
+                type:
+                  - string
+                  - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+    required:
+      - organization_id
+  organization_invited_users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type: string
+      feature_access:
+        type:
+          - object
+          - "null"
+        properties:
+          conversations:
+            type:
+              - string
+              - "null"
+          crm:
+            type:
+              - string
+              - "null"
+          marketing:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          transactional:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      is_owner:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - email
+  emailCampaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      abTesting:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      emailExpirationDate:
+        type:
+          - object
+          - "null"
+        properties:
+          duration:
+            type:
+              - number
+              - "null"
+          unit:
+            type:
+              - string
+              - "null"
+      footer:
+        type:
+          - string
+          - "null"
+      header:
+        type:
+          - string
+          - "null"
+      htmlContent:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      inlineImageActivation:
+        type:
+          - boolean
+          - "null"
+      mirrorActive:
+        type:
+          - boolean
+          - "null"
+      modifiedAt:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      previewText:
+        type:
+          - string
+          - "null"
+      recipients:
+        type:
+          - object
+          - "null"
+        properties:
+          excludedSegments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          exclusionLists:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          lists:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          segments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      replyTo:
+        type:
+          - string
+          - "null"
+      scheduledAt:
+        type:
+          - string
+          - "null"
+      sendAtBestTime:
+        type:
+          - boolean
+          - "null"
+      sender:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      sentDate:
+        type:
+          - string
+          - "null"
+      shareLink:
+        type:
+          - string
+          - "null"
+      splitRule:
+        type:
+          - number
+          - "null"
+      statistics:
+        type:
+          - object
+          - "null"
+        properties:
+          campaignStats:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                clickers:
+                  type:
+                    - number
+                    - "null"
+                complaints:
+                  type:
+                    - number
+                    - "null"
+                deferred:
+                  type:
+                    - number
+                    - "null"
+                delivered:
+                  type:
+                    - number
+                    - "null"
+                hardBounces:
+                  type:
+                    - number
+                    - "null"
+                listId:
+                  type:
+                    - number
+                    - "null"
+                sent:
+                  type:
+                    - number
+                    - "null"
+                softBounces:
+                  type:
+                    - number
+                    - "null"
+                trackableViews:
+                  type:
+                    - number
+                    - "null"
+                uniqueClicks:
+                  type:
+                    - number
+                    - "null"
+                uniqueViews:
+                  type:
+                    - number
+                    - "null"
+                unsubscriptions:
+                  type:
+                    - number
+                    - "null"
+                viewed:
+                  type:
+                    - number
+                    - "null"
+          globalStats:
+            type:
+              - object
+              - "null"
+            properties:
+              clickers:
+                type:
+                  - number
+                  - "null"
+              complaints:
+                type:
+                  - number
+                  - "null"
+              delivered:
+                type:
+                  - number
+                  - "null"
+              estimatedViews:
+                type:
+                  - number
+                  - "null"
+              hardBounces:
+                type:
+                  - number
+                  - "null"
+              sent:
+                type:
+                  - number
+                  - "null"
+              softBounces:
+                type:
+                  - number
+                  - "null"
+              trackableViews:
+                type:
+                  - number
+                  - "null"
+              trackableViewsRate:
+                type:
+                  - number
+                  - "null"
+              uniqueClicks:
+                type:
+                  - number
+                  - "null"
+              uniqueViews:
+                type:
+                  - number
+                  - "null"
+              unsubscriptions:
+                type:
+                  - number
+                  - "null"
+              viewed:
+                type:
+                  - number
+                  - "null"
+          linksStats:
+            type:
+              - object
+              - "null"
+            properties:
+              http://:
+                type:
+                  - number
+                  - "null"
+              http://www.brevo.com:
+                type:
+                  - number
+                  - "null"
+              https://285ukt2b.sibpages.com/fr?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://app.brevo.com/billing/account/plans/marketing:
+                type:
+                  - number
+                  - "null"
+              https://app.livestorm.co/brevo/2025-insights-unveiling-brevos-roadmap-connect-for-success/live?s=9e3e1b62-9903-4ff2-981c-02ea137fe0a5#/:
+                type:
+                  - number
+                  - "null"
+              https://app.livestorm.co/brevo/automation-personnalisation-duo-gagnant-marketing-omnicanal?&utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://app.livestorm.co/brevo/automation-personnalisation-duo-gagnant-marketing-omnicanal?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://app.livestorm.co/captain-wallet/damart-and-le-wallet-mobile-970-de-roi-strategie-mise-en-place-et-retours-dexperience?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://ca.linkedin.com/company/brevo:
+                type:
+                  - number
+                  - "null"
+              https://ca.linkedin.com/company/brevo?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://content.brevo.com/Brevo-marketing-benchmark-2025:
+                type:
+                  - number
+                  - "null"
+              https://content.brevo.com/Brevo-marketing-benchmark-2025?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://content.brevo.com/Marketing-Benchmark:
+                type:
+                  - number
+                  - "null"
+              https://content.brevo.com/Marketing-Benchmark?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://content.brevo.com/dach-marketing-benchmark-2025-nl:
+                type:
+                  - number
+                  - "null"
+              https://content.brevo.com/dach-marketing-benchmark-2025-nl?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://de.sendinblue.com/contact/:
+                type:
+                  - number
+                  - "null"
+              https://de.sendinblue.com/contact/?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://de.sendinblue.com/legal/privacypolicy/:
+                type:
+                  - number
+                  - "null"
+              https://de.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/de/articles/20791391306770-Ein-Pop-up-Anmeldeformular-in-Brevo-erstellen:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/de/articles/25318176966290-Testnachrichten-die-von-einer-Automatisierung-versendet-werden:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/en-us/articles/20791391306770-Create-a-pop-up-sign-up-form-in-Brevo:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/en-us/articles/25318176966290-Test-messages-sent-from-an-automation:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/en-us/articles/360013130059-RSS-Campaign-integration-Automatically-share-your-blog-posts-with-your-subscribers:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/fr/articles/20791391306770-Cr%C3%A9er-un-formulaire-d-inscription-pop-up-dans-Brevo:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/fr/articles/20791391306770-Cr%C3%A9er-un-formulaire-d-inscription-pop-up-dans-Brevo?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/fr/articles/25318176966290-Messages-de-test-envoy%C3%A9s-depuis-une-automatisation:
+                type:
+                  - number
+                  - "null"
+              https://help.brevo.com/hc/fr/articles/25318176966290-Messages-de-test-envoy%C3%A9s-depuis-une-automatisation?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://ibsvsl84bec.typeform.com/brevosurvey2025?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://my.brevo.com/dashboard?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://onboarding.brevo.com/account/register/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_dach?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_dach?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_es:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_es?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_france:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_france?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_france?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_france?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_france?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://twitter.com/brevo_official?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://webinars.brevo.com/:
+                type:
+                  - number
+                  - "null"
+              https://webinars.brevo.com/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://webinars.brevo.com/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://webinars.brevo.com/fr?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://webinars.brevo.com/fr?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://webinars.brevo.com/fr?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/blog/earth-day-subject-lines/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/blog/easter-email-marketing/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/blog/easter-email-subject-lines/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/blog/email-popup-examples/&sa=D&source=editors&ust=1743800206388510&usg=AOvVaw2tG-GFxj3BpmyT0xG5OexJ:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/blog/spring-easter-newsletter-ideas/&sa=D&source=editors&ust=1743800293999140&usg=AOvVaw3SiEns7PsEaRv473ldmuST:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/contact/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/contact/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/contact/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/contact/?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/contact/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/email-funnel/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/erinnerungsmail/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/ki-marketing-tools/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/marketing-automation-workflows/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/videokonferenz-tools/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/warenkorbabbrecher-mails/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/blog/willkommens-mail/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/contact/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/legal/impressum/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/legal/privacypolicy/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de/releases/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/de?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/blog/ia-marketing/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/blog/plan-de-communication/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/contact/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/contact/?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/contact/?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/events/petit-dejeuner-bangumi/?utm_medium=email&utm_source=dedicated&utm_campaign=bangumi-breakfast-invitation-20250410&utm_content=fr:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/events/retour-presence/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/releases/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/releases/?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr/solutions/enterprise/?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/fr?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/legal/privacypolicy/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com/releases/:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.brevo.com?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/Sendinblue/:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/Sendinblue/?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.dach?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.dach?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.france:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.france?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.france?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.france?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.france?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.facebook.com/brevo.official?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/brevo?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/sendinblue/?hl=en:
+                type:
+                  - number
+                  - "null"
+              https://www.instagram.com/sendinblue/?hl=en&utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo-official:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo-official?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo-official?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo/?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.linkedin.com/company/brevo?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.sendinblue.com/legal/privacypolicy/?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_dach?utm_source=brevo&utm_campaign=CTS_DE_SS_CLIENT_SURVEY_20250402&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_dach?utm_source=brevo&utm_campaign=DE_Blog_Newsletter_April_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_france:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_france?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_france?utm_source=brevo&utm_campaign=CTS_ENT_EN_Webinar_Invitation-REMINDER_BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_france?utm_source=brevo&utm_campaign=CTS_ENT_FR_Webinar_Invitation-REMINDER -BENCHMARK_20250415&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_france?utm_source=brevo&utm_campaign=WEB_FR_ENT_WEBINARS_APRIL_2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/@brevo_official?utm_source=brevo&utm_campaign=EN_blog_Newsletter_April-2025&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/sendinblue:
+                type:
+                  - number
+                  - "null"
+              https://www.youtube.com/sendinblue?utm_source=brevo&utm_campaign=NEWS_FR_APR_RETROSPECTIVEENT_1&utm_medium=email:
+                type:
+                  - number
+                  - "null"
+          mirrorClick:
+            type:
+              - number
+              - "null"
+          remaining:
+            type:
+              - number
+              - "null"
+          statsByDomain:
+            type:
+              - object
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      subjectA:
+        type:
+          - string
+          - "null"
+      subjectB:
+        type:
+          - string
+          - "null"
+      tag:
+        type:
+          - string
+          - "null"
+      testSent:
+        type:
+          - boolean
+          - "null"
+      toField:
+        type:
+          - string
+          - "null"
+      utmCampaignValue:
+        type:
+          - string
+          - "null"
+      utmMedium:
+        type:
+          - string
+          - "null"
+      utmSource:
+        type:
+          - string
+          - "null"
+      winnerCriteria:
+        type:
+          - string
+          - "null"
+      winnerDelay:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modifiedAt
+  smsCampaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      content:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modifiedAt:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      organisationPrefix:
+        type:
+          - string
+          - "null"
+      recipients:
+        type:
+          - object
+          - "null"
+        properties:
+          exclusionLists:
+            type:
+              - array
+              - "null"
+          lists:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      scheduledAt:
+        type:
+          - string
+          - "null"
+      sender:
+        type:
+          - string
+          - "null"
+      sentDate:
+        type:
+          - string
+          - "null"
+      statistics:
+        type:
+          - object
+          - "null"
+        properties:
+          answered:
+            type:
+              - number
+              - "null"
+          delivered:
+            type:
+              - number
+              - "null"
+          hardBounces:
+            type:
+              - number
+              - "null"
+          processing:
+            type:
+              - number
+              - "null"
+          sent:
+            type:
+              - number
+              - "null"
+          softBounces:
+            type:
+              - number
+              - "null"
+          unsubscriptions:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unsubscribeInstruction:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedAt

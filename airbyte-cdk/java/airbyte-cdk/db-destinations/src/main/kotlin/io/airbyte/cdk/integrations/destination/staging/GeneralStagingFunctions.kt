@@ -166,7 +166,7 @@ object GeneralStagingFunctions {
                     stagingOperations.dropStageIfExists(database, stageName, stagePath)
                 }
             }
-            typerDeduper.commitFinalTables()
+            typerDeduper.commitFinalTables(streamSyncSummaries)
             typerDeduper.cleanup()
             log.info { "Cleaning up destination completed." }
         }

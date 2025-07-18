@@ -1,0 +1,2553 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Eventbrite is a global self-service ticketing platform for live experiences
+  that allows anyone to create, share, find and attend events that fuel their
+  passions and enrich their lives. From music festivals, marathons, conferences,
+  community rallies, and fundraisers, to gaming competitions and air guitar
+  contests.
+
+check:
+  type: CheckStream
+  stream_names:
+    - attendees
+
+definitions:
+  streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/users/me/organizations/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - organizations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/organizations/{{ stream_partition['organization_id'] }}/events/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changed
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    attendees:
+      type: DeclarativeStream
+      name: attendees
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/events/{{ stream_partition['event_id'] }}/attendees/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - attendees
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changed
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: changed_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attendees"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/categories/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    formats:
+      type: DeclarativeStream
+      name: formats
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/formats/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - formats
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/formats"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/organizations/{{ stream_partition['organization_id'] }}/orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changed
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: changed_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    organizations_members:
+      type: DeclarativeStream
+      name: organizations_members
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/organizations/{{ stream_partition['organization_id'] }}/members/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_members"
+    organizations_roles:
+      type: DeclarativeStream
+      name: organizations_roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/organizations/{{ stream_partition['organization_id'] }}/roles/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations_roles"
+    default_questions:
+      type: DeclarativeStream
+      name: default_questions
+      primary_key:
+        - id
+        - event_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/events/{{ stream_partition['event_id'] }}/canned_questions/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - questions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - event_id
+              value: "{{ stream_partition['event_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/default_questions"
+    custom_questions:
+      type: DeclarativeStream
+      name: custom_questions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/events/{{ stream_partition['event_id'] }}/questions/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - questions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_questions"
+    ticket_buyer_settings:
+      type: DeclarativeStream
+      name: ticket_buyer_settings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/events/{{ stream_partition['event_id'] }}/ticket_buyer_settings/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_buyer_settings"
+    ticket_classes:
+      type: DeclarativeStream
+      name: ticket_classes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/events/{{ stream_partition['event_id'] }}/ticket_classes/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ticket_classes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_classes"
+    available_ticket_classes:
+      type: DeclarativeStream
+      name: available_ticket_classes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v3/events/{{ stream_partition['event_id']
+            }}/ticket_classes/for_sale
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ticket_classes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/available_ticket_classes"
+    venues:
+      type: DeclarativeStream
+      name: venues
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/organizations/{{ stream_partition['organization_id'] }}/venues/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - venues
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/venues"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.eventbriteapi.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["private_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/attendees"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/formats"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/organizations_members"
+  - $ref: "#/definitions/streams/organizations_roles"
+  - $ref: "#/definitions/streams/default_questions"
+  - $ref: "#/definitions/streams/custom_questions"
+  - $ref: "#/definitions/streams/ticket_buyer_settings"
+  - $ref: "#/definitions/streams/ticket_classes"
+  - $ref: "#/definitions/streams/available_ticket_classes"
+  - $ref: "#/definitions/streams/venues"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - private_token
+      - start_date
+    properties:
+      private_token:
+        type: string
+        description: The private token to use for authenticating API requests.
+        name: private_token
+        order: 0
+        title: Private Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organizations: true
+    events: true
+    attendees: true
+    categories: true
+    formats: true
+    orders: true
+    organizations_members: true
+    organizations_roles: true
+    default_questions: true
+    custom_questions: true
+    ticket_buyer_settings: true
+    ticket_classes: true
+    available_ticket_classes: true
+    venues: true
+  testedStreams:
+    organizations:
+      streamHash: cdf090784912902a1baf6a15855467bbf42a6bcf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 619f6a74fb156053feab45d447645d03802eb0d2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attendees:
+      streamHash: cca52b6f2f7b64ca54a859431f5a2715dd3bdd23
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      hasRecords: true
+      streamHash: 5867a2a09a254edf1acf7fd44674c1d712342046
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    formats:
+      streamHash: 6a6f4c18f13b7997a5b3d173b12b87732fd0fe18
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    orders:
+      streamHash: c8213ec7874d9710980e2135f307b86986c36cc3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_members:
+      streamHash: dbdc820b56d99ce756ace5ca62219532d29c0911
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations_roles:
+      streamHash: 59d3e9ed057c23c0a3bd54467e0ffbb58c96f105
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    default_questions:
+      streamHash: ac9400f703de1323dff19b668de992947f655267
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom_questions:
+      streamHash: 1c96b3abc356dae4cda5b2969dd61b569ad7e2f2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ticket_buyer_settings:
+      streamHash: 9cbe232bcac302859ee9ce022714d2c0caf5c00f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ticket_classes:
+      streamHash: 8c526c32f1039852f55432c988b7088890db4978
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    available_ticket_classes:
+      streamHash: f2c7cc775750c2ba33b6c88a5b666a026e64cc71
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    venues:
+      streamHash: e46687743326e6119276d4f151a827a264efd39b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.eventbrite.com/platform/api
+
+schemas:
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _type:
+        type:
+          - string
+          - "null"
+      created:
+        type: string
+      id:
+        type: string
+      image_id:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      vertical:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - object
+          - "null"
+        properties:
+          html:
+            type:
+              - string
+              - "null"
+          text:
+            type:
+              - string
+              - "null"
+      capacity:
+        type:
+          - number
+          - "null"
+      capacity_is_custom:
+        type:
+          - boolean
+          - "null"
+      category_id:
+        type:
+          - string
+          - "null"
+      changed:
+        type: string
+      created:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      format_id:
+        type:
+          - string
+          - "null"
+      hide_end_date:
+        type:
+          - boolean
+          - "null"
+      hide_start_date:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      inventory_type:
+        type:
+          - string
+          - "null"
+      invite_only:
+        type:
+          - boolean
+          - "null"
+      is_externally_ticketed:
+        type:
+          - boolean
+          - "null"
+      is_free:
+        type:
+          - boolean
+          - "null"
+      is_locked:
+        type:
+          - boolean
+          - "null"
+      is_reserved_seating:
+        type:
+          - boolean
+          - "null"
+      is_series:
+        type:
+          - boolean
+          - "null"
+      is_series_parent:
+        type:
+          - boolean
+          - "null"
+      listed:
+        type:
+          - boolean
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      logo:
+        type:
+          - object
+          - "null"
+        properties:
+          aspect_ratio:
+            type:
+              - string
+              - "null"
+          crop_mask:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              top_left:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  x:
+                    type:
+                      - number
+                      - "null"
+                  "y":
+                    type:
+                      - number
+                      - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          edge_color:
+            type:
+              - string
+              - "null"
+          edge_color_set:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          original:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          url:
+            type:
+              - string
+              - "null"
+      logo_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          html:
+            type:
+              - string
+              - "null"
+          text:
+            type:
+              - string
+              - "null"
+      online_event:
+        type:
+          - boolean
+          - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
+      organizer_id:
+        type:
+          - string
+          - "null"
+      privacy_setting:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - string
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      shareable:
+        type:
+          - boolean
+          - "null"
+      show_colors_in_seatmap_thumbnail:
+        type:
+          - boolean
+          - "null"
+      show_pick_a_seat:
+        type:
+          - boolean
+          - "null"
+      show_remaining:
+        type:
+          - boolean
+          - "null"
+      show_seatmap_thumbnail:
+        type:
+          - boolean
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      start:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subcategory_id:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      tx_time_limit:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      venue_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - changed
+  attendees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      affiliate:
+        type:
+          - string
+          - "null"
+      answers:
+        type:
+          - array
+          - "null"
+      barcodes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            barcode:
+              type:
+                - string
+                - "null"
+            changed:
+              type:
+                - string
+                - "null"
+            checkin_type:
+              type:
+                - number
+                - "null"
+            created:
+              type:
+                - string
+                - "null"
+            is_printed:
+              type:
+                - boolean
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      cancelled:
+        type:
+          - boolean
+          - "null"
+      changed:
+        type: string
+      checked_in:
+        type:
+          - boolean
+          - "null"
+      costs:
+        type:
+          - object
+          - "null"
+        properties:
+          base_price:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          eventbrite_fee:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          gross:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          payment_fee:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          tax:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+      created:
+        type:
+          - string
+          - "null"
+      delivery_method:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      order_id:
+        type:
+          - string
+          - "null"
+      profile:
+        type:
+          - object
+          - "null"
+        properties:
+          addresses:
+            type:
+              - object
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      refunded:
+        type:
+          - boolean
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      ticket_class_id:
+        type:
+          - string
+          - "null"
+      ticket_class_name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - changed
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      name_localized:
+        type:
+          - string
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      short_name:
+        type:
+          - string
+          - "null"
+      short_name_localized:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  formats:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      name_localized:
+        type:
+          - string
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      short_name:
+        type:
+          - string
+          - "null"
+      short_name_localized:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      changed:
+        type: string
+      costs:
+        type:
+          - object
+          - "null"
+        properties:
+          base_price:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          eventbrite_fee:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          gross:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          payment_fee:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          tax:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+              major_value:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+      created:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - changed
+  organizations_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _type:
+        type:
+          - string
+          - "null"
+      immutable:
+        type:
+          - boolean
+          - "null"
+      role_summary:
+        type:
+          - string
+          - "null"
+      user_id:
+        type: string
+    required:
+      - user_id
+  organizations_roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _type:
+        type:
+          - string
+          - "null"
+      deletable:
+        type:
+          - boolean
+          - "null"
+      grantable:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      immutable:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
+      permission_type:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+  default_questions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      choices:
+        type:
+          - array
+          - "null"
+      default_value:
+        type:
+          - string
+          - "null"
+      editable:
+        type:
+          - boolean
+          - "null"
+      event_id:
+        type: number
+      group_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      include:
+        type:
+          - boolean
+          - "null"
+      question:
+        type:
+          - object
+          - "null"
+        properties:
+          html:
+            type:
+              - string
+              - "null"
+          text:
+            type:
+              - string
+              - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      respondent:
+        type:
+          - string
+          - "null"
+      ticket_classes:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - event_id
+  custom_questions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      choices:
+        type:
+          - array
+          - "null"
+      display_answer_on_order:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      question:
+        type:
+          - object
+          - "null"
+        properties:
+          html:
+            type:
+              - string
+              - "null"
+          text:
+            type:
+              - string
+              - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      respondent:
+        type:
+          - string
+          - "null"
+      sorting:
+        type:
+          - number
+          - "null"
+      ticket_classes:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  ticket_buyer_settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      allow_attendee_update:
+        type:
+          - boolean
+          - "null"
+      confirmation_message:
+        type:
+          - object
+          - "null"
+        properties: {}
+      event_id:
+        type:
+          - string
+          - "null"
+      instructions:
+        type:
+          - object
+          - "null"
+        properties: {}
+      refund_request_enabled:
+        type:
+          - boolean
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      sales_ended_message:
+        type:
+          - object
+          - "null"
+        properties: {}
+      survey_info:
+        type:
+          - object
+          - "null"
+        properties: {}
+      survey_name:
+        type:
+          - string
+          - "null"
+      survey_respondent:
+        type:
+          - string
+          - "null"
+      survey_ticket_classes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      survey_time_limit:
+        type:
+          - number
+          - "null"
+  ticket_classes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actual_fee:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          major_value:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      auto_hide:
+        type:
+          - boolean
+          - "null"
+      capacity:
+        type:
+          - number
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          major_value:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      delivery_methods:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      donation:
+        type:
+          - boolean
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      fee:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          major_value:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      free:
+        type:
+          - boolean
+          - "null"
+      has_pdf_ticket:
+        type:
+          - boolean
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      hidden_currently:
+        type:
+          - boolean
+          - "null"
+      hide_description:
+        type:
+          - boolean
+          - "null"
+      hide_sale_dates:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      include_fee:
+        type:
+          - boolean
+          - "null"
+      maximum_quantity:
+        type:
+          - number
+          - "null"
+      maximum_quantity_per_order:
+        type:
+          - number
+          - "null"
+      minimum_quantity:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      on_sale_status:
+        type:
+          - string
+          - "null"
+      payment_constraints:
+        type:
+          - array
+          - "null"
+      quantity_sold:
+        type:
+          - number
+          - "null"
+      quantity_total:
+        type:
+          - number
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      sales_channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      sales_end:
+        type:
+          - string
+          - "null"
+      sales_start:
+        type:
+          - string
+          - "null"
+      secondary_assignment_enabled:
+        type:
+          - boolean
+          - "null"
+      sorting:
+        type:
+          - number
+          - "null"
+      split_fee:
+        type:
+          - boolean
+          - "null"
+      tax:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          major_value:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  available_ticket_classes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          major_value:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      delivery_methods:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      donation:
+        type:
+          - boolean
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      fee:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          major_value:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      free:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      include_fee:
+        type:
+          - boolean
+          - "null"
+      maximum_quantity:
+        type:
+          - number
+          - "null"
+      maximum_quantity_per_order:
+        type:
+          - number
+          - "null"
+      maximum_quantity_per_order_without_pending:
+        type:
+          - number
+          - "null"
+      minimum_quantity:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      on_sale_status:
+        type:
+          - string
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+      sales_channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      sales_end:
+        type:
+          - string
+          - "null"
+      sales_start:
+        type:
+          - string
+          - "null"
+      secondary_assignment_enabled:
+        type:
+          - boolean
+          - "null"
+      tax:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          major_value:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      variant_id:
+        type:
+          - string
+          - "null"
+      variant_input_type:
+        type:
+          - string
+          - "null"
+      variants:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            category:
+              type:
+                - string
+                - "null"
+            checkout_group_id:
+              type:
+                - string
+                - "null"
+            cost:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                display:
+                  type:
+                    - string
+                    - "null"
+                major_value:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            display_name:
+              type:
+                - string
+                - "null"
+            display_shipping_fee:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                display:
+                  type:
+                    - string
+                    - "null"
+                major_value:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+            fee:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                display:
+                  type:
+                    - string
+                    - "null"
+                major_value:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+            fee_components:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  base:
+                    type:
+                      - string
+                      - "null"
+                  bucket:
+                    type:
+                      - string
+                      - "null"
+                  group_name:
+                    type:
+                      - string
+                      - "null"
+                  intermediate:
+                    type:
+                      - boolean
+                      - "null"
+                  internal_name:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  payer:
+                    type:
+                      - string
+                      - "null"
+                  recipient:
+                    type:
+                      - string
+                      - "null"
+                  rule:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      fee:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          base:
+                            type:
+                              - string
+                              - "null"
+                          bucket:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          payer:
+                            type:
+                              - string
+                              - "null"
+                          recipient:
+                            type:
+                              - string
+                              - "null"
+                          title:
+                            type:
+                              - string
+                              - "null"
+                      fixed:
+                        type:
+                          - number
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      max:
+                        type:
+                          - number
+                          - "null"
+                      min:
+                        type:
+                          - number
+                          - "null"
+                      percent:
+                        type:
+                          - number
+                          - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      display:
+                        type:
+                          - string
+                          - "null"
+                      major_value:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - number
+                          - "null"
+            free:
+              type:
+                - boolean
+                - "null"
+            hide_sale_dates:
+              type:
+                - boolean
+                - "null"
+            include_fee:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            on_sale_status:
+              type:
+                - string
+                - "null"
+            payment_constraints:
+              type:
+                - array
+                - "null"
+            shipping_components:
+              type:
+                - array
+                - "null"
+            tax:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                display:
+                  type:
+                    - string
+                    - "null"
+                major_value:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+            tax_and_fee:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                display:
+                  type:
+                    - string
+                    - "null"
+                major_value:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+            tax_components:
+              type:
+                - array
+                - "null"
+            ticket_options_range:
+              type:
+                - array
+                - "null"
+            total_cost:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                display:
+                  type:
+                    - string
+                    - "null"
+                major_value:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+            use_all_in_price:
+              type:
+                - boolean
+                - "null"
+  venues:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_1:
+            type:
+              - string
+              - "null"
+          address_2:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - string
+              - "null"
+          localized_address_display:
+            type:
+              - string
+              - "null"
+          localized_area_display:
+            type:
+              - string
+              - "null"
+          localized_multi_line_address_display:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          longitude:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      latitude:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      resource_uri:
+        type:
+          - string
+          - "null"
+    required:
+      - id

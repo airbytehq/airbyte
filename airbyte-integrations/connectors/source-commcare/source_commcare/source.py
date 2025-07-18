@@ -9,12 +9,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs
 
 import requests
+from flatten_json import flatten
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from flatten_json import flatten
 
 
 # Basic full refresh stream
@@ -56,7 +57,6 @@ class CommcareStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"format": "json"}
         return params
 
@@ -79,7 +79,6 @@ class Application(CommcareStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"format": "json", "extras": "true"}
         return params
 
@@ -123,7 +122,6 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"format": "json"}
         if next_page_token:
             params.update(next_page_token)
@@ -136,7 +134,6 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
 
 class Case(IncrementalStream):
-
     """
     docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/
     """
@@ -167,7 +164,6 @@ class Case(IncrementalStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         # start date is what we saved for forms
         # if self.cursor_field in self.state else (CommcareStream.last_form_date or self.initial_date)
         ix = self.state[self.cursor_field]
@@ -234,7 +230,6 @@ class Form(IncrementalStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         # if self.cursor_field in self.state else self.initial_date
         ix = self.state[self.cursor_field]
         params = {

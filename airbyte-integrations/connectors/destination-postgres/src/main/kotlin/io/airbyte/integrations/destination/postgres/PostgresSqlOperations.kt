@@ -24,7 +24,8 @@ import org.postgresql.core.BaseConnection
 
 val LOGGER = KotlinLogging.logger {}
 
-class PostgresSqlOperations : JdbcSqlOperations() {
+class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
+    private val dropTableQualifier: String = if (useDropCascade) "CASCADE" else ""
     override fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
         return if (isDestinationV2) {
             java.util.List.of( // the raw_id index _could_ be unique (since raw_id is a UUID)
@@ -140,51 +141,9 @@ class PostgresSqlOperations : JdbcSqlOperations() {
         val tmpName = rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX
         database.executeWithinTransaction(
             listOf(
-                "DROP TABLE $rawNamespace.$rawName",
+                "DROP TABLE $rawNamespace.$rawName $dropTableQualifier",
                 "ALTER TABLE $rawNamespace.$tmpName RENAME TO $rawName"
             )
         )
-    }
-
-    override fun isOtherGenerationIdInTable(
-        database: JdbcDatabase,
-        generationId: Long,
-        namespace: String,
-        name: String
-    ): Boolean {
-        val selectTableResultSet =
-            database
-                .unsafeQuery(
-                    """SELECT 1 
-            |               FROM pg_catalog.pg_namespace n
-            |               JOIN pg_catalog.pg_class c
-            |               ON c.relnamespace=n.oid
-            |               WHERE n.nspname=?
-            |               AND c.relkind='r'
-            |               AND c.relname=?
-            |               LIMIT 1
-        """.trimMargin(),
-                    namespace,
-                    name
-                )
-                .use { it.toList() }
-        if (selectTableResultSet.isEmpty()) {
-            return false
-        } else {
-            val selectGenIdResultSet =
-                database
-                    .unsafeQuery("SELECT _airbyte_generation_id FROM $namespace.$name LIMIT 1;")
-                    .use { it.toList() }
-            if (selectGenIdResultSet.isEmpty()) {
-                return false
-            } else {
-                val genIdInTable =
-                    selectGenIdResultSet.first().get("_airbyte_generation_id")?.asLong()
-                LOGGER.info {
-                    "found generationId in table $namespace.$name: $genIdInTable (generationId = $generationId)"
-                }
-                return genIdInTable != generationId
-            }
-        }
     }
 }

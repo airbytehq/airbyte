@@ -1,0 +1,5510 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  Nutshell is a CRM tool.
+
+  Using this connector we can extract data from various streams such as contacts
+  , events , products and pipelines.
+
+  Docs : https://developers.nutshell.com/docs/getting-started
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    accounts_list_items:
+      type: DeclarativeStream
+      name: accounts_list_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - listItems
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts_list_items"
+    account_types:
+      type: DeclarativeStream
+      name: account_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounttypes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - accountTypes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_types"
+    industries:
+      type: DeclarativeStream
+      name: industries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: industries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - industries
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/industries"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - activities
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    activity_types:
+      type: DeclarativeStream
+      name: activity_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: activitytypes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - activityTypes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activity_types"
+    audiences:
+      type: DeclarativeStream
+      name: audiences
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: audiences
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - emAudiences
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audiences"
+    competitors:
+      type: DeclarativeStream
+      name: competitors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: competitors
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - competitors
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/competitors"
+    competitor_maps:
+      type: DeclarativeStream
+      name: competitor_maps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: competitormaps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - competitorMaps
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/competitor_maps"
+    leads_custom_fields:
+      type: DeclarativeStream
+      name: leads_custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: leads/customfields/attributes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customFields
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads_custom_fields"
+    leads_list_items:
+      type: DeclarativeStream
+      name: leads_list_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: leads/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - listItems
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads_list_items"
+    leads:
+      type: DeclarativeStream
+      name: leads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: leads
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+    leads_report:
+      type: DeclarativeStream
+      name: leads_report
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: leads/report
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reports
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads_report"
+    contacts_custom_fields:
+      type: DeclarativeStream
+      name: contacts_custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/customfields/attributes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customFields
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_custom_fields"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    contacts_list_items:
+      type: DeclarativeStream
+      name: contacts_list_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - listItems
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_list_items"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    filters:
+      type: DeclarativeStream
+      name: filters
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: filters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - filters
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/filters"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: notes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - products
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    lead_products:
+      type: DeclarativeStream
+      name: lead_products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: productmaps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - productMaps
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_products"
+    sources:
+      type: DeclarativeStream
+      name: sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sources
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sources"
+    stages:
+      type: DeclarativeStream
+      name: stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - stages
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stages"
+    pipelines:
+      type: DeclarativeStream
+      name: pipelines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stagesets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - stagesets
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipelines"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.nutshell.com/rest/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/accounts_list_items"
+  - $ref: "#/definitions/streams/account_types"
+  - $ref: "#/definitions/streams/industries"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/activity_types"
+  - $ref: "#/definitions/streams/audiences"
+  - $ref: "#/definitions/streams/competitors"
+  - $ref: "#/definitions/streams/competitor_maps"
+  - $ref: "#/definitions/streams/leads_custom_fields"
+  - $ref: "#/definitions/streams/leads_list_items"
+  - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/leads_report"
+  - $ref: "#/definitions/streams/contacts_custom_fields"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/contacts_list_items"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/filters"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/lead_products"
+  - $ref: "#/definitions/streams/sources"
+  - $ref: "#/definitions/streams/stages"
+  - $ref: "#/definitions/streams/pipelines"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: API Token
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: true
+    accounts_list_items: true
+    account_types: true
+    industries: true
+    activities: true
+    activity_types: true
+    audiences: true
+    competitors: true
+    competitor_maps: true
+    leads_custom_fields: true
+    leads_list_items: true
+    leads: true
+    leads_report: true
+    contacts_custom_fields: true
+    contacts: true
+    contacts_list_items: true
+    events: true
+    filters: true
+    notes: true
+    products: true
+    lead_products: true
+    sources: true
+    stages: true
+    pipelines: true
+    tags: true
+    users: true
+  testedStreams:
+    accounts:
+      streamHash: 96176c8138e2947189c8248d0e107c45e2213c1d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    accounts_list_items:
+      hasRecords: true
+      streamHash: 950a82a5cb97a96275f458afab995a8b7f7f4253
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    account_types:
+      hasRecords: true
+      streamHash: 3971bad17989f52be26760bf32361dada60abffb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    industries:
+      hasRecords: true
+      streamHash: 090308ee3fd98e1d63726112a68f5603c6a640ab
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    activities:
+      streamHash: 9ecc362e2ccb01a394d8b7b896dd08c05348038f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activity_types:
+      hasRecords: true
+      streamHash: 75d8067582013231d6422857b1809e33a988dc79
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audiences:
+      hasRecords: true
+      streamHash: 1740633999bd89071ff1cd5815596cbc54ae992e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    competitors:
+      hasRecords: true
+      streamHash: f228a19770cc2cd56bdc0ae29ff514b5004ed1ca
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    competitor_maps:
+      hasRecords: true
+      streamHash: 9c9a560b8998b245b53e489926b82bf88eb0ac65
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    leads_custom_fields:
+      hasRecords: true
+      streamHash: efc120a9dd34396060e67db65ce8d30c87909fc0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    leads_list_items:
+      hasRecords: true
+      streamHash: 3ccca9e30beaefb65eb56df09e2c4071661f2571
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    leads:
+      streamHash: 713b65b5d2b685ca04263fc807932e804b4207d3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leads_report:
+      hasRecords: true
+      streamHash: 8fada2e36796f20d464127fe1cbb8db5bbd4bec1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_custom_fields:
+      hasRecords: true
+      streamHash: 5ce848d74dc68b2437021e5ef54dce4b21152e80
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts:
+      streamHash: 57a95ebdcdd0abb5d0cc85d688cd483dca929c11
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts_list_items:
+      hasRecords: true
+      streamHash: 3acd42b55b54243d6fd283f8797d3d5922f82b29
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events:
+      streamHash: f0ce38f5cbaf8b080683b37903d431cdd473d600
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    filters:
+      hasRecords: true
+      streamHash: c421400c7d79583d7cdf23b502009ee9d50a7efb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    notes:
+      streamHash: d8b92a0d1132bad5d95d178bcd4d02718f07634b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      hasRecords: true
+      streamHash: 2ff96073d3e16d854f41423cd115d5bf2103cea6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lead_products:
+      hasRecords: true
+      streamHash: a4f6eb55ac384e9ff0c3d6520f3a58f057413c1a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sources:
+      hasRecords: true
+      streamHash: 50b294bf440887aebdbe3649ddf763a08f5e113e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stages:
+      hasRecords: true
+      streamHash: 7d4571033d422d8bece1b991415e857e035ee259
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    pipelines:
+      hasRecords: true
+      streamHash: 05a244867424c123a2ff84728827bd623b4190ef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tags:
+      hasRecords: true
+      streamHash: e9314e64ff51a372efe7cb64cf5ad72e6007f15f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 9715618f1ce6e97522d9f18503982a8547fe6933
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isPrimary:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                address_1:
+                  type:
+                    - string
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    latitude:
+                      type:
+                        - number
+                        - "null"
+                    longitude:
+                      type:
+                        - number
+                        - "null"
+                locationAccuracy:
+                  type:
+                    - string
+                    - "null"
+                postalCode:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      initials:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          accountType:
+            type:
+              - string
+              - "null"
+          contacts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          files:
+            type:
+              - array
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          relatedFiles:
+            type:
+              - array
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  accounts_list_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - object
+              - "null"
+            properties: {}
+          accountType:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              address_1:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          childAccounts:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        avatarUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrlPath:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        initials:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          clickedEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          contactIds:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+          contacts:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        avatarUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrlPath:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        initials:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          createdTime:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          ctctBounceRate:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctClickRate:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctEmailAddress:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctEngagementRating:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctLastClickTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctLastOpenTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctLists:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          ctctNumberOfEmailsSent:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctOpenRate:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctStatus:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties: {}
+          deletedTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          email:
+            type:
+              - object
+              - "null"
+            properties: {}
+          emailClickCount:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          emailClickRate:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          emailLastClickTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          emailLastOpenTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          emailOpenCount:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          emailOpenRate:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          inProgressEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          industry:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          lastContactedTime:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          lastLoggedActivity_11_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_15_Time:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          lastLoggedActivity_19_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_1_Time:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          lastLoggedActivity_23_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_27_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_2_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_3_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_6_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_7_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_8_Time:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          leadIds:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          leads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          legacyId:
+            type:
+              - object
+              - "null"
+            properties: {}
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          nextActivityStartTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          noReplyEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          numChildAccounts:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfCancelledLeads:
+            type:
+              - object
+              - "null"
+            properties: {}
+          numberOfContacts:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfEmailsReceived:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfEmailsSent:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfEmployees:
+            type:
+              - object
+              - "null"
+            properties: {}
+          numberOfLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfLostLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfOpenLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfWonLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          openedEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          origin:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          owner:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          parentAccount:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        avatarUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrlPath:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        initials:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          phone:
+            type:
+              - object
+              - "null"
+            properties: {}
+          phones:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fax:
+                    type:
+                      - array
+                      - "null"
+                  home:
+                    type:
+                      - array
+                      - "null"
+                  mobile:
+                    type:
+                      - array
+                      - "null"
+                  other:
+                    type:
+                      - array
+                      - "null"
+                  phone:
+                    type:
+                      - array
+                      - "null"
+                  work:
+                    type:
+                      - array
+                      - "null"
+          postalCode:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          receivedEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          receivedReplyEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          revenue:
+            type:
+              - object
+              - "null"
+            properties: {}
+          tags:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          territory:
+            type:
+              - object
+              - "null"
+            properties: {}
+          url:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties: {}
+          valueOfCancelledLeads:
+            type:
+              - object
+              - "null"
+            properties: {}
+          valueOfLostLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              formattedValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  formatted:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          valueOfOpenLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              formattedValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  formatted:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          valueOfWonLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              formattedValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  formatted:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      initials:
+        type:
+          - string
+          - "null"
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      latlon:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          entity:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              href:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+      mapUrl:
+        type:
+          - string
+          - "null"
+      primaryInfo:
+        type:
+          - string
+          - "null"
+      primaryName:
+        type:
+          - string
+          - "null"
+      relatedInfo:
+        type:
+          - string
+          - "null"
+      relatedName:
+        type:
+          - string
+          - "null"
+      relatedType:
+        type:
+          - string
+          - "null"
+      relatedUrl:
+        type:
+          - string
+          - "null"
+      relatedUrlPath:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  account_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  industries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      agenda:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - number
+          - "null"
+      endTime:
+        type:
+          - number
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isAllDay:
+        type:
+          - boolean
+          - "null"
+      isCancelled:
+        type:
+          - boolean
+          - "null"
+      isEditable:
+        type:
+          - boolean
+          - "null"
+      isFlagged:
+        type:
+          - boolean
+          - "null"
+      isLogged:
+        type:
+          - boolean
+          - "null"
+      isMediaLogged:
+        type:
+          - boolean
+          - "null"
+      isOverdue:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - array
+              - "null"
+          activityType:
+            type:
+              - string
+              - "null"
+          comments:
+            type:
+              - array
+              - "null"
+          contacts:
+            type:
+              - array
+              - "null"
+          creator:
+            type:
+              - string
+              - "null"
+          leads:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          logger:
+            type:
+              - string
+              - "null"
+          users:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      loggedTime:
+        type:
+          - number
+          - "null"
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  activity_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isBenchmarkable:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  audiences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isWebFX:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  competitors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  competitor_maps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          competitor:
+            type:
+              - string
+              - "null"
+          lead:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  leads_custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      enum:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  leads_list_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        avatarUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrlPath:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        initials:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          contacts:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        avatarUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrlPath:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        initials:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          nextActivityStartTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          overdueDuration:
+            type:
+              - object
+              - "null"
+            properties: {}
+          owner:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+          value:
+            type:
+              - object
+              - "null"
+            properties:
+              formattedValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  formatted:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      latlon:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          entity:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              href:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+      mapUrl:
+        type:
+          - string
+          - "null"
+      primaryAccount:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          htmlUrl:
+            type:
+              - string
+              - "null"
+          htmlUrlPath:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      primaryContact:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          htmlUrl:
+            type:
+              - string
+              - "null"
+          htmlUrlPath:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      primaryInfo:
+        type:
+          - string
+          - "null"
+      primaryName:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      relatedInfo:
+        type:
+          - string
+          - "null"
+      relatedName:
+        type:
+          - string
+          - "null"
+      relatedType:
+        type:
+          - string
+          - "null"
+      relatedUrl:
+        type:
+          - string
+          - "null"
+      relatedUrlPath:
+        type:
+          - string
+          - "null"
+      sortKey:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  leads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isPrimary:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                address_1:
+                  type:
+                    - string
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    latitude:
+                      type:
+                        - number
+                        - "null"
+                    longitude:
+                      type:
+                        - number
+                        - "null"
+                locationAccuracy:
+                  type:
+                    - string
+                    - "null"
+                postalCode:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      initials:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          accountType:
+            type:
+              - string
+              - "null"
+          contacts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          files:
+            type:
+              - array
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          relatedFiles:
+            type:
+              - array
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  leads_report:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            bucket:
+              type:
+                - string
+                - "null"
+            bucketType:
+              type:
+                - string
+                - "null"
+            count:
+              type:
+                - object
+                - "null"
+              properties:
+                formatted:
+                  type:
+                    - string
+                    - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                prefix:
+                  type:
+                    - string
+                    - "null"
+                subvalues:
+                  type:
+                    - array
+                    - "null"
+                suffix:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+            filters:
+              type:
+                - object
+                - "null"
+              properties:
+                createdTime:
+                  type:
+                    - string
+                    - "null"
+            segments:
+              type:
+                - array
+                - "null"
+            total:
+              type:
+                - object
+                - "null"
+              properties:
+                formatted:
+                  type:
+                    - string
+                    - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                prefix:
+                  type:
+                    - string
+                    - "null"
+                subvalues:
+                  type:
+                    - array
+                    - "null"
+                suffix:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+      id:
+        type: string
+      key:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      prefix:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - object
+          - "null"
+        properties:
+          bucket:
+            type:
+              - string
+              - "null"
+          bucketType:
+            type:
+              - string
+              - "null"
+          count:
+            type:
+              - object
+              - "null"
+            properties:
+              formatted:
+                type:
+                  - string
+                  - "null"
+              prefix:
+                type:
+                  - string
+                  - "null"
+              subvalues:
+                type:
+                  - array
+                  - "null"
+              suffix:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          filters:
+            type:
+              - object
+              - "null"
+          segments:
+            type:
+              - array
+              - "null"
+          total:
+            type:
+              - object
+              - "null"
+            properties:
+              formatted:
+                type:
+                  - string
+                  - "null"
+              prefix:
+                type:
+                  - string
+                  - "null"
+              subvalues:
+                type:
+                  - array
+                  - "null"
+              suffix:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+    required:
+      - id
+  contacts_custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isPrimary:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                address_1:
+                  type:
+                    - string
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    latitude:
+                      type:
+                        - number
+                        - "null"
+                    longitude:
+                      type:
+                        - number
+                        - "null"
+                locationAccuracy:
+                  type:
+                    - string
+                    - "null"
+                postalCode:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                timezone:
+                  type:
+                    - string
+                    - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isPrimary:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      initials:
+        type:
+          - string
+          - "null"
+      jobTitle:
+        type:
+          - string
+          - "null"
+      jobs:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              1-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              10-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              11-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              12-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              13-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              14-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              15-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              16-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              17-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              18-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              19-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              2-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              20-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              21-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              22-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              23-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              24-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              25-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              26-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              27-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              28-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              29-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              3-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              30-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              31-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              32-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              4-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              5-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              6-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              7-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              8-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              9-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          files:
+            type:
+              - array
+              - "null"
+          relatedFiles:
+            type:
+              - array
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isPrimary:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                E164:
+                  type:
+                    - string
+                    - "null"
+                countryCode:
+                  type:
+                    - string
+                    - "null"
+                countryCodeAndNumber:
+                  type:
+                    - string
+                    - "null"
+                number:
+                  type:
+                    - string
+                    - "null"
+                numberFormatted:
+                  type:
+                    - string
+                    - "null"
+      urls:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  contacts_list_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - object
+              - "null"
+            properties: {}
+          Starting Date:
+            type:
+              - object
+              - "null"
+            properties: {}
+          accountIds:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+          accountTags:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          accountType:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          accounts:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        avatarUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrlPath:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        initials:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              address_1:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          audiences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          bouncedDripSequences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          bouncedEditions:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          clickedDripSequences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          clickedEditions:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          clickedEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          companyAddress:
+            type:
+              - object
+              - "null"
+            properties:
+              address_1:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          companyPhone:
+            type:
+              - object
+              - "null"
+            properties: {}
+          createdTime:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          ctctBounceRate:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctClickRate:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctEmailAddress:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctEngagementRating:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctLastClickTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctLastOpenTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctLists:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          ctctNumberOfEmailsSent:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctOpenRate:
+            type:
+              - object
+              - "null"
+            properties: {}
+          ctctStatus:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties: {}
+          deletedTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          email:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          emailClickCount:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          emailClickRate:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          emailLastClickTime:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          emailLastOpenTime:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          emailOpenCount:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          emailOpenRate:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          engagementRating:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          inProgressDripSequences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          inProgressEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          industry:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          jobTitle:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          lastContactedTime:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          lastLoggedActivity_11_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_15_Time:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          lastLoggedActivity_19_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_1_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_23_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_27_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_2_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_3_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_6_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_7_Time:
+            type:
+              - object
+              - "null"
+            properties: {}
+          lastLoggedActivity_8_Time:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          leadIds:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+          leads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        avatarUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrl:
+                          type:
+                            - string
+                            - "null"
+                        htmlUrlPath:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        initials:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          legacyId:
+            type:
+              - object
+              - "null"
+            properties: {}
+          marketingLastContactedTime:
+            type:
+              - object
+              - "null"
+            properties:
+              absoluteLocalizedString:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          marketingStatus:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          nextActivityStartTime:
+            type:
+              - object
+              - "null"
+            properties: {}
+          noReplyEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          numberOfCancelledLeads:
+            type:
+              - object
+              - "null"
+            properties: {}
+          numberOfEmailsReceived:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfEmailsSent:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfLostLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfOpenLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          numberOfWonLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - number
+                  - "null"
+          openedEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          origin:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          owner:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          phone:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          phones:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fax:
+                    type:
+                      - array
+                      - "null"
+                  home:
+                    type:
+                      - array
+                      - "null"
+                  mobile:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  other:
+                    type:
+                      - array
+                      - "null"
+                  phone:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  work:
+                    type:
+                      - array
+                      - "null"
+          postalCode:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          primaryAccountOwner:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  avatarUrl:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  initials:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          receivedAllMessagesDripSequences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          receivedDripSequences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          receivedEditions:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          receivedEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          receivedReplyEmailSequenceTemplates:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          sentEditions:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          subscribedAudiences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          tags:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        color:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+          territory:
+            type:
+              - object
+              - "null"
+            properties: {}
+          unsubscribedAudiences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          unsubscribedFromAllEmails:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+          url:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - object
+                  - "null"
+                properties: {}
+          valueOfCancelledLeads:
+            type:
+              - object
+              - "null"
+            properties: {}
+          valueOfLostLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              formattedValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  formatted:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          valueOfOpenLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              formattedValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  formatted:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          valueOfWonLeads:
+            type:
+              - object
+              - "null"
+            properties:
+              formattedValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  formatted:
+                    type:
+                      - string
+                      - "null"
+                  prefix:
+                    type:
+                      - string
+                      - "null"
+                  suffix:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          viewedDripSequences:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+          viewedEditions:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      initials:
+        type:
+          - string
+          - "null"
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      latlon:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          entity:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              href:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+      mapUrl:
+        type:
+          - string
+          - "null"
+      primaryInfo:
+        type:
+          - string
+          - "null"
+      primaryName:
+        type:
+          - string
+          - "null"
+      relatedInfo:
+        type:
+          - string
+          - "null"
+      relatedName:
+        type:
+          - string
+          - "null"
+      relatedType:
+        type:
+          - string
+          - "null"
+      relatedUrl:
+        type:
+          - string
+          - "null"
+      relatedUrlPath:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      actorType:
+        type:
+          - string
+          - "null"
+      changes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            attribute:
+              type:
+                - string
+                - "null"
+            newValue:
+              anyOf:
+                - type: string
+                - type: object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    position:
+                      type: number
+            oldValue:
+              anyOf:
+                - type: string
+                - type: object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    position:
+                      type: number
+      createdTime:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          actor:
+            type:
+              - string
+              - "null"
+          comments:
+            type:
+              - array
+              - "null"
+          payloads:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      payloadType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  filters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - number
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isDeleteable:
+        type:
+          - boolean
+          - "null"
+      isImmutable:
+        type:
+          - boolean
+          - "null"
+      isShared:
+        type:
+          - boolean
+          - "null"
+      isUpdateable:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - string
+              - "null"
+          usersAndTeams:
+            type:
+              - array
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      reportType:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      bodyMarkup:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - number
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      htmlUrl:
+        type:
+          - string
+          - "null"
+      htmlUrlPath:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isEditable:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          comments:
+            type:
+              - array
+              - "null"
+          parent:
+            type:
+              - string
+              - "null"
+      parentType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          currencySymbol:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      prices:
+        type:
+          - object
+          - "null"
+        properties:
+          1-markets:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              currencySymbol:
+                type:
+                  - string
+                  - "null"
+              formatted:
+                type:
+                  - string
+                  - "null"
+      productType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  lead_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          lead:
+            type:
+              - string
+              - "null"
+          product:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      productType:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      sourceType:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      activeAvatarUrl:
+        type:
+          - string
+          - "null"
+      completeAvatarUrl:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      incompleteAvatarUrl:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          stageset:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      overdueAvatarUrl:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      canAccess:
+        type:
+          - boolean
+          - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          stages:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      colorType:
+        type:
+          - string
+          - "null"
+      count:
+        type:
+          - number
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tagType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      agentStatus:
+        type:
+          - string
+          - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      canAccessEmailMarketing:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      hasSetPassword:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      initials:
+        type:
+          - string
+          - "null"
+      isAdministrator:
+        type:
+          - boolean
+          - "null"
+      isEnabled:
+        type:
+          - boolean
+          - "null"
+      isHiddenFromFilters:
+        type:
+          - boolean
+          - "null"
+      isViewingRestricted:
+        type:
+          - boolean
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          teams:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      modifiedTime:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          canAccessBilling:
+            type:
+              - boolean
+              - "null"
+          canAccessCrm:
+            type:
+              - boolean
+              - "null"
+          canAccessFullCampaigns:
+            type:
+              - boolean
+              - "null"
+          canAccessMarketing:
+            type:
+              - boolean
+              - "null"
+          canAccessSetup:
+            type:
+              - boolean
+              - "null"
+          canAssignEntities:
+            type:
+              - boolean
+              - "null"
+          canBulkEdit:
+            type:
+              - boolean
+              - "null"
+          canDeleteEntities:
+            type:
+              - boolean
+              - "null"
+          canExport:
+            type:
+              - boolean
+              - "null"
+          canImport:
+            type:
+              - boolean
+              - "null"
+          canManageEmailTemplates:
+            type:
+              - boolean
+              - "null"
+          canMergeEntities:
+            type:
+              - boolean
+              - "null"
+          canUseInbox:
+            type:
+              - boolean
+              - "null"
+          canUseOrTryInbox:
+            type:
+              - boolean
+              - "null"
+          canUsePeopleIQ:
+            type:
+              - boolean
+              - "null"
+          canViewSharedEmails:
+            type:
+              - boolean
+              - "null"
+      phonecallerType:
+        type:
+          - string
+          - "null"
+    required:
+      - id

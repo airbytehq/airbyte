@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-courier
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

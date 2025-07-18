@@ -28,7 +28,7 @@ object PostgresSslConnectionUtils {
     const val VERIFY_FULL: String = "verify-full"
     const val DISABLE: String = "disable"
     const val TRUE_STRING_VALUE: String = "true"
-    const val ENCRYPT_FILE_NAME: String = "encrypt"
+    const val ENCRYPT_FILE_NAME: String = "/tmp/encrypt"
     const val FACTORY_VALUE: String = "org.postgresql.ssl.DefaultJavaSSLFactory"
 
     @JvmStatic
@@ -62,17 +62,13 @@ object PostgresSslConnectionUtils {
             if (encryption.has(PARAM_CLIENT_KEY_PASSWORD))
                 encryption[PARAM_CLIENT_KEY_PASSWORD].asText()
             else ""
-        var keyStorePassword = RandomStringUtils.randomAlphanumeric(10)
+        var keyStorePassword = RandomStringUtils.insecure().nextAlphanumeric(10)
         if (sslPassword.isEmpty()) {
             val file = File(ENCRYPT_FILE_NAME)
             if (file.exists()) {
                 keyStorePassword = readFile(file)
             } else {
-                try {
-                    createCertificateFile(ENCRYPT_FILE_NAME, keyStorePassword)
-                } catch (e: IOException) {
-                    throw RuntimeException("Failed to create encryption file ")
-                }
+                createCertificateFile(ENCRYPT_FILE_NAME, keyStorePassword)
             }
         } else {
             keyStorePassword = sslPassword

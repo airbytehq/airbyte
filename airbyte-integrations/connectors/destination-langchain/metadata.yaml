@@ -1,5 +1,5 @@
 data:
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

@@ -15,8 +15,14 @@ properties:
       - "unitTests"
       - "integrationTests"
       - "acceptanceTests"
+      - "liveTests"
   testSecrets:
     description: "List of secrets required to run the test suite"
     type: array
     items:
       "$ref": "Secret.yaml"
+  testConnections:
+    description: "List of sandbox cloud connections that tests can be run against"
+    type: array
+    items:
+      "$ref": "TestConnections.yaml"

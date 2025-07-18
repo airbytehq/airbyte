@@ -1,0 +1,389 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - nasa_apod
+definitions:
+  streams:
+    nasa_apod:
+      type: DeclarativeStream
+      name: nasa_apod
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.nasa.gov/
+          path: planetary/apod
+          http_method: GET
+          request_parameters:
+            api_key: "{{ config['api_key'] }}"
+            start_date: >-
+              {{ stream_interval.start_time if stream_interval else
+              config['start_date'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        lookback_window: P31D
+        incremental_cursor: date
+        path: planetary/apod
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            concept_tags:
+              type:
+                - "null"
+                - boolean
+            concepts:
+              type:
+                - "null"
+                - object
+                - string
+              patternProperties:
+                ^[0-9]+$:
+                  type:
+                    - "null"
+                    - string
+            copyright:
+              type:
+                - "null"
+                - string
+            date:
+              type:
+                - "null"
+                - string
+              format: "%Y-%m-%d"
+            explanation:
+              type:
+                - "null"
+                - string
+            hdurl:
+              type:
+                - "null"
+                - string
+              format: uri
+            media_type:
+              type:
+                - "null"
+                - string
+              enum:
+                - image
+                - video
+            resource:
+              type:
+                - "null"
+                - object
+              properties:
+                image_set:
+                  type:
+                    - "null"
+                    - string
+                planet:
+                  type:
+                    - "null"
+                    - string
+            service_version:
+              type:
+                - "null"
+                - string
+              pattern: ^v[0-9]$
+            thumbnail_url:
+              type:
+                - "null"
+                - string
+              format: uri
+            title:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+              format: uri
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.nasa.gov/
+streams:
+  - type: DeclarativeStream
+    name: nasa_apod
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.nasa.gov/
+        path: planetary/apod
+        http_method: GET
+        request_parameters:
+          api_key: "{{ config['api_key'] }}"
+          start_date: >-
+            {{ stream_interval.start_time if stream_interval else
+            config['start_date'] }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      lookback_window: P31D
+      incremental_cursor: date
+      path: planetary/apod
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          concept_tags:
+            type:
+              - "null"
+              - boolean
+          concepts:
+            type:
+              - "null"
+              - object
+              - string
+            patternProperties:
+              ^[0-9]+$:
+                type:
+                  - "null"
+                  - string
+          copyright:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+            format: "%Y-%m-%d"
+          explanation:
+            type:
+              - "null"
+              - string
+          hdurl:
+            type:
+              - "null"
+              - string
+            format: uri
+          media_type:
+            type:
+              - "null"
+              - string
+            enum:
+              - image
+              - video
+          resource:
+            type:
+              - "null"
+              - object
+            properties:
+              image_set:
+                type:
+                  - "null"
+                  - string
+              planet:
+                type:
+                  - "null"
+                  - string
+          service_version:
+            type:
+              - "null"
+              - string
+            pattern: ^v[0-9]$
+          thumbnail_url:
+            type:
+              - "null"
+              - string
+            format: uri
+          title:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+            format: uri
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: API access key used to retrieve data from the NASA APOD API.
+        airbyte_secret: true
+        order: 0
+      concept_tags:
+        type: boolean
+        default: false
+        description: >-
+          Indicates whether concept tags should be returned with the rest of the
+          response.  The concept tags are not necessarily included in the
+          explanation, but rather derived from common search tags that are
+          associated with the description text. (Better than just pure text
+          search.) Defaults to False.
+        order: 1
+      count:
+        type: integer
+        minimum: 1
+        maximum: 100
+        description: >-
+          A positive integer, no greater than 100. If this is specified then
+          `count` randomly  chosen images will be returned in a JSON array.
+          Cannot be used in conjunction with  `date` or `start_date` and
+          `end_date`.
+        order: 2
+      end_date:
+        type: string
+        description: >-
+          Indicates that end of a date range. If `start_date` is specified
+          without an `end_date` then `end_date` defaults to the current date.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2022-10-20"
+        format: date
+        order: 3
+      start_date:
+        type: string
+        description: >-
+          Indicates the start of a date range. All images in the range from
+          `start_date` to  `end_date` will be returned in a JSON array. Must be
+          after 1995-06-16, the first day an APOD picture was posted. There are
+          no images for tomorrow available through this API.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2022-10-20"
+        format: date
+        order: 4
+      thumbs:
+        type: boolean
+        default: false
+        description: >-
+          Indicates whether the API should return a thumbnail image URL for
+          video files. If set to True, the API returns URL of video thumbnail.
+          If an APOD is not a video, this parameter is ignored.
+        order: 5
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    nasa_apod: false
+schemas:
+  nasa_apod:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      concept_tags:
+        type:
+          - "null"
+          - boolean
+      concepts:
+        type:
+          - "null"
+          - object
+          - string
+        patternProperties:
+          ^[0-9]+$:
+            type:
+              - "null"
+              - string
+      copyright:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+        format: "%Y-%m-%d"
+      explanation:
+        type:
+          - "null"
+          - string
+      hdurl:
+        type:
+          - "null"
+          - string
+        format: uri
+      media_type:
+        type:
+          - "null"
+          - string
+        enum:
+          - image
+          - video
+      resource:
+        type:
+          - "null"
+          - object
+        properties:
+          image_set:
+            type:
+              - "null"
+              - string
+          planet:
+            type:
+              - "null"
+              - string
+      service_version:
+        type:
+          - "null"
+          - string
+        pattern: ^v[0-9]$
+      thumbnail_url:
+        type:
+          - "null"
+          - string
+        format: uri
+      title:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+        format: uri

@@ -1,0 +1,24 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: STDIO
+      format: JSONL
+      socket-paths:
+    check:
+      jdbc:
+        queries:
+          - SELECT DATABASE_PATH() FROM DUAL
+
+    extract:
+      jdbc:
+        mode: sequential
+
+    exception-classifiers:
+      jdbc:
+        order: 123
+        rules:
+          - error: config
+            code: 90149
+            group: "Connection failure"
+            output: "Database does not exist"

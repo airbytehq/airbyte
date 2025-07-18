@@ -9,11 +9,13 @@ from decimal import Decimal, getcontext
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
+
 from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode
 
 from .aws import AwsHandler
 from .config_reader import ConnectorConfig, PartitionOptions
 from .constants import EMPTY_VALUES, GLUE_TYPE_MAPPING_DECIMAL, GLUE_TYPE_MAPPING_DOUBLE, PANDAS_TYPE_MAPPING
+
 
 # By default we set glue decimal type to decimal(28,25)
 # this setting matches that precision.

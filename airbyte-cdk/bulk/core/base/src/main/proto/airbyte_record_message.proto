@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+ */
+syntax = "proto3";
+
+import "airbyte_record_message_meta.proto";
+
+package io.airbyte.protocol.protobuf;
+
+message AirbyteRecordMessageProtobuf {
+  optional string stream_namespace = 1;
+  string stream_name = 2;
+  uint64 emitted_at_ms = 3;
+  string partition_id = 4; // Unique id associating this record to a state message
+  repeated AirbyteValueProtobuf data = 5;
+  AirbyteRecordMessageMeta meta = 6;
+};
+
+message AirbyteValueProtobuf {
+  oneof value {
+    bool boolean = 1;
+    string string = 2;
+    int64 integer = 3;
+    string big_integer = 4; // Prefer over integer iff it exists
+    double number = 5;
+    string big_decimal = 6; // Prefer over number iff it exists
+    string date = 7;
+    string time_with_timezone = 8;
+    string time_without_timezone = 9;
+    string timestamp_with_timezone = 10;
+    string timestamp_without_timezone = 11;
+    bytes json = 12; // JSON-encoded arrays, objects, unions, or otherwise unknown.
+  }
+  bool is_null = 13;
+};

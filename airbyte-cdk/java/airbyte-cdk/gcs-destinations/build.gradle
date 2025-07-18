@@ -9,7 +9,7 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
     api project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations')
 
-    api 'com.google.cloud:google-cloud-storage:2.32.1'
+    api 'com.google.cloud:google-cloud-storage:2.42.0'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
     testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations')

@@ -1,0 +1,622 @@
+version: 4.3.2
+
+type: DeclarativeSource
+
+description: ""
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api_token"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+              - type: DefaultErrorHandler
+                max_retries: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    leads:
+      type: DeclarativeStream
+      name: leads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/{{stream_partition.account_id}}/leads
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api_token"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+              - type: DefaultErrorHandler
+                max_retries: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_visit_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_date
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1M
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - account_id
+              value: "{{stream_partition.account_id}}"
+        - type: AddFields
+          fields:
+            - path:
+                - last_visit_date
+              value: "{{record['attributes']['last_visit_date']}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+    visits:
+      type: DeclarativeStream
+      name: visits
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/{{stream_partition.account_id}}/visits
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api_token"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+              - type: DefaultErrorHandler
+                max_retries: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_date
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1M
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - account_id
+              value: "{{stream_partition.account_id}}"
+        - type: AddFields
+          fields:
+            - path:
+                - started_at
+              value: "{{record['attributes']['started_at']}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/visits"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.leadfeeder.com
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/visits"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_date
+    properties:
+      api_token:
+        type: string
+        order: 0
+        title: Api Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: false
+    leads: false
+    visits: false
+  testedStreams: {}
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          on_trial:
+            type:
+              - boolean
+              - "null"
+          subscription:
+            type:
+              - string
+              - "null"
+          subscription_addons:
+            type:
+              - array
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  leads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          business_id:
+            type:
+              - string
+              - "null"
+          crm_organization_id:
+            type:
+              - string
+              - "null"
+          employee_count:
+            type:
+              - number
+              - "null"
+          employees_range:
+            type:
+              - object
+              - "null"
+            properties:
+              max:
+                type:
+                  - number
+                  - "null"
+              min:
+                type:
+                  - number
+                  - "null"
+          facebook_url:
+            type:
+              - string
+              - "null"
+          first_visit_date:
+            type:
+              - string
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          last_visit_date:
+            type:
+              - string
+              - "null"
+          linkedin_url:
+            type:
+              - string
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          quality:
+            type:
+              - number
+              - "null"
+          revenue:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          twitter_handle:
+            type:
+              - string
+              - "null"
+          view_in_leadfeeder:
+            type:
+              - string
+              - "null"
+          visits:
+            type:
+              - number
+              - "null"
+          website_url:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      last_visit_date:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+      - last_visit_date
+  visits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          campaign:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          device_type:
+            type:
+              - string
+              - "null"
+          ga_client_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          hour:
+            type:
+              - number
+              - "null"
+          keyword:
+            type:
+              - string
+              - "null"
+          lead_id:
+            type:
+              - string
+              - "null"
+          lf_client_id:
+            type:
+              - string
+              - "null"
+          medium:
+            type:
+              - string
+              - "null"
+          page_depth:
+            type:
+              - number
+              - "null"
+          referring_url:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          started_at:
+            type:
+              - string
+              - "null"
+          visit_length:
+            type:
+              - number
+              - "null"
+          visit_route:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                display_page_name:
+                  type:
+                    - string
+                    - "null"
+                hostname:
+                  type:
+                    - string
+                    - "null"
+                page_path:
+                  type:
+                    - string
+                    - "null"
+                page_title:
+                  type:
+                    - string
+                    - "null"
+                page_url:
+                  type:
+                    - string
+                    - "null"
+                previous_page_path:
+                  type:
+                    - string
+                    - "null"
+                time_on_page:
+                  type:
+                    - number
+                    - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      started_at:
+        type: string
+    required:
+      - id
+      - started_at

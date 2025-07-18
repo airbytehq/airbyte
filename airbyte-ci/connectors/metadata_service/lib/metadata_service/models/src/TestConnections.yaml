@@ -1,0 +1,17 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/TestConnections.yaml
+title: TestConnections
+description: List of sandbox cloud connections that tests can be run against
+type: object
+required:
+  - name
+  - id
+additionalProperties: false
+properties:
+  name:
+    type: string
+    description: "The connection name"
+  id:
+    type: string
+    description: "The connection ID"

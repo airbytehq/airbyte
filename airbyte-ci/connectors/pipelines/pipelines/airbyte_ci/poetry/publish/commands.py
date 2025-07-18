@@ -5,12 +5,14 @@
 """
 Module exposing the format commands.
 """
+
 from __future__ import annotations
 
 from typing import Optional
 
 import asyncclick as click
 from packaging import version
+
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
@@ -98,7 +100,7 @@ async def publish(
         version=publish_version,
     )
 
-    dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Publish {ctx.obj['package_path']} to python registry")
+    dagger_client = await click_pipeline_context.get_dagger_client()
     context.dagger_client = dagger_client
 
     if await _has_metadata_yaml(context):

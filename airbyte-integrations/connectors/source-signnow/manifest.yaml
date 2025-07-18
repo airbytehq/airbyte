@@ -1,0 +1,4112 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.signnow.com/
+  API Reference: https://docs.signnow.com/docs/signnow/welcome
+
+check:
+  type: CheckStream
+  stream_names:
+    - user
+
+definitions:
+  streams:
+    user:
+      type: DeclarativeStream
+      name: user
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user"
+    user_modified_documents:
+      type: DeclarativeStream
+      name: user_modified_documents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/documentsv2
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_modified_documents"
+    user_documents:
+      type: DeclarativeStream
+      name: user_documents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/documents
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_documents"
+    crm_contacts:
+      type: DeclarativeStream
+      name: crm_contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/crm/contacts
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated
+              value: "{{ record['meta']['updated_at'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_contacts"
+    favourites:
+      type: DeclarativeStream
+      name: favourites
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/favorites
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/favourites"
+    logs:
+      type: DeclarativeStream
+      name: logs
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: request-logs
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/logs"
+    folder:
+      type: DeclarativeStream
+      name: folder
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/folder
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folder"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/teams
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    team_admins:
+      type: DeclarativeStream
+      name: team_admins
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/teams/{{ stream_partition['team_id'] }}/admins
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_admins"
+    brands:
+      type: DeclarativeStream
+      name: brands
+      primary_key:
+        - unique_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/brands
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/brands"
+    crm_users:
+      type: DeclarativeStream
+      name: crm_users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/crm/users
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_users"
+    crm_groups:
+      type: DeclarativeStream
+      name: crm_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/crm/groups
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_groups"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/organizations
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    signing_links:
+      type: DeclarativeStream
+      name: signing_links
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/application/signing-links
+          http_method: GET
+          request_headers:
+            Authorization: Basic {{ config['auth_token'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signing_links"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.signnow.com
+
+streams:
+  - $ref: "#/definitions/streams/user"
+  - $ref: "#/definitions/streams/user_modified_documents"
+  - $ref: "#/definitions/streams/user_documents"
+  - $ref: "#/definitions/streams/crm_contacts"
+  - $ref: "#/definitions/streams/favourites"
+  - $ref: "#/definitions/streams/logs"
+  - $ref: "#/definitions/streams/folder"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/team_admins"
+  - $ref: "#/definitions/streams/brands"
+  - $ref: "#/definitions/streams/crm_users"
+  - $ref: "#/definitions/streams/crm_groups"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/signing_links"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - auth_token
+      - api_key_id
+      - start_date
+    properties:
+      auth_token:
+        type: string
+        description: >-
+          The authorization token is needed for `signing_links` stream which
+          could be seen from enlarged view of
+          `https://app.signnow.com/webapp/api-dashboard/keys`
+        order: 0
+        title: Auth Token
+        airbyte_secret: true
+      api_key_id:
+        type: string
+        description: >-
+          Api key which could be found in API section after enlarging keys
+          section
+        title: API Key
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      name_filter_for_documents:
+        type: array
+        description: Name filter for documents stream
+        order: 3
+        title: Name filter for documents
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    user: true
+    user_modified_documents: true
+    user_documents: true
+    crm_contacts: true
+    favourites: true
+    logs: true
+    folder: true
+    teams: true
+    team_admins: true
+    brands: true
+    crm_users: true
+    crm_groups: true
+    organizations: true
+    signing_links: false
+  testedStreams:
+    user:
+      streamHash: 5b5a1b44589b76c1c613bbf1683dd4d9be2d50db
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_modified_documents:
+      streamHash: 42f8ff537f09ef8e0c8211a90c981dfd264012fa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_documents:
+      streamHash: e0fb80001a60fb221c8762ca34cfb6a7eefcc47f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_contacts:
+      streamHash: 5a3a8200c658d75178a422dd7f29e28e58416edf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    favourites:
+      streamHash: b241997c15fff195f55cdf11fc792babd930bacd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    logs:
+      streamHash: 1ccca65410679fe2b979e560f9988e6f7573c69f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    folder:
+      streamHash: 849584b92c1240d4a0a84ef416ffdf9e6d6fd866
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: 634c3864e3e74df93967a476eca16cfab51ea971
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    team_admins:
+      streamHash: 198ff7a19937fc9f97a0bc72e4e0540e1ddfb1ac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    brands:
+      streamHash: 88fea76a84d98e3ead159f5cfd5f3c7c70bdc423
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_users:
+      streamHash: 6b65019f430cb15fcba6f6bdab3836912536ac0a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    crm_groups:
+      streamHash: 694d14a247252080c689faa8b9ac4f5b4844914d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: 52d8c4b845673892fa271ceacd0b610ee3a61f9b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signing_links:
+      streamHash: ced9be71b0ff2ae1850d0d9a2b1c0269f8613a40
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.signnow.com/docs/signnow/welcome
+
+schemas:
+  user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      active:
+        type:
+          - string
+          - "null"
+      appleapps:
+        type:
+          - boolean
+          - "null"
+      billing_period:
+        type:
+          - object
+          - "null"
+        properties:
+          end_date:
+            type:
+              - string
+              - "null"
+          end_timestamp:
+            type:
+              - number
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          start_timestamp:
+            type:
+              - number
+              - "null"
+      companies:
+        type:
+          - array
+          - "null"
+      created:
+        type: string
+      credits:
+        type:
+          - number
+          - "null"
+      document_count:
+        type:
+          - number
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      facebookapps:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      googleapps:
+        type:
+          - boolean
+          - "null"
+      has_atticus_access:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      is_logged_in:
+        type:
+          - boolean
+          - "null"
+      issue_notifications:
+        type:
+          - array
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lifetime_document_count:
+        type:
+          - number
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      merchant_accounts:
+        type:
+          - array
+          - "null"
+      microsoftapps:
+        type:
+          - boolean
+          - "null"
+      modified_primary_email:
+        type:
+          - string
+          - "null"
+      monthly_document_count:
+        type:
+          - string
+          - "null"
+      organization_settings:
+        type:
+          - array
+          - "null"
+      premium_access:
+        type:
+          - object
+          - "null"
+        properties:
+          active:
+            type:
+              - boolean
+              - "null"
+          business:
+            type:
+              - boolean
+              - "null"
+          credit_card:
+            type:
+              - boolean
+              - "null"
+          error:
+            type:
+              - boolean
+              - "null"
+          plan:
+            type:
+              - string
+              - "null"
+          subscription:
+            type:
+              - object
+              - "null"
+            properties:
+              version:
+                type:
+                  - number
+                  - "null"
+              admin_email:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - number
+                  - "null"
+              expired_at:
+                type:
+                  - number
+                  - "null"
+              gateway_subscription:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  auto_renew:
+                    type:
+                      - boolean
+                      - "null"
+              key:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              plan:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  billing_cycle:
+                    type:
+                      - number
+                      - "null"
+                  groups:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  is_marketplace:
+                    type:
+                      - boolean
+                      - "null"
+                  is_trial:
+                    type:
+                      - boolean
+                      - "null"
+                  level:
+                    type:
+                      - string
+                      - "null"
+                  mobile_plan_type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  plan_id:
+                    type:
+                      - string
+                      - "null"
+                  price:
+                    type:
+                      - number
+                      - "null"
+              seats:
+                type:
+                  - number
+                  - "null"
+              serial_number:
+                type:
+                  - string
+                  - "null"
+              term:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - number
+                  - "null"
+              used_seats:
+                type:
+                  - number
+                  - "null"
+          trial:
+            type:
+              - boolean
+              - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              added_date:
+                type:
+                  - number
+                  - "null"
+              admin:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+      primary_email:
+        type:
+          - string
+          - "null"
+      pro:
+        type:
+          - number
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          add_signature_stamp:
+            type:
+              - boolean
+              - "null"
+          add_signature_stamp_with_name:
+            type:
+              - boolean
+              - "null"
+          advanced_signing_flow:
+            type:
+              - boolean
+              - "null"
+          agree_to_be_beta_tester:
+            type:
+              - boolean
+              - "null"
+          agreement_to_test_new_functionality_in_organization:
+            type:
+              - boolean
+              - "null"
+          allow_big_attachment_file:
+            type:
+              - boolean
+              - "null"
+          allow_big_count_of_attachment_fields_per_document:
+            type:
+              - boolean
+              - "null"
+          allow_cfr_control:
+            type:
+              - boolean
+              - "null"
+          allow_document_copying_to_other_accounts:
+            type:
+              - boolean
+              - "null"
+          allow_download_certificate:
+            type:
+              - boolean
+              - "null"
+          allow_edit_document_after_signing:
+            type:
+              - boolean
+              - "null"
+          allow_embedded_extended_token_expiration:
+            type:
+              - boolean
+              - "null"
+          allow_qes:
+            type:
+              - boolean
+              - "null"
+          allow_signers_download_with_history:
+            type:
+              - boolean
+              - "null"
+          allow_team_admin_create_csv_report_for_shared_template:
+            type:
+              - boolean
+              - "null"
+          allow_team_admin_rename_docs:
+            type:
+              - boolean
+              - "null"
+          audit_trail_completion_retention_days:
+            type:
+              - boolean
+              - "null"
+          auto_apply_signatures_and_initials_to_document_fields:
+            type:
+              - boolean
+              - "null"
+          block_export_options_when_credit_card_validation_is_used:
+            type:
+              - boolean
+              - "null"
+          block_login_via_social_networks:
+            type:
+              - boolean
+              - "null"
+          block_organization_selfleave_by_member:
+            type:
+              - boolean
+              - "null"
+          cc_completion_email_contain_only_downloading_document_link:
+            type:
+              - boolean
+              - "null"
+          cfr_title_21_part_11:
+            type:
+              - boolean
+              - "null"
+          cloud_auto_export:
+            type:
+              - boolean
+              - "null"
+          cloud_export_with_history:
+            type:
+              - boolean
+              - "null"
+          common_experiments:
+            type:
+              - boolean
+              - "null"
+          completed_document_name_formula:
+            type:
+              - boolean
+              - "null"
+          copy_export:
+            type:
+              - boolean
+              - "null"
+          dashboard_onboarding_current_step:
+            type:
+              - boolean
+              - "null"
+          dashboard_onboarding_enabled:
+            type:
+              - boolean
+              - "null"
+          dashboard_tips_enabled:
+            type:
+              - boolean
+              - "null"
+          date_format:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_expiration_time:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_after:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_before:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_repeat:
+            type:
+              - boolean
+              - "null"
+          default_workspace:
+            type:
+              - boolean
+              - "null"
+          default_workspace_assigned:
+            type:
+              - boolean
+              - "null"
+          digitally_sign_dowloaded_docs:
+            type:
+              - boolean
+              - "null"
+          disable_download_action_in_editor:
+            type:
+              - boolean
+              - "null"
+          disable_email_notifications:
+            type:
+              - boolean
+              - "null"
+          disable_email_recipients:
+            type:
+              - boolean
+              - "null"
+          disable_form_search:
+            type:
+              - boolean
+              - "null"
+          disable_problem_invite_email_notifications:
+            type:
+              - boolean
+              - "null"
+          do_no_consent_redirect_url:
+            type:
+              - boolean
+              - "null"
+          document_attachment_only_for_signer:
+            type:
+              - boolean
+              - "null"
+          document_completion_retention_days:
+            type:
+              - boolean
+              - "null"
+          document_guide:
+            type:
+              - boolean
+              - "null"
+          document_prefill_disable_fields_existing_validation:
+            type:
+              - boolean
+              - "null"
+          document_schema_extended:
+            type:
+              - boolean
+              - "null"
+          electronic_consent_required:
+            type:
+              - boolean
+              - "null"
+          electronic_consent_text:
+            type:
+              - boolean
+              - "null"
+          email_admin_on_banned_login:
+            type:
+              - boolean
+              - "null"
+          email_btn_bkgd_color:
+            type:
+              - boolean
+              - "null"
+          email_btn_text_color:
+            type:
+              - boolean
+              - "null"
+          email_custom_message:
+            type:
+              - boolean
+              - "null"
+          email_custom_subject:
+            type:
+              - boolean
+              - "null"
+          email_footer_enabled:
+            type:
+              - boolean
+              - "null"
+          email_logo_position:
+            type:
+              - boolean
+              - "null"
+          emailed_docs_include_history:
+            type:
+              - boolean
+              - "null"
+          enable_advanced_threat_protection:
+            type:
+              - boolean
+              - "null"
+          enable_document_comments:
+            type:
+              - boolean
+              - "null"
+          enable_document_download_link_for_invite_completion_mails:
+            type:
+              - boolean
+              - "null"
+          enable_eu_date_format:
+            type:
+              - boolean
+              - "null"
+          enable_full_story_tracker:
+            type:
+              - boolean
+              - "null"
+          enable_hyperlink_field:
+            type:
+              - boolean
+              - "null"
+          enable_hyperlink_protection:
+            type:
+              - boolean
+              - "null"
+          enable_mfa:
+            type:
+              - boolean
+              - "null"
+          enable_pki:
+            type:
+              - boolean
+              - "null"
+          enable_qes:
+            type:
+              - boolean
+              - "null"
+          enable_render_pages_in_editor_as_images:
+            type:
+              - boolean
+              - "null"
+          enable_team_admin_move_docs:
+            type:
+              - boolean
+              - "null"
+          enable_team_generic_email:
+            type:
+              - boolean
+              - "null"
+          every_signature_and_initials_field_requires_user_authentication:
+            type:
+              - boolean
+              - "null"
+          flatten_before_aspose:
+            type:
+              - boolean
+              - "null"
+          front_end_session_length:
+            type:
+              - boolean
+              - "null"
+          guide_signers_only_through_required_fields:
+            type:
+              - boolean
+              - "null"
+          have_merged_document_group_option:
+            type:
+              - boolean
+              - "null"
+          hide_decline_to_sign_option_in_signing_session:
+            type:
+              - boolean
+              - "null"
+          hide_doc_copy_options:
+            type:
+              - boolean
+              - "null"
+          hide_registration_for_new_users_after_signing:
+            type:
+              - boolean
+              - "null"
+          hide_upgrade_subscription_button:
+            type:
+              - boolean
+              - "null"
+          invite_canceled_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_completion_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_decline_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_expiration_days:
+            type:
+              - boolean
+              - "null"
+          invite_update_notifications_for_all_invites_at_invite_create:
+            type:
+              - boolean
+              - "null"
+          lock_signing_date_by_default:
+            type:
+              - boolean
+              - "null"
+          logout_on_signing:
+            type:
+              - boolean
+              - "null"
+          mobileweb_option:
+            type:
+              - boolean
+              - "null"
+          no_document_attachment:
+            type:
+              - boolean
+              - "null"
+          no_document_file_attachments:
+            type:
+              - boolean
+              - "null"
+          no_user_signature_return:
+            type:
+              - boolean
+              - "null"
+          only_administrator_is_able_to_invite_to_the_team:
+            type:
+              - boolean
+              - "null"
+          org_allowed_team_admins:
+            type:
+              - boolean
+              - "null"
+          parse_only_signature_fields:
+            type:
+              - boolean
+              - "null"
+          pending_invite_document_view_notification:
+            type:
+              - boolean
+              - "null"
+          receive_signer_email_after_sent_field_invite_to_yourself:
+            type:
+              - boolean
+              - "null"
+          redirect_to_registration_when_fields_saved:
+            type:
+              - boolean
+              - "null"
+          require_authentication_for_invites:
+            type:
+              - boolean
+              - "null"
+          require_drawn_signatures:
+            type:
+              - boolean
+              - "null"
+          require_login_for_signing:
+            type:
+              - boolean
+              - "null"
+          required_preset_signature_name:
+            type:
+              - boolean
+              - "null"
+          restrict_download:
+            type:
+              - boolean
+              - "null"
+          run_experiments:
+            type:
+              - boolean
+              - "null"
+          save_signer_signature_and_initials:
+            type:
+              - boolean
+              - "null"
+          signature_stamp_position:
+            type:
+              - boolean
+              - "null"
+          signing_link_document_download:
+            type:
+              - boolean
+              - "null"
+          signing_reason:
+            type:
+              - boolean
+              - "null"
+          sso-only-login:
+            type:
+              - boolean
+              - "null"
+          unsuccessful_logout_attempts_allowed:
+            type:
+              - boolean
+              - "null"
+          upload_limit:
+            type:
+              - boolean
+              - "null"
+          use_team_generic_data:
+            type:
+              - boolean
+              - "null"
+          watermark_downloaded_document:
+            type:
+              - boolean
+              - "null"
+          web_trial_extended_to:
+            type:
+              - boolean
+              - "null"
+          workspace_organization:
+            type:
+              - boolean
+              - "null"
+          workspace_subscription_admin:
+            type:
+              - boolean
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          bad_cloud_export_token:
+            type:
+              - boolean
+              - "null"
+          bad_copy_token:
+            type:
+              - boolean
+              - "null"
+          has_cloud_export_token:
+            type:
+              - boolean
+              - "null"
+          has_copy_token:
+            type:
+              - boolean
+              - "null"
+          has_salesforce_token:
+            type:
+              - boolean
+              - "null"
+      subscriptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            billing_cycle:
+              type:
+                - number
+                - "null"
+            created:
+              type:
+                - number
+                - "null"
+            credit_card:
+              type:
+                - boolean
+                - "null"
+            expired:
+              type:
+                - number
+                - "null"
+            gateway_subscription:
+              type:
+                - object
+                - "null"
+              properties:
+                auto_renew:
+                  type:
+                    - boolean
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            is_freemium:
+              type:
+                - boolean
+                - "null"
+            is_seat_free_subscription:
+              type:
+                - boolean
+                - "null"
+            is_usage_based:
+              type:
+                - boolean
+                - "null"
+            is_usage_based_seat_free:
+              type:
+                - boolean
+                - "null"
+            mobile_plan_type:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            plan:
+              type:
+                - string
+                - "null"
+            plan_version:
+              type:
+                - number
+                - "null"
+            seat_admin_email:
+              type:
+                - string
+                - "null"
+            seats:
+              type:
+                - number
+                - "null"
+            subscription_id:
+              type:
+                - string
+                - "null"
+            term:
+              type:
+                - number
+                - "null"
+            trial:
+              type:
+                - boolean
+                - "null"
+            updated:
+              type:
+                - number
+                - "null"
+            used_seats:
+              type:
+                - number
+                - "null"
+      teams:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            admins:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  billing:
+                    type:
+                      - number
+                      - "null"
+                  document_access:
+                    type:
+                      - number
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  is_secondary:
+                    type:
+                      - string
+                      - "null"
+                  primary:
+                    type:
+                      - boolean
+                      - "null"
+            created_since:
+              type:
+                - string
+                - "null"
+            document_count:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            team:
+              type:
+                - string
+                - "null"
+            team_options:
+              type:
+                - object
+                - "null"
+              properties:
+                hide_doc_copy_options:
+                  type:
+                    - boolean
+                    - "null"
+            team_owner_full_name:
+              type:
+                - string
+                - "null"
+      verified:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - created
+  user_modified_documents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      approver_field_invites:
+        type:
+          - array
+          - "null"
+      approver_roles:
+        type:
+          - array
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      checks:
+        type:
+          - array
+          - "null"
+      created:
+        type: string
+      document_group_info:
+        type:
+          - object
+          - "null"
+        properties:
+          doc_count_in_group:
+            type:
+              - number
+              - "null"
+          freeform_invite:
+            type:
+              - object
+              - "null"
+            properties: {}
+          sign_as_merged:
+            type:
+              - boolean
+              - "null"
+      document_group_template_info:
+        type:
+          - array
+          - "null"
+      document_name:
+        type:
+          - string
+          - "null"
+      entity_labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            is_system:
+              type:
+                - boolean
+                - "null"
+            label_name:
+              type:
+                - string
+                - "null"
+            updated:
+              type:
+                - number
+                - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      enumeration_options:
+        type:
+          - array
+          - "null"
+      field_invites:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            decline_by_signature:
+              type:
+                - string
+                - "null"
+            declined:
+              type:
+                - array
+                - "null"
+            delivery_type:
+              type:
+                - string
+                - "null"
+            electronic_consent_required:
+              type:
+                - number
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            email_group:
+              type:
+                - object
+                - "null"
+              properties: {}
+            email_sent_statuses:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  created_at:
+                    type:
+                      - number
+                      - "null"
+                  last_reaction_at:
+                    type:
+                      - number
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+            expiration_time:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            id_verification_required:
+              type:
+                - string
+                - "null"
+            id_verified:
+              type:
+                - string
+                - "null"
+            is_document_locked:
+              type:
+                - string
+                - "null"
+            is_draft_exists:
+              type:
+                - string
+                - "null"
+            is_embedded:
+              type:
+                - boolean
+                - "null"
+            is_full_declined:
+              type:
+                - boolean
+                - "null"
+            password_method:
+              type:
+                - string
+                - "null"
+            password_protected:
+              type:
+                - string
+                - "null"
+            password_type:
+              type:
+                - string
+                - "null"
+            reassign:
+              type:
+                - string
+                - "null"
+            reminder:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            role_id:
+              type:
+                - string
+                - "null"
+            signer_user_id:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            updated:
+              type:
+                - string
+                - "null"
+      field_validators:
+        type:
+          - array
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            field_id:
+              type:
+                - string
+                - "null"
+            field_request_id:
+              type:
+                - string
+                - "null"
+            fulfiller:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            json_attributes:
+              type:
+                - object
+                - "null"
+              properties:
+                allowed_types:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                page_number:
+                  type:
+                    - number
+                    - "null"
+                required:
+                  type:
+                    - boolean
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+                x:
+                  type:
+                    - number
+                    - "null"
+                "y":
+                  type:
+                    - number
+                    - "null"
+            originator:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            role_id:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      inserts:
+        type:
+          - array
+          - "null"
+      integrations:
+        type:
+          - array
+          - "null"
+      is_favorite:
+        type:
+          - boolean
+          - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      notary_invites:
+        type:
+          - array
+          - "null"
+      original_filename:
+        type:
+          - string
+          - "null"
+      originator_organization_settings:
+        type:
+          - array
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      page_count:
+        type:
+          - string
+          - "null"
+      pinned:
+        type:
+          - boolean
+          - "null"
+      radiobuttons:
+        type:
+          - array
+          - "null"
+      recently_used:
+        type:
+          - string
+          - "null"
+      requests:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            email_sent_statuses:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  created_at:
+                    type:
+                      - number
+                      - "null"
+                  last_reaction_at:
+                    type:
+                      - number
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+            id:
+              type:
+                - string
+                - "null"
+            originator_email:
+              type:
+                - string
+                - "null"
+            signer_email:
+              type:
+                - string
+                - "null"
+            signer_user_id:
+              type:
+                - string
+                - "null"
+            unique_id:
+              type:
+                - string
+                - "null"
+            user_id:
+              type:
+                - string
+                - "null"
+      roles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            signing_order:
+              type:
+                - string
+                - "null"
+            unique_id:
+              type:
+                - string
+                - "null"
+      routing_details:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            approvers:
+              type:
+                - array
+                - "null"
+            cc:
+              type:
+                - array
+                - "null"
+            cc_step:
+              type:
+                - array
+                - "null"
+            created:
+              type:
+                - string
+                - "null"
+            data:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default_email:
+                    type:
+                      - string
+                      - "null"
+                  delivery_type:
+                    type:
+                      - string
+                      - "null"
+                  inviter_role:
+                    type:
+                      - boolean
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  role_id:
+                    type:
+                      - string
+                      - "null"
+                  signing_order:
+                    type:
+                      - number
+                      - "null"
+            id:
+              type:
+                - string
+                - "null"
+            updated:
+              type:
+                - string
+                - "null"
+            viewers:
+              type:
+                - array
+                - "null"
+      seals:
+        type:
+          - array
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          add_signature_stamp:
+            type:
+              - boolean
+              - "null"
+          add_signature_stamp_with_name:
+            type:
+              - boolean
+              - "null"
+          advanced_signing_flow:
+            type:
+              - boolean
+              - "null"
+          agree_to_be_beta_tester:
+            type:
+              - boolean
+              - "null"
+          agreement_to_test_new_functionality_in_organization:
+            type:
+              - boolean
+              - "null"
+          allow_big_attachment_file:
+            type:
+              - boolean
+              - "null"
+          allow_big_count_of_attachment_fields_per_document:
+            type:
+              - boolean
+              - "null"
+          allow_cfr_control:
+            type:
+              - boolean
+              - "null"
+          allow_document_copying_to_other_accounts:
+            type:
+              - boolean
+              - "null"
+          allow_download_certificate:
+            type:
+              - boolean
+              - "null"
+          allow_edit_document_after_signing:
+            type:
+              - boolean
+              - "null"
+          allow_embedded_extended_token_expiration:
+            type:
+              - boolean
+              - "null"
+          allow_qes:
+            type:
+              - boolean
+              - "null"
+          allow_signers_download_with_history:
+            type:
+              - boolean
+              - "null"
+          allow_team_admin_create_csv_report_for_shared_template:
+            type:
+              - boolean
+              - "null"
+          allow_team_admin_rename_docs:
+            type:
+              - boolean
+              - "null"
+          audit_trail_completion_retention_days:
+            type:
+              - boolean
+              - "null"
+          auto_apply_signatures_and_initials_to_document_fields:
+            type:
+              - boolean
+              - "null"
+          block_export_options_when_credit_card_validation_is_used:
+            type:
+              - boolean
+              - "null"
+          block_login_via_social_networks:
+            type:
+              - boolean
+              - "null"
+          block_organization_selfleave_by_member:
+            type:
+              - boolean
+              - "null"
+          cc_completion_email_contain_only_downloading_document_link:
+            type:
+              - boolean
+              - "null"
+          cfr_title_21_part_11:
+            type:
+              - boolean
+              - "null"
+          cloud_auto_export:
+            type:
+              - boolean
+              - "null"
+          cloud_export_with_history:
+            type:
+              - boolean
+              - "null"
+          common_experiments:
+            type:
+              - boolean
+              - "null"
+          completed_document_name_formula:
+            type:
+              - boolean
+              - "null"
+          copy_export:
+            type:
+              - boolean
+              - "null"
+          dashboard_onboarding_current_step:
+            type:
+              - boolean
+              - "null"
+          dashboard_onboarding_enabled:
+            type:
+              - boolean
+              - "null"
+          dashboard_tips_enabled:
+            type:
+              - boolean
+              - "null"
+          date_format:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_expiration_time:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_after:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_before:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_repeat:
+            type:
+              - boolean
+              - "null"
+          default_workspace:
+            type:
+              - boolean
+              - "null"
+          default_workspace_assigned:
+            type:
+              - boolean
+              - "null"
+          digitally_sign_dowloaded_docs:
+            type:
+              - boolean
+              - "null"
+          disable_download_action_in_editor:
+            type:
+              - boolean
+              - "null"
+          disable_email_notifications:
+            type:
+              - boolean
+              - "null"
+          disable_email_recipients:
+            type:
+              - boolean
+              - "null"
+          disable_form_search:
+            type:
+              - boolean
+              - "null"
+          disable_problem_invite_email_notifications:
+            type:
+              - boolean
+              - "null"
+          do_no_consent_redirect_url:
+            type:
+              - boolean
+              - "null"
+          document_attachment_only_for_signer:
+            type:
+              - boolean
+              - "null"
+          document_completion_retention_days:
+            type:
+              - boolean
+              - "null"
+          document_guide:
+            type:
+              - boolean
+              - "null"
+          document_prefill_disable_fields_existing_validation:
+            type:
+              - boolean
+              - "null"
+          document_schema_extended:
+            type:
+              - boolean
+              - "null"
+          electronic_consent_required:
+            type:
+              - boolean
+              - "null"
+          electronic_consent_text:
+            type:
+              - boolean
+              - "null"
+          email_admin_on_banned_login:
+            type:
+              - boolean
+              - "null"
+          email_btn_bkgd_color:
+            type:
+              - boolean
+              - "null"
+          email_btn_text_color:
+            type:
+              - boolean
+              - "null"
+          email_custom_message:
+            type:
+              - boolean
+              - "null"
+          email_custom_subject:
+            type:
+              - boolean
+              - "null"
+          email_footer_enabled:
+            type:
+              - boolean
+              - "null"
+          email_logo_position:
+            type:
+              - boolean
+              - "null"
+          emailed_docs_include_history:
+            type:
+              - boolean
+              - "null"
+          enable_advanced_threat_protection:
+            type:
+              - boolean
+              - "null"
+          enable_document_comments:
+            type:
+              - boolean
+              - "null"
+          enable_document_download_link_for_invite_completion_mails:
+            type:
+              - boolean
+              - "null"
+          enable_eu_date_format:
+            type:
+              - boolean
+              - "null"
+          enable_full_story_tracker:
+            type:
+              - boolean
+              - "null"
+          enable_hyperlink_field:
+            type:
+              - boolean
+              - "null"
+          enable_hyperlink_protection:
+            type:
+              - boolean
+              - "null"
+          enable_mfa:
+            type:
+              - boolean
+              - "null"
+          enable_pki:
+            type:
+              - boolean
+              - "null"
+          enable_qes:
+            type:
+              - boolean
+              - "null"
+          enable_render_pages_in_editor_as_images:
+            type:
+              - boolean
+              - "null"
+          enable_team_admin_move_docs:
+            type:
+              - boolean
+              - "null"
+          enable_team_generic_email:
+            type:
+              - boolean
+              - "null"
+          every_signature_and_initials_field_requires_user_authentication:
+            type:
+              - boolean
+              - "null"
+          flatten_before_aspose:
+            type:
+              - boolean
+              - "null"
+          front_end_session_length:
+            type:
+              - boolean
+              - "null"
+          guide_signers_only_through_required_fields:
+            type:
+              - boolean
+              - "null"
+          have_merged_document_group_option:
+            type:
+              - boolean
+              - "null"
+          hide_decline_to_sign_option_in_signing_session:
+            type:
+              - boolean
+              - "null"
+          hide_doc_copy_options:
+            type:
+              - boolean
+              - "null"
+          hide_registration_for_new_users_after_signing:
+            type:
+              - boolean
+              - "null"
+          hide_upgrade_subscription_button:
+            type:
+              - boolean
+              - "null"
+          invite_canceled_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_completion_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_decline_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_expiration_days:
+            type:
+              - boolean
+              - "null"
+          invite_update_notifications_for_all_invites_at_invite_create:
+            type:
+              - boolean
+              - "null"
+          lock_signing_date_by_default:
+            type:
+              - boolean
+              - "null"
+          logout_on_signing:
+            type:
+              - boolean
+              - "null"
+          mobileweb_option:
+            type:
+              - boolean
+              - "null"
+          no_document_attachment:
+            type:
+              - boolean
+              - "null"
+          no_document_file_attachments:
+            type:
+              - boolean
+              - "null"
+          no_user_signature_return:
+            type:
+              - boolean
+              - "null"
+          only_administrator_is_able_to_invite_to_the_team:
+            type:
+              - boolean
+              - "null"
+          org_allowed_team_admins:
+            type:
+              - boolean
+              - "null"
+          parse_only_signature_fields:
+            type:
+              - boolean
+              - "null"
+          pending_invite_document_view_notification:
+            type:
+              - boolean
+              - "null"
+          receive_signer_email_after_sent_field_invite_to_yourself:
+            type:
+              - boolean
+              - "null"
+          redirect_to_registration_when_fields_saved:
+            type:
+              - boolean
+              - "null"
+          require_authentication_for_invites:
+            type:
+              - boolean
+              - "null"
+          require_drawn_signatures:
+            type:
+              - boolean
+              - "null"
+          require_email_subject:
+            type:
+              - boolean
+              - "null"
+          require_login_for_signing:
+            type:
+              - boolean
+              - "null"
+          required_preset_signature_name:
+            type:
+              - boolean
+              - "null"
+          restrict_download:
+            type:
+              - boolean
+              - "null"
+          run_experiments:
+            type:
+              - boolean
+              - "null"
+          save_signer_signature_and_initials:
+            type:
+              - boolean
+              - "null"
+          signature_stamp_position:
+            type:
+              - boolean
+              - "null"
+          signing_link_document_download:
+            type:
+              - boolean
+              - "null"
+          signing_reason:
+            type:
+              - boolean
+              - "null"
+          sso-only-login:
+            type:
+              - boolean
+              - "null"
+          unsuccessful_logout_attempts_allowed:
+            type:
+              - boolean
+              - "null"
+          upload_limit:
+            type:
+              - boolean
+              - "null"
+          use_team_generic_data:
+            type:
+              - boolean
+              - "null"
+          watermark_downloaded_document:
+            type:
+              - boolean
+              - "null"
+          web_trial_extended_to:
+            type:
+              - boolean
+              - "null"
+          workspace_organization:
+            type:
+              - boolean
+              - "null"
+          workspace_subscription_admin:
+            type:
+              - boolean
+              - "null"
+      signatures:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      template:
+        type:
+          - boolean
+          - "null"
+      texts:
+        type:
+          - array
+          - "null"
+      thumbnail:
+        type:
+          - object
+          - "null"
+        properties:
+          large:
+            type:
+              - string
+              - "null"
+          medium:
+            type:
+              - string
+              - "null"
+          small:
+            type:
+              - string
+              - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      version_time:
+        type:
+          - string
+          - "null"
+      viewer_field_invites:
+        type:
+          - array
+          - "null"
+      viewer_roles:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - created
+  user_documents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      approver_field_invites:
+        type:
+          - array
+          - "null"
+      approver_roles:
+        type:
+          - array
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      checks:
+        type:
+          - array
+          - "null"
+      created:
+        type: string
+      document_group_info:
+        type:
+          - object
+          - "null"
+        properties:
+          doc_count_in_group:
+            type:
+              - number
+              - "null"
+          freeform_invite:
+            type:
+              - object
+              - "null"
+            properties: {}
+          sign_as_merged:
+            type:
+              - boolean
+              - "null"
+      document_group_template_info:
+        type:
+          - array
+          - "null"
+      document_name:
+        type:
+          - string
+          - "null"
+      entity_labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            is_system:
+              type:
+                - boolean
+                - "null"
+            label_name:
+              type:
+                - string
+                - "null"
+            updated:
+              type:
+                - number
+                - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      enumeration_options:
+        type:
+          - array
+          - "null"
+      field_invites:
+        type:
+          - array
+          - "null"
+      field_validators:
+        type:
+          - array
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      inserts:
+        type:
+          - array
+          - "null"
+      integrations:
+        type:
+          - array
+          - "null"
+      is_favorite:
+        type:
+          - boolean
+          - "null"
+      lines:
+        type:
+          - array
+          - "null"
+      notary_invites:
+        type:
+          - array
+          - "null"
+      original_filename:
+        type:
+          - string
+          - "null"
+      originator_organization_settings:
+        type:
+          - array
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      page_count:
+        type:
+          - string
+          - "null"
+      pinned:
+        type:
+          - boolean
+          - "null"
+      radiobuttons:
+        type:
+          - array
+          - "null"
+      recently_used:
+        type:
+          - string
+          - "null"
+      requests:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            email_sent_statuses:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  created_at:
+                    type:
+                      - number
+                      - "null"
+                  last_reaction_at:
+                    type:
+                      - number
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+            id:
+              type:
+                - string
+                - "null"
+            originator_email:
+              type:
+                - string
+                - "null"
+            signer_email:
+              type:
+                - string
+                - "null"
+            signer_user_id:
+              type:
+                - string
+                - "null"
+            unique_id:
+              type:
+                - string
+                - "null"
+            user_id:
+              type:
+                - string
+                - "null"
+      roles:
+        type:
+          - array
+          - "null"
+      routing_details:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            approvers:
+              type:
+                - array
+                - "null"
+            cc:
+              type:
+                - array
+                - "null"
+            cc_step:
+              type:
+                - array
+                - "null"
+            created:
+              type:
+                - string
+                - "null"
+            data:
+              type:
+                - array
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            updated:
+              type:
+                - string
+                - "null"
+            viewers:
+              type:
+                - array
+                - "null"
+      seals:
+        type:
+          - array
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          add_signature_stamp:
+            type:
+              - boolean
+              - "null"
+          add_signature_stamp_with_name:
+            type:
+              - boolean
+              - "null"
+          advanced_signing_flow:
+            type:
+              - boolean
+              - "null"
+          agree_to_be_beta_tester:
+            type:
+              - boolean
+              - "null"
+          agreement_to_test_new_functionality_in_organization:
+            type:
+              - boolean
+              - "null"
+          allow_big_attachment_file:
+            type:
+              - boolean
+              - "null"
+          allow_big_count_of_attachment_fields_per_document:
+            type:
+              - boolean
+              - "null"
+          allow_cfr_control:
+            type:
+              - boolean
+              - "null"
+          allow_document_copying_to_other_accounts:
+            type:
+              - boolean
+              - "null"
+          allow_download_certificate:
+            type:
+              - boolean
+              - "null"
+          allow_edit_document_after_signing:
+            type:
+              - boolean
+              - "null"
+          allow_embedded_extended_token_expiration:
+            type:
+              - boolean
+              - "null"
+          allow_qes:
+            type:
+              - boolean
+              - "null"
+          allow_signers_download_with_history:
+            type:
+              - boolean
+              - "null"
+          allow_team_admin_create_csv_report_for_shared_template:
+            type:
+              - boolean
+              - "null"
+          allow_team_admin_rename_docs:
+            type:
+              - boolean
+              - "null"
+          audit_trail_completion_retention_days:
+            type:
+              - boolean
+              - "null"
+          auto_apply_signatures_and_initials_to_document_fields:
+            type:
+              - boolean
+              - "null"
+          block_export_options_when_credit_card_validation_is_used:
+            type:
+              - boolean
+              - "null"
+          block_login_via_social_networks:
+            type:
+              - boolean
+              - "null"
+          block_organization_selfleave_by_member:
+            type:
+              - boolean
+              - "null"
+          cc_completion_email_contain_only_downloading_document_link:
+            type:
+              - boolean
+              - "null"
+          cfr_title_21_part_11:
+            type:
+              - boolean
+              - "null"
+          cloud_auto_export:
+            type:
+              - boolean
+              - "null"
+          cloud_export_with_history:
+            type:
+              - boolean
+              - "null"
+          common_experiments:
+            type:
+              - boolean
+              - "null"
+          completed_document_name_formula:
+            type:
+              - boolean
+              - "null"
+          copy_export:
+            type:
+              - boolean
+              - "null"
+          dashboard_onboarding_current_step:
+            type:
+              - boolean
+              - "null"
+          dashboard_onboarding_enabled:
+            type:
+              - boolean
+              - "null"
+          dashboard_tips_enabled:
+            type:
+              - boolean
+              - "null"
+          date_format:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_expiration_time:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_after:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_before:
+            type:
+              - boolean
+              - "null"
+          default_field_invite_remind_repeat:
+            type:
+              - boolean
+              - "null"
+          default_workspace:
+            type:
+              - boolean
+              - "null"
+          default_workspace_assigned:
+            type:
+              - boolean
+              - "null"
+          digitally_sign_dowloaded_docs:
+            type:
+              - boolean
+              - "null"
+          disable_download_action_in_editor:
+            type:
+              - boolean
+              - "null"
+          disable_email_notifications:
+            type:
+              - boolean
+              - "null"
+          disable_email_recipients:
+            type:
+              - boolean
+              - "null"
+          disable_form_search:
+            type:
+              - boolean
+              - "null"
+          disable_problem_invite_email_notifications:
+            type:
+              - boolean
+              - "null"
+          do_no_consent_redirect_url:
+            type:
+              - boolean
+              - "null"
+          document_attachment_only_for_signer:
+            type:
+              - boolean
+              - "null"
+          document_completion_retention_days:
+            type:
+              - boolean
+              - "null"
+          document_guide:
+            type:
+              - boolean
+              - "null"
+          document_prefill_disable_fields_existing_validation:
+            type:
+              - boolean
+              - "null"
+          document_schema_extended:
+            type:
+              - boolean
+              - "null"
+          electronic_consent_required:
+            type:
+              - boolean
+              - "null"
+          electronic_consent_text:
+            type:
+              - boolean
+              - "null"
+          email_admin_on_banned_login:
+            type:
+              - boolean
+              - "null"
+          email_btn_bkgd_color:
+            type:
+              - boolean
+              - "null"
+          email_btn_text_color:
+            type:
+              - boolean
+              - "null"
+          email_custom_message:
+            type:
+              - boolean
+              - "null"
+          email_custom_subject:
+            type:
+              - boolean
+              - "null"
+          email_footer_enabled:
+            type:
+              - boolean
+              - "null"
+          email_logo_position:
+            type:
+              - boolean
+              - "null"
+          emailed_docs_include_history:
+            type:
+              - boolean
+              - "null"
+          enable_advanced_threat_protection:
+            type:
+              - boolean
+              - "null"
+          enable_document_comments:
+            type:
+              - boolean
+              - "null"
+          enable_document_download_link_for_invite_completion_mails:
+            type:
+              - boolean
+              - "null"
+          enable_eu_date_format:
+            type:
+              - boolean
+              - "null"
+          enable_full_story_tracker:
+            type:
+              - boolean
+              - "null"
+          enable_hyperlink_field:
+            type:
+              - boolean
+              - "null"
+          enable_hyperlink_protection:
+            type:
+              - boolean
+              - "null"
+          enable_mfa:
+            type:
+              - boolean
+              - "null"
+          enable_pki:
+            type:
+              - boolean
+              - "null"
+          enable_qes:
+            type:
+              - boolean
+              - "null"
+          enable_render_pages_in_editor_as_images:
+            type:
+              - boolean
+              - "null"
+          enable_team_admin_move_docs:
+            type:
+              - boolean
+              - "null"
+          enable_team_generic_email:
+            type:
+              - boolean
+              - "null"
+          every_signature_and_initials_field_requires_user_authentication:
+            type:
+              - boolean
+              - "null"
+          flatten_before_aspose:
+            type:
+              - boolean
+              - "null"
+          front_end_session_length:
+            type:
+              - boolean
+              - "null"
+          guide_signers_only_through_required_fields:
+            type:
+              - boolean
+              - "null"
+          have_merged_document_group_option:
+            type:
+              - boolean
+              - "null"
+          hide_decline_to_sign_option_in_signing_session:
+            type:
+              - boolean
+              - "null"
+          hide_doc_copy_options:
+            type:
+              - boolean
+              - "null"
+          hide_registration_for_new_users_after_signing:
+            type:
+              - boolean
+              - "null"
+          hide_upgrade_subscription_button:
+            type:
+              - boolean
+              - "null"
+          invite_canceled_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_completion_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_decline_redirect_url:
+            type:
+              - boolean
+              - "null"
+          invite_expiration_days:
+            type:
+              - boolean
+              - "null"
+          invite_update_notifications_for_all_invites_at_invite_create:
+            type:
+              - boolean
+              - "null"
+          lock_signing_date_by_default:
+            type:
+              - boolean
+              - "null"
+          logout_on_signing:
+            type:
+              - boolean
+              - "null"
+          mobileweb_option:
+            type:
+              - boolean
+              - "null"
+          no_document_attachment:
+            type:
+              - boolean
+              - "null"
+          no_document_file_attachments:
+            type:
+              - boolean
+              - "null"
+          no_user_signature_return:
+            type:
+              - boolean
+              - "null"
+          only_administrator_is_able_to_invite_to_the_team:
+            type:
+              - boolean
+              - "null"
+          org_allowed_team_admins:
+            type:
+              - boolean
+              - "null"
+          parse_only_signature_fields:
+            type:
+              - boolean
+              - "null"
+          pending_invite_document_view_notification:
+            type:
+              - boolean
+              - "null"
+          receive_signer_email_after_sent_field_invite_to_yourself:
+            type:
+              - boolean
+              - "null"
+          redirect_to_registration_when_fields_saved:
+            type:
+              - boolean
+              - "null"
+          require_authentication_for_invites:
+            type:
+              - boolean
+              - "null"
+          require_drawn_signatures:
+            type:
+              - boolean
+              - "null"
+          require_email_subject:
+            type:
+              - boolean
+              - "null"
+          require_login_for_signing:
+            type:
+              - boolean
+              - "null"
+          required_preset_signature_name:
+            type:
+              - boolean
+              - "null"
+          restrict_download:
+            type:
+              - boolean
+              - "null"
+          run_experiments:
+            type:
+              - boolean
+              - "null"
+          save_signer_signature_and_initials:
+            type:
+              - boolean
+              - "null"
+          signature_stamp_position:
+            type:
+              - boolean
+              - "null"
+          signing_link_document_download:
+            type:
+              - boolean
+              - "null"
+          signing_reason:
+            type:
+              - boolean
+              - "null"
+          sso-only-login:
+            type:
+              - boolean
+              - "null"
+          unsuccessful_logout_attempts_allowed:
+            type:
+              - boolean
+              - "null"
+          upload_limit:
+            type:
+              - boolean
+              - "null"
+          use_team_generic_data:
+            type:
+              - boolean
+              - "null"
+          watermark_downloaded_document:
+            type:
+              - boolean
+              - "null"
+          web_trial_extended_to:
+            type:
+              - boolean
+              - "null"
+          workspace_organization:
+            type:
+              - boolean
+              - "null"
+          workspace_subscription_admin:
+            type:
+              - boolean
+              - "null"
+      signatures:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      template:
+        type:
+          - boolean
+          - "null"
+      texts:
+        type:
+          - array
+          - "null"
+      thumbnail:
+        type:
+          - object
+          - "null"
+        properties:
+          large:
+            type:
+              - string
+              - "null"
+          medium:
+            type:
+              - string
+              - "null"
+          small:
+            type:
+              - string
+              - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      version_time:
+        type:
+          - string
+          - "null"
+      viewer_field_invites:
+        type:
+          - array
+          - "null"
+      viewer_roles:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - created
+  crm_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties: {}
+      company:
+        type:
+          - object
+          - "null"
+        properties: {}
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - number
+              - "null"
+          interacted_at:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - number
+              - "null"
+      phone:
+        type:
+          - object
+          - "null"
+        properties: {}
+      updated:
+        type: number
+    required:
+      - id
+      - updated
+  favourites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      entity_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      api_version:
+        type:
+          - string
+          - "null"
+      application_id:
+        type:
+          - string
+          - "null"
+      application_name:
+        type:
+          - string
+          - "null"
+      created:
+        type: number
+      error:
+        type:
+          - boolean
+          - "null"
+      request:
+        type:
+          - object
+          - "null"
+        properties:
+          body:
+            type:
+              - string
+              - "null"
+          headers:
+            type:
+              - string
+              - "null"
+          host:
+            type:
+              - string
+              - "null"
+          ip:
+            type:
+              - string
+              - "null"
+          method:
+            type:
+              - string
+              - "null"
+          query:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          uri:
+            type:
+              - string
+              - "null"
+      request_id:
+        type:
+          - string
+          - "null"
+      response:
+        type:
+          - object
+          - "null"
+        properties:
+          body:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - number
+              - "null"
+          headers:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - created
+  folder:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type: string
+      documents:
+        type:
+          - array
+          - "null"
+      folders:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            document_count:
+              type:
+                - string
+                - "null"
+            folder_count:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            shared:
+              type:
+                - boolean
+                - "null"
+            team_id:
+              type:
+                - string
+                - "null"
+            team_name:
+              type:
+                - string
+                - "null"
+            team_type:
+              type:
+                - string
+                - "null"
+            template_count:
+              type:
+                - string
+                - "null"
+            user_id:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      shared:
+        type:
+          - boolean
+          - "null"
+      system_folder:
+        type:
+          - boolean
+          - "null"
+      total_documents:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      created:
+        type: number
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created
+  team_admins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      primary:
+        type:
+          - boolean
+          - "null"
+      updated:
+        type: number
+      user_id:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - updated
+  brands:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      link:
+        type:
+          - string
+          - "null"
+      owner_type:
+        type:
+          - string
+          - "null"
+      resources:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      unique_id:
+        type: string
+    required:
+      - unique_id
+  crm_users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  crm_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - id
+      - updated_at
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      creator_id:
+        type:
+          - string
+          - "null"
+      has_admin:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      is_default_workspace:
+        type:
+          - boolean
+          - "null"
+      is_workspace:
+        type:
+          - boolean
+          - "null"
+      membership:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            invited_by:
+              type:
+                - array
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  signing_links:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      created:
+        type:
+          - integer
+          - "null"
+      count:
+        type:
+          - integer
+          - "null"
+      hash:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

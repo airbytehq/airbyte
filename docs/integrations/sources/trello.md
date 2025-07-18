@@ -83,6 +83,14 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 1.3.5 | 2025-07-12 | [63204](https://github.com/airbytehq/airbyte/pull/63204) | Update dependencies |
+| 1.3.4 | 2025-07-05 | [62668](https://github.com/airbytehq/airbyte/pull/62668) | Update dependencies |
+| 1.3.3 | 2025-06-28 | [62283](https://github.com/airbytehq/airbyte/pull/62283) | Update dependencies |
+| 1.3.2 | 2025-06-21 | [61828](https://github.com/airbytehq/airbyte/pull/61828) | Update dependencies |
+| 1.3.1 | 2025-06-14 | [48153](https://github.com/airbytehq/airbyte/pull/48153) | Update dependencies |
+| 1.3.0 | 2024-01-02 | [50853](https://github.com/airbytehq/airbyte/pull/50853) | Restrore unit tests |
+| 1.2.1 | 2024-10-29 | [43914](https://github.com/airbytehq/airbyte/pull/43914) | Update dependencies |
+| 1.2.0 | 2024-10-22 | [47257](https://github.com/airbytehq/airbyte/pull/47257) | Migrate to Manifest-only |
 | 1.1.0 | 2024-07-17 | [42019](https://github.com/airbytehq/airbyte/pull/42019) | Migrate to CDK v3.5.3 |
 | 1.0.10 | 2024-07-13 | [41774](https://github.com/airbytehq/airbyte/pull/41774) | Update dependencies |
 | 1.0.9 | 2024-07-10 | [41601](https://github.com/airbytehq/airbyte/pull/41601) | Update dependencies |

@@ -17,17 +17,7 @@ import java.time.Instant
 import java.util.Locale
 import java.util.Optional
 import kotlin.Int
-import org.jooq.Condition
-import org.jooq.CreateTableColumnStep
-import org.jooq.DSLContext
-import org.jooq.DataType
-import org.jooq.Field
-import org.jooq.InsertValuesStepN
-import org.jooq.Name
-import org.jooq.Record
-import org.jooq.SQLDialect
-import org.jooq.SelectConditionStep
-import org.jooq.SelectFieldOrAsterisk
+import org.jooq.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -331,7 +321,7 @@ constructor(
     ): String {
         val hasGenerationId = columns == DestinationColumns.V2_WITH_GENERATION
 
-        val createTable: CreateTableColumnStep =
+        val createTable: CreateTableElementListStep =
             dslContext
                 .createTable(rawTableName)
                 .column(
@@ -413,7 +403,7 @@ constructor(
             .columns(buildFinalTableFields(columns, metaFields))
     }
 
-    private fun insertAndDeleteTransaction(
+    protected open fun insertAndDeleteTransaction(
         streamConfig: StreamConfig,
         finalSuffix: String?,
         minRawTimestamp: Optional<Instant>,
@@ -517,7 +507,7 @@ constructor(
         return createSchemaSql.sql
     }
 
-    protected fun createTableSql(
+    protected open fun createTableSql(
         namespace: String,
         tableName: String,
         columns: LinkedHashMap<ColumnId, AirbyteType>

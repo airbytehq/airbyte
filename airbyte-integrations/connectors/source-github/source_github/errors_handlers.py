@@ -5,12 +5,14 @@
 from typing import Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_protocol.models import FailureType
 
 from . import constants
+
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     401: ErrorResolution(
@@ -39,6 +41,13 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         error_message="Gone. Please ensure the url is valid.",
     ),
 }
+
+
+def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
+    if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.CONFLICT:
+        response_data = response_or_exception.json()
+        return response_data.get("message") == "Git Repository is empty."
+    return False
 
 
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
@@ -86,10 +95,27 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
                 )
 
+            if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
+                log_message = f"Ignoring response for '{response_or_exception.request.method}' request to '{response_or_exception.url}' with response code '{response_or_exception.status_code}' as the repository is empty."
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.config_error,
+                    error_message=log_message,
+                )
+
         return super().interpret_response(response_or_exception)
 
 
 class ContributorActivityErrorHandler(HttpStatusErrorHandler):
+    """
+    This custom error handler is needed for streams based on repository statistics endpoints like ContributorActivity because
+    when requesting data that hasn't been cached yet when the request is made, you'll receive a 202 response. And these requests
+    need to retried to get the actual results.
+
+    See the docs for more info:
+    https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#a-word-about-caching
+    """
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.ACCEPTED:
             return ErrorResolution(

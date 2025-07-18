@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.Jdbc
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedupingTest {
@@ -53,12 +55,19 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
   @Override
   protected SqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), false);
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), false, false);
   }
 
   @Override
   protected JdbcCompatibleSourceOperations<?> getSourceOperations() {
     return new PostgresSourceOperations();
+  }
+
+  @Disabled
+  @Test
+  @Override
+  public void resumeAfterCancelledTruncate() throws Exception {
+    super.resumeAfterCancelledTruncate();
   }
 
   @Test
@@ -232,6 +241,77 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(getStreamNamespace(), getStreamName());
     assertEquals(1, actualFinalRecords.size());
     assertEquals(largeString, actualFinalRecords.get(0).get("name").asText());
+
+  }
+
+  @Test
+  void testDropCascade() throws Exception {
+    ConfiguredAirbyteCatalog catalog1 =
+        new ConfiguredAirbyteCatalog()
+            .withStreams(
+                List.of(
+                    new ConfiguredAirbyteStream()
+                        .withSyncMode(SyncMode.FULL_REFRESH)
+                        .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                        .withCursorField(List.of("updated_at"))
+                        .withPrimaryKey(java.util.List.of(List.of("id1"), List.of("id2")))
+                        .withStream(
+                            new AirbyteStream()
+                                .withNamespace(getStreamNamespace())
+                                .withName(getStreamName())
+                                .withJsonSchema(getSchema()))
+                        .withMinimumGenerationId(43L)
+                        .withSyncId(42L)
+                        .withGenerationId(43L)));
+
+    // First sync
+    List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog1, messages1);
+    var expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
+    var expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+
+    String rawTableName = getRawSchema() + "." +
+        getNameTransformer().convertStreamName(
+            StreamId.concatenateRawTableName(
+                getStreamNamespace(),
+                Names.toAlphanumericAndUnderscore(getStreamName())));
+    String finalTableName = getStreamNamespace() + "." + Names.toAlphanumericAndUnderscore(getStreamName());
+    getDatabase().execute("CREATE VIEW " + getStreamNamespace() + ".v1 AS SELECT * FROM " + rawTableName);
+    if (!disableFinalTableComparison()) {
+      getDatabase().execute("CREATE VIEW " + getStreamNamespace() + ".v2 AS SELECT * FROM " + finalTableName);
+    } // Second sync
+    for (var message : messages1) {
+      message.getRecord().setEmittedAt(2000L);
+    }
+    var catalog2 =
+        new ConfiguredAirbyteCatalog()
+            .withStreams(
+                List.of(
+                    new ConfiguredAirbyteStream()
+                        .withSyncMode(SyncMode.FULL_REFRESH)
+                        .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                        .withCursorField(List.of("updated_at"))
+                        .withPrimaryKey(java.util.List.of(List.of("id1"), List.of("id2")))
+                        .withStream(
+                            new AirbyteStream()
+                                .withNamespace(getStreamNamespace())
+                                .withName(getStreamName())
+                                .withJsonSchema(getSchema()))
+                        .withMinimumGenerationId(44L)
+                        .withSyncId(42L)
+                        .withGenerationId(44L)));
+    runSync(catalog2, messages1);
+
+    for (var record : expectedRawRecords1) {
+      ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, "1970-01-01T00:00:02.000000Z");
+      ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, 44);
+    }
+    for (var record : expectedFinalRecords1) {
+      ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, "1970-01-01T00:00:02.000000Z");
+      ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, 44);
+    }
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
   }
 

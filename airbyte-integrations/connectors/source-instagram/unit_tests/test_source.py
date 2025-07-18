@@ -2,10 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import logging
 
-from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
@@ -14,86 +12,67 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     SyncMode,
 )
-from source_instagram.source import SourceInstagram
+
+from .conftest import GRAPH_URL, account_url, get_source, mock_fb_account_response
+
 
 logger = logging.getLogger("airbyte")
 
-GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
-
-account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
-
 
 account_url_response = {
-    "data": [
-        {
-            "id": "page_id",
-            "name": "Airbyte",
-            "instagram_business_account": {
-                "id": "instagram_business_account_id"
-            }
-        }
-    ],
-    "paging": {
-        "cursors": {
-            "before": "before",
-            "after": "after"
-        }
-    }
+    "data": [{"id": "page_id", "name": "Airbyte", "instagram_business_account": {"id": "instagram_business_account_id"}}],
+    # I'm not sure why we added paging originally, but it's presence can lead to trying to fetch
+    # additional business accounts which is not intended because we don't have mocks supplied for query params `after=after`
+    # "paging": {"cursors": {"before": "before", "after": "after"}},
 }
 
-def test_check_connection_ok(api, requests_mock, some_config):
+
+def mock_api(requests_mock, some_config):
+    fb_account_response = mock_fb_account_response("unknown_account", some_config, requests_mock)
+
+    requests_mock.register_uri(
+        "GET",
+        f"{GRAPH_URL}/me/accounts?" f"access_token={some_config['access_token']}&summary=true",
+        [fb_account_response],
+    )
+
+
+def test_check_connection_ok(requests_mock):
+    some_config = {"start_date": "2021-01-23T00:00:00Z", "access_token": "unknown_token"}
+    mock_api(requests_mock, some_config)
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
-    ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)
+
+    ok, error_msg = get_source(config=some_config, state=None).check_connection(logger, config=some_config)
     assert ok
     assert not error_msg
 
 
-def test_check_connection_empty_config(api):
-    config = {}
-    ok, error_msg = SourceInstagram().check_connection(logger, config=config)
-
-    assert not ok
-    assert error_msg
-
-
-def test_check_connection_invalid_config_future_date(api, some_config_future_date):
-    ok, error_msg = SourceInstagram().check_connection(logger, config=some_config_future_date)
-
-    assert not ok
-    assert error_msg
-
-
-def test_check_connection_no_date_config(api, requests_mock, some_config):
+def test_check_connection_no_date_config(requests_mock):
+    some_config = {"start_date": "2021-01-23T00:00:00Z", "access_token": "unknown_token"}
+    mock_api(requests_mock, some_config)
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
     some_config.pop("start_date")
-    ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)
+
+    ok, error_msg = get_source(config=some_config, state=None).check_connection(logger, config=some_config)
 
     assert ok
     assert not error_msg
 
 
-def test_check_connection_exception(api, config):
-    api.side_effect = RuntimeError("Something went wrong!")
-    ok, error_msg = SourceInstagram().check_connection(logger, config=config)
-
-    assert not ok
-    assert error_msg
-
-
-def test_streams(api, config):
-    streams = SourceInstagram().streams(config)
+def test_streams(config):
+    streams = get_source(config=config, state=None).streams(config)
 
     assert len(streams) == 8
 
 
 def test_spec():
-    spec = SourceInstagram().spec(logger)
+    spec = get_source(config={}, state=None).spec(logger)
 
     assert isinstance(spec, ConnectorSpecification)
 
 
 def test_read(config):
-    source = SourceInstagram()
+    source = get_source(config=config, state=None)
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(

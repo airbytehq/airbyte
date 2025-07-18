@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
@@ -18,7 +19,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) {
-    final var container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2022-latest");
+    final var container = new MsSQLContainerFactory().shared(BaseImage.MSSQL_2022.reference);
     testdb = new MsSQLTestDatabase(container);
     testdb = testdb
         .withConnectionProperty("encrypt", "true")

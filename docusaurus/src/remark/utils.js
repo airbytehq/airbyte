@@ -4,7 +4,7 @@ const { catalog } = require("../connector_registry");
 const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];
 const connectorPageAlternativeEndingsRegExp = new RegExp(
   connectorPageAlternativeEndings.join("|"),
-  "gi"
+  "gi",
 );
 
 const isDocsPage = (vfile) => {
@@ -30,6 +30,17 @@ const isDocsPage = (vfile) => {
   return response;
 };
 
+const isEnterpriseConnectorDocsPage = (vfile) => {
+  if (
+    vfile.path.includes("integrations/enterprise-connectors") &&
+    !vfile.path.toLowerCase().includes("readme.md")
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
 const getRegistryEntry = async (vfile) => {
   if (
     !vfile.path.includes("integrations/sources") &&
@@ -51,20 +62,20 @@ const getRegistryEntry = async (vfile) => {
 
   const dockerRepository = `airbyte/${connectorType.replace(
     /s$/,
-    ""
+    "",
   )}-${connectorName}`;
 
   const registry = await catalog;
 
   let registryEntry = registry.find(
-    (r) => r.dockerRepository_oss === dockerRepository
+    (r) => r.dockerRepository_oss === dockerRepository,
   );
 
   if (!registryEntry) {
     registryEntry = buildArchivedRegistryEntry(
       connectorName,
       dockerRepository,
-      connectorType
+      connectorType,
     );
   }
 
@@ -74,7 +85,7 @@ const getRegistryEntry = async (vfile) => {
 const buildArchivedRegistryEntry = (
   connectorName,
   dockerRepository,
-  connectorType
+  connectorType,
 ) => {
   const dockerName = dockerRepository.split("/")[1];
   const registryEntry = {
@@ -93,5 +104,6 @@ const buildArchivedRegistryEntry = (
 
 module.exports = {
   isDocsPage,
+  isEnterpriseConnectorDocsPage,
   getRegistryEntry,
 };

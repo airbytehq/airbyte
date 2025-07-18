@@ -3,6 +3,7 @@
 #
 
 """This module groups util function used in pipelines."""
+
 from __future__ import annotations
 
 import sys
@@ -10,6 +11,7 @@ from pathlib import Path
 
 import asyncclick as click
 from dagger import DaggerError
+
 from pipelines import consts, main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN, STATIC_REPORT_PREFIX
 from pipelines.helpers import sentry_utils

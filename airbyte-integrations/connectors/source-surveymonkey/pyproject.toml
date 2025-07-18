@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.13"
+version = "0.3.37"
 name = "source-surveymonkey"
 description = "Source implementation for Surveymonkey."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_surveymonkey"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.90.0"
+airbyte-cdk = "^2"
 vcrpy = "==4.1.1"
 urllib3 = "==1.26.18"
 
@@ -28,3 +28,11 @@ source-surveymonkey = "source_surveymonkey.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.12.0"
 pytest = "^8.0.0"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

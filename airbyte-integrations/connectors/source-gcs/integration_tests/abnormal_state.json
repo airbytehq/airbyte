@@ -3,9 +3,9 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "_ab_source_file_last_modified": "2023-02-27T10:34:32.664000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_1.csv",
+        "_ab_source_file_last_modified": "2093-02-27T10:34:32.664000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_1.csv",
         "history": {
-          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_1.csv": "2023-02-27T10:34:32.664000Z"
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_1.csv": "2029-02-27T10:34:32.664000Z"
         }
       },
       "stream_descriptor": {
@@ -17,9 +17,9 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "_ab_source_file_last_modified": "2023-02-27T10:34:32.680000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_2.csv",
+        "_ab_source_file_last_modified": "2093-02-27T10:34:32.680000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_2.csv",
         "history": {
-          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_2.csv": "2023-02-27T10:34:32.680000Z"
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_2.csv": "2093-02-27T10:34:32.680000Z"
         }
       },
       "stream_descriptor": {
@@ -31,9 +31,9 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "_ab_source_file_last_modified": "2024-03-21T16:13:20.571000Z\"_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/simple_test.csv.gz",
+        "_ab_source_file_last_modified": "2094-03-21T16:13:20.571000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/simple_test.csv.gz",
         "history": {
-          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/simple_test.csv.gz": "2024-03-21T16:13:20.571000Z"
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/simple_test.csv.gz": "2094-03-21T16:13:20.571000Z"
         }
       },
       "stream_descriptor": {

@@ -1,0 +1,593 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - message-streams
+
+definitions:
+  streams:
+    deliverystats:
+      type: DeclarativeStream
+      name: deliverystats
+      primary_key:
+        - Name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /deliverystats
+          http_method: GET
+          request_parameters:
+            count: "500"
+          request_body_json:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Bounces
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deliverystats"
+    message-streams:
+      type: DeclarativeStream
+      name: message-streams
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /message-streams
+          http_method: GET
+          request_parameters:
+            count: "500"
+          request_body_json:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - MessageStreams
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/message-streams"
+    domains:
+      type: DeclarativeStream
+      name: domains
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/account_base_requester"
+          path: /domains
+          http_method: GET
+          request_parameters:
+            count: "500"
+          request_body_json:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Domains
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/domains"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - MessageID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /messages/outbound
+          http_method: GET
+          request_parameters:
+            count: "500"
+          request_body_json:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+    bounces:
+      type: DeclarativeStream
+      name: bounces
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bounces
+          http_method: GET
+          request_parameters:
+            count: "500"
+          request_body_json:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Bounces
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bounces"
+    servers:
+      type: DeclarativeStream
+      name: servers
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/account_base_requester"
+          path: /servers
+          http_method: GET
+          request_parameters:
+            count: "500"
+          request_body_json:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Servers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/servers"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.postmarkapp.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"X-Postmark-Server-Token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Postmark-Server-Token
+        inject_into: header
+  account_base_requester:
+    type: HttpRequester
+    url_base: https://api.postmarkapp.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"X-Postmark-Account-Token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Postmark-Account-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/deliverystats"
+  - $ref: "#/definitions/streams/message-streams"
+  - $ref: "#/definitions/streams/domains"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/bounces"
+  - $ref: "#/definitions/streams/servers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - X-Postmark-Server-Token
+      - X-Postmark-Account-Token
+    properties:
+      X-Postmark-Server-Token:
+        type: string
+        description: API Key for server
+        order: 0
+        title: X-Postmark-Server-Token
+        airbyte_secret: true
+      X-Postmark-Account-Token:
+        type: string
+        description: API Key for account
+        order: 1
+        title: X-Postmark-Account-Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    deliverystats: false
+    message-streams: false
+    domains: false
+    messages: false
+    bounces: false
+    servers: false
+  testedStreams:
+    deliverystats:
+      streamHash: ee3d7bf2e220be4d2334fa38e790b592378d8264
+    message-streams:
+      streamHash: 1444b29438f64709e7d115982e04a862a034ee58
+    domains:
+      streamHash: fb745329025819d5cdaaeaf3c56e037f3f95178d
+    messages:
+      streamHash: 004802781c5fffa13856f532caa5fd2ca971a5bb
+    bounces:
+      streamHash: 453a72e42168ce858cee393707b11e567c6a0f77
+    servers:
+      streamHash: 858c5a5c878e5e4f90bd09e85f6955cbed0a3278
+  assist: {}
+
+schemas:
+  deliverystats:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      Count:
+        type: integer
+        description: The total count of delivered items for the specified time period.
+      Name:
+        type: string
+        description: The name of the delivery status type corresponding to the count.
+  message-streams:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      ArchivedAt:
+        type: "null"
+        description: Timestamp when the message stream was archived.
+      CreatedAt:
+        type: string
+        description: Timestamp when the message stream was created.
+      Description:
+        type: string
+        description: Description of the message stream.
+      ExpectedPurgeDate:
+        type: "null"
+        description: Expected date for purging the message stream data.
+      ID:
+        type: string
+        description: Unique identifier for the message stream.
+      MessageStreamType:
+        type: string
+        description: Type of the message stream (e.g., transactional, marketing).
+      Name:
+        type: string
+        description: Name of the message stream.
+      ServerID:
+        type: integer
+        description: Unique identifier of the server associated with the message stream.
+      SubscriptionManagementConfiguration:
+        type: object
+        description: Configuration settings related to managing subscriptions.
+        properties:
+          UnsubscribeHandlingType:
+            type: string
+            description: >-
+              Type of unsubscribe handling for the message stream (e.g., manual,
+              automatic).
+      UpdatedAt:
+        type: "null"
+        description: Timestamp when the message stream was last updated.
+  domains:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      DKIMVerified:
+        type: boolean
+        description: Indicates if DKIM for the domain is verified or not.
+      ID:
+        type: integer
+        description: The unique identifier assigned to the domain.
+      Name:
+        type: string
+        description: The name of the domain.
+      ReturnPathDomainVerified:
+        type: boolean
+        description: Indicates if the return path domain is verified or not.
+      SPFVerified:
+        type: boolean
+        description: Indicates if SPF for the domain is verified or not.
+      WeakDKIM:
+        type: boolean
+        description: Indicates if the DKIM for the domain is weak or not.
+  messages:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      Attachments:
+        type: array
+        description: List of attachments included in the message.
+        items: {}
+      Bcc:
+        type: array
+        description: List of email addresses in the BCC field.
+        items: {}
+      Cc:
+        type: array
+        description: List of email addresses in the CC field.
+        items: {}
+      From:
+        type: string
+        description: Email address of the sender.
+      MessageID:
+        type: string
+        description: Unique identifier for the message.
+      MessageStream:
+        type: string
+        description: Stream identifier for the message.
+      Metadata:
+        type: object
+        description: Additional metadata associated with the message.
+        properties:
+          client-id:
+            type: string
+            description: Client identifier associated with the message.
+          color:
+            type: string
+            description: Color tag associated with the message.
+      ReceivedAt:
+        type: string
+        description: Timestamp indicating when the message was received.
+      Recipients:
+        type: array
+        description: List of recipient email addresses.
+        items:
+          type: string
+      Sandboxed:
+        type: boolean
+        description: Indicates if the message was sent in sandbox mode.
+      Status:
+        type: string
+        description: Current status of the message (e.g., delivered, failed).
+      Subject:
+        type: string
+        description: Subject line of the message.
+      Tag:
+        type: string
+        description: Tag associated with the message for categorization.
+      To:
+        type: array
+        description: List of recipients with their email addresses and names if available.
+        items:
+          type: object
+          properties:
+            Email:
+              type: string
+              description: Recipient's email address.
+            Name:
+              type: "null"
+              description: Recipient's name.
+      TrackLinks:
+        type: string
+        description: Indicates if links in the message are being tracked.
+      TrackOpens:
+        type: boolean
+        description: Indicates if message opens are being tracked.
+  bounces:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      BouncedAt:
+        type: string
+        description: Timestamp indicating when the email bounced
+      CanActivate:
+        type: boolean
+        description: Whether the recipient can manually reactivate the email address
+      Description:
+        type: string
+        description: Description or reason for the bounce
+      Details:
+        type: string
+        description: Additional details or error message related to the bounce
+      DumpAvailable:
+        type: boolean
+        description: Whether detailed dump of the bounce is available
+      Email:
+        type: string
+        description: Email address that bounced
+      From:
+        type: string
+        description: Sender's email address
+      ID:
+        type: integer
+        description: Unique identifier for the bounce entry
+      Inactive:
+        type: boolean
+        description: Whether the recipient's email address is inactive
+      MessageID:
+        type: string
+        description: Unique identifier for the original message
+      MessageStream:
+        type: string
+        description: Identifier for the message stream where the bounce occurred
+      Name:
+        type: string
+        description: Recipient's name if available
+      ServerID:
+        type: integer
+        description: Identifier for the server that handled the message
+      Subject:
+        type: string
+        description: Subject of the original email
+      Tag:
+        type: string
+        description: Tag associated with the original message
+      Type:
+        type: string
+        description: Type of bounce (hard, soft, etc.)
+      TypeCode:
+        type: integer
+        description: Numeric code representing the bounce type
+  servers:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    additionalProperties: true
+    properties:
+      ApiTokens:
+        type: array
+        description: List of API tokens associated with the server
+        items:
+          type: string
+      BounceHookUrl:
+        type: string
+        description: URL to which bounce notifications are sent
+      ClickHookUrl:
+        type: string
+        description: URL to which click event notifications are sent
+      Color:
+        type: string
+        description: Color associated with the server for identification purposes
+      DeliveryHookUrl:
+        type: string
+        description: URL to which delivery event notifications are sent
+      DeliveryType:
+        type: string
+        description: Type of delivery mechanism used by the server
+      EnableSmtpApiErrorHooks:
+        type: boolean
+        description: Flag indicating if SMTP API error hooks are enabled
+      ID:
+        type: integer
+        description: Unique identifier of the server
+      InboundAddress:
+        type: string
+        description: Email address for inbound messages
+      InboundDomain:
+        type: string
+        description: Domain for inbound message processing
+      InboundHash:
+        type: string
+        description: Hash code associated with inbound messages
+      InboundHookUrl:
+        type: string
+        description: URL to which inbound message notifications are sent
+      InboundSpamThreshold:
+        type: integer
+        description: Spam threshold value for inbound messages
+      IncludeBounceContentInHook:
+        type: boolean
+        description: Flag indicating if bounce content is included in notifications
+      Name:
+        type: string
+        description: Name of the server
+      OpenHookUrl:
+        type: string
+        description: URL to which open event notifications are sent
+      PostFirstOpenOnly:
+        type: boolean
+        description: Flag indicating if only the first open event should be tracked
+      RawEmailEnabled:
+        type: boolean
+        description: Flag indicating if raw email content is enabled
+      ServerLink:
+        type: string
+        description: Link to the server's details or dashboard
+      SmtpApiActivated:
+        type: boolean
+        description: Flag indicating if SMTP API is activated
+      TrackLinks:
+        type: string
+        description: Flag indicating if link tracking is enabled
+      TrackOpens:
+        type: boolean
+        description: Flag indicating if open tracking is enabled

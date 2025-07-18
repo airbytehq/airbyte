@@ -5,6 +5,7 @@ package io.airbyte.workers.internal
 
 import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
+import io.airbyte.cdk.extensions.TestContext
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.io.LineGobbler
 import io.airbyte.commons.json.Jsons
@@ -182,7 +183,7 @@ constructor(
 
         fun createContainerLogMdcBuilder(): MdcScope.Builder =
             MdcScope.Builder()
-                .setLogPrefix("destination")
+                .setLogPrefix("destination-${TestContext.CURRENT_TEST_NAME.get()}")
                 .setPrefixColor(LoggingHelper.Color.YELLOW_BACKGROUND)
         val IGNORED_EXIT_CODES: Set<Int> =
             setOf(

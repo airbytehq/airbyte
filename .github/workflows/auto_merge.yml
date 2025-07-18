@@ -2,22 +2,26 @@ name: Auto merge connector PRs Cron
 
 on:
   schedule:
-    # 0AM UTC is 2AM CEST, 3AM EEST, 5PM PDT.
-    - cron: "0 0 * * *"
+    # Every 2 hours on the hour.
+    - cron: "0 */2 * * *"
   workflow_dispatch:
 jobs:
   run_auto_merge:
     name: Run auto-merge
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
       - name: Run auto merge
         shell: bash
         working-directory: airbyte-ci/connectors/auto_merge
@@ -25,7 +29,7 @@ jobs:
           # We need a custom Github Token as some API endpoints
           # are not available from GHA auto generated tokens
           # like the one to list branch protection rules...
-          GITHUB_TOKEN: ${{ secrets.AUTO_MERGE_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           AUTO_MERGE_PRODUCTION: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE }}
         run: |
           poetry install

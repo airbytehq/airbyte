@@ -27,7 +27,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.TransientErrorTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.json.Jsons;
@@ -115,7 +114,7 @@ public class PostgresCdcCtidInitializer {
 
     final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid = ctidStreams.streamsForCtidSync();
 
-    LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+    LOGGER.info("Streams to be synced via ctid (can include RFR streams) : {}", finalListOfStreamsToBeSyncedViaCtid.size());
     LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
     final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
         finalListOfStreamsToBeSyncedViaCtid,
@@ -333,9 +332,7 @@ public class PostgresCdcCtidInitializer {
        * in the following order: 1. Run the debezium iterators with only the incremental streams which
        * have been fully or partially completed configured. 2. Resume initial load for partially completed
        * and not started streams. This step will timeout and throw a transient error if run for too long
-       * (> 8hrs by default). 3. Emit a transient error. This is to signal to the platform to restart the
-       * sync to clear the WAL. We cannot simply add the same cdc iterators as their target end position
-       * is fixed to the tip of the WAL at the start of the sync.
+       * (> 8hrs by default).
        */
       AirbyteTraceMessageUtility.emitAnalyticsTrace(wassOccurrenceMessage());
       final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
@@ -349,9 +346,7 @@ public class PostgresCdcCtidInitializer {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialSyncCtidIterators,
-                      cdcStreamsCompleteStatusEmitters,
-                      List.of(new TransientErrorTraceEmitterIterator(
-                          new TransientErrorException("Forcing a new sync after the initial load to read the WAL"))))
+                      cdcStreamsCompleteStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));

@@ -6,8 +6,11 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import requests
+
 if TYPE_CHECKING:
-    from typing import Set, Tuple, List, Callable
+    from typing import Callable, List, Set, Tuple
+
     from dagger import Container
 
 from connector_ops.utils import METADATA_FILE_NAME, Connector  # type: ignore
@@ -84,6 +87,6 @@ def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
     """
 
     def never_fail_exec_inner(container: Container) -> Container:
-        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"])
 
     return never_fail_exec_inner

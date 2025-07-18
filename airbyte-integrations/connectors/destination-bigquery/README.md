@@ -80,3 +80,22 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
+## Managing BigQuery Permissions
+
+Before testing the bigquery connector, add the necessary permissions using the following steps:
+
+1. Create a service account using the Google Cloud console or use an existing account. To create a new service account, go to IAM & Admin -> Service Accounts in the left navigation menu and click the "CREATE SERVICE ACCOUNT" link
+
+2. Create a customer permissions role using the Google Cloud console by using IAM & Admin -> Roles in the left navigation menu and click the "CREATE ROLE" link. Add the following permissions for the role:
+ 
+   bigquery.datasets.create  
+   bigquery.datasets.get  
+   bigquery.jobs.create  
+   bigquery.tables.create  
+   bigquery.tables.delete  
+   bigquery.tables.get  
+   bigquery.tables.updateData  
+
+3. Assign the custom role to the newly created service account from the Service Account page.
+

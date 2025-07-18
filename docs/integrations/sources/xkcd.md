@@ -1,10 +1,8 @@
 # XKCD
 
-This page guides you through the process of setting up the xkcd source connector.
-
 ## Prerequisites
 
-XKCD is an open API, so no credentials are needed to set up the surce.
+XKCD is an open API, so no credentials are needed to set up the source.
 
 ## Supported sync modes
 
@@ -25,6 +23,24 @@ XKCD does not perform rate limiting.
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| 0.2.17 | 2025-07-12 | [63193](https://github.com/airbytehq/airbyte/pull/63193) | Update dependencies |
+| 0.2.16 | 2025-07-05 | [61236](https://github.com/airbytehq/airbyte/pull/61236) | Update dependencies |
+| 0.2.15 | 2025-05-24 | [60764](https://github.com/airbytehq/airbyte/pull/60764) | Update dependencies |
+| 0.2.14 | 2025-05-10 | [60013](https://github.com/airbytehq/airbyte/pull/60013) | Update dependencies |
+| 0.2.13 | 2025-05-04 | [59557](https://github.com/airbytehq/airbyte/pull/59557) | Update dependencies |
+| 0.2.12 | 2025-04-26 | [58935](https://github.com/airbytehq/airbyte/pull/58935) | Update dependencies |
+| 0.2.11 | 2025-04-19 | [58563](https://github.com/airbytehq/airbyte/pull/58563) | Update dependencies |
+| 0.2.10 | 2025-04-13 | [58051](https://github.com/airbytehq/airbyte/pull/58051) | Update dependencies |
+| 0.2.9 | 2025-04-05 | [57393](https://github.com/airbytehq/airbyte/pull/57393) | Update dependencies |
+| 0.2.8 | 2025-03-29 | [56892](https://github.com/airbytehq/airbyte/pull/56892) | Update dependencies |
+| 0.2.7 | 2025-03-22 | [56251](https://github.com/airbytehq/airbyte/pull/56251) | Update dependencies |
+| 0.2.6 | 2025-03-08 | [55605](https://github.com/airbytehq/airbyte/pull/55605) | Update dependencies |
+| 0.2.5 | 2025-03-01 | [55116](https://github.com/airbytehq/airbyte/pull/55116) | Update dependencies |
+| 0.2.4 | 2025-02-22 | [54508](https://github.com/airbytehq/airbyte/pull/54508) | Update dependencies |
+| 0.2.3 | 2025-02-15 | [47934](https://github.com/airbytehq/airbyte/pull/47934) | Update dependencies |
+| 0.2.2 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.1 | 2024-07-28 | [42834](https://github.com/airbytehq/airbyte/pull/42834) | Fix Metadata sha256 digest |
+| 0.2.0 | 2024-07-25 | [42479](https://github.com/airbytehq/airbyte/pull/42479) | Migrate to low code manifest only connector |
 | 0.1.10 | 2024-07-20 | [42380](https://github.com/airbytehq/airbyte/pull/42380) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41682](https://github.com/airbytehq/airbyte/pull/41682) | Update dependencies |
 | 0.1.8 | 2024-07-10 | [41393](https://github.com/airbytehq/airbyte/pull/41393) | Update dependencies |

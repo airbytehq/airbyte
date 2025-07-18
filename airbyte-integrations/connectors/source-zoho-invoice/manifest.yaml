@@ -1,0 +1,1654 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  Zoho invoice is an invoicing software used by businesses.
+
+  With this connector we can extract data from various streams such as items ,
+  contacts and invoices streams.
+
+  Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
+
+check:
+  type: CheckStream
+  stream_names:
+    - items
+
+definitions:
+  streams:
+    items:
+      type: DeclarativeStream
+      name: items
+      primary_key:
+        - item_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: items
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - contact_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - invoice_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: invoices
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoices
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    recurring_invoices:
+      type: DeclarativeStream
+      name: recurring_invoices
+      primary_key:
+        - recurring_invoice_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: recurringinvoices
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recurring_invoices
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recurring_invoices"
+    customer_payments:
+      type: DeclarativeStream
+      name: customer_payments
+      primary_key:
+        - payment_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: customerpayments
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customerpayments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_payments"
+    credit notes:
+      type: DeclarativeStream
+      name: credit notes
+      primary_key:
+        - creditnote_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: creditnotes
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - creditnotes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/credit notes"
+    expenses:
+      type: DeclarativeStream
+      name: expenses
+      primary_key:
+        - expense_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: expenses
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - expenses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expenses"
+    taxes:
+      type: DeclarativeStream
+      name: taxes
+      primary_key:
+        - tax_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/taxes
+          http_method: GET
+          request_headers:
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - taxes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.zohoapis.{{ config['region'] }}/invoice/v3/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://accounts.zoho.in/oauth/v2/token
+
+streams:
+  - $ref: "#/definitions/streams/items"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/recurring_invoices"
+  - $ref: "#/definitions/streams/customer_payments"
+  - $ref: "#/definitions/streams/credit notes"
+  - $ref: "#/definitions/streams/expenses"
+  - $ref: "#/definitions/streams/taxes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - region
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      organization_id:
+        type: string
+        description: To be provided if a user belongs to multiple organizations
+        order: 3
+        title: Organization ID
+      region:
+        type: string
+        enum:
+          - com
+          - eu
+          - in
+          - com.cn
+          - com.au
+          - jp
+          - sa
+          - ca
+        order: 4
+        title: Region
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    items: true
+    users: true
+    contacts: true
+    invoices: true
+    recurring_invoices: true
+    customer_payments: true
+    credit notes: true
+    expenses: true
+    taxes: true
+  testedStreams:
+    items:
+      streamHash: 2d6534f99c83d65519effcb14e7d119db1674f5a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: a246106b1c4373a5105508c126c539ca69b541d6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      hasRecords: true
+      streamHash: 6150e20bbb3c3b7fefae12d87efb22179139d52a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices:
+      hasRecords: true
+      streamHash: cb0cb9526e649a7522b3b2d86aa4ef5af5581a0b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    recurring_invoices:
+      hasRecords: true
+      streamHash: 5de65fa77e81237f1fa6a6275a6dbaff59458b80
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customer_payments:
+      hasRecords: true
+      streamHash: 7625f6062136e947be65114ae692df425d96aa7c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    credit notes:
+      hasRecords: true
+      streamHash: e1cf97fe81ac4aefb324072130c8946e515e802b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    expenses:
+      hasRecords: true
+      streamHash: 147537711b05fb4a95fbb6c85c1c14c0e43f4a9d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    taxes:
+      hasRecords: true
+      streamHash: f47e68753dd13cf3fb35b455ac0ea4ef6539e27d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      has_attachment:
+        type:
+          - boolean
+          - "null"
+      image_document_id:
+        type:
+          - string
+          - "null"
+      image_name:
+        type:
+          - string
+          - "null"
+      image_type:
+        type:
+          - string
+          - "null"
+      is_linked_with_zohocrm:
+        type:
+          - boolean
+          - "null"
+      item_id:
+        type: string
+      item_name:
+        type:
+          - string
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      product_type:
+        type:
+          - string
+          - "null"
+      rate:
+        type:
+          - number
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tax_id:
+        type:
+          - string
+          - "null"
+      tax_name:
+        type:
+          - string
+          - "null"
+      tax_percentage:
+        type:
+          - number
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+      zcrm_product_id:
+        type:
+          - string
+          - "null"
+    required:
+      - item_id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      invitation_type:
+        type:
+          - string
+          - "null"
+      is_current_user:
+        type:
+          - boolean
+          - "null"
+      is_customer_segmented:
+        type:
+          - boolean
+          - "null"
+      is_employee:
+        type:
+          - boolean
+          - "null"
+      is_super_admin:
+        type:
+          - boolean
+          - "null"
+      is_vendor_segmented:
+        type:
+          - boolean
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      user_id:
+        type: string
+      user_role:
+        type:
+          - string
+          - "null"
+      user_type:
+        type:
+          - string
+          - "null"
+    required:
+      - user_id
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ach_supported:
+        type:
+          - boolean
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type: string
+      contact_name:
+        type:
+          - string
+          - "null"
+      contact_type:
+        type:
+          - string
+          - "null"
+      contact_type_formatted:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      created_time_formatted:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      custom_field_hash:
+        type:
+          - object
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      customer_sub_type:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      facebook:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      has_attachment:
+        type:
+          - boolean
+          - "null"
+      is_linked_with_zohocrm:
+        type:
+          - boolean
+          - "null"
+      language_code:
+        type:
+          - string
+          - "null"
+      language_code_formatted:
+        type:
+          - string
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      last_modified_time_formatted:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      outstanding_receivable_amount:
+        type:
+          - number
+          - "null"
+      outstanding_receivable_amount_bcy:
+        type:
+          - number
+          - "null"
+      pan_no:
+        type:
+          - string
+          - "null"
+      payment_terms:
+        type:
+          - number
+          - "null"
+      payment_terms_label:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      portal_status:
+        type:
+          - string
+          - "null"
+      portal_status_formatted:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      twitter:
+        type:
+          - string
+          - "null"
+      unused_credits_receivable_amount:
+        type:
+          - number
+          - "null"
+      unused_credits_receivable_amount_bcy:
+        type:
+          - number
+          - "null"
+      vendor_name:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - contact_id
+  invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      ach_payment_initiated:
+        type:
+          - boolean
+          - "null"
+      adjustment:
+        type:
+          - number
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      billing_address:
+        type:
+          - object
+          - "null"
+        properties:
+          address:
+            type:
+              - string
+              - "null"
+          attention:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          fax:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+      client_viewed_time:
+        type:
+          - string
+          - "null"
+      color_code:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      currency_symbol:
+        type:
+          - string
+          - "null"
+      current_sub_status:
+        type:
+          - string
+          - "null"
+      current_sub_status_id:
+        type:
+          - string
+          - "null"
+      custom_field_hash:
+        type:
+          - object
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      documents:
+        type:
+          - string
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      due_days:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      has_attachment:
+        type:
+          - boolean
+          - "null"
+      invoice_id:
+        type: string
+      invoice_number:
+        type:
+          - string
+          - "null"
+      invoice_url:
+        type:
+          - string
+          - "null"
+      is_emailed:
+        type:
+          - boolean
+          - "null"
+      is_pre_gst:
+        type:
+          - boolean
+          - "null"
+      is_viewed_by_client:
+        type:
+          - boolean
+          - "null"
+      is_viewed_in_mail:
+        type:
+          - boolean
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      last_payment_date:
+        type:
+          - string
+          - "null"
+      last_reminder_sent_date:
+        type:
+          - string
+          - "null"
+      mail_first_viewed_time:
+        type:
+          - string
+          - "null"
+      mail_last_viewed_time:
+        type:
+          - string
+          - "null"
+      no_of_copies:
+        type:
+          - number
+          - "null"
+      payment_expected_date:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      project_name:
+        type:
+          - string
+          - "null"
+      reference_number:
+        type:
+          - string
+          - "null"
+      reminders_sent:
+        type:
+          - number
+          - "null"
+      salesperson_id:
+        type:
+          - string
+          - "null"
+      salesperson_name:
+        type:
+          - string
+          - "null"
+      schedule_time:
+        type:
+          - string
+          - "null"
+      shipping_address:
+        type:
+          - object
+          - "null"
+        properties:
+          address:
+            type:
+              - string
+              - "null"
+          attention:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          fax:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+      shipping_charge:
+        type:
+          - number
+          - "null"
+      show_no_of_copies:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      template_id:
+        type:
+          - string
+          - "null"
+      template_type:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      transaction_type:
+        type:
+          - string
+          - "null"
+      unprocessed_payment_amount:
+        type:
+          - number
+          - "null"
+      updated_time:
+        type:
+          - string
+          - "null"
+      write_off_amount:
+        type:
+          - number
+          - "null"
+      zcrm_potential_id:
+        type:
+          - string
+          - "null"
+      zcrm_potential_name:
+        type:
+          - string
+          - "null"
+    required:
+      - invoice_id
+  recurring_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      child_entity_type:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      last_four_digits:
+        type:
+          - string
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      last_sent_date:
+        type:
+          - string
+          - "null"
+      next_invoice_date:
+        type:
+          - string
+          - "null"
+      recurrence_frequency:
+        type:
+          - string
+          - "null"
+      recurrence_name:
+        type:
+          - string
+          - "null"
+      recurring_invoice_id:
+        type: string
+      reference_number:
+        type:
+          - string
+          - "null"
+      repeat_every:
+        type:
+          - number
+          - "null"
+      salesperson_id:
+        type:
+          - string
+          - "null"
+      salesperson_name:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+    required:
+      - recurring_invoice_id
+  customer_payments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      applied_invoices:
+        type:
+          - array
+          - "null"
+      bcy_amount:
+        type:
+          - number
+          - "null"
+      bcy_refunded_amount:
+        type:
+          - number
+          - "null"
+      bcy_unused_amount:
+        type:
+          - number
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      custom_fields_list:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      documents:
+        type:
+          - string
+          - "null"
+      gateway_transaction_id:
+        type:
+          - string
+          - "null"
+      has_attachment:
+        type:
+          - boolean
+          - "null"
+      invoice_numbers:
+        type:
+          - string
+          - "null"
+      last_four_digits:
+        type:
+          - string
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      payment_gateway:
+        type:
+          - string
+          - "null"
+      payment_id:
+        type: string
+      payment_mode:
+        type:
+          - string
+          - "null"
+      payment_mode_formatted:
+        type:
+          - string
+          - "null"
+      payment_number:
+        type:
+          - string
+          - "null"
+      payment_status:
+        type:
+          - string
+          - "null"
+      payment_type:
+        type:
+          - string
+          - "null"
+      product_description:
+        type:
+          - string
+          - "null"
+      reference_number:
+        type:
+          - string
+          - "null"
+      settlement_status:
+        type:
+          - string
+          - "null"
+      tax_amount_withheld:
+        type:
+          - number
+          - "null"
+      unused_amount:
+        type:
+          - number
+          - "null"
+    required:
+      - payment_id
+  credit notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      applied_invoices:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      client_viewed_time:
+        type:
+          - string
+          - "null"
+      color_code:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      creditnote_id:
+        type: string
+      creditnote_number:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      current_sub_status:
+        type:
+          - string
+          - "null"
+      current_sub_status_id:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      has_attachment:
+        type:
+          - boolean
+          - "null"
+      is_emailed:
+        type:
+          - boolean
+          - "null"
+      is_viewed_by_client:
+        type:
+          - boolean
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      price_precision:
+        type:
+          - number
+          - "null"
+      reference_number:
+        type:
+          - string
+          - "null"
+      salesperson_id:
+        type:
+          - string
+          - "null"
+      salesperson_name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      template_id:
+        type:
+          - string
+          - "null"
+      template_type:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+    required:
+      - creditnote_id
+  expenses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      account_name:
+        type:
+          - string
+          - "null"
+      bcy_total:
+        type:
+          - number
+          - "null"
+      bcy_total_without_tax:
+        type:
+          - number
+          - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - string
+          - "null"
+      custom_fields_list:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      distance:
+        type:
+          - number
+          - "null"
+      end_reading:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      expense_id:
+        type: string
+      expense_receipt_name:
+        type:
+          - string
+          - "null"
+      expense_type:
+        type:
+          - string
+          - "null"
+      has_attachment:
+        type:
+          - boolean
+          - "null"
+      is_billable:
+        type:
+          - boolean
+          - "null"
+      is_personal:
+        type:
+          - boolean
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      mileage_rate:
+        type:
+          - number
+          - "null"
+      mileage_type:
+        type:
+          - string
+          - "null"
+      mileage_unit:
+        type:
+          - string
+          - "null"
+      reference_number:
+        type:
+          - string
+          - "null"
+      report_id:
+        type:
+          - string
+          - "null"
+      report_name:
+        type:
+          - string
+          - "null"
+      report_number:
+        type:
+          - string
+          - "null"
+      start_reading:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      total_without_tax:
+        type:
+          - number
+          - "null"
+      user_name:
+        type:
+          - string
+          - "null"
+    required:
+      - expense_id
+  taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      diff_rate_reason:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      is_default_tax:
+        type:
+          - boolean
+          - "null"
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      is_inactive:
+        type:
+          - boolean
+          - "null"
+      last_modified_time:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tax_id:
+        type: string
+      tax_name:
+        type:
+          - string
+          - "null"
+      tax_percentage:
+        type:
+          - number
+          - "null"
+      tax_specific_type:
+        type:
+          - string
+          - "null"
+      tax_specification:
+        type:
+          - string
+          - "null"
+      tax_type:
+        type:
+          - string
+          - "null"
+    required:
+      - tax_id

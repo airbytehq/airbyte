@@ -1,0 +1,1714 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - account_overview
+
+definitions:
+  streams:
+    addresses:
+      type: DeclarativeStream
+      name: addresses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: addresses
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - addresses
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/addresses"
+    agents_activity:
+      type: DeclarativeStream
+      name: agents_activity
+      primary_key:
+        - agent_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/agents_activity
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - agents_activity
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agents_activity"
+    agents_overview:
+      type: DeclarativeStream
+      name: agents_overview
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/agents_overview
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - agents_overview
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - current_timestamp
+              value: "{{ now_utc().strftime('%s') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agents_overview"
+    greeting_categories:
+      type: DeclarativeStream
+      name: greeting_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /greeting_categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - greeting_categories
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/greeting_categories"
+    greetings:
+      type: DeclarativeStream
+      name: greetings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /greetings
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - greetings
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/greetings"
+    phone_numbers:
+      type: DeclarativeStream
+      name: phone_numbers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: phone_numbers
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - phone_numbers
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/phone_numbers"
+    call_legs:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/incremental/legs
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - legs
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+      name: call_legs
+      primary_key:
+        - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_legs"
+    calls:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/incremental/calls
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calls
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+      name: calls
+      primary_key:
+        - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_time
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calls"
+    current_queue_activity:
+      type: DeclarativeStream
+      name: current_queue_activity
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/current_queue_activity
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - current_queue_activity
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - current_timestamp
+              value: "{{ now_utc().strftime('%s') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/current_queue_activity"
+    account_overview:
+      type: DeclarativeStream
+      name: account_overview
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/account_overview
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - account_overview
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - current_timestamp
+              value: "{{ now_utc().strftime('%s') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_overview"
+    ivrs:
+      type: DeclarativeStream
+      name: ivrs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ivr
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ivrs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ivrs"
+    ivr_menus:
+      type: DeclarativeStream
+      name: ivr_menus
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ivr
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.IVRMenusRecordExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ivr_menus"
+    ivr_routes:
+      type: DeclarativeStream
+      name: ivr_routes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ivr
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.IVRRoutesRecordExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ivr_routes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/channels/voice/
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_declarative_manifest.components.ZendeskTalkAuthenticator
+      legacy_basic_auth:
+        type: BasicHttpAuthenticator
+        password: "{{ config['access_token'] }}"
+        username: "{{ config['email'] }}/token"
+      basic_auth:
+        type: BasicHttpAuthenticator
+        password: "{{ config['credentials']['api_token'] }}"
+        username: "{{ config['credentials']['email'] }}/token"
+      oauth:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['access_token'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/addresses"
+  - $ref: "#/definitions/streams/agents_activity"
+  - $ref: "#/definitions/streams/agents_overview"
+  - $ref: "#/definitions/streams/greeting_categories"
+  - $ref: "#/definitions/streams/greetings"
+  - $ref: "#/definitions/streams/phone_numbers"
+  - $ref: "#/definitions/streams/call_legs"
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/current_queue_activity"
+  - $ref: "#/definitions/streams/account_overview"
+  - $ref: "#/definitions/streams/ivrs"
+  - $ref: "#/definitions/streams/ivr_menus"
+  - $ref: "#/definitions/streams/ivr_routes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - subdomain
+      - start_date
+    properties:
+      subdomain:
+        type: string
+        description: >-
+          This is your Zendesk subdomain that can be found in your account URL.
+          For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where
+          MY_SUBDOMAIN is the value of your subdomain.
+        order: 0
+        title: Subdomain
+      credentials:
+        type: object
+        description: >-
+          Zendesk service provides two authentication methods. Choose between:
+          `OAuth2.0` or `API token`.
+        title: Authentication
+        order: 1
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - access_token
+            additionalProperties: true
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              access_token:
+                type: string
+                description: >-
+                  The value of the API token generated. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk-talk">docs</a>
+                  for more information.
+                title: Access Token
+                airbyte_secret: true
+              client_id:
+                type: string
+                description: Client ID
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: Client Secret
+                title: Client Secret
+                airbyte_secret: true
+          - type: object
+            title: API Token
+            required:
+              - email
+              - api_token
+            additionalProperties: true
+            properties:
+              auth_type:
+                type: string
+                const: api_token
+              email:
+                type: string
+                description: The user email for your Zendesk account.
+                title: Email
+              api_token:
+                type: string
+                description: >-
+                  The value of the API token generated. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/zendesk-talk">docs</a>
+                  for more information.
+                title: API Token
+                airbyte_secret: true
+      start_date:
+        type: string
+        description: >-
+          The date from which you'd like to replicate data for Zendesk Talk API,
+          in the format YYYY-MM-DDT00:00:00Z. All data generated after this date
+          will be replicated.
+        order: 2
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2020-10-15T00:00:00Z"
+    additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          subdomain:
+            type: string
+            path_in_connector_config:
+              - subdomain
+
+metadata:
+  autoImportSchema:
+    addresses: false
+    agents_activity: false
+    agents_overview: false
+    greeting_categories: false
+    greetings: false
+    phone_numbers: false
+    call_legs: false
+    calls: false
+    current_queue_activity: false
+    account_overview: false
+    ivrs: false
+    ivr_menus: false
+    ivr_routes: false
+  yamlComponents:
+    streams:
+      ivr_menus:
+        - recordSelector
+      ivr_routes:
+        - recordSelector
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  addresses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      city:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      provider_reference:
+        type:
+          - "null"
+          - string
+      province:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      street:
+        type:
+          - "null"
+          - string
+      zip:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  agents_activity:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      accepted_third_party_conferences:
+        type:
+          - "null"
+          - integer
+      accepted_transfers:
+        type:
+          - "null"
+          - integer
+      agent_id:
+        type:
+          - "null"
+          - integer
+      agent_state:
+        type:
+          - "null"
+          - string
+      available_time:
+        type:
+          - "null"
+          - integer
+      avatar_url:
+        type:
+          - "null"
+          - string
+      average_hold_time:
+        type:
+          - "null"
+          - integer
+      average_talk_time:
+        type:
+          - "null"
+          - integer
+      average_wrap_up_time:
+        type:
+          - "null"
+          - integer
+      away_time:
+        type:
+          - "null"
+          - integer
+      call_status:
+        type:
+          - "null"
+          - string
+      calls_accepted:
+        type:
+          - "null"
+          - integer
+      calls_denied:
+        type:
+          - "null"
+          - integer
+      calls_missed:
+        type:
+          - "null"
+          - integer
+      calls_put_on_hold:
+        type:
+          - "null"
+          - integer
+      forwarding_number:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      online_time:
+        type:
+          - "null"
+          - integer
+      started_third_party_conferences:
+        type:
+          - "null"
+          - integer
+      started_transfers:
+        type:
+          - "null"
+          - integer
+      total_call_duration:
+        type:
+          - "null"
+          - integer
+      total_hold_time:
+        type:
+          - "null"
+          - integer
+      total_talk_time:
+        type:
+          - "null"
+          - integer
+      total_wrap_up_time:
+        type:
+          - "null"
+          - integer
+      transfers_only_time:
+        type:
+          - "null"
+          - integer
+      via:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  agents_overview:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      average_accepted_transfers:
+        type:
+          - "null"
+          - integer
+      average_available_time:
+        type:
+          - "null"
+          - integer
+      average_away_time:
+        type:
+          - "null"
+          - integer
+      average_calls_accepted:
+        type:
+          - "null"
+          - integer
+      average_calls_denied:
+        type:
+          - "null"
+          - integer
+      average_calls_missed:
+        type:
+          - "null"
+          - integer
+      average_calls_put_on_hold:
+        type:
+          - "null"
+          - integer
+      average_hold_time:
+        type:
+          - "null"
+          - integer
+      average_online_time:
+        type:
+          - "null"
+          - integer
+      average_started_transfers:
+        type:
+          - "null"
+          - integer
+      average_talk_time:
+        type:
+          - "null"
+          - integer
+      average_transfers_only_time:
+        type:
+          - "null"
+          - integer
+      average_wrap_up_time:
+        type:
+          - "null"
+          - integer
+      current_timestamp:
+        type: integer
+      total_accepted_transfers:
+        type:
+          - "null"
+          - integer
+      total_calls_accepted:
+        type:
+          - "null"
+          - integer
+      total_calls_denied:
+        type:
+          - "null"
+          - integer
+      total_calls_missed:
+        type:
+          - "null"
+          - integer
+      total_calls_put_on_hold:
+        type:
+          - "null"
+          - integer
+      total_hold_time:
+        type:
+          - "null"
+          - integer
+      total_started_transfers:
+        type:
+          - "null"
+          - integer
+      total_talk_time:
+        type:
+          - "null"
+          - integer
+      total_wrap_up_time:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  greeting_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  greetings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      active:
+        type:
+          - "null"
+          - boolean
+      audio_name:
+        type:
+          - "null"
+          - string
+      audio_url:
+        type:
+          - "null"
+          - string
+      category_id:
+        type:
+          - "null"
+          - integer
+      default:
+        type:
+          - "null"
+          - boolean
+      default_lang:
+        type:
+          - "null"
+          - boolean
+      has_sub_settings:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - string
+      ivr_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - string
+            - integer
+      name:
+        type:
+          - "null"
+          - string
+      pending:
+        type:
+          - "null"
+          - boolean
+      phone_number_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - integer
+            - string
+      upload_id:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  phone_numbers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      call_recording_consent:
+        type:
+          - "null"
+          - string
+      capabilities:
+        type:
+          - "null"
+          - object
+        properties:
+          emergency_address:
+            type:
+              - "null"
+              - boolean
+          mms:
+            type:
+              - "null"
+              - boolean
+          sms:
+            type:
+              - "null"
+              - boolean
+          voice:
+            type:
+              - "null"
+              - boolean
+      categorised_greetings:
+        type:
+          - "null"
+          - object
+      categorised_greetings_with_sub_settings:
+        type:
+          - "null"
+          - object
+      country_code:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      default_greeting_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - string
+      default_group_id:
+        type:
+          - "null"
+          - integer
+      display_number:
+        type:
+          - "null"
+          - string
+      external:
+        type:
+          - "null"
+          - boolean
+      failover_number:
+        type:
+          - "null"
+          - string
+      greeting_ids:
+        type:
+          - "null"
+          - array
+      group_ids:
+        type:
+          - "null"
+          - array
+      id:
+        type:
+          - "null"
+          - integer
+      ivr_id:
+        type:
+          - "null"
+          - integer
+      line_type:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      nickname:
+        type:
+          - "null"
+          - string
+      number:
+        type:
+          - "null"
+          - string
+      outbound_enabled:
+        type:
+          - "null"
+          - boolean
+      priority:
+        type:
+          - "null"
+          - integer
+      recorded:
+        type:
+          - "null"
+          - boolean
+      schedule_id:
+        type:
+          - "null"
+          - integer
+      sms_enabled:
+        type:
+          - "null"
+          - boolean
+      sms_group_id:
+        type:
+          - "null"
+          - integer
+      token:
+        type:
+          - "null"
+          - string
+      toll_free:
+        type:
+          - "null"
+          - boolean
+      transcription:
+        type:
+          - "null"
+          - boolean
+      voice_enabled:
+        type:
+          - "null"
+          - boolean
+    additionalProperties: true
+  call_legs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      agent_id:
+        type:
+          - "null"
+          - integer
+      available_via:
+        type:
+          - "null"
+          - string
+      call_charge:
+        type:
+          - "null"
+          - string
+      call_id:
+        type:
+          - "null"
+          - integer
+      completion_status:
+        type:
+          - "null"
+          - string
+      conference_from:
+        type:
+          - "null"
+          - integer
+      conference_time:
+        type:
+          - "null"
+          - integer
+      conference_to:
+        type:
+          - "null"
+          - integer
+      consultation_from:
+        type:
+          - "null"
+          - integer
+      consultation_time:
+        type:
+          - "null"
+          - integer
+      consultation_to:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+      duration:
+        type:
+          - "null"
+          - integer
+      forwarded_to:
+        type:
+          - "null"
+          - string
+      hold_time:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      minutes_billed:
+        type:
+          - "null"
+          - integer
+      quality_issues:
+        type:
+          - "null"
+          - array
+      talk_time:
+        type:
+          - "null"
+          - integer
+      transferred_from:
+        type:
+          - "null"
+          - integer
+      transferred_to:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user_id:
+        type:
+          - "null"
+          - integer
+      wrap_up_time:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  calls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      agent_id:
+        type:
+          - integer
+          - "null"
+      call_charge:
+        type:
+          - string
+          - "null"
+      call_group_id:
+        type:
+          - integer
+          - "null"
+      call_recording_consent:
+        type:
+          - string
+          - "null"
+      call_recording_consent_action:
+        type:
+          - string
+          - "null"
+      call_recording_consent_keypress:
+        type:
+          - string
+          - "null"
+      callback:
+        type:
+          - boolean
+          - "null"
+      callback_source:
+        type:
+          - string
+          - "null"
+      completion_status:
+        type:
+          - string
+          - "null"
+      consultation_time:
+        type:
+          - integer
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer_requested_voicemail:
+        type:
+          - boolean
+          - "null"
+      default_group:
+        type:
+          - boolean
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - integer
+          - "null"
+      exceeded_queue_time:
+        type:
+          - boolean
+          - "null"
+      exceeded_queue_wait_time:
+        type:
+          - boolean
+          - "null"
+      hold_time:
+        type:
+          - integer
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      ivr_action:
+        type:
+          - string
+          - "null"
+      ivr_destination_group_name:
+        type:
+          - string
+          - "null"
+      ivr_hops:
+        type:
+          - integer
+          - "null"
+      ivr_routed_to:
+        type:
+          - string
+          - "null"
+      ivr_time_spent:
+        type:
+          - integer
+          - "null"
+      minutes_billed:
+        type:
+          - integer
+          - "null"
+      not_recording_time:
+        type:
+          - integer
+          - "null"
+      outside_business_hours:
+        type:
+          - boolean
+          - "null"
+      overflowed:
+        type:
+          - boolean
+          - "null"
+      overflowed_to:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      phone_number_id:
+        type:
+          - integer
+          - "null"
+      quality_issues:
+        type:
+          - array
+          - "null"
+      recording_control_interactions:
+        type:
+          - integer
+          - "null"
+      recording_time:
+        type:
+          - integer
+          - "null"
+      talk_time:
+        type:
+          - integer
+          - "null"
+      ticket_id:
+        type:
+          - integer
+          - "null"
+      time_to_answer:
+        type:
+          - integer
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      voicemail:
+        type:
+          - boolean
+          - "null"
+      wait_time:
+        type:
+          - integer
+          - "null"
+      wrap_up_time:
+        type:
+          - integer
+          - "null"
+    additionalProperties: true
+  current_queue_activity:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      agents_online:
+        type:
+          - integer
+          - "null"
+      average_wait_time:
+        type:
+          - integer
+          - "null"
+      callbacks_waiting:
+        type:
+          - integer
+          - "null"
+      calls_waiting:
+        type:
+          - integer
+          - "null"
+      current_timestamp:
+        type: integer
+      embeddable_callbacks_waiting:
+        type:
+          - integer
+          - "null"
+      longest_wait_time:
+        type:
+          - integer
+          - "null"
+    additionalProperties: true
+  account_overview:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      average_call_duration:
+        type:
+          - integer
+          - "null"
+      average_callback_wait_time:
+        type:
+          - integer
+          - "null"
+      average_hold_time:
+        type:
+          - integer
+          - "null"
+      average_queue_wait_time:
+        type:
+          - integer
+          - "null"
+      average_time_to_answer:
+        type:
+          - integer
+          - "null"
+      average_wrap_up_time:
+        type:
+          - integer
+          - "null"
+      current_timestamp:
+        type: integer
+      max_calls_waiting:
+        type:
+          - integer
+          - "null"
+      max_queue_wait_time:
+        type:
+          - integer
+          - "null"
+      total_call_duration:
+        type:
+          - integer
+          - "null"
+      total_callback_calls:
+        type:
+          - integer
+          - "null"
+      total_calls:
+        type:
+          - integer
+          - "null"
+      total_calls_abandoned_in_queue:
+        type:
+          - integer
+          - "null"
+      total_calls_outside_business_hours:
+        type:
+          - integer
+          - "null"
+      total_calls_with_exceeded_queue_wait_time:
+        type:
+          - integer
+          - "null"
+      total_calls_with_requested_voicemail:
+        type:
+          - integer
+          - "null"
+      total_embeddable_callback_calls:
+        type:
+          - integer
+          - "null"
+      total_hold_time:
+        type:
+          - integer
+          - "null"
+      total_inbound_calls:
+        type:
+          - integer
+          - "null"
+      total_outbound_calls:
+        type:
+          - integer
+          - "null"
+      total_textback_requests:
+        type:
+          - integer
+          - "null"
+      total_voicemails:
+        type:
+          - integer
+          - "null"
+      total_wrap_up_time:
+        type:
+          - integer
+          - "null"
+    additionalProperties: true
+  ivrs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - integer
+          - "null"
+      menus:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          properties:
+            default:
+              type:
+                - boolean
+                - "null"
+            greeting_id:
+              type:
+                - integer
+                - "null"
+            id:
+              type:
+                - integer
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            routes:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                properties:
+                  action:
+                    type:
+                      - string
+                      - "null"
+                  greeting:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - integer
+                      - "null"
+                  keypress:
+                    type:
+                      - string
+                      - "null"
+                  option_text:
+                    type:
+                      - string
+                      - "null"
+                  options:
+                    type:
+                      - object
+                      - "null"
+                  overflow_options:
+                    type:
+                      - array
+                      - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone_number_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - integer
+      phone_number_names:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - integer
+    additionalProperties: true
+  ivr_menus:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      default:
+        type:
+          - boolean
+          - "null"
+      greeting_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - integer
+          - "null"
+      ivr_id:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  ivr_routes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      action:
+        type:
+          - string
+          - "null"
+      greeting:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - integer
+          - "null"
+      ivr_id:
+        type:
+          - integer
+          - "null"
+      ivr_menu_id:
+        type:
+          - integer
+          - "null"
+      keypress:
+        type:
+          - string
+          - "null"
+      option_text:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - object
+          - "null"
+      overflow_options:
+        type:
+          - array
+          - "null"
+    additionalProperties: true

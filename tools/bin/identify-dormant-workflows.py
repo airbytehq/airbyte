@@ -13,6 +13,7 @@ from github import Github
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
+
 DAYS_TO_KEEP_ORPHANED_JOBS = 90
 SLACK_CHANNEL_FOR_NOTIFICATIONS = "infra-alerts"
 
@@ -97,7 +98,6 @@ def main():
                 print(message)
 
                 if slack_token:
-
                     print("Sending Slack notification...")
                     client = WebClient(slack_token)
 

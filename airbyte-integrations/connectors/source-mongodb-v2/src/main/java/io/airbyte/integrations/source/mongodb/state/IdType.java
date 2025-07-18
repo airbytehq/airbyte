@@ -101,14 +101,15 @@ public enum IdType {
    * Parse a string representation of a binary _id field into a BsonBinary object. The string can be a
    * UUID or a Base64 encoded string.
    *
-   * @param id a string representation of an _id field
+   * @param state State will have a string representation of an _id field and its corresponding
+   *        subtype.
    * @return a BsonBinary object
    */
-  public static BsonBinary parseBinaryIdString(final String id) {
+  public static BsonBinary parseBinaryIdString(final String id, final Byte binarySubType) {
     try {
       return new BsonBinary(UUID.fromString(id));
     } catch (final IllegalArgumentException ex) {
-      return new BsonBinary(Base64.getDecoder().decode(id));
+      return new BsonBinary(binarySubType, Base64.getDecoder().decode(id));
     }
   }
 

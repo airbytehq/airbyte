@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import logging
 import subprocess
 from pathlib import Path
 from typing import List
@@ -7,7 +8,7 @@ from typing import List
 from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback
 
 
-async def format_prettier(files: List[Path]) -> None:
+async def format_prettier(files: List[Path], logger: logging.Logger) -> None:
     if len(files) == 0:
         return
 
@@ -18,13 +19,13 @@ async def format_prettier(files: List[Path]) -> None:
 
     to_format = [str(file) for file in files]
 
-    print(f"       Formatting files: npx prettier --write {' '.join(to_format)}")
+    logger.info(f"       Formatting files: npx prettier --write {' '.join(to_format)}")
     command = ["npx", "prettier", "--config", str(config_path), "--write"] + to_format
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode == 0:
-        print("Files formatted successfully.")
+        logger.info("        Files formatted successfully.")
     else:
-        print("Error formatting files.")
+        logger.warn("        Error formatting files.")
 
 
 def verify_formatters() -> None:

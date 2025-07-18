@@ -6,11 +6,11 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 4.2.1
+  dockerImageTag: 4.4.1
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   githubIssueLabel: source-gitlab
@@ -20,15 +20,17 @@ data:
   name: Gitlab
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-gitlab
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: In this release, several changes have been made to the Gitlab connector. The primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`. Users will need to refresh schemas and reset the affected streams after upgrading.
@@ -64,9 +66,17 @@ data:
       - commits
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gitlab_config_with_ids_dev_null
+          id: 0a232b74-3f4e-492e-b522-cdd87d7e78c1
+        - name: gitlab_config_oauth_dev_null
+          id: 4b892767-e35e-4126-b1ab-b4fd02d08c15
+        - name: gitlab_config_dev_null
+          id: 8e190e6d-1f8f-411f-8468-9ce77fec5b4c
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -1,0 +1,2067 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://app.launchdarkly.com/api/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['access_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+          path: /projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _id:
+              type:
+                - "null"
+                - string
+            defaultClientSideAvailability:
+              type:
+                - "null"
+                - object
+            includeInSnippetByDefault:
+              type:
+                - "null"
+                - boolean
+            key:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            tags:
+              type:
+                - "null"
+                - array
+    environments:
+      type: DeclarativeStream
+      name: environments
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://app.launchdarkly.com/api/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['access_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+          path: /projects/{{ stream_slice.project_key }}/environments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: key
+                partition_field: project_key
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - _id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://app.launchdarkly.com/api/v2
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['access_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: Authorization
+                          inject_into: header
+                      path: /projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: offset
+                      page_size_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: limit
+                      pagination_strategy:
+                        type: OffsetIncrement
+                        page_size: 20
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type: object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        _id:
+                          type:
+                            - "null"
+                            - string
+                        defaultClientSideAvailability:
+                          type:
+                            - "null"
+                            - object
+                        includeInSnippetByDefault:
+                          type:
+                            - "null"
+                            - boolean
+                        key:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        tags:
+                          type:
+                            - "null"
+                            - array
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _id:
+              type:
+                - "null"
+                - string
+            _pubnub:
+              type:
+                - "null"
+                - object
+            apiKey:
+              type:
+                - "null"
+                - string
+            approvalSettings:
+              type:
+                - "null"
+                - object
+            color:
+              type:
+                - "null"
+                - string
+            confirmChanges:
+              type:
+                - "null"
+                - boolean
+            defaultTrackEvents:
+              type:
+                - "null"
+                - boolean
+            defaultTtl:
+              type:
+                - "null"
+                - integer
+            key:
+              type:
+                - "null"
+                - string
+            mobileKey:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            requireComments:
+              type:
+                - "null"
+                - boolean
+            secureMode:
+              type:
+                - "null"
+                - boolean
+            tags:
+              type:
+                - "null"
+                - array
+    metrics:
+      type: DeclarativeStream
+      name: metrics
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://app.launchdarkly.com/api/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['access_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+          path: /metrics/{{ stream_slice.project_key }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: key
+                partition_field: project_key
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - _id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://app.launchdarkly.com/api/v2
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['access_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: Authorization
+                          inject_into: header
+                      path: /projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: offset
+                      page_size_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: limit
+                      pagination_strategy:
+                        type: OffsetIncrement
+                        page_size: 20
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type: object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        _id:
+                          type:
+                            - "null"
+                            - string
+                        defaultClientSideAvailability:
+                          type:
+                            - "null"
+                            - object
+                        includeInSnippetByDefault:
+                          type:
+                            - "null"
+                            - boolean
+                        key:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        tags:
+                          type:
+                            - "null"
+                            - array
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _access:
+              type:
+                - "null"
+                - object
+            _attachedFlagCount:
+              type:
+                - "null"
+                - integer
+            _creationDate:
+              type:
+                - "null"
+                - integer
+            _id:
+              type:
+                - "null"
+                - string
+            _links:
+              type:
+                - "null"
+                - object
+            _maintainer:
+              type:
+                - "null"
+                - object
+            _site:
+              type:
+                - "null"
+                - object
+            description:
+              type:
+                - "null"
+                - string
+            eventKey:
+              type:
+                - "null"
+                - string
+            experimentCount:
+              type:
+                - "null"
+                - integer
+            isNumeric:
+              type:
+                - "null"
+                - boolean
+            key:
+              type:
+                - "null"
+                - string
+            kind:
+              type:
+                - "null"
+                - string
+            lastModified:
+              type:
+                - "null"
+                - object
+            maintainerId:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            successCriteria:
+              type:
+                - "null"
+                - string
+            tags:
+              type:
+                - "null"
+                - array
+            unit:
+              type:
+                - "null"
+                - string
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://app.launchdarkly.com/api/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['access_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+          path: /members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _id:
+              type:
+                - "null"
+                - string
+            _lastSeen:
+              type:
+                - "null"
+                - integer
+            _lastSeenMetadata:
+              type:
+                - "null"
+                - object
+            _pendingInvite:
+              type:
+                - "null"
+                - boolean
+            _verified:
+              type:
+                - "null"
+                - boolean
+            creationDate:
+              type:
+                - "null"
+                - integer
+            customRoles:
+              type:
+                - "null"
+                - array
+            email:
+              type:
+                - "null"
+                - string
+            excludedDashboards:
+              type:
+                - "null"
+                - array
+            firstName:
+              type:
+                - "null"
+                - string
+            isBeta:
+              type:
+                - "null"
+                - boolean
+            lastName:
+              type:
+                - "null"
+                - string
+            mfa:
+              type:
+                - "null"
+                - string
+            oauthProviders:
+              type:
+                - "null"
+                - array
+            role:
+              type:
+                - "null"
+                - string
+    auditlog:
+      type: DeclarativeStream
+      name: auditlog
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://app.launchdarkly.com/api/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['access_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+          path: /auditlog
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _accountId:
+              type:
+                - "null"
+                - string
+            _id:
+              type:
+                - "null"
+                - string
+            accesses:
+              type:
+                - "null"
+                - array
+            comment:
+              type:
+                - "null"
+                - string
+            date:
+              type:
+                - "null"
+                - integer
+            description:
+              type:
+                - "null"
+                - string
+            kind:
+              type:
+                - "null"
+                - string
+            member:
+              type:
+                - "null"
+                - object
+            name:
+              type:
+                - "null"
+                - string
+            shortDescription:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+            titleVerb:
+              type:
+                - "null"
+                - string
+    flags:
+      type: DeclarativeStream
+      name: flags
+      primary_key:
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://app.launchdarkly.com/api/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['access_token'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+          path: /flags/{{ stream_slice.project_key }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: key
+                partition_field: project_key
+                stream:
+                  type: DeclarativeStream
+                  name: projects
+                  primary_key:
+                    - _id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://app.launchdarkly.com/api/v2
+                      authenticator:
+                        type: ApiKeyAuthenticator
+                        api_token: "{{ config['access_token'] }}"
+                        inject_into:
+                          type: RequestOption
+                          field_name: Authorization
+                          inject_into: header
+                      path: /projects
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - items
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: offset
+                      page_size_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: limit
+                      pagination_strategy:
+                        type: OffsetIncrement
+                        page_size: 20
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type: object
+                      $schema: http://json-schema.org/draft-07/schema#
+                      additionalProperties: true
+                      properties:
+                        _id:
+                          type:
+                            - "null"
+                            - string
+                        defaultClientSideAvailability:
+                          type:
+                            - "null"
+                            - object
+                        includeInSnippetByDefault:
+                          type:
+                            - "null"
+                            - boolean
+                        key:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        tags:
+                          type:
+                            - "null"
+                            - array
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            _maintainer:
+              type:
+                - "null"
+                - object
+            _version:
+              type:
+                - "null"
+                - integer
+            archived:
+              type:
+                - "null"
+                - boolean
+            clientSideAvailability:
+              type:
+                - "null"
+                - object
+            creationDate:
+              type:
+                - "null"
+                - integer
+            customProperties:
+              type:
+                - "null"
+                - object
+            description:
+              type:
+                - "null"
+                - string
+            environments:
+              type:
+                - "null"
+                - object
+            experiments:
+              type:
+                - "null"
+                - object
+            goalIds:
+              type:
+                - "null"
+                - array
+            includeInSnippet:
+              type:
+                - "null"
+                - boolean
+            key:
+              type:
+                - "null"
+                - string
+            maintainerId:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            tags:
+              type:
+                - "null"
+                - array
+            temporary:
+              type:
+                - "null"
+                - boolean
+            variationJsonSchema:
+              type:
+                - "null"
+                - object
+            variations:
+              type:
+                - "null"
+                - array
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.launchdarkly.com/api/v2
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['access_token'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+streams:
+  - type: DeclarativeStream
+    name: projects
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://app.launchdarkly.com/api/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['access_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        path: /projects
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 20
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          defaultClientSideAvailability:
+            type:
+              - "null"
+              - object
+          includeInSnippetByDefault:
+            type:
+              - "null"
+              - boolean
+          key:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+  - type: DeclarativeStream
+    name: environments
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://app.launchdarkly.com/api/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['access_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        path: /projects/{{ stream_slice.project_key }}/environments
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 20
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: project_key
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - _id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://app.launchdarkly.com/api/v2
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['access_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: Authorization
+                        inject_into: header
+                    path: /projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: limit
+                    pagination_strategy:
+                      type: OffsetIncrement
+                      page_size: 20
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      _id:
+                        type:
+                          - "null"
+                          - string
+                      defaultClientSideAvailability:
+                        type:
+                          - "null"
+                          - object
+                      includeInSnippetByDefault:
+                        type:
+                          - "null"
+                          - boolean
+                      key:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      tags:
+                        type:
+                          - "null"
+                          - array
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          _pubnub:
+            type:
+              - "null"
+              - object
+          apiKey:
+            type:
+              - "null"
+              - string
+          approvalSettings:
+            type:
+              - "null"
+              - object
+          color:
+            type:
+              - "null"
+              - string
+          confirmChanges:
+            type:
+              - "null"
+              - boolean
+          defaultTrackEvents:
+            type:
+              - "null"
+              - boolean
+          defaultTtl:
+            type:
+              - "null"
+              - integer
+          key:
+            type:
+              - "null"
+              - string
+          mobileKey:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          requireComments:
+            type:
+              - "null"
+              - boolean
+          secureMode:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+  - type: DeclarativeStream
+    name: metrics
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://app.launchdarkly.com/api/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['access_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        path: /metrics/{{ stream_slice.project_key }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 20
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: project_key
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - _id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://app.launchdarkly.com/api/v2
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['access_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: Authorization
+                        inject_into: header
+                    path: /projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: limit
+                    pagination_strategy:
+                      type: OffsetIncrement
+                      page_size: 20
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      _id:
+                        type:
+                          - "null"
+                          - string
+                      defaultClientSideAvailability:
+                        type:
+                          - "null"
+                          - object
+                      includeInSnippetByDefault:
+                        type:
+                          - "null"
+                          - boolean
+                      key:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      tags:
+                        type:
+                          - "null"
+                          - array
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _access:
+            type:
+              - "null"
+              - object
+          _attachedFlagCount:
+            type:
+              - "null"
+              - integer
+          _creationDate:
+            type:
+              - "null"
+              - integer
+          _id:
+            type:
+              - "null"
+              - string
+          _links:
+            type:
+              - "null"
+              - object
+          _maintainer:
+            type:
+              - "null"
+              - object
+          _site:
+            type:
+              - "null"
+              - object
+          description:
+            type:
+              - "null"
+              - string
+          eventKey:
+            type:
+              - "null"
+              - string
+          experimentCount:
+            type:
+              - "null"
+              - integer
+          isNumeric:
+            type:
+              - "null"
+              - boolean
+          key:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          lastModified:
+            type:
+              - "null"
+              - object
+          maintainerId:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          successCriteria:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          unit:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: members
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://app.launchdarkly.com/api/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['access_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        path: /members
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 20
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          _lastSeen:
+            type:
+              - "null"
+              - integer
+          _lastSeenMetadata:
+            type:
+              - "null"
+              - object
+          _pendingInvite:
+            type:
+              - "null"
+              - boolean
+          _verified:
+            type:
+              - "null"
+              - boolean
+          creationDate:
+            type:
+              - "null"
+              - integer
+          customRoles:
+            type:
+              - "null"
+              - array
+          email:
+            type:
+              - "null"
+              - string
+          excludedDashboards:
+            type:
+              - "null"
+              - array
+          firstName:
+            type:
+              - "null"
+              - string
+          isBeta:
+            type:
+              - "null"
+              - boolean
+          lastName:
+            type:
+              - "null"
+              - string
+          mfa:
+            type:
+              - "null"
+              - string
+          oauthProviders:
+            type:
+              - "null"
+              - array
+          role:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: auditlog
+    primary_key:
+      - _id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://app.launchdarkly.com/api/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['access_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        path: /auditlog
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 20
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _accountId:
+            type:
+              - "null"
+              - string
+          _id:
+            type:
+              - "null"
+              - string
+          accesses:
+            type:
+              - "null"
+              - array
+          comment:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - integer
+          description:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          member:
+            type:
+              - "null"
+              - object
+          name:
+            type:
+              - "null"
+              - string
+          shortDescription:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          titleVerb:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: flags
+    primary_key:
+      - key
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://app.launchdarkly.com/api/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['access_token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        path: /flags/{{ stream_slice.project_key }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 20
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: project_key
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - _id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://app.launchdarkly.com/api/v2
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['access_token'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: Authorization
+                        inject_into: header
+                    path: /projects
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - items
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: limit
+                    pagination_strategy:
+                      type: OffsetIncrement
+                      page_size: 20
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    $schema: http://json-schema.org/draft-07/schema#
+                    additionalProperties: true
+                    properties:
+                      _id:
+                        type:
+                          - "null"
+                          - string
+                      defaultClientSideAvailability:
+                        type:
+                          - "null"
+                          - object
+                      includeInSnippetByDefault:
+                        type:
+                          - "null"
+                          - boolean
+                      key:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      tags:
+                        type:
+                          - "null"
+                          - array
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          _maintainer:
+            type:
+              - "null"
+              - object
+          _version:
+            type:
+              - "null"
+              - integer
+          archived:
+            type:
+              - "null"
+              - boolean
+          clientSideAvailability:
+            type:
+              - "null"
+              - object
+          creationDate:
+            type:
+              - "null"
+              - integer
+          customProperties:
+            type:
+              - "null"
+              - object
+          description:
+            type:
+              - "null"
+              - string
+          environments:
+            type:
+              - "null"
+              - object
+          experiments:
+            type:
+              - "null"
+              - object
+          goalIds:
+            type:
+              - "null"
+              - array
+          includeInSnippet:
+            type:
+              - "null"
+              - boolean
+          key:
+            type:
+              - "null"
+              - string
+          maintainerId:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          temporary:
+            type:
+              - "null"
+              - boolean
+          variationJsonSchema:
+            type:
+              - "null"
+              - object
+          variations:
+            type:
+              - "null"
+              - array
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+    properties:
+      access_token:
+        type: string
+        title: Access token
+        description: >-
+          Your Access token. See <a
+          href="https://apidocs.launchdarkly.com/#section/Overview/Authentication">here</a>.
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    projects: false
+    environments: false
+    metrics: false
+    members: false
+    auditlog: false
+    flags: false
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - "null"
+          - string
+      defaultClientSideAvailability:
+        type:
+          - "null"
+          - object
+      includeInSnippetByDefault:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+  environments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - "null"
+          - string
+      _pubnub:
+        type:
+          - "null"
+          - object
+      apiKey:
+        type:
+          - "null"
+          - string
+      approvalSettings:
+        type:
+          - "null"
+          - object
+      color:
+        type:
+          - "null"
+          - string
+      confirmChanges:
+        type:
+          - "null"
+          - boolean
+      defaultTrackEvents:
+        type:
+          - "null"
+          - boolean
+      defaultTtl:
+        type:
+          - "null"
+          - integer
+      key:
+        type:
+          - "null"
+          - string
+      mobileKey:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      requireComments:
+        type:
+          - "null"
+          - boolean
+      secureMode:
+        type:
+          - "null"
+          - boolean
+      tags:
+        type:
+          - "null"
+          - array
+  metrics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _access:
+        type:
+          - "null"
+          - object
+      _attachedFlagCount:
+        type:
+          - "null"
+          - integer
+      _creationDate:
+        type:
+          - "null"
+          - integer
+      _id:
+        type:
+          - "null"
+          - string
+      _links:
+        type:
+          - "null"
+          - object
+      _maintainer:
+        type:
+          - "null"
+          - object
+      _site:
+        type:
+          - "null"
+          - object
+      description:
+        type:
+          - "null"
+          - string
+      eventKey:
+        type:
+          - "null"
+          - string
+      experimentCount:
+        type:
+          - "null"
+          - integer
+      isNumeric:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      kind:
+        type:
+          - "null"
+          - string
+      lastModified:
+        type:
+          - "null"
+          - object
+      maintainerId:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      successCriteria:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+      unit:
+        type:
+          - "null"
+          - string
+  members:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - "null"
+          - string
+      _lastSeen:
+        type:
+          - "null"
+          - integer
+      _lastSeenMetadata:
+        type:
+          - "null"
+          - object
+      _pendingInvite:
+        type:
+          - "null"
+          - boolean
+      _verified:
+        type:
+          - "null"
+          - boolean
+      creationDate:
+        type:
+          - "null"
+          - integer
+      customRoles:
+        type:
+          - "null"
+          - array
+      email:
+        type:
+          - "null"
+          - string
+      excludedDashboards:
+        type:
+          - "null"
+          - array
+      firstName:
+        type:
+          - "null"
+          - string
+      isBeta:
+        type:
+          - "null"
+          - boolean
+      lastName:
+        type:
+          - "null"
+          - string
+      mfa:
+        type:
+          - "null"
+          - string
+      oauthProviders:
+        type:
+          - "null"
+          - array
+      role:
+        type:
+          - "null"
+          - string
+  auditlog:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _accountId:
+        type:
+          - "null"
+          - string
+      _id:
+        type:
+          - "null"
+          - string
+      accesses:
+        type:
+          - "null"
+          - array
+      comment:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - integer
+      description:
+        type:
+          - "null"
+          - string
+      kind:
+        type:
+          - "null"
+          - string
+      member:
+        type:
+          - "null"
+          - object
+      name:
+        type:
+          - "null"
+          - string
+      shortDescription:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      titleVerb:
+        type:
+          - "null"
+          - string
+  flags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _maintainer:
+        type:
+          - "null"
+          - object
+      _version:
+        type:
+          - "null"
+          - integer
+      archived:
+        type:
+          - "null"
+          - boolean
+      clientSideAvailability:
+        type:
+          - "null"
+          - object
+      creationDate:
+        type:
+          - "null"
+          - integer
+      customProperties:
+        type:
+          - "null"
+          - object
+      description:
+        type:
+          - "null"
+          - string
+      environments:
+        type:
+          - "null"
+          - object
+      experiments:
+        type:
+          - "null"
+          - object
+      goalIds:
+        type:
+          - "null"
+          - array
+      includeInSnippet:
+        type:
+          - "null"
+          - boolean
+      key:
+        type:
+          - "null"
+          - string
+      maintainerId:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+      temporary:
+        type:
+          - "null"
+          - boolean
+      variationJsonSchema:
+        type:
+          - "null"
+          - object
+      variations:
+        type:
+          - "null"
+          - array

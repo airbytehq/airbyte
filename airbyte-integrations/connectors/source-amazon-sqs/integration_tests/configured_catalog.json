@@ -1,27 +1,18 @@
 {
   "streams": [
     {
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append",
       "stream": {
-        "name": "Airbyte",
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "name": "QueueMessages",
         "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "body": {
-              "type": "string"
-            },
-            "attributes": {
-              "type": ["null", "object"]
-            }
-          }
-        }
-      }
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
