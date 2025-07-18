@@ -229,7 +229,7 @@ The "Error message" field allows you to customize the message that is relayed ba
 
 ## Advanced Error Handling Configuration
 
-### Max Retries
+### Max Retry Count
 
 The "Max retry count" field allows you to configure the maximum number of times a request will be retried before giving up. This applies to all retryable responses (those with RETRY or RATE_LIMITED actions).
 
