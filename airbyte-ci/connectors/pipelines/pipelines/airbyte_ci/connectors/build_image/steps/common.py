@@ -39,14 +39,14 @@ class BuildConnectorImagesBase(Step, ABC):
     USER = AirbyteConnectorBaseImage.USER
 
     @property
-    def title(self) -> str:
+    def title(self: "BuildConnectorImagesBase") -> str:
         return f"Build {self.context.connector.technical_name} docker image for platform(s) {', '.join(self.build_platforms)}"
 
-    def __init__(self, context: ConnectorContext) -> None:
+    def __init__(self: "BuildConnectorImagesBase", context: ConnectorContext) -> None:
         self.build_platforms = context.targeted_platforms
         super().__init__(context)
 
-    async def _run(self, *args: Any) -> StepResult:
+    async def _run(self: "BuildConnectorImagesBase", *args: Any) -> StepResult:
         build_results_per_platform = {}
         for platform in self.build_platforms:
             try:
@@ -73,7 +73,7 @@ class BuildConnectorImagesBase(Step, ABC):
         )
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout=success_message, output=build_results_per_platform)
 
-    async def _build_connector(self, platform: "dagger.Platform", *args: Any, **kwargs: Any) -> "dagger.Container":
+    async def _build_connector(self: "BuildConnectorImagesBase", platform: "dagger.Platform", *args: Any, **kwargs: Any) -> "dagger.Container":
         """Implement the generation of the image for the platform and return the corresponding container.
 
         Returns:
@@ -100,11 +100,11 @@ class BuildConnectorImagesBase(Step, ABC):
 class LoadContainerToLocalDockerHost(Step):
     context: ConnectorContext
 
-    def __init__(self, context: ConnectorContext, image_tag: str = "dev") -> None:
+    def __init__(self: "LoadContainerToLocalDockerHost", context: ConnectorContext, image_tag: str = "dev") -> None:
         super().__init__(context)
         self.image_tag = image_tag
 
-    def _generate_dev_tag(self, platform: "dagger.Platform", multi_platforms: bool) -> str:
+    def _generate_dev_tag(self: "LoadContainerToLocalDockerHost", platform: "dagger.Platform", multi_platforms: bool) -> str:
         """
         When building for multiple platforms, we need to tag the image with the platform name.
         There's no way to locally build a multi-arch image, so we need to tag the image with the platform name when the user passed multiple architecture options.
@@ -112,14 +112,14 @@ class LoadContainerToLocalDockerHost(Step):
         return f"{self.image_tag}-{platform.replace('/', '-')}" if multi_platforms else self.image_tag
 
     @property
-    def title(self) -> str:
+    def title(self: "LoadContainerToLocalDockerHost") -> str:
         return f"Load {self.image_name}:{self.image_tag} to the local docker host."
 
     @property
-    def image_name(self) -> str:
+    def image_name(self: "LoadContainerToLocalDockerHost") -> str:
         return f"airbyte/{self.context.connector.technical_name}"
 
-    async def _run(self, containers: dict["dagger.Platform", "dagger.Container"]) -> StepResult:
+    async def _run(self: "LoadContainerToLocalDockerHost", containers: dict["dagger.Platform", "dagger.Container"]) -> StepResult:
         loaded_images = []
         image_sha = None
         multi_platforms = len(containers) > 1
