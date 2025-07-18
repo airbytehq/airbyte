@@ -92,8 +92,6 @@ jobs:
 
           .github/scripts/generate_build_customizations.sh $CONNECTOR
 
-          cd airbyte-integrations/connectors/$CONNECTOR
-
           # Set proxy environment variables
           export IMAGE_HTTP_PROXY=${{ vars.HTTP_PROXY }}
           export IMAGE_HTTPS_PROXY=${{ vars.HTTPS_PROXY }}
@@ -105,8 +103,20 @@ jobs:
           DEV_IMAGE="airbyte/$CONNECTOR:dev"
           if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "$DEV_IMAGE"; then
             echo "✅ Found built image: $DEV_IMAGE"
-            docker tag "$DEV_IMAGE" "$IMAGE_NAME"
-            docker push "$IMAGE_NAME"
+            if grep -q "docker.io/airbyte/source-declarative-manifest" "$METADATAFILE"; then
+              echo "🛠️ Detected manifest-only connector."
+              CUSTOM_IMAGE="airbyte/$CONNECTOR:custom"
+              
+              .github/scripts/build_custom_docker_image.sh $CONNECTOR
+
+              echo "🔄 Tagging and pushing image $CUSTOM_IMAGE to $IMAGE_NAME"
+              docker tag "$CUSTOM_IMAGE" "$IMAGE_NAME"
+              docker push "$IMAGE_NAME"
+            else
+              echo "🔄 Tagging and pushing image $DEV_IMAGE to $IMAGE_NAME"
+              docker tag "$DEV_IMAGE" "$IMAGE_NAME"
+              docker push "$IMAGE_NAME"
+            fi
           else
             echo "❌ Error: Image $DEV_IMAGE was not found after build."
             exit 1
