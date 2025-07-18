@@ -231,7 +231,7 @@ The "Error message" field allows you to customize the message that is relayed ba
 
 ### Max Retries
 
-The "Max retries" field allows you to configure the maximum number of times a request will be retried before giving up. This applies to all retryable responses (those with RETRY or RATE_LIMITED actions).
+The "Max retry count" field allows you to configure the maximum number of times a request will be retried before giving up. This applies to all retryable responses (those with RETRY or RATE_LIMITED actions).
 
 **Configuration:**
 - **Max retry count**: Maximum number of retry attempts (default: 5)
