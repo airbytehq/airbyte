@@ -15,9 +15,12 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 class DestinationMessageFactory(
@@ -142,6 +145,7 @@ class DestinationMessageFactory(
                 }
             }
             AirbyteMessage.Type.STATE -> {
+                logger.info { "Received state message $message" }
                 when (message.state.type) {
                     AirbyteStateMessage.AirbyteStateType.STREAM -> {
                         val additionalProperties = message.state.additionalProperties
