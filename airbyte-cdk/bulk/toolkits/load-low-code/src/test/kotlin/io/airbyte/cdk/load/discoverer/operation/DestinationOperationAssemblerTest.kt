@@ -55,8 +55,8 @@ class DestinationOperationAssemblerTest {
     }
 
     @Test
-    internal fun `test given object has matching key but not available properties when assemble then return factory result`() {
-        every { property.isAvailable() } returns false
+    internal fun `test given object has matching key when assemble then return factory result`() {
+        every { property.isAvailable() } returns true // is available will always be true if isMatchingKey is true based on DiscoveredProperty's implementation
         every { property.isMatchingKey() } returns true
         val assembler =
             DestinationOperationAssembler(
