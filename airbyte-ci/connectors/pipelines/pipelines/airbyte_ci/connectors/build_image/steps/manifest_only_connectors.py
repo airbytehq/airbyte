@@ -3,12 +3,12 @@
 #
 
 
+import subprocess
+from pathlib import Path
 from typing import Any
 
-from dagger import Container, Platform
 from pydash.objects import get  # type: ignore
 
-from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import COMPONENTS_FILE_PATH, MANIFEST_FILE_PATH
@@ -25,46 +25,51 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: Platform, *args: Any) -> Container:
+    async def _build_connector(self, platform: str, *args: Any) -> str:
         baseImage = get(self.context.connector.metadata, "connectorBuildOptions.baseImage")
         if not baseImage:
             raise ValueError("connectorBuildOptions.baseImage is required to build a manifest only connector.")
 
         return await self._build_from_base_image(platform)
 
-    def _get_base_container(self, platform: Platform) -> Container:
+    def _get_base_container(self, platform: str) -> str:
         base_image_name = get(self.context.connector.metadata, "connectorBuildOptions.baseImage")
         self.logger.info(f"Building manifest connector from base image {base_image_name}")
-        return self.dagger_client.container(platform=platform).from_(base_image_name)
+        return base_image_name
 
-    async def _build_from_base_image(self, platform: Platform) -> Container:
+    async def _build_from_base_image(self, platform: str) -> str:
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
 
         Returns:
-            Container: The connector container built from the base image.
+            str: The connector image name built from the base image.
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
-
-        # Mount manifest file
-        base_container = self._get_base_container(platform)
-        user = await self.get_image_user(base_container)
-        base_container = base_container.with_file(
-            f"source_declarative_manifest/{MANIFEST_FILE_PATH}",
-            (await self.context.get_connector_dir(include=[MANIFEST_FILE_PATH])).file(MANIFEST_FILE_PATH),
-            owner=user,
-        )
-
-        # Mount components file if it exists
-        components_file = self.context.connector.manifest_only_components_path
-        if components_file.exists():
-            base_container = base_container.with_file(
-                f"source_declarative_manifest/{COMPONENTS_FILE_PATH}",
-                (await self.context.get_connector_dir(include=[COMPONENTS_FILE_PATH])).file(COMPONENTS_FILE_PATH),
-                owner=user,
-            )
-        connector_container = build_customization.apply_airbyte_entrypoint(base_container, self.context.connector)
-        connector_container = await apply_python_development_overrides(self.context, connector_container, user)
-        return connector_container
+        base_image_name = self._get_base_container(platform)
+        
+        docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent / "docker-images"
+        dockerfile_path = docker_images_dir / "Dockerfile.manifest-only-connector"
+        
+        image_name = f"airbyte/{self.context.connector.technical_name}:dev-{platform.replace('/', '-')}"
+        
+        connector_snake_name = self.context.connector.technical_name.replace("-", "_")
+        
+        cmd = [
+            "docker", "build",
+            "--platform", f"linux/{platform}",
+            "--file", str(dockerfile_path),
+            "--build-arg", f"BASE_IMAGE={base_image_name}",
+            "--build-arg", f"CONNECTOR_SNAKE_NAME={connector_snake_name}",
+            "--build-arg", f"CONNECTOR_NAME={self.context.connector.technical_name}",
+            "--build-arg", f"CONNECTOR_VERSION={self.context.connector.metadata.get('dockerImageTag', 'dev')}",
+            "--tag", image_name,
+            str(self.context.connector.code_directory)
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"Failed to build manifest-only connector: {result.stderr}")
+            
+        return image_name
 
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:

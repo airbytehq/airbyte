@@ -9,7 +9,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import final
 
-import dagger
 import semver
 
 from .published_image import PublishedImage
@@ -26,14 +25,12 @@ class AirbyteConnectorBaseImage(ABC):
     AIRBYTE_DIR_PATH: str = "/airbyte"
 
     @final
-    def __init__(self, dagger_client: dagger.Client, version: semver.VersionInfo):
+    def __init__(self, version: semver.VersionInfo):
         """Initializes the Airbyte base image.
 
         Args:
-            dagger_client (dagger.Client): The dagger client used to build the base image.
             version (semver.VersionInfo): The version of the base image.
         """
-        self.dagger_client = dagger_client
         self.version = version
 
     # INSTANCE PROPERTIES:
@@ -79,17 +76,17 @@ class AirbyteConnectorBaseImage(ABC):
     # MANDATORY SUBCLASSES METHODS:
 
     @abstractmethod
-    def get_container(self, platform: dagger.Platform) -> dagger.Container:
-        """Returns the container of the Airbyte connector base image."""
+    def get_container(self, platform: str) -> str:
+        """Returns the image name of the Airbyte connector base image."""
         raise NotImplementedError("Subclasses must define a 'get_container' method.")
 
     @abstractmethod
-    async def run_sanity_checks(self, platform: dagger.Platform):
+    async def run_sanity_checks(self, platform: str):
         """Runs sanity checks on the base image container.
         This method is called before image publication.
 
         Args:
-            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
+            platform (str): The platform on which the sanity checks should run.
 
         Raises:
             SanityCheckError: Raised if a sanity check fails.
@@ -98,24 +95,11 @@ class AirbyteConnectorBaseImage(ABC):
 
     # INSTANCE METHODS:
     @final
-    def get_base_container(self, platform: dagger.Platform) -> dagger.Container:
-        """Returns a container using the base image.
-        This container is used to build the Airbyte base image.
-        We create the user 'airbyte' with the UID 1000 and GID 1000.
+    def get_base_container(self, platform: str) -> str:
+        """Returns the base image name.
+        This is used to build the Airbyte base image using Docker.
 
         Returns:
-            dagger.Container: The container using the base python image.
+            str: The base image name.
         """
-        return (
-            self.dagger_client.container(platform=platform)
-            .from_(self.root_image.address)
-            # Set the timezone to UTC
-            .with_exec(["ln", "-snf", "/usr/share/zoneinfo/Etc/UTC", "/etc/localtime"])
-            # Create the user 'airbyte' with the UID 1000 and GID 1000
-            .with_exec(["adduser", "--uid", str(self.USER_ID), "--system", "--group", "--no-create-home", self.USER])
-            # Create the cache airbyte directories and set the right permissions
-            .with_exec(["mkdir", "--mode", "755", self.CACHE_DIR_PATH])
-            .with_exec(["mkdir", "--mode", "755", self.AIRBYTE_DIR_PATH])
-            # Change the owner of the airbyte directory to the user 'airbyte'
-            .with_exec(["chown", f"{self.USER}:{self.USER}", self.AIRBYTE_DIR_PATH])
-        )
+        return self.root_image.address

@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dagger import Container, Directory, File, Platform, QueryError
+import subprocess
+from pathlib import Path
 
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -16,7 +17,10 @@ class BuildConnectorDistributionTar(GradleTask):
     A step to build a Java connector image using the distTar Gradle task.
     """
 
-    title = "Build connector tar"
+    @property
+    def title(self) -> str:
+        return "Build connector tar"
+    
     gradle_task_name = "distTar"
 
 
@@ -25,11 +29,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     A step to build Java connector images using the distTar Gradle task.
     """
 
-    async def _run(self, dist_dir: Directory) -> StepResult:
-        dist_tar: File
+    async def _run(self, dist_dir_path: str) -> StepResult:
         try:
-            dir_files = await dist_dir.entries()
-            tar_files = [f for f in dir_files if f.endswith(".tar")]
+            dist_path = Path(dist_dir_path)
+            tar_files = list(dist_path.glob("*.tar"))
             num_files = len(tar_files)
             if num_files != 1:
                 error_message = (
@@ -38,13 +41,37 @@ class BuildConnectorImages(BuildConnectorImagesBase):
                     else "More than one distribution tar file was built for the current java connector."
                 )
                 return StepResult(step=self, status=StepStatus.FAILURE, stderr=error_message)
-            dist_tar = dist_dir.file(tar_files[0])
-        except QueryError as e:
+            dist_tar_path = str(tar_files[0])
+        except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
-        return await super()._run(dist_tar)
+        return await super()._run(dist_tar_path)
 
-    async def _build_connector(self, platform: Platform, dist_tar: File) -> Container:
-        return await java.with_airbyte_java_connector(self.context, dist_tar, platform)
+    async def _build_connector(self, platform: str, dist_tar_path: str) -> str:
+        """
+        Build a Java connector image using Docker.
+        """
+        base_image_name = f"airbyte/java-connector-base:dev-{platform.replace('/', '-')}"
+        
+        docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent / "docker-images"
+        dockerfile_path = docker_images_dir / "Dockerfile.java-connector"
+        
+        image_name = f"airbyte/{self.context.connector.technical_name}:dev-{platform.replace('/', '-')}"
+        
+        cmd = [
+            "docker", "build",
+            "--platform", f"linux/{platform}",
+            "--file", str(dockerfile_path),
+            "--build-arg", f"BASE_IMAGE={base_image_name}",
+            "--build-arg", f"CONNECTOR_NAME={self.context.connector.technical_name}",
+            "--tag", image_name,
+            str(self.context.connector.code_directory)
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"Failed to build Java connector: {result.stderr}")
+            
+        return image_name
 
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:
@@ -52,17 +79,17 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
 
     if context.use_host_gradle_dist_tar and context.is_local:
         # Special case: use a local dist tar to speed up local development.
-        dist_dir = await context.dagger_client.host().directory(dist_tar_directory_path(context), include=["*.tar"])
+        dist_dir_path = dist_tar_directory_path(context)
         # Speed things up by only building for the local platform.
-        return await BuildConnectorImages(context).run(dist_dir)
+        return await BuildConnectorImages(context).run(dist_dir_path)
 
     # Default case: distribution tar is built by the dagger pipeline.
     build_connector_tar_result = await BuildConnectorDistributionTar(context).run()
     if build_connector_tar_result.status is not StepStatus.SUCCESS:
         return build_connector_tar_result
 
-    dist_dir = await build_connector_tar_result.output.directory("build/distributions")
-    return await BuildConnectorImages(context).run(dist_dir)
+    dist_dir_path = f"{context.connector.code_directory}/build/distributions"
+    return await BuildConnectorImages(context).run(dist_dir_path)
 
 
 def dist_tar_directory_path(context: ConnectorContext) -> str:
