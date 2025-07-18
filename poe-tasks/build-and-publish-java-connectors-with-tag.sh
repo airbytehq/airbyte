@@ -96,7 +96,9 @@ is_in_whitelist() {
     source-sftp|\
     source-snowflake|\
     source-teradata|\
-    source-tidb)
+    source-tidb|\
+    source-redshift|\
+    source-singlestore)
       return 0
       ;;
     *)
