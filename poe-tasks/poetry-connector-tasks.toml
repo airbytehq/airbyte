@@ -152,13 +152,13 @@ mkdir -p "build/releases/${VERSION}"
 rm -rf "build/releases/${VERSION}"/*
 
 # Copy required files
-REQUIRED_FILES=("metadata.yaml")
+REQUIRED_FILES=("metadata.yaml" "icon.svg")
 for file in "${REQUIRED_FILES[@]}"; do
   cp "$file" "build/releases/${VERSION}/"
 done
 
 # Copy optional files if they exist
-OPTIONAL_FILES=("icon.svg" "pyproject.toml" "poetry.lock" "poetry.toml" "setup.py" "requirements.txt" "README.md")
+OPTIONAL_FILES=("pyproject.toml" "poetry.lock" "poetry.toml" "setup.py" "requirements.txt" "README.md")
 for file in "${OPTIONAL_FILES[@]}"; do
   if [ -f "$file" ]; then
     cp "$file" "build/releases/${VERSION}/"
