@@ -69,7 +69,6 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 
 - "Cursor field" is set to `webPublicationDate`
 - "Cursor datetime formats" is set to `%Y-%m-%dT%H:%M:%SZ`
-- "API time filtering capabilities" is set to "Range" (supports both start and end datetime filtering)
 - "Start datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
 - "End datetime" is set to "now" to fetch all articles up to the current date
 - "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
