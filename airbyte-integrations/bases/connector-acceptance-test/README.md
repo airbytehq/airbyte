@@ -1,8 +1,9 @@
 # Connector Acceptance Tests (CAT)
 
+> _**⚠️ NOTE: CAT is deprecated and no longer supported.**_
+
 This package gathers multiple test suites to assess the sanity of any Airbyte connector.
 It is shipped as a [pytest](https://docs.pytest.org/en/7.1.x/) plugin and relies on pytest to discover, configure and execute tests.
-Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/).
 
 ## Configuration
 

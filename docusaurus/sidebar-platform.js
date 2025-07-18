@@ -123,17 +123,6 @@ const buildAConnector = {
         },
       ],
     },
-    {
-      type: "category",
-      label: "Testing Connectors",
-      link: {
-        type: "doc",
-        id: "connector-development/testing-connectors/README",
-      },
-      items: [
-        "connector-development/testing-connectors/connector-acceptance-tests-reference",
-      ],
-    },
     "connector-development/local-connector-development",
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
