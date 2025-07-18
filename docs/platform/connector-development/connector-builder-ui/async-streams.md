@@ -57,9 +57,7 @@ The Creation tab configures how to request that a job be created on the server. 
 - **Partition Router**: Configuration for partitioning the stream into multiple requests
 - **Error Handler**: Error handling configuration for creation requests
 
-#### Advanced Configuration
-
-Additional configuration options are available in the collapsed "Advanced" section, which automatically expands if there are validation errors in any of the advanced fields.
+Additional configuration options are available in the collapsed "Advanced" section for less common use cases.
 
 #### Example Configuration (SendGrid):
 
