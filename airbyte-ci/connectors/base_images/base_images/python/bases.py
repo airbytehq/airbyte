@@ -20,6 +20,39 @@ class AirbyteManifestOnlyConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
     repository: Final[str] = "airbyte/source-declarative-manifest"
 
+    def get_container(self, platform: dagger.Platform) -> dagger.Container:
+        """Returns the container for the manifest-only connector base image.
+        
+        Args:
+            platform (dagger.Platform): The platform this container should be built for.
+            
+        Returns:
+            dagger.Container: The container for the base image.
+        """
+        docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent / "docker-images"
+        dockerfile_path = docker_images_dir / "Dockerfile.manifest-only-connector"
+        
+        return (
+            self.dagger_client.container(platform=platform)
+            .build(
+                context=self.dagger_client.host().directory(str(docker_images_dir)),
+                dockerfile=dockerfile_path.name
+            )
+        )
+
+    async def run_sanity_checks(self, platform: dagger.Platform):
+        """Runs sanity checks on the manifest-only base image container.
+        
+        Args:
+            platform (dagger.Platform): The platform on which the sanity checks should run.
+        """
+        container = self.get_container(platform)
+        await base_sanity_checks.check_timezone_is_utc(container)
+        await base_sanity_checks.check_a_command_is_available_using_version_option(container, "bash")
+        await base_sanity_checks.check_user_exists(container, self.USER, expected_uid=self.USER_ID, expected_gid=self.USER_ID)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+        await base_sanity_checks.check_user_can_write_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+
 
 class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
     root_image: Final[published_image.PublishedImage] = PYTHON_3_11_13
