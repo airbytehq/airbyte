@@ -40,7 +40,7 @@ An asynchronous stream in the Connector Builder UI is divided into four main tab
 
 ### 1. Creation Tab
 
-The Creation tab configures how to request that a job be created on the server. This tab uses schema-driven form controls that automatically generate the appropriate input fields based on the AsyncRetriever component definition.
+The Creation tab configures how to request that a job be created on the server.
 
 ![Creation Tab](./assets/connector_builder_async_creation_tab.png)
 
