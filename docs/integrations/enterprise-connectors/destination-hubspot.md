@@ -1,5 +1,5 @@
 ---
-dockerRepository: airbyte/destination-salesforce
+dockerRepository: airbyte/destination-hubspot
 ---
 # HubSpot Destination
 
