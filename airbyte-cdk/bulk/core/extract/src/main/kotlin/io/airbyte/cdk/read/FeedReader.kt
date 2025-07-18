@@ -395,7 +395,9 @@ class FeedReader(
         for (stateMessage in stateMessages) {
             if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
                 stateMessage.setAdditionalProperty("id", globalStateId.getAndIncrement())
+                log.info {"*** Adding outer state id to message: ${stateMessage.additionalProperties["id"]}"}
                 if (FeedReader.tmpPartitionId != null) {
+                    log.info {"*** Adding partition id to state message: ${FeedReader.tmpPartitionId}"}
                     stateMessage.setAdditionalProperty("partition_id", tmpPartitionId)
                 } else {
                     stateMessage.additionalProperties.get("partition_id")?.let {
