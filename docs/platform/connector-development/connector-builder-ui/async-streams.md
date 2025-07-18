@@ -63,7 +63,7 @@ Additional configuration options are available in the collapsed "Advanced" secti
 
 In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
-- **URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports`
+- **API Endpoint URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports`
 - **HTTP Method** dropdown: `POST`
 - **HTTP Response Format** dropdown: `JSON`
 - In the **Authentication** section: 
