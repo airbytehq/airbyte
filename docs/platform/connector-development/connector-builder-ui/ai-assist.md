@@ -67,7 +67,6 @@ The Assistant will help you set up your streams by:
 - **Stream Discovery**: Automatically identifying available data streams from the API documentation
 - **Configuration Suggestions**: Providing likely configurations for each stream including endpoints, parameters, and data extraction patterns
 - **Incremental Sync Setup**: Configuring cursor-based incremental synchronization where supported by the API
-- **Schema Inference**: Suggesting data schemas based on API response examples and documentation
 
 ### Test & Review
 
