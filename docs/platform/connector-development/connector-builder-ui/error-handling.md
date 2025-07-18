@@ -88,7 +88,7 @@ Although a lot of API documentation does not call out using an exponential backo
 
 ### Wait Time Extracted from Response Header
 
-The "Wait time from header" backoff strategy allows the connector to wait before retrying a request based on the value specified in the API response header.
+The "Wait Time Extracted from Response Header" backoff strategy allows the connector to wait before retrying a request based on the value specified in the API response header.
 
 **Configuration:**
 - **Response header name** (required): The name of the response header that contains the wait time value
