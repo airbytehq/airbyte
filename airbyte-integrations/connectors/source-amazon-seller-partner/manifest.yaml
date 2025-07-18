@@ -319,6 +319,7 @@ spec:
             path_in_connector_config:
             - lwa_client_secret
   config_normalization_rules:
+    type: ConfigNormalizationRules
     config_migrations:
       - type: ConfigMigration
         description: Starting from `2.0.1`, the `account_type` property becomes required. For those connector configs that do not contain this key, the default value of `Seller` will be used.
