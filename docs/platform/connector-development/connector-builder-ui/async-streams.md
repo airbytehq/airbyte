@@ -125,7 +125,7 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
   - Set **Timeout** to: `timeout`
 - In the **Download Target Extractor** section:
   - Set the **Field Path** to: `urls`
-- **Polling Job Timeout**: Set an appropriate timeout value (e.g., `PT30M` for 30 minutes)
+- **Polling Job Timeout**: Set an appropriate timeout value (e.g., `30` for 30 minutes)
 
 ### 3. Download Tab
 
