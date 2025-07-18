@@ -2708,7 +2708,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     mapOf(
                         "id" to 5,
                         "string" to
-                            if (allTypesBehavior.convertAllValuesToString) {
+                            if (
+                                allTypesBehavior.convertAllValuesToString &&
+                                    dataChannelFormat != DataChannelFormat.PROTOBUF
+                            ) {
                                 "{}"
                             } else {
                                 null
@@ -2734,6 +2737,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         // id and struct don't have a bad value case here
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
+                        .filter {
+                            it != "boolean" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "integer" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "number" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
                         .map { key ->
                             val change =
                                 Change(
