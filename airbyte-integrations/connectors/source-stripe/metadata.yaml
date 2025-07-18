@@ -6,7 +6,7 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.59.1@sha256:78694237e75ac23418e4c5bcc9200362d6bc9c3eb840c9b27e56a7c4c2822e4f
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
@@ -21,7 +21,7 @@ data:
   name: Stripe
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-stripe
   registryOverrides:
     cloud:
@@ -54,8 +54,8 @@ data:
       - refunds
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
