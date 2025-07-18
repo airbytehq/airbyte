@@ -83,3 +83,27 @@ help = "Get the base image of the connector from its metadata.yaml file."
 [tasks.run-cat-tests]
 shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
 help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
+
+[tasks.make-portable-tar]
+shell = """
+set -eu # Ensure we return non-zero exit code upon failure
+
+CONNECTOR_NAME=$(basename "$PWD")
+
+# Create the base dist tar file
+../../../gradlew :airbyte-integrations:connectors:${CONNECTOR_NAME}:distTar
+JAR_ROOT_NAME="airbyte-app" # TODO: Use connector name instead after updating distTar logic
+
+cp ../../../poe-tasks/portable-launch.sh "build/tmp/${JAR_ROOT_NAME}/bin/portable-launch.sh"
+chmod +x "build/tmp/${JAR_ROOT_NAME}/bin/portable-launch.sh"
+tar -rf "build/distributions/${JAR_ROOT_NAME}.tar" -C build/tmp ${JAR_ROOT_NAME}/bin/portable-launch.sh
+echo "✅ portable-launch.sh appended to build/distributions/${JAR_ROOT_NAME}.tar"
+
+# Test the portable tar file
+echo "Testing the portable tar file..."
+cd build/distributions
+tar -xf "${JAR_ROOT_NAME}.tar"
+cd "${JAR_ROOT_NAME}"
+./bin/portable-launch.sh --spec
+echo "✅ Portable tar file created and tested successfully at build/distributions/${JAR_ROOT_NAME}.tar"
+"""
