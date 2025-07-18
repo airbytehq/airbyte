@@ -139,11 +139,15 @@ class FullRefreshTest(TestCase):
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
             .with_record(
-                _a_customer().with_field(
+                _a_customer()
+                .with_id("1")
+                .with_field(
                     _SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()).with_record(_a_bank_account()))
                 )
             )
-            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .with_record(
+                _a_customer().with_id("2").with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
+            )
             .build(),
         )
 
@@ -246,13 +250,17 @@ class FullRefreshTest(TestCase):
             .with_limit(100)
             .build(),
             _customers_response()
-            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .with_record(
+                _a_customer().with_id("1").with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
+            )
             .build(),
         )
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
-            .with_record(_a_customer().with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account()))))
+            .with_record(
+                _a_customer().with_id("2").with_field(_SOURCES_FIELD, _as_dict(_bank_accounts_response().with_record(_a_bank_account())))
+            )
             .build(),
         )
 

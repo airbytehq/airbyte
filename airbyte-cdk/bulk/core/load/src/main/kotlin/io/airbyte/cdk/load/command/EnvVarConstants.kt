@@ -46,4 +46,9 @@ object EnvVarConstants {
             "airbyte.destination.core.data-channel.socket-paths",
             "DATA_CHANNEL_SOCKET_PATHS",
         )
+    val NAMESPACE_MAPPER_CONFIG_PATH =
+        Property(
+            "airbyte.destination.core.mappers.namespace-mapping-config-path",
+            "NAMESPACE_MAPPING_CONFIG_PATH",
+        )
 }

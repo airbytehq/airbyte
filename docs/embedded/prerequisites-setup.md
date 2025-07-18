@@ -2,77 +2,92 @@
 products: embedded
 ---
 
-# Prerequisites and setup
+# Get Started with Widget
 
-Before you can start using Embedded, complete the following one-time setup process.
+## Airbyte Credentials
 
-## Prerequisites
+To use Airbyte Embedded, must have an active Airbyte Cloud with Embedded enabled. (Please [contact sales](https://share.hsforms.com/2uRdBz9VoTWiCtjECzRYgawcvair) if you would like to sign up for a trial of Airbyte Embedded). Once you have your Airbyte instance enabled, log in, and navigate to **Settings > Embedded**. Note down the following values. 
 
-1. Receive the following values from your Airbyte account representative. If you don't have one, [please reach out to our team](https://airbyte.com/company/talk-to-sales). Then, create an `.env` file with the following:
+- `Organization Id`: Unique identifier to your Airbyte instance.
+- `Client Id`: Unique app id. Required for API access.
+- `Client Secret`: Secret key used to obtain a refresh token for API access.
 
-    ```yaml
-    AIRBYTE_ORGANIZATION_ID=
-    AIRBYTE_CLIENT_ID=
-    AIRBYTE_CLIENT_SECRET=
-    EXTERNAL_USER_ID=
-    ```
+If you the client Id and Client Secret are blank, you will need to create a new Application via **Settings > Applications.** 
 
-    The `EXTERNAL_USER_ID` is a unique identifier you create and assign when generating an Embedded Widget. It's the identifier used to differentiate between unique users. You should create one unique identifier for each of your users. For testing, you may set `EXTERNAL_USER_ID=0`.
+In addition to the Embedded keys above, you will require an external user id, `External User Id`. This is a a unique identifier you create and assign when initiating the Embedded Widget. `External User Id`. You must create one unique identifier for each of your users using a UUID generator, or internal customer identifier.  The sample onboarding app uses the email provided for the external user id. In production, you may need to change this to use a common UUID library such as  [this](https://www.npmjs.com/package/uuid). 
 
-2. Configure or prepare an S3 bucket to load customer data to. Obtain the following values required to read from and write to the bucket to be used later during setup:
+## Configure .env
 
-    ```yaml
-    AWS_S3_ACCESS_KEY_ID=
-    AWS_S3_SECRET_ACCESS_KEY=
-    S3_BUCKET_NAME=
-    S3_PATH_PREFIX=
-    S3_BUCKET_REGION=
-    ```
+Clone the [sample app via Github](https://github.com/airbytehq/embedded-sampleweb-reactjs), and navigate to embedded-sampleweb-reactjs/server.
 
-## One-time setup
-
-Before submitting requests to Airbyte, you’ll need to use your Client ID and Client Secret to generate the access key used for API request authentication. You can use the following [cURL to create an access key](https://reference.airbyte.com/reference/createaccesstoken#/):
-
-```sh
-curl --request POST \
-     --url https://api.airbyte.com/v1/applications/token \
-     --header 'accept: application/json' \
-     --header 'content-type: application/json' \
-     --data '
-      {
-        "client_id": "<client_id>",
-        "client_secret": "<client_secret>",
-        "grant-type": "<client_credentials>"
-      }'
+```bash
+git clone <repository-url>
+cd embedded-sampleweb-reactjs/server
 ```
 
-Next, you’ll need to create a connection template. You only need to do this once. The template describes where your customer data will land, and at what frequency to sync customer data. By default, syncs will run every hour. Here’s an example cURL API request for creating an S3 destination using the values obtained earlier to connect to an S3 bucket:
+ Then, copy the .env.local.example to .env:
 
-```sh
-curl --location --request POST 'https://api.airbyte.com/v1/config_templates/connections' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer <token>' \
---data '{
-    "destinationName": "destination-s3", 
-    "organizationId": "<ORGANIZATION_ID>",
-    "destinationActorDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
-      "destinationConfiguration": {
-        "access_key_id": "<AWS_S3_ACCESS_KEY_ID>",
-        "secret_access_key": "<AWS_S3_SECRET_ACCESS_KEY>",
-        "s3_bucket_name": "<S3_BUCKET_NAME>",
-        "s3_bucket_path": "<S3_PATH_PREFIX>",
-        "s3_bucket_region": "<S3_BUCKET_REGION>",
-        "format": {
-          "format_type": "CSV",
-          "flattening": "Root level flattening"
-          }
-        }
-      }
-    }'
+```bash
+ cp .env.example .env
 ```
 
-Once this succeeds, you are ready to send customer data through Airbyte.
+Set the `SONAR_ALLOWED_ORIGIN` to be the url where your onboarding app will be deployed. Or use http://localhost:5173 for the default React host/port when running locally
 
-## Install node.js and npm
+```bash
+# Airbyte Embedded Configuration
+## For security reasons, we require that the widget can only we attached to a specific origin.
+## If you're developing locally, it will look like: http://localhost:5173
+## Once you're in production, it will look like: https://app.abc.com
+SONAR_ALLOWED_ORIGIN=your_deployed_webapp_url
+```
 
-Before you can complete the tutorial on the next page, you must [install Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
+Paste in your the Organization Id, Client Id, Client Secret to the following keys:
+
+```bash
+## These 3 pieces of information are available in your initial workspace: Settings > Embedded
+SONAR_AIRBYTE_ORGANIZATION_ID=your_organization_id
+SONAR_AIRBYTE_CLIENT_ID=your_client_id
+SONAR_AIRBYTE_CLIENT_SECRET=your_client_secret
+```
+
+The sample web app uses basic authentication to protect the webapp. This is fine for testing, but it is recommended to be changed for product use. Set your password in the .env file:
+
+```bash
+SONAR_WEBAPP_PASSWORD=your_password
+```
+
+Next, you need to provide configuration details to an [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html) running on AWS. This S3 bucket is the AI Destination Store from the AI Hub Blueprint. It is where customer data will be written.
+
+```bash
+# AWS Credentials
+SONAR_AWS_ACCESS_KEY=your_aws_access_key
+SONAR_AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+
+# S3 Configuration
+SONAR_S3_BUCKET=your_s3_bucket_name
+SONAR_S3_BUCKET_REGION=your_s3_bucket_region
+SONAR_S3_BUCKET_PREFIX=your_s3_bucket_prefix
+```
+
+The following values are examples of what an S3 configuration should look like:
+
+![S3 Bucket configuration.](./assets/s3-bucket-config.png)
+
+```bash
+# S3 Configuration
+SONAR_S3_BUCKET=airbyte-embed
+SONAR_S3_BUCKET_REGION=us-east-2
+SONAR_S3_BUCKET_PREFIX=quinton-test
+```
+
+## Create Connector to S3
+
+Next, you need to create the S3 destination connector within your Airbyte Embedded instance. You can use the provided script within the sample app, which relies on the values in the .env file created above.
+
+```bash
+./setup-s3.sh
+```
+
+:::caution
+Only run this script once. Running it multiple times will create multiple connections to s3 and may cause errors when customer data syncs.
+:::

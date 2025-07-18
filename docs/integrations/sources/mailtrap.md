@@ -28,6 +28,11 @@ Email Delivery Platform for individuals and businesses to test, send and control
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.27 | 2025-07-12 | [63131](https://github.com/airbytehq/airbyte/pull/63131) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62556](https://github.com/airbytehq/airbyte/pull/62556) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62163](https://github.com/airbytehq/airbyte/pull/62163) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61850](https://github.com/airbytehq/airbyte/pull/61850) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [60616](https://github.com/airbytehq/airbyte/pull/60616) | Update dependencies |
 | 0.0.22 | 2025-05-10 | [59822](https://github.com/airbytehq/airbyte/pull/59822) | Update dependencies |
 | 0.0.21 | 2025-05-03 | [59238](https://github.com/airbytehq/airbyte/pull/59238) | Update dependencies |
 | 0.0.20 | 2025-04-26 | [58177](https://github.com/airbytehq/airbyte/pull/58177) | Update dependencies |

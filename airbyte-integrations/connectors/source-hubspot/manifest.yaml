@@ -1755,6 +1755,8 @@ definitions:
         schema_normalization:
           type: CustomSchemaNormalization
           class_name: source_declarative_manifest.components.EntitySchemaNormalization
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt

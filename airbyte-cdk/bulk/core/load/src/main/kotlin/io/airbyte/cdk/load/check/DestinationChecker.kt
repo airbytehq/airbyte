@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputRecord
@@ -38,12 +39,14 @@ private val logger = KotlinLogging.logger {}
 interface DestinationChecker<C : DestinationConfiguration> {
     fun mockStream() =
         DestinationStream(
-            descriptor = DestinationStream.Descriptor("testing", "test"),
+            unmappedNamespace = "testing",
+            unmappedName = "test",
             importType = Append,
             schema = ObjectTypeWithoutSchema,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
+            namespaceMapper = NamespaceMapper()
         )
 
     fun check(config: C)

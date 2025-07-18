@@ -93,7 +93,9 @@ abstract class S3V2WriteTest(
         val streamName = "stream"
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = streamName,
+                namespaceMapper = namespaceMapperForMedium(),
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -199,7 +201,8 @@ abstract class S3V2WriteTest(
         Assumptions.assumeTrue(unionBehavior == UnionBehavior.PROMOTE_TO_OBJECT)
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, "stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "stream",
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -222,7 +225,8 @@ abstract class S3V2WriteTest(
                                     nullable = true
                                 )
                         )
-                    )
+                    ),
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         assertThrows<DestinationUncleanExitException> {
@@ -245,7 +249,8 @@ abstract class S3V2WriteTest(
         Assumptions.assumeTrue(mergesUnions)
         val stream =
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(randomizedNamespace, "stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "stream",
                 importType = Append,
                 generationId = 1L,
                 minimumGenerationId = 0L,
@@ -289,7 +294,8 @@ abstract class S3V2WriteTest(
                                     nullable = true
                                 ),
                         )
-                    )
+                    ),
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         val expectedRecords =
@@ -407,6 +413,105 @@ class S3V2WriteTestCsvGzip :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
     )
+
+class S3V2WriteTestAvroUncompressedProto :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        preserveUndeclaredFields = false,
+        // this is technically false. Avro + parquet do have limits on numbers.
+        // But float64 is weird, in that the actual _limits_ are unreasonably large -
+        // but at that size, you have very little precision.
+        // This is actually covered by the nested/topLevelFloatLosesPrecision test cases.
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
+
+class S3V2WriteTestAvroBzip2Proto :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
+
+class S3V2WriteTestCsvUncompressedProtoSocket :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
+
+class S3V2WriteTestCsvFlattenedProtoSocket :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+    ) {
+
+    @Test
+    @Disabled("Clear will never run in socket mode")
+    override fun testClear() {
+        super.testClear()
+    }
+}
 
 class S3V2WriteTestAvroUncompressed :
     S3V2WriteTest(
@@ -528,6 +633,11 @@ class S3V2WriteTestJsonUncompressedSockets :
     override fun testClear() {
         super.testClear()
     }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
 }
 
 class S3V2WriteTestJsonUncompressedSocketsProtobuf :
@@ -542,6 +652,7 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
         allTypesBehavior = Untyped,
         // Because proto uses a fixed-sized array of typed unions, nulls are always present
         nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
         mismatchedTypesUnrepresentable = true,
         dataChannelMedium = DataChannelMedium.SOCKET,
         dataChannelFormat = DataChannelFormat.PROTOBUF,
@@ -550,5 +661,10 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
     @Disabled("Clear will never run in socket mode")
     override fun testClear() {
         super.testClear()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
     }
 }

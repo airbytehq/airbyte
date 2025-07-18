@@ -35,7 +35,7 @@ class SyncManager(
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager> =
         ConcurrentHashMap(
             catalog.streams.associate {
-                it.descriptor to StreamManager(it, requireCheckpointIndexOnState)
+                it.mappedDescriptor to StreamManager(it, requireCheckpointIndexOnState)
             }
         )
 
@@ -45,7 +45,7 @@ class SyncManager(
     private val inputConsumed = CompletableDeferred<Boolean>()
     private val checkpointsProcessed = CompletableDeferred<Boolean>()
     private val setupComplete = CompletableDeferred<Unit>()
-    private val globalReadCount = ConcurrentHashMap<CheckpointId, CheckpointValue>()
+    private val globalReadCount = ConcurrentHashMap<CheckpointId, Long>()
 
     /** Get the manager for the given stream. Throws an exception if the stream is not found. */
     fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager {
@@ -123,7 +123,7 @@ class SyncManager(
         if (incompleteStreams.isNotEmpty()) {
             val prettyStreams = incompleteStreams.map { it.toPrettyString() }
             throw TransientErrorException(
-                "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
+                "Input was fully read, but some streams did not receive a terminal stream status message. If the destination did not encounter other errors, this likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
             )
         }
         inputConsumed.complete(true)
@@ -141,11 +141,8 @@ class SyncManager(
         setupComplete.await()
     }
 
-    fun setGlobalReadCountForCheckpoint(
-        checkpointId: CheckpointId,
-        checkpointValue: CheckpointValue
-    ) {
-        globalReadCount[checkpointId] = checkpointValue
+    fun setGlobalReadCountForCheckpoint(checkpointId: CheckpointId, records: Long) {
+        globalReadCount[checkpointId] = records
     }
 
     fun hasGlobalCount(checkpointId: CheckpointId): Boolean {
@@ -160,6 +157,6 @@ class SyncManager(
                 )
         val persistedCount =
             streamManagers.values.sumOf { it.persistedRecordCountForCheckpoint(checkpointId) }
-        return persistedCount == readCount.records
+        return persistedCount == readCount
     }
 }

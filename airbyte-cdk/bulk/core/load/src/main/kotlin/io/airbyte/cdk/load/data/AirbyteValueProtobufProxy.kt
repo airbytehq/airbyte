@@ -20,8 +20,10 @@ import java.math.BigInteger
  * the same schema. Eventually this order needs to be set by the source with a header message.
  */
 class AirbyteValueProtobufProxy(private val data: List<AirbyteValueProtobuf>) : AirbyteValueProxy {
-    private inline fun <T> getNullable(field: FieldAccessor, getter: (FieldAccessor) -> T): T? =
-        if (data[field.index].isNull) null else getter(field)
+    private inline fun <T> getNullable(field: FieldAccessor, getter: (FieldAccessor) -> T): T? {
+        return if (data.isEmpty() || data.size < field.index || data[field.index].isNull) null
+        else getter(field)
+    }
 
     override fun getBoolean(field: FieldAccessor): Boolean? =
         getNullable(field) { data[it.index].boolean }
