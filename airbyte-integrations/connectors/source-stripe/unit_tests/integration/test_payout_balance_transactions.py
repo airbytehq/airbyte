@@ -153,7 +153,7 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
             _balance_transactions_response().with_record(_balance_transaction_record()).build(),
         )
 
-        source = SourceStripe(config=config, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=config, state=_NO_STATE)
         output = read(source, config=config, catalog=_create_catalog())
 
         assert output.records[0].record.data["payout"]
