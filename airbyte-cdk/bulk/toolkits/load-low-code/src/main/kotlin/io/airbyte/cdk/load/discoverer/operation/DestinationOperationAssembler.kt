@@ -84,7 +84,7 @@ class DestinationOperationAssembler(
             } // note that composite keys are not supported in this model
         val propertiesForSyncMode = properties.filter { it.isAvailable() }
 
-        if (propertiesForSyncMode.isEmpty() && matchingKeys.isEmpty()) {
+        if (propertiesForSyncMode.isEmpty()) {
             logger.warn {
                 "Object $objectName with operation $importType has no properties and therefore will not be added to the catalog"
             }
