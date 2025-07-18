@@ -69,7 +69,6 @@ class DestinationOperationAssemblerTest {
             assembler.assemble(DestinationObject(OBJECT_NAME, apiRepresentationWithOneProperty()))
 
         assertEquals(1, operations.size)
-        assertEquals(1, operations[0].schema.asColumns().size) // the matching key should be available in the schema
     }
 
     @Test
