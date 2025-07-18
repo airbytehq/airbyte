@@ -69,7 +69,7 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 
 - "Cursor field" is set to `webPublicationDate`
 - "Cursor datetime formats" is set to `%Y-%m-%dT%H:%M:%SZ`
-- "Start datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
+- "Start datetime" is set to "Interpolated Value" and pointed at `{{ config['start_time'] }}` to allow the user of the connector configuring a Source to specify the time to start syncing
 - "End datetime" is set to "now" to fetch all articles up to the current date
 - "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
 - "Inject end time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `to-date`
