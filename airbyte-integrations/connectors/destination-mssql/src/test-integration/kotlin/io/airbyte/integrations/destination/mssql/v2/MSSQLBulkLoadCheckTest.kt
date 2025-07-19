@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
+import java.nio.file.Files
 import java.nio.file.Path
 
 class MSSQLBulkLoadCheckTest :
@@ -15,7 +16,7 @@ class MSSQLBulkLoadCheckTest :
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    Path.of(BulkInsert.CONFIG_FILE),
+                    Files.readString(Path.of(BulkInsert.CONFIG_FILE)),
                     name = "Bulk Load Check Should work",
                 ),
             ),

@@ -90,6 +90,20 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| 1.4.28 | 2025-07-19 | [63607](https://github.com/airbytehq/airbyte/pull/63607) | Update dependencies |
+| 1.4.27 | 2025-07-12 | [62957](https://github.com/airbytehq/airbyte/pull/62957) | Update dependencies |
+| 1.4.26 | 2025-07-05 | [62781](https://github.com/airbytehq/airbyte/pull/62781) | Update dependencies |
+| 1.4.25 | 2025-06-28 | [62431](https://github.com/airbytehq/airbyte/pull/62431) | Update dependencies |
+| 1.4.24 | 2025-06-21 | [61941](https://github.com/airbytehq/airbyte/pull/61941) | Update dependencies |
+| 1.4.23 | 2025-06-14 | [61277](https://github.com/airbytehq/airbyte/pull/61277) | Update dependencies |
+| 1.4.22 | 2025-05-24 | [60376](https://github.com/airbytehq/airbyte/pull/60376) | Update dependencies |
+| 1.4.21 | 2025-05-10 | [60018](https://github.com/airbytehq/airbyte/pull/60018) | Update dependencies |
+| 1.4.20 | 2025-05-03 | [58841](https://github.com/airbytehq/airbyte/pull/58841) | Update dependencies |
+| 1.4.19 | 2025-04-19 | [58307](https://github.com/airbytehq/airbyte/pull/58307) | Update dependencies |
+| 1.4.18 | 2025-04-12 | [57765](https://github.com/airbytehq/airbyte/pull/57765) | Update dependencies |
+| 1.4.17 | 2025-04-05 | [57201](https://github.com/airbytehq/airbyte/pull/57201) | Update dependencies |
+| 1.4.16 | 2025-03-29 | [56474](https://github.com/airbytehq/airbyte/pull/56474) | Update dependencies |
+| 1.4.15 | 2025-03-22 | [55944](https://github.com/airbytehq/airbyte/pull/55944) | Update dependencies |
 | 1.4.14 | 2025-03-08 | [55292](https://github.com/airbytehq/airbyte/pull/55292) | Update dependencies |
 | 1.4.13 | 2025-03-01 | [54926](https://github.com/airbytehq/airbyte/pull/54926) | Update dependencies |
 | 1.4.12 | 2025-02-22 | [54447](https://github.com/airbytehq/airbyte/pull/54447) | Update dependencies |

@@ -41,7 +41,7 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     # access_token_name: Union[InterpolatedString, str] = "access_token"
     # parameters: InitVar[Mapping[str, Any]]
 
-    def get_headers(self):
+    def get_refresh_request_headers(self):
         basic_auth = base64.b64encode(bytes(f"{self.get_client_id()}:{self.get_client_secret()}", "utf-8")).decode("utf-8")
         return {"Authorization": f"Basic {basic_auth}"}
 
@@ -57,7 +57,7 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     def _get_refresh_access_token_response(self):
         try:
             request_url = self.get_token_refresh_endpoint()
-            request_headers = self.get_headers()
+            request_headers = self.get_refresh_request_headers()
             request_body = self.build_refresh_request_body()
 
             logger.info(f"Sending request to URL: {request_url}")

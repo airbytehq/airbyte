@@ -1,0 +1,116 @@
+name: Docker Image Publishing (On-Demand)
+on:
+  workflow_dispatch:
+    inputs:
+      connector-type:
+        description: "Connector Type"
+        required: true
+        default: "java"
+        type: choice
+        options:
+          - "java"
+          - "python"
+      image-type:
+        description: "Image Type (for now only 'base' is supported)"
+        required: true
+        default: "base"
+        type: choice
+        options:
+          - "base"
+      tag-or-version-number:
+        description: "Tag or Version Number (without 'v' prefix)"
+        required: true
+        default: "dev-test"
+      repository-root:
+        description: "Repository Root, either GitHub (GHCR) or DockerHub. Use GHCR for testing."
+        required: true
+        default: "ghcr.io/airbytehq"
+        type: choice
+        options:
+          - "docker.io/airbyte"
+          - "ghcr.io/airbytehq"
+      dry-run:
+        description: "Dry Run (if true, no image will be pushed)"
+        required: true
+        type: boolean
+        default: true
+      require-security-check:
+        description: "Abort if HIGH/CRITICAL security vulnerabilities are found."
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  build-and-publish-base-image:
+    name: Build and Publish ${{ github.event.inputs.connector-type }} Base Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.image-type == 'base' }}
+    environment:
+      name: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}
+      url: https://${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}/${{ github.event.inputs.connector-type }}-connector-base
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        if: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' }}
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        if: ${{ github.event.inputs.repository-root == 'ghcr.io/airbytehq' }}
+        with:
+          registry: ghcr.io/airbytehq
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set and debug variables
+        id: vars
+        run: |
+          DOCKERFILE=docker-images/Dockerfile.${{ github.event.inputs.connector-type }}-connector-base
+          IMAGE_NAME=${{ github.event.inputs.connector-type }}-connector-base
+          FULL_IMAGE_REF=${{ github.event.inputs.repository-root }}/${IMAGE_NAME}:${{ github.event.inputs.tag-or-version-number }}
+          echo "DOCKERFILE=${DOCKERFILE}" | tee -a "$GITHUB_OUTPUT"
+          echo "IMAGE_NAME=${IMAGE_NAME}" | tee -a "$GITHUB_OUTPUT"
+          echo "FULL_IMAGE_REF=${FULL_IMAGE_REF}" | tee -a "$GITHUB_OUTPUT"
+          # Echo other input variables for debugging and logging purposes
+          echo "dry-run=${{ github.event.inputs.dry-run }}"
+          echo "require-security-check=${{ github.event.inputs.require-security-check }}"
+
+      - name: Build Base Image
+        id: docker-build-base
+        uses: docker/build-push-action@v6
+        with:
+          file: ${{ steps.vars.outputs.DOCKERFILE }}
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.vars.outputs.FULL_IMAGE_REF }}
+          push: false
+
+      - name: Run Vulnerability Scan
+        uses: anchore/scan-action@v6
+        with:
+          image: "${{ steps.vars.outputs.FULL_IMAGE_REF }}"
+          output-format: "table"
+          severity-cutoff: high
+          fail-build: ${{ github.event.inputs.require-security-check }}
+
+      - name: Publish Base Image
+        # Note: By design, this should reuse the cache from above, without
+        # rebuilding the image.
+        # https://docs.docker.com/build/ci/github-actions/test-before-push/
+        id: docker-image-publish
+        if: ${{ github.event.inputs.dry-run == 'false' }}
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          file: ${{ steps.vars.outputs.DOCKERFILE }}
+          tags: ${{ steps.vars.outputs.FULL_IMAGE_REF }}
+          push: true

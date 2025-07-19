@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a mock source for testing the Airbyte pipeline. It can generate arbitrary data streams. It is a subset of what is in [End-to-End Testing Source](e2e-test.md) in Open Source to avoid Airbyte Cloud users accidentally in curring a huge bill.
+This is a mock source for testing the Airbyte pipeline. It can generate arbitrary data streams. It is a subset of what is in [End-to-End Testing Source](e2e-test) in Open Source to avoid Airbyte Cloud users accidentally in curring a huge bill.
 
 ## Mode
 

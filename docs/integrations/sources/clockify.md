@@ -9,6 +9,20 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.28 | 2025-07-19 | [63596](https://github.com/airbytehq/airbyte/pull/63596) | Update dependencies |
+| 0.4.27 | 2025-07-12 | [63021](https://github.com/airbytehq/airbyte/pull/63021) | Update dependencies |
+| 0.4.26 | 2025-06-28 | [62381](https://github.com/airbytehq/airbyte/pull/62381) | Update dependencies |
+| 0.4.25 | 2025-06-21 | [61973](https://github.com/airbytehq/airbyte/pull/61973) | Update dependencies |
+| 0.4.24 | 2025-06-14 | [61266](https://github.com/airbytehq/airbyte/pull/61266) | Update dependencies |
+| 0.4.23 | 2025-05-24 | [60408](https://github.com/airbytehq/airbyte/pull/60408) | Update dependencies |
+| 0.4.22 | 2025-05-10 | [59916](https://github.com/airbytehq/airbyte/pull/59916) | Update dependencies |
+| 0.4.21 | 2025-05-03 | [59415](https://github.com/airbytehq/airbyte/pull/59415) | Update dependencies |
+| 0.4.20 | 2025-04-26 | [58880](https://github.com/airbytehq/airbyte/pull/58880) | Update dependencies |
+| 0.4.19 | 2025-04-19 | [58367](https://github.com/airbytehq/airbyte/pull/58367) | Update dependencies |
+| 0.4.18 | 2025-04-12 | [57834](https://github.com/airbytehq/airbyte/pull/57834) | Update dependencies |
+| 0.4.17 | 2025-04-05 | [57208](https://github.com/airbytehq/airbyte/pull/57208) | Update dependencies |
+| 0.4.16 | 2025-03-29 | [56499](https://github.com/airbytehq/airbyte/pull/56499) | Update dependencies |
+| 0.4.15 | 2025-03-22 | [55997](https://github.com/airbytehq/airbyte/pull/55997) | Update dependencies |
 | 0.4.14 | 2025-03-08 | [55291](https://github.com/airbytehq/airbyte/pull/55291) | Update dependencies |
 | 0.4.13 | 2025-03-01 | [54906](https://github.com/airbytehq/airbyte/pull/54906) | Update dependencies |
 | 0.4.12 | 2025-02-22 | [54252](https://github.com/airbytehq/airbyte/pull/54252) | Update dependencies |

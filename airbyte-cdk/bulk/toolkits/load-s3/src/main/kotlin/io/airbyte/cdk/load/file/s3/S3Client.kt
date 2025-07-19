@@ -10,10 +10,13 @@ import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.runtime.auth.credentials.StsAssumeRoleCredentialsProvider
 import aws.sdk.kotlin.services.s3.model.CopyObjectRequest
 import aws.sdk.kotlin.services.s3.model.CreateMultipartUploadRequest
+import aws.sdk.kotlin.services.s3.model.Delete
 import aws.sdk.kotlin.services.s3.model.DeleteObjectRequest
+import aws.sdk.kotlin.services.s3.model.DeleteObjectsRequest
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.sdk.kotlin.services.s3.model.HeadObjectRequest
-import aws.sdk.kotlin.services.s3.model.ListObjectsRequest
+import aws.sdk.kotlin.services.s3.model.ListObjectsV2Request
+import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
@@ -38,6 +41,8 @@ import jakarta.inject.Singleton
 import java.io.InputStream
 import kotlinx.coroutines.flow.flow
 
+private const val DELETE_BATCH_SIZE = 1000
+
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
     val keyWithBucketName
@@ -59,22 +64,19 @@ class S3KotlinClient(
     private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String) = flow {
-        var request = ListObjectsRequest {
-            bucket = bucketConfig.s3BucketName
-            this.prefix = prefix
-        }
-        var lastKey: String? = null
-        while (true) {
-            val response = client.listObjects(request)
-            response.contents?.forEach { obj ->
-                lastKey = obj.key
-                emit(S3Object(obj.key!!, bucketConfig))
-            } // null contents => empty list, not error
-            if (response.isTruncated == false) {
-                break
-            }
-            request = request.copy { marker = lastKey }
-        }
+        var token: String? = null
+        do {
+            val resp =
+                client.listObjectsV2(
+                    ListObjectsV2Request {
+                        bucket = bucketConfig.s3BucketName
+                        this.prefix = prefix
+                        continuationToken = token
+                    }
+                )
+            resp.contents?.forEach { emit(S3Object(it.key!!, bucketConfig)) }
+            token = resp.nextContinuationToken
+        } while (token != null)
     }
 
     override suspend fun move(remoteObject: S3Object, toKey: String): S3Object {
@@ -137,6 +139,17 @@ class S3KotlinClient(
         delete(S3Object(key, bucketConfig))
     }
 
+    override suspend fun delete(keys: Set<String>) {
+        keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
+            val deleteObjects = Delete { objects = chunk.map { ObjectIdentifier { key = it } } }
+            val request = DeleteObjectsRequest {
+                bucket = bucketConfig.s3BucketName
+                delete = deleteObjects
+            }
+            client.deleteObjects(request)
+        }
+    }
+
     override suspend fun startStreamingUpload(
         key: String,
         metadata: Map<String, String>
@@ -148,7 +161,7 @@ class S3KotlinClient(
         }
         val response = client.createMultipartUpload(request)
 
-        log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
+        log.debug { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
 
         return S3StreamingUpload(client, bucketConfig, response)
     }
@@ -156,14 +169,13 @@ class S3KotlinClient(
 
 /**
  * [assumeRoleCredentials] is required if [keyConfig] does not have an access key, _and_ [arnRole]
- * includes a nonnull role ARN. Otherwise it is ignored.
+ * includes a nonnull role ARN. Otherwise, it is ignored.
  */
 @Factory
 class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
-    private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
     private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
     private val s3ClientConfig: S3ClientConfigurationProvider? = null,
 ) {
@@ -177,7 +189,7 @@ class S3ClientFactory(
         T : AWSAccessKeyConfigurationProvider,
         T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config, config, assumeRoleCredentials).make()
+            S3ClientFactory(config, config, config, assumeRoleCredentials).make()
     }
 
     @Singleton
@@ -233,7 +245,7 @@ class S3ClientFactory(
 
         val s3SdkClient =
             aws.sdk.kotlin.services.s3.S3Client {
-                region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+                region = bucketConfig.s3BucketConfiguration.s3BucketRegion
                 credentialsProvider = credsProvider
                 endpointUrl =
                     bucketConfig.s3BucketConfiguration.s3Endpoint?.let {

@@ -5,7 +5,9 @@ pluginManagement {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
 
         // ## Prefer repos controlled by Airbyte.
-        // TODO: add airbyte-controlled proxy repos here
+        maven {
+            url = 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
 
         // ## Look into other, public repos.
         // Gradle plugin portal.
@@ -51,6 +53,14 @@ dependencyResolutionManagement {
 
         // Maven Central has most of everything.
         mavenCentral()
+        // TODO remove this after jsonschemafriend is republished to jitpack https://github.com/jimblackler/jsonschemafriend/issues/124
+        maven {
+            name 'scijava'
+            url 'https://maven.scijava.org/content/repositories/public'
+            content {
+                includeGroup 'net.jimblackler.jsonschemafriend'
+            }
+        }
         // Jitpack is used to pull dependencies directly from github.
         maven {
             name 'jitpack'
@@ -161,6 +171,8 @@ void includeCdkProjects(String dir, String gradlePathPrefix, String projectNameP
     }
 }
 
+// Include convenience aggregator.
+include ":airbyte-cdk"
 // Include all java CDK modules.
 includeCdkProjects("airbyte-cdk/java/airbyte-cdk", ":airbyte-cdk:java:airbyte-cdk:", "airbyte-cdk-")
 includeCdkProjects("airbyte-cdk/bulk/core", ":airbyte-cdk:bulk:core:", "bulk-cdk-core-")
@@ -187,6 +199,5 @@ integrationsPath.eachDir { dir ->
 }
 
 // Include miscellaneous modules.
-include ':airbyte-integrations:connector-templates:generator'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'

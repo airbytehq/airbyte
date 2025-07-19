@@ -1,0 +1,4635 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://giphy.com/
+  API Reference: https://developers.giphy.com/docs/api/endpoint/#trending
+
+check:
+  type: CheckStream
+  stream_names:
+    - categories
+
+definitions:
+  streams:
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/gifs/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    emoji:
+      type: DeclarativeStream
+      name: emoji
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/emoji
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: import_datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/emoji"
+    autocomplete_tags:
+      type: DeclarativeStream
+      name: autocomplete_tags
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/gifs/search/tags
+          http_method: GET
+          request_parameters:
+            q: "{{ config['query'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/autocomplete_tags"
+    channel_search:
+      type: DeclarativeStream
+      name: channel_search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/channels/search
+          http_method: GET
+          request_parameters:
+            q: "{{ config['query'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_search"
+    gifs_search:
+      type: DeclarativeStream
+      name: gifs_search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/gifs/search
+          http_method: GET
+          request_parameters:
+            q: "{{ config['query_for_gif'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: import_datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/gifs_search"
+    stickers_search:
+      type: DeclarativeStream
+      name: stickers_search
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/stickers/search
+          http_method: GET
+          request_parameters:
+            q: "{{ config['query_for_stickers'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: import_datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stickers_search"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.giphy.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_key
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/emoji"
+  - $ref: "#/definitions/streams/autocomplete_tags"
+  - $ref: "#/definitions/streams/channel_search"
+  - $ref: "#/definitions/streams/gifs_search"
+  - $ref: "#/definitions/streams/stickers_search"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+      - query
+      - query_for_gif
+      - query_for_stickers
+      - query_for_clips
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your GIPHY API Key. You can create and find your API key in the GIPHY
+          Developer Dashboard at https://developers.giphy.com/dashboard/.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      query:
+        type: string
+        description: A query for search endpoint
+        title: Query for search endpoints
+        default: foo
+        order: 2
+      query_for_gif:
+        type: string
+        description: Query for gif search endpoint
+        title: Query for gif search endpoint
+        default: foo
+        order: 3
+      query_for_stickers:
+        type: string
+        description: Query for stickers search endpoint
+        title: Query for stickers search endpoint
+        default: foo
+        order: 4
+      query_for_clips:
+        type: string
+        description: Query for clips search endpoint
+        title: Query for clips search endpoint
+        default: foo
+        order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    categories: true
+    emoji: true
+    autocomplete_tags: true
+    channel_search: true
+    gifs_search: true
+    stickers_search: true
+  testedStreams:
+    categories:
+      streamHash: 831a9f2504429826032bced4ee36b09b9d1e94f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    emoji:
+      streamHash: 3289232dcf579f237bbe209256ed92b7d2cfad28
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    autocomplete_tags:
+      streamHash: 46f1e7ddc4b923a1c31932365d45f3d66eb9d068
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    channel_search:
+      streamHash: 1a75665804363aeaa06921c992885253c8c3d528
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    gifs_search:
+      streamHash: 1efc5ea3ff11ab961a1d5e8fde2548d8728fb158
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stickers_search:
+      streamHash: 28363d5b5cc4ca536c46bce3687b416503f81688
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.giphy.com/docs/api/endpoint/#categories
+
+schemas:
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      gif:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          alt_text:
+            type:
+              - string
+              - "null"
+          analytics:
+            type:
+              - object
+              - "null"
+            properties:
+              onclick:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+              onload:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+              onsent:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+          analytics_response_payload:
+            type:
+              - string
+              - "null"
+          bitly_gif_url:
+            type:
+              - string
+              - "null"
+          bitly_url:
+            type:
+              - string
+              - "null"
+          content_url:
+            type:
+              - string
+              - "null"
+          embed_url:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          images:
+            type:
+              - object
+              - "null"
+            properties:
+              480w_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_large:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_medium:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_small:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_downsampled:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_small:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_small_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_downsampled:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_small:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_small_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              hd:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              looping:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+              original:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  frames:
+                    type:
+                      - string
+                      - "null"
+                  hash:
+                    type:
+                      - string
+                      - "null"
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              original_mp4:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              original_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              preview:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              preview_gif:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              preview_webp:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+          import_datetime:
+            type:
+              - string
+              - "null"
+          is_sticker:
+            type:
+              - number
+              - "null"
+          rating:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          source_post_url:
+            type:
+              - string
+              - "null"
+          source_tld:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          trending_datetime:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              banner_image:
+                type:
+                  - string
+                  - "null"
+              banner_url:
+                type:
+                  - string
+                  - "null"
+              display_name:
+                type:
+                  - string
+                  - "null"
+              instagram_url:
+                type:
+                  - string
+                  - "null"
+              is_verified:
+                type:
+                  - boolean
+                  - "null"
+              profile_url:
+                type:
+                  - string
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+              website_url:
+                type:
+                  - string
+                  - "null"
+          username:
+            type:
+              - string
+              - "null"
+      name:
+        type: string
+      name_encoded:
+        type:
+          - string
+          - "null"
+      subcategories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            name_encoded:
+              type:
+                - string
+                - "null"
+    required:
+      - name
+  emoji:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      alt_text:
+        type:
+          - string
+          - "null"
+      analytics:
+        type:
+          - object
+          - "null"
+        properties:
+          onclick:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          onload:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          onsent:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+      analytics_response_payload:
+        type:
+          - string
+          - "null"
+      bitly_gif_url:
+        type:
+          - string
+          - "null"
+      bitly_url:
+        type:
+          - string
+          - "null"
+      content_url:
+        type:
+          - string
+          - "null"
+      embed_url:
+        type:
+          - string
+          - "null"
+      emoji_group_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      images:
+        type:
+          - object
+          - "null"
+        properties:
+          480w_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_large:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_medium:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_downsampled:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_small_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_downsampled:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_small_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          hd:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          looping:
+            type:
+              - object
+              - "null"
+            properties:
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+          original:
+            type:
+              - object
+              - "null"
+            properties:
+              frames:
+                type:
+                  - string
+                  - "null"
+              hash:
+                type:
+                  - string
+                  - "null"
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          original_mp4:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          original_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview_gif:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview_webp:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+      import_datetime:
+        type: string
+      is_low_contrast:
+        type:
+          - boolean
+          - "null"
+      is_sticker:
+        type:
+          - number
+          - "null"
+      rating:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      source_post_url:
+        type:
+          - string
+          - "null"
+      source_tld:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      trending_datetime:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          banner_image:
+            type:
+              - string
+              - "null"
+          banner_url:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          instagram_url:
+            type:
+              - string
+              - "null"
+          is_verified:
+            type:
+              - boolean
+              - "null"
+          profile_url:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          website_url:
+            type:
+              - string
+              - "null"
+      username:
+        type:
+          - string
+          - "null"
+      variation:
+        type:
+          - string
+          - "null"
+      variation_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - import_datetime
+  autocomplete_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      analytics_response_payload:
+        type:
+          - string
+          - "null"
+      name:
+        type: string
+    required:
+      - name
+  channel_search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      analytics_response_payload:
+        type:
+          - string
+          - "null"
+      ancestors:
+        type:
+          - array
+          - "null"
+      banner_image:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      featured_gif:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          alt_text:
+            type:
+              - string
+              - "null"
+          analytics:
+            type:
+              - object
+              - "null"
+            properties:
+              onclick:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+              onload:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+              onsent:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+          analytics_response_payload:
+            type:
+              - string
+              - "null"
+          bitly_gif_url:
+            type:
+              - string
+              - "null"
+          bitly_url:
+            type:
+              - string
+              - "null"
+          content_url:
+            type:
+              - string
+              - "null"
+          embed_url:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          images:
+            type:
+              - object
+              - "null"
+            properties:
+              480w_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              4k:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_large:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_medium:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_small:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              downsized_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_downsampled:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_small:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_small_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_height_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_downsampled:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_small:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_small_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              fixed_width_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              hd:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              looping:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+              original:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  frames:
+                    type:
+                      - string
+                      - "null"
+                  hash:
+                    type:
+                      - string
+                      - "null"
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  webp:
+                    type:
+                      - string
+                      - "null"
+                  webp_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              original_mp4:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              original_still:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              preview:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  mp4:
+                    type:
+                      - string
+                      - "null"
+                  mp4_size:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              preview_gif:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+              preview_webp:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  height:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - string
+                      - "null"
+          import_datetime:
+            type:
+              - string
+              - "null"
+          is_sticker:
+            type:
+              - number
+              - "null"
+          rating:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          source_post_url:
+            type:
+              - string
+              - "null"
+          source_tld:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          trending_datetime:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              banner_image:
+                type:
+                  - string
+                  - "null"
+              banner_url:
+                type:
+                  - string
+                  - "null"
+              display_name:
+                type:
+                  - string
+                  - "null"
+              instagram_url:
+                type:
+                  - string
+                  - "null"
+              is_verified:
+                type:
+                  - boolean
+                  - "null"
+              profile_url:
+                type:
+                  - string
+                  - "null"
+              username:
+                type:
+                  - string
+                  - "null"
+              website_url:
+                type:
+                  - string
+                  - "null"
+          username:
+            type:
+              - string
+              - "null"
+          video:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              assets:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  1080p:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - string
+                          - "null"
+                  360p:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - string
+                          - "null"
+                  480p:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - string
+                          - "null"
+                  720p:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - string
+                          - "null"
+              dash_manifest_url:
+                type:
+                  - string
+                  - "null"
+              duration:
+                type:
+                  - number
+                  - "null"
+              hls_manifest_url:
+                type:
+                  - string
+                  - "null"
+              previews:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fixed_height:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - string
+                          - "null"
+                      mp4:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      webp:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - string
+                          - "null"
+                  fixed_width:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      height:
+                        type:
+                          - string
+                          - "null"
+                      mp4:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      webp:
+                        type:
+                          - string
+                          - "null"
+                      width:
+                        type:
+                          - string
+                          - "null"
+      has_children:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      is_live:
+        type:
+          - boolean
+          - "null"
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_visible:
+        type:
+          - boolean
+          - "null"
+      metadata_description:
+        type:
+          - string
+          - "null"
+      num_children:
+        type:
+          - number
+          - "null"
+      screensaver_gif_id:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      syncable_tags:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          banner_image:
+            type:
+              - string
+              - "null"
+          banner_url:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          instagram_url:
+            type:
+              - string
+              - "null"
+          is_verified:
+            type:
+              - boolean
+              - "null"
+          profile_url:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          website_url:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  gifs_search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      alt_text:
+        type:
+          - string
+          - "null"
+      analytics:
+        type:
+          - object
+          - "null"
+        properties:
+          onclick:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          onload:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          onsent:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+      analytics_response_payload:
+        type:
+          - string
+          - "null"
+      bitly_gif_url:
+        type:
+          - string
+          - "null"
+      bitly_url:
+        type:
+          - string
+          - "null"
+      content_url:
+        type:
+          - string
+          - "null"
+      embed_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      images:
+        type:
+          - object
+          - "null"
+        properties:
+          480w_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          4k:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_large:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_medium:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_downsampled:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_small_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_downsampled:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_small_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          hd:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          looping:
+            type:
+              - object
+              - "null"
+            properties:
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+          original:
+            type:
+              - object
+              - "null"
+            properties:
+              frames:
+                type:
+                  - string
+                  - "null"
+              hash:
+                type:
+                  - string
+                  - "null"
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          original_mp4:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          original_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview_gif:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview_webp:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+      import_datetime:
+        type: string
+      is_sticker:
+        type:
+          - number
+          - "null"
+      rating:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      source_post_url:
+        type:
+          - string
+          - "null"
+      source_tld:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      trending_datetime:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          banner_image:
+            type:
+              - string
+              - "null"
+          banner_url:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          instagram_url:
+            type:
+              - string
+              - "null"
+          is_verified:
+            type:
+              - boolean
+              - "null"
+          profile_url:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          website_url:
+            type:
+              - string
+              - "null"
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - import_datetime
+  stickers_search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      alt_text:
+        type:
+          - string
+          - "null"
+      analytics:
+        type:
+          - object
+          - "null"
+        properties:
+          onclick:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          onload:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+          onsent:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+      analytics_response_payload:
+        type:
+          - string
+          - "null"
+      bitly_gif_url:
+        type:
+          - string
+          - "null"
+      bitly_url:
+        type:
+          - string
+          - "null"
+      content_url:
+        type:
+          - string
+          - "null"
+      embed_url:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      images:
+        type:
+          - object
+          - "null"
+        properties:
+          480w_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          4k:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_large:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_medium:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          downsized_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_downsampled:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_small_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_height_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_downsampled:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_small:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_small_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          fixed_width_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          hd:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          looping:
+            type:
+              - object
+              - "null"
+            properties:
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+          original:
+            type:
+              - object
+              - "null"
+            properties:
+              frames:
+                type:
+                  - string
+                  - "null"
+              hash:
+                type:
+                  - string
+                  - "null"
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              webp:
+                type:
+                  - string
+                  - "null"
+              webp_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          original_mp4:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          original_still:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              mp4:
+                type:
+                  - string
+                  - "null"
+              mp4_size:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview_gif:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+          preview_webp:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - string
+                  - "null"
+      import_datetime:
+        type: string
+      is_low_contrast:
+        type:
+          - boolean
+          - "null"
+      is_sticker:
+        type:
+          - number
+          - "null"
+      rating:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      source_post_url:
+        type:
+          - string
+          - "null"
+      source_tld:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      trending_datetime:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          avatar_url:
+            type:
+              - string
+              - "null"
+          banner_image:
+            type:
+              - string
+              - "null"
+          banner_url:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          instagram_url:
+            type:
+              - string
+              - "null"
+          is_verified:
+            type:
+              - boolean
+              - "null"
+          profile_url:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          website_url:
+            type:
+              - string
+              - "null"
+      username:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - import_datetime

@@ -73,7 +73,7 @@ def all_specs_secrets(
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def specs_secrets_mask_yaml(context: OpExecutionContext, all_specs_secrets: Set[str]) -> Output:
-    yaml_string = yaml.dump({"properties": list(all_specs_secrets)})
+    yaml_string = yaml.dump({"properties": sorted(list(all_specs_secrets))})
     registry_directory_manager = context.resources.registry_directory_manager
     file_handle = registry_directory_manager.write_data(yaml_string.encode(), ext="yaml", key="specs_secrets_mask")
     metadata = {

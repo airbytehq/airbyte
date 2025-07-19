@@ -264,6 +264,13 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.7 | 2025-07-19 | [63449](https://github.com/airbytehq/airbyte/pull/63449) | Update dependencies |
+| 2.6.6 | 2025-07-12 | [63255](https://github.com/airbytehq/airbyte/pull/63255) | Update dependencies |
+| 2.6.5 | 2025-07-05 | [62625](https://github.com/airbytehq/airbyte/pull/62625) | Update dependencies |
+| 2.6.4 | 2025-06-28 | [62390](https://github.com/airbytehq/airbyte/pull/62390) | Update dependencies |
+| 2.6.3 | 2025-06-21 | [61932](https://github.com/airbytehq/airbyte/pull/61932) | Update dependencies |
+| 2.6.2 | 2025-06-14 | [51848](https://github.com/airbytehq/airbyte/pull/51848) | Update dependencies |
+| 2.6.1 | 2025-06-05 | [58674](https://github.com/airbytehq/airbyte/pull/58674) | Update CDK to fix complex datatype errors with interpolation |
 | 2.6.0 | 2024-10-23 | [47282](https://github.com/airbytehq/airbyte/pull/47282) | Migrate to Manifest-only |
 | 2.5.8 | 2025-01-11 | [43797](https://github.com/airbytehq/airbyte/pull/43797) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.5.7 | 2024-06-25 | [40269](https://github.com/airbytehq/airbyte/pull/40269) | Update dependencies |

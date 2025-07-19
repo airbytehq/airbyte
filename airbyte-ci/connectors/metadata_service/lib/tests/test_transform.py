@@ -63,6 +63,7 @@ def test_transform_to_json_does_not_mutate_keys(valid_metadata_upload_files, val
     fields_with_defaults = [
         "data.supportsRefreshes",
         "data.supportsFileTransfer",
+        "data.supportsDataActivation",
         "data.releases.rolloutConfiguration.enableProgressiveRollout",
         "data.releases.rolloutConfiguration.initialPercentage",
         "data.releases.rolloutConfiguration.maxPercentage",

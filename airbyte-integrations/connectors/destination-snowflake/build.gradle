@@ -1,9 +1,11 @@
 plugins {
     id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.46.0'
+    cdkVersionRequired = '0.48.12'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -42,6 +44,6 @@ integrationTestJava {
 }
 
 dependencies {
-    implementation 'net.snowflake:snowflake-jdbc:3.20.0'
+    implementation 'net.snowflake:snowflake-jdbc:3.24.0'
     implementation 'org.apache.commons:commons-text:1.12.0'
 }

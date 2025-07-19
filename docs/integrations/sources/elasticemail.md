@@ -32,6 +32,20 @@ Docs : https://elasticemail.com/developers/api-documentation/rest-api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-07-19 | [63569](https://github.com/airbytehq/airbyte/pull/63569) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [62974](https://github.com/airbytehq/airbyte/pull/62974) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62821](https://github.com/airbytehq/airbyte/pull/62821) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62425](https://github.com/airbytehq/airbyte/pull/62425) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61949](https://github.com/airbytehq/airbyte/pull/61949) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [61208](https://github.com/airbytehq/airbyte/pull/61208) | Update dependencies |
+| 0.0.22 | 2025-05-24 | [60375](https://github.com/airbytehq/airbyte/pull/60375) | Update dependencies |
+| 0.0.21 | 2025-05-10 | [60037](https://github.com/airbytehq/airbyte/pull/60037) | Update dependencies |
+| 0.0.20 | 2025-05-03 | [58835](https://github.com/airbytehq/airbyte/pull/58835) | Update dependencies |
+| 0.0.19 | 2025-04-19 | [58298](https://github.com/airbytehq/airbyte/pull/58298) | Update dependencies |
+| 0.0.18 | 2025-04-12 | [57813](https://github.com/airbytehq/airbyte/pull/57813) | Update dependencies |
+| 0.0.17 | 2025-04-05 | [57251](https://github.com/airbytehq/airbyte/pull/57251) | Update dependencies |
+| 0.0.16 | 2025-03-29 | [56529](https://github.com/airbytehq/airbyte/pull/56529) | Update dependencies |
+| 0.0.15 | 2025-03-22 | [55924](https://github.com/airbytehq/airbyte/pull/55924) | Update dependencies |
 | 0.0.14 | 2025-03-08 | [55283](https://github.com/airbytehq/airbyte/pull/55283) | Update dependencies |
 | 0.0.13 | 2025-03-01 | [54960](https://github.com/airbytehq/airbyte/pull/54960) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54393](https://github.com/airbytehq/airbyte/pull/54393) | Update dependencies |

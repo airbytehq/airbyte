@@ -7,11 +7,11 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 4.7.1
+  dockerImageTag: 4.10.3
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -21,7 +21,7 @@ data:
   name: Zendesk Support
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-zendesk-support
   registryOverrides:
     cloud:
@@ -69,9 +69,10 @@ data:
       - tickets
       - users
   supportLevel: certified
+  supportsFileTransfer: true
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

@@ -6,20 +6,23 @@ package io.airbyte.integrations.source.mssql;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil;
+import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.*;
+import java.sql.JDBCType;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +126,7 @@ class MssqlSourceTest {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
-        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (name)");
+        .with("CREATE UNIQUE CLUSTERED INDEX n1 ON id_and_name (name)");
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
     final var db = source().createDatabase(getConfig());
@@ -138,7 +141,21 @@ class MssqlSourceTest {
   }
 
   @Test
-  void testDiscoverWithNoClusteredIndex() throws SQLException {
+  void testDiscoverWithNonUniqueClusteredIndex() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+    final Map<String, List<String>> oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
+        new AirbyteStream().withName(
+            actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace()));
+    assertNull(oc);
+  }
+
+  @Test
+  void testDiscoverWithNonClusteredIndex() throws SQLException {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
@@ -158,7 +175,7 @@ class MssqlSourceTest {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
-        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (id, name)");
+        .with("CREATE UNIQUE CLUSTERED INDEX n1 ON id_and_name (id, name)");
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
     final var db = source().createDatabase(getConfig());
@@ -254,6 +271,35 @@ class MssqlSourceTest {
 
     assert (oc.isEmpty());
 
+  }
+
+  @Test
+  void testSetCursorCutoffInfoForValue() {
+    CursorInfo cursorInfo = new CursorInfo(null, null, null, null);
+    Instant now = Instant.parse("2024-06-01T12:34:56Z");
+
+    // DATE
+    CommonField<JDBCType> dateField = new CommonField<>("date_col", JDBCType.DATE);
+    MssqlSource.setCursorCutoffInfoForValue(cursorInfo, dateField, now);
+    assertEquals("2024-06-01", cursorInfo.getCutoffTime());
+
+    // TIMESTAMP
+    cursorInfo = new CursorInfo(null, null, null, null);
+    CommonField<JDBCType> tsField = new CommonField<>("ts_col", JDBCType.TIMESTAMP);
+    MssqlSource.setCursorCutoffInfoForValue(cursorInfo, tsField, now);
+    assertEquals("2024-06-01T00:00:00Z", cursorInfo.getCutoffTime()); // ISO_OFFSET_DATE_TIME
+
+    // TIMESTAMP_WITH_TIMEZONE
+    cursorInfo = new CursorInfo(null, null, null, null);
+    CommonField<JDBCType> tsTzField = new CommonField<>("ts_tz_col", JDBCType.TIMESTAMP_WITH_TIMEZONE);
+    MssqlSource.setCursorCutoffInfoForValue(cursorInfo, tsTzField, now);
+    assertEquals("2024-06-01T00:00:00.000000Z", cursorInfo.getCutoffTime());
+
+    // Non-temporal type
+    cursorInfo = new CursorInfo(null, null, null, null);
+    CommonField<JDBCType> intField = new CommonField<>("int_col", JDBCType.INTEGER);
+    MssqlSource.setCursorCutoffInfoForValue(cursorInfo, intField, now);
+    assertNull(cursorInfo.getCutoffTime());
   }
 
 }

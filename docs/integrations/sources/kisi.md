@@ -39,6 +39,20 @@ You can learn more about the API key here https://api.kisi.io/docs#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2025-07-19 | [63468](https://github.com/airbytehq/airbyte/pull/63468) | Update dependencies |
+| 0.0.32 | 2025-07-12 | [63150](https://github.com/airbytehq/airbyte/pull/63150) | Update dependencies |
+| 0.0.31 | 2025-07-05 | [62572](https://github.com/airbytehq/airbyte/pull/62572) | Update dependencies |
+| 0.0.30 | 2025-06-21 | [61783](https://github.com/airbytehq/airbyte/pull/61783) | Update dependencies |
+| 0.0.29 | 2025-06-14 | [61116](https://github.com/airbytehq/airbyte/pull/61116) | Update dependencies |
+| 0.0.28 | 2025-05-24 | [60636](https://github.com/airbytehq/airbyte/pull/60636) | Update dependencies |
+| 0.0.27 | 2025-05-10 | [59894](https://github.com/airbytehq/airbyte/pull/59894) | Update dependencies |
+| 0.0.26 | 2025-05-03 | [59256](https://github.com/airbytehq/airbyte/pull/59256) | Update dependencies |
+| 0.0.25 | 2025-04-26 | [58774](https://github.com/airbytehq/airbyte/pull/58774) | Update dependencies |
+| 0.0.24 | 2025-04-19 | [58159](https://github.com/airbytehq/airbyte/pull/58159) | Update dependencies |
+| 0.0.23 | 2025-04-12 | [57678](https://github.com/airbytehq/airbyte/pull/57678) | Update dependencies |
+| 0.0.22 | 2025-04-05 | [57109](https://github.com/airbytehq/airbyte/pull/57109) | Update dependencies |
+| 0.0.21 | 2025-03-29 | [56695](https://github.com/airbytehq/airbyte/pull/56695) | Update dependencies |
+| 0.0.20 | 2025-03-22 | [56007](https://github.com/airbytehq/airbyte/pull/56007) | Update dependencies |
 | 0.0.19 | 2025-03-08 | [55494](https://github.com/airbytehq/airbyte/pull/55494) | Update dependencies |
 | 0.0.18 | 2025-03-01 | [54811](https://github.com/airbytehq/airbyte/pull/54811) | Update dependencies |
 | 0.0.17 | 2025-02-22 | [54352](https://github.com/airbytehq/airbyte/pull/54352) | Update dependencies |

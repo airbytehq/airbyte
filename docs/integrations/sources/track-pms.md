@@ -24,6 +24,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | accounting_deposits_payments | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdepositpayments) |
 | accounting_items | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getitemscollection) |
 | accounting_transactions | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getowneridtransactionscollection) |
+| booking_fees | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbookingfees) |
 | charges | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchargescollection) |
 | companies | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getcompanies) |
 | contacts | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getcontacts) |
@@ -59,7 +60,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | owners_statements | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-statements) |
 | owners_statements_transactions | statement_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getstatementtransactionscollection) |
 | owners_units | ownerId.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getownerunitscollection) |
-| promo_codes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getpromocodes) |
+| promo_codes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getpromocodesv2) |
 | quotes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getquotescollectionv2) |
 | rate_types | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | reservations | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations) |
@@ -70,7 +71,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | reservations_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreservationtypes) |
 | reservations_v2 | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations-1) |
 | reviews | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreviewscollection) |
-| roles | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitrolescollection) |
+| roles | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | suspend_code_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getsuspendcodereasons) |
 | tags | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettagscollection) |
 | tax_districts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettaxdistrictscollection) |
@@ -84,7 +85,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | units_blocks | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitblockscollection) |
 | units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchannelunitcollection) |
 | units_charge_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchargescollection) |
-| units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypedailypricing) |
+| units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unitdailypricing) |
 | units_pricing_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
 | units_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchanneltaxcollection) |
 | units_taxes_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
@@ -101,6 +102,8 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 4.1.0 | 2025-06-30 | Fix error handler, add scroll parameter for reservations endpoints, add booking fees endpoint, schema updates |
+| 4.0.0 | 2025-03-30 | Prune units schema; fix docs; update error handler; diable connector auto schema determination |
 | 3.0.0 | 2025-02-26 | Drop redundant streams & omit unneeded sensitive fields from accounting_* streams |
 | 2.0.0 | 2025-02-13 | Rename and alphabetize folio_id stream |
 | 1.0.0 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |

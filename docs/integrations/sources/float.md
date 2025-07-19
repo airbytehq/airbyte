@@ -35,6 +35,19 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.27 | 2025-07-19 | [63595](https://github.com/airbytehq/airbyte/pull/63595) | Update dependencies |
+| 0.0.26 | 2025-07-17 | [63315](https://github.com/airbytehq/airbyte/pull/63315) | source-float contribution from cvd |
+| 0.0.25 | 2025-07-12 | [63025](https://github.com/airbytehq/airbyte/pull/63025) | Update dependencies |
+| 0.0.24 | 2025-07-05 | [62759](https://github.com/airbytehq/airbyte/pull/62759) | Update dependencies |
+| 0.0.23 | 2025-06-28 | [62314](https://github.com/airbytehq/airbyte/pull/62314) | Update dependencies |
+| 0.0.22 | 2025-06-21 | [61955](https://github.com/airbytehq/airbyte/pull/61955) | Update dependencies |
+| 0.0.21 | 2025-06-14 | [60401](https://github.com/airbytehq/airbyte/pull/60401) | Update dependencies |
+| 0.0.20 | 2025-05-10 | [59937](https://github.com/airbytehq/airbyte/pull/59937) | Update dependencies |
+| 0.0.19 | 2025-05-03 | [58908](https://github.com/airbytehq/airbyte/pull/58908) | Update dependencies |
+| 0.0.18 | 2025-04-19 | [57837](https://github.com/airbytehq/airbyte/pull/57837) | Update dependencies |
+| 0.0.17 | 2025-04-05 | [57258](https://github.com/airbytehq/airbyte/pull/57258) | Update dependencies |
+| 0.0.16 | 2025-03-29 | [56533](https://github.com/airbytehq/airbyte/pull/56533) | Update dependencies |
+| 0.0.15 | 2025-03-22 | [55942](https://github.com/airbytehq/airbyte/pull/55942) | Update dependencies |
 | 0.0.14 | 2025-03-08 | [55330](https://github.com/airbytehq/airbyte/pull/55330) | Update dependencies |
 | 0.0.13 | 2025-03-01 | [54994](https://github.com/airbytehq/airbyte/pull/54994) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54402](https://github.com/airbytehq/airbyte/pull/54402) | Update dependencies |

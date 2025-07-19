@@ -1,0 +1,85 @@
+# A shared set of tasks for Java and Kotlin Airbyte connectors using Gradle.
+#
+# This file should be included in connectors' `poe_tasks.toml` as follows:
+#
+# ```toml
+# `airbyte-integrations/connectors/<connector-name>/poe_tasks.toml`
+#
+# include = [
+#     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
+# ]
+#
+# Within any java connector directory, you can then run `poe gradle tasks` to
+# see the full set of available Gradle tasks.
+#
+# Example usage:
+
+# ```bash
+# # First, move to the connector directory:
+# cd airbyte-integrations/connectors/source-mysql
+#
+# # View available Gradle tasks:
+# poe gradle tasks
+#
+# # Run a Gradle task (e.g. `build`):
+# poe gradle build
+# ```
+
+[tasks]
+
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
+fetch-secrets = "airbyte-cdk secrets fetch"
+
+install = [
+  "gradle-warmup",
+  "install-cdk-cli",
+]
+
+gradle-warmup.help = "Warm up the Gradle daemon and cache by listing available tasks (no build)"
+gradle-warmup.cmd = "${POE_GIT_ROOT}/gradlew --no-daemon tasks --quiet"
+install-cdk-cli.help = "Install the CDK CLI for things like secrets and testing"
+install-cdk-cli.cmd = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+
+test-all = "gradle check"
+test-fast = "test-all"  # TODO: Add a fast-fail unit test definition
+format-check = "gradle check -x test"
+lint-check = "echo 'No lint check step for this connector.'"
+
+test-unit-tests = "gradle test"
+test-integration-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if [ -d src/test-integration ]; then
+  echo "Found 'src/test-integration' directory, running integration tests..."
+  gradle integrationTestJava
+else
+  echo "No integration tests defined; skipping integration tests."
+fi
+'''
+
+[tasks.gradle]
+help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
+shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+connector_name=$(basename "$PWD")
+echo "Running: ./gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}"
+${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_and_args}
+'''
+args = [
+  { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }
+]
+
+# Generic tasks (same across all connector types)
+
+[tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' $PWD/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."

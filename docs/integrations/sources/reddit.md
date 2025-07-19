@@ -65,6 +65,19 @@ Hit send to receive `api_key` in the response under `access_token`
 
 | Version          | Date       |Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.0.29 | 2025-07-12 | [63054](https://github.com/airbytehq/airbyte/pull/63054) | Update dependencies |
+| 0.0.28 | 2025-07-05 | [62697](https://github.com/airbytehq/airbyte/pull/62697) | Update dependencies |
+| 0.0.27 | 2025-06-28 | [62217](https://github.com/airbytehq/airbyte/pull/62217) | Update dependencies |
+| 0.0.26 | 2025-06-21 | [61787](https://github.com/airbytehq/airbyte/pull/61787) | Update dependencies |
+| 0.0.25 | 2025-06-14 | [60557](https://github.com/airbytehq/airbyte/pull/60557) | Update dependencies |
+| 0.0.24 | 2025-05-10 | [60162](https://github.com/airbytehq/airbyte/pull/60162) | Update dependencies |
+| 0.0.23 | 2025-05-03 | [59473](https://github.com/airbytehq/airbyte/pull/59473) | Update dependencies |
+| 0.0.22 | 2025-04-27 | [59106](https://github.com/airbytehq/airbyte/pull/59106) | Update dependencies |
+| 0.0.21 | 2025-04-19 | [58458](https://github.com/airbytehq/airbyte/pull/58458) | Update dependencies |
+| 0.0.20 | 2025-04-12 | [57923](https://github.com/airbytehq/airbyte/pull/57923) | Update dependencies |
+| 0.0.19 | 2025-04-05 | [57298](https://github.com/airbytehq/airbyte/pull/57298) | Update dependencies |
+| 0.0.18 | 2025-03-29 | [56770](https://github.com/airbytehq/airbyte/pull/56770) | Update dependencies |
+| 0.0.17 | 2025-03-22 | [56163](https://github.com/airbytehq/airbyte/pull/56163) | Update dependencies |
 | 0.0.16 | 2025-03-08 | [55061](https://github.com/airbytehq/airbyte/pull/55061) | Update dependencies |
 | 0.0.15 | 2025-02-23 | [54586](https://github.com/airbytehq/airbyte/pull/54586) | Update dependencies |
 | 0.0.14 | 2025-02-15 | [53957](https://github.com/airbytehq/airbyte/pull/53957) | Update dependencies |

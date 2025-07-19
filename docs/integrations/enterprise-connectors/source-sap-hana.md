@@ -1,11 +1,8 @@
-# Source SAP HANA
+---
+dockerRepository: airbyte/source-sap-hana-enterprise
+---
 
-:::info
-Airbyte Enterprise Connectors are a selection of premium connectors available exclusively for 
-Airbyte Self-Managed Enterprise and Airbyte Teams customers. These connectors, built and maintained by the Airbyte team, 
-provide enhanced capabilities and support for critical enterprise systems. 
-To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
-:::
+# Source SAP HANA
 
 Airbyte’s incubating SAP HANA enterprise source connector currently offers Full Refresh and Incrementals syncs for streams. Support for Change Data Capture (CDC) is currently in-development and will be available soon.
 

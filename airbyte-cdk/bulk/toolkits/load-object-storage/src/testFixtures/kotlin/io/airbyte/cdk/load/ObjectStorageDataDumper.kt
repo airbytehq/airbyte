@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
-import io.airbyte.cdk.load.command.object_storage.MSSQLCSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
@@ -77,8 +76,8 @@ class ObjectStorageDataDumper(
         }
     }
 
-    fun dumpFile(): List<String> {
-        val prefix = pathFactory.getFinalDirectory(stream).toString()
+    fun dumpFile(): Map<String, String> {
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream)
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client
@@ -92,10 +91,17 @@ class ObjectStorageDataDumper(
                                     null -> objectData
                                     else -> error("Unsupported compressor")
                                 }
-                            BufferedReader(decompressed.reader()).readText()
+                            // Remove the "namespace/name/" prefix from the object key
+                            val truncatedKey =
+                                listedObject.key
+                                    .replace(prefix, "")
+                                    // Remove the dynamic date bit on the file path, if present
+                                    .replace("\\d{4}_\\d{2}_\\d{2}_\\d+_/".toRegex(), "")
+                            truncatedKey to BufferedReader(decompressed.reader()).readText()
                         }
                     }
                     .toList()
+                    .toMap()
             }
         }
     }
@@ -128,7 +134,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                inputStream.toAvroReader(stream.descriptor).use { reader ->
+                inputStream.toAvroReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
@@ -136,21 +142,11 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
-                inputStream.toParquetReader(stream.descriptor).use { reader ->
+                inputStream.toParquetReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
                         .toList()
-                }
-            }
-            is MSSQLCSVFormatConfiguration -> {
-                CSVParser(inputStream.bufferedReader(), CSVFormat.DEFAULT.withHeader()).use {
-                    it.records.map { record ->
-                        record
-                            .toAirbyteValue(stream.schema.withAirbyteMeta(true))
-                            .maybeUnflatten(true)
-                            .toOutputRecord()
-                    }
                 }
             }
         }

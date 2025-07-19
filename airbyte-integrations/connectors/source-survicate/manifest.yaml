@@ -1,4 +1,4 @@
-version: 4.6.2
+version: 5.7.5
 
 type: DeclarativeSource
 
@@ -54,8 +54,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -64,7 +64,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -111,8 +111,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -162,8 +162,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -180,7 +180,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -197,7 +197,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: respondents/{{ stream_partition.respondent.uuid }}/responses
+          path: respondents/{{ stream_partition.respondent.uuid }}/attributes
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -225,8 +225,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -235,6 +235,12 @@ definitions:
               partition_field: respondent
               stream:
                 $ref: "#/definitions/streams/surveys_responses"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - respondent_uuid
+              value: "{{ stream_partition.respondent.uuid }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -274,8 +280,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -293,11 +299,11 @@ definitions:
     url_base: https://data-api.survicate.com/v2/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: Basic {{ config["api_key"] }}
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: Authorization
-      api_token: Basic {{ config["api_key"] }}
+        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/surveys"
@@ -317,15 +323,15 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       start_date:
         type: string
+        order: 1
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 1
     additionalProperties: true
 
 metadata:
@@ -340,40 +346,40 @@ metadata:
       - authenticator
   testedStreams:
     surveys:
+      hasRecords: true
       streamHash: d7fd2315f6acad8f3b7627902518f910da5a9281
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     surveys_questions:
+      hasRecords: true
       streamHash: 40aae5ddb5ee69e08a9e00ede7205cf6735877c7
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     surveys_responses:
+      hasRecords: true
       streamHash: 95b1e2612243b3b2b2c4fc045beb24683699a763
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     respondents_attributes:
-      streamHash: 0e1777a7983e396717a3f1e684df32b2f7c8467f
+      streamHash: 75d690c2e7f488319683961e596ee1eb290cb02d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     respondents_responses:
+      hasRecords: true
       streamHash: 7e608e3b7f0f5a5a10beec1533070ca59783481f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -536,103 +542,22 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      response:
+      id:
         type:
-          - object
+          - number
           - "null"
-        properties:
-          answers:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                action_performed:
-                  type:
-                    - boolean
-                    - "null"
-                answer:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    content:
-                      type:
-                        - string
-                        - "null"
-                    id:
-                      type:
-                        - number
-                        - "null"
-                    rating:
-                      type:
-                        - number
-                        - "null"
-                question_id:
-                  type:
-                    - number
-                    - "null"
-                question_type:
-                  type:
-                    - string
-                    - "null"
-          collected_at:
-            type:
-              - string
-              - "null"
-          device_type:
-            type:
-              - string
-              - "null"
-          language:
-            type:
-              - string
-              - "null"
-          operating_system:
-            type:
-              - string
-              - "null"
-          respondent:
-            type:
-              - object
-              - "null"
-            properties:
-              attributes:
-                type:
-                  - array
-                  - "null"
-              uuid:
-                type:
-                  - string
-                  - "null"
-          url:
-            type:
-              - string
-              - "null"
-          uuid:
-            type:
-              - string
-              - "null"
-      survey:
+      name:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
+      respondent_uuid:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
   respondents_responses:
     type: object
     $schema: http://json-schema.org/schema#

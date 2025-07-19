@@ -6,6 +6,20 @@ on:
       - master
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
+  workflow_call:
+    inputs:
+      connectors-options:
+        description: "Options to pass to the 'airbyte-ci connectors' command group."
+        default: "--name=source-pokeapi"
+        type: string
+      publish-options:
+        description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
+        default: "--pre-release"
+        type: string
+      airbyte_ci_binary_url:
+        description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
+        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+        type: string
   workflow_dispatch:
     inputs:
       connectors-options:
@@ -20,11 +34,38 @@ on:
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: ubuntu-24.04-4core
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+
+      - name: Create docker buildx builder
+        id: create-buildx-builder
+        shell: bash
+        run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Build and publish JVM connectors images [On merge to master]
+        id: build-and-publish-JVM-connectors-images-master
+        if: github.event_name == 'push'
+        shell: bash
+        run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json  --java | ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish
+
       - name: Publish modified connectors [On merge to master]
+        # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
         id: publish-modified-connectors
         if: github.event_name == 'push'
         uses: ./.github/actions/run-airbyte-ci
@@ -47,9 +88,15 @@ jobs:
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
 
+      - name: Build and publish JVM connectors images [manual]
+        id: build-and-publish-JVM-connectors-images-manual
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        shell: bash
+        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} ${{ inputs.connectors-options }} --publish
+
       - name: Publish connectors [manual]
         id: publish-connectors
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
@@ -65,9 +112,9 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
+          subcommand: "connectors ${{ inputs.connectors-options }} publish ${{ inputs.publish-options }}"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
-          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
           max_attempts: 2
 
   notify-failure-slack-channel:

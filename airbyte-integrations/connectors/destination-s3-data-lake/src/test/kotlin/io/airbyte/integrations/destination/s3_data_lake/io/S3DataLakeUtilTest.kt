@@ -7,21 +7,23 @@ package io.airbyte.integrations.destination.s3_data_lake.io
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
@@ -32,6 +34,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.AIRBYTE_CDC_DELETE_COLUMN
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -189,10 +192,8 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testConvertAirbyteRecordToIcebergRecordInsert() {
-        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val airbyteStream =
             DestinationStream(
-                descriptor = streamDescriptor,
                 importType = Append,
                 schema =
                     ObjectType(
@@ -204,18 +205,36 @@ internal class S3DataLakeUtilTest {
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 1,
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
             )
         val airbyteRecord =
-            DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
-                data =
-                    ObjectValue(
-                        linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
+            EnrichedDestinationRecordAirbyteValue(
+                stream = airbyteStream,
+                declaredFields =
+                    linkedMapOf(
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            )
                     ),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = Meta(),
+                sourceMeta = Meta(),
+                airbyteRawId = UUIDGenerator().v7(),
             )
-        val pipeline = ParquetMapperPipelineTest().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -225,7 +244,6 @@ internal class S3DataLakeUtilTest {
         val icebergRecord =
             icebergUtil.toRecord(
                 record = airbyteRecord,
-                pipeline = pipeline,
                 tableSchema = schema,
                 stream = airbyteStream
             )
@@ -236,38 +254,58 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testConvertAirbyteRecordToIcebergRecordDelete() {
-        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val airbyteStream =
             DestinationStream(
-                descriptor = streamDescriptor,
                 importType = Append,
                 schema =
                     ObjectType(
                         linkedMapOf(
                             "id" to FieldType(IntegerType, nullable = true),
                             "name" to FieldType(StringType, nullable = true),
+                            AIRBYTE_CDC_DELETE_COLUMN to
+                                FieldType(TimestampTypeWithTimezone, nullable = true),
                         )
                     ),
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 1,
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
             )
         val airbyteRecord =
-            DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
-                data =
-                    ObjectValue(
-                        linkedMapOf(
-                            "id" to IntegerValue(42L),
-                            "name" to StringValue("John Doe"),
-                            AIRBYTE_CDC_DELETE_COLUMN to
+            EnrichedDestinationRecordAirbyteValue(
+                stream = airbyteStream,
+                declaredFields =
+                    linkedMapOf(
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            ),
+                        AIRBYTE_CDC_DELETE_COLUMN to
+                            EnrichedAirbyteValue(
                                 TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
-                        )
+                                TimestampTypeWithTimezone,
+                                AIRBYTE_CDC_DELETE_COLUMN,
+                                airbyteMetaField = null,
+                            ),
                     ),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = Meta(),
+                sourceMeta = Meta(),
+                airbyteRawId = UUIDGenerator().v7(),
             )
-        val pipeline = ParquetMapperPipelineTest().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -277,7 +315,6 @@ internal class S3DataLakeUtilTest {
         val icebergRecord =
             icebergUtil.toRecord(
                 record = airbyteRecord,
-                pipeline = pipeline,
                 tableSchema = schema,
                 stream = airbyteStream
             )
@@ -288,10 +325,8 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testConvertAirbyteRecordToIcebergRecordUpdate() {
-        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val airbyteStream =
             DestinationStream(
-                descriptor = streamDescriptor,
                 importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("id")),
                 schema =
                     ObjectType(
@@ -303,18 +338,36 @@ internal class S3DataLakeUtilTest {
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 1,
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
             )
         val airbyteRecord =
-            DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
-                data =
-                    ObjectValue(
-                        linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
+            EnrichedDestinationRecordAirbyteValue(
+                stream = airbyteStream,
+                declaredFields =
+                    linkedMapOf(
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            ),
                     ),
+                undeclaredFields = linkedMapOf(),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = Meta(),
+                sourceMeta = Meta(),
+                airbyteRawId = UUIDGenerator().v7(),
             )
-        val pipeline = ParquetMapperPipelineTest().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -324,7 +377,6 @@ internal class S3DataLakeUtilTest {
         val icebergRecord =
             icebergUtil.toRecord(
                 record = airbyteRecord,
-                pipeline = pipeline,
                 tableSchema = schema,
                 stream = airbyteStream
             )
@@ -351,7 +403,7 @@ internal class S3DataLakeUtilTest {
         val s3BucketConfiguration =
             S3BucketConfiguration(
                 s3BucketName = s3BucketName,
-                s3BucketRegion = S3BucketRegion.`us-east-1`,
+                s3BucketRegion = S3BucketRegion.`us-east-1`.region,
                 s3Endpoint = s3Endpoint,
             )
         val icebergCatalogConfiguration =
@@ -440,11 +492,9 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testConversionToIcebergSchemaWithMetadataAndPrimaryKey() {
-        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val primaryKeys = listOf("id")
         val stream =
             DestinationStream(
-                descriptor = streamDescriptor,
                 importType = Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys),
                 schema =
                     ObjectType(
@@ -456,9 +506,12 @@ internal class S3DataLakeUtilTest {
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 1,
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
             )
-        val pipeline = ParquetMapperPipelineTest().create(stream)
-        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
         assertNotNull(schema.findField("id"))
@@ -471,10 +524,8 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testConversionToIcebergSchemaWithMetadataAndWithoutPrimaryKey() {
-        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val stream =
             DestinationStream(
-                descriptor = streamDescriptor,
                 importType = Append,
                 schema =
                     ObjectType(
@@ -486,9 +537,12 @@ internal class S3DataLakeUtilTest {
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 1,
+                unmappedNamespace = "namespace",
+                unmappedName = "name",
+                namespaceMapper =
+                    NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
             )
-        val pipeline = ParquetMapperPipelineTest().create(stream)
-        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(emptySet<String>(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
         assertNotNull(schema.findField("id"))

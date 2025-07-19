@@ -37,6 +37,19 @@ To get a Private Token:
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.28 | 2025-07-19 | [63590](https://github.com/airbytehq/airbyte/pull/63590) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63011](https://github.com/airbytehq/airbyte/pull/63011) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62796](https://github.com/airbytehq/airbyte/pull/62796) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62419](https://github.com/airbytehq/airbyte/pull/62419) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61977](https://github.com/airbytehq/airbyte/pull/61977) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [61224](https://github.com/airbytehq/airbyte/pull/61224) | Update dependencies |
+| 0.0.22 | 2025-05-24 | [60368](https://github.com/airbytehq/airbyte/pull/60368) | Update dependencies |
+| 0.0.21 | 2025-05-10 | [60002](https://github.com/airbytehq/airbyte/pull/60002) | Update dependencies |
+| 0.0.20 | 2025-05-03 | [58891](https://github.com/airbytehq/airbyte/pull/58891) | Update dependencies |
+| 0.0.19 | 2025-04-19 | [57784](https://github.com/airbytehq/airbyte/pull/57784) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57233](https://github.com/airbytehq/airbyte/pull/57233) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56549](https://github.com/airbytehq/airbyte/pull/56549) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [55961](https://github.com/airbytehq/airbyte/pull/55961) | Update dependencies |
 | 0.0.15 | 2025-03-08 | [55289](https://github.com/airbytehq/airbyte/pull/55289) | Update dependencies |
 | 0.0.14 | 2025-03-01 | [54917](https://github.com/airbytehq/airbyte/pull/54917) | Update dependencies |
 | 0.0.13 | 2025-02-22 | [54425](https://github.com/airbytehq/airbyte/pull/54425) | Update dependencies |

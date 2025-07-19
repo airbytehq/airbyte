@@ -28,6 +28,21 @@ Connector for the Basespace v1 API. This can be used to extract data on projects
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.31 | 2025-07-19 | [63498](https://github.com/airbytehq/airbyte/pull/63498) | Update dependencies |
+| 0.0.30 | 2025-07-12 | [63144](https://github.com/airbytehq/airbyte/pull/63144) | Update dependencies |
+| 0.0.29 | 2025-07-05 | [62643](https://github.com/airbytehq/airbyte/pull/62643) | Update dependencies |
+| 0.0.28 | 2025-06-28 | [62160](https://github.com/airbytehq/airbyte/pull/62160) | Update dependencies |
+| 0.0.27 | 2025-06-21 | [61852](https://github.com/airbytehq/airbyte/pull/61852) | Update dependencies |
+| 0.0.26 | 2025-06-14 | [61124](https://github.com/airbytehq/airbyte/pull/61124) | Update dependencies |
+| 0.0.25 | 2025-05-24 | [60629](https://github.com/airbytehq/airbyte/pull/60629) | Update dependencies |
+| 0.0.24 | 2025-05-10 | [59849](https://github.com/airbytehq/airbyte/pull/59849) | Update dependencies |
+| 0.0.23 | 2025-05-03 | [59266](https://github.com/airbytehq/airbyte/pull/59266) | Update dependencies |
+| 0.0.22 | 2025-04-26 | [58814](https://github.com/airbytehq/airbyte/pull/58814) | Update dependencies |
+| 0.0.21 | 2025-04-19 | [58185](https://github.com/airbytehq/airbyte/pull/58185) | Update dependencies |
+| 0.0.20 | 2025-04-12 | [57713](https://github.com/airbytehq/airbyte/pull/57713) | Update dependencies |
+| 0.0.19 | 2025-04-05 | [57074](https://github.com/airbytehq/airbyte/pull/57074) | Update dependencies |
+| 0.0.18 | 2025-03-29 | [56662](https://github.com/airbytehq/airbyte/pull/56662) | Update dependencies |
+| 0.0.17 | 2025-03-22 | [56057](https://github.com/airbytehq/airbyte/pull/56057) | Update dependencies |
 | 0.0.16 | 2025-03-08 | [55448](https://github.com/airbytehq/airbyte/pull/55448) | Update dependencies |
 | 0.0.15 | 2025-03-01 | [54758](https://github.com/airbytehq/airbyte/pull/54758) | Update dependencies |
 | 0.0.14 | 2025-02-22 | [54298](https://github.com/airbytehq/airbyte/pull/54298) | Update dependencies |

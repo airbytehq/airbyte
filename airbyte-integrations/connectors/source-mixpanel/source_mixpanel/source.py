@@ -1,21 +1,42 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import base64
 import copy
+import logging
+import os
+from functools import wraps
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
+from source_mixpanel.streams import Export
 
-from .streams import Export
-from .testing import adapt_validate_if_testing
+
+def adapt_validate_if_testing(func):
+    """
+    Due to API limitations (60 requests per hour) it is impossible to run acceptance tests in normal mode,
+    so we're reducing amount of requests by aligning start date if `AVAILABLE_TESTING_RANGE_DAYS` flag is set in env variables.
+    """
+
+    @wraps(func)
+    def wrapper(self, config):
+        config = func(self, config)
+        available_testing_range_days = int(os.environ.get("AVAILABLE_TESTING_RANGE_DAYS", 0))
+        if available_testing_range_days:
+            logger = logging.getLogger("airbyte")
+            logger.info("SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
+            if (config["end_date"] - config["start_date"]).days > available_testing_range_days:
+                config["start_date"] = config["end_date"].subtract(days=available_testing_range_days)
+        return config
+
+    return wrapper
 
 
 def raise_config_error(message: str, original_error: Optional[Exception] = None):
@@ -32,35 +53,8 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        credentials = config.get("credentials")
-        if not credentials.get("option_title"):
-            if credentials.get("api_secret"):
-                credentials["option_title"] = "Project Secret"
-            else:
-                credentials["option_title"] = "Service Account"
-
-        streams = super().streams(config=config)
-
-        config_transformed = copy.deepcopy(config)
-        config_transformed = self._validate_and_transform(config_transformed)
-        auth = self.get_authenticator(config)
-
-        streams.append(Export(authenticator=auth, **config_transformed))
-
-        return streams
-
-    @staticmethod
-    def get_authenticator(config: Mapping[str, Any]) -> TokenAuthenticator:
-        credentials = config["credentials"]
-        username = credentials.get("username")
-        secret = credentials.get("secret")
-        if username and secret:
-            return BasicHttpAuthenticator(username=username, password=secret)
-        return TokenAuthenticatorBase64(token=credentials["api_secret"])
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @staticmethod
     def validate_date(name: str, date_str: str, default: pendulum.date) -> pendulum.date:
@@ -133,3 +127,30 @@ class SourceMixpanel(YamlDeclarativeSource):
         config["export_lookback_window"] = export_lookback_window
 
         return config
+
+    @staticmethod
+    def get_authenticator(config: Mapping[str, Any]) -> TokenAuthenticator:
+        credentials = config["credentials"]
+        username = credentials.get("username")
+        secret = credentials.get("secret")
+        if username and secret:
+            return BasicHttpAuthenticator(username=username, password=secret)
+        return TokenAuthenticatorBase64(token=credentials["api_secret"])
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        credentials = config.get("credentials")
+        if not credentials.get("option_title"):
+            if credentials.get("api_secret"):
+                credentials["option_title"] = "Project Secret"
+            else:
+                credentials["option_title"] = "Service Account"
+
+        streams = super().streams(config=config)
+
+        config_transformed = copy.deepcopy(config)
+        config_transformed = self._validate_and_transform(config_transformed)
+        auth = self.get_authenticator(config)
+
+        streams.append(Export(authenticator=auth, **config_transformed))
+
+        return streams

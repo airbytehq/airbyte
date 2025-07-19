@@ -63,7 +63,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - "{{ parameters['field_path'] }}"
+        - "{{ parameters['extractor_field_path'] }}"
 
   retriever:
     type: SimpleRetriever
@@ -113,14 +113,14 @@ definitions:
     $parameters:
       name: users
       path: users.list
-      field_path: members
+      extractor_field_path: members
 
   channels_stream:
     primary_key: "id"
     $parameters:
       name: channels
       path: conversations.list
-      field_path: channels
+      extractor_field_path: channels
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -159,7 +159,7 @@ definitions:
     $parameters:
       name: channel_members
       path: conversations.members
-      field_path: members
+      extractor_field_path: members
     primary_key:
       - member_id
       - channel_id
@@ -184,7 +184,7 @@ definitions:
     $parameters:
       name: channel_messages
       path: conversations.history
-      field_path: messages
+      extractor_field_path: messages
     primary_key:
       - channel_id
       - ts
@@ -194,6 +194,11 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           inclusive: "True"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -207,7 +212,7 @@ definitions:
               $parameters:
                 name: channels
                 path: conversations.list
-                field_path: channels
+                extractor_field_path: channels
             parent_key: id
             partition_field: channel
             request_option:
@@ -218,7 +223,7 @@ definitions:
       cursor_field: float_ts
       cursor_datetime_formats:
         - "%s_as_float"
-      step: P100D
+      step: "P{{ config.get('channel_messages_window_size', 100) }}D"
       cursor_granularity: PT1S
       lookback_window: "P{{ config.get('lookback_window', 0) }}D"
       datetime_format: "%s_as_float"
@@ -258,3 +263,8 @@ check:
   type: CheckStream
   stream_names:
     - users
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10

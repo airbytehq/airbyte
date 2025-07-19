@@ -47,9 +47,9 @@ class ProtocolMessageDeserializer(
                 )
             }
 
-        return destinationMessageFactory.fromAirbyteMessage(
+        return destinationMessageFactory.fromAirbyteProtocolMessage(
             airbyteMessage,
-            serialized,
+            serialized.length.toLong(),
         )
     }
 }

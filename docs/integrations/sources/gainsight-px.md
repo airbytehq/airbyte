@@ -74,6 +74,21 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
+| 0.2.30 | 2025-07-19 | [63599](https://github.com/airbytehq/airbyte/pull/63599) | Update dependencies |
+| 0.2.29 | 2025-07-12 | [62993](https://github.com/airbytehq/airbyte/pull/62993) | Update dependencies |
+| 0.2.28 | 2025-07-05 | [62800](https://github.com/airbytehq/airbyte/pull/62800) | Update dependencies |
+| 0.2.27 | 2025-06-28 | [62365](https://github.com/airbytehq/airbyte/pull/62365) | Update dependencies |
+| 0.2.26 | 2025-06-21 | [61951](https://github.com/airbytehq/airbyte/pull/61951) | Update dependencies |
+| 0.2.25 | 2025-06-14 | [61165](https://github.com/airbytehq/airbyte/pull/61165) | Update dependencies |
+| 0.2.24 | 2025-05-24 | [60390](https://github.com/airbytehq/airbyte/pull/60390) | Update dependencies |
+| 0.2.23 | 2025-05-10 | [60045](https://github.com/airbytehq/airbyte/pull/60045) | Update dependencies |
+| 0.2.22 | 2025-05-03 | [59391](https://github.com/airbytehq/airbyte/pull/59391) | Update dependencies |
+| 0.2.21 | 2025-04-26 | [58859](https://github.com/airbytehq/airbyte/pull/58859) | Update dependencies |
+| 0.2.20 | 2025-04-19 | [58372](https://github.com/airbytehq/airbyte/pull/58372) | Update dependencies |
+| 0.2.19 | 2025-04-12 | [57759](https://github.com/airbytehq/airbyte/pull/57759) | Update dependencies |
+| 0.2.18 | 2025-04-05 | [57217](https://github.com/airbytehq/airbyte/pull/57217) | Update dependencies |
+| 0.2.17 | 2025-03-29 | [56481](https://github.com/airbytehq/airbyte/pull/56481) | Update dependencies |
+| 0.2.16 | 2025-03-22 | [55985](https://github.com/airbytehq/airbyte/pull/55985) | Update dependencies |
 | 0.2.15 | 2025-03-08 | [55337](https://github.com/airbytehq/airbyte/pull/55337) | Update dependencies |
 | 0.2.14 | 2025-03-01 | [54970](https://github.com/airbytehq/airbyte/pull/54970) | Update dependencies |
 | 0.2.13 | 2025-02-22 | [54408](https://github.com/airbytehq/airbyte/pull/54408) | Update dependencies |

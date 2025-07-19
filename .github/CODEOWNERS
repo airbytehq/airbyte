@@ -1,10 +1,10 @@
 # Vector db connectors
-/airbyte-integrations/connectors/destination-pinecone @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-weaviate @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-pinecone @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-weaviate @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-milvus @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-qdrant @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-chroma @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/dev-extensibility
 
 # CI/CD
 /.github/ @airbytehq/dev-extensibility
@@ -64,3 +64,9 @@
 /airbyte-integrations/connectors/source-salesforce/ @airbytehq/dev-extensibility
 /airbyte-integrations/connectors/source-shopify/ @airbytehq/dev-extensibility
 /airbyte-integrations/connectors/source-stripe/ @airbytehq/dev-extensibility
+
+# Breaking changes detection
+# This rule ensures that breaking changes to connectors (identified by a required
+# update in the connnector's migration file) are reviewed by the 
+# `breaking-changes-reviewers` team to manage and help message breaking changes.
+docs/integrations/**/*-migrations.md @airbytehq/breaking-change-reviewers

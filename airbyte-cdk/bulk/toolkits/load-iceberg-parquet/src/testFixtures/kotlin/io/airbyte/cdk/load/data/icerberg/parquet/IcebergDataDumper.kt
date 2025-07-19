@@ -81,7 +81,7 @@ class IcebergDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val catalog = getCatalog(spec)
-        val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.descriptor))
+        val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
 
         val outputRecords = mutableListOf<OutputRecord>()
         IcebergGenerics.read(table).build().use { records ->
@@ -113,7 +113,7 @@ class IcebergDataDumper(
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
+    ): Map<String, String> {
         throw NotImplementedError("Iceberg doesn't support universal file transfer")
     }
 }

@@ -6,8 +6,8 @@ package io.airbyte.cdk.test.fixtures.legacy
 
 import io.airbyte.api.client.AirbyteApiClient
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody
-import io.airbyte.protocol.models.AirbyteCatalog
-import io.airbyte.protocol.models.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteCatalog
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*

@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+
+    api platform('com.google.cloud:libraries-bom:26.57.0')
+}

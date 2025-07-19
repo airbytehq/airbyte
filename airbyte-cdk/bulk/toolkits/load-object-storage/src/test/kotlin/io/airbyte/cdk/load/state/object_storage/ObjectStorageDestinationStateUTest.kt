@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.state.object_storage
 
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
@@ -25,13 +26,18 @@ class ObjectStorageDestinationStateUTest {
     data class MockObj(override val key: String, override val storageConfig: Unit = Unit) :
         RemoteObject<Unit>
 
+    private val destinationConfig =
+        object : DestinationConfiguration() {
+            override val generationIdMetadataKey = "test-ab-generation-id"
+        }
+
     @MockK lateinit var stream: DestinationStream
     @MockK lateinit var client: ObjectStorageClient<*>
     @MockK lateinit var pathFactory: ObjectStoragePathFactory
 
     @BeforeEach
     fun setup() {
-        every { stream.descriptor } returns DestinationStream.Descriptor("test", "stream")
+        every { stream.mappedDescriptor } returns DestinationStream.Descriptor("test", "stream")
         every { pathFactory.getLongestStreamConstantPrefix(any()) } returns ""
     }
 
@@ -59,7 +65,7 @@ class ObjectStorageDestinationStateUTest {
                 PathMatcher(Regex("(dog|cat|turtle-1)$suffix"), mapOf("suffix" to 2))
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, destinationConfig)
         val state = persister.load(stream)
 
         assertEquals("dog-4", state.ensureUnique("dog"))
@@ -97,7 +103,7 @@ class ObjectStorageDestinationStateUTest {
                 )
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, destinationConfig)
         val state = persister.load(stream)
 
         assertEquals(2L, state.getPartIdCounter("dog/").get())
@@ -132,7 +138,7 @@ class ObjectStorageDestinationStateUTest {
                 val stream = firstArg<DestinationStream>()
                 val suffix = secondArg<String>()
                 PathMatcher(
-                    Regex("(${stream.descriptor.name})/([0-9]+)$suffix"),
+                    Regex("(${stream.mappedDescriptor.name})/([0-9]+)$suffix"),
                     mapOf("suffix" to 3)
                 )
             }
@@ -140,20 +146,22 @@ class ObjectStorageDestinationStateUTest {
         coEvery { client.getMetadata(any()) } answers
             {
                 val key = firstArg<String>()
-                mapOf("ab-generation-id" to key.split("/").last())
+                // Note that because we the generation ID metadata key, so the
+                // "ab-generation-id" key is replaced with "test-ab-generation-id"
+                mapOf("test-ab-generation-id" to key.split("/").last())
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, destinationConfig)
 
         val dogStream = mockk<DestinationStream>(relaxed = true)
-        every { dogStream.descriptor } returns DestinationStream.Descriptor("test", "dog")
+        every { dogStream.mappedDescriptor } returns DestinationStream.Descriptor("test", "dog")
         every { dogStream.minimumGenerationId } returns 0L
         every { dogStream.shouldBeTruncatedAtEndOfSync() } returns true
         val dogState = persister.load(dogStream)
         assertEquals(0, dogState.getObjectsToDelete().size)
 
         val catStream = mockk<DestinationStream>(relaxed = true)
-        every { catStream.descriptor } returns DestinationStream.Descriptor("test", "cat")
+        every { catStream.mappedDescriptor } returns DestinationStream.Descriptor("test", "cat")
         every { catStream.minimumGenerationId } returns 3L
         every { catStream.shouldBeTruncatedAtEndOfSync() } returns true
         val catState = persister.load(catStream)
@@ -163,7 +171,8 @@ class ObjectStorageDestinationStateUTest {
         )
 
         val turtleStream = mockk<DestinationStream>(relaxed = true)
-        every { turtleStream.descriptor } returns DestinationStream.Descriptor("test", "turtle-1")
+        every { turtleStream.mappedDescriptor } returns
+            DestinationStream.Descriptor("test", "turtle-1")
         every { turtleStream.minimumGenerationId } returns 3L
         every { turtleStream.shouldBeTruncatedAtEndOfSync() } returns false
         val turtleState = persister.load(turtleStream)

@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
@@ -35,7 +34,6 @@ class S3DataLakeStreamLoader(
 ) : StreamLoader {
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
-    private val pipeline = IcebergParquetPipelineFactory().create(stream)
 
     // If we're executing a truncate, then force the schema change.
     internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
@@ -44,7 +42,7 @@ class S3DataLakeStreamLoader(
         } else {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
-    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -53,10 +51,10 @@ class S3DataLakeStreamLoader(
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        s3DataLakeUtil.createNamespaceWithGlueHandling(stream.descriptor, catalog)
+        s3DataLakeUtil.createNamespaceWithGlueHandling(stream.mappedDescriptor, catalog)
         table =
             icebergUtil.createTable(
-                streamDescriptor = stream.descriptor,
+                streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
                 schema = incomingSchema,
                 properties = properties
@@ -75,12 +73,12 @@ class S3DataLakeStreamLoader(
         targetSchema = computeOrExecuteSchemaUpdate().schema
         try {
             logger.info {
-                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
+                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
             }
             table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
         } catch (e: IllegalArgumentException) {
             logger.info {
-                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
+                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.mappedDescriptor}"
             }
         }
 
@@ -89,10 +87,10 @@ class S3DataLakeStreamLoader(
                 table = table,
                 schema = targetSchema,
             )
-        streamStateStore.put(stream.descriptor, state)
+        streamStateStore.put(stream.mappedDescriptor, state)
     }
 
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
@@ -105,31 +103,20 @@ class S3DataLakeStreamLoader(
             // stale table metadata without this.
             table.refresh()
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
-            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
-            if (stream.minimumGenerationId > 0) {
+            if (stream.isSingleGenerationTruncate()) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
                 }
-                val generationIdsToDelete =
-                    (0 until stream.minimumGenerationId).map(
-                        icebergUtil::constructGenerationIdSuffix
-                    )
                 val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteGenerationId(
-                    table,
-                    stagingBranchName,
-                    generationIdsToDelete
-                )
+                icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
                 //  Doing it again to push the deletes from the staging to main branch
                 logger.info {
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
-                table
-                    .manageSnapshots()
-                    .fastForwardBranch(mainBranchName, stagingBranchName)
-                    .commit()
+                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
             }
         }
     }
