@@ -38,11 +38,9 @@ To create a new stream as an asynchronous stream, click the `+` add stream butto
 
 An asynchronous stream in the Connector Builder UI is divided into four main tabs: **Creation**, **Polling**, **Download**, and **Schema**. The first three tabs correspond to the three phases of asynchronous data extraction, while the Schema tab allows you to configure the stream's data schema.
 
-### 1. Creation Tab
+### Creation Tab
 
 The Creation tab configures how to request that a job be created on the server.
-
-![Creation Tab](./assets/connector_builder_async_creation_tab.png)
 
 #### Key Components:
 
@@ -70,11 +68,9 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
   - Select **Bearer Token** authentication type
   - Fill out the **API Key** user input with your SendGrid API key
 
-### 2. Polling Tab
+### Polling Tab
 
 The Polling tab defines how to check the status of a running job.
-
-![Polling Tab](./assets/connector_builder_async_polling_tab.png)
 
 #### Key Components:
 
@@ -127,11 +123,9 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
   - Set the **Field Path** to: `urls`
 - **Polling Job Timeout**: Set an appropriate timeout value (e.g., `30` for 30 minutes)
 
-### 3. Download Tab
+### Download Tab
 
 The Download tab configures how to retrieve the results once the job is complete. This tab provides comprehensive configuration options for processing the downloaded data.
-
-![Download Tab](./assets/connector_builder_async_download_tab.png)
 
 #### Key Components:
 
