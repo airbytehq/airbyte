@@ -73,7 +73,7 @@ Use this to batch multiple partitions together for APIs that support filtering b
 
 **Note:** Per-partition incremental syncs may not work as expected with grouping since partition groupings might change between syncs.
 
-## Multiple Partition Routers
+### Multiple Partition Routers
 
 You can configure multiple partition routers on a single stream. When multiple routers are used, all possible combinations of partition values are requested separately.
 
@@ -115,7 +115,7 @@ For complex injection requirements that the standard options don't support:
 
 **Incremental Dependency**: When enabled, the parent stream is read incrementally based on child stream updates.
 
-## When NOT to Use Partitioning
+## When not to Use Partitioning
 
 Don't use partitioning for:
 - **Pagination**: Use the Pagination feature instead
