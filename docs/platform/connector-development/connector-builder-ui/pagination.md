@@ -429,7 +429,7 @@ Configuration:
 - **Pagination method**: Page Increment
 - **Start From Page**: 0
 - **Page size**: 100
-- **Inject Page Number**: Enabled (if API requires explicit page=0)
+- **Inject Page Number on First Request**: Enabled (if API requires explicit page=0)
 
 ## Performance Recommendations
 
@@ -485,7 +485,7 @@ If you're seeing duplicate records:
 
 If the first request fails or behaves unexpectedly:
 
-- **Check injection settings**: Verify if you need to enable "Inject Page Number" or "Inject Offset" for the first request
+- **Check injection settings**: Verify if you need to enable "Inject Page Number on First Request" or "Inject Offset on First Request" for the first request
 - **Validate start page**: Ensure the "Start From Page" value matches the API's expectations (0-based vs 1-based)
 - **Review API requirements**: Some APIs don't accept pagination parameters on the first request - disable injection if needed
 - **Test without pagination**: Try making a request without pagination parameters to understand the API's default behavior
