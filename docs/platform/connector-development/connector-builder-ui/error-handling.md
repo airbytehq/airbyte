@@ -100,8 +100,6 @@ The "Wait Time Extracted from Response Header" backoff strategy allows the conne
 - Regex: `"([-+]?\\d+)"` (extracts numeric value)
 - Max wait: `3600` (don't wait more than 1 hour)
 
-<iframe width="640" height="545" src="https://www.loom.com/embed/84b65299b5cd4f83a8e3b6abdfa0ebd2" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
 #### Example
 
 The [Chargebee API](https://apidocs.chargebee.com/docs/api/error-handling) documentation recommends using the `Retry-After` in the response headers to determine when to retry the request.
@@ -121,8 +119,6 @@ The "Wait Until Time Defined in Response Header" backoff strategy allows the con
 - Header name: `"X-RateLimit-Reset"`
 - Min wait: `10` (always wait at least 10 seconds)
 - Regex: `"([-+]?\\d+)"` (extracts numeric timestamp)
-
-<iframe width="640" height="562" src="https://www.loom.com/embed/023bc8a5e5464b2fba125f9344e3f02f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 #### Example
 
