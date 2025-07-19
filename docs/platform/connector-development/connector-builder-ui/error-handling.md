@@ -136,62 +136,6 @@ A response filter should be used when a connector needs to interpret an API resp
 
 Multiple response filters can be configured for a single error handler. When using multiple filters, they are applied sequentially and the response will be processed according to the first filter that matches.
 
-<iframe width="640" height="716" src="https://www.loom.com/embed/dc86147384204156a2b79442a00c0dd3" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
-### Response Conditions
-
-The following conditions can be specified on response filters to determine if attributes of the response match the filter. When more than one condition is specified, the filter will take action if the response satisfies any of the conditions:
-
-- [Error Message Substring](#error-message-substring)
-- [Predicate](#predicate)
-- [HTTP Codes](#http-codes)
-
-#### Error Message Substring
-
-For a response filter that defines the "Error Message Substring" field, the connector will check if the provided text exists within the text body of the API response. If the text is present, the response filter will carry out the specified action.
-
-**Configuration:**
-- **Error message substring**: The text to search for in the response body
-
-**Example:**
-- Value: `"This API operation is not enabled for this site"`
-
-##### Example
-
-For the Chargebee API, some endpoints are only available for a specific API version and if an endpoint is unavailable, the response text will contain `"This API operation is not enabled for this site"`. The Airbyte Chargebee integration allows customers to configure which API version to use when retrieving data for a stream. When the connector makes requests to Chargebee using an unsupported version, the response filter will match according to the response text and proceeds based on the configured action.
-
-#### Predicate
-
-This field allows for more granular control over how the response filter matches against attributes of an API response. The predicate is an interpolation expression that is evaluated against the API response's text body or headers.
-
-**Configuration:**
-- **Predicate**: An interpolation expression that evaluates to true or false based on the response content
-
-**Examples:**
-- `"{{ 'Too much requests' in response }}"` (check if text exists in response)
-- `"{{ response.code == 300 }}"` (check specific field value)
-- `"{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"` (complex condition)
-
-##### Example
-
-For the Zoom API, the response text body can include a special non-error status codes under the `code` field. An example response text body would look like `{"code": 300}`. The "Error message contains" condition is too broad because there could be record data containing the text "300". Instead, for a response filter defining the predicate as `{{ response.code == 300 }}`, during a sync, the predicate expression will be evaluated to true and the connector proceeds based on the configured action.
-
-#### HTTP Codes
-
-A response filter can specify a set of numeric HTTP status codes to match against. When receiving an API response, the connector will check if the status code of the response is in the provided set of HTTP status codes.
-
-**Configuration:**
-- **HTTP codes**: An array of HTTP status codes to match against
-
-**Examples:**
-- `[420, 429]` (match rate limiting codes)
-- `[500]` (match server errors)
-- `[403, 404]` (match specific client errors)
-
-##### Example
-
-The Pocket API emits API responses for rate limiting errors using a 403 error status code. The default error handler interprets 403 errors as non-retryable and will fail the sync when they are encountered. The connector can configure a response filter with HTTP status codes that contains 403. When a 403 error response from the API is encountered, the connector proceeds based on the configured action.
-
 ### Action
 
 If a response from the API matches the conditions of the response filter, the connector will continue the sync according to the configured action. The following actions are available:
@@ -210,22 +154,76 @@ When using the FAIL action, you can optionally specify a failure type to categor
 - **config_error**: Indicates an error caused by incorrect user configuration
 - **transient_error**: Indicates a temporary error that might resolve itself
 
-### Custom Error Messages
+### Error Message
 
 The "Error message" field allows you to customize the message that is relayed back to users when the API response matches a response filter. This field supports interpolation, allowing you to include dynamic information from the response in the error message.
 
 **Configuration:**
+
 - **Error message**: Custom error message to display when the filter matches
 
 **Interpolation context available:**
+
 - `config`: Access to connector configuration values
 - `response`: Access to the API response content
 - `headers`: Access to response headers
 
-**Examples:**
+#### Example
+
 - `"API rate limit exceeded. Please try again later."`
 - `"Invalid API key: {{ response.error_message }}"`
 - `"Request failed with status {{ response.status_code }}: {{ response.message }}"`
+
+### Error Message Substring
+
+For a response filter that defines the "Error Message Substring" field, the connector will check if the provided text exists within the text body of the API response. If the text is present, the response filter will carry out the specified action.
+
+**Configuration:**
+- **Error message substring**: The text to search for in the response body
+
+**Example:**
+- Value: `"This API operation is not enabled for this site"`
+
+#### Example
+
+For the Chargebee API, some endpoints are only available for a specific API version and if an endpoint is unavailable, the response text will contain `"This API operation is not enabled for this site"`. The Airbyte Chargebee integration allows customers to configure which API version to use when retrieving data for a stream. When the connector makes requests to Chargebee using an unsupported version, the response filter will match according to the response text and proceeds based on the configured action.
+
+### HTTP Codes
+
+A response filter can specify a set of numeric HTTP status codes to match against. When receiving an API response, the connector will check if the status code of the response is in the provided set of HTTP status codes.
+
+**Configuration:**
+- **HTTP codes**: An array of HTTP status codes to match against
+
+**Examples:**
+- `[420, 429]` (match rate limiting codes)
+- `[500]` (match server errors)
+- `[403, 404]` (match specific client errors)
+
+#### Example
+
+The Pocket API emits API responses for rate limiting errors using a 403 error status code. The default error handler interprets 403 errors as non-retryable and will fail the sync when they are encountered. The connector can configure a response filter with HTTP status codes that contains 403. When a 403 error response from the API is encountered, the connector proceeds based on the configured action.
+
+### Predicate
+
+This field allows for more granular control over how the response filter matches against attributes of an API response. The predicate is an interpolation expression that is evaluated against the API response's text body or headers.
+
+**Configuration:**
+- **Predicate**: An interpolation expression that evaluates to true or false based on the response content
+
+**Examples:**
+- `"{{ 'Too much requests' in response }}"` (check if text exists in response)
+- `"{{ response.code == 300 }}"` (check specific field value)
+- `"{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"` (complex condition)
+
+##### Example
+
+For the Zoom API, the response text body can include a special non-error status codes under the `code` field. An example response text body would look like `{"code": 300}`. The "Error message contains" condition is too broad because there could be record data containing the text "300". Instead, for a response filter defining the predicate as `{{ response.code == 300 }}`, during a sync, the predicate expression will be evaluated to true and the connector proceeds based on the configured action.
+
+
+
+
+
 
 ## Advanced Error Handling Configuration
 
