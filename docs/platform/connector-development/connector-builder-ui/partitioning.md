@@ -2,7 +2,7 @@
 
 Partitioning is required when records of a stream are grouped into subsets that need to be queried separately to extract all records. This is common when APIs require specific parameters (like IDs or categories) to fetch different portions of the data.
 
-The Connector Builder UI provides a unified partitioning interface that supports multiple partition router types through a schema-driven form. All partitioning configuration is done through the **Partition Router** section in the stream configuration.
+The Connector Builder UI provides a unified partitioning interface that supports multiple partition router types. All partitioning configuration is done through the **Partition Router** section in the stream configuration.
 
 ## Partition Router Types
 
