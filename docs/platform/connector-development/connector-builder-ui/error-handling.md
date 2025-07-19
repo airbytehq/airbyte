@@ -212,18 +212,13 @@ This field allows for more granular control over how the response filter matches
 - **Predicate**: An interpolation expression that evaluates to true or false based on the response content
 
 **Examples:**
-- `"{{ 'Too much requests' in response }}"` (check if text exists in response)
+- `"{{ 'Too many requests' in response }}"` (check if text exists in response)
 - `"{{ response.code == 300 }}"` (check specific field value)
 - `"{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"` (complex condition)
 
-##### Example
+#### Example
 
 For the Zoom API, the response text body can include a special non-error status codes under the `code` field. An example response text body would look like `{"code": 300}`. The "Error message contains" condition is too broad because there could be record data containing the text "300". Instead, for a response filter defining the predicate as `{{ response.code == 300 }}`, during a sync, the predicate expression will be evaluated to true and the connector proceeds based on the configured action.
-
-
-
-
-
 
 ## Advanced Error Handling Configuration
 
