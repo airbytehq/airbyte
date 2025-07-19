@@ -22,10 +22,6 @@ In the builder UI, these are configured as follows:
 
 - **Cursor field** - The property in the record that defines when the record was last updated. This field is used to determine which records have been synced and which are new.
 - **Cursor datetime formats** - The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. The UI can auto-detect common formats from your test data.
-- **API time filtering capabilities** - Specifies how the API allows filtering by datetime:
-  - **Range**: API supports both start and end datetime filtering
-  - **Start**: API supports start datetime filtering but returns all data from start to now
-  - **No filter (data feed)**: API doesn't support filtering and returns data in descending order (newest to oldest)
 - **Start datetime** - The initial start date for the time range to fetch records. For incremental syncs, subsequent syncs will use the last cursor value as the new start date.
 - **End datetime** - The end date for the time range (only available for Range mode). Usually set to "now" to sync all changes up to the current time.
 - **Inject start/end time into outgoing HTTP request** - Configures how to send the datetime values to the API (as query parameters, headers, or request body).
