@@ -320,6 +320,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.4.3 | 2025-07-19 | [61127](https://github.com/airbytehq/airbyte/pull/61127) | Update dependencies |
 | 0.4.2 | 2025-05-24 | [60621](https://github.com/airbytehq/airbyte/pull/60621) | Update dependencies |
 | 0.4.1 | 2025-05-10 | [58227](https://github.com/airbytehq/airbyte/pull/58227) | Update dependencies |
 | 0.4.0 | 2025-05-06 | [59690](https://github.com/airbytehq/airbyte/pull/59690) | Promoting release candidate 0.4.0-rc.1 to a main version. |
