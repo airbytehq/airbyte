@@ -600,16 +600,6 @@ The "transformations" feature can be used for these purposes.
 
 ### Removing fields
 
-<iframe
-  width="640"
-  height="538"
-  src="https://www.loom.com/embed/8dca8feaa54f49848667d3fd5b945372"
-  frameborder="0"
-  webkitallowfullscreen
-  mozallowfullscreen
-  allowfullscreen
-></iframe>
-
 To remove a field from a record, add a new transformation in the "Transformations" section of type "remove" and enter the field path. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records also include the html content of the mailing which takes up a lot of space:
 
 ```
@@ -684,16 +674,6 @@ The `*` character can also be used as a placeholder to filter for all fields tha
 ```
 
 ### Adding fields
-
-<iframe
-  width="640"
-  height="409"
-  src="https://www.loom.com/embed/ab3b72cafb734112b645607ab6d1ab1f"
-  frameborder="0"
-  webkitallowfullscreen
-  mozallowfullscreen
-  allowfullscreen
-></iframe>
 
 Adding fields can be used to apply a hashing function to an existing field to pseudonymize it. To do this, add a new transformation in the "Transformations" section of type "add" and enter the field path and the new value. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records include the name of the sender:
 
