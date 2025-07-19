@@ -26,7 +26,7 @@ class AirbyteConnectorBaseImage(ABC):
     AIRBYTE_DIR_PATH: str = "/airbyte"
 
     @final
-    def __init__(self, dagger_client: dagger.Client, version: semver.VersionInfo):
+    def __init__(self, dagger_client: dagger.Client, version: semver.VersionInfo) -> None:
         """Initializes the Airbyte base image.
 
         Args:
@@ -89,7 +89,7 @@ class AirbyteConnectorBaseImage(ABC):
         This method is called before image publication.
 
         Args:
-            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
+            platform (dagger.Platform): The platform on which the sanity checks should run.
 
         Raises:
             SanityCheckError: Raised if a sanity check fails.
