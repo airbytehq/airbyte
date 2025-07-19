@@ -50,9 +50,9 @@ The Components Mapping configuration defines how data from the resolver is mappe
 
 ### Field Path
 A list of potentially nested fields indicating the full path where the value will be added or updated in the template. Supports:
-- Simple field names: `["data"]`
-- Nested fields: `["data", "records"]`
-- Dynamic field names using interpolation: `["data", "{{ components_values.name }}"]`
+- Simple field names: `["primary_key"]`
+- Nested fields: `["retriever", "requester", "url"]`
+- Dynamic field names using interpolation: `["retriever", "{{ components_values.name }}"]`
 - Wildcard patterns: `["*", "**", "name"]`
 
 ### Value
