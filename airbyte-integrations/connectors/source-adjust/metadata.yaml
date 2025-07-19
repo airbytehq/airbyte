@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
-  dockerImageTag: 0.1.33
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-adjust
   documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
   githubIssueLabel: source-adjust
@@ -14,7 +14,7 @@ data:
   name: Adjust
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-adjust
   registryOverrides:
     cloud:
@@ -24,10 +24,10 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
 metadataSpecVersion: "1.0"
