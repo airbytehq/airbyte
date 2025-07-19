@@ -270,7 +270,7 @@ curl -X GET \
 
 In most cases, OAuth refresh tokens are long-lived and can be reused to create access tokens for every sync. However, some APIs invalidate the refresh token after each use and return a new refresh token along with the access token. One example of this behavior is the [Smartsheets API](https://smartsheet.redoc.ly/#section/OAuth-Walkthrough/Get-or-Refresh-an-Access-Token).
 
-For APIs that use single-use refresh tokens, define `Refresh Token Updater` and `Refresh Token Property Name`. When these are defined:
+For APIs that use single-use refresh tokens, turn on `Refresh Token Updater`. In this case:
 
 - The authenticator expects a new refresh token to be returned from the token refresh endpoint
 - By default, the property `refresh_token` is used to extract the new refresh token, but this can be configured using the "Refresh token property name" setting
