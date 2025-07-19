@@ -49,7 +49,7 @@ The `/search` endpoint has a `from-date` and a `to-date` query parameter which c
 
 Content records have the following form:
 
-```
+```json
 {
     "id": "world/2022/oct/21/russia-ukraine-war-latest-what-we-know-on-day-240-of-the-invasion",
     "type": "article",
@@ -70,17 +70,15 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 - "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
 - "Inject end time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `to-date`
 
-<iframe width="640" height="835" src="https://www.loom.com/embed/78eb5da26e2e4f4aa9c3a48573d9ed3b" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
 Setting the start date in the "Testing values" to a date in the past like **2023-04-09T00:00:00Z** results in the following request:
 
-<pre>
+```bash
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-09T00:00:00Z</b>&to-date={`now`}'
-</pre>
+```
 
 The most recent encountered date will be saved as the [*state*](../../understanding-airbyte/airbyte-protocol.md#state--checkpointing) of the connection - when the next sync is running, it picks up from that cutoff date as the new start date. Let's assume the last ecountered article looked like this:
 
-<pre>
+```json
 {`{
   "id": "business/live/2023/apr/15/uk-bosses-more-optimistic-energy-prices-fall-ai-spending-boom-economics-business-live",
   "type": "liveblog",
@@ -88,13 +86,13 @@ The most recent encountered date will be saved as the [*state*](../../understand
   "sectionName": "Business",
   "webPublicationDate": `}<b>"2023-04-15T07:30:58Z"</b>{`,
 }`}
-</pre>
+```
 
 Then when a sync is triggered for the same connection the next day, the following request is made:
 
-<pre>
+```bash
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-15T07:30:58Z</b>&to-date={`<now>`}'
-</pre>
+```
 
 :::info
 If the last record read has a datetime earlier than the end time of the stream interval, the end time of the interval will be stored in the state.
@@ -105,27 +103,6 @@ The `from-date` is set to the cutoff date of articles synced already and the `to
 :::info
 In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](/platform/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
-
-## API time filtering capabilities
-
-The Connector Builder supports three different API filtering modes:
-
-### Range filtering
-The API can filter data based on both start and end datetime parameters. This is the most common and efficient mode, allowing you to request only the data within a specific time window.
-
-### Start filtering  
-The API can filter data based on a start datetime parameter but doesn't support an end datetime. When using this mode, the API will return all data from the start datetime up to the current time.
-
-### No filter (data feed)
-Some APIs don't support datetime filtering and instead provide a paginated "feed" of data ordered from newest to oldest. 
-
-:::warning
-The "No filter" option can only be used if the data is sorted from newest to oldest across pages. If the data is sorted differently, the connector will stop syncing records too late or too early. In these cases, it's better to disable incremental syncs and sync the full set of records on a regular schedule.
-:::
-
-When using "No filter" mode, the connector will automatically request pages of records until it encounters a cursor value that is less than or equal to the cutoff date from the previous sync. The "Inject start/end time into outgoing HTTP request" options are disabled in this mode since the API doesn't support filtering.
-
-The `/new` endpoint of the [Reddit API](https://www.reddit.com/dev/api/#GET_new) is such an API. By configuring pagination and setting time filtering capabilities to the "No filter" option, the connector will automatically request the next page of records until the cutoff datetime is encountered. This is done by comparing the cursor value of the records with the either the configured start date or the latest cursor value that was encountered in a previous sync - if the cursor value is less than or equal to that cutoff date, the sync is finished. The latest cursor value is saved as part of the connection and used as the cutoff date for the next sync.
 
 ## Advanced settings
 
@@ -153,12 +130,12 @@ The "Cursor Granularity" also needs to be set to an ISO 8601 duration - it repre
 
 For example if the "Step" is set to 10 days (`P10D`) and the "Cursor granularity" set to one second (`PT1S`) for the Guardian articles stream described above and a longer time range, then the following requests will be performed:
 
-<pre>
+```bash
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-01-01T00:00:00Z</b>&to-date=<b>2023-01-09T23:59:59Z</b>'{`\n`}
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-01-10T00:00:00Z</b>&to-date=<b>2023-01-19T23:59:59Z</b>'{`\n`}
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-01-20T00:00:00Z</b>&to-date=<b>2023-01-29T23:59:59Z</b>'{`\n`}
 ...
-</pre>
+```
 
 After an interval is processed, the cursor value of the last record will be saved as part of the connection as the new cutoff date, as described in the [example above](#example).
 
@@ -186,7 +163,7 @@ In these cases, there are two options:
 
 Reiterating the example from above with a "Lookback window" of 2 days configured, let's assume the last encountered article looked like this:
 
-<pre>
+```json
 {`{
   "id": "business/live/2023/apr/15/uk-bosses-more-optimistic-energy-prices-fall-ai-spending-boom-economics-business-live",
   "type": "liveblog",
@@ -194,13 +171,13 @@ Reiterating the example from above with a "Lookback window" of 2 days configured
   "sectionName": "Business",
   "webPublicationDate": `}<b>{`"2023-04-15T07:30:58Z"`}</b>{`,
 }`}
-</pre>
+```
 
 Then when a sync is triggered for the same connection the next day, the following request is made:
 
-<pre>
+```bash
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-13T07:30:58Z</b>&to-date={`<now>`}'
-</pre>
+```
 
 ## Custom parameter injection
 
