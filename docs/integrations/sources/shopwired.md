@@ -35,6 +35,7 @@ API Reference: https://api.shopwired.co.uk/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-07-19 | [63639](https://github.com/airbytehq/airbyte/pull/63639) | Update dependencies |
 | 0.0.8 | 2025-07-12 | [63053](https://github.com/airbytehq/airbyte/pull/63053) | Update dependencies |
 | 0.0.7 | 2025-06-28 | [62295](https://github.com/airbytehq/airbyte/pull/62295) | Update dependencies |
 | 0.0.6 | 2025-06-14 | [61618](https://github.com/airbytehq/airbyte/pull/61618) | Update dependencies |
