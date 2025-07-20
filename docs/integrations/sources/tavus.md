@@ -25,6 +25,7 @@ API Reference: https://docs.tavus.io/api-reference/phoenix-replica-model/get-rep
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2025-07-19 | [63649](https://github.com/airbytehq/airbyte/pull/63649) | Update dependencies |
 | 0.0.10 | 2025-07-12 | [63071](https://github.com/airbytehq/airbyte/pull/63071) | Update dependencies |
 | 0.0.9 | 2025-07-05 | [62728](https://github.com/airbytehq/airbyte/pull/62728) | Update dependencies |
 | 0.0.8 | 2025-06-28 | [62209](https://github.com/airbytehq/airbyte/pull/62209) | Update dependencies |
