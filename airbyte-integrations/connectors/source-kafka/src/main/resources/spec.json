@@ -55,31 +55,22 @@
           },
           {
             "title": "PROTOBUF",
+            "required": ["buf_token", "buf_module_name", "buf_file_name"],
             "properties": {
               "deserialization_type": {
                 "const": "PROTOBUF"
               },
-              "deserialization_strategy": {
+              "buf_token": {
                 "type": "string",
-                "enum": [
-                  "TopicNameStrategy",
-                  "RecordNameStrategy",
-                  "TopicRecordNameStrategy"
-                ],
-                "default": "TopicNameStrategy"
-              },
-              "schema_registry_url": {
-                "type": "string",
-                "examples": ["http://localhost:8081"]
-              },
-              "schema_registry_username": {
-                "type": "string",
-                "default": ""
-              },
-              "schema_registry_password": {
-                "type": "string",
-                "default": "",
                 "airbyte_secret": true
+              },
+              "buf_module_name": {
+                "type": "string",
+                "example": "hudhud/hudhudapis"
+              },
+              "buf_file_name": {
+                "type": "string",
+                "example": "hudhud/maps/trips/events/v1/events.proto"
               }
             }
           }

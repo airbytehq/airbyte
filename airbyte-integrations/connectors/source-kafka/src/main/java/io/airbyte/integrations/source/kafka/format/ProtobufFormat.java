@@ -21,26 +21,23 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.client.SchemaMetadata;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchema;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -48,7 +45,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
@@ -77,9 +73,13 @@ public class ProtobufFormat extends AbstractFormat {
   private static final String SUBSCRIPTION_TYPE_ASSIGN = "assign";
   
   // Schema Registry configuration constants
-  private static final String SCHEMA_REGISTRY_URL_KEY = "schema_registry_url";
-  private static final String SCHEMA_REGISTRY_USERNAME_KEY = "schema_registry_username";
-  private static final String SCHEMA_REGISTRY_PASSWORD_KEY = "schema_registry_password";
+  // URL template for Buf.build API to fetch protobuf schema files
+  // Format: https://buf.build/{module_name}/raw/main/-/{file_name}
+  private static final String URL_TEMPLATE = "https://buf.build/%s/raw/main/-/%s";
+  // Configuration keys for Buf.build authentication and schema location
+  private static final String TOKEN = "buf_token";           // API token for Buf.build authentication
+  private static final String MODULE_NAME = "buf_module_name"; // Buf.build module identifier (e.g., "hudhud/hudhudapis")
+  private static final String FILE_NAME = "buf_file_name";     // Path to the .proto file within the module
   
   // Configuration field constants
   private static final String REPEATED_CALLS_CONFIG = "repeated_calls";
@@ -90,21 +90,14 @@ public class ProtobufFormat extends AbstractFormat {
   private static final String SUBSCRIPTION_TYPE_CONFIG = "subscription_type";
   private static final String TOPIC_PATTERN_CONFIG = "topic_pattern";
   private static final String TOPIC_PARTITIONS_CONFIG = "topic_partitions";
-  private static final String PROTOCOL_CONFIG = "protocol";
-  private static final String SASL_MECHANISM_CONFIG = "sasl_mechanism";
-  
+
   // Default configuration values
   private static final int DEFAULT_RETRY_COUNT = 0;
   private static final int DEFAULT_POLLING_TIME_MS = 100;
   private static final int DEFAULT_MAX_RECORDS = 100000;
-  private static final int DEFAULT_SCHEMA_CACHE_SIZE = 1000;
   private static final int CONFLUENT_MAGIC_BYTE_LENGTH = 5;
   private static final byte CONFLUENT_MAGIC_BYTE = 0;
   
-  // Constants for authentication
-  private static final String USER_INFO_AUTH_SOURCE = "USER_INFO";
-  private static final String SASL_OAUTHBEARER_INHERIT = "SASL_OAUTHBEARER_INHERIT";
-
   // Reusable instances for better performance (thread-safe)
   private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
   private static final JsonFormat.Printer PROTOBUF_JSON_PRINTER = JsonFormat.printer()
@@ -366,8 +359,7 @@ public class ProtobufFormat extends AbstractFormat {
    * @return Protobuf message descriptor
    */
   private Descriptors.Descriptor getDescriptorForTopic(String topic) {
-    Function<String, Descriptors.Descriptor> descriptorFunc = this::buildDescriptorForTopic;
-    return descriptors.computeIfAbsent(topic, descriptorFunc);
+    return descriptors.computeIfAbsent(topic, this::buildDescriptorForTopic);
   }
 
   /**
@@ -382,36 +374,50 @@ public class ProtobufFormat extends AbstractFormat {
 
     try {
       final JsonNode protobufConfig = config.get(MESSAGE_FORMAT_CONFIG_KEY);
-      final Map<String, String> schemaRegistryProps = new HashMap<>();
-      
-      // Configure Schema Registry authentication
-      if (protobufConfig.has(SCHEMA_REGISTRY_USERNAME_KEY)) {
-        schemaRegistryProps.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE, USER_INFO_AUTH_SOURCE);
-        schemaRegistryProps.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
-            String.format("%s:%s", 
-                protobufConfig.get(SCHEMA_REGISTRY_USERNAME_KEY).asText(), 
-                protobufConfig.get(SCHEMA_REGISTRY_PASSWORD_KEY).asText()));
-      } else {
-        // If the registry username is missing and sasl_mechanism == OAUTHBEARER
-        final JsonNode protocolConfig = config.get(PROTOCOL_CONFIG);
-        if (protocolConfig != null && 
-            protocolConfig.has(SASL_MECHANISM_CONFIG) &&
-            protocolConfig.get(SASL_MECHANISM_CONFIG).asText().equals(OAuthBearerLoginModule.OAUTHBEARER_MECHANISM)) {
-          schemaRegistryProps.put(SchemaRegistryClientConfig.BEARER_AUTH_CREDENTIALS_SOURCE, SASL_OAUTHBEARER_INHERIT);
-        }
+
+      // Validate required Buf.build configuration parameters
+      // All three parameters are mandatory for Buf.build schema fetching
+      if (!(protobufConfig.has(TOKEN) && protobufConfig.has(MODULE_NAME) && protobufConfig.has(FILE_NAME))) {
+        throw new RuntimeException(
+                String.format("The Arguments ['%s', '%s', '%s'] must be set!", TOKEN, MODULE_NAME, FILE_NAME)
+        );
       }
 
-      try (SchemaRegistryClient schemaRegistryClient = new CachedSchemaRegistryClient(
-          protobufConfig.get(SCHEMA_REGISTRY_URL_KEY).asText(),
-          DEFAULT_SCHEMA_CACHE_SIZE,
-          schemaRegistryProps)) {
+      // Extract configuration values for Buf.build API call
+      String token = protobufConfig.get(TOKEN).asText();
+      String module = protobufConfig.get(MODULE_NAME).asText();
+      String file = protobufConfig.get(FILE_NAME).asText();
 
-        // Fetch schema from Schema Registry
-        LOGGER.debug("Fetching schema for subject: {}", subject);
-        SchemaMetadata schemaMetadata = schemaRegistryClient.getLatestSchemaMetadata(subject);
+      // Build HTTP request to fetch protobuf schema from Buf.build
+      // Uses bearer token authentication and requests the raw .proto file
+      HttpRequest request = HttpRequest.newBuilder()
+              .uri(URI.create(String.format(URL_TEMPLATE, module, file)))
+              .header("Authorization", "Bearer " + token)
+              .header("Content-Type", "application/json")
+              .build();
 
-        // Parse the protobuf schema
-        ProtobufSchema protobufSchema = new ProtobufSchema(schemaMetadata.getSchema());
+      // Execute HTTP request to Buf.build API with automatic resource management
+      try(HttpClient client = HttpClient.newHttpClient()) {
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Validate successful response from Buf.build API
+        if (response.statusCode() != 200) {
+          throw new RuntimeException(
+                  String.format(
+                          "failed to fetch schema for Module ['%s'] and file name ['%s']\nWith response: %s",
+                          module,
+                          file,
+                          response.body()
+                  )
+          );
+        }
+
+        LOGGER.debug("Status Code: {}", response.statusCode());
+
+        // Parse the raw .proto file content into a ProtobufSchema object
+        // The response body contains the actual protobuf schema definition
+        ProtobufSchema protobufSchema = new ProtobufSchema(response.body());
 
         // Build descriptor from the protobuf schema
         Descriptors.Descriptor descriptor = protobufSchema.toDescriptor();
