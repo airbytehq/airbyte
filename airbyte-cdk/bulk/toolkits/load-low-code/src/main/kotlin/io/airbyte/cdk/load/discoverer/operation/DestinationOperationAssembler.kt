@@ -54,7 +54,9 @@ class DestinationOperationAssembler(
             throw IllegalStateException("The schema returned by the API does not have properties")
         }
 
-        return insertionMethods.mapNotNull { createOperation(destinationObject.name, apiSchema, it) }
+        return insertionMethods.mapNotNull {
+            createOperation(destinationObject.name, apiSchema, it)
+        }
     }
 
     private fun hasProperties(apiObject: JsonNode): Boolean {

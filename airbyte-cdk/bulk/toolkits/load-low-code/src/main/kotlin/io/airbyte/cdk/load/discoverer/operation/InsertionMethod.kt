@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.discoverer.operation
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -8,7 +12,10 @@ import java.util.function.Predicate
 /**
  * Describes the information related to how data is inserted in an object.
  *
- * Note that if matchingKeyPredicate is provided, it needs to return `true` to at least one of the properties. If this is not the case, the insertion method for this object will not be returned as part of the discover command. If not provided, it means that it is expected not to have matching keys.
+ * Note that if matchingKeyPredicate is provided, it needs to return `true` to at least one of the
+ * properties. If this is not the case, the insertion method for this object will not be returned as
+ * part of the discover command. If not provided, it means that it is expected not to have matching
+ * keys.
  */
 class InsertionMethod(
     private val importType: ImportType,
@@ -26,12 +33,14 @@ class InsertionMethod(
             apiRepresentation,
             namePath,
             typePath,
-            matchingKeyPredicate ?: Predicate {_ -> false},
+            matchingKeyPredicate ?: Predicate { _ -> false },
             availabilityPredicate,
             requiredPredicate,
             typeMapper,
         )
     }
 
-    fun requiresMatchingKey(): Boolean {return matchingKeyPredicate!= null}
+    fun requiresMatchingKey(): Boolean {
+        return matchingKeyPredicate != null
+    }
 }
