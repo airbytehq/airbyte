@@ -3,7 +3,7 @@
 #
 
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from google.ads.googleads.errors import GoogleAdsException
@@ -19,6 +19,7 @@ from google.api_core.exceptions import (
 )
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
+from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import ServiceAccounts
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -115,6 +116,7 @@ class MockGoogleAdsFailsOneDate(MockGoogleAds):
         return mock_response_fails_one_date()
 
 
+@patch.object(SourceGoogleAds, "get_customers", return_value=[])
 def test_read_records_unauthenticated(mocker, customers, config):
     credentials = config["credentials"]
     api = GoogleAds(credentials=credentials)
