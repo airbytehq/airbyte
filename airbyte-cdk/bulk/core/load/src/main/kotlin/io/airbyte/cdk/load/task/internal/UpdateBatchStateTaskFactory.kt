@@ -22,7 +22,7 @@ import jakarta.inject.Singleton
 class UpdateBatchStateTask(
     private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*>,
+    private val checkpointManager: CheckpointManager,
     private val launcher: DestinationTaskLauncher
 ) : Task {
     private val log = KotlinLogging.logger {}
@@ -35,15 +35,12 @@ class UpdateBatchStateTask(
             val state =
                 when (message) {
                     is BatchStateUpdate -> {
-                        log.info {
+                        log.debug {
                             "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
                         }
                         manager.incrementCheckpointCounts(
-                            message.taskName,
-                            message.part,
                             message.state,
                             message.checkpointCounts,
-                            message.inputCount
                         )
                         message.state
                     }
@@ -51,11 +48,6 @@ class UpdateBatchStateTask(
                         log.info {
                             "End-of-stream checks for ${message.stream}: ${message.taskName}[${message.part}]"
                         }
-                        manager.markTaskEndOfStream(
-                            message.taskName,
-                            message.part,
-                            message.totalInputCount
-                        )
                         BatchState.COMPLETE
                     }
                 }
@@ -63,10 +55,10 @@ class UpdateBatchStateTask(
                 checkpointManager.flushReadyCheckpointMessages()
             }
             if (manager.isBatchProcessingCompleteForCheckpoints()) {
-                log.info { "Batch processing complete for ${message.stream}" }
+                log.debug { "Batch processing complete for ${message.stream}" }
                 launcher.handleStreamComplete(message.stream)
             } else {
-                log.info { "Batch processing still incomplete for ${message.stream}" }
+                log.debug { "Batch processing still incomplete for ${message.stream}" }
             }
         }
     }
@@ -76,7 +68,7 @@ class UpdateBatchStateTask(
 class UpdateBatchStateTaskFactory(
     @Named("batchStateUpdateQueue") private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<*>,
+    private val checkpointManager: CheckpointManager,
 ) {
     fun make(taskLauncher: DestinationTaskLauncher): UpdateBatchStateTask {
         return UpdateBatchStateTask(inputQueue, syncManager, checkpointManager, taskLauncher)

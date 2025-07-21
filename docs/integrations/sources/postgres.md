@@ -100,7 +100,7 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, you must connect to primary/master databases. Pointing the connector configuration to replica database hosts for CDC will lead to failures.
+For CDC, you may connect to primary/master databases or replicas. To use a replica as a source, Postgres must be at version 16.1 or later and this connector must be at version 3.6.21 or later. You must also enable additional configurations on the database instance (for help, see the [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)).
 
 ### Step 2: Provide additional permissions to read-only user
 
@@ -344,6 +344,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.35  | 2025-06-12 | [61527](https://github.com/airbytehq/airbyte/pull/61527)   | Add error handling for connection issues and adopt the latest CDK version.
+| 3.6.34  | 2025-05-11 | [60876](https://github.com/airbytehq/airbyte/pull/60876)   | Cache CDC initial state once constructed.
 | 3.6.33  | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.
 | 3.6.32  | 2025-05-8  | [59722](https://github.com/airbytehq/airbyte/pull/59722)   | Consolidate gradle set up.                                                                                                                                                 |
 | 3.6.31  | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                                                       |

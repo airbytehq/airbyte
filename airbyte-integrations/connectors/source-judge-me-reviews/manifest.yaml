@@ -1,0 +1,284 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Get Reviews from Judge.me Reviews: https://judge.me/
+  API: https://judge.me/api/docs#tag/Reviews/operation/reviews#index
+
+check:
+  type: CheckStream
+  stream_names:
+    - reviews
+
+definitions:
+  streams:
+    reviews:
+      type: DeclarativeStream
+      name: reviews
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reviews
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 2
+          request_parameters:
+            shop_domain: "{{ config['shop_domain'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reviews
+          schema_normalization: Default
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reviews"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.judge.me/api/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_token
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/reviews"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - shop_domain
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      shop_domain:
+        type: string
+        description: example.myshopify.com
+        order: 1
+        title: Shop Domain
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    reviews:
+      hasRecords: true
+      streamHash: f8b68b7c5668f5eb526387af40aca242a4ef6fca
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    reviews: true
+
+schemas:
+  reviews:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      body:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      pinned:
+        type:
+          - boolean
+          - "null"
+      rating:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      curated:
+        type:
+          - string
+          - "null"
+      featured:
+        type:
+          - boolean
+          - "null"
+      pictures:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            urls:
+              type:
+                - object
+                - "null"
+              properties:
+                huge:
+                  type:
+                    - string
+                    - "null"
+                small:
+                  type:
+                    - string
+                    - "null"
+                compact:
+                  type:
+                    - string
+                    - "null"
+                original:
+                  type:
+                    - string
+                    - "null"
+            hidden:
+              type:
+                - boolean
+                - "null"
+      reviewer:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          external_id:
+            type:
+              - number
+              - "null"
+          unsubscribed_at:
+            type:
+              - string
+              - "null"
+          accepts_marketing:
+            type:
+              - boolean
+              - "null"
+      verified:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      product_title:
+        type:
+          - string
+          - "null"
+      product_handle:
+        type:
+          - string
+          - "null"
+      product_external_id:
+        type:
+          - number
+          - "null"
+      has_published_videos:
+        type:
+          - boolean
+          - "null"
+      has_published_pictures:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true

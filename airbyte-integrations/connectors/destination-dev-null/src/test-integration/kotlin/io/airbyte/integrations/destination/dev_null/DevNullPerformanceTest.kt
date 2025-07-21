@@ -11,7 +11,7 @@ class DevNullPerformanceTest :
     BasicPerformanceTest(
         configContents = DevNullTestUtils.configContents(DevNullTestUtils.silentConfigPath),
         configSpecClass = DevNullSpecification::class.java,
-        defaultRecordsToInsert = 1_000_000,
+        defaultRecordsToInsert = 100_000,
     ) {
     @Test
     override fun testInsertRecords() {

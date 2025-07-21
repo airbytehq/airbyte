@@ -4,6 +4,7 @@ import React from "react";
 import { getSupportLevelDisplay } from "../connector_registry";
 import { Callout } from "./Callout";
 import { Chip } from "./Chip";
+import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
 import styles from "./HeaderDecoration.module.css";
 
 // Extend Day.js with the relativeTime plugin
@@ -281,9 +282,13 @@ const ConnectorMetadataCallout = ({
       </MetadataStat>
       {supportLevel !== "archived" && (
         <MetadataStat label="Connector Version">
-          <a href={github_url} target="_blank">
-            {dockerImageTag}&nbsp;
-          </a>
+          {!isEnterprise && github_url ? (
+            <a href={github_url} target="_blank">
+              {dockerImageTag}&nbsp;
+            </a>
+          ) : (
+            <span>{dockerImageTag}</span>
+          )}
           {lastUpdated && (
             <span>{`(last updated ${dayjs(lastUpdated).fromNow()})`}</span>
           )}
@@ -309,7 +314,11 @@ const ConnectorMetadataCallout = ({
       )}
       {isEnterprise && (
         <MetadataStat label="Enterprise Connector">
-          <strong>This premium connector is available to Enterprise customers at an additional cost</strong>.{" "}
+          <strong>
+            This premium connector is available to Enterprise customers at an
+            additional cost
+          </strong>
+          .{" "}
           <a href="https://airbyte.com/company/talk-to-sales" target="_blank">
             Talk to Sales{" "}
           </a>
@@ -358,7 +367,6 @@ export const HeaderDecoration = ({
   lastUpdated,
   definitionId,
 }) => {
-  console.log("definitionId", definitionId);
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
@@ -367,12 +375,18 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <ConnectorTitle
-        iconUrl={iconUrl}
-        originalTitle={originalTitle}
-        originalId={originalId}
-        isArchived={isArchived}
-      />
+      <div
+        className={styles.connectorHeader}
+   
+      >
+        <ConnectorTitle
+          iconUrl={iconUrl}
+          originalTitle={originalTitle}
+          originalId={originalId}
+          isArchived={isArchived}
+        />
+        <CopyPageButton />
+      </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
         isOss={isOss}

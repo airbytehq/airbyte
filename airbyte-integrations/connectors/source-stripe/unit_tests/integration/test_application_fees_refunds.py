@@ -136,11 +136,13 @@ class FullRefreshTest(TestCase):
             _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response()
             .with_record(
-                _an_application_fee().with_field(
-                    _REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()).with_record(_a_refund()))
-                )
+                _an_application_fee()
+                .with_id("1")
+                .with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()).with_record(_a_refund())))
             )
-            .with_record(_an_application_fee().with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()))))
+            .with_record(
+                _an_application_fee().with_id("2").with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund())))
+            )
             .build(),
         )
 
@@ -228,13 +230,17 @@ class FullRefreshTest(TestCase):
             .with_limit(100)
             .build(),
             _application_fees_response()
-            .with_record(_an_application_fee().with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()))))
+            .with_record(
+                _an_application_fee().with_id("1").with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund())))
+            )
             .build(),
         )
         http_mocker.get(
             _application_fees_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response()
-            .with_record(_an_application_fee().with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()))))
+            .with_record(
+                _an_application_fee().with_id("2").with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund())))
+            )
             .build(),
         )
 

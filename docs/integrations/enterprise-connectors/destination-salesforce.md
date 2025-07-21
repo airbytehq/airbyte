@@ -1,3 +1,6 @@
+---
+dockerRepository: airbyte/destination-salesforce
+---
 # Salesforce Destination
 
 ## Overview

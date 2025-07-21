@@ -63,6 +63,7 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 | Version | Date       | Pull Request                                                                                                  | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| 0.3.1 | 2025-07-10 | [62915](https://github.com/airbytehq/airbyte/pull/62915) | Add gradle docker plugins |
 | 0.3.0 | 2025-03-06 | [48969](https://github.com/airbytehq/airbyte/pull/48969) | fix datatype and connection string |
 | 0.2.4 | 2025-01-10 | [51502](https://github.com/airbytehq/airbyte/pull/51502) | Use a non root base image |
 | 0.2.3 | 2024-12-18 | [49909](https://github.com/airbytehq/airbyte/pull/49909) | Use a base image: airbyte/java-connector-base:1.0.0 |

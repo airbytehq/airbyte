@@ -6,18 +6,19 @@ package io.airbyte.cdk.load.pipline.object_storage.file
 
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
+import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
 @Named("fileCompletedOutputPartitioner")
-class FileCompletedOutputPartitioner<T : RemoteObject<*>> :
-    ObjectLoaderCompletedUploadPartitioner<StreamKey, T> {
+class FileCompletedOutputPartitioner<K : WithStream, T : RemoteObject<*>> :
+    ObjectLoaderCompletedUploadPartitioner<K, ObjectLoaderPartLoader.PartResult<T>, StreamKey, T> {
     override fun getOutputKey(
-        inputKey: ObjectKey,
+        inputKey: K,
         output: ObjectLoaderUploadCompleter.UploadResult<T>
     ): StreamKey {
         return StreamKey(inputKey.stream)

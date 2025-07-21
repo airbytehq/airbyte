@@ -147,6 +147,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.8.0 | 2025-06-24 | [62048](https://github.com/airbytehq/airbyte/pull/62048) | Promoting release candidate 4.8.0-rc.1 to a main version. |
+| 4.8.0-rc.1     | 2025-06-16 | [61580](https://github.com/airbytehq/airbyte/pull/61580)  | Convert to manifest-only format                                                                                                                               |
 | 4.7.0     | 2025-03-10 | [55681](https://github.com/airbytehq/airbyte/pull/55681)  | Ads / AdGroups report by country streams                                                                                                                               |
 | 4.6.2 | 2024-10-30 | [48003](https://github.com/airbytehq/airbyte/pull/48003) | Add new metrics to ads_reports_daily stream |
 | 4.6.1 | 2025-03-22 | [51959](https://github.com/airbytehq/airbyte/pull/51959) | Update dependencies |

@@ -1,4 +1,6 @@
 data:
+  ab_internal:
+    requireVersionIncrementsInPullRequests: false
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503

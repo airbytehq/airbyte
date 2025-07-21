@@ -196,15 +196,14 @@ definitions:
     $parameters:
       name: "metafields"
       data_path: "metafields"
-  # PRODUCTS
-  products_stream:
+  # PLANS
+  plans_stream:
     description: >-
-      Products Stream: https://developer.rechargepayments.com/2021-11/products/products_list
-      Products endpoint has 422 error with 2021-11 API version
-    $ref: "#/definitions/base_deprecated_api_stream"
+      Plans Stream: https://developer.rechargepayments.com/2021-11/plans/plans_list
+    $ref: "#/definitions/base_modern_api_stream"
     $parameters:
-      name: "products"
-      data_path: "products"
+      name: "plans"
+      data_path: "plans"
   # SHOP
   shop_stream:
     description: >-
@@ -229,6 +228,13 @@ definitions:
             value: "{{ record.shop.get('id') or record.store.get('id') }}"
     $parameters:
       name: "shop"
+  payment_methods_stream:
+    description: >-
+      Payment Methods Stream: https://developer.rechargepayments.com/2021-11/payment_methods/payment_methods_list
+    $ref: "#/definitions/base_modern_api_stream"
+    $parameters:
+      name: "payment_methods"
+      data_path: "payment_methods"
 
   # INCREMENTAL STREAMS
   # ADDRESSES
@@ -311,12 +317,13 @@ streams:
   - "#/definitions/discounts_stream"
   - "#/definitions/metafields_stream"
   - "#/definitions/onetimes_stream"
-  - "#/definitions/products_stream"
+  - "#/definitions/plans_stream"
   - "#/definitions/shop_stream"
   - "#/definitions/subscriptions_stream"
   - "#/definitions/events_stream"
   - "#/definitions/bundle_selections_stream"
   - "#/definitions/credit_adjustments_stream"
+  - "#/definitions/payment_methods_stream"
   # The `orders` stream remains implemented in `streams.py` due to:
   # 1. Inability to resolve `$ref` conditionally
   # 2. Inability to dynamically switch between paginators (diff api versions, require diff pagination approach) (or create the CustomPaginator component)

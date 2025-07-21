@@ -1,3 +1,6 @@
+---
+dockerRepository: airbyte/source-oracle-enterprise
+---
 # Source Oracle
 
 Airbyte's Oracle enterprise source connector offers the following features:

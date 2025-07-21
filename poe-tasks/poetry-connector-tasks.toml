@@ -16,7 +16,7 @@
 
 [tool.poe.tasks]
 
-get-language = "echo 'python'" # Use with -qq to get just the language name
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
 fetch-secrets = "airbyte-cdk secrets fetch"
 
 install = ["install-project", "install-cdk-cli"]
@@ -124,3 +124,17 @@ args = [
   { name = "BRANCH", positional = true, default = "main" },
 ]
 help = "Pin to a specific branch of the CDK."
+
+# Generic tasks (same across all connector types)
+
+[tool.poe.tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' $PWD/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tool.poe.tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tool.poe.tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."

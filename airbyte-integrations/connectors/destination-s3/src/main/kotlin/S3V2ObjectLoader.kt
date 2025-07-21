@@ -13,7 +13,7 @@ import jakarta.inject.Singleton
 @Singleton
 class S3V2ObjectLoader(
     config: S3V2Configuration<*>,
-    @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean
+    @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
 ) : ObjectLoader {
     override val numPartWorkers: Int =
         if (isLegacyFileTransfer) {

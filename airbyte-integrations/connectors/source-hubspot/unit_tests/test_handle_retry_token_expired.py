@@ -5,7 +5,8 @@ import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-from unit_tests.conftest import find_stream
+
+from .conftest import find_stream
 
 
 def test_handle_request_with_retry(config, requests_mock):

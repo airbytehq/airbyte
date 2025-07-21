@@ -14,7 +14,7 @@ import java.nio.channels.SocketChannel
 import kotlinx.coroutines.delay
 
 class ClientSocket(
-    private val socketPath: String,
+    val socketPath: String,
     private val bufferSizeBytes: Int,
     private val connectWaitDelayMs: Long = 1000L,
     private val connectTimeoutMs: Long = 15 * 60 * 1000L,
@@ -35,10 +35,11 @@ class ClientSocket(
                 )
             }
         }
+        log.info { "Socket file $socketPath created" }
 
         val address = UnixDomainSocketAddress.of(socketFile.toPath())
         SocketChannel.open(StandardProtocolFamily.UNIX).use { channel ->
-            log.info { "Socket $socketPath opened" }
+            log.info { "Socket file $socketPath opened" }
 
             if (!channel.connect(address)) {
                 throw IllegalStateException("Failed to connect to socket $socketPath")
@@ -48,7 +49,7 @@ class ClientSocket(
             // as a signal that it's safe to create the TCP connection to the
             // socat sidecar that feeds data into the socket. Removing it
             // will break tests. TODO: Anything else.
-            log.info { "Socket $socketPath connected for reading" }
+            log.info { "Socket file $socketPath connected for reading" }
 
             Channels.newInputStream(channel).buffered(bufferSizeBytes).use { inputStream ->
                 block(inputStream)

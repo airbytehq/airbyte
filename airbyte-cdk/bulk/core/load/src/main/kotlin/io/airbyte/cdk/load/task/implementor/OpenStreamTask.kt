@@ -37,9 +37,11 @@ class OpenStreamTask(
                 streamLoader.start()
                 streamLoader
             }
-            syncManager.registerStartedStreamLoader(stream.descriptor, result)
             result.getOrThrow()
-            streamsSeen.add(stream.descriptor)
+            // in practice, if we're here, then `result` is by definition successful
+            // (because otherwise, getOrThrow would have thrown)
+            syncManager.registerStartedStreamLoader(stream.mappedDescriptor, result)
+            streamsSeen.add(stream.mappedDescriptor)
             streamsSeen
         }
     }

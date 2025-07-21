@@ -37,6 +37,11 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 1.0.17 | 2025-07-19 | [63636](https://github.com/airbytehq/airbyte/pull/63636) | Update dependencies |
+| 1.0.16 | 2025-07-12 | [63091](https://github.com/airbytehq/airbyte/pull/63091) | Update dependencies |
+| 1.0.15 | 2025-06-28 | [62210](https://github.com/airbytehq/airbyte/pull/62210) | Update dependencies |
+| 1.0.14 | 2025-06-14 | [61296](https://github.com/airbytehq/airbyte/pull/61296) | Update dependencies |
+| 1.0.13 | 2025-05-25 | [60502](https://github.com/airbytehq/airbyte/pull/60502) | Update dependencies |
 | 1.0.12 | 2025-05-10 | [60144](https://github.com/airbytehq/airbyte/pull/60144) | Update dependencies |
 | 1.0.11 | 2025-05-04 | [59595](https://github.com/airbytehq/airbyte/pull/59595) | Update dependencies |
 | 1.0.10 | 2025-04-27 | [58974](https://github.com/airbytehq/airbyte/pull/58974) | Update dependencies |
