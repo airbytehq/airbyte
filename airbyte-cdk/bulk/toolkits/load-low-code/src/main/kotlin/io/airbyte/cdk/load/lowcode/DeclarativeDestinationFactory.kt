@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.RequestMethod
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
+import io.airbyte.cdk.load.http.authentication.OAuthAuthenticator
 import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
 import io.airbyte.cdk.load.interpolation.StringInterpolator
 import io.airbyte.cdk.load.model.DeclarativeDestination as DeclarativeDestinationModel
@@ -24,6 +25,7 @@ import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
+import io.airbyte.cdk.load.model.http.authenticator.OAuthAuthenticator as OAuthAuthenticatorModel
 import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -46,6 +48,7 @@ T : ObjectStorageConfigProvider {
     ): Interceptor =
         when (model) {
             is BasicAccessAuthenticatorModel -> model.toInterceptor(createInterpolationContext())
+            is OAuthAuthenticatorModel -> model.toInterceptor(createInterpolationContext())
         }
 
     private fun createChecker(
@@ -61,6 +64,16 @@ T : ObjectStorageConfigProvider {
         BasicAccessAuthenticator(
             stringInterpolator.interpolate(this.username, interpolationContext),
             stringInterpolator.interpolate(this.password, interpolationContext),
+        )
+
+    fun OAuthAuthenticatorModel.toInterceptor(
+        interpolationContext: Map<String, Any>
+    ): OAuthAuthenticator =
+        OAuthAuthenticator(
+            stringInterpolator.interpolate(this.url, interpolationContext),
+            stringInterpolator.interpolate(this.clientId, interpolationContext),
+            stringInterpolator.interpolate(this.clientSecret, interpolationContext),
+            stringInterpolator.interpolate(this.refreshToken, interpolationContext),
         )
 
     fun HttpRequesterModel.toRequester(): HttpRequester {

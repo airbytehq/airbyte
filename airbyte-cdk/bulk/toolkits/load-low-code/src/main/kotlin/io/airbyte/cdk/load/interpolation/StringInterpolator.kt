@@ -88,6 +88,7 @@ class StringInterpolator {
                 .build()
         )
 
+    /** Possible improvement: validate if all variables have been resolved and if not, throw. */
     fun interpolate(string: String, context: Map<String, Any>): String {
         return interpolator.render(string, context)
     }
