@@ -27,6 +27,7 @@ The Airbyte connector for [Spotler CRM](https://spotler.com/) enables seamless d
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.26 | 2025-07-19 | [63647](https://github.com/airbytehq/airbyte/pull/63647) | Update dependencies |
 | 0.0.25 | 2025-07-12 | [63079](https://github.com/airbytehq/airbyte/pull/63079) | Update dependencies |
 | 0.0.24 | 2025-07-05 | [62743](https://github.com/airbytehq/airbyte/pull/62743) | Update dependencies |
 | 0.0.23 | 2025-06-28 | [62225](https://github.com/airbytehq/airbyte/pull/62225) | Update dependencies |

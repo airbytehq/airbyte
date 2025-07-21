@@ -35,14 +35,20 @@ class FeedReader(
     val root: RootReader,
     val feed: Feed,
     val resourceAcquirer: ResourceAcquirer,
-    val dataChannelFormat: DataChannelFormat,
+    dataChannelFormat: DataChannelFormat,
     val dataChannelMedium: DataChannelMedium,
-    val bufferByteSizeThresholdForFlush: Int,
+    bufferByteSizeThresholdForFlush: Int,
     val clock: Clock,
 ) {
     private val log = KotlinLogging.logger {}
 
     private val stateId: AtomicInteger = AtomicInteger(1)
+
+    // Global state ID is unique for each state emitted regardless of the feed it originates from.
+    companion object {
+        private val globalStateId: AtomicInteger = AtomicInteger(1)
+    }
+
     private val feedBootstrap: FeedBootstrap<*> =
         FeedBootstrap.create(
             root.outputConsumer,
@@ -234,7 +240,7 @@ class FeedReader(
                     "for '${feed.label}' in round $partitionsCreatorID"
             }
             checkpoint = partitionReader.checkpoint()
-        } catch (e: TimeoutCancellationException) {
+        } catch (_: TimeoutCancellationException) {
             log.info {
                 "timed out reading partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"
@@ -375,7 +381,7 @@ class FeedReader(
             return
         }
 
-        // Old flow - checkpoint state messages to stdout
+        // Legacy flow - checkpoint state messages to stdout
         if (dataChannelMedium == DataChannelMedium.STDIO) {
             log.info { "checkpoint of ${stateMessages.size} state message(s)" }
             for (stateMessage in stateMessages) {
@@ -383,10 +389,12 @@ class FeedReader(
             }
             return
         }
-        // New flow
-
+        // Socket flow - checkpoint state messages to stdout and also to one connected socket
         log.info { "checkpoint of ${stateMessages.size} state message(s)" }
         for (stateMessage in stateMessages) {
+            if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
+                stateMessage.setAdditionalProperty("id", globalStateId.getAndIncrement())
+            }
             // checkpoint state messages to stdout
             root.outputConsumer.accept(stateMessage)
             when (finalCheckpoint) {
