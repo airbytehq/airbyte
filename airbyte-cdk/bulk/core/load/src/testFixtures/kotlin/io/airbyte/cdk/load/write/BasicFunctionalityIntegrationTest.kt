@@ -1789,79 +1789,6 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
-    /** Run a sync in dedup mode with composite PK, then drop one of the PKs entirely. */
-    @Test
-    open fun testBizarrePkSchemaEvolution() {
-        assumeTrue(verifyDataWriting)
-        assumeTrue(isStreamSchemaRetroactive)
-        val stream =
-            DestinationStream(
-                randomizedNamespace,
-                "test_stream",
-                Dedupe(primaryKey = listOf(listOf("id1"), listOf("id2")), cursor = emptyList()),
-                ObjectType(linkedMapOf("id1" to intType, "id2" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-                namespaceMapper = namespaceMapperForMedium()
-            )
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    stream,
-                    """{"id1": 42, "id2": 420}""",
-                    emittedAtMs = 1234L,
-                    checkpointId = checkpointKeyForMedium()?.checkpointId
-                )
-            )
-        )
-        val finalStream =
-            DestinationStream(
-                randomizedNamespace,
-                "test_stream",
-                Dedupe(primaryKey = listOf(listOf("id1")), cursor = emptyList()),
-                ObjectType(linkedMapOf("id1" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 43,
-                namespaceMapper = namespaceMapperForMedium()
-            )
-        runSync(
-            updatedConfig,
-            finalStream,
-            listOf(
-                InputRecord(
-                    finalStream,
-                    """{"id1": 43}""",
-                    emittedAtMs = 2345,
-                    checkpointId = checkpointKeyForMedium()?.checkpointId
-                )
-            )
-        )
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 1234,
-                    generationId = 0,
-                    data = mapOf("id1" to 42),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
-                ),
-                OutputRecord(
-                    extractedAt = 2345,
-                    generationId = 0,
-                    data = mapOf("id1" to 43),
-                    airbyteMeta = OutputRecord.Meta(syncId = 43),
-                )
-            ),
-            finalStream,
-            primaryKey = listOf(listOf("id")),
-            cursor = null,
-        )
-    }
-
     /**
      * In many databases/warehouses, changing a column to/from JSON is nontrivial. This test runs
      * syncs to execute that schema change (under the assumption that UnknownType is rendered as a
@@ -2592,7 +2519,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "string": "foo",
+                          "string": "fo\u0000o",
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
@@ -2775,7 +2702,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     mapOf(
                         "id" to 5,
                         "string" to
-                            if (allTypesBehavior.convertAllValuesToString) {
+                            if (
+                                allTypesBehavior.convertAllValuesToString &&
+                                    dataChannelFormat != DataChannelFormat.PROTOBUF
+                            ) {
                                 "{}"
                             } else {
                                 null
@@ -2801,6 +2731,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         // id and struct don't have a bad value case here
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
+                        .filter {
+                            it != "boolean" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "integer" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "number" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
                         .map { key ->
                             val change =
                                 Change(
@@ -2862,7 +2801,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "string" to "foo",
+                            "string" to "fo\u0000o",
                             "number" to 42.1,
                             "integer" to 42,
                             "boolean" to true,

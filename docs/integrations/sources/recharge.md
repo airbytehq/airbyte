@@ -154,6 +154,8 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.3 | 2025-07-20 | [63658](https://github.com/airbytehq/airbyte/pull/63658) | Update dependencies |
+| 3.0.2 | 2025-07-12 | [63057](https://github.com/airbytehq/airbyte/pull/63057) | Update dependencies |
 | 3.0.1 | 2025-07-05 | [62581](https://github.com/airbytehq/airbyte/pull/62581) | Update dependencies |
 | 3.0.0 | 2025-06-20 | [61727](https://github.com/airbytehq/airbyte/pull/61727) | Removes deprecated `products` stream. Adds new `plans` stream. |
 | 2.10.1 | 2025-06-14 | [61073](https://github.com/airbytehq/airbyte/pull/61073) | Update dependencies |

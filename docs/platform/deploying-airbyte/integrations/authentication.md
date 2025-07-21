@@ -2,6 +2,9 @@
 products: oss-community, oss-enterprise
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Authentication
 
 Airbyte comes with built in authentication based on the email provided at setup and a generated password. If you need to
@@ -107,21 +110,57 @@ You may need to restart the airbyte-server pod for the changes to take effect.
 ### Disabling Secure Cookies
 For users running Airbyte on a non-localhost domain without HTTPS, secure cookies cannot be set. To disable secure cookies, update your `values.yaml` file with the following snippet:
 
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
 ```yaml
 global:
   auth:
     cookieSecureSetting: "false"
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml
+global:
+  auth:
+    security:
+      cookieSecureSetting: "false"
+```
+
+</TabItem>
+</Tabs>
+
+
 This setting should only be used if HTTPS is not available, as it reduces security by allowing cookies to be transmitted over non-secure connections.
 
 ### Modifying Cookie SameSite Setting
 By default, Airbyte uses a `cookieSameSiteSetting` of `"Strict"`. If you need to allow cookies to be sent in a cross-site context, you can change this setting to `"None"`. Update your `values.yaml` file with the following:
+
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
 
 ```yaml
 global:
   auth:
     cookieSameSiteSetting: "None"
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml
+global:
+  auth:
+    security:
+      cookieSameSiteSetting: "None"
+```
+
+</TabItem>
+</Tabs>
+
+
 
 Note: Setting `cookieSameSiteSetting` to `"None"` may be necessary for certain integrations but should be used cautiously as it can make your application more susceptible to CSRF attacks. Make sure other security measures are in place if you configure this setting.
 
