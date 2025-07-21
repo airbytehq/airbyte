@@ -45,10 +45,11 @@ The SAP HANA source connector supports incremental syncs using Change Data Captu
 
 When CDC is enabled, the connector:
 
-1. **Creates trigger tables** in a dedicated `_ab_cdc` schema
-2. **Sets up database triggers** on your source tables that capture changes
-3. **Uses trigger tables** to track all data modifications with before/after values
-4. **Reads incrementally** from trigger tables using `_ab_trigger_change_time` as the cursor
+1. **Reads from pre-configured trigger tables** in a dedicated `_ab_cdc` schema
+2. **Uses trigger tables** to track all data modifications with before/after values
+3. **Reads incrementally** from trigger tables using `_ab_trigger_change_time` as the cursor
+
+Note: Trigger tables and database triggers must be manually created before enabling CDC.
 
 ### Trigger Table Structure
 
@@ -74,12 +75,15 @@ To use CDC:
 
 ### CDC Prerequisites
 
+- **Manual trigger setup**: You must manually create trigger tables and database triggers before enabling CDC
 - **Database permissions**: Your SAP HANA user must have permissions to:
-  - Create schemas (`_ab_cdc`)
-  - Create tables in the `_ab_cdc` schema
-  - Create triggers on source tables
-  - Read from trigger tables
-- **Trigger table setup**: Trigger tables can be created manually or programatically by an administrator of the SAP HANA instance.
+  - Read from trigger tables in the `_ab_cdc` schema
+  - Access source tables for initial discovery
+- **Trigger table setup**: Trigger tables can be created manually or programatically by an administrator of the SAP HANA instance. The setup requires:
+  - Create the `_ab_cdc` schema
+  - Create trigger tables with the naming convention `_ab_trigger_{source_schema}_{source_table}`
+  - Set up INSERT, UPDATE, and DELETE triggers on source tables to populate trigger tables
+  - Ensure trigger tables contain the required meta fields (`_ab_trigger_change_id`, `_ab_trigger_change_time`, `_ab_trigger_operation_type`)
 
 ### CDC Limitations
 
