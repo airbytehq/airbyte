@@ -2292,9 +2292,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 namespaceMapper = namespaceMapperForMedium()
             )
         val stream1 = makeStream("cursor1")
-        fun makeRecord(cursorName: String, emittedAtMs: Long) =
+        fun makeRecord(stream: DestinationStream, cursorName: String, emittedAtMs: Long) =
             InputRecord(
-                stream1,
+                stream,
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
                 emittedAtMs = emittedAtMs,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -2302,10 +2302,10 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             updatedConfig,
             stream1,
-            listOf(makeRecord("cursor1", emittedAtMs = 100)),
+            listOf(makeRecord(stream1, "cursor1", emittedAtMs = 100)),
         )
         val stream2 = makeStream("cursor2")
-        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2", emittedAtMs = 200)))
+        runSync(updatedConfig, stream2, listOf(makeRecord(stream2, "cursor2", emittedAtMs = 200)))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
