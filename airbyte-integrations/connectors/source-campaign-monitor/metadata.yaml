@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9d350ec7-2860-4106-a331-7d9403dd9a02
-  dockerImageTag: 0.0.26
+  dockerImageTag: 0.0.27
   dockerRepository: airbyte/source-campaign-monitor
   githubIssueLabel: source-campaign-monitor
   icon: icon.svg
