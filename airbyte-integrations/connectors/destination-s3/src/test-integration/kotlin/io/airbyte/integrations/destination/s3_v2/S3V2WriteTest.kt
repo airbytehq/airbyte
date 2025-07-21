@@ -414,7 +414,6 @@ class S3V2WriteTestAvroUncompressedProto :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
-        preserveUndeclaredFields = false,
         // this is technically false. Avro + parquet do have limits on numbers.
         // But float64 is weird, in that the actual _limits_ are unreasonably large -
         // but at that size, you have very little precision.
@@ -442,7 +441,6 @@ class S3V2WriteTestAvroBzip2Proto :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
-        preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
@@ -465,7 +463,6 @@ class S3V2WriteTestCsvUncompressedProtoSocket :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
@@ -489,7 +486,6 @@ class S3V2WriteTestCsvFlattenedProtoSocket :
         unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
