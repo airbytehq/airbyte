@@ -333,6 +333,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.15 | 2025-07-21 | [63341](https://github.com/airbytehq/airbyte/pull/63341) | Bump memory on Discover to 1GB |
 | 5.8.14 | 2025-07-19 | [63499](https://github.com/airbytehq/airbyte/pull/63499) | Update dependencies |
 | 5.8.13 | 2025-07-12 | [63115](https://github.com/airbytehq/airbyte/pull/63115) | Update dependencies |
 | 5.8.12 | 2025-07-08 | [62866](https://github.com/airbytehq/airbyte/pull/62866) | Handle non-numeric values in fields with declared numeric type |
