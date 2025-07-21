@@ -1,4 +1,6 @@
-const sidebar = {
+import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
+
+const sidebar: SidebarsConfig = {
   apisidebar: [
     {
       type: "doc",
@@ -6,7 +8,7 @@ const sidebar = {
     },
     {
       type: "category",
-      label: "connection_config_template",
+      label: "Connection Config Template",
       link: {
         type: "doc",
         id: "connection-config-template",
@@ -42,7 +44,7 @@ const sidebar = {
     },
     {
       type: "category",
-      label: "source_config_template",
+      label: "Source Config Template",
       link: {
         type: "doc",
         id: "source-config-template",
@@ -72,7 +74,7 @@ const sidebar = {
     },
     {
       type: "category",
-      label: "partial_user_config",
+      label: "Partial User Config",
       link: {
         type: "doc",
         id: "partial-user-config",

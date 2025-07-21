@@ -13,7 +13,12 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
-const embeddedApiSidebar = require("./api-docs/embedded-api/sidebar");
+let embeddedApiSidebar = [];
+try {
+  embeddedApiSidebar = require("./api-docs/embedded-api/sidebar");
+} catch (error) {
+  console.log("Sidebar file not found, using empty array");
+}
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -214,7 +219,7 @@ const config = {
           const data = await responseSpec.json();
 
           // when we have display name correct, we should change this to tag["x-display-name"]
-          const allowedTags = data.tags.map((tag) => tag["name"]);
+          const allowedTags = data.tags.map((tag) => tag["x-displayName"]);
 
           // embeddedApiSidebar is the actual array of sidebar items from the generated file
           const sidebarItems = Array.isArray(embeddedApiSidebar)
