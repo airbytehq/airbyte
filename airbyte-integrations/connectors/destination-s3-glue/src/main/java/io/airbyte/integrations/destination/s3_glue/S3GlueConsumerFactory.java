@@ -83,10 +83,10 @@ public class S3GlueConsumerFactory {
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
       final String bucketPath = s3Config.getBucketPath();
-      final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat());
+      final SyncMode sourceSyncMode = stream.getSyncMode();
+      final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat().replace("${YEAR}", sourceSyncMode + "_${YEAR}"));
       final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final SyncMode sourceSyncMode = stream.getSyncMode();
       final JsonNode jsonSchema = abStream.getJsonSchema();
       String location = "s3://" + s3Config.getBucketName() + "/";
       if (sourceSyncMode == SyncMode.FULL_REFRESH) {
