@@ -11,6 +11,10 @@ class ConfigBuilder:
             "start_date": "2020-05-01T00:00:00Z",
         }
 
+    def with_personal_access_tokens(self, tokens: str) -> "ConfigBuilder":
+        self._config["credentials"]["personal_access_token"] = tokens
+        return self
+
     def with_repositories(self, repositories: List[str]) -> "ConfigBuilder":
         self._config["repositories"] = repositories
         return self
