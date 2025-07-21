@@ -3,11 +3,11 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.0@sha256:4ee59c9d62c18191ab9b27dabc7de1ed89c519d54680e764ac055695f6cd2d1f
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.59.2@sha256:89dcb86ee03b8d951b8a2a80a64d2c84a369dacef29346ec6a5f64c9fb7132f8
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 4.2.0-rc.1
+  dockerImageTag: 4.2.1
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
@@ -26,7 +26,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: "This release removes deprecated metrics - `clips_replays_count`, `ig_reels_aggregated_all_plays_count`, `impressions`, and `plays` from `media_insights` stream, and `impressions` from `user_insights` and `story_insights` streams. Customers who these streams must take action with their connections. For more details, see our <a href='https://docs.airbyte.com/integrations/sources/instagram-migrations'>migration guide</a>."
