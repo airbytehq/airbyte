@@ -249,8 +249,6 @@ Then, go to the schema tab of your connection and click **refresh source schema*
 Expand to see details about Hubspot connector limitations and troubleshooting.
 </summary>
 
-### Connector limitations
-
 ### Rate limiting
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
@@ -260,6 +258,10 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 | `Free & Starter`            | Burst: 100/10 seconds, Daily: 250,000   |
 | `Professional & Enterprise` | Burst: 150/10 seconds, Daily: 500,000   |
 | `API add-on (any tier)`     | Burst: 200/10 seconds, Daily: 1,000,000 |
+
+### Custom properties sync slowly
+
+If you use [custom properties](https://knowledge.hubspot.com/properties/create-and-edit-properties) in HubSpot, syncs take longer. Airbyte doesn't alert you to the presence of custom properties, but you can check if you're using them with HubSpot's UI.
 
 ### Troubleshooting
 
