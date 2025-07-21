@@ -6,20 +6,19 @@ import json
 import logging
 import re
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import anyascii
 import requests
 
-from airbyte_cdk import InterpolatedString
+from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.schema import DynamicSchemaLoader, SchemaLoader
+from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
@@ -454,6 +453,9 @@ class CustomGAQueryHttpRequester(HttpRequester):
             query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE {cursor_field} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY {self.cursor_field} ASC"
         else:
             query = f"SELECT {', '.join(fields)} FROM {resource_name}"
+
+        self._validate_query(query)
+
         return query
 
     def _get_list_of_fields(self) -> List[str]:
@@ -480,6 +482,12 @@ class CustomGAQueryHttpRequester(HttpRequester):
         from_index = query_upper.find("FROM")
         return self.query[from_index + 4 :].strip()
 
+    def _validate_query(self, query: str):
+        try:
+            GAQL.parse(query)
+        except ValueError:
+            raise ValueError("GAQL query validation failed.")
+
 
 @dataclass()
 class CustomGAQuerySchemaLoader(SchemaLoader):
@@ -495,6 +503,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
     def __post_init__(self):
         self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={})
+        self._validate_query(self.query)
 
     def get_json_schema(self) -> Dict[str, Any]:
         local_json_schema = {
@@ -504,20 +513,9 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
             "additionalProperties": True,
         }
 
-        fields = self._get_list_of_fields()
-        cursor_field = self._cursor_field.eval(self.config)
-        if cursor_field:
-            fields.append(cursor_field)
-
-        for field in fields:
-            response = requests.get(
-                url=f"https://googleads.googleapis.com/v18/googleAdsFields/{field}",
-                headers=self._get_request_headers(),
-            )
-            response.raise_for_status()
-            response_json = response.json()
-
-            field_value = self._build_field_value(field, response_json)
+        for field in self._get_list_of_fields():
+            field_metadata_response_json = self._get_field_metadata(field)
+            field_value = self._build_field_value(field, field_metadata_response_json)
             local_json_schema["properties"][field] = field_value
 
         return local_json_schema
@@ -536,6 +534,29 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
         return field_value
 
+    def _get_field_metadata(self, field: str) -> Dict[str, Any]:
+        url = f"https://googleads.googleapis.com/v18/googleAdsFields/{field}"
+        logger.debug(f"`GET` request for field metadata for {field}, url: {url}")
+        response = requests.get(
+            url=url,
+            headers=self._get_request_headers(),
+        )
+
+        response.raise_for_status()
+
+        response_json = response.json()
+        logger.debug(f"Metadata response for {field}: {response_json}")
+        error = response_json.get("error")
+        if error:
+            failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
+            raise AirbyteTracedException(
+                failure_type=failure_type,
+                internal_message=f"Failed to get field metadata for {field}, error: {error}",
+                message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
+            )
+
+        return response_json
+
     def _get_list_of_fields(self) -> List[str]:
         """
         Extract field names from the `SELECT` clause of the query.
@@ -549,6 +570,10 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
         fields = [field.strip() for field in fields_portion.split(",")]
 
+        cursor_field = self._cursor_field.eval(self.config)
+        if cursor_field:
+            fields.append(cursor_field)
+
         return fields
 
     def _get_request_headers(self) -> Mapping[str, Any]:
@@ -559,3 +584,101 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
         headers["developer-token"] = self.config["credentials"]["developer_token"]
         return headers
+
+    def _validate_query(self, query: str):
+        try:
+            GAQL.parse(query)
+        except ValueError:
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
+            )
+
+
+@dataclass(repr=False, eq=False, frozen=True)
+class GAQL:
+    """
+    Simple regex parser of Google Ads Query Language
+    https://developers.google.com/google-ads/api/docs/query/grammar
+    """
+
+    fields: Tuple[str]
+    resource_name: str
+    where: str
+    order_by: str
+    limit: Optional[int]
+    parameters: str
+
+    REGEX = re.compile(
+        r"""\s*
+            SELECT\s+(?P<FieldNames>\S.*)
+            \s+
+            FROM\s+(?P<ResourceNames>[a-z][a-zA-Z_]*(\s*,\s*[a-z][a-zA-Z_]*)*)
+            \s*
+            (\s+WHERE\s+(?P<WhereClause>\S.*?))?
+            (\s+ORDER\s+BY\s+(?P<OrderByClause>\S.*?))?
+            (\s+LIMIT\s+(?P<LimitClause>[1-9]([0-9])*))?
+            \s*
+            (\s+PARAMETERS\s+(?P<ParametersClause>\S.*?))?
+            $""",
+        flags=re.I | re.DOTALL | re.VERBOSE,
+    )
+
+    REGEX_FIELD_NAME = re.compile(r"^[a-z][a-z0-9._]*$", re.I)
+
+    @classmethod
+    def parse(cls, query):
+        m = cls.REGEX.match(query)
+        if not m:
+            raise ValueError
+
+        fields = [f.strip() for f in m.group("FieldNames").split(",")]
+        for field in fields:
+            if not cls.REGEX_FIELD_NAME.match(field):
+                raise ValueError
+
+        resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
+        if len(resource_names) > 1:
+            raise ValueError
+        resource_name = resource_names[0]
+
+        where = cls._normalize(m.group("WhereClause") or "")
+        order_by = cls._normalize(m.group("OrderByClause") or "")
+        limit = m.group("LimitClause")
+        if limit:
+            limit = int(limit)
+        parameters = cls._normalize(m.group("ParametersClause") or "")
+        return cls(tuple(fields), resource_name, where, order_by, limit, parameters)
+
+    def __str__(self):
+        fields = ", ".join(self.fields)
+        query = f"SELECT {fields} FROM {self.resource_name}"
+        if self.where:
+            query += " WHERE " + self.where
+        if self.order_by:
+            query += " ORDER BY " + self.order_by
+        if self.limit is not None:
+            query += " LIMIT " + str(self.limit)
+        if self.parameters:
+            query += " PARAMETERS " + self.parameters
+        return query
+
+    def __repr__(self):
+        return self.__str__()
+
+    @staticmethod
+    def _normalize(s):
+        s = s.strip()
+        return re.sub(r"\s+", " ", s)
+
+    def set_where(self, value: str):
+        return self.__class__(self.fields, self.resource_name, value, self.order_by, self.limit, self.parameters)
+
+    def set_limit(self, value: int):
+        return self.__class__(self.fields, self.resource_name, self.where, self.order_by, value, self.parameters)
+
+    def append_field(self, value):
+        fields = list(self.fields)
+        fields.append(value)
+        return self.__class__(tuple(fields), self.resource_name, self.where, self.order_by, self.limit, self.parameters)

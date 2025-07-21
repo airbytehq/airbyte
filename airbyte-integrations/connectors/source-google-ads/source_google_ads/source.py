@@ -36,19 +36,6 @@ class SourceGoogleAds(YamlDeclarativeSource):
     def _validate_and_transform(config: Mapping[str, Any]):
         if config.get("end_date") == "":
             config.pop("end_date")
-        for query in config.get("custom_queries_array", []):
-            # In concurrent source this method can be executed multiple times
-            if isinstance(query["query"], GAQL):
-                break
-            try:
-                query["query"] = GAQL.parse(query["query"])
-            except ValueError:
-                message = (
-                    f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
-                    "https://developers.google.com/google-ads/api/fields/v18/query_validator"
-                )
-                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-
         if "customer_id" in config:
             config["customer_ids"] = config["customer_id"].split(",")
             config.pop("customer_id")

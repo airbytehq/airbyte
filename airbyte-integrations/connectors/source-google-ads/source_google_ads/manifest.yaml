@@ -4,8 +4,6 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
-  # Placeholder: currently unused but required in the manifest.
-  # The check using the customer stream and custom queries stream should be implemented once the full migration to low-code is complete.
   stream_names:
     - campaign
 
@@ -290,7 +288,7 @@ definitions:
         class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -329,7 +327,7 @@ definitions:
       class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v18/googleAdsFields"
+        url: "https://googleads.googleapis.com/v18/googleAdsFields"
         http_method: GET
         error_handler:
           $ref: "#/definitions/base_error_handler"
