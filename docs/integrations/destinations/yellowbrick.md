@@ -198,7 +198,7 @@ Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                               | Subject         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------- |
-| 0.0.5   | 2025-07-18 | [\#63371](https://github.com/airbytehq/airbyte/pull/63371) | Update connector icon |
+| 0.0.5   | 2025-07-21 | [\#63371](https://github.com/airbytehq/airbyte/pull/63371) | Update connector icon |
 | 0.0.4   | 2024-03-17 | [\#48475](https://github.com/airbytehq/airbyte/pull/48475) | Use JSONB functionality behind the scenes. |
 | 0.0.3   | 2024-08-06 | [\#43342](https://github.com/airbytehq/airbyte/pull/43342) | Remove explicit Kotlin dependency. |
 | 0.0.2   | 2024-05-17 | [\#38329](https://github.com/airbytehq/airbyte/pull/38329) | Update CDK      |

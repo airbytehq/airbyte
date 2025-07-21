@@ -101,7 +101,7 @@ Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.
 
 | Version | Date       | Pull Request                                               | Subject                 |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------- |
-| 0.0.2   | 2025-07-18 | [63371](https://github.com/airbytehq/airbyte/pull/63371) | Update connector icon |
+| 0.0.2   | 2025-07-21 | [63371](https://github.com/airbytehq/airbyte/pull/63371) | Update connector icon |
 | 0.0.1   | 2023-03-28 | [\#24620](https://github.com/airbytehq/airbyte/pull/24620) | Initial public release. |
 
 </details>

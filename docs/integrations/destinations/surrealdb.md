@@ -87,7 +87,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.1   | 2025-07-18 | [\#63371](https://github.com/airbytehq/airbyte/pull/63371) | Update connector icon.                                                                       |
+| 0.1.1   | 2025-07-21 | [\#63371](https://github.com/airbytehq/airbyte/pull/63371) | Update connector icon.                                                                       |
 | 0.1.0   | 2025-05-09 | [\#59742](https://github.com/airbytehq/airbyte/pull/59742) | Added SurrealDB destination.                                                                       |
 
 </details>
