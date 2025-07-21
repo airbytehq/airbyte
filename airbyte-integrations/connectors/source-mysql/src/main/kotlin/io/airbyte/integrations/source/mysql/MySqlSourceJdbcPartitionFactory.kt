@@ -531,7 +531,7 @@ class MySqlSourceJdbcPartitionFactory(
     private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? {
         return when (upperBound) {
             is Long -> calculateBoundaries(num, lowerBound as Long?, upperBound)
-            is Int -> calculateBoundaries(num, lowerBound as Long?, upperBound.toLong())
+            is Int -> calculateBoundaries(num, (lowerBound as Int?)?.toLong(), upperBound.toLong())
             is String -> calculateBoundaries(num, lowerBound as String?, upperBound)
             is Double -> calculateBoundaries(num, lowerBound as Double?, upperBound)
             is OffsetDateTime -> calculateBoundaries(num, lowerBound as? OffsetDateTime, upperBound)
