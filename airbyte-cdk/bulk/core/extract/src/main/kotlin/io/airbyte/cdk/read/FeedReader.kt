@@ -421,7 +421,7 @@ class FeedReader(
             }
         }
 
-        // If this is the final checkpoint, we initialzie the OutputMessageRouter and emit all
+        // If this is the final checkpoint, we initialize the OutputMessageRouter and emit all
         // pending messages through it
         if (finalCheckpoint) {
             doWithMessageRouter {
