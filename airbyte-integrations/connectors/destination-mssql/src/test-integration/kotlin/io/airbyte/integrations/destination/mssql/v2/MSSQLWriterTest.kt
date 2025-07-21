@@ -91,12 +91,6 @@ abstract class MSSQLWriterTest(
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
     }
-
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/13572")
-    override fun testBizarrePkSchemaEvolution() {
-        super.testBizarrePkSchemaEvolution()
-    }
 }
 
 class MSSQLDataDumper(private val configProvider: (MSSQLSpecification) -> MSSQLConfiguration) :
