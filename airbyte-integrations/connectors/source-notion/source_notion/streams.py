@@ -4,11 +4,10 @@
 
 import logging as Logger
 from abc import ABC
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from requests import HTTPError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
@@ -73,7 +72,9 @@ class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
     Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
     """
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: Logger, source: Source, error: requests.HTTPError
+    ) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
             "Please make sure your integration has read access for the resources you are trying to sync"
@@ -96,8 +97,6 @@ class NotionStream(HttpStream, ABC):
 
         # If start_date is not found in config, set it to 2 years ago and update value in config for use in next stream
         if not self.start_date:
-            from datetime import datetime
-
             two_years_ago = datetime.now(timezone.utc) - timedelta(days=730)  # 2 years = 730 days
             self.start_date = self._format_datetime_for_notion(two_years_ago)
             config["start_date"] = self.start_date
@@ -174,7 +173,7 @@ class NotionStream(HttpStream, ABC):
         return response.status_code == 400 or response.status_code == 429 or response.status_code >= 500
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        params = dict(super().request_headers(**kwargs))
+        params = super().request_headers(**kwargs)
         # Notion API version, see https://developers.notion.com/reference/versioning
         params["Notion-Version"] = "2022-06-28"
         return params
