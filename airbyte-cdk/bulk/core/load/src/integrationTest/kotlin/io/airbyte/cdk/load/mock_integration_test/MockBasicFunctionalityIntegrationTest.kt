@@ -31,6 +31,7 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -73,6 +74,12 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
         nullEqualsUnset = dataChannelFormat == DataChannelFormat.PROTOBUF,
+        unknownTypesBehavior =
+            if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                UnknownTypesBehavior.NULL
+            } else {
+                UnknownTypesBehavior.PASS_THROUGH
+            },
     ) {
     @Test
     override fun testBasicWrite() {
@@ -432,6 +439,20 @@ class MockBasicFunctionalityIntegrationTestSocketProtobuf :
         DataChannelMedium.SOCKET,
         DataChannelFormat.PROTOBUF,
     ) {
+    // java.time.format.DateTimeParseException: Text 'foo' could not be parsed at index 0
+    // expected, protobuf mode assumes valid values.
+    @Test
+    @Disabled(
+        "we need a separate test case that exercises all types, but without bad values - https://github.com/airbytehq/airbyte-internal-issues/issues/13708"
+    )
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    // not suuuper important - this only happens if the source/platform have a bug,
+    // and send us a weird state message.
+    // probably should fix at some point (probably indicates bad exception handling somewhere),
+    // but IMO not critical.
     @Test
     @Disabled("Sockets medium hangs when receiving an unrecognized state message")
     override fun testCrashInInputLoop() {
