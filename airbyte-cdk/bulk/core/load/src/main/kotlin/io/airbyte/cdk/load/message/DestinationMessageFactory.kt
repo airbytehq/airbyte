@@ -145,7 +145,6 @@ class DestinationMessageFactory(
                 }
             }
             AirbyteMessage.Type.STATE -> {
-                logger.info { "Received state message $message" }
                 when (message.state.type) {
                     AirbyteStateMessage.AirbyteStateType.STREAM -> {
                         val additionalProperties = message.state.additionalProperties
@@ -240,6 +239,14 @@ class DestinationMessageFactory(
         stateMessage: AirbyteStateMessage,
     ): Map<DestinationStream.Descriptor, CheckpointKey> =
         stateMessage.global.streamStates
+            .filter {
+                /*
+                 * Streams that have not made any progress since the last state message will not include the checkpoint ID's.
+                 * Filter these streams out so that they do not fail the check in keyFromAdditionalPropertiesMaybe().
+                 */
+                it.additionalProperties.containsKey(Meta.CHECKPOINT_ID_NAME) &&
+                    it.additionalProperties.containsKey(Meta.CHECKPOINT_INDEX_NAME)
+            }
             .map {
                 it.streamDescriptor to keyFromAdditionalPropertiesMaybe(it.additionalProperties)
             }
