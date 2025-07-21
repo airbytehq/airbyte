@@ -48,6 +48,7 @@ from source_shopify.streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
+from source_shopify.state_migrations import TransactionsCursorMigration
 
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -517,3 +518,176 @@ def test_countries_parse_response(config, countries_response_data, countries_exp
         countries_expected_record_data,
     ]
     assert list(records) == expected_records
+
+
+class TestTransactionsCursorMigration:
+    """Test suite for the transactions cursor field migration from 'created_at' to 'processed_at'."""
+
+    def test_should_migrate_stream_state_true_cases(self):
+        """Test cases where state migration should occur."""
+        # Case 1: Affected stream with old cursor field only
+        state_with_old_cursor = {"created_at": "2023-12-01T10:00:00Z"}
+        assert TransactionsCursorMigration.should_migrate_stream_state("transactions", state_with_old_cursor)
+
+        # Case 2: Affected stream with old cursor and some other fields
+        state_with_old_and_other = {
+            "created_at": "2023-12-01T10:00:00Z",
+            "orders": {"updated_at": "2023-12-01T09:00:00Z"},
+        }
+        assert TransactionsCursorMigration.should_migrate_stream_state("transactions", state_with_old_and_other)
+
+    def test_should_migrate_stream_state_false_cases(self):
+        """Test cases where state migration should NOT occur."""
+        # Case 1: Non-affected stream
+        state_orders = {"updated_at": "2023-12-01T10:00:00Z"}
+        assert not TransactionsCursorMigration.should_migrate_stream_state("orders", state_orders)
+
+        # Case 2: Already has new cursor field
+        state_with_new_cursor = {"processed_at": "2023-12-01T10:00:00Z"}
+        assert not TransactionsCursorMigration.should_migrate_stream_state("transactions", state_with_new_cursor)
+
+        # Case 3: Has both old and new cursor fields
+        state_with_both = {
+            "created_at": "2023-12-01T10:00:00Z",
+            "processed_at": "2023-12-01T15:00:00Z",
+        }
+        assert not TransactionsCursorMigration.should_migrate_stream_state("transactions", state_with_both)
+
+        # Case 4: Old cursor field is None
+        state_with_none = {"created_at": None}
+        assert not TransactionsCursorMigration.should_migrate_stream_state("transactions", state_with_none)
+
+        # Case 5: Old cursor field is empty string
+        state_with_empty = {"created_at": ""}
+        assert not TransactionsCursorMigration.should_migrate_stream_state("transactions", state_with_empty)
+
+        # Case 6: Empty state
+        empty_state = {}
+        assert not TransactionsCursorMigration.should_migrate_stream_state("transactions", empty_state)
+
+    def test_migrate_stream_state_successful_migration(self):
+        """Test successful state migration scenarios."""
+        # Case 1: Basic migration
+        original_state = {"created_at": "2023-12-01T10:00:00Z"}
+        expected_state = {
+            "created_at": "2023-12-01T10:00:00Z",
+            "processed_at": "2023-12-01T10:00:00Z",
+        }
+
+        migrated_state = TransactionsCursorMigration.migrate_stream_state("transactions", original_state.copy())
+        assert migrated_state == expected_state
+
+        # Case 2: Migration with additional fields preserved
+        original_state_with_extras = {
+            "created_at": "2023-12-01T10:00:00Z",
+            "orders": {"updated_at": "2023-12-01T09:00:00Z"},
+        }
+        expected_state_with_extras = {
+            "created_at": "2023-12-01T10:00:00Z",
+            "processed_at": "2023-12-01T10:00:00Z",
+            "orders": {"updated_at": "2023-12-01T09:00:00Z"},
+        }
+
+        migrated_state = TransactionsCursorMigration.migrate_stream_state("transactions", original_state_with_extras.copy())
+        assert migrated_state == expected_state_with_extras
+
+    def test_migrate_stream_state_no_migration_needed(self):
+        """Test scenarios where no migration should occur."""
+        # Case 1: Stream doesn't need migration
+        orders_state = {"updated_at": "2023-12-01T10:00:00Z"}
+        result = TransactionsCursorMigration.migrate_stream_state("orders", orders_state.copy())
+        assert result == orders_state  # Should be unchanged
+
+        # Case 2: Already has new cursor field
+        new_state = {"processed_at": "2023-12-01T15:00:00Z"}
+        result = TransactionsCursorMigration.migrate_stream_state("transactions", new_state.copy())
+        assert result == new_state  # Should be unchanged
+
+    def test_migrate_state_full_connector_state(self):
+        """Test migration of complete connector state."""
+        # Case 1: State with transactions that need migration
+        original_full_state = {
+            "transactions": {"created_at": "2023-12-01T10:00:00Z"},
+            "orders": {"updated_at": "2023-12-01T09:00:00Z"},
+            "customers": {"updated_at": "2023-12-01T08:00:00Z"},
+        }
+
+        expected_full_state = {
+            "transactions": {
+                "created_at": "2023-12-01T10:00:00Z",
+                "processed_at": "2023-12-01T10:00:00Z",
+            },
+            "orders": {"updated_at": "2023-12-01T09:00:00Z"},
+            "customers": {"updated_at": "2023-12-01T08:00:00Z"},
+        }
+
+        migrated_full_state = TransactionsCursorMigration.migrate_state(original_full_state.copy())
+        assert migrated_full_state == expected_full_state
+
+        # Case 2: State without transactions stream
+        state_without_transactions = {
+            "orders": {"updated_at": "2023-12-01T09:00:00Z"},
+            "customers": {"updated_at": "2023-12-01T08:00:00Z"},
+        }
+
+        result = TransactionsCursorMigration.migrate_state(state_without_transactions.copy())
+        assert result == state_without_transactions  # Should be unchanged
+
+        # Case 3: Empty state
+        empty_state = {}
+        result = TransactionsCursorMigration.migrate_state(empty_state.copy())
+        assert result == empty_state  # Should be unchanged
+
+        # Case 4: None state
+        result = TransactionsCursorMigration.migrate_state(None)
+        assert result is None
+
+    def test_get_fallback_cursor_value(self):
+        """Test fallback cursor value logic."""
+        # Case 1: State has old cursor value
+        state_with_old = {"created_at": "2023-12-01T10:00:00Z"}
+        fallback = TransactionsCursorMigration.get_fallback_cursor_value(state_with_old)
+        assert fallback == "2023-12-01T10:00:00Z"
+
+        # Case 2: State has no old cursor value
+        state_without_old = {"some_other_field": "value"}
+        fallback = TransactionsCursorMigration.get_fallback_cursor_value(state_without_old)
+        assert fallback == "2020-01-01T00:00:00Z"  # Default
+
+        # Case 3: Custom default
+        fallback = TransactionsCursorMigration.get_fallback_cursor_value(state_without_old, "2022-01-01T00:00:00Z")
+        assert fallback == "2022-01-01T00:00:00Z"
+
+        # Case 4: Empty state
+        fallback = TransactionsCursorMigration.get_fallback_cursor_value({})
+        assert fallback == "2020-01-01T00:00:00Z"
+
+    def test_transactions_stream_uses_migration(self, config):
+        """Test that the Transactions stream properly integrates the migration."""
+        stream = Transactions(config)
+        
+        # Test state with old cursor field
+        old_state = {"created_at": "2023-12-01T10:00:00Z"}
+        latest_record = {"processed_at": "2023-12-01T12:00:00Z", "id": "123"}
+        
+        # The get_updated_state method should handle migration internally
+        updated_state = stream.get_updated_state(old_state.copy(), latest_record)
+        
+        # The new cursor should be updated with the latest record value
+        assert updated_state["processed_at"] == "2023-12-01T12:00:00Z"
+        # Should also include orders state (from parent stream logic)
+        assert "orders" in updated_state
+
+    def test_transactions_graphql_stream_uses_migration(self, config):
+        """Test that the TransactionsGraphql stream properly integrates the migration."""
+        stream = TransactionsGraphql(config)
+        
+        # Test state with old cursor field
+        old_state = {"created_at": "2023-12-01T10:00:00Z"}
+        latest_record = {"processed_at": "2023-12-01T12:00:00Z", "id": "123"}
+        
+        # The get_updated_state method should handle migration internally
+        updated_state = stream.get_updated_state(old_state.copy(), latest_record)
+        
+        # The new cursor should be updated with the latest record value
+        assert updated_state["processed_at"] == "2023-12-01T12:00:00Z"

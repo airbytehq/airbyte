@@ -32,6 +32,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
+from source_shopify.state_migrations import TransactionsCursorMigration
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 
 from airbyte_cdk import HttpSubStream
@@ -243,19 +244,50 @@ class OrderRisks(IncrementalShopifyGraphQlBulkStream):
 
 
 class Transactions(IncrementalShopifySubstream):
+    """
+    Transactions stream for Shopify REST API.
+    
+    Note: Uses 'processed_at' as cursor field (changed from 'created_at' in v3.1.0) to ensure
+    transaction updates are captured during incremental syncs. The 'created_at' field only
+    reflects when the transaction record was initially created, not when it was last updated
+    or processed, causing missed updates when transaction status changes.
+    """
     parent_stream_class = Orders
     slice_key = "order_id"
     data_field = "transactions"
-    cursor_field = "created_at"
+    cursor_field = "processed_at"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
+    
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        """
+        Override to handle cursor field migration from 'created_at' to 'processed_at'.
+        """
+        # Apply state migration if needed
+        migrated_state = TransactionsCursorMigration.migrate_stream_state(self.name, current_stream_state)
+        
+        # Call parent implementation with migrated state
+        return super().get_updated_state(migrated_state, latest_record)
 
 
 class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
+    """
+    Transactions stream for Shopify GraphQL Bulk API.
+    
+    Note: Uses 'processed_at' as cursor field (changed from 'created_at' in v3.1.0) to ensure
+    transaction updates are captured during incremental syncs. The 'created_at' field only
+    reflects when the transaction record was initially created, not when it was last updated
+    or processed, causing missed updates when transaction status changes.
+    
+    This stream is functionally equivalent to the Transactions stream but uses GraphQL API
+    and excludes certain fields like user_id that require additional scopes.
+    """
     bulk_query: Transaction = Transaction
-    cursor_field = "created_at"
+    cursor_field = "processed_at"
 
     @property
     def name(self) -> str:
@@ -272,6 +304,18 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
             - additional `read_users` scope is required https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes
         """
         return ResourceSchemaLoader(package_name_from_class(Transactions)).get_schema("transactions")
+    
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        """
+        Override to handle cursor field migration from 'created_at' to 'processed_at'.
+        """
+        # Apply state migration if needed
+        migrated_state = TransactionsCursorMigration.migrate_stream_state(self.name, current_stream_state)
+        
+        # Call parent implementation with migrated state
+        return super().get_updated_state(migrated_state, latest_record)
 
 
 class TenderTransactions(IncrementalShopifyStream):
