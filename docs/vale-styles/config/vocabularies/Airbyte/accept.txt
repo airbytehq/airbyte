@@ -37,6 +37,9 @@ Python
 MarkDownLint
 markdownlint-cli2
 JavaScript
+ETL
+ELT
+[Dd]ata activation
 
 # Common acronyms and initialisms that don't need definitions
 
