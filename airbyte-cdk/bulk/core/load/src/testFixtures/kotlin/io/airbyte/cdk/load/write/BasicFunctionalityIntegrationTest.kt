@@ -2525,7 +2525,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "string": "foo",
+                          "string": "fo\u0000o",
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
@@ -2708,7 +2708,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     mapOf(
                         "id" to 5,
                         "string" to
-                            if (allTypesBehavior.convertAllValuesToString) {
+                            if (
+                                allTypesBehavior.convertAllValuesToString &&
+                                    dataChannelFormat != DataChannelFormat.PROTOBUF
+                            ) {
                                 "{}"
                             } else {
                                 null
@@ -2734,6 +2737,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         // id and struct don't have a bad value case here
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
+                        .filter {
+                            it != "boolean" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "integer" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "number" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
                         .map { key ->
                             val change =
                                 Change(
@@ -2795,7 +2807,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "string" to "foo",
+                            "string" to "fo\u0000o",
                             "number" to 42.1,
                             "integer" to 42,
                             "boolean" to true,

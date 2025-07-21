@@ -175,6 +175,105 @@ definitions:
             parent_key: "clientCustomer"
             partition_field: "customer_id"
 
+  template_criterion_stream:
+    type: StateDelegatingStream
+    full_refresh_stream:
+      $ref: "#/definitions/incremental_stream_base"
+      retriever:
+        $ref: "#/definitions/incremental_stream_base/retriever"
+        requester:
+          type: CustomRequester
+          class_name: "source_google_ads.components.CriterionFullRefreshRequester"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $ref: "#/schemas"
+          authenticator:
+            $ref: "#/definitions/authenticator"
+          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+          http_method: POST
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: change_status.last_change_date_time
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+      transformations:
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: ["change_status.last_change_date_time"]
+              value: "{{ today_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
+    incremental_stream:
+      $ref: "#/definitions/incremental_stream_base"
+      retriever:
+        type: CustomRetriever
+        class_name: "source_google_ads.components.CriterionRetriever"
+        requester:
+          type: CustomRequester
+          class_name: "source_google_ads.components.CriterionIncrementalRequester"
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $ref: "#/schemas"
+          authenticator:
+            $ref: "#/definitions/authenticator"
+          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
+          http_method: POST
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+        partition_router:
+          type: GroupingPartitionRouter
+          group_size: 10000
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/change_status_stream"
+                parent_key: "change_status.{{ parameters['resource_name'] }}"
+                partition_field: "{{ parameters['resource_name'] }}.resource_name"
+                extra_fields:
+                  [
+                    ["change_status.last_change_date_time"],
+                    ["change_status.resource_status"],
+                  ]
+                incremental_dependency: true
+        transformations:
+          - type: CustomTransformation
+            class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+          - type: CustomTransformation
+            class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: change_status.last_change_date_time
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+
   accessible_accounts:
     $ref: "#/definitions/stream_base"
     name: accessible_accounts
@@ -359,6 +458,18 @@ definitions:
       schema:
         $ref: "#/schemas/ad_group_ad_legacy"
 
+  ad_group_bidding_strategy_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: ad_group_bidding_strategy
+    primary_key:
+      - ad_group.id
+      - bidding_strategy.id
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ad_group_bidding_strategy"
+
   ad_group_label_stream:
     $ref: "#/definitions/full_refresh_stream_base"
     name: ad_group_label
@@ -412,6 +523,18 @@ definitions:
       schema:
         $ref: "#/schemas/campaign"
 
+  campaign_bidding_strategy_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: campaign_bidding_strategy
+    primary_key:
+      - campaign.id
+      - bidding_strategy.id
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/campaign_bidding_strategy"
+
   campaign_budget_stream:
     $ref: "#/definitions/incremental_stream_base"
     name: campaign_budget
@@ -444,6 +567,48 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/campaign_label"
+
+  click_view_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: click_view
+    primary_key:
+      - "click_view.gclid"
+      - "segments.date"
+      - "segments.ad_network_type"
+    retriever:
+      $ref: "#/definitions/incremental_stream_base/retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_google_ads.components.ClickViewHttpRequester"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/click_view"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: segments.date
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      lookback_window: "P{{ max(config.get('conversion_window_days', 1), 1) }}D"
+      step: P1D
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ max(config.get('start_date', day_delta(-90, format='%Y-%m-%d')), day_delta(-90, format='%Y-%m-%d')) }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/click_view"
 
   customer_stream:
     $ref: "#/definitions/incremental_stream_base"
@@ -593,19 +758,156 @@ definitions:
       schema:
         $ref: "#/schemas/user_location_view"
 
+  change_status_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: change_status
+    retriever:
+      type: CustomRetriever
+      class_name: "source_google_ads.components.ChangeStatusRetriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_google_ads.components.ChangeStatusRequester"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+        name: change_status
+      record_selector:
+        type: RecordSelector
+        $parameters:
+          name: "change_status"
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_client"
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
+            extra_fields: [["manager"]]
+      transformations:
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: change_status.last_change_date_time
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+      cursor_granularity: PT0.000001S
+      step: P14D
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ day_delta(-90, format='%Y-%m-%d %H:%M:%S.%f') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        customer_client_stream: "#/definitions/customer_client"
+        cursor_field: change_status.last_change_date_time
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/change_status"
+
+  ad_group_criterion_stream:
+    type: StateDelegatingStream
+    $parameters:
+      name: "ad_group_criterion"
+      resource_name: "ad_group_criterion"
+      primary_key:
+        - ad_group_criterion.resource_name
+      resource_type: AD_GROUP_CRITERION
+    full_refresh_stream:
+      $ref: "#/definitions/template_criterion_stream/full_refresh_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_group_criterion"
+    incremental_stream:
+      $ref: "#/definitions/template_criterion_stream/incremental_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_group_criterion"
+
+  ad_listing_group_criterion_stream:
+    type: StateDelegatingStream
+    $parameters:
+      name: "ad_listing_group_criterion"
+      resource_name: "ad_group_criterion"
+      primary_key:
+        - ad_group_criterion.resource_name
+      resource_type: AD_GROUP_CRITERION
+    full_refresh_stream:
+      $ref: "#/definitions/template_criterion_stream/full_refresh_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_listing_group_criterion"
+    incremental_stream:
+      $ref: "#/definitions/template_criterion_stream/incremental_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_listing_group_criterion"
+
+  campaign_criterion_stream:
+    type: StateDelegatingStream
+    $parameters:
+      name: "campaign_criterion"
+      resource_name: "campaign_criterion"
+      primary_key:
+        - campaign_criterion.resource_name
+      resource_type: CAMPAIGN_CRITERION
+    full_refresh_stream:
+      $ref: "#/definitions/template_criterion_stream/full_refresh_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaign_criterion"
+    incremental_stream:
+      $ref: "#/definitions/template_criterion_stream/incremental_stream"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaign_criterion"
+
 streams:
   - "#/definitions/account_performance_report_stream"
   - "#/definitions/ad_group_stream"
   - "#/definitions/ad_group_ad_stream"
   - "#/definitions/ad_group_ad_label_stream"
   - "#/definitions/ad_group_ad_legacy_stream"
+  - "#/definitions/ad_group_bidding_strategy_stream"
+  - "#/definitions/ad_group_criterion_stream"
   - "#/definitions/ad_group_label_stream"
   - "#/definitions/ad_group_criterion_label_stream"
+  - "#/definitions/ad_listing_group_criterion_stream"
   - "#/definitions/audience_stream"
   - "#/definitions/campaign_stream"
+  - "#/definitions/campaign_bidding_strategy_stream"
   - "#/definitions/campaign_budget_stream"
+  - "#/definitions/campaign_criterion_stream"
   - "#/definitions/campaign_label_stream"
   - "#/definitions/customer_stream"
+  - "#/definitions/click_view_stream"
   - "#/definitions/customer_label_stream"
   - "#/definitions/display_keyword_view_stream"
   - "#/definitions/geographic_view_stream"
@@ -792,6 +1094,552 @@ schemas:
           - string
         format: date
     additionalProperties: true
+
+  ad_group_criterion:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      deleted_at:
+        description: The date when the ad group criterion was deleted.
+        type:
+          - "null"
+          - string
+      change_status.last_change_date_time:
+        description: The date and time of the last change made to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group.id:
+        description: The ID of the ad group associated with the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.ad_group:
+        description: The ad group to which the ad group criterion belongs.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.age_range.type:
+        description: The age range targeting type for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.app_payment_model.type:
+        description: The app payment model type for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.approval_status:
+        description: The approval status of the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.audience.audience:
+        description: The audience targeting for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.bid_modifier:
+        description: The bid modifier for the ad group criterion.
+        type:
+          - "null"
+          - number
+      ad_group_criterion.combined_audience.combined_audience:
+        description: The combined audience targeting for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.cpc_bid_micros:
+        description: The CPC bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.cpm_bid_micros:
+        description: The CPM bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.cpv_bid_micros:
+        description: The CPV bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.criterion_id:
+        description: The ID of the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.custom_affinity.custom_affinity:
+        description: The custom affinity targeting for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.custom_audience.custom_audience:
+        description: The custom audience targeting for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.custom_intent.custom_intent:
+        description: The custom intent targeting for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.disapproval_reasons:
+        description: The reasons for disapproval of the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.display_name:
+        description: The display name of the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.effective_cpc_bid_micros:
+        description: The effective CPC bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.effective_cpc_bid_source:
+        description: The source of the effective CPC bid for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.effective_cpm_bid_micros:
+        description: The effective CPM bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.effective_cpm_bid_source:
+        description: The source of the effective CPM bid for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.effective_cpv_bid_micros:
+        description: The effective CPV bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.effective_cpv_bid_source:
+        description: The source of the effective CPV bid for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.effective_percent_cpc_bid_micros:
+        description:
+          The effective percent CPC bid amount in micros for the ad group
+          criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.effective_percent_cpc_bid_source:
+        description:
+          The source of the effective percent CPC bid for the ad group
+          criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.final_mobile_urls:
+        description: The final mobile URLs for the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.final_url_suffix:
+        description: The final URL suffix for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.final_urls:
+        description: The final URLs for the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.gender.type:
+        description: The gender targeting type for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.income_range.type:
+        description: The income range targeting type for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.keyword.match_type:
+        description: The match type of the keyword for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.keyword.text:
+        description: The text of the keyword for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.labels:
+        description: The labels associated with the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.mobile_app_category.mobile_app_category_constant:
+        description: The mobile app category constant for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.mobile_application.app_id:
+        description: The application ID for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.mobile_application.name:
+        description: The name of the mobile application for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.negative:
+        description: Indicates if the ad group criterion is negative or not.
+        type:
+          - "null"
+          - boolean
+      ad_group_criterion.parental_status.type:
+        description: The parental status targeting type for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.percent_cpc_bid_micros:
+        description: The percent CPC bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.placement.url:
+        description: The URL placement for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.position_estimates.estimated_add_clicks_at_first_position_cpc:
+        description:
+          The estimated additional clicks at the first position CPC for
+          the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.position_estimates.estimated_add_cost_at_first_position_cpc:
+        description:
+          The estimated additional cost at the first position CPC for the
+          ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.position_estimates.first_page_cpc_micros:
+        description: The first page CPC bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.position_estimates.first_position_cpc_micros:
+        description:
+          The first position CPC bid amount in micros for the ad group
+          criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.position_estimates.top_of_page_cpc_micros:
+        description: The top of page CPC bid amount in micros for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.quality_info.creative_quality_score:
+        description: The creative quality score for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.quality_info.post_click_quality_score:
+        description: The post-click quality score for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.quality_info.quality_score:
+        description: The quality score for the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.quality_info.search_predicted_ctr:
+        description: The predicted click-through rate for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.resource_name:
+        description: The resource name of the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.status:
+        description: The status of the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.system_serving_status:
+        description: The serving status of the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.topic.path:
+        description: The path of the topic targeting for the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.topic.topic_constant:
+        description: The topic constant for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.tracking_url_template:
+        description: The tracking URL template for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.type:
+        description: The type of the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.url_custom_parameters:
+        description: The custom parameters for the URLs of the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.user_interest.user_interest_category:
+        description: The user interest category for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.user_list.user_list:
+        description: The user list targeting for the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.webpage.conditions:
+        description: The conditions set for webpage targeting of the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.webpage.coverage_percentage:
+        description:
+          The coverage percentage for the webpage targeting of the ad group
+          criterion.
+        type:
+          - "null"
+          - number
+      ad_group_criterion.webpage.criterion_name:
+        description:
+          The criterion name for the webpage targeting of the ad group
+          criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.webpage.sample.sample_urls:
+        description: The sample URLs for webpage targeting of the ad group criterion.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      ad_group_criterion.youtube_channel.channel_id:
+        description:
+          The channel ID for YouTube channel targeting of the ad group
+          criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.youtube_video.video_id:
+        description: The video ID for YouTube video targeting of the ad group criterion.
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+
+  ad_listing_group_criterion:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      deleted_at:
+        description:
+          The timestamp indicating when the ad group criterion was deleted,
+          if applicable.
+        type:
+          - "null"
+          - string
+      change_status.last_change_date_time:
+        description: The date and time of the last change made to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.resource_name:
+        description: The resource name of the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group.id:
+        description: The ID of the ad group associated with the criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.criterion_id:
+        description: The ID of the criterion defining the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.listing_group.case_value.activity_country.value:
+        description:
+          The country where the activity related to the ad group criterion
+          takes place.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.activity_id.value:
+        description: The ID of the activity related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.activity_rating.value:
+        description: The rating of the activity related to the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.listing_group.case_value.hotel_city.city_criterion:
+        description:
+          The city where the hotel related to the ad group criterion is
+          located.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.hotel_class.value:
+        description: The class of the hotel related to the ad group criterion.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.listing_group.case_value.hotel_country_region.country_region_criterion:
+        description:
+          The country region where the hotel related to the ad group criterion
+          is located.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.hotel_id.value:
+        description: The ID of the hotel related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.hotel_state.state_criterion:
+        description:
+          The state where the hotel related to the ad group criterion is
+          located.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_category.category_id:
+        description:
+          The ID of the category to which the product related to the ad
+          group criterion belongs.
+        type:
+          - "null"
+          - integer
+      ad_group_criterion.listing_group.case_value.product_category.level:
+        description: The category level of the product related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_brand.value:
+        description: The brand of the product related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_channel.channel:
+        description:
+          The channel where the product related to the ad group criterion
+          is sold.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity:
+        description:
+          The exclusivity level of the product on its distribution channel
+          related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_condition.condition:
+        description: The condition of the product related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_custom_attribute.index:
+        description:
+          The custom attribute index of the product related to the ad group
+          criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_custom_attribute.value:
+        description:
+          The custom attribute value of the product related to the ad group
+          criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_item_id.value:
+        description: The ID of the product item related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_type.level:
+        description: The level of product type related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.case_value.product_type.value:
+        description: The value of the product type related to the ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.parent_ad_group_criterion:
+        description: The parent ad group criterion of the current ad group criterion.
+        type:
+          - "null"
+          - string
+      ad_group_criterion.listing_group.type:
+        description: The type of the listing group associated with the ad group criterion.
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+
   campaign:
     $schema: http://json-schema.org/schema#
     type: object
@@ -1315,6 +2163,99 @@ schemas:
           - "null"
           - string
     additionalProperties: true
+
+  campaign_criterion:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      deleted_at:
+        description: Timestamp indicating when the criterion was deleted.
+        type:
+          - "null"
+          - string
+      change_status.last_change_date_time:
+        description: The date and time of the last change made to the criterion.
+        type:
+          - "null"
+          - string
+      campaign.id:
+        description: The unique identifier for the campaign associated with the criterion.
+        type:
+          - "null"
+          - integer
+      campaign_criterion.resource_name:
+        description: The resource name of the criterion.
+        type:
+          - "null"
+          - string
+      campaign_criterion.campaign:
+        description: The specific campaign this criterion is targeting.
+        type:
+          - "null"
+          - string
+      campaign_criterion.age_range.type:
+        description: The age range targeting type for the criterion.
+        type:
+          - "null"
+          - string
+      campaign_criterion.mobile_application.name:
+        description: The name of the mobile application targeted by the criterion.
+        type:
+          - "null"
+          - string
+      campaign_criterion.negative:
+        description: Indicates whether the criterion is a negative targeting criterion.
+        type:
+          - "null"
+          - boolean
+      campaign_criterion.youtube_channel.channel_id:
+        description: The YouTube channel ID targeted by the criterion.
+        type:
+          - "null"
+          - string
+      campaign_criterion.youtube_video.video_id:
+        description: The YouTube video ID targeted by the criterion.
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+
+  change_status:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      change_status.last_change_date_time:
+        description: The date and time when the last change was made.
+        type:
+          - "null"
+          - string
+      change_status.resource_type:
+        description: The type of the resource that was changed.
+        type:
+          - "null"
+          - string
+      change_status.resource_status:
+        description: The status of the resource after the change.
+        type:
+          - "null"
+          - string
+      change_status.resource_name:
+        description: The name of the resource that was changed.
+        type:
+          - "null"
+          - string
+      change_status.ad_group_criterion:
+        description: The status of the ad group criterion that was changed.
+        type:
+          - "null"
+          - string
+      change_status.campaign_criterion:
+        description: The status of the campaign criterion that was changed.
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+
   display_keyword_view:
     $schema: http://json-schema.org/schema#
     type: object
@@ -1735,6 +2676,7 @@ schemas:
           - string
         format: date
     additionalProperties: true
+
   geographic_view:
     $schema: http://json-schema.org/schema#
     type: object
@@ -1775,6 +2717,7 @@ schemas:
           - string
         format: date
     additionalProperties: true
+
   keyword_view:
     $schema: http://json-schema.org/schema#
     type: object
@@ -1924,6 +2867,7 @@ schemas:
           - "null"
           - integer
     additionalProperties: true
+
   shopping_performance_view:
     $schema: http://json-schema.org/schema#
     type: object
@@ -2225,6 +3169,7 @@ schemas:
           - "null"
           - integer
     additionalProperties: true
+
   topic_view:
     $schema: http://json-schema.org/schema#
     type: object
@@ -2659,6 +3604,7 @@ schemas:
           - "null"
           - integer
     additionalProperties: true
+
   user_location_view:
     $schema: http://json-schema.org/schema#
     type: object
@@ -2912,6 +3858,7 @@ schemas:
           - "null"
           - integer
     additionalProperties: true
+
   customer:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3027,6 +3974,7 @@ schemas:
           - "null"
           - string
         format: date
+
   campaign_budget:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3299,6 +4247,7 @@ schemas:
         type:
           - "null"
           - integer
+
   account_performance_report:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -3592,6 +4541,7 @@ schemas:
         type:
           - "null"
           - integer
+
   ad_group_ad:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -4359,6 +5309,7 @@ schemas:
           - "null"
           - string
         format: date
+
   ad_group_ad_legacy:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5104,6 +6055,7 @@ schemas:
         type:
           - "null"
           - integer
+
   audience:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5153,6 +6105,7 @@ schemas:
         type:
           - "null"
           - string
+
   user_interest:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5196,6 +6149,7 @@ schemas:
         type:
           - "null"
           - string
+
   ad_group_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5230,6 +6184,7 @@ schemas:
         type:
           - "null"
           - string
+
   ad_group_ad_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5269,6 +6224,7 @@ schemas:
         type:
           - "null"
           - integer
+
   campaign_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5303,6 +6259,7 @@ schemas:
         type:
           - "null"
           - string
+
   label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5342,6 +6299,7 @@ schemas:
         type:
           - "null"
           - string
+
   ad_group_criterion_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5376,6 +6334,7 @@ schemas:
         type:
           - "null"
           - integer
+
   customer_label:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -5406,3 +6365,432 @@ schemas:
         type:
           - "null"
           - string
+
+  click_view:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      ad_group.name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      click_view.gclid:
+        description: The Google Click Identifier for tracking purposes.
+        type:
+          - "null"
+          - string
+      click_view.ad_group_ad:
+        description: Details of the ad in the ad group that was clicked.
+        type:
+          - "null"
+          - string
+      click_view.keyword:
+        description: The keyword that triggered the ad click.
+        type:
+          - "null"
+          - string
+      click_view.keyword_info.match_type:
+        description: The match type of the keyword triggering the ad click.
+        type:
+          - "null"
+          - string
+      click_view.keyword_info.text:
+        description: The text of the keyword that triggered the ad click.
+        type:
+          - "null"
+          - string
+      campaign.id:
+        description: The unique identifier for the campaign.
+        type:
+          - "null"
+          - integer
+      ad_group.id:
+        description: The unique identifier for the ad group.
+        type:
+          - "null"
+          - integer
+      segments.date:
+        description: The date when the click occurred.
+        type:
+          - "null"
+          - string
+        format: date
+      customer.id:
+        description: The unique identifier for the customer account.
+        type:
+          - "null"
+          - integer
+      campaign.name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      segments.ad_network_type:
+        description: Type of ad network where the click originated.
+        type:
+          - "null"
+          - string
+      campaign.network_settings.target_content_network:
+        description: Boolean indicating if the campaign is targeting the content network.
+        type:
+          - "null"
+          - boolean
+      campaign.network_settings.target_google_search:
+        description: Boolean indicating if the campaign is targeting Google search.
+        type:
+          - "null"
+          - boolean
+      campaign.network_settings.target_partner_search_network:
+        description: Boolean indicating if the campaign is targeting partner search network.
+        type:
+          - "null"
+          - boolean
+      campaign.network_settings.target_search_network:
+        description: Boolean indicating if the campaign is targeting search network.
+        type:
+          - "null"
+          - boolean
+
+  campaign_bidding_strategy:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      customer.id:
+        description: The ID of the customer associated with the bidding strategy.
+        type:
+          - "null"
+          - integer
+      campaign.id:
+        description: The ID of the campaign associated with the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.aligned_campaign_budget_id:
+        description:
+          The ID of the campaign budget that this bidding strategy is aligned
+          with.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.campaign_count:
+        description: The total count of campaigns that are using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.currency_code:
+        description: The currency code used by the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.effective_currency_code:
+        description:
+          The effective currency code applied by the bidding strategy across
+          campaigns.
+        type:
+          - "null"
+          - string
+      bidding_strategy.enhanced_cpc:
+        description: Indicates if Enhanced CPC (ECPC) is enabled for this bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.id:
+        description: The unique ID of the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for Maximize Conversion Value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_floor_micros:
+        description:
+          The minimum CPC bid floor in micros for Maximize Conversion Value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.target_roas:
+        description:
+          The target Return on Ad Spend (ROAS) for Maximize Conversion Value
+          strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.maximize_conversions.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Maximize Conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for Maximize Conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.target_cpa_micros:
+        description:
+          The target Cost per Acquisition (CPA) in micros for Maximize Conversions
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.name:
+        description: The name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.non_removed_campaign_count:
+        description: The count of active campaigns that are using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.resource_name:
+        description: The resource name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.status:
+        description: The status of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_cpa.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for Target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.target_cpa_micros:
+        description: The target Cost per Acquisition (CPA) in micros for Target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for Target Impression Share
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.location:
+        description:
+          The targeted location for Impression Share in Target Impression Share
+          strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_impression_share.location_fraction_micros:
+        description:
+          The fraction of requested location's impressions targeted by Target
+          Impression Share.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for Target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.target_roas:
+        description: The target Return on Ad Spend (ROAS) for Target ROAS strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.target_spend.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for Target Spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_spend.target_spend_micros:
+        description: The target spend in micros for Target Spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.type:
+        description: The type of bidding strategy used.
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: The date segment for the data.
+        type:
+          - "null"
+          - string
+        format: date
+
+  ad_group_bidding_strategy:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      ad_group.id:
+        description: The ID of the ad group to which the bidding strategy belongs.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.aligned_campaign_budget_id:
+        description: The ID of the campaign budget aligned with the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.campaign_count:
+        description: The count of campaigns using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.currency_code:
+        description: The currency code used for the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.effective_currency_code:
+        description: The effective currency code for the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.enhanced_cpc:
+        description: Flag indicating if Enhanced CPC is enabled for the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.id:
+        description: The ID of the bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for maximize conversion value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.cpc_bid_floor_micros:
+        description:
+          The minimum CPC bid floor in micros for maximize conversion value
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversion_value.target_roas:
+        description: The target return on ad spend for maximize conversion value strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.maximize_conversions.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for maximize conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for maximize conversions strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.maximize_conversions.target_cpa_micros:
+        description:
+          The target cost per acquisition in micros for maximize conversions
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.name:
+        description: The name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.non_removed_campaign_count:
+        description: The count of non-removed campaigns using this bidding strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.resource_name:
+        description: The resource name of the bidding strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.status:
+        description: The status of the bidding strategy (e.g., enabled or paused).
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_cpa.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_cpa.target_cpa_micros:
+        description: The target cost per acquisition in micros for target CPA strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.cpc_bid_ceiling_micros:
+        description:
+          The maximum CPC bid ceiling in micros for target impression share
+          strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_impression_share.location:
+        description: The targeted location for the impression share strategy.
+        type:
+          - "null"
+          - string
+      bidding_strategy.target_impression_share.location_fraction_micros:
+        description: The targeted impression share fraction in micros.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.cpc_bid_floor_micros:
+        description: The minimum CPC bid floor in micros for target ROAS strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_roas.target_roas:
+        description: The target return on ad spend for target ROAS strategy.
+        type:
+          - "null"
+          - number
+      bidding_strategy.target_spend.cpc_bid_ceiling_micros:
+        description: The maximum CPC bid ceiling in micros for target spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.target_spend.target_spend_micros:
+        description: The target spend in micros for target spend strategy.
+        type:
+          - "null"
+          - integer
+      bidding_strategy.type:
+        description: The type of bidding strategy (e.g., target CPA, target ROAS).
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: The date for which the data is segmented.
+        type:
+          - "null"
+          - string
+        format: date
