@@ -10,6 +10,7 @@ import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.List
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -203,10 +204,10 @@ private data class Stale(
 ) : StateForCheckpoint {
     override val numRecords: Long
         get() = 0L
-    override val id: Int
-        get() = 0
+    override val id: Int?
+        get() = null
     override val partitionId: String?
-        get() = ""
+        get() = null
 }
 
 private class GlobalStateManager(
@@ -219,6 +220,7 @@ private class GlobalStateManager(
             .mapValues { GlobalStreamStateManager(it.key, it.value) }
             .mapKeys { it.key.id }
 
+    private val stateId: AtomicInteger = AtomicInteger(1)
     fun checkpoint(): AirbyteStateMessage? {
         var shouldCheckpoint = false
         var totalNumRecords = 0L
@@ -243,20 +245,40 @@ private class GlobalStateManager(
                             true -> Jsons.objectNode()
                             false -> streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
                         }
-                    ),
+                    )
+                    // Only add id and partition_id if they are not null (stdio mode compatibility).
+                    .apply {
+                        streamStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) }
+                    }
+                    .apply {
+                        streamStateForCheckpoint.partitionId?.let { partitionId ->
+                            withAdditionalProperty("partition_id", partitionId)
+                        }
+                    },
             )
         }
         if (!shouldCheckpoint) {
             return null
         }
+
         val airbyteGlobalState =
             AirbyteGlobalState()
                 .withSharedState(globalStateForCheckpoint.opaqueStateValue)
                 .withStreamStates(streamStates)
+
         return AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
             .withGlobal(airbyteGlobalState)
             .withSourceStats(AirbyteStateStats().withRecordCount(totalNumRecords.toDouble()))
+            // Only partition_id if not null (stdio mode compatibility). id is added before being
+            // send to wire in FeedReader.maybeCheckpoint()
+            // As global state may be checkpointed multiple times, we use a unique id for each
+            // checkpoint.
+            .apply {
+                globalStateForCheckpoint.partitionId?.let { partitionId ->
+                    withAdditionalProperty("partition_id", partitionId)
+                }
+            }
     }
 }
 
