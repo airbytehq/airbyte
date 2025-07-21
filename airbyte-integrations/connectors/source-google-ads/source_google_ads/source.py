@@ -3,26 +3,21 @@
 #
 
 
-import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from pendulum import parse, today
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.utils import AirbyteTracedException
 
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AdGroupCriterion,
-    AdListingGroupCriterion,
-    CampaignCriterion,
     CustomerClient,
 )
-from .utils import GAQL, logger, traced_exception
+from .utils import logger
 
 
 class SourceGoogleAds(YamlDeclarativeSource):
@@ -107,9 +102,4 @@ class SourceGoogleAds(YamlDeclarativeSource):
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
 
         streams = super().streams(config=config)
-        streams += [
-            AdGroupCriterion(**default_config),
-            AdListingGroupCriterion(**default_config),
-            CampaignCriterion(**default_config),
-        ]
         return streams

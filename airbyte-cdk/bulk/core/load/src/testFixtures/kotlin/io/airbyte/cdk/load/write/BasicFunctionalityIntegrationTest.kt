@@ -297,7 +297,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
     val coercesLegacyUnions: Boolean = false,
-    val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
@@ -376,7 +375,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     InputRecord(
                         stream = stream,
-                        data = """{"id": 5678, "undeclared": "asdf"}""",
+                        data = """{"id": 5678}""",
                         emittedAtMs = 1234,
                         changes =
                             mutableListOf(
@@ -418,7 +417,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytesForMediumAndFormat(234L, 254L, 59L)
+                            totalBytes = expectedBytesForMediumAndFormat(214L, 234L, 59L)
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -437,12 +436,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             OutputRecord(
                                 extractedAt = 1234,
                                 generationId = 0,
-                                data =
-                                    if (preserveUndeclaredFields) {
-                                        mapOf("id" to 5678, "undeclared" to "asdf")
-                                    } else {
-                                        mapOf("id" to 5678)
-                                    },
+                                data = mapOf("id" to 5678),
                                 airbyteMeta =
                                     OutputRecord.Meta(
                                         changes =
@@ -2525,7 +2519,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "string": "foo",
+                          "string": "fo\u0000o",
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
@@ -2708,7 +2702,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     mapOf(
                         "id" to 5,
                         "string" to
-                            if (allTypesBehavior.convertAllValuesToString) {
+                            if (
+                                allTypesBehavior.convertAllValuesToString &&
+                                    dataChannelFormat != DataChannelFormat.PROTOBUF
+                            ) {
                                 "{}"
                             } else {
                                 null
@@ -2734,6 +2731,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         // id and struct don't have a bad value case here
                         // (id would make the test unusable; struct is tested in testContainerTypes)
                         .filter { it != "id" && it != "struct" }
+                        .filter {
+                            it != "boolean" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "integer" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "number" || dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
                         .map { key ->
                             val change =
                                 Change(
@@ -2795,7 +2801,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "string" to "foo",
+                            "string" to "fo\u0000o",
                             "number" to 42.1,
                             "integer" to 42,
                             "boolean" to true,
@@ -3769,7 +3775,7 @@ abstract class BasicFunctionalityIntegrationTest(
             listOf(
                 InputRecord(
                     stream,
-                    """{"foo": "bar"}""",
+                    """{}""",
                     emittedAtMs = 1000L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
@@ -3779,12 +3785,7 @@ abstract class BasicFunctionalityIntegrationTest(
             OutputRecord(
                 extractedAt = 1000L,
                 generationId = 42,
-                data =
-                    if (preserveUndeclaredFields) {
-                        mapOf("foo" to "bar")
-                    } else {
-                        emptyMap()
-                    },
+                data = emptyMap(),
                 airbyteMeta = OutputRecord.Meta(syncId = 42),
             )
         dumpAndDiffRecords(

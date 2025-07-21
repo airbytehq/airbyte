@@ -87,14 +87,25 @@ class DefaultObjectStorageFormattingWriterFactory(
                     )
                 }
             is AvroFormatConfiguration ->
-                AvroFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    formatConfig =
-                        formatConfigProvider.objectStorageFormatConfiguration
-                            as AvroFormatConfiguration,
-                    rootLevelFlattening = flatten,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToAvroFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as AvroFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                } else {
+                    AvroFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as AvroFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                }
             is ParquetFormatConfiguration ->
                 ParquetFormattingWriter(
                     stream = stream,
