@@ -79,7 +79,7 @@ To use CDC:
   - Create tables in the `_ab_cdc` schema
   - Create triggers on source tables
   - Read from trigger tables
-- **Trigger table setup**: The connector will automatically create the necessary trigger tables and triggers during the first sync
+- **Trigger table setup**: Trigger tables can be created manually or programatically by an administrator of the SAP HANA instance.
 
 ### CDC Limitations
 
