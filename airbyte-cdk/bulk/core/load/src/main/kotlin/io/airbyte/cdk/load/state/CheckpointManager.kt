@@ -131,7 +131,9 @@ class CheckpointManager(
         storedCheckpointsLock.withLock {
             val previousCheckpointType = checkpointType.getAndUpdate { CheckpointType.SNAPSHOT }
             if (
-                previousCheckpointType != null && previousCheckpointType != CheckpointType.SNAPSHOT
+                // CDC switches from global for incremental to snapshot for catch-up, so either are
+                // valid as a previous state
+                previousCheckpointType != null && previousCheckpointType == CheckpointType.STREAM
             ) {
                 throw IllegalStateException(
                     "Global checkpoints cannot be mixed with non-global checkpoints"
