@@ -1,0 +1,73 @@
+---
+id: list-embedded-sources
+title: "List Sources"
+description: "**Requires a Scoped Token as the bearer token.**"
+sidebar_label: "List Sources"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWEtz2zYQ/iuYPbSJh5b8iPzgzWmd1jNpm4mc6cH22CtgKSEBAQYA5aga/vfOghQtV47beDo5+WQZ2P329WGB5RIiTgPkF3BaTkgpUnCVgaIgva6idhZy2Np6T59r7SkIFGPpKlLi3H0iKzCIOCMxIfTkReS1wdbWpb20b3WIAo1J+8HVXlIrS1aJOpAX0tlCT2tPagAZuIo8sr0zBTkYHeI1dQ5dd+qQQSBZex0XkF8s4dfz83evk2XIL66aqwwq9FhSJB+SgMWSIIdb5z+FCiVdawUZaA7pc01+ARn4NjAFefQ1ZRDkjEqEfAlxUbFyiF7bKWRQOF9ihBzqOsFEHQ0L/LlCF2cKGvbCU6icDRQYZm9nh//cT+i4lpJCKGoj3nfCkIF0NpKNLI5VZbRM+Rh+DKyzXHOt8pytqFsLCmNa1ZHKsLmt1bdEwzFkXeI2tVZSv/N+k0GoyxK9/quv0XWksjIY6fv6oWWbIrSLP4pU+vsaTdav2NoY4Cr1lli3abKVgJt8JBnvUeMCkm/Jm87YGsC4T8I45eB8lYJvAX0kk+um0hYfrbNIJdzho/e4WEvMz8yJf7OfiPMgek/KpmGQVw9x+DUqwWgU4tO5W1IIOKWn1u63Tr3JgLx3PjxyDgpNRj3V0Juk3GT/t8PX0qkng50ygviJER4q9UrspNJJ8hG6nLbJ475fYG1i6qf/AXKDJ/ubPHnj/EQrRfaZJc8sSSzZ29tkyQdbecd3Ik4MvxEiX/LPhHkmTJPB6KHr58xG8haNCOTn5EWK+5kxz4xJlCkpzhwPElNi8QrjDHIYYqWH893harAYrg8WzKJ2bKi9gRxmMVb5cGicRDNz6ZFzn4En2k8WkcTYWfTi5N1ZyslqQhkz0dqCr88pfRIZHrp5g/9vR6iUP20LlyT7d5lF378RF3emfwxsVniKXtOcguAXnXBWTGiGphCuEAtXeyHrEF1JPgi0ShREKggdRXTtNk6530rBc1Jh3G0YbMR6ac9nlIzx+UJtg9gXHElgI2RV5bSNIb+02+Lmn2m+yVlim4e+7QKlttOEFJ2QzhiSUUhPin1AEwb3IAKHfpOLdjp0/s4UqxcU5awNuvCu7K20S6uh8wVWOogfhPJ6TuGluNVxxpOoXh9Bv+6CtpGm7WgabvJ+pH3YoxItTqnHbbUGl/z2YXq1ydwZHA92IIMv28ZNU6XvGBfy4VAqO6i8U4NbmgQdabvQhsJAunJ4sDOind2J3BsVh7R7jEd7dPjq8OhoeLC/P8L9Y4VH8vhggoej0d7OZHd0cP3WTd0gzKeJWZULscTUCLvZOI3p4/4Y3Kv68q6ZfpdPAN3JiPQlDiuD2nKjSKlZdif4ArDSnMtdyGBFLz4ZXQBXGaSjml/AcjnBQB+8aRpebud9Pt1KpzeGgrxAE+iRmF90IauX4mvefaLF5geGOZqaRVM/mKPXbC91sgxmhCp9r1h2uidSUhXXtDZuLUbp+9kvp+eQAdacjb6XdL0jW/1Y695oF2vYy2UrkSrXNLAKIFUNmqumaf4Gb7EvwA==
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Sources"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/sources"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+**Requires a Scoped Token as the bearer token.**
+
+List all the sources the end user configured.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"workspace_id","in":"query","required":true,"schema":{"type":"string","format":"uuid","title":"Workspace Id"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"data":{"items":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"name":{"type":"string","title":"Name"},"summarized_source_template":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"name":{"type":"string","title":"Name"},"icon":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Icon"}},"type":"object","required":["id","name","icon"],"title":"SummarizedSourceTemplate"}},"type":"object","required":["id","name","summarized_source_template"],"title":"SourceListItem"},"type":"array","title":"Data"}},"type":"object","required":["data"],"title":"SourceListResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

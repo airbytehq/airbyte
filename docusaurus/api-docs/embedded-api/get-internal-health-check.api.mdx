@@ -1,0 +1,63 @@
+---
+id: get-internal-health-check
+title: "Health Check"
+description: "Health Check"
+sidebar_label: "Health Check"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV8lu4zgQ/RWiDrMAiuU47Sy6pYNeAsxgMpP0yQkciixJ7FCkQlJOG4b+fVCUt8QJphHM0ScLctV7VaVX1NMCAi89ZBP4ilyHCu4SsA06HpQ1lxIyKDFMlQnoDNfTKgZNRYXiARJw6BtrPHrIFjAaDulHohdONZQPGVy3QqD3RavZP8tgSEBYE9AECudNo5WIdOl3TzkL8KLCmtNV46iYoHoG34PRZZg3CBnk1mrkBhIIKmjcEEKXwGOLLU6VKayreV/PS8RgA9dbeNRoiW4L7yZGdEksSrYa5VTYtq/9zaTrVSy7iLFdAg0aqUz5E8lXfeQqtUtWoTb/jiLEsT+2yqGkx9Z3sFveS8a7DcHfNJfLrbH8F8dq7q+NdAu3V9AFaeMLhvXj7jrC//CaOj5yyYgIfXi/Kmr0npcY08z8rwKyyXq6PjhlSuiS9R3Tag3dVtV/LtO7BNA56yKmClj7XapCoZbvJfock7vk/y54Kqx8N9gnQmAXhPCaClZh542KkbCJ4c7xObxAIo1ILHirA2STu5+B3NHJ0a5OPluXKynR7FWyV0lUyWi0q5JvpnGWDiqea2RoggrzvWD2gqHw8Wuvn8ulrWEe3Qwdi33vFbNXTJTMc6305oZdLJ1vjaGyS3tMXouHCjJIeaPS2WG68stp75fTlV/udebjaFqnIYMqhCZLU20F15WNNug577ly+Twgu7aGO3Z+dRmn5lG0ToU5Gc26l8TXm5urj8gdui13SfBLc1hHv9wHUHtk4mLkyrMSAcW2dc3dfEP9qyda5jA4hTP0TPLAmTUsx4rrgtmCzW3rmGh9sDU6z7iRrECUnqnAgu3/5iWdyII9WfdQaPvkBzu93pqbCiMZbSBXxrMjRp14IkEjG6tM8NmtOWD3q1ljnaOUKO8zijhoPbqDggty0IQULBNWaxSBCYeSauDaD55BeGr9PmP9h491GypKLzCIqm+6cLZes/S3vG2dQM9+443y7BcmnZqh/509qVCxUKFy1EyhytahfLuE+BnQf3X5+4xxrSn5jYpqbniJa9w+a3BL7ojk1Q9zODgbDCGBHwfalvFJbxTnszQV0gwaZ+XgCXOvAh4USqMfCFunx8MxDg9zMRoXJ3h4xk9HePLh5PQ0PT46GvOjM8lPxdlxzk/G49EwPxwfT/+wpR34WRmV1Vgfah6PSsNr3F2eZ099rdWAP0LaaK4MLXcsdrFcrAnwRlF3h5DAarkggX696MSOyHcJxB3KJrBY5NzjN6e7jm4/tkiSntwlMONOkUGIx0KEkLQykwU8YFS9ENjQHs64buP58vIVQAu43v8vn26g6/4FiJlAyw==
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Health Check"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/internal/health/check"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Health Check
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"success":{"type":"boolean","title":"Success"},"queue_information":{"properties":{"total":{"type":"integer","title":"Total"},"scheduled_count":{"type":"integer","title":"Scheduled Count"},"pending_count":{"type":"integer","title":"Pending Count"}},"type":"object","required":["total","scheduled_count","pending_count"],"title":"QueueInformation"}},"type":"object","required":["success","queue_information"],"title":"HealthCheckGetResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

@@ -1,0 +1,73 @@
+---
+id: list-integrations-destinations
+title: "List Destinations"
+description: "**Requires an Access Token as the bearer token.**"
+sidebar_label: "List Destinations"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWNty2zYQ/RUMHtrEQ4uyHPnCN+fWesZpM4kzfZA18pJYSkhAgAFA2xoN/72zoC6UJbu2mkc/2aQWZ/fsHgDcnXEPY8eTAX+PzksNXhrt+DDiAl1mZUnPPOF7e1/wZyUtOgaanWUZOscuzQ/UDBzzE2QpgkXLPL3r7O1d6St9IZ1nooXb4RE3JdrwdC54wpV0fiS1x3Hz0o3a9iMecYdZZaWf8mQw439eXn5+GxzxZDCshxEvwUKBHq0LBhoKDLCF9DzikmL/WaGd8ojbhoHgSQ7KYcRdNsECeDLjflrSshAIWn6f/eUEWQF3sqgKpqsiRctMvsaMecMs+srqTlidQ6U8T3rdiHvpFYFfhJjq/4ddR0uOWWWdsc8n6byVerzB8UwzU8LPClljwG6lnzDUmREoWAnjeTisQA8CPBDRBbd3TSwb5HYAbTG8NfaHKyHDkRQP8/S2epRmbmwBnie8qgLMZvqXftj5e0q2uq9blhvb2eJ0Qf+fFYDYXuEnuiBFW3Sl0Q4dkel1u/RnHfBrFfZfXin2ZW7MI54Z7VF7MoeyVDILwPF3R2tmrQSVlvagl40HjXfNGj39Ow97aD2BVI/5G10pFUJc8P6L1hJf8AFZeizcpgspnlKXBWiTwkYCm6uWrun3JtWLHI4E5lLL8O/zXLbOPvZ+CbIq5tJDA/hwVG2gS7Kp62hhbNLvmPk1FQ14CCNwfYzKliCGW53SiXvuseArt2AtTNshUq3+K6xQ0IddLFVX14T0ZptI34JgBInO7y7OAp2DMe6qz0/z5XXE0Vpj3SMizSUqsaujj2FxHf3qgEd0UO4K9oEQ2DtC2FbvhdlZKYPlI5r50CSvdbENhk+B3NDJ4aZOPhqbSiFQv6jkRSVBJb3epkq+6dIauvQgVchQe/oifBHMi2DqiPe3XT/n2qPVoJhDe4OWBd4vinlRTJBMgX5iqP8cI5mX4Cc84TGUMr45iNv9aNz+SI9DP0p6arrNyiqe8In3ZRLHymSgJiZ87tzrgqRNpx7ZV6PBsrPP5yE7i8b2K0muKX27vV2mk+D5vMGh56bRDpmUOjfBck43OCDbqijATleuf3fklrpIK/EGHaMPPGY0S3ECKqeOc2oqy7LKeVOgpS5fsBxROCY9NSzhZxjTyZuFbiZX5tZ1NrheaWp3yBntNJDasUNGTBw5QS1KI7V3yZXeZ9eLhGORohAorhOy2K8c2v0cMmoYCckblhmlMPMssygoBlCuswbhiPp1wprxgrErV7Q8R59NGtK5NcXSS/PKmcpm6NgrKKVjvzFh5Q26102z6icoLZHJ5biyKB4OoS2b64SBUmEwsj2iAjSMcYk7n49c0VcQyatJZrdz2unyiN/tKzMOlV4pziVxnAndKa0RnVtMnfS4n0uFrpOZIj7q9rF7kGa9fn6MB6dw0sPjN8cnJ/HR4WEfDk8FnGSnRykc9/u9bnrQPxpdmLHpuJtxUFZpnC8gHInzZjwMc9aGRPdKP1udrb9wXDTfBB7vfFwqkJpOh5CF2XzbDjiUktJ2EGYEqxqst030SC1N2KHJgM9mKTj8ZlVd0+tmrkCbWsjwkbGaoDzI8rljoa1cfuC0NbC6AVWRTThPnx7JbsObh8NZzpZ2jOfVvPziNXvWgOWRkO4Ng1aBDenBSoosXAcRnyCIMCGczdeSAMt2ejeufkJZXgp/fLjkEYeK1LU8hufHbrT4p3UFgp62sGezxiLIva75gkCQOq+HdV3/C1s1Z8A=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Destinations"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/integrations/destinations/"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+**Requires an Access Token as the bearer token.**
+
+List destinations.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"limit","in":"query","required":false,"schema":{"type":"integer","description":"The maximum number of destinations to return.","default":20,"title":"Limit"},"description":"The maximum number of destinations to return."},{"name":"cursor","in":"query","required":false,"schema":{"type":"string","description":"An opaque string with encoded pagination metadata.","title":"Cursor"},"description":"An opaque string with encoded pagination metadata."},{"name":"workspace_id","in":"query","required":true,"schema":{"type":"string","format":"uuid","description":"The workspace ID to list destinations for.","required":true,"title":"Workspace Id"},"description":"The workspace ID to list destinations for."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"next":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Next"},"data":{"items":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"name":{"type":"string","title":"Name"},"destination_definition_id":{"type":"string","format":"uuid","title":"Destination Definition Id"},"destination_type":{"type":"string","title":"Destination Type"}},"type":"object","required":["id","name","destination_definition_id","destination_type"],"title":"DestinationListItem"},"type":"array","title":"Data"}},"type":"object","required":["data"],"title":"DestinationListResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

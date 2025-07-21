@@ -1,0 +1,71 @@
+---
+id: list-tools-workspaces
+title: "List Workspaces"
+description: "List Workspaces"
+sidebar_label: "List Workspaces"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1v2zgQ/SvEHHZbQLEdp86Hbmm33Q3Qbos2RQ+u4YylkcyWIlWSSuI19N8XQ/lDrp3ANXrMyZEynHkzfBzxzRw85g7iIVwbo8QXi2VJ1okj8cXY767EhByMIjAlWfTS6KsUYlDS+bE3Rrnx3cpsDBE4Sior/Qzi4Rz+ub7+8JLQkoV4OKpHEZRosSBP1gUDjQVBHH7GidEepXYQgdQQw4+K7AwisPSjkpZSiDNUjiJwyZQKhHgOflbycuet1DlEkJJLrCwZJcRwPSXBnoXJhJ+SWAMV3gjOoAMReOkVO/mXLV8tMdSHOKujVUZKFtL/eiZSe8rJ7kylwHtZVIXQVTEhyzg2MVjyldWdsDbDSnmI+711fm8Dop157eu5lV9SWWfsb9uqSy1MiT8qEo2BuJN+KkgnJqVUlJhLHbgnCvKYosf2zr1qsGyldoDTVobG5qjlf8FiLNOHU/W2ejTTzNgCPcRQVcHNdv3bocTVX0tCtXchM7azI+qyBO83PKS7t3nfMHxOLbnSaEeOM+r3evyz6fFTlSTkXFYp8XFhDBHwISbt2RzLUskkROt+c7xm3qpSabmheNlEWEPgJ+mpcI8Y8XbsUehlcVZ9bFGZZoO317c7AdR1tDQwk2+U+I3qDzfBLHyOdsR8K52/8lTA2h9ai7Nd+ELb0XTflE/P3mehSW7iZIou3uhKqbBbK+S8dm/k3GlDtIdwr/a1rtnpi100eImpYO/k/OHbX5BzmNOhab9bLK8jIGuNfYxEmSSVHhroTVhcR78b8Jhb0qHOXrMH8Yo97Nr6pdllKYPlI0R83RSv9QEZjvZxucWTk22evDF2ItOU9BNLnlgSWNLvb7Pksy6t4c8KThQJ0p5vkk+EeSJMHcFg1+fnSnuyGpVwZG/JipD3E2OeGBMos8kVvtK0RS1Xz08Ny9mc2F2JfgoxdLGU3dvjbpC33fV1qRvkLdOsEa+VVRDD1Psy7naVSVBNTbgF/SRDpJ3MPIlPRqMVlx+uQtGWOvkTM7FhRFstr6rM7mEhL/h50hhwdlJnJlguqhACsG1VFGhn69B/Og7LMs5KuiUnWOwIo8WEpqgyFnwzU1mRVM6bgsU/6lRkRKkT0rNOCP/GnBtyEvRCpsyd62zl+lWz0OBgSzUvTgRn4jgI6bQ0UnsXf9VH4mZZZyomlKaU3sRscVQ5skcZJqzY2JM3IjFKUeJFYillDKhcZ8OF49RvYtEMKYxdh+LlGflk2iSdWVOsojSvnKksa59nWEon/hCplbfknjdq0U9JWk4mk3llKX0YQpDuzYTE3cQClQpzgt2ICtSY08pvs6rzlS9HTK+mmL3ORacHEdwfKZOHnV4zzsXdbpLqTmlN2rmjiZOejjKpyHUSU3RPewPqHU+S/iA7o+MLPO/T2Yuz8/Pu6cnJAE8uUjxPLk4neDYY9HuT48Hp+K3JTcfd5oFZpXG+wNApF2p4++xsbPyKrp7ufbdUKDUf74B3vjhXQ8BScoLHfHL5bEG0KUZYiIQjFA9hPp+go89W1TW/bmQ3n7pUhsvBesbwE5BV5993/rML+Hea7RhL3aKq2DZ0wV/Dsf/w5hE8y6HSgTgOG7I8DGc1AzoQz7OPC1X6XPzaFOQRTNtTmzW4ET9YyejCByWCKWEaZpPzxfLLJKGyXeKtywN7WX02/n59DRFgxfReHYFFh46Wf7Q+oqhnLd/zeWNxbb6TrmtY5uD5GepRXdf/A2isctY=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Workspaces"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/tools/workspaces/"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+List Workspaces
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"name_contains","in":"query","required":false,"schema":{"type":"string","description":"The name of the workspaces to list.","title":"Name Contains"},"description":"The name of the workspaces to list."},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","description":"The maximum number of workspaces to return.","default":20,"title":"Limit"},"description":"The maximum number of workspaces to return."},{"name":"cursor","in":"query","required":false,"schema":{"type":"string","description":"An opaque string with encoded pagination metadata.","title":"Cursor"},"description":"An opaque string with encoded pagination metadata."},{"name":"organization_id","in":"query","required":true,"schema":{"type":"string","format":"uuid","description":"The organization ID to list workspaces for.","required":true,"title":"Organization Id"},"description":"The organization ID to list workspaces for."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"workspaces":{"items":{"properties":{"workspace_id":{"type":"string","format":"uuid","title":"Workspace Id"},"name":{"type":"string","title":"Name"}},"type":"object","required":["workspace_id","name"],"title":"WorkspaceListItem"},"type":"array","title":"Workspaces"},"next":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Next"}},"type":"object","required":["workspaces","next"],"title":"WorkspaceListResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

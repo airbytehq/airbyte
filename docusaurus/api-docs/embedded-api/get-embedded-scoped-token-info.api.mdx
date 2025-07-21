@@ -1,0 +1,63 @@
+---
+id: get-embedded-scoped-token-info
+title: "Get Scoped Token Info"
+description: "Get the organization and workspace id for a scoped token."
+sidebar_label: "Get Scoped Token Info"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV9tu4zYQ/RViHnoBZMtx1rnoLVtkUwMtdtFk0QfHcChyJHNDkVqSctZr6N+LoXyLkwJt2kc/WaCHc2aOzoxmVhB46SGbwHWVo5QoYZqARC+cqoOyBjK4wcDCHJl1JTfqO6djxo1kT9Y9+poLZEqywjrGmRe2RsmCfUTThwRsjS5eGEvIoMQwwzXOrDOdRdOZMoWFBBz62hqPHrIVDAcD+nkezG0jBHpfNJr9sTaGBIQ1AU0gc17XWomImX7xdGcFXsyx4vRUO4ooqA5hP6OZknQUljVCBj44ZUpIoLCu4gEyaBolIYGggiaDj/tkjCW0CWzp+Jeu/tzSSH7aZHPR5l9QhMjK10Y5lPSaDkM+gJ3u3N5Gfu+I3rEp7A2GLWFtSzDvXuP3PZeM8NCHt/Naofe8xHjNLD8WkE0O6WiT7YlptIZ2L/Lf19fbBNA566JPFbDyL6EKhVq+FehDvNwm/3fAM2Hlm51dkwf2C3l4TQwbs6taRUvY2XDn+BIOPHmgei54owNkk+k/cflCJ6cvdfLBulxJieaokqNKokqGw5cq+WxqZ6lf81wjQxNUWB4FcxQMmY9e+/yMTUBnuGYe3QIdi3kfFXNUTJSMR9E4aiGUyK93d5/eI3foorspkRfmdj1nQgI1D3PIIOW1Shcn6WbwTLvBsxcHz3Q9eHZy89Fx4zRkMA+hztJUW8H13MZp6LlUr5TLlwHZrTXcsatP40jeJsRbUmSnjP1At2yTe8KNZpBB3hlQljEkstwMcgRAtk1VcbfcQf/oCZY5DE7hAj2TPHBmDctxznXBbMGWtnFMND7YCp2PU3uBKD1TgQXb/c1LaswijvOFtk++/yLXe3M3xwhGhciV8eyUUSaeQNDI2ioTfHZveuzhkPCHjCx6jUfXK7hQpoyegmXCao0iMOFQUgxc+/4zF55Sf8hYt0ZYt4Oi6wUGMe+SLpyttijdkbeNE+jZT7xWnv3ApFML9D+zJxXmtM8oR8kUqmwcyr8PQZmAZbfD+IeMca27ZejViCpueIlbv92t/j0NSSSvjsxB/7I/gAS+9bQt45veKc5naSqk6dfOyv4T5l4F7BVKo+8LW6VngxEOTnIxHBXneHLJL4Z4/u784iI9Oz0d8dNLyS/E5VnOz0ej4SA/GZ3NfrOl7ftFGZVVWx8qHjum4VF2tNt1iwKLmwIbd/Xw7PWvdu33Py2Da+kH/BbSWnNlqGXE3FfrYp0ArxWRdQIJbPQTy2RXsrCukGkCsS6zCaxWOff42em2peOvDVKZTKYJLLhTNHvEFpHAHLmM/WIFjxgrSQisqbYXXDexdR1+XZ41lpvrO0iANxTrtpTXpZtsHva6LDfLPd+rVWcRmW5bSNZBdGm107Zt/wKUTFli
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Scoped Token Info"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/scoped-token/info"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get the organization and workspace id for a scoped token.
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"workspace_id":{"type":"string","format":"uuid","title":"Workspace Id"}},"type":"object","required":["organization_id","workspace_id"],"title":"ScopedTokenInfoGetResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

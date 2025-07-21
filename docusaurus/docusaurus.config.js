@@ -14,7 +14,8 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
-const embeddedApiSidebar = require("./api-docs/embedded-api/sidebar");
+const fs = require("fs");
+const path = require("path");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -198,28 +199,77 @@ const config = {
           // file that exports a nested object, but Docusaurus expects just the array of sidebar items, so we need to extracts the actual sidebar
           // items from the generated file structure.
 
-          const responseSpec = await fetch(
-            "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json",
-          );
-          const data = await responseSpec.json();
+          try {
+            const specPath = path.join(
+              __dirname,
+              "src",
+              "data",
+              "embedded_api_spec.json",
+            );
 
-          // when we have display name correct, we should change this to tag["x-display-name"]
-          const allowedTags = data.tags.map((tag) => tag["name"]);
-
-          // embeddedApiSidebar is the actual array of sidebar items from the generated file
-          const sidebarItems = Array.isArray(embeddedApiSidebar)
-            ? embeddedApiSidebar
-            : [];
-
-          const filteredItems = sidebarItems.filter((item) => {
-            if (item.type !== "category") {
-              return true;
+            if (!fs.existsSync(specPath)) {
+              console.warn(
+                "Embedded API spec file not found, using empty sidebar",
+              );
+              return [];
             }
 
-            return allowedTags.includes(item.label);
-          });
+            const data = JSON.parse(fs.readFileSync(specPath, "utf8"));
+            console.log("Loaded embedded API spec from cache");
 
-          return filteredItems;
+            // Load the freshly generated sidebar (not the cached one from module load)
+            const sidebarPath = path.join(
+              __dirname,
+              "api-docs",
+              "embedded-api",
+              "sidebar.ts",
+            );
+            let freshSidebar = [];
+
+            if (fs.existsSync(sidebarPath)) {
+              try {
+                const sidebarModule = require("./api-docs/embedded-api/sidebar.ts");
+                freshSidebar = sidebarModule.default || sidebarModule;
+                console.log("Loaded fresh sidebar from generated files");
+              } catch (sidebarError) {
+                console.warn(
+                  "Could not load fresh sidebar, using empty array:",
+                  sidebarError.message,
+                );
+                freshSidebar = [];
+              }
+            } else {
+              console.warn(
+                "Generated sidebar file not found, using empty array",
+              );
+              freshSidebar = [];
+            }
+
+            // when we have display name correct, we should change this to tag["x-display-name"]
+            // const allowedTags = data.tags.map((tag) => tag["x-displayName"]);
+            const allowedTags = data.tags?.map((tag) => tag["name"]) || [];
+
+            // Use freshly loaded sidebar items from the generated file
+            const sidebarItems = Array.isArray(freshSidebar)
+              ? freshSidebar
+              : [];
+
+            const filteredItems = sidebarItems.filter((item) => {
+              if (item.type !== "category") {
+                return true;
+              }
+
+              return allowedTags.includes(item.label);
+            });
+
+            return filteredItems;
+          } catch (error) {
+            console.warn(
+              "Error loading embedded API spec from cache:",
+              error.message,
+            );
+            return [];
+          }
         },
       },
     ],
@@ -230,8 +280,7 @@ const config = {
         docsPluginId: "embedded-api",
         config: {
           embedded: {
-            specPath:
-              "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json",
+            specPath: "src/data/embedded_api_spec.json",
             outputDir: "api-docs/embedded-api",
             sidebarOptions: {
               groupPathsBy: "tag",

@@ -1,0 +1,63 @@
+---
+id: list-internal-account-organizations
+title: "List Organizations"
+description: "List Organizations"
+sidebar_label: "List Organizations"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV01v2zgQ/SvEHPYDUCwnqfOhW5q4uwaaOKhd7CENFIocyWwlUiUpp66h/74YynbixCm2xR5zskzNvHkzfENxluB54SC5gbEtuFbfuVdGO7iNwNRow7+RhARK5XyqtEereZlyIUyjfWoeO6UQgUVXG+3QQbKEg36ffiQ6YVVNNpDApBECncubkn1YGUMEwmiP2pM5r+tSiQAZf3bkswQnZlhxeqot8fKqi7AVnxaUx8r92C5Vkpb8okZIwHmrdAER5MZW3EMCTaMkROCVL8ngcV3YSEIbbaNpXuEuvJ3+V2TcRpAr63x6b+wXV3OBP0npHXmzf9bea1Y6M9xKpYvUee4btwsSdVPRbl+Np+lkevZhOryACC6Gk+no6mw6Gl+lk+H043V6Pr68fj+cDiGC4eXb4UV6Pr4Ypufj61FwWL++IKFsMt0QmIT4Q4rVttGahMk+o/BBJF8bZVESkac7s6u6O+u1K+Hb3WWHBw7cWr54YXfcT5F9MZp7r5zfSLttCfTNrk54yyUjdHT+1zugQud4ERTI9WKcQ3LzdNfbaLOim7KE9hHxy5V7GwFaa+yPmihXWMpfDfQuOLfR/004FUb+MtiQENg5Ieza+rXZWa2C5Q90NOyKF4HEnDelh+Tm9r9APtPJ4XOdvDM2U1KiflXJq0qCSg4Onqvko66toS8rz0pkqL3yi1fBvAqGzAe7Pj+j1WWOObRztCzk/aqYV8UEyTgUjaUjhBL5ezq9fovcog1wt9ETKdGNh21fpai+fmZodCiQAtbczyCBmNcqnu/H61EiXo0S8dbdKgZiQLJ0gUBjS0hg5n2dxHFpBC9nJtyatnmcKZstPLKJ0dyys+tRKPI6lQkpt1PQ44Q2u0LwFDeYQQJZZ0DVUDo3wXJVtRCAbJuq4nbxEPp3R2GZRW8VztExyT1nRrMMZ7zMmcnZwjSWicZ5U6F1jGvJckTpmPLMm+41L+gAF4xuvHlp7l3vWa6f9HSGIRg1LFfasUNGmTgKglrWRmnvkk96j92tq45VhlKivEvIYq9xaPdyLpQuApI3TJiyROGZsCiJAy9dbwvCUep3CevGQ2MfQpF7jl7MuqRza6pNlG7JmcYKdOwPXivHfmPSqjm6P9m98jPmZ6gsJZOrorEoX6ZA2im62dTdJYyXJTm/wKjimhe4we28ep/oMkXy6orZ7532+hDBt73SFGGnHxTnkjgWUvdqa2TvHjOnPO7lqkTXE6aKj/oD7O9n4mCQH+P+KT85wOM3xycn8dHh4YAfnkp+Ik6PMn48GBz0s/3BUfreFKbn5kVQVm2cr3g4WbtJcnczbe39RrEev/m4LrkKI06gvFw12g3wWlGO+0Dy7ZoNIli125M5i0LQPBO6KrmB5TLjDj/asm1p+WuDJPKb2wjm3Cq6YYSDIIIZchlOhSV8wdAHQmBN8HNeNuGAevoNoZbcnA1/DadEqiHKm7RWjRetHx6dpVwvHmEvl53F1HxB3bYQrUh4+g/tbdu2/wKngdCH
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Organizations"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/internal/account/organizations/"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+List Organizations
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organizations":{"items":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"organization_name":{"type":"string","title":"Organization Name"},"first_workspace_id":{"type":"string","format":"uuid","title":"First Workspace Id"},"onboarding_status":{"type":"string","enum":["NOT_STARTED","DESTINATION_SETUP_COMPLETE","EMBED_CODE_COPIED","COMPLETED"],"title":"OnboardingStatusEnum"}},"type":"object","required":["organization_id","organization_name","first_workspace_id","onboarding_status"],"title":"Organization"},"type":"array","title":"Organizations"}},"type":"object","required":["organizations"],"title":"OrganizationsListResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

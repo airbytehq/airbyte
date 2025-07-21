@@ -1,5 +1,5 @@
 export default {
-  "ai-agents": [
+  "developer-tools": [
     {
       type: "category",
       collapsible: false,
