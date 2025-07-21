@@ -62,6 +62,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/customers"
+
     customer_addresses:
       type: DeclarativeStream
       name: customer_addresses
@@ -580,6 +581,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: transactions
           http_method: GET
+        request_parameters:
+          include: address
         record_selector:
           type: RecordSelector
           extractor:
@@ -1951,6 +1954,35 @@ schemas:
           - "null"
         properties:
           url:
+            type:
+              - string
+              - "null"
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          first_line:
+            type:
+              - string
+              - "null"
+          second_line:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          country_code:
             type:
               - string
               - "null"
