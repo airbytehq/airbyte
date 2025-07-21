@@ -1,0 +1,63 @@
+---
+id: get-internal-build-info
+title: "Get Build Info"
+description: "Return current build information for frontend version checking."
+sidebar_label: "Get Build Info"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV9tu2zgQ/RViHvYCyJbj1LnoLVm03QC7aNGk++IECUWOZLYUqQ4pp4ahf18M7djOpYtF0Ec/2aDOzJkZnhmNlqAxKDJtNN5BAZ8wduSE6ojQRVF2xmphXOWpkQwRlSdRkXcRnRZzpMCHaobqq3H1EDLwLVKCXmgooMZ4a1xEctLeJm+37A0yIAytdwEDFEsYj0b88ziWy04pDKHqrPi0BkMGKnFHhsu2tUYlsvxLYJslBDXDRvK/ljiUaFYMiZtDWkJctAgFhEjG1ZBBNNHywTlDjIaejxoMUTbtDp7TqJF2DK42qD6DdS3+i+CfNaRnhhXGl19QxVSOb50h1FBMN7HuxrEluHkS8QXXs+/Z6ZuXyngutWDvGOLry9dgCLLGZOYWHyoopk/z7LPNieushX4n0L/X5n0GSOQp+TQRm/CcqjJo9WuJ3iXjPvvZAd8qr1/t7C17EH+wh5eu/gF21pqEhC1GEskFPPEUIAONlexshGJ6839cbvrnQSeHz3XyzlNptEa3V8leJUkl4/FzlXx2LXkey7K0KNBFExd7wewFw/DJS6+fi/XbXwSkOZJIee8Vs1dMkkyDcebXiyJk0Mo4gwJy2Zp8fpA/bI552ogG681xJaSQcu/IQgGzGNsiz61X0s582nMei/DMULmIKC69kyTOPl6ksgRUHZm4uGStre78z6urj+coCWlnkWP3zJtgUEC5AnD8KSRGrvNMBIztmkbSYkv9a2BaQRjJ4ByD0DJK4Z0ocSZtJXwlFr4joboQfYMUhHRaVIg6CBNF9KvHsuaRq8S9p6+V9fdh+CzXa3c1w0TGLSaNC+JQcCaBSdDp1hsXQ3HtBuLuodLYlKg16ruCEYMuIA0qqYyrk6fohfLWoopCEWqOQdowfOQicOp3hVh9AHjaUrF5hVHNVklX5JsNy+oo+I4UBvGbbE0QvwhNZo7hd3Fv4kzEGRriZCpTd4T6xyGkFX319RHuCiGtZeMfRNRIJ2vc+F1ZDa/dzqpdwGh4OhxBBt8H1tfppreKC0WeK+2GLXk9vMcymIiDylgMQ+Wb/Gg0wdFBqcaT6hgPTuXJGI/fHJ+c5EeHhxN5eKrliTo9KuXxZDIelQeTo9u/fO2HYV4nZbU+xEamWehkkt17jCJt/OJi1QiP7n25nag/4SturfyI32PeWmkcz4KU+nLdpFOQreFaHUAGD40KGey06k0GqRuLKSyXpQz4mWzf8/G3Drk5pjcZzCUZ3iXSBMlghlJz802X8BVT/yiFLXf0XNoujaKnbwtu5c0cef/2Cvr+X2RVGvk=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Build Info"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/internal/build-info"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Return current build information for frontend version checking.
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"buildId":{"type":"string","title":"Buildid"},"timestamp":{"type":"integer","title":"Timestamp"},"version":{"type":"string","title":"Version"}},"type":"object","required":["buildId","timestamp","version"],"title":"BuildInfo"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
