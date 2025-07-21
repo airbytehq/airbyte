@@ -250,7 +250,6 @@ private class GlobalStateManager(
         val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint().last()
         totalNumRecords += globalStateForCheckpoint.numRecords
         if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
-        val streamStates = mutableListOf<AirbyteStreamState>()
         val stateMessages = mutableListOf<AirbyteStateMessage>()
         val multipleStreamsState = mutableListOf<MutableList<AirbyteStreamState>>()
         val qFresh = mutableMapOf<StreamIdentifier, ArrayDeque<StateForCheckpoint>>()
