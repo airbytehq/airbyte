@@ -76,7 +76,7 @@ class ClickhouseChecker(
 class RawClickHouseClientFactory {
     fun make(config: ClickhouseConfiguration): Client {
         val factory = ClickhouseBeanFactory()
-        val tunnel = factory.tunnel(config)
-        return ClickhouseBeanFactory().clickhouseClient(config, tunnel)
+        val endpoint = factory.resolvedEndpoint(config)
+        return ClickhouseBeanFactory().clickhouseClient(config, endpoint)
     }
 }
