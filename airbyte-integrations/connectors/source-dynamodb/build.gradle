@@ -16,7 +16,7 @@ application {
 
 dependencies {
 
-    implementation platform('software.amazon.awssdk:bom:2.18.1')
+    implementation platform('software.amazon.awssdk:bom:2.32.4')
     // https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb
     implementation 'software.amazon.awssdk:dynamodb'
     implementation 'software.amazon.awssdk:sts'
