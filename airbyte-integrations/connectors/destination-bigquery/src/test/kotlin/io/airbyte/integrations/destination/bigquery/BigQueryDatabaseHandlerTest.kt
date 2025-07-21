@@ -11,7 +11,7 @@ import com.google.cloud.bigquery.JobStatus
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -26,20 +26,15 @@ class BigQueryDatabaseHandlerTest {
     fun `billing errors are wrapped as ConfigErrorException`() {
         val bqError = BigQueryError(BILLING_ERROR, "loc", BILLING_ERROR)
         val bq: BigQuery = mockk {
-            every { create(any(JobInfo::class), *anyVararg()) } returns
+            coEvery { create(any(JobInfo::class), *anyVararg()).status } returns
                 mockk {
-                    every { status } returns
-                        mockk {
-                            every { state } returns JobStatus.State.DONE
-                            every { error } returns bqError
-                            every { executionErrors } returns listOf(bqError)
-                        }
+                    coEvery { state } returns JobStatus.State.DONE
+                    coEvery { error } returns bqError
+                    coEvery { executionErrors } returns listOf(bqError)
                 }
         }
         val handler = BigQueryDatabaseHandler(bq, "location")
 
-        assertThrows<ConfigErrorException> {
-            handler.execute(Sql(listOf(listOf("select * from nowhere"))))
-        }
+        assertThrows<ConfigErrorException> { handler.execute(Sql.of("select * from nowhere")) }
     }
 }
