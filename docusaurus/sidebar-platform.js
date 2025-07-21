@@ -216,6 +216,8 @@ const deployAirbyte = {
       type: "doc",
       id: "deploying-airbyte/abctl-ec2",
     },
+    "deploying-airbyte/chart-v2-community",
+    "deploying-airbyte/values",
     {
       type: "category",
       label: "abctl",
@@ -395,6 +397,7 @@ module.exports = {
             "enterprise-setup/scaling-airbyte",
             "enterprise-setup/upgrade-service-account",
             "enterprise-setup/upgrading-from-community",
+            "enterprise-setup/chart-v2-enterprise",
           ],
         },
         {
