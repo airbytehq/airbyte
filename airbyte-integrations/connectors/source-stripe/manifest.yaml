@@ -1193,8 +1193,6 @@ definitions:
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           global_substream_cursor: true
-#        $parameters:
-#          name: payment_methods
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         name: payment_methods
@@ -1203,8 +1201,6 @@ definitions:
           requester:
             $ref: "#/definitions/events_objects_retriever/requester"
             request_parameters: "{{ {'type': 'payment_method.*'} }}"
-#        $parameters:
-#          name: payment_methods
 
     persons:
       type: StateDelegatingStream
@@ -1833,7 +1829,6 @@ schemas:
               - "null"
               - string
           support_address:
-            description: Support address for the business.
             type:
               - "null"
               - object
@@ -2012,7 +2007,6 @@ schemas:
         additionalProperties: true
         properties:
           address:
-            description: The address of the company.
             type:
               - "null"
               - object
@@ -2309,7 +2303,6 @@ schemas:
               - "null"
               - string
           address:
-            description: The address of the individual.
             type:
               - "null"
               - object
@@ -2605,7 +2598,6 @@ schemas:
               - "null"
               - string
           registered_address:
-            description: Registered address of the individual.
             type:
               - "null"
               - object
@@ -3118,7 +3110,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Type of object, which should have a value of 'application_fee'.
+        description: 'Type of object, which should have a value of ''application_fee''.'
         type:
           - "null"
           - string
@@ -3185,12 +3177,14 @@ schemas:
           - object
         properties:
           object:
-            description: Type of object, which should have a value of 'list'.
+            description: 'Type of object, which should have a value of ''list''.'
             type:
               - "null"
               - string
           data:
-            description: An array of objects representing refunds issued for this application fee.
+            description: >-
+              An array of objects representing refunds issued for this
+              application fee.
             type: array
             items: {}
           has_more:
@@ -3213,7 +3207,9 @@ schemas:
               - "null"
               - string
           resource:
-            description: Contains information about the resource used for the payment of the application fee.
+            description: >-
+              Contains information about the resource used for the payment of
+              the application fee.
             type:
               - "null"
               - object
@@ -3242,7 +3238,7 @@ schemas:
           - "null"
           - string
       object:
-        description: The object type, which will be 'fee_refund'
+        description: 'The object type, which will be ''fee_refund'''
         type:
           - "null"
           - string
@@ -3277,7 +3273,9 @@ schemas:
           - "null"
           - string
       metadata:
-        description: Additional information or custom data associated with the application fee refunds.
+        description: >-
+          Additional information or custom data associated with the application
+          fee refunds.
         type:
           - "null"
           - object
@@ -3325,82 +3323,93 @@ schemas:
             - "null"
             - object
           properties:
-            id:
-              description: Unique identifier for the object.
-              type:
-                - "null"
-                - string
-            object:
-              description: String representing the object's type. Objects of the same type share the same value.
-              type:
-                - "null"
-                - string
-            amount:
-              description: Gross amount of this transaction (in cents (or local equivalent)). A positive value represents funds charged to another party, and a negative value represents funds sent to another party.
-              type:
-                - "null"
-                - integer
-            available_on:
-              description: The date that the transaction's net funds become available in the Stripe balance.
-              type:
-                - "null"
-                - integer
-            created:
-              description: Time at which the object was created. Measured in seconds since the Unix epoch.
+            fee:
               type:
                 - "null"
                 - integer
             currency:
-              description: Three-letter ISO currency code, in lowercase. Must be a supported currency.
-              type:
-                - "null"
-                - string
-            description:
-              description: An arbitrary string attached to the object. Often useful for displaying to users.
-              type:
-                - "null"
-                - string
-            exchange_rate:
-              description: If applicable, this transaction uses an exchange rate.
-              type:
-                - "null"
-                - number
-            fee:
-              description: Fees (in cents (or local equivalent)) paid for this transaction. Represented as a positive integer when assessed.
-              type:
-                - "null"
-                - integer
-            fee_details:
-              description: Detailed breakdown of fees (in cents (or local equivalent)) paid for this transaction.
-              type:
-                - "null"
-                - array
-              items:
-                type:
-                  - "null"
-                  - object
-            net:
-              description: Net impact to a Stripe balance (in cents (or local equivalent)). A positive value represents incrementing a Stripe balance, and a negative value decrementing a Stripe balance.
-              type:
-                - "null"
-                - integer
-            reporting_category:
-              description: Learn more about how reporting categories can help you understand balance transactions from an accounting perspective.
               type:
                 - "null"
                 - string
             source:
-              description: This transaction relates to the Stripe object.
               type:
                 - "null"
                 - string
+            fee_details:
+              type:
+                - "null"
+                - array
+              items:
+                properties:
+                  application:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  description:
+                    type:
+                      - "null"
+                      - string
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+            available_on:
+              type:
+                - "null"
+                - integer
             status:
-              description: The transaction's net funds status in the Stripe balance, which are either `available` or `pending`.
               type:
                 - "null"
                 - string
+            description:
+              type:
+                - "null"
+                - string
+            net:
+              type:
+                - "null"
+                - integer
+            exchange_rate:
+              type:
+                - "null"
+                - number
             type:
-              description: Transaction type.
+              type:
+                - "null"
+                - string
+            sourced_transfers:
+              items: {}
+              type:
+                - "null"
+                - array
+            id:
+              type:
+                - "null"
+                - string
+            object:
+              type:
+                - "null"
+                - string
+            created:
+              type:
+                - "null"
+                - integer
+            amount:
+              type:
+                - "null"
+                - integer
+            reporting_category:
               type:
                 - "null"
                 - string
@@ -3408,128 +3417,382 @@ schemas:
           - "null"
           - array
       card:
-        description: The card used for the authorization.
         type:
           - "null"
           - object
         properties:
-          id:
-            description: Unique identifier for the object.
-            type:
-              - "null"
-              - string
-          object:
-            description: String representing the object's type. Objects of the same type share the same value.
-            type:
-              - "null"
-              - string
-          account:
-            description: The account this card belongs to.
-            type:
-              - "null"
-              - string
-          address_city:
-            description: City/District/Suburb/Town/Village.
-            type:
-              - "null"
-              - string
-          address_country:
-            description: Billing address country, if provided when creating card.
-            type:
-              - "null"
-              - string
-          address_line1:
-            description: Address line 1 (Street address/PO Box/Company name).
-            type:
-              - "null"
-              - string
-          address_line1_check:
-            description: "If `address_line1` was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`."
-            type:
-              - "null"
-              - string
-          address_line2:
-            description: Address line 2 (Apartment/Suite/Unit/Building).
-            type:
-              - "null"
-              - string
-          address_state:
-            description: State/County/Province/Region.
-            type:
-              - "null"
-              - string
-          address_zip:
-            description: ZIP or postal code.
-            type:
-              - "null"
-              - string
-          address_zip_check:
-            description: "If `address_zip` was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`."
-            type:
-              - "null"
-              - string
           brand:
-            description: Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             type:
               - "null"
               - string
-          country:
-            description: Two-letter ISO code representing the country of the card.
+          cancellation_reason:
             type:
               - "null"
               - string
-          customer:
-            description: The customer that this card belongs to.
+          cardholder:
+            type:
+              - "null"
+              - object
+            properties:
+              billing:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  address:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      city:
+                        type:
+                          - "null"
+                          - string
+                      country:
+                        type:
+                          - "null"
+                          - string
+                      line1:
+                        type:
+                          - "null"
+                          - string
+                      line2:
+                        type:
+                          - "null"
+                          - string
+                      postal_code:
+                        type:
+                          - "null"
+                          - string
+                      state:
+                        type:
+                          - "null"
+                          - string
+              company:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  tax_id_provided:
+                    type: boolean
+              created:
+                type:
+                  - "null"
+                  - integer
+              updated:
+                type:
+                  - "null"
+                  - integer
+              email:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              individual:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  dob:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      day:
+                        type:
+                          - "null"
+                          - integer
+                      month:
+                        type:
+                          - "null"
+                          - integer
+                      year:
+                        type:
+                          - "null"
+                          - integer
+                  first_name:
+                    type:
+                      - "null"
+                      - string
+                  last_name:
+                    type:
+                      - "null"
+                      - string
+                  verification:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      document:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          back:
+                            type:
+                              - "null"
+                              - string
+                          front:
+                            type:
+                              - "null"
+                              - string
+              livemode:
+                type:
+                  - "null"
+                  - boolean
+              metadata:
+                type:
+                  - "null"
+                  - object
+              name:
+                type:
+                  - "null"
+                  - string
+              object:
+                type:
+                  - "null"
+                  - string
+              phone_number:
+                type:
+                  - "null"
+                  - string
+              requirements:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  disabled_reason:
+                    type:
+                      - "null"
+                      - string
+                  past_due:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+              spending_controls:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  allowed_categories:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+                  blocked_categories:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+                  spending_limits:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                  spending_limits_currency:
+                    type:
+                      - "null"
+                      - string
+              status:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              preferred_locales:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+          created:
+            type:
+              - "null"
+              - integer
+          updated:
+            type:
+              - "null"
+              - integer
+          currency:
             type:
               - "null"
               - string
-          cvc_check:
-            description: "If a CVC was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`."
-            type:
-              - "null"
-              - string
-          dynamic_last4:
-            description: The last four digits of the device account number.
+          cvc:
             type:
               - "null"
               - string
           exp_month:
-            description: Two-digit number representing the card's expiration month.
             type:
               - "null"
               - integer
           exp_year:
-            description: Four-digit number representing the card's expiration year.
             type:
               - "null"
               - integer
-          fingerprint:
-            description: Uniquely identifies this particular card number.
-            type:
-              - "null"
-              - string
-          funding:
-            description: Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
+          id:
             type:
               - "null"
               - string
           last4:
-            description: The last four digits of the card.
             type:
               - "null"
               - string
+          livemode:
+            type:
+              - "null"
+              - boolean
           metadata:
-            description: Set of key-value pairs that you can attach to an object.
             type:
               - "null"
               - object
-          name:
-            description: Cardholder name.
+            additionalProperties: true
+          number:
             type:
               - "null"
               - string
-          tokenization_method:
-            description: If the card number is tokenized, this is the method that was used.
+          object:
+            type:
+              - "null"
+              - string
+          replaced_by:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          replacement_for:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          replacement_reason:
+            type:
+              - "null"
+              - string
+          shipping:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              address:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  city:
+                    type:
+                      - "null"
+                      - string
+                  country:
+                    type:
+                      - "null"
+                      - string
+                  line1:
+                    type:
+                      - "null"
+                      - string
+                  line2:
+                    type:
+                      - "null"
+                      - string
+                  postal_code:
+                    type:
+                      - "null"
+                      - string
+                  state:
+                    type:
+                      - "null"
+                      - string
+              carrier:
+                type:
+                  - "null"
+                  - string
+              eta:
+                type:
+                  - "null"
+                  - integer
+              name:
+                type:
+                  - "null"
+                  - string
+              service:
+                type:
+                  - "null"
+                  - string
+              status:
+                type:
+                  - "null"
+                  - string
+              tracking_number:
+                type:
+                  - "null"
+                  - string
+              tracking_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+          spending_controls:
+            type:
+              - "null"
+              - object
+            properties:
+              allowed_categories:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              blocked_categories:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              spending_limits:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+              spending_limits_currency:
+                type:
+                  - "null"
+                  - string
+          status:
+            type:
+              - "null"
+              - string
+          type:
             type:
               - "null"
               - string
@@ -3621,7 +3884,7 @@ schemas:
           - object
         additionalProperties: true
       object:
-        description: Type of object, in this case, always 'authorization'.
+        description: 'Type of object, in this case, always ''authorization''.'
         type:
           - "null"
           - string
@@ -3857,12 +4120,11 @@ schemas:
                 - object
               additionalProperties: true
             object:
-              description: Type of object, in this case, always 'transaction'.
+              description: 'Type of object, in this case, always ''transaction''.'
               type:
                 - "null"
                 - string
             purchase_details:
-              description: Details about the purchase made in the transaction.
               type:
                 - "null"
                 - object
@@ -4016,88 +4278,97 @@ schemas:
           - "null"
           - string
   balance_transactions:
-    $schema: https://json-schema.org/draft-07/schema#
-    additionalProperties: true
     type:
       - "null"
       - object
     properties:
-      id:
-        description: Unique identifier for the object.
-        type:
-          - "null"
-          - string
-      object:
-        description: String representing the object's type. Objects of the same type share the same value.
-        type:
-          - "null"
-          - string
-      amount:
-        description: Gross amount of this transaction (in cents (or local equivalent)). A positive value represents funds charged to another party, and a negative value represents funds sent to another party.
-        type:
-          - "null"
-          - integer
-      available_on:
-        description: The date that the transaction's net funds become available in the Stripe balance.
-        type:
-          - "null"
-          - integer
-      created:
-        description: Time at which the object was created. Measured in seconds since the Unix epoch.
+      fee:
         type:
           - "null"
           - integer
       currency:
-        description: Three-letter ISO currency code, in lowercase. Must be a supported currency.
-        type:
-          - "null"
-          - string
-      description:
-        description: An arbitrary string attached to the object. Often useful for displaying to users.
-        type:
-          - "null"
-          - string
-      exchange_rate:
-        description: If applicable, this transaction uses an exchange rate.
-        type:
-          - "null"
-          - number
-      fee:
-        description: Fees (in cents (or local equivalent)) paid for this transaction. Represented as a positive integer when assessed.
-        type:
-          - "null"
-          - integer
-      fee_details:
-        description: Detailed breakdown of fees (in cents (or local equivalent)) paid for this transaction.
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-      net:
-        description: Net impact to a Stripe balance (in cents (or local equivalent)). A positive value represents incrementing a Stripe balance, and a negative value decrementing a Stripe balance.
-        type:
-          - "null"
-          - integer
-      reporting_category:
-        description: Learn more about how reporting categories can help you understand balance transactions from an accounting perspective.
         type:
           - "null"
           - string
       source:
-        description: This transaction relates to the Stripe object.
         type:
           - "null"
           - string
+      fee_details:
+        type:
+          - "null"
+          - array
+        items:
+          properties:
+            application:
+              type:
+                - "null"
+                - string
+            type:
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            amount:
+              type:
+                - "null"
+                - integer
+            currency:
+              type:
+                - "null"
+                - string
+          type:
+            - "null"
+            - object
+      available_on:
+        type:
+          - "null"
+          - integer
       status:
-        description: The transaction's net funds status in the Stripe balance, which are either `available` or `pending`.
         type:
           - "null"
           - string
+      description:
+        type:
+          - "null"
+          - string
+      net:
+        type:
+          - "null"
+          - integer
+      exchange_rate:
+        type:
+          - "null"
+          - number
       type:
-        description: Transaction type.
+        type:
+          - "null"
+          - string
+      sourced_transfers:
+        items: {}
+        type:
+          - "null"
+          - array
+      id:
+        type:
+          - "null"
+          - string
+      object:
+        type:
+          - "null"
+          - string
+      created:
+        type:
+          - "null"
+          - integer
+      amount:
+        type:
+          - "null"
+          - integer
+      reporting_category:
         type:
           - "null"
           - string
@@ -4112,7 +4383,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Type of object, in this case, 'bank_account'.
+        description: 'Type of object, in this case, ''bank_account''.'
         type:
           - "null"
           - string
@@ -4122,7 +4393,9 @@ schemas:
           - "null"
           - string
       account_holder_type:
-        description: The type of account holder (individual or company) for the bank account.
+        description: >-
+          The type of account holder (individual or company) for the bank
+          account.
         type:
           - "null"
           - string
@@ -4173,7 +4446,7 @@ schemas:
           - "null"
           - string
       status:
-        description: Status of the bank account (e.g., verified, unverified).
+        description: 'Status of the bank account (e.g., verified, unverified).'
         type:
           - "null"
           - string
@@ -4188,216 +4461,578 @@ schemas:
           - "null"
           - boolean
   cardholders:
-    $schema: https://json-schema.org/draft-07/schema#
-    additionalProperties: true
     type:
       - "null"
       - object
     properties:
-      id:
-        description: Unique identifier for the object.
-        type:
-          - "null"
-          - string
-      object:
-        description: String representing the object's type. Objects of the same type share the same value.
-        type:
-          - "null"
-          - string
       billing:
-        description: The cardholder's billing address.
         type:
           - "null"
           - object
+        properties:
+          address:
+            type:
+              - "null"
+              - object
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              line1:
+                type:
+                  - "null"
+                  - string
+              line2:
+                type:
+                  - "null"
+                  - string
+              postal_code:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
       company:
-        description: Additional information about a `company` cardholder.
         type:
           - "null"
           - object
+        properties:
+          tax_id_provided:
+            type: boolean
       created:
-        description: Time at which the object was created. Measured in seconds since the Unix epoch.
+        type:
+          - "null"
+          - integer
+      updated:
         type:
           - "null"
           - integer
       email:
-        description: The cardholder's email address.
+        type:
+          - "null"
+          - string
+      id:
         type:
           - "null"
           - string
       individual:
-        description: Additional information about an `individual` cardholder.
         type:
           - "null"
           - object
+        properties:
+          dob:
+            type:
+              - "null"
+              - object
+            properties:
+              day:
+                type:
+                  - "null"
+                  - integer
+              month:
+                type:
+                  - "null"
+                  - integer
+              year:
+                type:
+                  - "null"
+                  - integer
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          verification:
+            type:
+              - "null"
+              - object
+            properties:
+              document:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  back:
+                    type:
+                      - "null"
+                      - string
+                  front:
+                    type:
+                      - "null"
+                      - string
       livemode:
-        description: Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
         type:
           - "null"
           - boolean
       metadata:
-        description: Set of key-value pairs that you can attach to an object.
         type:
           - "null"
           - object
       name:
-        description: The cardholder's name.
-        type:
-          - "null"
-          - string
-      phone_number:
-        description: The cardholder's phone number.
-        type:
-          - "null"
-          - string
-      preferences:
-        description: The cardholder's preferences.
-        type:
-          - "null"
-          - object
-      requirements:
-        description: The cardholder's requirements.
-        type:
-          - "null"
-          - object
-      shipping:
-        description: The cardholder's shipping address.
-        type:
-          - "null"
-          - object
-      status:
-        description: Specifies whether to permit authorizations on this cardholder's cards.
-        type:
-          - "null"
-          - string
-      type:
-        description: One of `individual` or `company`.
-        type:
-          - "null"
-          - string
-  cards:
-    $schema: https://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    type:
-      - "null"
-      - object
-    properties:
-      id:
-        description: Unique identifier for the object.
         type:
           - "null"
           - string
       object:
-        description: String representing the object's type. Objects of the same type share the same value.
         type:
           - "null"
           - string
-      account:
-        description: The account this card belongs to.
+      phone_number:
         type:
           - "null"
           - string
-      address_city:
-        description: City/District/Suburb/Town/Village.
+      requirements:
+        type:
+          - "null"
+          - object
+        properties:
+          disabled_reason:
+            type:
+              - "null"
+              - string
+          past_due:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+      spending_controls:
+        type:
+          - "null"
+          - object
+        properties:
+          allowed_categories:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          blocked_categories:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          spending_limits:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          spending_limits_currency:
+            type:
+              - "null"
+              - string
+      status:
         type:
           - "null"
           - string
-      address_country:
-        description: Billing address country, if provided when creating card.
+      type:
         type:
           - "null"
           - string
-      address_line1:
-        description: Address line 1 (Street address/PO Box/Company name).
+      preferred_locales:
         type:
           - "null"
-          - string
-      address_line1_check:
-        description: "If `address_line1` was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`."
-        type:
-          - "null"
-          - string
-      address_line2:
-        description: Address line 2 (Apartment/Suite/Unit/Building).
-        type:
-          - "null"
-          - string
-      address_state:
-        description: State/County/Province/Region.
-        type:
-          - "null"
-          - string
-      address_zip:
-        description: ZIP or postal code.
-        type:
-          - "null"
-          - string
-      address_zip_check:
-        description: "If `address_zip` was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`."
-        type:
-          - "null"
-          - string
+          - array
+        items:
+          type:
+            - "null"
+            - string
+  cards:
+    type:
+      - "null"
+      - object
+    properties:
       brand:
-        description: Card brand. Can be `amex`, `diners`, `discover`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
         type:
           - "null"
           - string
-      country:
-        description: Two-letter ISO code representing the country of the card.
+      cancellation_reason:
         type:
           - "null"
           - string
-      customer:
-        description: The customer that this card belongs to.
+      cardholder:
+        type:
+          - "null"
+          - object
+        properties:
+          billing:
+            type:
+              - "null"
+              - object
+            properties:
+              address:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  city:
+                    type:
+                      - "null"
+                      - string
+                  country:
+                    type:
+                      - "null"
+                      - string
+                  line1:
+                    type:
+                      - "null"
+                      - string
+                  line2:
+                    type:
+                      - "null"
+                      - string
+                  postal_code:
+                    type:
+                      - "null"
+                      - string
+                  state:
+                    type:
+                      - "null"
+                      - string
+          company:
+            type:
+              - "null"
+              - object
+            properties:
+              tax_id_provided:
+                type: boolean
+          created:
+            type:
+              - "null"
+              - integer
+          updated:
+            type:
+              - "null"
+              - integer
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          individual:
+            type:
+              - "null"
+              - object
+            properties:
+              dob:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  day:
+                    type:
+                      - "null"
+                      - integer
+                  month:
+                    type:
+                      - "null"
+                      - integer
+                  year:
+                    type:
+                      - "null"
+                      - integer
+              first_name:
+                type:
+                  - "null"
+                  - string
+              last_name:
+                type:
+                  - "null"
+                  - string
+              verification:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  document:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      back:
+                        type:
+                          - "null"
+                          - string
+                      front:
+                        type:
+                          - "null"
+                          - string
+          livemode:
+            type:
+              - "null"
+              - boolean
+          metadata:
+            type:
+              - "null"
+              - object
+          name:
+            type:
+              - "null"
+              - string
+          object:
+            type:
+              - "null"
+              - string
+          phone_number:
+            type:
+              - "null"
+              - string
+          requirements:
+            type:
+              - "null"
+              - object
+            properties:
+              disabled_reason:
+                type:
+                  - "null"
+                  - string
+              past_due:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+          spending_controls:
+            type:
+              - "null"
+              - object
+            properties:
+              allowed_categories:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              blocked_categories:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              spending_limits:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+              spending_limits_currency:
+                type:
+                  - "null"
+                  - string
+          status:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          preferred_locales:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+      created:
+        type:
+          - "null"
+          - integer
+      updated:
+        type:
+          - "null"
+          - integer
+      currency:
         type:
           - "null"
           - string
-      cvc_check:
-        description: "If a CVC was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`."
-        type:
-          - "null"
-          - string
-      dynamic_last4:
-        description: The last four digits of the device account number.
+      cvc:
         type:
           - "null"
           - string
       exp_month:
-        description: Two-digit number representing the card's expiration month.
         type:
           - "null"
           - integer
       exp_year:
-        description: Four-digit number representing the card's expiration year.
         type:
           - "null"
           - integer
-      fingerprint:
-        description: Uniquely identifies this particular card number.
-        type:
-          - "null"
-          - string
-      funding:
-        description: Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
+      id:
         type:
           - "null"
           - string
       last4:
-        description: The last four digits of the card.
         type:
           - "null"
           - string
+      livemode:
+        type:
+          - "null"
+          - boolean
       metadata:
-        description: Set of key-value pairs that you can attach to an object.
         type:
           - "null"
           - object
-      name:
-        description: Cardholder name.
+        additionalProperties: true
+      number:
         type:
           - "null"
           - string
-      tokenization_method:
-        description: If the card number is tokenized, this is the method that was used.
+      object:
+        type:
+          - "null"
+          - string
+      replaced_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      replacement_for:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      replacement_reason:
+        type:
+          - "null"
+          - string
+      shipping:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          address:
+            type:
+              - "null"
+              - object
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              line1:
+                type:
+                  - "null"
+                  - string
+              line2:
+                type:
+                  - "null"
+                  - string
+              postal_code:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+          carrier:
+            type:
+              - "null"
+              - string
+          eta:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          service:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          tracking_number:
+            type:
+              - "null"
+              - string
+          tracking_url:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+      spending_controls:
+        type:
+          - "null"
+          - object
+        properties:
+          allowed_categories:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          blocked_categories:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          spending_limits:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          spending_limits_currency:
+            type:
+              - "null"
+              - string
+      status:
+        type:
+          - "null"
+          - string
+      type:
         type:
           - "null"
           - string
@@ -4847,7 +5482,9 @@ schemas:
                   - "null"
                   - string
       destination:
-        description: The ID of the destination on account to which funds are to be transferred.
+        description: >-
+          The ID of the destination on account to which funds are to be
+          transferred.
         type:
           - "null"
           - string
@@ -4856,7 +5493,7 @@ schemas:
         type:
           - string
       object:
-        description: Object type, always set to 'charge'.
+        description: 'Object type, always set to ''charge''.'
         type:
           - "null"
           - string
@@ -5865,7 +6502,9 @@ schemas:
               - "null"
               - string
       billing_details:
-        description: Details of the billing address and contact information of the customer.
+        description: >-
+          Details of the billing address and contact information of the
+          customer.
         type:
           - "null"
           - object
@@ -5950,7 +6589,7 @@ schemas:
           - "null"
           - boolean
   checkout_sessions:
-    $schema: http://json-schema.org/draft-04/schema#
+    $schema: 'http://json-schema.org/draft-04/schema#'
     type:
       - "null"
       - object
@@ -5966,7 +6605,9 @@ schemas:
           - "null"
           - string
       after_expiration:
-        description: Information related to the recovery options after the session expiration.
+        description: >-
+          Information related to the recovery options after the session
+          expiration.
         type:
           - "null"
           - object
@@ -5978,7 +6619,9 @@ schemas:
               - object
             properties:
               allow_promotion_codes:
-                description: Flag indicating whether to allow promotion codes during recovery.
+                description: >-
+                  Flag indicating whether to allow promotion codes during
+                  recovery.
                 type:
                   - "null"
                   - boolean
@@ -6290,7 +6933,6 @@ schemas:
           - object
         properties:
           address:
-            description: Shipping address.
             type:
               - "null"
               - object
@@ -6836,7 +7478,6 @@ schemas:
                     - "null"
                     - integer
                 rate:
-                  description: Tax rate details.
                   type:
                     - "null"
                     - object
@@ -6918,7 +7559,6 @@ schemas:
           - object
         properties:
           address:
-            description: Shipping address.
             type:
               - "null"
               - object
@@ -6978,7 +7618,6 @@ schemas:
           - "null"
           - string
       payment_method_configuration_details:
-        description: Details of payment method configuration.
         type:
           - "null"
           - object
@@ -7002,7 +7641,7 @@ schemas:
           - "null"
           - string
   checkout_sessions_line_items:
-    $schema: http://json-schema.org/draft-04/schema#
+    $schema: 'http://json-schema.org/draft-04/schema#'
     type:
       - "null"
       - object
@@ -7033,7 +7672,9 @@ schemas:
           - "null"
           - integer
       object:
-        description: The type of object, in this case, it will be 'checkout_sessions_line_items'.
+        description: >-
+          The type of object, in this case, it will be
+          'checkout_sessions_line_items'.
         type:
           - "null"
           - string
@@ -7142,7 +7783,7 @@ schemas:
                         - "null"
                         - number
                     object:
-                      description: Type of object, in this case, 'coupon'
+                      description: 'Type of object, in this case, ''coupon'''
                       type:
                         - "null"
                         - string
@@ -7212,7 +7853,7 @@ schemas:
                     - "null"
                     - string
                 object:
-                  description: Type of object, in this case, 'discount'
+                  description: 'Type of object, in this case, ''discount'''
                   type:
                     - "null"
                     - string
@@ -7248,7 +7889,7 @@ schemas:
               - "null"
               - string
           object:
-            description: Type of object, in this case, 'price'
+            description: 'Type of object, in this case, ''price'''
             type:
               - "null"
               - string
@@ -7429,7 +8070,7 @@ schemas:
                     - "null"
                     - string
                 object:
-                  description: Type of object, in this case, 'tax_rate'
+                  description: 'Type of object, in this case, ''tax_rate'''
                   type:
                     - "null"
                     - string
@@ -7521,7 +8162,7 @@ schemas:
           - "null"
           - boolean
       object:
-        description: Type of object, in this case, 'coupon'.
+        description: 'Type of object, in this case, ''coupon''.'
         type:
           - "null"
           - string
@@ -7531,7 +8172,9 @@ schemas:
           - "null"
           - string
       duration:
-        description: Specifies the duration that the coupon remains valid for, e.g., once, repeating.
+        description: >-
+          Specifies the duration that the coupon remains valid for, e.g., once,
+          repeating.
         type:
           - "null"
           - string
@@ -7669,7 +8312,9 @@ schemas:
               - "null"
               - string
           data:
-            description: An array of line item objects containing discount amounts, tax amounts, and tax rates
+            description: >-
+              An array of line item objects containing discount amounts, tax
+              amounts, and tax rates
             type:
               - "null"
               - array
@@ -8141,7 +8786,7 @@ schemas:
           - "null"
           - integer
   customer_balance_transactions:
-    $schema: http://json-schema.org/draft-04/schema#
+    $schema: 'http://json-schema.org/draft-04/schema#'
     type:
       - "null"
       - object
@@ -8152,7 +8797,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Type of object, in this case, 'balance_transaction'
+        description: 'Type of object, in this case, ''balance_transaction'''
         type:
           - "null"
           - string
@@ -8213,114 +8858,21 @@ schemas:
           - object
         additionalProperties: true
       type:
-        description: Type of the balance transaction (e.g., charge, refund, adjustment)
+        description: 'Type of the balance transaction (e.g., charge, refund, adjustment)'
         type:
           - "null"
           - string
   customers:
-    $schema: https://json-schema.org/draft-07/schema#
-    additionalProperties: true
     type:
       - "null"
       - object
     properties:
-      id:
-        description: Unique identifier for the object.
-        type:
-          - "null"
-          - string
-      object:
-        description: String representing the object's type. Objects of the same type share the same value.
-        type:
-          - "null"
-          - string
-      address:
-        description: The customer's address.
-        type:
-          - "null"
-          - object
-      balance:
-        description: The current balance, if any, that's stored on the customer.
-        type:
-          - "null"
-          - integer
-      cash_balance:
-        description: The current funds being held by Stripe on behalf of the customer.
-        type:
-          - "null"
-          - object
-      created:
-        description: Time at which the object was created. Measured in seconds since the Unix epoch.
-        type:
-          - "null"
-          - integer
-      currency:
-        description: Three-letter ISO code for the currency the customer can be charged in for recurring billing purposes.
-        type:
-          - "null"
-          - string
-      default_source:
-        description: ID of the default payment source for the customer.
-        type:
-          - "null"
-          - string
-      delinquent:
-        description: When the customer's latest invoice is billed by charging automatically, delinquent is true if the invoice's latest charge is failed.
-        type:
-          - "null"
-          - boolean
-      description:
-        description: An arbitrary string attached to the object. Often useful for displaying to users.
-        type:
-          - "null"
-          - string
-      discount:
-        description: Describes the current discount active on the customer.
-        type:
-          - "null"
-          - object
-      email:
-        description: The customer's email address.
-        type:
-          - "null"
-          - string
-      invoice_prefix:
-        description: The prefix for the customer used to generate unique invoice numbers.
-        type:
-          - "null"
-          - string
-      invoice_settings:
-        description: The customer's default invoice settings.
-        type:
-          - "null"
-          - object
-      livemode:
-        description: Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
-        type:
-          - "null"
-          - boolean
       metadata:
-        description: Set of key-value pairs that you can attach to an object.
         type:
           - "null"
           - object
-      name:
-        description: The customer's full name or business name.
-        type:
-          - "null"
-          - string
-      next_invoice_sequence:
-        description: The suffix of the customer's next invoice number, e.g., 0001.
-        type:
-          - "null"
-          - integer
-      phone:
-        description: The customer's phone number.
-        type:
-          - "null"
-          - string
+        properties: {}
       preferred_locales:
-        description: The customer's preferred locales (languages), ordered by preference.
         type:
           - "null"
           - array
@@ -8328,33 +8880,901 @@ schemas:
           type:
             - "null"
             - string
-      shipping:
-        description: Mailing and shipping address for the customer.
+      invoice_settings:
         type:
           - "null"
           - object
-      sources:
-        description: The customer's payment sources.
-        type:
-          - "null"
-          - object
-      subscriptions:
-        description: The customer's current subscriptions.
-        type:
-          - "null"
-          - object
-      tax:
-        description: Describes the customer's tax exemption status.
-        type:
-          - "null"
-          - object
-      tax_exempt:
-        description: The customer's tax exemption status.
+        properties:
+          custom_fields:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          default_payment_method:
+            type:
+              - "null"
+              - string
+          footer:
+            type:
+              - "null"
+              - string
+      name:
         type:
           - "null"
           - string
-      tax_ids:
-        description: The customer's tax IDs.
+      tax_exempt:
+        type:
+          - "null"
+          - string
+      next_invoice_sequence:
+        type:
+          - "null"
+          - integer
+      balance:
+        type:
+          - "null"
+          - integer
+      phone:
+        type:
+          - "null"
+          - string
+      address:
+        type:
+          - "null"
+          - object
+        properties:
+          city:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          line1:
+            type:
+              - "null"
+              - string
+          line2:
+            type:
+              - "null"
+              - string
+          postal_code:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+      shipping:
+        type:
+          - "null"
+          - object
+        properties:
+          address:
+            type:
+              - "null"
+              - object
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              line1:
+                type:
+                  - "null"
+                  - string
+              line2:
+                type:
+                  - "null"
+                  - string
+              postal_code:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+          name:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+      sources:
+        anyOf:
+          - type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                metadata:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                type:
+                  type:
+                    - "null"
+                    - string
+                address_zip:
+                  type:
+                    - "null"
+                    - string
+                livemode:
+                  type:
+                    - "null"
+                    - boolean
+                card:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    fingerprint:
+                      type:
+                        - "null"
+                        - string
+                    last4:
+                      type:
+                        - "null"
+                        - string
+                    dynamic_last4:
+                      type:
+                        - "null"
+                        - string
+                    address_line1_check:
+                      type:
+                        - "null"
+                        - string
+                    exp_month:
+                      type:
+                        - "null"
+                        - integer
+                    tokenization_method:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    exp_year:
+                      type:
+                        - "null"
+                        - integer
+                    three_d_secure:
+                      type:
+                        - "null"
+                        - string
+                    funding:
+                      type:
+                        - "null"
+                        - string
+                    brand:
+                      type:
+                        - "null"
+                        - string
+                    cvc_check:
+                      type:
+                        - "null"
+                        - string
+                    country:
+                      type:
+                        - "null"
+                        - string
+                    address_zip_check:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      type:
+                        - "null"
+                        - string
+                statement_descriptor:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                address_country:
+                  type:
+                    - "null"
+                    - string
+                funding:
+                  type:
+                    - "null"
+                    - string
+                dynamic_last4:
+                  type:
+                    - "null"
+                    - string
+                exp_year:
+                  type:
+                    - "null"
+                    - integer
+                last4:
+                  type:
+                    - "null"
+                    - string
+                exp_month:
+                  type:
+                    - "null"
+                    - integer
+                brand:
+                  type:
+                    - "null"
+                    - string
+                address_line2:
+                  type:
+                    - "null"
+                    - string
+                country:
+                  type:
+                    - "null"
+                    - string
+                object:
+                  type:
+                    - "null"
+                    - string
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                cvc_check:
+                  type:
+                    - "null"
+                    - string
+                usage:
+                  type:
+                    - "null"
+                    - string
+                address_line1:
+                  type:
+                    - "null"
+                    - string
+                owner:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    verified_address:
+                      type:
+                        - "null"
+                        - string
+                    email:
+                      type:
+                        - "null"
+                        - string
+                    address:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        city:
+                          type:
+                            - "null"
+                            - string
+                        country:
+                          type:
+                            - "null"
+                            - string
+                        line1:
+                          type:
+                            - "null"
+                            - string
+                        line2:
+                          type:
+                            - "null"
+                            - string
+                        postal_code:
+                          type:
+                            - "null"
+                            - string
+                        state:
+                          type:
+                            - "null"
+                            - string
+                    verified_email:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    phone:
+                      type:
+                        - "null"
+                        - string
+                    verified_name:
+                      type:
+                        - "null"
+                        - string
+                    verified_phone:
+                      type:
+                        - "null"
+                        - string
+                tokenization_method:
+                  type:
+                    - "null"
+                    - string
+                client_secret:
+                  type:
+                    - "null"
+                    - string
+                fingerprint:
+                  type:
+                    - "null"
+                    - string
+                address_city:
+                  type:
+                    - "null"
+                    - string
+                currency:
+                  type:
+                    - "null"
+                    - string
+                address_line1_check:
+                  type:
+                    - "null"
+                    - string
+                receiver:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    refund_attributes_method:
+                      type:
+                        - "null"
+                        - string
+                    amount_returned:
+                      type:
+                        - "null"
+                        - integer
+                    amount_received:
+                      type:
+                        - "null"
+                        - integer
+                    refund_attributes_status:
+                      type:
+                        - "null"
+                        - string
+                    address:
+                      type:
+                        - "null"
+                        - string
+                    amount_charged:
+                      type:
+                        - "null"
+                        - integer
+                flow:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                ach_credit_transfer:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    bank_name:
+                      type:
+                        - "null"
+                        - string
+                    fingerprint:
+                      type:
+                        - "null"
+                        - string
+                    routing_number:
+                      type:
+                        - "null"
+                        - string
+                    swift_code:
+                      type:
+                        - "null"
+                        - string
+                    refund_account_holder_type:
+                      type:
+                        - "null"
+                        - string
+                    refund_account_holder_name:
+                      type:
+                        - "null"
+                        - string
+                    refund_account_number:
+                      type:
+                        - "null"
+                        - string
+                    refund_routing_number:
+                      type:
+                        - "null"
+                        - string
+                    account_number:
+                      type:
+                        - "null"
+                        - string
+                customer:
+                  type:
+                    - "null"
+                    - string
+                address_zip_check:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                created:
+                  type:
+                    - "null"
+                    - integer
+                address_state:
+                  type:
+                    - "null"
+                    - string
+                alipay:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                bancontact:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                eps:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                ideal:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                multibanco:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                redirect:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    failure_reason:
+                      type:
+                        - "null"
+                        - string
+                    return_url:
+                      type:
+                        - "null"
+                        - string
+                    status:
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      type:
+                        - "null"
+                        - string
+          - type:
+              - "null"
+              - object
+            properties:
+              metadata:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              type:
+                type:
+                  - "null"
+                  - string
+              address_zip:
+                type:
+                  - "null"
+                  - string
+              livemode:
+                type:
+                  - "null"
+                  - boolean
+              card:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  fingerprint:
+                    type:
+                      - "null"
+                      - string
+                  last4:
+                    type:
+                      - "null"
+                      - string
+                  dynamic_last4:
+                    type:
+                      - "null"
+                      - string
+                  address_line1_check:
+                    type:
+                      - "null"
+                      - string
+                  exp_month:
+                    type:
+                      - "null"
+                      - integer
+                  tokenization_method:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  exp_year:
+                    type:
+                      - "null"
+                      - integer
+                  three_d_secure:
+                    type:
+                      - "null"
+                      - string
+                  funding:
+                    type:
+                      - "null"
+                      - string
+                  brand:
+                    type:
+                      - "null"
+                      - string
+                  cvc_check:
+                    type:
+                      - "null"
+                      - string
+                  country:
+                    type:
+                      - "null"
+                      - string
+                  address_zip_check:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+              statement_descriptor:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              address_country:
+                type:
+                  - "null"
+                  - string
+              funding:
+                type:
+                  - "null"
+                  - string
+              dynamic_last4:
+                type:
+                  - "null"
+                  - string
+              exp_year:
+                type:
+                  - "null"
+                  - integer
+              last4:
+                type:
+                  - "null"
+                  - string
+              exp_month:
+                type:
+                  - "null"
+                  - integer
+              brand:
+                type:
+                  - "null"
+                  - string
+              address_line2:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              object:
+                type:
+                  - "null"
+                  - string
+              amount:
+                type:
+                  - "null"
+                  - integer
+              cvc_check:
+                type:
+                  - "null"
+                  - string
+              usage:
+                type:
+                  - "null"
+                  - string
+              address_line1:
+                type:
+                  - "null"
+                  - string
+              owner:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  verified_address:
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    type:
+                      - "null"
+                      - string
+                  address:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      city:
+                        type:
+                          - "null"
+                          - string
+                      country:
+                        type:
+                          - "null"
+                          - string
+                      line1:
+                        type:
+                          - "null"
+                          - string
+                      line2:
+                        type:
+                          - "null"
+                          - string
+                      postal_code:
+                        type:
+                          - "null"
+                          - string
+                      state:
+                        type:
+                          - "null"
+                          - string
+                  verified_email:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  phone:
+                    type:
+                      - "null"
+                      - string
+                  verified_name:
+                    type:
+                      - "null"
+                      - string
+                  verified_phone:
+                    type:
+                      - "null"
+                      - string
+              tokenization_method:
+                type:
+                  - "null"
+                  - string
+              client_secret:
+                type:
+                  - "null"
+                  - string
+              fingerprint:
+                type:
+                  - "null"
+                  - string
+              address_city:
+                type:
+                  - "null"
+                  - string
+              currency:
+                type:
+                  - "null"
+                  - string
+              address_line1_check:
+                type:
+                  - "null"
+                  - string
+              receiver:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  refund_attributes_method:
+                    type:
+                      - "null"
+                      - string
+                  amount_returned:
+                    type:
+                      - "null"
+                      - integer
+                  amount_received:
+                    type:
+                      - "null"
+                      - integer
+                  refund_attributes_status:
+                    type:
+                      - "null"
+                      - string
+                  address:
+                    type:
+                      - "null"
+                      - string
+                  amount_charged:
+                    type:
+                      - "null"
+                      - integer
+              flow:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              ach_credit_transfer:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  bank_name:
+                    type:
+                      - "null"
+                      - string
+                  fingerprint:
+                    type:
+                      - "null"
+                      - string
+                  routing_number:
+                    type:
+                      - "null"
+                      - string
+                  swift_code:
+                    type:
+                      - "null"
+                      - string
+                  refund_account_holder_type:
+                    type:
+                      - "null"
+                      - string
+                  refund_account_holder_name:
+                    type:
+                      - "null"
+                      - string
+                  refund_account_number:
+                    type:
+                      - "null"
+                      - string
+                  refund_routing_number:
+                    type:
+                      - "null"
+                      - string
+                  account_number:
+                    type:
+                      - "null"
+                      - string
+              customer:
+                type:
+                  - "null"
+                  - string
+              address_zip_check:
+                type:
+                  - "null"
+                  - string
+              status:
+                type:
+                  - "null"
+                  - string
+              created:
+                type:
+                  - "null"
+                  - integer
+              address_state:
+                type:
+                  - "null"
+                  - string
+              alipay:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              bancontact:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              eps:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              ideal:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              multibanco:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              redirect:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  failure_reason:
+                    type:
+                      - "null"
+                      - string
+                  return_url:
+                    type:
+                      - "null"
+                      - string
+                  status:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+      delinquent:
+        type:
+          - "null"
+          - boolean
+      description:
+        type:
+          - "null"
+          - string
+      livemode:
+        type:
+          - "null"
+          - boolean
+      default_source:
+        type:
+          - "null"
+          - string
+      cards:
         type:
           - "null"
           - array
@@ -8362,11 +9782,276 @@ schemas:
           type:
             - "null"
             - object
-      test_clock:
-        description: ID of the test clock this customer belongs to.
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+              properties: {}
+            object:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            exp_month:
+              type:
+                - "null"
+                - integer
+            dynamic_last4:
+              type:
+                - "null"
+                - string
+            exp_year:
+              type:
+                - "null"
+                - integer
+            last4:
+              type:
+                - "null"
+                - string
+            funding:
+              type:
+                - "null"
+                - string
+            brand:
+              type:
+                - "null"
+                - string
+            country:
+              type:
+                - "null"
+                - string
+            customer:
+              type:
+                - "null"
+                - string
+            cvc_check:
+              type:
+                - "null"
+                - string
+            address_line2:
+              type:
+                - "null"
+                - string
+            address_line1:
+              type:
+                - "null"
+                - string
+            fingerprint:
+              type:
+                - "null"
+                - string
+            address_zip:
+              type:
+                - "null"
+                - string
+            address_city:
+              type:
+                - "null"
+                - string
+            address_country:
+              type:
+                - "null"
+                - string
+            address_line1_check:
+              type:
+                - "null"
+                - string
+            tokenization_method:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            address_state:
+              type:
+                - "null"
+                - string
+            address_zip_check:
+              type:
+                - "null"
+                - string
+            type:
+              type:
+                - "null"
+                - string
+      email:
         type:
           - "null"
           - string
+      default_card:
+        type:
+          - "null"
+          - string
+      subscriptions:
+        type:
+          - "null"
+          - object
+        properties:
+          object:
+            type:
+              - "null"
+              - string
+          data:
+            type:
+              - "null"
+              - array
+          has_more:
+            type:
+              - "null"
+              - boolean
+          total_count:
+            type:
+              - "null"
+              - number
+          url:
+            type:
+              - "null"
+              - string
+      discount:
+        type:
+          - "null"
+          - object
+        properties:
+          end:
+            type:
+              - "null"
+              - integer
+          coupon:
+            type:
+              - "null"
+              - object
+            properties:
+              metadata:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              valid:
+                type:
+                  - "null"
+                  - boolean
+              livemode:
+                type:
+                  - "null"
+                  - boolean
+              amount_off:
+                type:
+                  - "null"
+                  - integer
+              redeem_by:
+                type:
+                  - "null"
+                  - integer
+              duration_in_months:
+                type:
+                  - "null"
+                  - integer
+              percent_off_precise:
+                type:
+                  - "null"
+                  - number
+              max_redemptions:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              times_redeemed:
+                type:
+                  - "null"
+                  - integer
+              id:
+                type:
+                  - "null"
+                  - string
+              duration:
+                type:
+                  - "null"
+                  - string
+              object:
+                type:
+                  - "null"
+                  - string
+              percent_off:
+                type:
+                  - "null"
+                  - number
+              created:
+                type:
+                  - "null"
+                  - integer
+          customer:
+            type:
+              - "null"
+              - string
+          start:
+            type:
+              - "null"
+              - integer
+          object:
+            type:
+              - "null"
+              - string
+          subscription:
+            type:
+              - "null"
+              - string
+      account_balance:
+        type:
+          - "null"
+          - integer
+      currency:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      invoice_prefix:
+        type:
+          - "null"
+          - string
+      tax_info_verification:
+        type:
+          - "null"
+          - string
+      object:
+        type:
+          - "null"
+          - string
+      created:
+        type:
+          - "null"
+          - integer
+      updated:
+        type:
+          - "null"
+          - integer
+      tax_info:
+        type:
+          - "null"
+          - string
+      test_clock:
+        type:
+          - "null"
+          - string
+      is_deleted:
+        type:
+          - "null"
+          - boolean
   disputes:
     type:
       - "null"
@@ -8676,7 +10361,7 @@ schemas:
           - "null"
           - integer
       data:
-        description: Additional data related to the event, specific to the event type.
+        description: 'Additional data related to the event, specific to the event type.'
         type:
           - "null"
           - object
@@ -8730,14 +10415,14 @@ schemas:
           - "null"
           - string
   external_account_bank_accounts:
-    $schema: http://json-schema.org/draft-04/schema#
+    $schema: 'http://json-schema.org/draft-04/schema#'
     type: object
     properties:
       id:
         description: The unique identifier for the bank account.
         type: string
       object:
-        description: The object type, which is typically 'bank_account'.
+        description: 'The object type, which is typically ''bank_account''.'
         type:
           - string
           - "null"
@@ -8747,12 +10432,12 @@ schemas:
           - string
           - "null"
       account_holder_type:
-        description: The type of account holder, such as individual or company.
+        description: 'The type of account holder, such as individual or company.'
         type:
           - string
           - "null"
       account_type:
-        description: The type of bank account, such as checking or savings.
+        description: 'The type of bank account, such as checking or savings.'
         type:
           - string
           - "null"
@@ -8792,7 +10477,7 @@ schemas:
           - string
           - "null"
       status:
-        description: The status of the bank account, such as 'verified' or 'pending'.
+        description: 'The status of the bank account, such as ''verified'' or ''pending''.'
         type:
           - string
           - "null"
@@ -8812,7 +10497,7 @@ schemas:
           - "null"
           - boolean
   external_account_cards:
-    $schema: http://json-schema.org/draft-04/schema#
+    $schema: 'http://json-schema.org/draft-04/schema#'
     type: object
     properties:
       id:
@@ -8839,7 +10524,9 @@ schemas:
           - string
           - "null"
       address_line1_check:
-        description: If `address_line1` was provided, indicates if it has been checked for address_line1 true/false.
+        description: >-
+          If `address_line1` was provided, indicates if it has been checked for
+          address_line1 true/false.
         type:
           - string
           - "null"
@@ -8859,12 +10546,14 @@ schemas:
           - string
           - "null"
       address_zip_check:
-        description: If `address_zip` was provided, indicates if it has been checked for address_zip true/false.
+        description: >-
+          If `address_zip` was provided, indicates if it has been checked for
+          address_zip true/false.
         type:
           - string
           - "null"
       brand:
-        description: The card brand such as Visa, Mastercard, etc.
+        description: 'The card brand such as Visa, Mastercard, etc.'
         type:
           - string
           - "null"
@@ -8874,7 +10563,9 @@ schemas:
           - string
           - "null"
       cvc_check:
-        description: If `cvc` was provided, indicates if it has been checked for cvc_check true/false.
+        description: >-
+          If `cvc` was provided, indicates if it has been checked for cvc_check
+          true/false.
         type:
           - string
           - "null"
@@ -8899,7 +10590,7 @@ schemas:
           - string
           - "null"
       funding:
-        description: The funding source such as credit, debit, etc.
+        description: 'The funding source such as credit, debit, etc.'
         type:
           - string
           - "null"
@@ -8919,12 +10610,16 @@ schemas:
           - string
           - "null"
       redaction:
-        description: Indicates if the card has been redacted for security purposes true/false.
+        description: >-
+          Indicates if the card has been redacted for security purposes
+          true/false.
         type:
           - string
           - "null"
       tokenization_method:
-        description: The method used to tokenize the card such as apple_pay, google_pay, etc.
+        description: >-
+          The method used to tokenize the card such as apple_pay, google_pay,
+          etc.
         type:
           - string
           - "null"
@@ -8964,7 +10659,9 @@ schemas:
           - "null"
           - string
       metadata:
-        description: Key-value pairs associated with the file link for storing additional information.
+        description: >-
+          Key-value pairs associated with the file link for storing additional
+          information.
         type:
           - "null"
           - object
@@ -8974,12 +10671,14 @@ schemas:
           - "null"
           - string
       object:
-        description: Indicates the object type, which should be 'file_link'.
+        description: 'Indicates the object type, which should be ''file_link''.'
         type:
           - "null"
           - string
       created:
-        description: Timestamp representing the date and time when the file link was created.
+        description: >-
+          Timestamp representing the date and time when the file link was
+          created.
         type:
           - "null"
           - integer
@@ -9142,7 +10841,9 @@ schemas:
           - object
         properties: {}
       plan:
-        description: Information about the subscription plan associated with the invoice item.
+        description: >-
+          Information about the subscription plan associated with the invoice
+          item.
         type:
           - "null"
           - object
@@ -9377,151 +11078,137 @@ schemas:
           - "null"
           - string
       price:
-        description: The price of the invoice item
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Prices Schema
-        additionalProperties: true
         type:
           - "null"
           - object
         properties:
           id:
-            description: Unique identifier for the price.
             type:
               - "null"
               - string
           object:
-            description: Type of object, in this case, 'price'.
             type:
               - "null"
               - string
           active:
-            description: Indicates if the price is currently active or not.
             type:
               - "null"
               - boolean
           billing_scheme:
-            description: Defines how the price interacts with the subscription's billing periods.
             type:
               - "null"
               - string
           created:
-            description: Timestamp representing when the price was created.
-            type:
-              - "null"
-              - integer
-          updated:
-            description: Timestamp representing when the price was last updated.
             type:
               - "null"
               - integer
           currency:
-            description: The currency of the price.
+            type:
+              - "null"
+              - string
+          currency_options:
             type:
               - "null"
               - string
           custom_unit_amount:
-            description: Custom unit amount for the price if set.
-            type:
-              - "null"
-              - string
-          livemode:
-            description: Indicates if the price is in live mode.
-            type:
-              - "null"
-              - boolean
-          lookup_key:
-            description: A reference key for the price used in lookup.
-            type:
-              - "null"
-              - string
-          metadata:
-            description: Custom metadata associated with the price.
             type:
               - "null"
               - object
             properties:
-              nickname:
-                description: User-defined nickname for the price.
+              maximum:
                 type:
                   - "null"
-                  - string
+                  - integer
+              minimum:
+                type:
+                  - "null"
+                  - integer
+              preset:
+                type:
+                  - "null"
+                  - integer
+          livemode:
+            type:
+              - "null"
+              - boolean
+          lookup_key:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - object
           nickname:
-            description: User-defined nickname for the price.
             type:
               - "null"
               - string
           product:
-            description: The product associated with the price.
             type:
               - "null"
               - string
           recurring:
-            description: Recurring billing details for the price.
             type:
               - "null"
               - object
             properties:
               aggregate_usage:
-                description: Specifies usage aggregation for the price if multiple subscriptions exist.
                 type:
                   - "null"
                   - string
               interval:
-                description: Specifies how often the price should be billed.
                 type:
                   - "null"
                   - string
               interval_count:
-                description: The number of intervals between each subscription billing.
                 type:
                   - "null"
-                  - number
-              trial_period_days:
-                description: Number of days of trial period for the price.
-                type:
-                  - "null"
-                  - string
+                  - integer
               usage_type:
-                description: Specifies usage type for the price.
                 type:
                   - "null"
                   - string
           tax_behavior:
-            description: Specifies the tax behavior for the price.
             type:
               - "null"
               - string
+          tiers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
           tiers_mode:
-            description: Specifies pricing tiers mode for the price.
             type:
               - "null"
               - string
           transform_quantity:
-            description: Specifies how the quantity should be transformed before calculating the price.
             type:
               - "null"
-              - string
+              - object
+            properties:
+              divide_by:
+                type:
+                  - "null"
+                  - integer
+              round:
+                type:
+                  - "null"
+                  - string
           type:
-            description: Indicates the type of the price.
             type:
               - "null"
               - string
           unit_amount:
-            description: Unit amount for the price.
             type:
               - "null"
-              - number
+              - integer
           unit_amount_decimal:
-            description: Unit amount in decimal format for the price.
             type:
               - "null"
               - string
-          is_deleted:
-            description: Indicates if the price has been deleted.
-            type:
-              - "null"
-              - boolean
       test_clock:
         description: A test clock for the item
         type:
@@ -9538,7 +11225,6 @@ schemas:
             - "null"
             - string
       tax_rates:
-        description: The tax rates applied to the item
         type:
           - "null"
           - array
@@ -9643,7 +11329,9 @@ schemas:
           - "null"
           - string
       metadata:
-        description: Additional information or custom data related to the invoice line items.
+        description: >-
+          Additional information or custom data related to the invoice line
+          items.
         type:
           - "null"
           - object
@@ -9654,7 +11342,7 @@ schemas:
           - "null"
           - string
       object:
-        description: The object type, which is 'invoiceitem'.
+        description: 'The object type, which is ''invoiceitem''.'
         type:
           - "null"
           - string
@@ -9669,7 +11357,9 @@ schemas:
           - "null"
           - integer
       amount:
-        description: The total amount of the invoice line item, including any taxes and discounts.
+        description: >-
+          The total amount of the invoice line item, including any taxes and
+          discounts.
         type:
           - "null"
           - integer
@@ -9758,7 +11448,7 @@ schemas:
                     - "null"
                     - integer
           object:
-            description: The object type, which is 'plan'.
+            description: 'The object type, which is ''plan''.'
             type:
               - "null"
               - string
@@ -9911,151 +11601,137 @@ schemas:
                     - "null"
                     - string
       price:
-        description: The price per unit for the invoice line item.
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Prices Schema
-        additionalProperties: true
         type:
           - "null"
           - object
         properties:
           id:
-            description: Unique identifier for the price.
             type:
               - "null"
               - string
           object:
-            description: Type of object, in this case, 'price'.
             type:
               - "null"
               - string
           active:
-            description: Indicates if the price is currently active or not.
             type:
               - "null"
               - boolean
           billing_scheme:
-            description: Defines how the price interacts with the subscription's billing periods.
             type:
               - "null"
               - string
           created:
-            description: Timestamp representing when the price was created.
-            type:
-              - "null"
-              - integer
-          updated:
-            description: Timestamp representing when the price was last updated.
             type:
               - "null"
               - integer
           currency:
-            description: The currency of the price.
+            type:
+              - "null"
+              - string
+          currency_options:
             type:
               - "null"
               - string
           custom_unit_amount:
-            description: Custom unit amount for the price if set.
-            type:
-              - "null"
-              - string
-          livemode:
-            description: Indicates if the price is in live mode.
-            type:
-              - "null"
-              - boolean
-          lookup_key:
-            description: A reference key for the price used in lookup.
-            type:
-              - "null"
-              - string
-          metadata:
-            description: Custom metadata associated with the price.
             type:
               - "null"
               - object
             properties:
-              nickname:
-                description: User-defined nickname for the price.
+              maximum:
                 type:
                   - "null"
-                  - string
+                  - integer
+              minimum:
+                type:
+                  - "null"
+                  - integer
+              preset:
+                type:
+                  - "null"
+                  - integer
+          livemode:
+            type:
+              - "null"
+              - boolean
+          lookup_key:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - object
           nickname:
-            description: User-defined nickname for the price.
             type:
               - "null"
               - string
           product:
-            description: The product associated with the price.
             type:
               - "null"
               - string
           recurring:
-            description: Recurring billing details for the price.
             type:
               - "null"
               - object
             properties:
               aggregate_usage:
-                description: Specifies usage aggregation for the price if multiple subscriptions exist.
                 type:
                   - "null"
                   - string
               interval:
-                description: Specifies how often the price should be billed.
                 type:
                   - "null"
                   - string
               interval_count:
-                description: The number of intervals between each subscription billing.
                 type:
                   - "null"
-                  - number
-              trial_period_days:
-                description: Number of days of trial period for the price.
-                type:
-                  - "null"
-                  - string
+                  - integer
               usage_type:
-                description: Specifies usage type for the price.
                 type:
                   - "null"
                   - string
           tax_behavior:
-            description: Specifies the tax behavior for the price.
             type:
               - "null"
               - string
+          tiers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
           tiers_mode:
-            description: Specifies pricing tiers mode for the price.
             type:
               - "null"
               - string
           transform_quantity:
-            description: Specifies how the quantity should be transformed before calculating the price.
             type:
               - "null"
-              - string
+              - object
+            properties:
+              divide_by:
+                type:
+                  - "null"
+                  - integer
+              round:
+                type:
+                  - "null"
+                  - string
           type:
-            description: Indicates the type of the price.
             type:
               - "null"
               - string
           unit_amount:
-            description: Unit amount for the price.
             type:
               - "null"
-              - number
+              - integer
           unit_amount_decimal:
-            description: Unit amount in decimal format for the price.
             type:
               - "null"
               - string
-          is_deleted:
-            description: Indicates if the price has been deleted.
-            type:
-              - "null"
-              - boolean
       discount_amounts:
         description: The amount of discount applied to each item in the invoice line items.
         type:
@@ -10087,7 +11763,6 @@ schemas:
             - "null"
             - string
       tax_rates:
-        description: A list of tax rates applied to the invoice line item.
         type:
           - "null"
           - array
@@ -10327,7 +12002,9 @@ schemas:
           - "null"
           - string
       auto_advance:
-        description: Flag indicating if the invoice will be automatically advanced to the next status
+        description: >-
+          Flag indicating if the invoice will be automatically advanced to the
+          next status
         type:
           - "null"
           - boolean
@@ -10604,7 +12281,7 @@ schemas:
           - "null"
           - boolean
       object:
-        description: Object type, should be 'invoice'
+        description: 'Object type, should be ''invoice'''
         type:
           - "null"
           - string
@@ -10624,7 +12301,7 @@ schemas:
           - "null"
           - string
       total:
-        description: The total amount on the invoice, including tax
+        description: 'The total amount on the invoice, including tax'
         type:
           - "null"
           - integer
@@ -11052,7 +12729,6 @@ schemas:
           - "null"
           - integer
       default_tax_rates:
-        description: The default tax rates applied to the invoice
         type:
           - "null"
           - array
@@ -11284,9 +12960,10 @@ schemas:
                 type:
                   - "null"
                   - string
+  is_file_based: false
+
+  is_resumable: false
   payment_intents:
-    $schema: https://json-schema.org/draft-07/schema#
-    additionalProperties: true
     type:
       - "null"
       - object
@@ -12959,7 +14636,9 @@ schemas:
           - "null"
           - integer
       balance_transaction:
-        description: The ID of the balance transaction that describes the impact on your account balance.
+        description: >-
+          The ID of the balance transaction that describes the impact on your
+          account balance.
         type:
           - "null"
           - string
@@ -12979,7 +14658,7 @@ schemas:
           - "null"
           - integer
       source_type:
-        description: The type of the source transaction (charge, payment, refund).
+        description: 'The type of the source transaction (charge, payment, refund).'
         type:
           - "null"
           - string
@@ -13038,7 +14717,7 @@ schemas:
               - "null"
               - string
           status:
-            description: The status of the bank account (verified, unverified).
+            description: 'The status of the bank account (verified, unverified).'
             type:
               - "null"
               - string
@@ -13061,7 +14740,7 @@ schemas:
           - "null"
           - integer
       method:
-        description: The method used for the payout (standard, instant).
+        description: 'The method used for the payout (standard, instant).'
         type:
           - "null"
           - string
@@ -13071,7 +14750,9 @@ schemas:
           - "null"
           - boolean
       statement_descriptor:
-        description: The statement descriptor that appears on the recipient's bank statement.
+        description: >-
+          The statement descriptor that appears on the recipient's bank
+          statement.
         type:
           - "null"
           - string
@@ -13091,7 +14772,7 @@ schemas:
           - "null"
           - string
       destination:
-        description: The destination of the payout (e.g., bank account).
+        description: 'The destination of the payout (e.g., bank account).'
         type:
           - "null"
           - string
@@ -13106,7 +14787,7 @@ schemas:
           - "null"
           - string
       status:
-        description: The status of the payout (paid, pending, failed).
+        description: 'The status of the payout (paid, pending, failed).'
         type:
           - "null"
           - string
@@ -13121,7 +14802,7 @@ schemas:
           - "null"
           - string
       type:
-        description: The type of the payout (bank_account, card).
+        description: 'The type of the payout (bank_account, card).'
         type:
           - "null"
           - string
@@ -13900,7 +15581,9 @@ schemas:
           - "null"
           - integer
       transform_usage:
-        description: Specifies billing behavior for subscription within a few hours of cycle-end.
+        description: >-
+          Specifies billing behavior for subscription within a few hours of
+          cycle-end.
         type:
           - "null"
           - string
@@ -13910,7 +15593,9 @@ schemas:
           - "null"
           - string
       amount:
-        description: The amount in the smallest currency unit representing the price of the plan.
+        description: >-
+          The amount in the smallest currency unit representing the price of the
+          plan.
         type:
           - "null"
           - integer
@@ -13989,7 +15674,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Type of object, in this case, 'price'.
+        description: 'Type of object, in this case, ''price''.'
         type:
           - "null"
           - string
@@ -13999,7 +15684,9 @@ schemas:
           - "null"
           - boolean
       billing_scheme:
-        description: Defines how the price interacts with the subscription's billing periods.
+        description: >-
+          Defines how the price interacts with the subscription's billing
+          periods.
         type:
           - "null"
           - string
@@ -14061,7 +15748,9 @@ schemas:
           - object
         properties:
           aggregate_usage:
-            description: Specifies usage aggregation for the price if multiple subscriptions exist.
+            description: >-
+              Specifies usage aggregation for the price if multiple
+              subscriptions exist.
             type:
               - "null"
               - string
@@ -14096,7 +15785,9 @@ schemas:
           - "null"
           - string
       transform_quantity:
-        description: Specifies how the quantity should be transformed before calculating the price.
+        description: >-
+          Specifies how the quantity should be transformed before calculating
+          the price.
         type:
           - "null"
           - string
@@ -14131,7 +15822,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Indicates the type of object, in this case, a product.
+        description: 'Indicates the type of object, in this case, a product.'
         type:
           - "null"
           - string
@@ -14288,7 +15979,7 @@ schemas:
           - "null"
           - boolean
   promotion_codes:
-    $schema: http://json-schema.org/draft-04/schema#
+    $schema: 'http://json-schema.org/draft-04/schema#'
     type:
       - "null"
       - object
@@ -14315,7 +16006,9 @@ schemas:
               - "null"
               - string
           amount_off:
-            description: The amount which will be discounted from the total if the coupon is applied.
+            description: >-
+              The amount which will be discounted from the total if the coupon
+              is applied.
             type:
               - "null"
               - integer
@@ -14325,7 +16018,7 @@ schemas:
               - "null"
               - string
           duration:
-            description: Indicates how long the discount will last (e.g, once, forever).
+            description: 'Indicates how long the discount will last (e.g, once, forever).'
             type:
               - "null"
               - string
@@ -14351,7 +16044,7 @@ schemas:
               - "null"
               - number
           object:
-            description: Indicates the object type, typically 'coupon'.
+            description: 'Indicates the object type, typically ''coupon''.'
             type:
               - "null"
               - string
@@ -14407,7 +16100,7 @@ schemas:
           - object
         properties: {}
       object:
-        description: Indicates the object type, typically 'promotion_code'.
+        description: 'Indicates the object type, typically ''promotion_code''.'
         type:
           - "null"
           - string
@@ -14427,7 +16120,7 @@ schemas:
           - "null"
           - integer
       customer:
-        description: The customer associated with the promotion code, if applicable.
+        description: 'The customer associated with the promotion code, if applicable.'
         type:
           - "null"
           - string
@@ -14453,7 +16146,9 @@ schemas:
           - object
         properties:
           first_time_transaction:
-            description: Indicates if the promotion code is applicable only for the first transaction.
+            description: >-
+              Indicates if the promotion code is applicable only for the first
+              transaction.
             type:
               - "null"
               - boolean
@@ -14483,7 +16178,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Indicates the type of object, which should be 'refund'.
+        description: 'Indicates the type of object, which should be ''refund''.'
         type:
           - "null"
           - string
@@ -14493,7 +16188,9 @@ schemas:
           - "null"
           - integer
       balance_transaction:
-        description: ID of the balance transaction that describes the impact on your account balance.
+        description: >-
+          ID of the balance transaction that describes the impact on your
+          account balance.
         type:
           - "null"
           - string
@@ -14529,7 +16226,7 @@ schemas:
           - "null"
           - string
       reason:
-        description: The reason for the refund (e.g. duplicate, fraudulent).
+        description: 'The reason for the refund (e.g. duplicate, fraudulent).'
         type:
           - "null"
           - string
@@ -14544,7 +16241,7 @@ schemas:
           - "null"
           - string
       status:
-        description: The status of the refund (e.g. succeeded, pending).
+        description: 'The status of the refund (e.g. succeeded, pending).'
         type:
           - "null"
           - string
@@ -14752,7 +16449,7 @@ schemas:
           - "null"
           - boolean
       object:
-        description: The object type, typically 'setup_attempt'.
+        description: 'The object type, typically ''setup_attempt''.'
         type:
           - "null"
           - string
@@ -14767,7 +16464,9 @@ schemas:
           - "null"
           - string
       payment_method_details:
-        description: Detailed information about the payment method associated with the setup attempt.
+        description: >-
+          Detailed information about the payment method associated with the
+          setup attempt.
         type:
           - "null"
           - object
@@ -14798,7 +16497,9 @@ schemas:
                   - "null"
                   - string
               bank_name:
-                description: The name of the bank associated with the Bancontact payment method.
+                description: >-
+                  The name of the bank associated with the Bancontact payment
+                  method.
                 type:
                   - "null"
                   - string
@@ -14818,7 +16519,9 @@ schemas:
                   - "null"
                   - string
               iban_last4:
-                description: The last 4 digits of the IBAN associated with the Bancontact payment method.
+                description: >-
+                  The last 4 digits of the IBAN associated with the Bancontact
+                  payment method.
                 type:
                   - "null"
                   - string
@@ -14828,7 +16531,9 @@ schemas:
                   - "null"
                   - string
               verified_name:
-                description: The verified name associated with the Bancontact payment method.
+                description: >-
+                  The verified name associated with the Bancontact payment
+                  method.
                 type:
                   - "null"
                   - string
@@ -14902,7 +16607,9 @@ schemas:
                   - "null"
                   - string
               iban_last4:
-                description: The last 4 digits of the IBAN associated with the iDEAL payment method.
+                description: >-
+                  The last 4 digits of the IBAN associated with the iDEAL
+                  payment method.
                 type:
                   - "null"
                   - string
@@ -14930,7 +16637,9 @@ schemas:
                   - "null"
                   - string
               bank_name:
-                description: The name of the bank associated with the Sofort payment method.
+                description: >-
+                  The name of the bank associated with the Sofort payment
+                  method.
                 type:
                   - "null"
                   - string
@@ -14950,7 +16659,9 @@ schemas:
                   - "null"
                   - string
               iban_last4:
-                description: The last 4 digits of the IBAN associated with the Sofort payment method.
+                description: >-
+                  The last 4 digits of the IBAN associated with the Sofort
+                  payment method.
                 type:
                   - "null"
                   - string
@@ -15006,7 +16717,6 @@ schemas:
               - "null"
               - string
           payment_intent:
-            description: The payment intent associated with the setup error.
             type:
               - "null"
               - object
@@ -16165,7 +17875,9 @@ schemas:
                   - object
                 properties:
                   bsb_number:
-                    description: The BSB number associated with the AU BECS Debit payment method.
+                    description: >-
+                      The BSB number associated with the AU BECS Debit payment
+                      method.
                     type:
                       - "null"
                       - string
@@ -16197,7 +17909,9 @@ schemas:
                       - "null"
                       - string
                   sort_code:
-                    description: The sort code associated with the BACS Debit payment method.
+                    description: >-
+                      The sort code associated with the BACS Debit payment
+                      method.
                     type:
                       - "null"
                       - string
@@ -16208,14 +17922,15 @@ schemas:
                   - "null"
                   - object
               billing_details:
-                description: Details about the billing information associated with the payment method.
+                description: >-
+                  Details about the billing information associated with the
+                  payment method.
                 additionalProperties: true
                 type:
                   - "null"
                   - object
                 properties:
                   address:
-                    description: The billing address.
                     type:
                       - "null"
                       - object
@@ -16466,7 +18181,7 @@ schemas:
                   - "null"
                   - object
               object:
-                description: The object type, typically 'payment_method'.
+                description: 'The object type, typically ''payment_method''.'
                 type:
                   - "null"
                   - string
@@ -16496,12 +18211,16 @@ schemas:
                 additionalProperties: true
                 properties:
                   bank_code:
-                    description: The bank code associated with the SEPA debit payment method.
+                    description: >-
+                      The bank code associated with the SEPA debit payment
+                      method.
                     type:
                       - "null"
                       - string
                   branch_code:
-                    description: The branch code associated with the SEPA debit payment method.
+                    description: >-
+                      The branch code associated with the SEPA debit payment
+                      method.
                     type:
                       - "null"
                       - string
@@ -16527,7 +18246,9 @@ schemas:
                           - "null"
                           - string
                       setup_attempt:
-                        description: The setup attempt associated with the SEPA debit generation.
+                        description: >-
+                          The setup attempt associated with the SEPA debit
+                          generation.
                         type:
                           - "null"
                           - string
@@ -16559,63 +18280,42 @@ schemas:
               - "null"
               - string
           setup_intent:
-            description: The setup intent associated with the setup error.
             type:
               - "null"
               - object
             properties:
               id:
-                description: Unique identifier for the object.
                 type:
-                  - "null"
                   - string
               object:
-                description: String representing the object's type. Objects of the same type share the same value.
                 type:
-                  - "null"
                   - string
+                enum:
+                  - setup_intent
               application:
-                description: ID of the Connect application that created the SetupIntent.
                 type:
                   - "null"
                   - string
-              attach_to_self:
-                description: If present, the SetupIntent's payment method will be attached to the in-context Stripe Account.
-                type:
-                  - "null"
-                  - boolean
-              automatic_payment_methods:
-                description: Settings for dynamic payment methods compatible with this Setup Intent
-                type:
-                  - "null"
-                  - object
               cancellation_reason:
-                description: Reason for cancellation of this SetupIntent, one of `abandoned`, `requested_by_customer`, or `duplicate`.
-                type:
-                  - "null"
-                  - string
-              client_secret:
-                description: The client secret of this SetupIntent. Used for client-side retrieval using a publishable key.
                 type:
                   - "null"
                   - string
               created:
-                description: Time at which the object was created. Measured in seconds since the Unix epoch.
+                type:
+                  - integer
+              updated:
                 type:
                   - "null"
                   - integer
               customer:
-                description: ID of the Customer this SetupIntent belongs to, if one exists.
                 type:
                   - "null"
                   - string
               description:
-                description: An arbitrary string attached to the object. Often useful for displaying to users.
                 type:
                   - "null"
                   - string
               flow_directions:
-                description: Indicates the directions of money movement for which this payment method is intended to be used.
                 type:
                   - "null"
                   - array
@@ -16624,52 +18324,43 @@ schemas:
                     - "null"
                     - string
               last_setup_error:
-                description: The error encountered in the previous SetupIntent confirmation.
                 type:
                   - "null"
-                  - object
+                  - string
               latest_attempt:
-                description: The most recent SetupAttempt for this SetupIntent.
                 type:
                   - "null"
                   - string
               livemode:
-                description: Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
                 type:
                   - "null"
                   - boolean
               mandate:
-                description: ID of the mandate to be used for this setup.
                 type:
                   - "null"
                   - string
               metadata:
-                description: Set of key-value pairs that you can attach to an object.
                 type:
                   - "null"
                   - object
               next_action:
-                description: If present, this property tells you what actions you need to take in order for your customer to continue payment setup.
                 type:
                   - "null"
-                  - object
+                  - string
               on_behalf_of:
-                description: The account (if any) for which the setup is intended.
                 type:
                   - "null"
                   - string
               payment_method:
-                description: ID of the payment method used with this SetupIntent.
                 type:
                   - "null"
                   - string
               payment_method_options:
-                description: Payment method-specific configuration for this SetupIntent.
                 type:
                   - "null"
                   - object
+                additionalProperties: true
               payment_method_types:
-                description: The list of payment method types (e.g. card) that this SetupIntent is allowed to set up.
                 type:
                   - "null"
                   - array
@@ -16677,21 +18368,49 @@ schemas:
                   type:
                     - "null"
                     - string
-              single_use:
-                description: If this is a `single_use` SetupIntent, this hash contains details about the `single_use` specific payment method.
+              single_use_mandate:
+                type:
+                  - "null"
+                  - string
+              status:
+                type:
+                  - string
+              usage:
+                type:
+                  - string
+                enum:
+                  - on_session
+                  - off_session
+              client_secret:
+                type:
+                  - "null"
+                  - string
+              automatic_payment_methods:
                 type:
                   - "null"
                   - object
-              status:
-                description: Status of this SetupIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `canceled`, or `succeeded`.
+                properties:
+                  allow_redirects:
+                    type:
+                      - "null"
+                      - string
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+              payment_method_configuration_details:
                 type:
                   - "null"
-                  - string
-              usage:
-                description: Indicates how the payment method is intended to be used in the future.
-                type:
-                  - "null"
-                  - string
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  parent:
+                    type:
+                      - "null"
+                      - string
           source:
             description: The source of the error.
             type:
@@ -16729,64 +18448,42 @@ schemas:
             - "null"
             - string
   setup_intents:
-    $schema: https://json-schema.org/draft-04/schema#
-    additionalProperties: true
     type:
       - "null"
       - object
     properties:
       id:
-        description: Unique identifier for the object.
         type:
-          - "null"
           - string
       object:
-        description: String representing the object's type. Objects of the same type share the same value.
         type:
-          - "null"
           - string
+        enum:
+          - setup_intent
       application:
-        description: ID of the Connect application that created the SetupIntent.
         type:
           - "null"
           - string
-      attach_to_self:
-        description: If present, the SetupIntent's payment method will be attached to the in-context Stripe Account.
-        type:
-          - "null"
-          - boolean
-      automatic_payment_methods:
-        description: Settings for dynamic payment methods compatible with this Setup Intent
-        type:
-          - "null"
-          - object
       cancellation_reason:
-        description: Reason for cancellation of this SetupIntent, one of `abandoned`, `requested_by_customer`, or `duplicate`.
-        type:
-          - "null"
-          - string
-      client_secret:
-        description: The client secret of this SetupIntent. Used for client-side retrieval using a publishable key.
         type:
           - "null"
           - string
       created:
-        description: Time at which the object was created. Measured in seconds since the Unix epoch.
+        type:
+          - integer
+      updated:
         type:
           - "null"
           - integer
       customer:
-        description: ID of the Customer this SetupIntent belongs to, if one exists.
         type:
           - "null"
           - string
       description:
-        description: An arbitrary string attached to the object. Often useful for displaying to users.
         type:
           - "null"
           - string
       flow_directions:
-        description: Indicates the directions of money movement for which this payment method is intended to be used.
         type:
           - "null"
           - array
@@ -16795,52 +18492,43 @@ schemas:
             - "null"
             - string
       last_setup_error:
-        description: The error encountered in the previous SetupIntent confirmation.
         type:
           - "null"
-          - object
+          - string
       latest_attempt:
-        description: The most recent SetupAttempt for this SetupIntent.
         type:
           - "null"
           - string
       livemode:
-        description: Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
         type:
           - "null"
           - boolean
       mandate:
-        description: ID of the mandate to be used for this setup.
         type:
           - "null"
           - string
       metadata:
-        description: Set of key-value pairs that you can attach to an object.
         type:
           - "null"
           - object
       next_action:
-        description: If present, this property tells you what actions you need to take in order for your customer to continue payment setup.
         type:
           - "null"
-          - object
+          - string
       on_behalf_of:
-        description: The account (if any) for which the setup is intended.
         type:
           - "null"
           - string
       payment_method:
-        description: ID of the payment method used with this SetupIntent.
         type:
           - "null"
           - string
       payment_method_options:
-        description: Payment method-specific configuration for this SetupIntent.
         type:
           - "null"
           - object
+        additionalProperties: true
       payment_method_types:
-        description: The list of payment method types (e.g. card) that this SetupIntent is allowed to set up.
         type:
           - "null"
           - array
@@ -16848,21 +18536,49 @@ schemas:
           type:
             - "null"
             - string
-      single_use:
-        description: If this is a `single_use` SetupIntent, this hash contains details about the `single_use` specific payment method.
+      single_use_mandate:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - string
+      usage:
+        type:
+          - string
+        enum:
+          - on_session
+          - off_session
+      client_secret:
+        type:
+          - "null"
+          - string
+      automatic_payment_methods:
         type:
           - "null"
           - object
-      status:
-        description: Status of this SetupIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `canceled`, or `succeeded`.
+        properties:
+          allow_redirects:
+            type:
+              - "null"
+              - string
+          enabled:
+            type:
+              - "null"
+              - boolean
+      payment_method_configuration_details:
         type:
           - "null"
-          - string
-      usage:
-        description: Indicates how the payment method is intended to be used in the future.
-        type:
-          - "null"
-          - string
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          parent:
+            type:
+              - "null"
+              - string
   shipping_rates:
     $schema: http://json-schema.org/draft-07/schema#
     title: Shipping Rates Schema
@@ -16877,7 +18593,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Type of object, in this case, it will always be 'shipping_rate'
+        description: 'Type of object, in this case, it will always be ''shipping_rate'''
         type:
           - "null"
           - string
@@ -16902,7 +18618,9 @@ schemas:
           - "null"
           - string
       fixed_amount:
-        description: Details about the fixed shipping amount associated with a shipping rate.
+        description: >-
+          Details about the fixed shipping amount associated with a shipping
+          rate.
         type:
           - "null"
           - object
@@ -16923,7 +18641,9 @@ schemas:
           - "null"
           - boolean
       metadata:
-        description: Any additional data related to the shipping rate that is not directly represented by other fields.
+        description: >-
+          Any additional data related to the shipping rate that is not directly
+          represented by other fields.
         type:
           - "null"
           - object
@@ -16949,7 +18669,7 @@ schemas:
           - "null"
           - string
       type:
-        description: Type of shipping rate, e.g., international, domestic, etc.
+        description: 'Type of shipping rate, e.g., international, domestic, etc.'
         type:
           - "null"
           - string
@@ -17014,7 +18734,7 @@ schemas:
                     - "null"
                     - integer
           object:
-            description: Type of object, in this case, 'plan'.
+            description: 'Type of object, in this case, ''plan''.'
             type:
               - "null"
               - string
@@ -17039,7 +18759,9 @@ schemas:
               - "null"
               - string
           statement_descriptor:
-            description: Descriptor shown on the customer's credit card statement for the plan.
+            description: >-
+              Descriptor shown on the customer's credit card statement for the
+              plan.
             type:
               - "null"
               - string
@@ -17069,7 +18791,9 @@ schemas:
               - "null"
               - string
           id:
-            description: Unique identifier for the plan associated with the subscription item.
+            description: >-
+              Unique identifier for the plan associated with the subscription
+              item.
             type:
               - "null"
               - string
@@ -17079,17 +18803,19 @@ schemas:
               - "null"
               - integer
           usage_type:
-            description: Type of usage, either 'licensed' or 'metered'.
+            description: 'Type of usage, either ''licensed'' or ''metered''.'
             type:
               - "null"
               - string
           active:
-            description: Flag indicating if the plan associated with the subscription item is active.
+            description: >-
+              Flag indicating if the plan associated with the subscription item
+              is active.
             type:
               - "null"
               - boolean
           tiers_mode:
-            description: Mode to define tiered pricing, either 'graduated' or 'volume'.
+            description: 'Mode to define tiered pricing, either ''graduated'' or ''volume''.'
             type:
               - "null"
               - string
@@ -17109,7 +18835,9 @@ schemas:
               - "null"
               - string
           metadata:
-            description: Additional information specific to the plan of the subscription item.
+            description: >-
+              Additional information specific to the plan of the subscription
+              item.
             type:
               - "null"
               - object
@@ -17125,7 +18853,9 @@ schemas:
           - "null"
           - string
       trial_start:
-        description: Timestamp indicating when the trial period for the subscription item starts.
+        description: >-
+          Timestamp indicating when the trial period for the subscription item
+          starts.
         type:
           - "null"
           - integer
@@ -17135,7 +18865,9 @@ schemas:
           - "null"
           - integer
       cancel_at_period_end:
-        description: Flag indicating if the subscription will be canceled at the end of the current period.
+        description: >-
+          Flag indicating if the subscription will be canceled at the end of the
+          current period.
         type:
           - "null"
           - boolean
@@ -17166,7 +18898,9 @@ schemas:
           - object
         properties: {}
       application_fee_percent:
-        description: A fee percentage applied to the subscription that will be transferred to the platform owner.
+        description: >-
+          A fee percentage applied to the subscription that will be transferred
+          to the platform owner.
         type:
           - "null"
           - number
@@ -17176,7 +18910,9 @@ schemas:
           - "null"
           - string
       status:
-        description: Status of the subscription item, e.g., 'active', 'trialing', 'canceled'.
+        description: >-
+          Status of the subscription item, e.g., 'active', 'trialing',
+          'canceled'.
         type:
           - "null"
           - string
@@ -17186,7 +18922,7 @@ schemas:
           - "null"
           - string
       object:
-        description: Type of object, in this case, 'subscription_item'.
+        description: 'Type of object, in this case, ''subscription_item''.'
         type:
           - "null"
           - string
@@ -17201,23 +18937,28 @@ schemas:
           - "null"
           - number
       trial_end:
-        description: Timestamp indicating when the trial period for the subscription item ends.
+        description: >-
+          Timestamp indicating when the trial period for the subscription item
+          ends.
         type:
           - "null"
           - number
       billing_thresholds:
-        description: Threshold rules that trigger billing actions for the subscription item.
+        description: >-
+          Threshold rules that trigger billing actions for the subscription
+          item.
         type:
           - "null"
           - object
         properties:
           usage_gte:
-            description: The usage threshold that triggers the billing for metered billing subscriptions.
+            description: >-
+              The usage threshold that triggers the billing for metered billing
+              subscriptions.
             type:
               - "null"
               - integer
       tax_rates:
-        description: Tax rates applied to the subscription item price.
         type:
           - "null"
           - array
@@ -17287,151 +19028,137 @@ schemas:
                 - "null"
                 - string
       price:
-        description: Price of the subscription item.
-        $schema: http://json-schema.org/draft-07/schema#
-        title: Prices Schema
-        additionalProperties: true
         type:
           - "null"
           - object
         properties:
           id:
-            description: Unique identifier for the price.
             type:
               - "null"
               - string
           object:
-            description: Type of object, in this case, 'price'.
             type:
               - "null"
               - string
           active:
-            description: Indicates if the price is currently active or not.
             type:
               - "null"
               - boolean
           billing_scheme:
-            description: Defines how the price interacts with the subscription's billing periods.
             type:
               - "null"
               - string
           created:
-            description: Timestamp representing when the price was created.
-            type:
-              - "null"
-              - integer
-          updated:
-            description: Timestamp representing when the price was last updated.
             type:
               - "null"
               - integer
           currency:
-            description: The currency of the price.
+            type:
+              - "null"
+              - string
+          currency_options:
             type:
               - "null"
               - string
           custom_unit_amount:
-            description: Custom unit amount for the price if set.
-            type:
-              - "null"
-              - string
-          livemode:
-            description: Indicates if the price is in live mode.
-            type:
-              - "null"
-              - boolean
-          lookup_key:
-            description: A reference key for the price used in lookup.
-            type:
-              - "null"
-              - string
-          metadata:
-            description: Custom metadata associated with the price.
             type:
               - "null"
               - object
             properties:
-              nickname:
-                description: User-defined nickname for the price.
+              maximum:
                 type:
                   - "null"
-                  - string
+                  - integer
+              minimum:
+                type:
+                  - "null"
+                  - integer
+              preset:
+                type:
+                  - "null"
+                  - integer
+          livemode:
+            type:
+              - "null"
+              - boolean
+          lookup_key:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - object
           nickname:
-            description: User-defined nickname for the price.
             type:
               - "null"
               - string
           product:
-            description: The product associated with the price.
             type:
               - "null"
               - string
           recurring:
-            description: Recurring billing details for the price.
             type:
               - "null"
               - object
             properties:
               aggregate_usage:
-                description: Specifies usage aggregation for the price if multiple subscriptions exist.
                 type:
                   - "null"
                   - string
               interval:
-                description: Specifies how often the price should be billed.
                 type:
                   - "null"
                   - string
               interval_count:
-                description: The number of intervals between each subscription billing.
                 type:
                   - "null"
-                  - number
-              trial_period_days:
-                description: Number of days of trial period for the price.
-                type:
-                  - "null"
-                  - string
+                  - integer
               usage_type:
-                description: Specifies usage type for the price.
                 type:
                   - "null"
                   - string
           tax_behavior:
-            description: Specifies the tax behavior for the price.
             type:
               - "null"
               - string
+          tiers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
           tiers_mode:
-            description: Specifies pricing tiers mode for the price.
             type:
               - "null"
               - string
           transform_quantity:
-            description: Specifies how the quantity should be transformed before calculating the price.
             type:
               - "null"
-              - string
+              - object
+            properties:
+              divide_by:
+                type:
+                  - "null"
+                  - integer
+              round:
+                type:
+                  - "null"
+                  - string
           type:
-            description: Indicates the type of the price.
             type:
               - "null"
               - string
           unit_amount:
-            description: Unit amount for the price.
             type:
               - "null"
-              - number
+              - integer
           unit_amount_decimal:
-            description: Unit amount in decimal format for the price.
             type:
               - "null"
               - string
-          is_deleted:
-            description: Indicates if the price has been deleted.
-            type:
-              - "null"
-              - boolean
       subscription_updated:
         description: The timestamp at which the subscription was last updated.
         type:
@@ -17450,7 +19177,7 @@ schemas:
           - "null"
           - string
       object:
-        description: The object type, which is 'subscription_schedule'.
+        description: 'The object type, which is ''subscription_schedule''.'
         type:
           - "null"
           - string
@@ -17554,7 +19281,9 @@ schemas:
               - "null"
               - string
           on_behalf_of:
-            description: The ID of the account on whose behalf the subscription schedule operates.
+            description: >-
+              The ID of the account on whose behalf the subscription schedule
+              operates.
             type:
               - "null"
               - string
@@ -17613,7 +19342,6 @@ schemas:
                       - "null"
                       - string
                   tax_rates:
-                    description: Tax rates applied to the item.
                     type:
                       - "null"
                       - array
@@ -17718,7 +19446,6 @@ schemas:
                 - "null"
                 - string
             default_tax_rates:
-              description: Default tax rates applied in this phase.
               type:
                 - "null"
                 - array
@@ -17945,7 +19672,7 @@ schemas:
           - object
         properties:
           object:
-            description: Type of object, in this case, 'items'.
+            description: 'Type of object, in this case, ''items''.'
             type:
               - "null"
               - string
@@ -18000,7 +19727,9 @@ schemas:
           - "null"
           - object
       cancel_at_period_end:
-        description: Indicates if the subscription should be canceled at the end of the current period.
+        description: >-
+          Indicates if the subscription should be canceled at the end of the
+          current period.
         type:
           - "null"
           - boolean
@@ -18093,7 +19822,7 @@ schemas:
                   - "null"
                   - string
               object:
-                description: Type of object, in this case, 'coupon'.
+                description: 'Type of object, in this case, ''coupon''.'
                 type:
                   - "null"
                   - string
@@ -18118,7 +19847,7 @@ schemas:
               - "null"
               - integer
           object:
-            description: Type of object, in this case, 'discount'.
+            description: 'Type of object, in this case, ''discount''.'
             type:
               - "null"
               - string
@@ -18266,7 +19995,7 @@ schemas:
               - "null"
               - string
           object:
-            description: Type of object, in this case, 'plan'.
+            description: 'Type of object, in this case, ''plan''.'
             type:
               - "null"
               - string
@@ -18321,7 +20050,7 @@ schemas:
           - "null"
           - number
       object:
-        description: Type of object, in this case, 'subscription'.
+        description: 'Type of object, in this case, ''subscription''.'
         type:
           - "null"
           - string
@@ -18368,7 +20097,9 @@ schemas:
           - object
         properties:
           enabled:
-            description: Indicates if automatic tax calculation is enabled for the subscription.
+            description: >-
+              Indicates if automatic tax calculation is enabled for the
+              subscription.
             type:
               - "null"
               - boolean
@@ -18434,7 +20165,6 @@ schemas:
               - "null"
               - integer
       default_tax_rates:
-        description: The default tax rates applied to the subscription.
         type:
           - "null"
           - array
@@ -18577,7 +20307,7 @@ schemas:
                     - "null"
                     - string
                 object:
-                  description: Type of object, in this case, 'subscription item'.
+                  description: 'Type of object, in this case, ''subscription item''.'
                   type:
                     - "null"
                     - string
@@ -18593,161 +20323,151 @@ schemas:
                         - "null"
                         - integer
                 created:
-                  description: The timestamp at which the updated subscription item was created.
+                  description: >-
+                    The timestamp at which the updated subscription item was
+                    created.
                   type:
                     - "null"
                     - integer
                 metadata:
-                  description: Additional metadata associated with the updated subscription item.
+                  description: >-
+                    Additional metadata associated with the updated subscription
+                    item.
                   type:
                     - "null"
                     - object
                 price:
-                  description: The price of the updated subscription item.
-                  $schema: http://json-schema.org/draft-07/schema#
-                  title: Prices Schema
-                  additionalProperties: true
                   type:
                     - "null"
                     - object
                   properties:
                     id:
-                      description: Unique identifier for the price.
                       type:
                         - "null"
                         - string
                     object:
-                      description: Type of object, in this case, 'price'.
                       type:
                         - "null"
                         - string
                     active:
-                      description: Indicates if the price is currently active or not.
                       type:
                         - "null"
                         - boolean
                     billing_scheme:
-                      description: Defines how the price interacts with the subscription's billing periods.
                       type:
                         - "null"
                         - string
                     created:
-                      description: Timestamp representing when the price was created.
-                      type:
-                        - "null"
-                        - integer
-                    updated:
-                      description: Timestamp representing when the price was last updated.
                       type:
                         - "null"
                         - integer
                     currency:
-                      description: The currency of the price.
+                      type:
+                        - "null"
+                        - string
+                    currency_options:
                       type:
                         - "null"
                         - string
                     custom_unit_amount:
-                      description: Custom unit amount for the price if set.
-                      type:
-                        - "null"
-                        - string
-                    livemode:
-                      description: Indicates if the price is in live mode.
-                      type:
-                        - "null"
-                        - boolean
-                    lookup_key:
-                      description: A reference key for the price used in lookup.
-                      type:
-                        - "null"
-                        - string
-                    metadata:
-                      description: Custom metadata associated with the price.
                       type:
                         - "null"
                         - object
                       properties:
-                        nickname:
-                          description: User-defined nickname for the price.
+                        maximum:
                           type:
                             - "null"
-                            - string
+                            - integer
+                        minimum:
+                          type:
+                            - "null"
+                            - integer
+                        preset:
+                          type:
+                            - "null"
+                            - integer
+                    livemode:
+                      type:
+                        - "null"
+                        - boolean
+                    lookup_key:
+                      type:
+                        - "null"
+                        - string
+                    metadata:
+                      type:
+                        - "null"
+                        - object
                     nickname:
-                      description: User-defined nickname for the price.
                       type:
                         - "null"
                         - string
                     product:
-                      description: The product associated with the price.
                       type:
                         - "null"
                         - string
                     recurring:
-                      description: Recurring billing details for the price.
                       type:
                         - "null"
                         - object
                       properties:
                         aggregate_usage:
-                          description: Specifies usage aggregation for the price if multiple subscriptions exist.
                           type:
                             - "null"
                             - string
                         interval:
-                          description: Specifies how often the price should be billed.
                           type:
                             - "null"
                             - string
                         interval_count:
-                          description: The number of intervals between each subscription billing.
                           type:
                             - "null"
-                            - number
-                        trial_period_days:
-                          description: Number of days of trial period for the price.
-                          type:
-                            - "null"
-                            - string
+                            - integer
                         usage_type:
-                          description: Specifies usage type for the price.
                           type:
                             - "null"
                             - string
                     tax_behavior:
-                      description: Specifies the tax behavior for the price.
                       type:
                         - "null"
                         - string
+                    tiers:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - string
                     tiers_mode:
-                      description: Specifies pricing tiers mode for the price.
                       type:
                         - "null"
                         - string
                     transform_quantity:
-                      description: Specifies how the quantity should be transformed before calculating the price.
                       type:
                         - "null"
-                        - string
+                        - object
+                      properties:
+                        divide_by:
+                          type:
+                            - "null"
+                            - integer
+                        round:
+                          type:
+                            - "null"
+                            - string
                     type:
-                      description: Indicates the type of the price.
                       type:
                         - "null"
                         - string
                     unit_amount:
-                      description: Unit amount for the price.
                       type:
                         - "null"
-                        - number
+                        - integer
                     unit_amount_decimal:
-                      description: Unit amount in decimal format for the price.
                       type:
                         - "null"
                         - string
-                    is_deleted:
-                      description: Indicates if the price has been deleted.
-                      type:
-                        - "null"
-                        - boolean
                 quantity:
                   description: The quantity of the updated subscription item.
                   type:
@@ -18759,7 +20479,6 @@ schemas:
                     - "null"
                     - string
                 tax_rates:
-                  description: Tax rates applied to the updated subscription item.
                   type:
                     - "null"
                     - array
@@ -18834,7 +20553,9 @@ schemas:
               - "null"
               - integer
           trial_from_plan:
-            description: Indicates if the trial period is based on the plan for the pending update.
+            description: >-
+              Indicates if the trial period is based on the plan for the pending
+              update.
             type:
               - "null"
               - boolean
@@ -18871,7 +20592,9 @@ schemas:
           - "null"
           - string
       billing_thresholds:
-        description: Settings for billing thresholds such as usage-based pricing or limit enforcement.
+        description: >-
+          Settings for billing thresholds such as usage-based pricing or limit
+          enforcement.
         type:
           - "null"
           - object
@@ -18882,7 +20605,9 @@ schemas:
               - "null"
               - integer
           reset_billing_cycle_anchor:
-            description: Indicates if the billing cycle anchor should be reset based on the threshold.
+            description: >-
+              Indicates if the billing cycle anchor should be reset based on the
+              threshold.
             type:
               - "null"
               - boolean
@@ -18891,6 +20616,8 @@ schemas:
         type:
           - "null"
           - boolean
+  supported_sync_modes:
+    - full_refresh
   top_ups:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -18902,12 +20629,14 @@ schemas:
           - "null"
           - string
       amount:
-        description: The amount of the top-up in the smallest currency unit, e.g., 100 cents for $1
+        description: >-
+          The amount of the top-up in the smallest currency unit, e.g., 100
+          cents for $1
         type:
           - "null"
           - integer
       currency:
-        description: The currency in which the top-up was made, e.g., USD, EUR
+        description: 'The currency in which the top-up was made, e.g., USD, EUR'
         type:
           - "null"
           - string
@@ -18923,17 +20652,19 @@ schemas:
           - object
         properties: {}
       status:
-        description: Current status of the top-up, e.g., succeeded, failed
+        description: 'Current status of the top-up, e.g., succeeded, failed'
         type:
           - "null"
           - string
       object:
-        description: Type of object, in this case, 'top-up'
+        description: 'Type of object, in this case, ''top-up'''
         type:
           - "null"
           - string
       balance_transaction:
-        description: ID of the balance transaction that describes the impact of this top-up on your account balance
+        description: >-
+          ID of the balance transaction that describes the impact of this top-up
+          on your account balance
         type:
           - "null"
           - string
@@ -18979,7 +20710,9 @@ schemas:
           - object
         properties: {}
       statement_descriptor:
-        description: The statement descriptor displayed on customers' statements for the top-up
+        description: >-
+          The statement descriptor displayed on customers' statements for the
+          top-up
         type:
           - "null"
           - string
@@ -19001,7 +20734,9 @@ schemas:
           - "null"
           - integer
       amount_details:
-        description: Additional details about the transaction amount such as currency, fees, and taxes.
+        description: >-
+          Additional details about the transaction amount such as currency,
+          fees, and taxes.
         type:
           - "null"
           - object
@@ -19027,7 +20762,7 @@ schemas:
           - "null"
           - string
       cardholder:
-        description: Details about the cardholder, such as name and address.
+        description: 'Details about the cardholder, such as name and address.'
         type:
           - "null"
           - string
@@ -19072,7 +20807,9 @@ schemas:
           - "null"
           - string
       merchant_data:
-        description: Information about the merchant involved in the transaction, like the merchant name, location, and ID.
+        description: >-
+          Information about the merchant involved in the transaction, like the
+          merchant name, location, and ID.
         type:
           - "null"
           - object
@@ -19113,18 +20850,19 @@ schemas:
               - "null"
               - string
       metadata:
-        description: Additional metadata or custom information associated with the transaction.
+        description: >-
+          Additional metadata or custom information associated with the
+          transaction.
         type:
           - "null"
           - object
         additionalProperties: true
       object:
-        description: The object type, which in this case is 'transaction'.
+        description: 'The object type, which in this case is ''transaction''.'
         type:
           - "null"
           - string
       purchase_details:
-        description: Details of the purchase, such as items bought or services availed.
         type:
           - "null"
           - object
@@ -19247,7 +20985,7 @@ schemas:
             - "null"
             - string
       type:
-        description: The type of transaction, e.g., sale, refund, or dispute.
+        description: 'The type of transaction, e.g., sale, refund, or dispute.'
         type:
           - "null"
           - string
@@ -19259,7 +20997,7 @@ schemas:
     additionalProperties: true
     properties:
       amount:
-        description: The amount of the transfer reversal, in cents.
+        description: 'The amount of the transfer reversal, in cents.'
         type:
           - "null"
           - integer
@@ -19279,7 +21017,9 @@ schemas:
           - "null"
           - string
       destination_payment_refund:
-        description: The ID of the payment refund to which this transfer reversal is linked.
+        description: >-
+          The ID of the payment refund to which this transfer reversal is
+          linked.
         type:
           - "null"
           - string
@@ -19296,12 +21036,14 @@ schemas:
           - object
         properties: {}
       object:
-        description: Indicates the object type, which should be 'transfer_reversal'.
+        description: 'Indicates the object type, which should be ''transfer_reversal''.'
         type:
           - "null"
           - string
       source_refund:
-        description: The ID of the refund on the source transfer that created this reversal.
+        description: >-
+          The ID of the refund on the source transfer that created this
+          reversal.
         type:
           - "null"
           - string
@@ -19325,7 +21067,7 @@ schemas:
           - object
         properties:
           object:
-            description: The object type, in this case, 'list'
+            description: 'The object type, in this case, ''list'''
             type:
               - "null"
               - string
@@ -19390,7 +21132,7 @@ schemas:
           - "null"
           - integer
       source_type:
-        description: The type of the transfer source, e.g., card, bank account
+        description: 'The type of the transfer source, e.g., card, bank account'
         type:
           - "null"
           - string
@@ -19435,7 +21177,7 @@ schemas:
           - "null"
           - boolean
       object:
-        description: The object type, in this case, 'transfer'
+        description: 'The object type, in this case, ''transfer'''
         type:
           - "null"
           - string
@@ -19445,12 +21187,16 @@ schemas:
           - "null"
           - string
       transfer_group:
-        description: A unique identifier for the transfer group if multiple transfers are linked
+        description: >-
+          A unique identifier for the transfer group if multiple transfers are
+          linked
         type:
           - "null"
           - string
       arrival_date:
-        description: The date the funds are expected to arrive in the destination bank account
+        description: >-
+          The date the funds are expected to arrive in the destination bank
+          account
         type:
           - "null"
           - integer
@@ -19490,7 +21236,7 @@ schemas:
           - "null"
           - boolean
       object:
-        description: Represents the type of object, in this case, 'usage_record'
+        description: 'Represents the type of object, in this case, ''usage_record'''
         type:
           - "null"
           - string
@@ -19511,7 +21257,9 @@ schemas:
               - "null"
               - integer
       subscription_item:
-        description: The item within the subscription that this usage record is associated with
+        description: >-
+          The item within the subscription that this usage record is associated
+          with
         type:
           - "null"
           - string
