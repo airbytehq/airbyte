@@ -72,7 +72,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.21 | 2025-07-22 | [63709](https://github.com/airbytehq/airbyte/pull/63709) | fix: declare  env var explicitly |
+| 0.1.21 | 2025-07-22 | [63709](https://github.com/airbytehq/airbyte/pull/63709) | fix: resolve error "Can't find the home directory at '/nonexistent'"  |
 | 0.1.21 | 2025-07-06 | [62133](https://github.com/airbytehq/airbyte/pull/62133) | fix: when `primary_key` is not defined in the catalog, use `source_defined_primary_key` if available |
 | 0.1.20 | 2025-06-27 | [48673](https://github.com/airbytehq/airbyte/pull/48673) | Update dependencies |
 | 0.1.19 | 2025-05-25 | [60905](https://github.com/airbytehq/airbyte/pull/60905) | Allow unicode characters in database/table names |
