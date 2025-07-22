@@ -286,6 +286,10 @@ definitions:
           - type: ParentStreamConfig
             stream:
               $ref: "#/definitions/channel_messages_stream"
+            # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
+            # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
+            # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
+            incremental_dependency: false
             parent_key: ts
             partition_field: float_ts
             request_option:
