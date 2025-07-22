@@ -67,15 +67,7 @@ data class DestinationStream(
     private val namespaceMapper: NamespaceMapper
 ) {
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
-    val unknownColumnChanges by lazy {
-        schema.collectUnknownPaths().map {
-            Meta.Change(
-                it,
-                AirbyteRecordMessageMetaChange.Change.NULLED,
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
-            )
-        }
-    }
+    val unknownColumnChanges by lazy { schema.computeUnknownColumnChanges() }
 
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -173,6 +165,19 @@ data class DestinationStream(
     fun isSingleGenerationTruncate() =
         shouldBeTruncatedAtEndOfSync() && minimumGenerationId == generationId
 }
+
+/**
+ * This function exists so that our tests can easily mock a DestinationStream, while still getting a
+ * real value for unknownColumnChanges.
+ */
+fun AirbyteType.computeUnknownColumnChanges() =
+    this.collectUnknownPaths().map {
+        Meta.Change(
+            it,
+            AirbyteRecordMessageMetaChange.Change.NULLED,
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+        )
+    }
 
 @Singleton
 class DestinationStreamFactory(
