@@ -18,6 +18,7 @@ import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -72,6 +73,7 @@ class MongoDbDebeziumEventConverterTest {
     final AirbyteMessage expectedDelete = createAirbyteMessage(stream, emittedAt, "mongodb/delete_airbyte_message.json");
     final AirbyteMessage expectedDeleteNoBefore = createAirbyteMessage(stream, emittedAt, "mongodb/delete_no_before_airbyte_message.json");
 
+    // Test with default config (renderUuidFromBinary = false)
     final AirbyteMessage actualInsert = new MongoDbDebeziumEventConverter(
         cdcMetadataInjector, buildFromAirbyteMessage(expectedInsert), emittedAt, Jsons.emptyObject())
             .toAirbyteMessage(insertChangeEvent);
@@ -89,6 +91,27 @@ class MongoDbDebeziumEventConverterTest {
     deepCompare(expectedUpdate, actualUpdate);
     deepCompare(expectedDelete, actualDelete);
     deepCompare(expectedDeleteNoBefore, actualDeleteNoBefore);
+
+    // Test with renderUuidFromBinary = true
+    final JsonNode configWithRenderUuid = Jsons.jsonNode(Map.of(MongoConstants.RENDER_UUIDS_FROM_BINARY, true));
+    final AirbyteMessage actualInsertWithUuid = new MongoDbDebeziumEventConverter(
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedInsert), emittedAt, configWithRenderUuid)
+            .toAirbyteMessage(insertChangeEvent);
+    final AirbyteMessage actualUpdateWithUuid = new MongoDbDebeziumEventConverter(
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedUpdate), emittedAt, configWithRenderUuid)
+            .toAirbyteMessage(updateChangeEvent);
+    final AirbyteMessage actualDeleteWithUuid = new MongoDbDebeziumEventConverter(
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedDelete), emittedAt, configWithRenderUuid)
+            .toAirbyteMessage(deleteChangeEvent);
+    final AirbyteMessage actualDeleteNoBeforeWithUuid = new MongoDbDebeziumEventConverter(
+        cdcMetadataInjector, buildFromAirbyteMessage(expectedDeleteNoBefore), emittedAt, configWithRenderUuid)
+            .toAirbyteMessage(deleteChangeEventNoBefore);
+
+    // The test data doesn't contain UUIDs, so the results should be the same
+    deepCompare(expectedInsert, actualInsertWithUuid);
+    deepCompare(expectedUpdate, actualUpdateWithUuid);
+    deepCompare(expectedDelete, actualDeleteWithUuid);
+    deepCompare(expectedDeleteNoBefore, actualDeleteNoBeforeWithUuid);
   }
 
   @Test
