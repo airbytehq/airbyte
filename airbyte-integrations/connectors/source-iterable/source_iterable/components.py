@@ -39,6 +39,7 @@ class UsersSchemaLoader(SchemaLoader):
     name: str = "users"
 
     objects: Mapping[str, Any] = field(default_factory=dict)
+    schema: Mapping[str, Any] = field(default_factory=dict)
 
     def _get_field_schema(self, field_type: str) -> Mapping[str, Any]:
         match field_type:
@@ -123,6 +124,9 @@ class UsersSchemaLoader(SchemaLoader):
                 }
 
     def get_json_schema(self) -> Mapping[str, Any]:
+        if self.schema:
+            return self.schema
+
         schema = {
             "properties": {},
             "type": ["null", "object"]
@@ -191,5 +195,8 @@ class UsersSchemaLoader(SchemaLoader):
         # Last step is to add the processed objects to the schema
         for object_name, object_schema in self.objects.items():
             schema["properties"][object_name] = object_schema
+
+        # Cache the schema in the class
+        self.schema = schema
 
         return schema
