@@ -403,9 +403,44 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/customer_client_non_manager"
             parent_key: "clientCustomer"
             partition_field: "customer_id"
+            stream:
+              $ref: "#/definitions/stream_base"
+              name: customer_client
+              retriever:
+                $ref: "#/definitions/base_retriever"
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  url_base: "https://googleads.googleapis.com/v18/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+                  http_method: POST
+                  request_body:
+                    type: RequestBodyJsonObject
+                    value:
+                      query: >
+                        SELECT
+                          customer_client.client_customer,
+                          customer_client.level,
+                          customer_client.id,
+                          customer_client.manager,
+                          customer_client.time_zone,
+                          customer_client.status
+                        FROM
+                          customer_client
+                record_selector:
+                  extractor:
+                    type: DpathExtractor
+                    field_path: ["results", "*", "customerClient"]
+                  record_filter:
+                    type: CustomRecordFilter
+                    class_name: "source_google_ads.components.CustomerClientFilter"
+                partition_router:
+                  type: SubstreamPartitionRouter
+                  parent_stream_configs:
+                    - type: ParentStreamConfig
+                      stream: "#/definitions/accessible_accounts"
+                      parent_key: "accessible_customer_id"
+                      partition_field: "customer_id"
       paginator:
         type: NoPagination
     transformations:
@@ -960,36 +995,7 @@ definitions:
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
-            - retriever
-            - requester
-            - $parameters
-            - query
-          value: "{{ components_values.get('query', None) }}"
-          create_or_update: true
-        - type: ComponentMappingDefinition
-          field_path:
-            - retriever
-            - requester
-            - $parameters
-            - cursor_field
-          value: "{{ components_values.get('cursor_field', None) }}"
-          create_or_update: true
-        - type: ComponentMappingDefinition
-          field_path:
-            - schema_loader
-            - query
-          value: "{{ components_values.get('query', None) }}"
-          create_or_update: true
-        - type: ComponentMappingDefinition
-          field_path:
-            - schema_loader
-            - cursor_field
-          value: "{{ components_values.get('cursor_field', None) }}"
-          create_or_update: true
-        # This is a workaround to "conditionally" add the incremental_sync component if the user provided a cursor_field in the custom query object.
-        - type: ComponentMappingDefinition
-          field_path:
-            - "{{ 'incremental_sync' if components_values.get('cursor_field', None) else '$parameters' }}"
+            - incremental_sync
           value: >-
             {
               "type": "DatetimeBasedCursor",
@@ -1009,8 +1015,76 @@ definitions:
                 "datetime_format": "%Y-%m-%d"
               }
             }
+          condition: "{{ components_values.get('cursor_field', False) }}"
           create_or_update: true
-
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - $parameters
+            - query
+          value: "{{ components_values.get('query', None) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - $parameters
+            - cursor_field
+          value: "{{ components_values.get('cursor_field', None) }}"
+          condition: "{{ components_values.get('cursor_field', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - query
+          value: "{{ components_values.get('query', None) }}"
+          condition: "{{ components_values.get('query', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - cursor_field
+          value: "{{ components_values.get('cursor_field', None) }}"
+          condition: "{{ components_values.get('cursor_field', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - partition_router
+            - parent_stream_configs
+            - "0"
+            - stream
+            - name
+          value: customer_client_non_manager
+          condition: "{{ 'metrics' in components_values.get('query', '') }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - partition_router
+            - parent_stream_configs
+            - "0"
+            - stream
+            - retriever
+            - requester
+            - request_body
+            - value
+            - query
+          value: >
+            SELECT
+              customer_client.client_customer,
+              customer_client.level,
+              customer_client.id,
+              customer_client.manager,
+              customer_client.time_zone,
+              customer_client.status
+            FROM
+              customer_client
+            WHERE
+              customer_client.manager = FALSE
+          condition: "{{ 'metrics' in components_values.get('query', '') }}"
+          create_or_update: true
 streams:
   - "#/definitions/account_performance_report_stream"
   - "#/definitions/ad_group_stream"

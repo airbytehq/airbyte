@@ -59,6 +59,7 @@ GOOGLE_ADS_DATATYPE_MAPPING = {
     "DATE": "string",
     "MESSAGE": "string",
     "ENUM": "string",
+    "RESOURCE_NAME": "string",
 }
 
 
@@ -677,10 +678,14 @@ class CustomGAQueryHttpRequester(HttpRequester):
     Custom HTTP requester for custom query streams.
     """
 
+    parameters: Mapping[str, Any]
+
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters=parameters)
         self.query = parameters.get("query")
-        self._cursor_field = InterpolatedString.create(parameters.get("cursor_field"), parameters={})
+        self._cursor_field = (
+            InterpolatedString.create(parameters.get("cursor_field", ""), parameters={}) if parameters.get("cursor_field") else None
+        )
 
     def get_request_body_json(
         self,
@@ -708,7 +713,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
         fields = self._get_list_of_fields()
         resource_name = self._get_resource_name()
 
-        cursor_field = self._cursor_field.eval(self.config)
+        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
 
         if cursor_field:
             fields.append(cursor_field)
@@ -766,7 +771,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
     cursor_field: Union[str, InterpolatedString] = ""
 
     def __post_init__(self):
-        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={})
+        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
         self._validate_query(self.query)
 
     def get_json_schema(self) -> Dict[str, Any]:
@@ -834,7 +839,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
         fields = [field.strip() for field in fields_portion.split(",")]
 
-        cursor_field = self._cursor_field.eval(self.config)
+        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
         if cursor_field:
             fields.append(cursor_field)
 
