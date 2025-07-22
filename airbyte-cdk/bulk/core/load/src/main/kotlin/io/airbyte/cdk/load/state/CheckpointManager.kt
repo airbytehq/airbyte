@@ -185,9 +185,12 @@ class CheckpointManager(
             */
             when (checkpointType.get()) {
                 null -> log.info { "No checkpoints to flush" }
-                CheckpointType.GLOBAL -> flushGlobalCheckpoints()
                 CheckpointType.STREAM -> flushStreamCheckpoints()
-                CheckpointType.SNAPSHOT -> flushSnapshotCheckpoints()
+                CheckpointType.GLOBAL,
+                CheckpointType.SNAPSHOT -> {
+                    flushSnapshotCheckpoints()
+                    flushGlobalCheckpoints()
+                }
             }
         }
     }
@@ -419,7 +422,9 @@ class CheckpointManager(
         while (true) {
             val allCheckpointsFlushed =
                 storedCheckpointsLock.withLock {
-                    globalCheckpoints.isEmpty() && streamCheckpoints.all { it.value.isEmpty() }
+                    globalCheckpoints.isEmpty() &&
+                        streamCheckpoints.all { it.value.isEmpty() } &&
+                        snapshotStreamCheckpoints.isEmpty()
                 }
             if (allCheckpointsFlushed) {
                 log.info { "All checkpoints flushed" }
