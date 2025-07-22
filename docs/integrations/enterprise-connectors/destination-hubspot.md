@@ -38,6 +38,14 @@ The HubSpot source connector supports the following streams:
 
 ## Limitations & Troubleshooting
 
+### Destination Object Not Showing Up
+
+Except from the CONTACT object, the upsert method for this connector requires a unique value field to be present on the destination object. In order to create a unique value property, go in HubSpot and do the following:
+* In the CRM menu in the left-hand side, select the object you want to sync
+* Under `Actions`, select `Edit Properties`
+* Click on `Create property`
+* When entering the rules, check `Require unique values for this property`
+
 ### Rate limiting
 
 The connector is restricted by normal HubSpot [rate limitations](https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#public-apps).
