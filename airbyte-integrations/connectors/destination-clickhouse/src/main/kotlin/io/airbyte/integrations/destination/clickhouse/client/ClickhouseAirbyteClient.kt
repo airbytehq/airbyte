@@ -124,17 +124,7 @@ class ClickhouseAirbyteClient(
             throw IllegalStateException(error)
         }
 
-        val airbyteSchemaWithClickhouseType: Map<String, String> =
-            stream.schema
-                .asColumns()
-                .map { (fieldName, fieldType) ->
-                    // We don't need to nullable information here because we are setting all fields
-                    // as
-                    // nullable in the destination
-                    // Add map key
-                    fieldName.toClickHouseCompatibleName() to fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
-                }
-                .toMap()
+        val airbyteSchemaWithClickhouseType: Map<String, String> = getAirbyteSchemaWithClickhouseType(stream)
 
         val clickhousePks: List<String> =
             tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
@@ -190,6 +180,17 @@ class ClickhouseAirbyteClient(
             execute(sqlGenerator.dropTable(tempTableName))
         }
     }
+
+    internal fun getAirbyteSchemaWithClickhouseType(stream: DestinationStream): Map<String, String> = stream.schema
+        .asColumns()
+        .map { (fieldName, fieldType) ->
+            // We don't need to nullable information here because we are setting all fields
+            // as
+            // nullable in the destination
+            // Add map key
+            fieldName.toClickHouseCompatibleName() to fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+        }
+        .toMap()
 
     internal fun getChangedColumns(
         tableColumns: List<ClickHouseColumn>,
