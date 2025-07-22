@@ -4,8 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-from destination_motherduck import DestinationMotherDuck
-
 
 def run() -> None:
     if "HOME" not in os.environ:
@@ -18,6 +16,8 @@ def run() -> None:
     else:
         print("Using HOME:", os.environ["HOME"], file=sys.stderr)
 
+    # Defer import to ensure env var is set prior to loading the DuckDB engine.
+    from destination_motherduck import DestinationMotherDuck
     DestinationMotherDuck().run(sys.argv[1:])
 
 
