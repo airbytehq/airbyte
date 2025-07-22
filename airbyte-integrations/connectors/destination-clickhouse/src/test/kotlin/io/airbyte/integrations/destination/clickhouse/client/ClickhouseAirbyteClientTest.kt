@@ -414,9 +414,7 @@ class ClickhouseAirbyteClientTest {
             }
         clickhouseAirbyteClient.ensureSchemaMatches(stream, finalTableName, columnMapping)
 
-        coVerify(exactly = 0) {
-            clickhouseSqlGenerator.alterTable(any(), any())
-        }
+        coVerify(exactly = 0) { clickhouseSqlGenerator.alterTable(any(), any()) }
 
         coVerifyOrder {
             clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any())
