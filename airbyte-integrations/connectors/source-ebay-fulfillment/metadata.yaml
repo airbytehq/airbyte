@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-ebay-fulfillment
   githubIssueLabel: source-ebay-fulfillment
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Ebay Fulfillment
   releaseDate: 2025-05-14
   releaseStage: alpha

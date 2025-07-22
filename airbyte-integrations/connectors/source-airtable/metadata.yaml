@@ -22,7 +22,7 @@ data:
           memory_request: 2560Mi
   githubIssueLabel: source-airtable
   icon: airtable.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 5400
   name: Airtable
   remoteRegistries:

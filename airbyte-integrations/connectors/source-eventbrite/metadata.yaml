@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-eventbrite
   githubIssueLabel: source-eventbrite
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Eventbrite
   releaseDate: 2024-09-21
   releaseStage: alpha

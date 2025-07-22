@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-duckdb
   githubIssueLabel: destination-duckdb
   icon: duckdb.svg
-  license: MIT
+  license: ELv2
   name: DuckDB
   registryOverrides:
     cloud:

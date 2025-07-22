@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-care-quality-commission
   githubIssueLabel: source-care-quality-commission
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Care Quality Commission
   releaseDate: 2024-10-02
   releaseStage: alpha

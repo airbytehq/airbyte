@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-height
   githubIssueLabel: source-height
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Height
   releaseDate: 2024-08-31
   releaseStage: alpha

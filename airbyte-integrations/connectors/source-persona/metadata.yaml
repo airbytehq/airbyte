@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-persona
   githubIssueLabel: source-persona
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Persona
   releaseDate: 2024-10-03
   releaseStage: alpha

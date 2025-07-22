@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-mailosaur
   githubIssueLabel: source-mailosaur
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Mailosaur
   releaseDate: 2024-11-04
   releaseStage: alpha

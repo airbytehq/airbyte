@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-missive
   githubIssueLabel: source-missive
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Missive
   releaseDate: 2024-09-22
   releaseStage: alpha

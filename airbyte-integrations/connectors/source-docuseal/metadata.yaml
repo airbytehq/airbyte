@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-docuseal
   githubIssueLabel: source-docuseal
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Docuseal
   releaseDate: 2025-04-01
   releaseStage: alpha

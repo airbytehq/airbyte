@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-mendeley
   githubIssueLabel: source-mendeley
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Mendeley
   releaseDate: 2025-04-08
   releaseStage: alpha

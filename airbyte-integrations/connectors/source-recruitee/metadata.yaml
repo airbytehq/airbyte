@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-recruitee
   githubIssueLabel: source-recruitee
   icon: recruitee.svg
-  license: MIT
+  license: ELv2
   name: Recruitee
   remoteRegistries:
     pypi:

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-customerly
   githubIssueLabel: source-customerly
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Customerly
   releaseDate: 2025-03-18
   releaseStage: alpha

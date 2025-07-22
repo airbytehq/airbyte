@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-salesflare
   githubIssueLabel: source-salesflare
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Salesflare
   releaseDate: 2024-11-07
   releaseStage: alpha

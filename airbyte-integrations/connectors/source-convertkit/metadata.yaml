@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-convertkit
   githubIssueLabel: source-convertkit
   icon: convertkit.svg
-  license: MIT
+  license: ELv2
   name: ConvertKit
   remoteRegistries:
     pypi:

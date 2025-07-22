@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-buzzsprout
   githubIssueLabel: source-buzzsprout
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Buzzsprout
   releaseDate: 2024-09-16
   releaseStage: alpha

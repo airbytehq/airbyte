@@ -10,7 +10,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
   githubIssueLabel: source-adjust
   icon: adjust.svg
-  license: MIT
+  license: ELv2
   name: Adjust
   remoteRegistries:
     pypi:

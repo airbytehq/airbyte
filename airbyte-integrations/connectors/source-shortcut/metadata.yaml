@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-shortcut
   githubIssueLabel: source-shortcut
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Shortcut
   releaseDate: 2024-09-05
   releaseStage: alpha

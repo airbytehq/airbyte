@@ -21,7 +21,7 @@ data:
   githubIssueLabel: source-xsolla
   icon: icon.svg
   connectorSubtype: api
-  license: MIT
+  license: ELv2
   name: Xsolla
   releaseDate: 2024-10-01
   releaseStage: alpha

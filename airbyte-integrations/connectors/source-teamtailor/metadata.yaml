@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-teamtailor
   githubIssueLabel: source-teamtailor
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Teamtailor
   releaseDate: 2024-10-14
   releaseStage: alpha

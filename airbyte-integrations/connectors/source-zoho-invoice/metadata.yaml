@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-zoho-invoice
   githubIssueLabel: source-zoho-invoice
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Zoho Invoice
   releaseDate: 2024-11-05
   releaseStage: alpha

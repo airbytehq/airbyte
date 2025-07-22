@@ -15,7 +15,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
   githubIssueLabel: source-delighted
   icon: delighted.svg
-  license: MIT
+  license: ELv2
   name: Delighted
   registryOverrides:
     cloud:

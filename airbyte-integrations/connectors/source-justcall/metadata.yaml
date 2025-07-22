@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-justcall
   githubIssueLabel: source-justcall
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: JustCall
   releaseDate: 2024-10-21
   releaseStage: alpha

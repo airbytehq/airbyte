@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-picqer
   githubIssueLabel: source-picqer
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Picqer
   releaseDate: 2024-09-05
   releaseStage: alpha

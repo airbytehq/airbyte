@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-spotlercrm
   githubIssueLabel: source-spotlercrm
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: SpotlerCRM
   releaseDate: 2024-11-08
   releaseStage: alpha

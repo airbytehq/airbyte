@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-spotify-ads
   githubIssueLabel: source-spotify-ads
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Spotify Ads
   releaseDate: 2025-06-16
   releaseStage: alpha

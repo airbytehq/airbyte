@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-ninjaone-rmm
   githubIssueLabel: source-ninjaone-rmm
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: NinjaOne RMM
   releaseDate: 2025-04-04
   releaseStage: alpha

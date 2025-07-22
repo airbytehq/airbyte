@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-kissmetrics
   githubIssueLabel: source-kissmetrics
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Kissmetrics
   releaseDate: 2024-09-21
   releaseStage: alpha

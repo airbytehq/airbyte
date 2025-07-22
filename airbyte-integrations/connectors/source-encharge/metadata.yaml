@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-encharge
   githubIssueLabel: source-encharge
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Encharge
   releaseDate: 2024-11-08
   releaseStage: alpha

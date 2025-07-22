@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-safetyculture
   githubIssueLabel: source-safetyculture
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: SafetyCulture
   releaseDate: 2024-10-04
   releaseStage: alpha

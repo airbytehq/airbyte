@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-mention
   githubIssueLabel: source-mention
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Mention
   releaseDate: 2024-10-12
   releaseStage: alpha

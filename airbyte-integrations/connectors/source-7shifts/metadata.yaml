@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-7shifts
   githubIssueLabel: source-7shifts
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: 7shifts
   releaseDate: 2024-09-18
   releaseStage: alpha

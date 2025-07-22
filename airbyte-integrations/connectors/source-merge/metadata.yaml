@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-merge
   githubIssueLabel: source-merge
   icon: merge.svg
-  license: MIT
+  license: ELv2
   name: Merge
   remoteRegistries:
     pypi:

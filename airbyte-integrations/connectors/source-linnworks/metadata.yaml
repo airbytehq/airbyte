@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/linnworks
   githubIssueLabel: source-linnworks
   icon: linnworks.svg
-  license: MIT
+  license: ELv2
   name: Linnworks
   registryOverrides:
     cloud:

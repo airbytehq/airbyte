@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-tmdb
   githubIssueLabel: source-tmdb
   icon: tmdb.svg
-  license: MIT
+  license: ELv2
   name: TMDb
   remoteRegistries:
     pypi:

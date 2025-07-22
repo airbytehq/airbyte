@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-gmail
   githubIssueLabel: source-gmail
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Gmail
   releaseDate: 2024-10-09
   releaseStage: alpha

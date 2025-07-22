@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-gitbook
   githubIssueLabel: source-gitbook
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: GitBook
   releaseDate: 2024-10-30
   releaseStage: alpha

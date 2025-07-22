@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-blogger
   githubIssueLabel: source-blogger
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Blogger
   releaseDate: 2024-11-09
   releaseStage: alpha

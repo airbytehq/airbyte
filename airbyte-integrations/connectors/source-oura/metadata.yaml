@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-oura
   githubIssueLabel: source-oura
   icon: oura.svg
-  license: MIT
+  license: ELv2
   name: Oura
   releaseDate: 2022-10-20
   releaseStage: alpha

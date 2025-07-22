@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-customer-io
   githubIssueLabel: source-customer-io
   icon: customer-io.svg
-  license: MIT
+  license: ELv2
   name: Customer.io
   releaseDate: 2023-08-20
   releaseStage: alpha

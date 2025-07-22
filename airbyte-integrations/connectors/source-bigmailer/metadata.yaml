@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-bigmailer
   githubIssueLabel: source-bigmailer
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: BigMailer
   releaseDate: 2024-11-08
   releaseStage: alpha

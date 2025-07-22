@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-brevo
   githubIssueLabel: source-brevo
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Brevo
   releaseDate: 2025-03-24
   releaseStage: alpha

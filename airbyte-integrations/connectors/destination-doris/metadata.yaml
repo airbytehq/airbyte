@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-doris
   githubIssueLabel: destination-doris
   icon: apachedoris.svg
-  license: MIT
+  license: ELv2
   name: Apache Doris
   registryOverrides:
     cloud:

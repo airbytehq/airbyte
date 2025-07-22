@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-cimis
   githubIssueLabel: source-cimis
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: cimis
   releaseDate: 2024-09-18
   releaseStage: alpha

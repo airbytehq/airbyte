@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-shipstation
   githubIssueLabel: source-shipstation
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Shipstation
   releaseDate: 2025-03-13
   releaseStage: alpha

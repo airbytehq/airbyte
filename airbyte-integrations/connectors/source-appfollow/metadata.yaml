@@ -18,7 +18,7 @@ data:
   dockerRepository: airbyte/source-appfollow
   githubIssueLabel: source-appfollow
   icon: appfollow.svg
-  license: MIT
+  license: ELv2
   name: Appfollow
   releaseDate: 2023-08-10
   releaseStage: alpha

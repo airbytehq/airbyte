@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-tavus
   githubIssueLabel: source-tavus
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Tavus
   releaseDate: 2025-04-05
   releaseStage: alpha

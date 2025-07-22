@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-zoho-billing
   githubIssueLabel: source-zoho-billing
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Zoho Billing
   releaseDate: 2024-11-05
   releaseStage: alpha

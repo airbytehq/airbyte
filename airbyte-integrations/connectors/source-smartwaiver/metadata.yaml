@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-smartwaiver
   githubIssueLabel: source-smartwaiver
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Smartwaiver
   releaseDate: 2024-10-09
   releaseStage: alpha

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-freshchat
   githubIssueLabel: source-freshchat
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Freshchat
   releaseDate: 2024-09-22
   releaseStage: alpha

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-zapsign
   githubIssueLabel: source-zapsign
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: ZapSign
   releaseDate: 2025-04-04
   releaseStage: alpha

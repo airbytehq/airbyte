@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-cal-com
   githubIssueLabel: source-cal-com
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Cal.com
   releaseDate: 2024-11-11
   releaseStage: alpha

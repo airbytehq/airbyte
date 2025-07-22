@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-revolut-merchant
   githubIssueLabel: source-revolut-merchant
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Revolut Merchant
   releaseDate: 2024-10-27
   releaseStage: alpha

@@ -17,7 +17,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pgvector
   githubIssueLabel: destination-pgvector
   icon: pgvector.svg
-  license: MIT
+  license: ELv2
   name: PGVector
   remoteRegistries:
     pypi:

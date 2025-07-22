@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-microsoft-entra-id
   githubIssueLabel: source-microsoft-entra-id
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Microsoft Entra Id
   releaseDate: 2024-10-18
   releaseStage: alpha

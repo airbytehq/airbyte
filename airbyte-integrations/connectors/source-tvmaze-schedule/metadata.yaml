@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-tvmaze-schedule
   githubIssueLabel: source-tvmaze-schedule
   icon: tvmazeschedule.svg
-  license: MIT
+  license: ELv2
   name: TVMaze Schedule
   remoteRegistries:
     pypi:

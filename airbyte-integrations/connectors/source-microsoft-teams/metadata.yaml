@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-microsoft-teams
   githubIssueLabel: source-microsoft-teams
   icon: microsoft-teams.svg
-  license: MIT
+  license: ELv2
   name: Microsoft Teams
   releaseDate: 2020-12-21
   releaseStage: alpha

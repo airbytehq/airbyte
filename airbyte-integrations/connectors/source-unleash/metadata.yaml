@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-unleash
   githubIssueLabel: source-unleash
   icon: unleash.svg
-  license: MIT
+  license: ELv2
   name: Unleash
   remoteRegistries:
     pypi:

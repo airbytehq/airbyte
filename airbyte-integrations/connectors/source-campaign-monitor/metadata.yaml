@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-campaign-monitor
   githubIssueLabel: source-campaign-monitor
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Campaign Monitor
   releaseDate: 2024-10-05
   releaseStage: alpha

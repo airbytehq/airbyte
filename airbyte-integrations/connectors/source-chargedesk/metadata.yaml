@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-chargedesk
   githubIssueLabel: source-chargedesk
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Chargedesk
   releaseDate: 2024-10-18
   releaseStage: alpha

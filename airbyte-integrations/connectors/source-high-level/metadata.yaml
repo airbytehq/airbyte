@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-high-level
   githubIssueLabel: source-high-level
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: High Level
   releaseDate: 2024-08-23
   releaseStage: alpha

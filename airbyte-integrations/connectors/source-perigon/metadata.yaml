@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-perigon
   githubIssueLabel: source-perigon
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Perigon
   releaseDate: 2025-04-06
   releaseStage: alpha

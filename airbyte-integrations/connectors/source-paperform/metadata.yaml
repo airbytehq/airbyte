@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-paperform
   githubIssueLabel: source-paperform
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Paperform
   releaseDate: 2024-10-31
   releaseStage: alpha

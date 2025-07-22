@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-clarif-ai
   githubIssueLabel: source-clarif-ai
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Clarif-ai
   releaseDate: 2024-10-21
   releaseStage: alpha

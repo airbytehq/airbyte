@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-yotpo
   githubIssueLabel: source-yotpo
   icon: yotpo.svg
-  license: MIT
+  license: ELv2
   name: Yotpo
   remoteRegistries:
     pypi:

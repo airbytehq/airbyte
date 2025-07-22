@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-pabbly-subscriptions-billing
   githubIssueLabel: source-pabbly-subscriptions-billing
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Pabbly Subscriptions Billing
   releaseDate: 2024-11-08
   releaseStage: alpha

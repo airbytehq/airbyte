@@ -5,7 +5,7 @@ data:
   dockerImageTag: 0.2.12
   dockerRepository: airbyte/source-gutendex
   githubIssueLabel: source-gutendex
-  license: MIT
+  license: ELv2
   name: Gutendex
   remoteRegistries:
     pypi:

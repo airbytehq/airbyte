@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-yousign
   githubIssueLabel: source-yousign
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: YouSign
   releaseDate: 2025-04-01
   releaseStage: alpha
