@@ -2,7 +2,6 @@
 
 import os
 import sys
-
 from pathlib import Path
 
 from destination_motherduck import DestinationMotherDuck
