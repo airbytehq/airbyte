@@ -188,10 +188,10 @@ class CheckpointManager(
                 CheckpointType.STREAM -> flushStreamCheckpoints()
                 CheckpointType.GLOBAL,
                 CheckpointType.SNAPSHOT -> {
-                    if(snapshotStreamCheckpoints.isNotEmpty()) {
+                    if (snapshotStreamCheckpoints.isNotEmpty()) {
                         flushSnapshotCheckpoints()
                     }
-                    if(globalCheckpoints.isNotEmpty()) {
+                    if (globalCheckpoints.isNotEmpty()) {
                         flushGlobalCheckpoints()
                     }
                 }
