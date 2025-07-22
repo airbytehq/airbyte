@@ -1,0 +1,1679 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: Getting utilization by employee data for BI use
+
+check:
+  type: CheckStream
+  stream_names:
+    - Elixir Charge Projections
+
+definitions:
+  streams:
+    Projects:
+      type: DeclarativeStream
+      name: Projects
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://allvue-systems.app.netsuitesuiteprojectspro.com/odata/v4/reports/report1876
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      primary_key:
+        - Internal id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Projects"
+    ProjectSnapshots:
+      type: DeclarativeStream
+      name: ProjectSnapshots
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://allvue-systems.app.netsuitesuiteprojectspro.com/odata/v4/reports/report1885
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      primary_key:
+        - Internal id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ProjectSnapshots"
+    ProjectTasksPhases:
+      type: DeclarativeStream
+      name: ProjectTasksPhases
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"@odata.nextLink\", {}) }}"
+            stop_condition: "{{ not response.get(\"@odata.nextLink\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://allvue-systems.app.netsuitesuiteprojectspro.com/odata/v4/reports/report1877
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      primary_key:
+        - Internal id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ProjectTasksPhases"
+    Utilization By Employee:
+      type: DeclarativeStream
+      name: Utilization By Employee
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://allvue-systems.app.netsuitesuiteprojectspro.com/odata/v4/reports/report1833
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Utilization By Employee"
+    Elixir Charge Projections:
+      type: DeclarativeStream
+      name: Elixir Charge Projections
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            https://allvue-systems.app.netsuitesuiteprojectspro.com/odata/v4/reports/report1772
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Elixir Charge Projections"
+  base_requester:
+    type: HttpRequester
+    url_base: https://allvue-systems.app.netsuitesuiteprojectspro.com/odata/v4/reports/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Elixir Charge Projections"
+  - $ref: "#/definitions/streams/Projects"
+  - $ref: "#/definitions/streams/ProjectTasksPhases"
+  - $ref: "#/definitions/streams/ProjectSnapshots"
+  - $ref: "#/definitions/streams/Utilization By Employee"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Projects:
+      hasRecords: true
+      streamHash: ae1b5c4f63b0a5b76b62f4df946669b56c0aee79
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ProjectSnapshots:
+      hasRecords: true
+      streamHash: e38424b54c9fac6897920c1b9e3077cee011e9a8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ProjectTasksPhases:
+      hasRecords: true
+      streamHash: 9e8f702b7167b487881c61a4351d02e334d826e1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Utilization By Employee:
+      hasRecords: true
+      streamHash: 08c32b730419f581087a8e6069e7ecdd27157043
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Elixir Charge Projections:
+      hasRecords: true
+      streamHash: 6f45027860db5eddc0e6eaab1945f32873a2639d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Projects: true
+    ProjectSnapshots: true
+    ProjectTasksPhases: true
+    Utilization By Employee: true
+    Elixir Charge Projections: true
+
+schemas:
+  Projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - Internal id
+    properties:
+      Name:
+        type:
+          - string
+          - "null"
+      Notes:
+        type:
+          - string
+          - "null"
+      Today:
+        type:
+          - string
+          - "null"
+      Active:
+        type:
+          - string
+          - "null"
+      Budget:
+        type:
+          - number
+          - "null"
+      Auto ID:
+        type:
+          - number
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Segment:
+        type:
+          - string
+          - "null"
+      Updated:
+        type:
+          - string
+          - "null"
+      Currency:
+        type:
+          - string
+          - "null"
+      RAG Plan:
+        type:
+          - string
+          - "null"
+      Auto-bill:
+        type:
+          - string
+          - "null"
+      Fixed Bid:
+        type:
+          - string
+          - "null"
+      "% Complete":
+        type:
+          - number
+          - "null"
+      Compliance:
+        type:
+          - string
+          - "null"
+      Audit trail:
+        type:
+          - string
+          - "null"
+      External ID:
+        type:
+          - string
+          - "null"
+      Internal id:
+        type: number
+      RAG Overall:
+        type:
+          - string
+          - "null"
+      Budget (USD):
+        type:
+          - number
+          - "null"
+      Budget hours:
+        type:
+          - number
+          - "null"
+      Project Type:
+        type:
+          - string
+          - "null"
+      Delivery Lead:
+        type:
+          - string
+          - "null"
+      RAG Financial:
+        type:
+          - string
+          - "null"
+      RAG Resources:
+        type:
+          - string
+          - "null"
+      Revenue Drain:
+        type:
+          - string
+          - "null"
+      Sales Order _:
+        type:
+          - string
+          - "null"
+      Invoicing Hold:
+        type:
+          - string
+          - "null"
+      Send POC to NS:
+        type:
+          - string
+          - "null"
+      Sub-Product(s):
+        type:
+          - string
+          - "null"
+      Scoping Project:
+        type:
+          - string
+          - "null"
+      Allow time entry:
+        type:
+          - string
+          - "null"
+      Sync to Goldmine:
+        type:
+          - string
+          - "null"
+      Post mortem notes:
+        type:
+          - string
+          - "null"
+      Project EAC Hours:
+        type:
+          - number
+          - "null"
+      Export to NetSuite:
+        type:
+          - string
+          - "null"
+      Legacy Description:
+        type:
+          - string
+          - "null"
+      Opportunity Number:
+        type:
+          - string
+          - "null"
+      Allow expense entry:
+        type:
+          - string
+          - "null"
+      Document Repository:
+        type:
+          - string
+          - "null"
+      Legacy Status Notes:
+        type:
+          - string
+          - "null"
+      NetSuite Project ID:
+        type:
+          - string
+          - "null"
+      Timesheets approver:
+        type:
+          - string
+          - "null"
+      Billing Rules Set Up:
+        type:
+          - string
+          - "null"
+      Invoicing Hold notes:
+        type:
+          - string
+          - "null"
+      Is portfolio project:
+        type:
+          - string
+          - "null"
+      Active Implementation:
+        type:
+          - string
+          - "null"
+      Internal id - user_id:
+        type:
+          - number
+          - "null"
+      Path to Green Actions:
+        type:
+          - string
+          - "null"
+      SalesForce Project ID:
+        type:
+          - string
+          - "null"
+      Project Approved Hours:
+        type:
+          - number
+          - "null"
+      Project Completed Date:
+        type:
+          - string
+          - "null"
+      Time to Value - Actual:
+        type:
+          - number
+          - "null"
+      Client Purchase Order _:
+        type:
+          - string
+          - "null"
+      Potential Revenue Drain:
+        type:
+          - string
+          - "null"
+      RAG Overall Open Issues:
+        type:
+          - string
+          - "null"
+      Time to Value - Planned:
+        type:
+          - number
+          - "null"
+      Time to Value - Revised:
+        type:
+          - number
+          - "null"
+      Expense reports approver:
+        type:
+          - string
+          - "null"
+      Internal id - contact_id:
+        type:
+          - number
+          - "null"
+      Probability of closing %:
+        type:
+          - number
+          - "null"
+      Salesforce Opp Unique ID:
+        type:
+          - string
+          - "null"
+      Allow these users to edit:
+        type:
+          - string
+          - "null"
+      Billing reviewed for 2024:
+        type:
+          - string
+          - "null"
+      Internal id - customer_id:
+        type:
+          - number
+          - "null"
+      Internal id - newsfeed_id:
+        type:
+          - number
+          - "null"
+      Special Billing Situation:
+        type:
+          - string
+          - "null"
+      Internal id - rate_card_id:
+        type:
+          - number
+          - "null"
+      Planned First Go-Live Date:
+        type:
+          - string
+          - "null"
+      Internal id - attachment_id:
+        type:
+          - number
+          - "null"
+      Notes Required on Timesheet:
+        type:
+          - string
+          - "null"
+      Salesforce Opportunity Name:
+        type:
+          - string
+          - "null"
+      Allow only the owner to edit:
+        type:
+          - string
+          - "null"
+      Finance Has Reviewed Project:
+        type:
+          - string
+          - "null"
+      Internal id - cost_center_id:
+        type:
+          - number
+          - "null"
+      Scheduled project start date:
+        type:
+          - string
+          - "null"
+      Internal id - tax_location_id:
+        type:
+          - number
+          - "null"
+      Calculated project finish date:
+        type:
+          - string
+          - "null"
+      Internal id - project_stage_id:
+        type:
+          - number
+          - "null"
+      Invoice Detail Report approver:
+        type:
+          - string
+          - "null"
+      Internal id - invoice_layout_id:
+        type:
+          - number
+          - "null"
+      Planned Project Completion Date:
+        type:
+          - string
+          - "null"
+      Special Billing Situation notes:
+        type:
+          - string
+          - "null"
+      Internal id - billing_contact_id:
+        type:
+          - number
+          - "null"
+      Internal id - sold_to_contact_id:
+        type:
+          - number
+          - "null"
+      Base Project Schedule on Bookings:
+        type:
+          - string
+          - "null"
+      Budget vs Actuals Reporting Class:
+        type:
+          - string
+          - "null"
+      Internal id - project_location_id:
+        type:
+          - number
+          - "null"
+      Internal id - shipping_contact_id:
+        type:
+          - number
+          - "null"
+      Revised/Actual First Go-Live Date:
+        type:
+          - string
+          - "null"
+      Available for Project Duplication?:
+        type:
+          - string
+          - "null"
+      Internal id - portfolio_project_id:
+        type:
+          - number
+          - "null"
+      Original Hours - From Legacy System:
+        type:
+          - string
+          - "null"
+      Project Proceeding without Signed SOW:
+        type:
+          - string
+          - "null"
+      Original Budget Money - From Legacy System:
+        type:
+          - string
+          - "null"
+      Notify client owner when an issue is closed:
+        type:
+          - string
+          - "null"
+      NetSuite project real-time export dirty flag:
+        type:
+          - string
+          - "null"
+      Notify assigned user when an issue is closed:
+        type:
+          - string
+          - "null"
+      Notify client owner when an issue is created:
+        type:
+          - string
+          - "null"
+      Notify project owner when an issue is closed:
+        type:
+          - string
+          - "null"
+      Notify project owner when an issue is created:
+        type:
+          - string
+          - "null"
+      Notify user assigned to/ removed from an issue:
+        type:
+          - string
+          - "null"
+      Client - Internal id - credit_invoice_layout_id:
+        type:
+          - number
+          - "null"
+      NetSuite project metrics real-time export dirty flag:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  ProjectSnapshots:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - Internal id
+    properties:
+      Issue date:
+        type:
+          - string
+          - "null"
+      Internal id:
+        type: number
+      Project Stage:
+        type:
+          - string
+          - "null"
+      Project EAC Hours:
+        type:
+          - number
+          - "null"
+      Project ETC Hours:
+        type:
+          - number
+          - "null"
+      Project RAG Status:
+        type:
+          - string
+          - "null"
+      Project Budget Hours:
+        type:
+          - number
+          - "null"
+      Project Worked Hours:
+        type:
+          - number
+          - "null"
+      Project Approved Hours:
+        type:
+          - number
+          - "null"
+      Internal id - project_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  ProjectTasksPhases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - Internal id
+    properties:
+      Type:
+        type:
+          - string
+          - "null"
+      Notes:
+        type:
+          - string
+          - "null"
+      Client:
+        type:
+          - string
+          - "null"
+      Closed:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Project:
+        type:
+          - string
+          - "null"
+      Updated:
+        type:
+          - string
+          - "null"
+      Currency:
+        type:
+          - string
+          - "null"
+      End date:
+        type:
+          - string
+          - "null"
+      Task type:
+        type:
+          - string
+          - "null"
+      Audit trail:
+        type:
+          - string
+          - "null"
+      External ID:
+        type:
+          - string
+          - "null"
+      Internal id:
+        type: number
+      Scope Hours:
+        type:
+          - number
+          - "null"
+      Task Source:
+        type:
+          - string
+          - "null"
+      Planned Days:
+        type:
+          - number
+          - "null"
+      Self Service:
+        type:
+          - string
+          - "null"
+      "TTV: FGL (P)":
+        type:
+          - string
+          - "null"
+      "TTV: FGL (T)":
+        type:
+          - string
+          - "null"
+      Part of phase:
+        type:
+          - string
+          - "null"
+      Planned Hours:
+        type:
+          - number
+          - "null"
+      Project stage:
+        type:
+          - string
+          - "null"
+      Task Budget $:
+        type:
+          - number
+          - "null"
+      Assigned Users:
+        type:
+          - string
+          - "null"
+      Is Integration:
+        type:
+          - string
+          - "null"
+      Task EAC Hours:
+        type:
+          - number
+          - "null"
+      Phase EAC Hours:
+        type:
+          - number
+          - "null"
+      Phase/Task name:
+        type:
+          - string
+          - "null"
+      Fixed Start Date:
+        type:
+          - string
+          - "null"
+      Percent Complete:
+        type:
+          - string
+          - "null"
+      Sync to Goldmine:
+        type:
+          - string
+          - "null"
+      Phase Scope Hours:
+        type:
+          - number
+          - "null"
+      Task Actual Hours:
+        type:
+          - number
+          - "null"
+      Task classification:
+        type:
+          - string
+          - "null"
+      Missing Billing Rule:
+        type:
+          - string
+          - "null"
+      Calculated Start Date:
+        type:
+          - string
+          - "null"
+      Project - Internal id:
+        type:
+          - number
+          - "null"
+      Calculated Finish Date:
+        type:
+          - string
+          - "null"
+      Contractual Commitment:
+        type:
+          - string
+          - "null"
+      Service for timesheets:
+        type:
+          - string
+          - "null"
+      Change Request Activity:
+        type:
+          - string
+          - "null"
+      Internal id - parent_id:
+        type:
+          - number
+          - "null"
+      Internal id - project_id:
+        type:
+          - number
+          - "null"
+      Sync to Goldmine (Phase):
+        type:
+          - string
+          - "null"
+      Internal id - customer_id:
+        type:
+          - number
+          - "null"
+      Client Approved Scope Hours:
+        type:
+          - number
+          - "null"
+      Internal id - attachment_id:
+        type:
+          - number
+          - "null"
+      Internal id - cost_center_id:
+        type:
+          - number
+          - "null"
+      Internal id - projecttask_type_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Utilization By Employee:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      value:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            User:
+              type:
+                - string
+                - "null"
+            User - Manager:
+              type:
+                - string
+                - "null"
+            User - Department:
+              type:
+                - string
+                - "null"
+            User - Internal id:
+              type:
+                - number
+                - "null"
+            User - User Region:
+              type:
+                - string
+                - "null"
+            User - Delivery Vertical:
+              type:
+                - string
+                - "null"
+            User - Utilization Category:
+              type:
+                - string
+                - "null"
+            Total - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Total - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Total - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/05/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/12/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/19/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/26/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/02/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/09/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/16/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/23/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/02/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/09/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/16/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/23/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/30/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/06/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/13/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/20/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/27/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/04/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/11/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/18/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/25/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/01/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/08/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/15/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/22/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/29/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/06/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/13/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/20/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/27/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/03/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/10/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/17/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/24/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/31/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/07/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/14/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/21/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/28/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/05/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/12/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/19/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/26/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/02/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/09/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/16/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/23/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/30/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/07/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/14/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/21/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/28/2025 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/29/2024 - Resources - Base target hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/05/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 01/12/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 01/19/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 01/26/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 02/02/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 02/09/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 02/16/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 02/23/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 03/02/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 03/09/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 03/16/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 03/23/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 03/30/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 04/06/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 04/13/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 04/20/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 04/27/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 05/04/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 05/11/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 05/18/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 05/25/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 06/01/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 06/08/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 06/15/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 06/22/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 06/29/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 07/06/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 07/13/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 07/20/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 07/27/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 08/03/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 08/10/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 08/17/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 08/24/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 08/31/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 09/07/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 09/14/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 09/21/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 09/28/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 10/05/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 10/12/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 10/19/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 10/26/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 11/02/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 11/09/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 11/16/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 11/23/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 11/30/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 12/07/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 12/14/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 12/21/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 12/28/2025 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 12/29/2024 - Resources - Base target utilization:
+              type:
+                - number
+                - "null"
+            Week starting 01/05/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/12/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/19/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 01/26/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/02/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/09/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/16/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 02/23/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/02/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/09/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/16/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/23/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 03/30/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/06/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/13/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/20/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 04/27/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/04/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/11/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/18/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 05/25/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/01/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/08/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/15/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/22/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 06/29/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/06/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/13/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/20/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 07/27/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/03/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/10/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/17/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/24/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 08/31/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/07/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/14/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/21/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 09/28/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/05/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/12/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/19/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 10/26/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/02/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/09/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/16/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/23/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 11/30/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/07/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/14/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/21/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/28/2025 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+            Week starting 12/29/2024 - Resources - Base work schedule hours:
+              type:
+                - number
+                - "null"
+      "@odata.count":
+        type:
+          - number
+          - "null"
+      "@odata.context":
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  Elixir Charge Projections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      value:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Date:
+              type:
+                - string
+                - "null"
+            Total:
+              type:
+                - number
+                - "null"
+            Created:
+              type:
+                - string
+                - "null"
+            Updated:
+              type:
+                - string
+                - "null"
+            Currency:
+              type:
+                - string
+                - "null"
+            Hourly rate:
+              type:
+                - number
+                - "null"
+            Internal id:
+              type:
+                - number
+                - "null"
+            Total (USD):
+              type:
+                - number
+                - "null"
+            Hourly rate (USD):
+              type:
+                - number
+                - "null"
+            Internal id - user_id:
+              type:
+                - number
+                - "null"
+            Revenue Category (new):
+              type:
+                - string
+                - "null"
+            Internal id - category_4_id:
+              type:
+                - number
+                - "null"
+            Internal id - transaction_id:
+              type:
+                - number
+                - "null"
+      "@odata.count":
+        type:
+          - number
+          - "null"
+      "@odata.context":
+        type:
+          - string
+          - "null"
+      "@odata.nextLink":
+        type:
+          - string
+          - "null"
+    additionalProperties: true
