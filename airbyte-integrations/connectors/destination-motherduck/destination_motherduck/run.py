@@ -9,8 +9,9 @@ from destination_motherduck import DestinationMotherDuck
 
 
 def run() -> None:
-    # Resolve unset "HOME" variable and lack of access to '/nonexistent' path
     if "HOME" not in os.environ and Path("/airbyte").exists():
+        # Temporary fix for unset "HOME" variable leading to failure on '/nonexistent' path:
+        # https://github.com/airbytehq/airbyte/issues/63710
         os.environ["HOME"] = "/airbyte"
 
     DestinationMotherDuck().run(sys.argv[1:])
