@@ -187,64 +187,7 @@ class CheckpointManager(
                 null -> log.info { "No checkpoints to flush" }
                 CheckpointType.STREAM -> flushStreamCheckpoints()
                 CheckpointType.GLOBAL,
-                CheckpointType.SNAPSHOT -> {
-                    if (snapshotStreamCheckpoints.isNotEmpty()) {
-                        flushSnapshotCheckpoints()
-                    }
-                    if (globalCheckpoints.isNotEmpty()) {
-                        flushGlobalCheckpoints()
-                    }
-                }
-            }
-        }
-    }
-
-    private suspend fun flushSnapshotCheckpoints() {
-        if (snapshotStreamCheckpoints.isEmpty() && globalCheckpoints.isEmpty()) {
-            log.debug { "No global snapshot checkpoints to flush" }
-            return
-        }
-        val allStreamsPersisted =
-            catalog.streams.all { stream ->
-                val manager = syncManager.getStreamManager(stream.mappedDescriptor)
-                val streamCheckpoints = snapshotStreamCheckpoints[stream.mappedDescriptor]
-                val persistedResults = mutableListOf<Boolean>()
-
-                streamCheckpoints?.let {
-                    /*
-                     * If there are checkpoints for the given stream, check that records have been
-                     * persisted for each checkpoint ID for the stream.  If all are true/have been
-                     * persisted up to the associated checkpoint ID, then the stream is up to date.
-                     * If the stream does not have any checkpoints stored or is not currently tracked
-                     * by the manager, return true so that the flush will continue as there is
-                     * nothing for that stream to ensure that it has been persisted.
-                     */
-                    while (streamCheckpoints.isNotEmpty()) {
-                        val (nextCheckpointKey, _) = streamCheckpoints.firstEntry() ?: break
-                        val persisted =
-                            manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
-                        persistedResults.add(persisted)
-                        if (persisted) {
-                            // If the stream has been persisted to the checkpoint ID, remove it from
-                            // the list so that we don't scan it again.
-                            streamCheckpoints.remove(nextCheckpointKey)
-                        } else {
-                            // If any stream has not been persisted, immediately break the loop
-                            break
-                        }
-                    }
-                }
-
-                persistedResults.all { it }
-            }
-
-        while (globalCheckpoints.isNotEmpty()) {
-            val head = globalCheckpoints.firstEntry() ?: break
-            if (allStreamsPersisted) {
-                flushGlobalState(checkpointKey = head.key, checkpoint = head.value)
-            } else {
-                log.debug { "Not flushing global checkpoint ${head.key}" }
-                break
+                CheckpointType.SNAPSHOT -> flushGlobalCheckpoints()
             }
         }
     }
@@ -266,14 +209,10 @@ class CheckpointManager(
             }
 
             val allStreamsPersisted =
-                if (syncManager.hasGlobalCount(head.key.checkpointId)) {
-                    syncManager.areAllStreamsPersistedForGlobalCheckpoint(head.key.checkpointId)
+                if (snapshotStreamCheckpoints.isNotEmpty()) {
+                    checkSnapshotStreams()
                 } else {
-                    catalog.streams.all {
-                        syncManager
-                            .getStreamManager(it.mappedDescriptor)
-                            .areRecordsPersistedForCheckpoint(head.key.checkpointId)
-                    }
+                    checkGlobalStreams(head.key)
                 }
 
             if (allStreamsPersisted) {
@@ -282,6 +221,53 @@ class CheckpointManager(
                 log.debug { "Not flushing global checkpoint ${head.key}" }
                 break
             }
+        }
+    }
+
+    private fun checkGlobalStreams(key: CheckpointKey): Boolean {
+        return if (syncManager.hasGlobalCount(key.checkpointId)) {
+            syncManager.areAllStreamsPersistedForGlobalCheckpoint(key.checkpointId)
+        } else {
+            catalog.streams.all {
+                syncManager
+                    .getStreamManager(it.mappedDescriptor)
+                    .areRecordsPersistedForCheckpoint(key.checkpointId)
+            }
+        }
+    }
+
+    private fun checkSnapshotStreams(): Boolean {
+        return catalog.streams.all { stream ->
+            val manager = syncManager.getStreamManager(stream.mappedDescriptor)
+            val streamCheckpoints = snapshotStreamCheckpoints[stream.mappedDescriptor]
+            val persistedResults = mutableListOf<Boolean>()
+
+            streamCheckpoints?.let {
+                /*
+                 * If there are checkpoints for the given stream, check that records have been
+                 * persisted for each checkpoint ID for the stream.  If all are true/have been
+                 * persisted up to the associated checkpoint ID, then the stream is up to date.
+                 * If the stream does not have any checkpoints stored or is not currently tracked
+                 * by the manager, return true so that the flush will continue as there is
+                 * nothing for that stream to ensure that it has been persisted.
+                 */
+                while (streamCheckpoints.isNotEmpty()) {
+                    val (nextCheckpointKey, _) = streamCheckpoints.firstEntry() ?: break
+                    val persisted =
+                        manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
+                    persistedResults.add(persisted)
+                    if (persisted) {
+                        // If the stream has been persisted to the checkpoint ID, remove it from
+                        // the list so that we don't scan it again.
+                        streamCheckpoints.remove(nextCheckpointKey)
+                    } else {
+                        // If any stream has not been persisted, immediately break the loop
+                        break
+                    }
+                }
+            }
+
+            persistedResults.all { it }
         }
     }
 
