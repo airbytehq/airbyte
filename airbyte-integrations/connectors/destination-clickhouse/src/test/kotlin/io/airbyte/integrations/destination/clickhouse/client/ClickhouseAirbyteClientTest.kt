@@ -30,7 +30,6 @@ import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 
 class ClickhouseAirbyteClientTest {
     // Mocks
@@ -474,9 +473,10 @@ class ClickhouseAirbyteClientTest {
                 every { importType } returns Append
             }
 
-        val expected = mapOf(
-            "field_1" to "String",
-        )
+        val expected =
+            mapOf(
+                "field_1" to "String",
+            )
         val actual = clickhouseAirbyteClient.getAirbyteSchemaWithClickhouseType(stream)
         Assertions.assertEquals(expected, actual)
     }
