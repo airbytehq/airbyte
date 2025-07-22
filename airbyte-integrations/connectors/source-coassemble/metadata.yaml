@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-coassemble
   githubIssueLabel: source-coassemble
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Coassemble
   releaseDate: 2024-09-19
   releaseStage: alpha

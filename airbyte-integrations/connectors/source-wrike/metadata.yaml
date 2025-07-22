@@ -22,7 +22,7 @@ data:
   dockerRepository: airbyte/source-wrike
   githubIssueLabel: source-wrike
   icon: wrike.svg
-  license: MIT
+  license: ELv2
   name: Wrike
   releaseDate: 2023-10-10
   releaseStage: alpha

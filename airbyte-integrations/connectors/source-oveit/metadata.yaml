@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-oveit
   githubIssueLabel: source-oveit
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Oveit
   releaseDate: 2024-10-24
   releaseStage: alpha

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
   icon: shortio.svg
-  license: MIT
+  license: ELv2
   name: Shortio
   releaseDate: 2023-08-02
   releaseStage: alpha

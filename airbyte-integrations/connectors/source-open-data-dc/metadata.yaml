@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-open-data-dc
   githubIssueLabel: source-open-data-dc
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Open Data DC
   releaseDate: 2024-10-06
   releaseStage: alpha

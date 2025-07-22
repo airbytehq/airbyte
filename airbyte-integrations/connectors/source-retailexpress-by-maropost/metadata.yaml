@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-retailexpress-by-maropost
   githubIssueLabel: source-retailexpress-by-maropost
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Retail Express by Maropost
   releaseDate: 2025-01-17
   releaseStage: alpha

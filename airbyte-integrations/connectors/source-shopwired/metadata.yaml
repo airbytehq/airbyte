@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-shopwired
   githubIssueLabel: source-shopwired
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: ShopWired
   releaseDate: 2025-04-06
   releaseStage: alpha

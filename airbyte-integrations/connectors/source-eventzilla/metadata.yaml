@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-eventzilla
   githubIssueLabel: source-eventzilla
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Eventzilla
   releaseDate: 2024-10-23
   releaseStage: alpha
