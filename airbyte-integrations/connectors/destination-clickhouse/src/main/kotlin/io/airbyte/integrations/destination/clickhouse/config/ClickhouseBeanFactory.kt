@@ -19,8 +19,8 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurati
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import jakarta.inject.Singleton
 import jakarta.inject.Named
+import jakarta.inject.Singleton
 import org.apache.sshd.common.util.net.SshdSocketAddress
 
 private val log = KotlinLogging.logger {}
@@ -38,12 +38,10 @@ class ClickhouseBeanFactory {
         return when (val ssh = config.tunnelConfig) {
             is SshKeyAuthTunnelMethod,
             is SshPasswordAuthTunnelMethod -> {
-                val remote =
-                    SshdSocketAddress(config.hostname, config.port.toInt())
+                val remote = SshdSocketAddress(config.hostname, config.port.toInt())
                 val sshConnectionOptions: SshConnectionOptions =
                     SshConnectionOptions.fromAdditionalProperties(emptyMap())
-                val tunnel =
-                    createTunnelSession(remote, ssh, sshConnectionOptions)
+                val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
                 "${config.protocol}://${tunnel.address.hostName}:${tunnel.address.port}"
             }
             is SshNoTunnelMethod,
