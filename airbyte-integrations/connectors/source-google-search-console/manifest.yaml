@@ -354,6 +354,9 @@ definitions:
               action: RATE_LIMITED
               error_message_contains: "Search Analytics QPS quota exceeded"
             - type: HttpResponseFilter
+              action: IGNORE
+              error_message_contains: "User does not have sufficient permission"
+            - type: HttpResponseFilter
               action: FAIL
               http_codes:
                 - 400
