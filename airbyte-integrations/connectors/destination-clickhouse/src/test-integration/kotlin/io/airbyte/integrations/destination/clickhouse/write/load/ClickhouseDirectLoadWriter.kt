@@ -65,6 +65,7 @@ class ClickhouseDirectLoadWriterWithoutJson :
         true,
     )
 
+@Disabled("Requires local bastion and CH instance to pass")
 class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
     ClickhouseDirectLoadWriter(
         Path.of("secrets/ssh-tunnel.json"),
