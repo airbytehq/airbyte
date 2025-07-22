@@ -89,7 +89,7 @@ class DestinationOperationAssembler(
             return null
         } else if (insertionMethod.requiresMatchingKey() && matchingKeys.isEmpty()) {
             logger.warn {
-                "Object $objectName with operation ${insertionMethod.getImportType()} requires at least on matching key but none was found"
+                "Object $objectName with operation ${insertionMethod.getImportType()} requires at least one matching key but none was found"
             }
             return null
         }
