@@ -1,0 +1,41 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+    requireVersionIncrementsInPullRequests: false
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: c2927d6d-9c4b-42e4-ba51-618f459f46a9
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-skeleton-directload
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/destination-skeleton-directload
+  githubIssueLabel: destination-skeleton-directload
+  icon: icon.svg
+  license: ELv2
+  name: Skeleton-DirectLoad
+  connectorBuildOptions:
+    baseImage: airbyte/java-connector-base:2.0.3
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
+  supportLevel: certified
+  supportsDbt: true
+  supportsRefreshes: true
+  tags:
+    - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+metadataSpecVersion: "1.0"

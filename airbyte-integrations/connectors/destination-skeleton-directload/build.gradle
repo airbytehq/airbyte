@@ -1,0 +1,38 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-db']
+    cdk = '0.546'
+}
+
+java {
+    // TODO: rewrite code to avoid javac wornings in the first placew
+    compileJava {
+        options.compilerArgs += "-Xlint:-this-escape"
+    }
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.skeleton_directload.SkeletonDirectLoadDestinationKt'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+                                 '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
+                                 '-XX:GCLockerRetryAllocationCount=100',
+//            '-Djava.rmi.server.hostname=localhost',
+//            '-Dcom.sun.management.jmxremote=true',
+//            '-Dcom.sun.management.jmxremote.port=6000',
+//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
+//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.authenticate=false',
+//            '-Dcom.sun.management.jmxremote.ssl=false'
+    ]
+}
+
+dependencies {
+    testImplementation "io.mockk:mockk:1.13.13"
+}

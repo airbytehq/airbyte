@@ -1,0 +1,3 @@
+package io.airbyte.integrations.destination.skeleton_directload
+
+class SkeletonDirectLoadClient
