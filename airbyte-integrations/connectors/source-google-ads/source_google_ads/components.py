@@ -27,8 +27,8 @@ from airbyte_cdk.sources.declarative.incremental import (
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
@@ -639,6 +639,7 @@ class CriterionIncrementalRequester(GoogleAdsHttpRequester):
             "login-customer-id": stream_slice["parent_slice"]["parent_slice"]["customer_id"],
         }
 
+
 @dataclass
 class CriterionFullRefreshRequester(GoogleAdsHttpRequester):
     CURSOR_FIELD: str = "change_status.last_change_date_time"
@@ -670,17 +671,16 @@ class GoogleAdsCriterionParentStateMigration(StateMigration):
 
         return {"parent_state": stream_state}
 
+
 class CustomGAQueryHttpRequester(HttpRequester):
     """
     Custom HTTP requester for custom query streams.
     """
 
-    query: str = ""
-    cursor_field: Union[str, InterpolatedString] = ""
-
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters=parameters)
-        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={})
+        self.query = parameters.get("query")
+        self._cursor_field = InterpolatedString.create(parameters.get("cursor_field"), parameters={})
 
     def get_request_body_json(
         self,
@@ -714,7 +714,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
             fields.append(cursor_field)
 
         if "start_time" in stream_slice and "end_time" in stream_slice and cursor_field:
-            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE {cursor_field} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY {self.cursor_field} ASC"
+            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE {cursor_field} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY {cursor_field} ASC"
         else:
             query = f"SELECT {', '.join(fields)} FROM {resource_name}"
 

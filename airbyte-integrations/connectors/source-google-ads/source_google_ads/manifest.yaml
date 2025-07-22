@@ -942,7 +942,6 @@ definitions:
         schema:
           $ref: "#/schemas/campaign_criterion"
 
-
   custom_ga_query_stream:
     type: DynamicDeclarativeStream
     stream_template:
@@ -963,6 +962,7 @@ definitions:
           field_path:
             - retriever
             - requester
+            - $parameters
             - query
           value: "{{ components_values.get('query', None) }}"
           create_or_update: true
@@ -970,6 +970,7 @@ definitions:
           field_path:
             - retriever
             - requester
+            - $parameters
             - cursor_field
           value: "{{ components_values.get('cursor_field', None) }}"
           create_or_update: true
@@ -992,7 +993,7 @@ definitions:
           value: >-
             {
               "type": "DatetimeBasedCursor",
-              "cursor_field": "{{ components_values.get('cursor_field') if components_values.get('cursor_field') else None }}",
+              "cursor_field": "{{ components_values.get('cursor_field') }}",
               "datetime_format": "%Y-%m-%d",
               "lookback_window": "P{{ config.get('conversion_window_days', 14) }}D",
               "cursor_granularity": "P1D",

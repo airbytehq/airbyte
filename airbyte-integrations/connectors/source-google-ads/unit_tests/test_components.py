@@ -216,10 +216,11 @@ class TestCustomGAQueryHttpRequester:
         )
         requester = CustomGAQueryHttpRequester(
             name="test_custom_ga_query_http_requester",
-            parameters={},
+            parameters={
+                "query": config["custom_queries_array"][0]["query"],
+                "cursor_field": "{{ False }}",
+            },
             config=config,
-            query=config["custom_queries_array"][0]["query"],
-            cursor_field="{{ False }}",
         )
         request_body = requester.get_request_body_json(stream_slice={})
         assert request_body == {"query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"}
@@ -231,10 +232,11 @@ class TestCustomGAQueryHttpRequester:
         )
         requester = CustomGAQueryHttpRequester(
             name="test_custom_ga_query_http_requester",
-            parameters={},
+            parameters={
+                "query": config["custom_queries_array"][0]["query"],
+                "cursor_field": config["custom_queries_array"][0]["cursor_field"],
+            },
             config=config,
-            query=config["custom_queries_array"][0]["query"],
-            cursor_field=config["custom_queries_array"][0]["cursor_field"],
         )
         request_body = requester.get_request_body_json(
             stream_slice={
