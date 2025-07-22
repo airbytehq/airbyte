@@ -195,7 +195,7 @@ class MySqlSourceConfigurationTest {
         val config = factory.makeWithoutExceptionHandling(pojo)
         Assertions.assertEquals(4, config.maxConcurrency)
     }
-    
+
     @Test
     fun testTls() {
         val context = SSLContext.getDefault()
