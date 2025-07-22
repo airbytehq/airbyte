@@ -4,44 +4,58 @@ package io.airbyte.cdk.command
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.util.function.Supplier
 
-/**
- * Supplies a valid [T] configuration POJO instance, based on the `airbyte.connector.config`
- * Micronaut property values:
- * - either `airbyte.connector.config.json` if it is set (typically by the CLI)
- * - or the other, nested `airbyte.connector.config.*` properties (typically in unit tests)
- *
- * One may wonder why we need to inject this [Supplier] instead of injecting the POJO directly. The
- * reason is that injecting the POJO only works if the configuration values are set via the nested
- * Micronaut properties (i.e. in unit tests). We could make direct injection work the same way as
- * the [ConfiguredCatalogFactory] or the [InputStateFactory] (via a @Factory) but then we'd lose the
- * ability to set values via the nested properties. This current design caters to both use cases.
- * Furthermore, by deferring the parsing and validation of the configuration, we don't need to worry
- * about exception handling edge cases when implementing the CHECK operation.
- */
-@Singleton
-class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
-    private val micronautPropertiesFallback: T,
-    @Value("\${${CONNECTOR_CONFIG_PREFIX}.json}") private val jsonPropertyValue: String? = null,
-) : Supplier<T> {
-    @Suppress("UNCHECKED_CAST")
-    val javaClass: Class<T> = micronautPropertiesFallback::class.java as Class<T>
+interface ConfigurationSpecificationSupplier<T : ConfigurationSpecification> : Supplier<T> {
+    val jsonSchema: JsonNode
+}
 
-    val jsonSchema: JsonNode by lazy { ValidatedJsonUtils.generateAirbyteJsonSchema(javaClass) }
+fun <T : ConfigurationSpecification> buildJsonSchema(klazz: Class<T>): JsonNode {
+    return ValidatedJsonUtils.generateAirbyteJsonSchema(klazz)
+}
+
+@Singleton
+@Requires(property = "$CONNECTOR_CONFIG_PREFIX.json")
+class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
+    private val micronautPropertiesFallback: T,
+    @Value("\${${CONNECTOR_CONFIG_PREFIX}.json}") private val jsonPropertyValue: String,
+) : ConfigurationSpecificationSupplier<T> {
+
+    override val jsonSchema: JsonNode by lazy { buildJsonSchema(micronautPropertiesFallback.javaClass) }
 
     override fun get(): T {
-        val jsonMicronautFallback: String by lazy {
+        return ValidatedJsonUtils.parseUnvalidated(jsonPropertyValue, micronautPropertiesFallback.javaClass)
+    }
+}
+
+
+/**
+ * This class is used during testing. The goal is to be able to create configuration without actually providing a JSON. In order to do so, you need to:
+ * * Add `@ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)` annotation to your spec class
+ * * Add `@Property(name = "airbyte.connector.config.<key>", value = <value>)` annotation to your test or test class
+ *
+ * Note that during tests, you could still use `@Property(name = "$CONNECTOR_CONFIG_PREFIX.json", value = CONFIG_JSON)` in order to use the normal production flow with MicronautConfigurationSpecificationProvider.
+ */
+@Singleton
+@Requires(missingProperty = "$CONNECTOR_CONFIG_PREFIX.json")
+class MicronautTestConfigurationSpecificationProvider<T : ConfigurationSpecification>(
+    private val micronautPropertiesFallback: T,
+) : ConfigurationSpecificationSupplier<T> {
+
+    override val jsonSchema: JsonNode by lazy { ValidatedJsonUtils.generateAirbyteJsonSchema(micronautPropertiesFallback.javaClass) }
+
+    override fun get(): T {
+        val jsonMicronautSpec: String by lazy {
             try {
                 Jsons.writeValueAsString(micronautPropertiesFallback)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 throw ConfigErrorException("failed to serialize fallback instance for $javaClass")
             }
         }
-        val json: String = jsonPropertyValue ?: jsonMicronautFallback
-        return ValidatedJsonUtils.parseUnvalidated(json, javaClass)
+        return ValidatedJsonUtils.parseUnvalidated(jsonMicronautSpec, micronautPropertiesFallback.javaClass)
     }
 }
 
