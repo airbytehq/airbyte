@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
+import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.model.hasApplicableAlterations
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -131,7 +132,7 @@ class ClickhouseAirbyteClient(
                     // as
                     // nullable in the destination
                     // Add map key
-                    fieldName to fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+                    fieldName.toClickHouseCompatibleName() to fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
                 }
                 .toMap()
 
