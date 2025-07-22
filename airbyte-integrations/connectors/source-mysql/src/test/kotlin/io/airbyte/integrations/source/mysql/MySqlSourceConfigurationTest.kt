@@ -13,6 +13,7 @@ import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import java.time.Duration
+import javax.net.ssl.SSLContext
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -194,6 +195,17 @@ class MySqlSourceConfigurationTest {
         val config = factory.makeWithoutExceptionHandling(pojo)
         Assertions.assertEquals(4, config.maxConcurrency)
     }
+    
+    @Test
+    fun testTls() {
+        val context = SSLContext.getDefault()
+        val supported = context.supportedSSLParameters.protocols
+        val enabled = context.defaultSSLParameters.protocols
+
+        println("Supported TLS versions: ${supported.joinToString()}")
+        println("Enabled TLS versions: ${enabled.joinToString()}")
+    }
+
     companion object {
 
         const val CONFIG_V1: String =

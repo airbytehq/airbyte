@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-repairshopr
   githubIssueLabel: source-repairshopr
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Repairshopr
   releaseDate: 2024-11-08
   releaseStage: alpha

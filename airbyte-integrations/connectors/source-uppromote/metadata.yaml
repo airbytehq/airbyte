@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-uppromote
   githubIssueLabel: source-uppromote
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: UpPromote
   releaseDate: 2024-10-10
   releaseStage: alpha

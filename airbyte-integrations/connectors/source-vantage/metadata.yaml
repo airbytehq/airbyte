@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-vantage
   githubIssueLabel: source-vantage
   icon: vantage.svg
-  license: MIT
+  license: ELv2
   name: Vantage
   remoteRegistries:
     pypi:

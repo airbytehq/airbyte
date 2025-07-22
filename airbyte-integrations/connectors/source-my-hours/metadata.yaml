@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-my-hours
   githubIssueLabel: source-my-hours
   icon: my-hours.svg
-  license: MIT
+  license: ELv2
   name: My Hours
   releaseDate: 2021-12-21
   releaseStage: alpha
