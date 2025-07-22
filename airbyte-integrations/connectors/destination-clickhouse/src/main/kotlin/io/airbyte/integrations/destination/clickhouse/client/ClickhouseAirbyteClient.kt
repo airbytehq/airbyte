@@ -155,7 +155,7 @@ class ClickhouseAirbyteClient(
                 currentPKs,
             )
 
-        if (columnChanges.hasApplicableAlterations()) {
+        if (columnChanges.hasApplicableAlterations() && !columnChanges.hasDedupChange) {
             execute(
                 sqlGenerator.alterTable(
                     columnChanges,
