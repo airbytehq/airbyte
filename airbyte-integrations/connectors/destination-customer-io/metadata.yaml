@@ -25,6 +25,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+    requireVersionIncrementsInPullRequests: false
   supportLevel: certified
   supportsDataActivation: true
   supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work
