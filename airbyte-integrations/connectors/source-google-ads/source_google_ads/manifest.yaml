@@ -1057,7 +1057,7 @@ definitions:
             - stream
             - name
           value: customer_client_non_manager
-          condition: "{{ 'metrics' in components_values.get('query', '') }}"
+          condition: "{{ 'metrics' in components_values.get('query', False) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1083,7 +1083,7 @@ definitions:
               customer_client
             WHERE
               customer_client.manager = FALSE
-          condition: "{{ 'metrics' in components_values.get('query', '') }}"
+          condition: "{{ 'metrics' in components_values.get('query', False') }}"
           create_or_update: true
 streams:
   - "#/definitions/account_performance_report_stream"
