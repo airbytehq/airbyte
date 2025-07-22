@@ -530,9 +530,9 @@ class MySqlSourceJdbcPartitionFactory(
 
     private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? =
         when {
-            lowerBound is Long? && upperBound is Long  ->
+            lowerBound is Long? && upperBound is Long ->
                 calculateBoundaries(num, lowerBound, upperBound)
-            lowerBound is Int? && upperBound is Int->
+            lowerBound is Int? && upperBound is Int ->
                 calculateBoundaries(num, lowerBound, upperBound)
             lowerBound is String? && upperBound is String ->
                 calculateBoundaries(num, lowerBound, upperBound)

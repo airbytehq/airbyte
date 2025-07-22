@@ -5,6 +5,7 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -329,8 +330,8 @@ class FeedReader(
                             partitionId,
                             when (dataChannelMedium) {
                                 // State messages in SOCKET mode have an incrementing integer ID.
-                                DataChannelMedium.SOCKET -> stateId.getAndIncrement()
-                                DataChannelMedium.STDIO -> null
+                                SOCKET -> stateId.getAndIncrement()
+                                STDIO -> null
                             }
                         )
                     log.info {
@@ -383,7 +384,7 @@ class FeedReader(
         }
 
         // Legacy flow - checkpoint state messages to stdout
-        if (dataChannelMedium == DataChannelMedium.STDIO) {
+        if (dataChannelMedium == STDIO) {
             log.info { "checkpoint of ${stateMessages.size} state message(s)" }
             for (stateMessage in stateMessages) {
                 root.outputConsumer.accept(stateMessage)
@@ -395,13 +396,7 @@ class FeedReader(
         for (stateMessage in stateMessages) {
             if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
                 stateMessage.setAdditionalProperty("id", globalStateId.getAndIncrement())
-                log.info {
-                    "*** Adding outer state id to message: ${stateMessage.additionalProperties["id"]}"
-                }
-                if (FeedReader.tmpPartitionId != null) {
-                    log.info {
-                        "*** Adding partition id to state message: ${FeedReader.tmpPartitionId}"
-                    }
+                if (tmpPartitionId != null) {
                     stateMessage.setAdditionalProperty("partition_id", tmpPartitionId)
                 } else {
                     stateMessage.additionalProperties.get("partition_id")?.let {
