@@ -9,12 +9,12 @@ def run() -> None:
     if "HOME" not in os.environ:
         # Temporary fix for unset "HOME" variable leading to failure on '/nonexistent' path:
         # https://github.com/airbytehq/airbyte/issues/63710
-        print("Warning: 'HOME' environment variable is not set.", file=sys.stderr)
+        print("Warning: 'HOME' environment variable is not set.")
         if Path("/airbyte").exists():
-            print("Found /airbyte directory. Setting as home.", file=sys.stderr)
+            print("Found /airbyte directory. Setting as home.")
             os.environ["HOME"] = "/airbyte"
     else:
-        print("Using HOME:", os.environ["HOME"], file=sys.stderr)
+        print("Using HOME:", os.environ["HOME"])
 
     # Defer import to ensure env var is set prior to loading the DuckDB engine.
     from destination_motherduck import DestinationMotherDuck
