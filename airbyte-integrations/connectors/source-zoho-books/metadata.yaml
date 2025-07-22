@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-zoho-books
   githubIssueLabel: source-zoho-books
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Zoho Books
   releaseDate: 2024-10-19
   releaseStage: alpha

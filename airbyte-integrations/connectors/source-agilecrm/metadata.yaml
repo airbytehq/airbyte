@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-agilecrm
   githubIssueLabel: source-agilecrm
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: AgileCRM
   releaseDate: 2024-11-08
   releaseStage: alpha

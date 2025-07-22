@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-fastly
   githubIssueLabel: source-fastly
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Fastly
   releaseDate: 2025-04-09
   releaseStage: alpha

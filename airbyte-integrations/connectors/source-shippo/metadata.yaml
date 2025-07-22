@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-shippo
   githubIssueLabel: source-shippo
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Shippo
   releaseDate: 2024-10-28
   releaseStage: alpha

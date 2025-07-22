@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-imagga
   githubIssueLabel: source-imagga
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Imagga
   releaseDate: 2025-04-05
   releaseStage: alpha

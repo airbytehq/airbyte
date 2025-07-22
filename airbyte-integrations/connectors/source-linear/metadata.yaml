@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-linear
   githubIssueLabel: source-linear
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Linear
   releaseDate: 2025-04-11
   releaseStage: alpha
