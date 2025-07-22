@@ -86,7 +86,6 @@ abstract class ClickhouseDirectLoadWriter(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
         stringifyUnionObjects = true,
-        preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = true,
