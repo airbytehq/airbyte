@@ -81,6 +81,7 @@ constructor(
             AirbyteProtocolType.TIME_WITH_TIMEZONE -> SQLDataType.TIMEWITHTIMEZONE
             AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> SQLDataType.TIME
             AirbyteProtocolType.DATE -> SQLDataType.DATE
+            AirbyteProtocolType.GEOMETRY -> widestType  // Default to widest type, subclasses can override
             AirbyteProtocolType.UNKNOWN -> widestType
         }
     }
