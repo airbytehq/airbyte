@@ -267,9 +267,10 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          channel: "{{ stream_slice['parent_slice']['channel'] }}"
+          channel: "{{ stream_partition['parent_slice']['channel'] }}"
         error_handler:
           type: DefaultErrorHandler
+          max_retries: 20
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "retry-after"
@@ -314,7 +315,7 @@ definitions:
             value: "{{ record['ts']|float }}"
           - path:
               - channel_id
-            value: "{{ stream_slice['parent_slice']['channel'] }}"
+            value: "{{ stream_partition['parent_slice']['channel'] }}"
 
 streams:
   - "#/definitions/users_stream"
