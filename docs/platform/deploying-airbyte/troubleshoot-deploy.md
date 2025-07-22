@@ -1,6 +1,6 @@
 # Troubleshooting abctl
 
-This guide will help you navigate any issues with deploying Airbyte. This guide is intended for users of `abctl`.
+This guide will help you navigate any issues with deploying Airbyte with `abctl`.
 
 ## Common Errors
 
@@ -164,7 +164,11 @@ Upgrade to version `>0.15.1`
 
 Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade your `abctl` to fix this issue.
 
----
+### Make sure you have disabled secure cookies
+
+- Error: `Your credentials were correct, but the server failed to set a cookie. You appear to have deployed over HTTP. Make sure you have disabled secure cookies.`
+- Cause: You have deployed Airbyte to an insecure (non-HTTPS) host, but you haven't turned off secure cookies.
+- Fix: Deploy Airbyte again and set the `--insecure-cookies` flag. For example, `abctl local install --host example.com --insecure-cookies`.
 
 ## FAQ
 
