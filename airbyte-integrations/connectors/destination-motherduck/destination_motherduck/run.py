@@ -18,6 +18,7 @@ def run() -> None:
 
     # Defer import to ensure env var is set prior to loading the DuckDB engine.
     from destination_motherduck import DestinationMotherDuck
+
     DestinationMotherDuck().run(sys.argv[1:])
 
 
