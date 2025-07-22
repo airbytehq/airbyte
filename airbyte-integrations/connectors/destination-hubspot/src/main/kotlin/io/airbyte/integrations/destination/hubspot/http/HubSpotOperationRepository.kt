@@ -16,8 +16,8 @@ import io.airbyte.cdk.load.discoverer.destinationobject.DynamicDestinationObject
 import io.airbyte.cdk.load.discoverer.destinationobject.StaticDestinationObjectProvider
 import io.airbyte.cdk.load.discoverer.operation.CompositeOperationProvider
 import io.airbyte.cdk.load.discoverer.operation.DestinationOperationAssembler
-import io.airbyte.cdk.load.discoverer.operation.DiscoveredPropertyFactory
 import io.airbyte.cdk.load.discoverer.operation.DynamicOperationProvider
+import io.airbyte.cdk.load.discoverer.operation.InsertionMethod
 import io.airbyte.cdk.load.discoverer.operation.JsonNodePredicate
 import io.airbyte.cdk.load.discoverer.operation.OperationProvider
 import io.airbyte.cdk.load.http.HttpClient
@@ -41,19 +41,20 @@ class HubSpotOperationRepository(
                     operationAssembler =
                         DestinationOperationAssembler(
                             propertiesPath = PROPERTIES_PATH,
-                            propertyFactoriesByImportType =
-                                mapOf(
-                                    upsertOperation() to
-                                        DiscoveredPropertyFactory(
-                                            PROPERTY_NAME_PATH,
-                                            PROPERTY_TYPE_PATH,
+                            insertionMethods =
+                                listOf(
+                                    InsertionMethod(
+                                        importType = upsertOperation(),
+                                        namePath = PROPERTY_NAME_PATH,
+                                        typePath = PROPERTY_TYPE_PATH,
+                                        matchingKeyPredicate =
                                             JsonNodePredicate(
                                                 """{{ property["name"] == "email" }}"""
                                             ),
-                                            UPSERT_AVAILABILITY_PREDICATE,
-                                            NEVER_REQUIRED_PREDICATE,
-                                            TYPE_MAPPER,
-                                        )
+                                        availabilityPredicate = UPSERT_AVAILABILITY_PREDICATE,
+                                        requiredPredicate = NEVER_REQUIRED_PREDICATE,
+                                        typeMapper = TYPE_MAPPER,
+                                    ),
                                 ),
                             schemaRequester =
                                 HttpRequester(
@@ -68,11 +69,7 @@ class HubSpotOperationRepository(
                     operationAssembler =
                         DestinationOperationAssembler(
                             propertiesPath = PROPERTIES_PATH,
-                            propertyFactoriesByImportType =
-                                mapOf(
-                                    upsertOperation() to
-                                        HAS_UNIQUE_VALUE_MATCHING_KEY_PROPERTY_FACTORY,
-                                ),
+                            insertionMethods = listOf(UPSERT_UNIQUE_VALUE_INSERTION_METHOD),
                             schemaRequester =
                                 HttpRequester(
                                     httpClient,
@@ -99,11 +96,7 @@ class HubSpotOperationRepository(
                     operationAssembler =
                         DestinationOperationAssembler(
                             propertiesPath = PROPERTIES_PATH,
-                            propertyFactoriesByImportType =
-                                mapOf(
-                                    upsertOperation() to
-                                        HAS_UNIQUE_VALUE_MATCHING_KEY_PROPERTY_FACTORY,
-                                ),
+                            insertionMethods = listOf(UPSERT_UNIQUE_VALUE_INSERTION_METHOD),
                             schemaRequester = null,
                         ),
                 ),
@@ -132,20 +125,24 @@ class HubSpotOperationRepository(
         val NEVER_REQUIRED_PREDICATE: Predicate<JsonNode> = Predicate { _ -> false }
         const val STANDARD_OBJECT_SCHEMA_URL =
             """https://api.hubapi.com/crm/v3/schemas/{{ object["name"] }}"""
-        val HAS_UNIQUE_VALUE_MATCHING_KEY_PROPERTY_FACTORY =
-            DiscoveredPropertyFactory(
-                PROPERTY_NAME_PATH,
-                PROPERTY_TYPE_PATH,
-                JsonNodePredicate("""{{ property["hasUniqueValue"] }}"""),
-                UPSERT_AVAILABILITY_PREDICATE,
-                NEVER_REQUIRED_PREDICATE,
-                TYPE_MAPPER,
+        val UPSERT_UNIQUE_VALUE_INSERTION_METHOD =
+            InsertionMethod(
+                importType = upsertOperation(),
+                namePath = PROPERTY_NAME_PATH,
+                typePath = PROPERTY_TYPE_PATH,
+                matchingKeyPredicate =
+                    JsonNodePredicate(
+                        """{{ property["hasUniqueValue"] && property["modificationMetadata"]["readOnlyValue"] == false }}"""
+                    ),
+                availabilityPredicate = UPSERT_AVAILABILITY_PREDICATE,
+                requiredPredicate = NEVER_REQUIRED_PREDICATE,
+                typeMapper = TYPE_MAPPER,
             )
+
+        private fun upsertOperation(): Dedupe = Dedupe(emptyList(), emptyList())
     }
 
     fun fetchAll(): List<DestinationOperation> {
         return operationProvider.get()
     }
-
-    private fun upsertOperation(): Dedupe = Dedupe(emptyList(), emptyList())
 }
