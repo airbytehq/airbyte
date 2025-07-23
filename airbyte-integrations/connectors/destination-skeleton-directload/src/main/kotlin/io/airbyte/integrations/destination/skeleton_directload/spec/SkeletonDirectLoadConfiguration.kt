@@ -10,14 +10,13 @@ import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
-data class SkeletonDirectLoadConfiguration(val internalNamespace: String, val namespace: String) : DestinationConfiguration()
+data class SkeletonDirectLoadConfiguration(val namespace: String) : DestinationConfiguration()
 
 @Singleton
 class SkeletonDirectLoadConfigurationFactory :
     DestinationConfigurationFactory<SkeletonDirectLoadSpecification, SkeletonDirectLoadConfiguration> {
     override fun makeWithoutExceptionHandling(pojo: SkeletonDirectLoadSpecification): SkeletonDirectLoadConfiguration {
         return SkeletonDirectLoadConfiguration(
-            internalNamespace = pojo.internalNamespace,
             namespace = pojo.namespace
         )
     }

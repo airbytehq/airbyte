@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWri
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.airbyte.cdk.load.write.WriteOperation
+import io.airbyte.cdk.load.write.db.DbConstants.DEFAULT_INTERNAL_NAMESPACE
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.InputStream
@@ -71,10 +72,10 @@ class SkeletonDirectLoadBeansFactory {
         @Suppress("UNCHECKED_CAST")
         streamStateStore as StreamStateStore<DirectLoadTableExecutionConfig>
         val tempTableNameGenerator =
-            DefaultTempTableNameGenerator(internalNamespace = config.internalNamespace)
+            DefaultTempTableNameGenerator(internalNamespace = DEFAULT_INTERNAL_NAMESPACE)
 
         return DirectLoadTableWriter(
-            internalNamespace = config.internalNamespace,
+            internalNamespace = DEFAULT_INTERNAL_NAMESPACE,
             names = names,
             stateGatherer =
                 SkeletonDirectLoadDatabaseInitialStatusGatherer(
