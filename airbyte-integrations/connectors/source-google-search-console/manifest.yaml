@@ -356,6 +356,7 @@ definitions:
             - type: HttpResponseFilter
               action: IGNORE
               error_message_contains: "User does not have sufficient permission"
+              error_message: "{{ response['error']['message'] }}"
             - type: HttpResponseFilter
               action: FAIL
               http_codes:
@@ -1012,6 +1013,7 @@ definitions:
             - type: HttpResponseFilter
               action: IGNORE
               error_message_contains: "User does not have sufficient permission"
+              error_message: "{{ response['error']['message'] }}"
             - type: HttpResponseFilter
               action: FAIL
               http_codes:
@@ -1268,6 +1270,7 @@ dynamic_streams:
               - type: HttpResponseFilter
                 action: IGNORE
                 error_message_contains: "User does not have sufficient permission"
+                error_message: "{{ response['error']['message'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
