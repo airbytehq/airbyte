@@ -17,6 +17,9 @@ static_checker_reports/
 .tool-versions
 test-results
 
+# jenv version mgmt artifacts
+.java-version
+
 # Logs
 acceptance_tests_logs/
 airbyte_ci_logs/
