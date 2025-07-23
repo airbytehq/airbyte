@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-appfigures
   githubIssueLabel: source-appfigures
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Appfigures
   releaseDate: 2024-09-08
   releaseStage: alpha

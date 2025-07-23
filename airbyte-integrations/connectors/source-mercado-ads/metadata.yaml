@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-mercado-ads
   githubIssueLabel: source-mercado-ads
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Mercado Ads
   releaseDate: 2025-05-26
   releaseStage: alpha

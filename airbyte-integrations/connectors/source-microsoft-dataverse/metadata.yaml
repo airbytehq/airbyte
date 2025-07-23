@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-microsoft-dataverse
   githubIssueLabel: source-microsoft-dataverse
   icon: microsoftdataverse.svg
-  license: MIT
+  license: ELv2
   name: Microsoft Dataverse
   remoteRegistries:
     pypi:
