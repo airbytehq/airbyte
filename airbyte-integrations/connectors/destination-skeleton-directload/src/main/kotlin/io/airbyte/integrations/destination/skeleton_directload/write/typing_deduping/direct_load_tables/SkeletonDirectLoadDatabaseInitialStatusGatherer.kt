@@ -19,10 +19,8 @@ import kotlinx.coroutines.launch
 
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class SkeletonDirectLoadDatabaseInitialStatusGatherer(
-    @Suppress("UNUSED_PARAMETER")
-    private val skeletonClient: SkeletonDirectLoadClient,
-    @Suppress("UNUSED_PARAMETER")
-    private val tempTableNameGenerator: TempTableNameGenerator,
+    @Suppress("UNUSED_PARAMETER") private val skeletonClient: SkeletonDirectLoadClient,
+    @Suppress("UNUSED_PARAMETER") private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
         streams: TableCatalog,
@@ -45,8 +43,7 @@ class SkeletonDirectLoadDatabaseInitialStatusGatherer(
     }
 
     private fun getTableStatus(
-        @Suppress("UNUSED_PARAMETER")
-        tableName: TableName
+        @Suppress("UNUSED_PARAMETER") tableName: TableName
     ): DirectLoadTableStatus? {
         // The flow here should be to retrieve a table information and based on if there is data
         // in there, then we define if isEmpty is true or false.

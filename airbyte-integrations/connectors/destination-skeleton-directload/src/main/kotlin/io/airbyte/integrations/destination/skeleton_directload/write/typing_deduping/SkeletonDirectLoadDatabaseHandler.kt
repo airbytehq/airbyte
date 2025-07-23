@@ -13,16 +13,13 @@ private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin is hard")
 class SkeletonDirectLoadDatabaseHandler(
-    @Suppress("UNUSED_PARAMETER")
-    private val skeletonClient: SkeletonDirectLoadClient
-) :
-    DatabaseHandler {
+    @Suppress("UNUSED_PARAMETER") private val skeletonClient: SkeletonDirectLoadClient
+) : DatabaseHandler {
 
     @Throws(InterruptedException::class)
     override fun execute(@Suppress("UNUSED_PARAMETER") sql: Sql) {}
 
     override suspend fun createNamespaces(
-        @Suppress("UNUSED_PARAMETER")
-        namespaces: Collection<String>
+        @Suppress("UNUSED_PARAMETER") namespaces: Collection<String>
     ) {}
 }

@@ -10,10 +10,8 @@ import io.airbyte.integrations.destination.skeleton_directload.spec.SkeletonDire
 
 class SkeletonDirectLoadCheckCleaner : CheckCleaner<SkeletonDirectLoadConfiguration> {
     override fun cleanup(
-        @Suppress("UNUSED_PARAMETER")
-        config: SkeletonDirectLoadConfiguration,
-        @Suppress("UNUSED_PARAMETER")
-        stream: DestinationStream
+        @Suppress("UNUSED_PARAMETER") config: SkeletonDirectLoadConfiguration,
+        @Suppress("UNUSED_PARAMETER") stream: DestinationStream
     ) {
         // Here we clean up whatever has been created during the DirectLoad operation
     }
