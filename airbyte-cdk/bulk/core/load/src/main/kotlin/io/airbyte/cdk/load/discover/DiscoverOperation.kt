@@ -31,29 +31,14 @@ private val logger = KotlinLogging.logger {}
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "discover")
 @Requires(env = ["destination"])
-class DiscoverOperation<T : ConfigurationSpecification, C : DestinationConfiguration>(
-    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
-    val configFactory: DestinationConfigurationFactory<T, C>,
+class DiscoverOperation<C : DestinationConfiguration>(
+    val config: C,
     val destinationDiscoverer: DestinationDiscoverer<C>,
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer,
 ) : Operation {
 
     override fun execute() {
-        val pojo =
-            try {
-                configJsonObjectSupplier.get()
-            } catch (e: Exception) {
-                handleException(e)
-                return
-            }
-        val config =
-            try {
-                configFactory.make(pojo)
-            } catch (e: Exception) {
-                handleException(e)
-                return
-            }
         try {
             val destinationCatalog = destinationDiscoverer.discover(config)
             outputConsumer.accept(destinationCatalog.toProtocol())

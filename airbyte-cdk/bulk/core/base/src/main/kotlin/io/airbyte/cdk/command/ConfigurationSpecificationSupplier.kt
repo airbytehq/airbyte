@@ -37,7 +37,7 @@ class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
  * * Add `@ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)` annotation to your spec class
  * * Add `@Property(name = "airbyte.connector.config.<key>", value = <value>)` annotation to your test or test class
  *
- * Note that during tests, you could still use `@Property(name = "$CONNECTOR_CONFIG_PREFIX.json", value = CONFIG_JSON)` in order to use the normal production flow with MicronautConfigurationSpecificationProvider.
+ * Note that during tests, you could still use `@Property(name = "$CONNECTOR_CONFIG_PREFIX.json", value = CONFIG_JSON)` in order to use the normal production flow with JsonConfigurationSpecificationProvider.
  */
 @Singleton
 @Requires(missingProperty = "$CONNECTOR_CONFIG_PREFIX.json")
