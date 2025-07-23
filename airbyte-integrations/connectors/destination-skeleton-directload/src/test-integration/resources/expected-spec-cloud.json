@@ -6,12 +6,6 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
-      "internal_namespace" : {
-        "type" : "string",
-        "description" : "The Internal namespace",
-        "title" : "Internal namespace",
-        "order" : 0
-      },
       "namespace" : {
         "type" : "string",
         "description" : "The namespace",
@@ -19,7 +13,7 @@
         "order" : 0
       }
     },
-    "required" : [ "internal_namespace", "namespace" ]
+    "required" : [ "namespace" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,
