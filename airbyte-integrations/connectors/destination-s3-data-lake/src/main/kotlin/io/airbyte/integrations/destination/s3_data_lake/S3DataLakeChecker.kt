@@ -42,7 +42,6 @@ class S3DataLakeChecker(
                 testTableIdentifier,
                 catalog,
                 testTableSchema,
-                catalogProperties,
             )
 
         icebergTableCleaner.clearTable(
