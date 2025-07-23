@@ -46,9 +46,11 @@ class FeedReader(
     private val stateId: AtomicInteger = AtomicInteger(1)
 
     // Global state ID is unique for each state emitted regardless of the feed it originates from.
+    // When emitting a global state message in Socket mode, the global partition ID is repeated
+    // throughtout the read job
     companion object {
         private val globalStateId: AtomicInteger = AtomicInteger(1)
-        var tmpPartitionId: Any? = null
+        var globalPartitionId: Any? = null
     }
 
     private val feedBootstrap: FeedBootstrap<*> =
@@ -334,6 +336,11 @@ class FeedReader(
                                 STDIO -> null
                             }
                         )
+                    if (feed is Global && globalPartitionId == null) {
+                        // If this is a global feed, we set the global partition ID to the one
+                        // provided by the PartitionReader.
+                        globalPartitionId = partitionId
+                    }
                     log.info {
                         "updated state of '${feed.label}', moved it $numRecords record(s) forward"
                     }
@@ -396,14 +403,11 @@ class FeedReader(
         for (stateMessage in stateMessages) {
             if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
                 stateMessage.setAdditionalProperty("id", globalStateId.getAndIncrement())
-                if (tmpPartitionId != null) {
-                    stateMessage.setAdditionalProperty("partition_id", tmpPartitionId)
-                } else {
-                    stateMessage.additionalProperties.get("partition_id")?.let {
-                        tmpPartitionId = it
-                    }
-                }
+                // Every global state message has a global partition ID, even if it's not
+                // checkpointing the global partition.
+                globalPartitionId?.let { stateMessage.setAdditionalProperty("partition_id", it) }
             }
+
             // checkpoint state messages to stdout
             root.outputConsumer.accept(stateMessage)
             when (finalCheckpoint) {
