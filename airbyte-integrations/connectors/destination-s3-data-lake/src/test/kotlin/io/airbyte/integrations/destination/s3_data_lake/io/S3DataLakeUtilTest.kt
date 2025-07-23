@@ -87,7 +87,6 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testCreateTableWithMissingNamespace() {
-        val properties = mapOf<String, String>()
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
@@ -124,7 +123,6 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testCreateTableWithExistingNamespace() {
-        val properties = mapOf<String, String>()
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
@@ -160,7 +158,6 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testLoadTable() {
-        val properties = mapOf<String, String>()
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val catalog: NessieCatalog = mockk {
