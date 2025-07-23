@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.write.typing_deduping
+package io.airbyte.integrations.destination.skeleton_directload.write.typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
