@@ -47,7 +47,7 @@ class FeedReader(
 
     // Global state ID is unique for each state emitted regardless of the feed it originates from.
     // When emitting a global state message in Socket mode, the global partition ID is repeated
-    // throughtout the read job
+    // throughtout the read job.
     companion object {
         private val globalStateId: AtomicInteger = AtomicInteger(1)
         var globalPartitionId: Any? = null
@@ -405,6 +405,7 @@ class FeedReader(
                 stateMessage.setAdditionalProperty("id", globalStateId.getAndIncrement())
                 // Every global state message has a global partition ID, even if it's not
                 // checkpointing the global partition.
+                // This is requirement from destination in socket mode.
                 globalPartitionId?.let { stateMessage.setAdditionalProperty("partition_id", it) }
             }
 

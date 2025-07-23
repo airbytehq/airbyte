@@ -318,12 +318,10 @@ private class GlobalStateManager(
                     .withSourceStats(
                         AirbyteStateStats().withRecordCount(totalNumRecords.toDouble())
                     )
-                    // Only partition_id if not null (stdio mode compatibility). id is added before
-                    // being
-                    // send to wire in FeedReader.maybeCheckpoint()
+                    // Only partition_id if not null (stdio mode compatibility).
+                    // id is added before being sent to wire in FeedReader.maybeCheckpoint().
                     // As global state may be checkpointed multiple times, we use a unique id for
-                    // each
-                    // checkpoint.
+                    // each checkpoint.
                     .apply {
                         globalStateForCheckpoint.partitionId?.let { partitionId ->
                             withAdditionalProperty("partition_id", partitionId)
