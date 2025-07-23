@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-airbyte
   githubIssueLabel: source-airbyte
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Airbyte
   releaseDate: 2024-08-27
   releaseStage: alpha

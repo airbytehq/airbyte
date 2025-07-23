@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-invoiced
   githubIssueLabel: source-invoiced
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Invoiced
   releaseDate: 2024-10-21
   releaseStage: alpha

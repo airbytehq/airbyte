@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   githubIssueLabel: source-openweather
   icon: openweather.svg
-  license: MIT
+  license: ELv2
   name: Openweather
   registryOverrides:
     cloud:

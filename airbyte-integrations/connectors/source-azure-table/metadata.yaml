@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-azure-table
   githubIssueLabel: source-azure-table
   icon: azureblobstorage.svg
-  license: MIT
+  license: ELv2
   name: Azure Table Storage
   remoteRegistries:
     pypi:

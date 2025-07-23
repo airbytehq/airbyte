@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-employment-hero
   githubIssueLabel: source-employment-hero
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Employment-Hero
   releaseDate: 2024-09-25
   releaseStage: alpha
