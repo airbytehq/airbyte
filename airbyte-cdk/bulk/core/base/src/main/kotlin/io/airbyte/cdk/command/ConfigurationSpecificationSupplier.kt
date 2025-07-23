@@ -20,18 +20,18 @@ fun <T : ConfigurationSpecification> buildJsonSchema(klazz: Class<T>): JsonNode 
 @Singleton
 @Requires(property = "$CONNECTOR_CONFIG_PREFIX.json")
 class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
-    private val micronautPropertiesFallback: T,
+    private val micronautProvidedSpec: T,
     @Value("\${${CONNECTOR_CONFIG_PREFIX}.json}") private val jsonPropertyValue: String,
 ) : ConfigurationSpecificationSupplier<T> {
 
     override val jsonSchema: JsonNode by lazy {
-        buildJsonSchema(micronautPropertiesFallback.javaClass)
+        buildJsonSchema(micronautProvidedSpec.javaClass)
     }
 
     override fun get(): T {
         return ValidatedJsonUtils.parseUnvalidated(
             jsonPropertyValue,
-            micronautPropertiesFallback.javaClass
+            micronautProvidedSpec.javaClass
         )
     }
 }
@@ -50,24 +50,24 @@ class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
 @Singleton
 @Requires(missingProperty = "$CONNECTOR_CONFIG_PREFIX.json")
 class MicronautTestConfigurationSpecificationProvider<T : ConfigurationSpecification>(
-    private val micronautPropertiesFallback: T,
+    private val micronautProvidedSpec: T,
 ) : ConfigurationSpecificationSupplier<T> {
 
     override val jsonSchema: JsonNode by lazy {
-        ValidatedJsonUtils.generateAirbyteJsonSchema(micronautPropertiesFallback.javaClass)
+        ValidatedJsonUtils.generateAirbyteJsonSchema(micronautProvidedSpec.javaClass)
     }
 
     override fun get(): T {
         val jsonMicronautSpec: String by lazy {
             try {
-                Jsons.writeValueAsString(micronautPropertiesFallback)
+                Jsons.writeValueAsString(micronautProvidedSpec)
             } catch (_: Exception) {
                 throw ConfigErrorException("failed to serialize fallback instance for $javaClass")
             }
         }
         return ValidatedJsonUtils.parseUnvalidated(
             jsonMicronautSpec,
-            micronautPropertiesFallback.javaClass
+            micronautProvidedSpec.javaClass
         )
     }
 }
