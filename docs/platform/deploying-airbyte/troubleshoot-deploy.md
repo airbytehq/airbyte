@@ -168,7 +168,8 @@ Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade
 
 - Error: `Your credentials were correct, but the server failed to set a cookie. You appear to have deployed over HTTP. Make sure you have disabled secure cookies.`
 - Cause: You have deployed Airbyte to an insecure (non-HTTPS) host, but you haven't turned off secure cookies.
-- Fix: Deploy Airbyte again and set the `--insecure-cookies` flag. For example, `abctl local install --host example.com --insecure-cookies`.
+- Fix 1: Upgrade abctl to version 0.29 or higher. A bug in previous versions caused this message to appear even when it should not have.
+- Fix 2: Deploy Airbyte again and set the `--insecure-cookies` flag. For example, `abctl local install --host example.com --insecure-cookies`.
 
 ## FAQ
 
