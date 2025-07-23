@@ -1,5 +1,5 @@
 allprojects {
-    version = "0.1.0"
+    version = "0.0.1"
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
@@ -55,6 +55,35 @@ allprojects {
                     password System.getenv('CLOUDREPO_PASSWORD')
                 }
             }
+        }
+    }
+}
+
+tasks.register('checkBuildNumber') {
+    description = "Check that the version doesn't exist"
+
+    doLast {
+        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+        var groupIdUrl = "${repoUrl}/io/airbyte/bulk-cdk"
+        var artifactUrl = "${groupIdUrl}/bulk"
+        var metadataXmlUrl = "${artifactUrl}/maven-metadata.xml"
+
+        var connection = metadataXmlUrl.toURL().openConnection() as HttpURLConnection
+        try {
+            connection.setRequestMethod("GET")
+            connection.setDoInput(true)
+            var responseCode = connection.getResponseCode()
+            if (responseCode != 200) {
+                throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
+            }
+            String responseContent = connection.inputStream.text
+            def xml = new XmlParser().parseText(responseContent)
+            String latestVersion = xml."versioning"."latest".text()
+            if (version.toString() == latestVersion) {
+                throw new GradleException("Version already exist")
+            }
+        } finally {
+            connection.disconnect()
         }
     }
 }
