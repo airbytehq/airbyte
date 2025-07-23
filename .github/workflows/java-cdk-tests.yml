@@ -58,6 +58,15 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
+      - name: Check version existence
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-publish
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:checkBuildNumber
       - name: Run Java CDK Tests
         uses: burrunan/gradle-cache-action@v3
         env:
