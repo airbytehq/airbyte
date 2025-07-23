@@ -12,9 +12,13 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGener
 
 class SkeletonDirectLoadSqlGenerator : DirectLoadSqlGenerator {
     override fun createTable(
+        @Suppress("UNUSED_PARAMETER")
         stream: DestinationStream,
+        @Suppress("UNUSED_PARAMETER")
         tableName: TableName,
+        @Suppress("UNUSED_PARAMETER")
         columnNameMapping: ColumnNameMapping,
+        @Suppress("UNUSED_PARAMETER")
         replace: Boolean,
     ): Sql {
         return Sql.of(
@@ -24,7 +28,12 @@ class SkeletonDirectLoadSqlGenerator : DirectLoadSqlGenerator {
         )
     }
 
-    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
+    override fun overwriteTable(
+        @Suppress("UNUSED_PARAMETER")
+        sourceTableName: TableName,
+        @Suppress("UNUSED_PARAMETER")
+        targetTableName: TableName
+    ): Sql {
         return Sql.of(
             """
             // This does not do anything but it should overwrite a table
@@ -33,8 +42,11 @@ class SkeletonDirectLoadSqlGenerator : DirectLoadSqlGenerator {
     }
 
     override fun copyTable(
+        @Suppress("UNUSED_PARAMETER")
         columnNameMapping: ColumnNameMapping,
+        @Suppress("UNUSED_PARAMETER")
         sourceTableName: TableName,
+        @Suppress("UNUSED_PARAMETER")
         targetTableName: TableName
     ): Sql {
         return Sql.of(
@@ -45,9 +57,13 @@ class SkeletonDirectLoadSqlGenerator : DirectLoadSqlGenerator {
     }
 
     override fun upsertTable(
+        @Suppress("UNUSED_PARAMETER")
         stream: DestinationStream,
+        @Suppress("UNUSED_PARAMETER")
         columnNameMapping: ColumnNameMapping,
+        @Suppress("UNUSED_PARAMETER")
         sourceTableName: TableName,
+        @Suppress("UNUSED_PARAMETER")
         targetTableName: TableName
     ): Sql {
         return Sql.of(
@@ -57,7 +73,10 @@ class SkeletonDirectLoadSqlGenerator : DirectLoadSqlGenerator {
         )
     }
 
-    override fun dropTable(tableName: TableName): Sql {
+    override fun dropTable(
+        @Suppress("UNUSED_PARAMETER")
+        tableName: TableName
+    ): Sql {
         return Sql.of(
             """
             // This does not do anything but it should drop a table

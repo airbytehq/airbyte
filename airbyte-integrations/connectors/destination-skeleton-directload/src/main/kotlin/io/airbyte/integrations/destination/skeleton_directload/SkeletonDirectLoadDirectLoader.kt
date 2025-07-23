@@ -13,6 +13,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 class SkeletonDirectLoadDirectLoader(
+    @Suppress("UNUSED_PARAMETER")
     private val config: SkeletonDirectLoadConfiguration,
 ) : DirectLoader {
     private var recordCount: Long = 0L
@@ -26,11 +27,11 @@ class SkeletonDirectLoadDirectLoader(
     }
 
     override suspend fun finish() {
-        /* do nothing */
+        /* do nothing for now */
     }
 
     override fun close() {
-        /* do even more nothing */
+        /* do even more nothing for now */
     }
 }
 

@@ -19,20 +19,30 @@ private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class SkeletonDirectLoadNativeTableOperations(
+    @Suppress("UNUSED_PARAMETER")
     private val skeletonClient: SkeletonDirectLoadClient,
+    @Suppress("UNUSED_PARAMETER")
     private val sqlOperations: DefaultDirectLoadTableSqlOperations,
+    @Suppress("UNUSED_PARAMETER")
     private val databaseHandler: SkeletonDirectLoadDatabaseHandler,
+    @Suppress("UNUSED_PARAMETER")
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DirectLoadTableNativeOperations {
     override suspend fun ensureSchemaMatches(
+        @Suppress("UNUSED_PARAMETER")
         stream: DestinationStream,
+        @Suppress("UNUSED_PARAMETER")
         tableName: TableName,
+        @Suppress("UNUSED_PARAMETER")
         columnNameMapping: ColumnNameMapping,
     ) {
         // The name is not ideal here but this method should actually perform actions on the DB.
     }
 
-    override suspend fun getGenerationId(tableName: TableName): Long {
+    override suspend fun getGenerationId(
+        @Suppress("UNUSED_PARAMETER")
+        tableName: TableName
+    ): Long {
         // This method should return the generation id for the current table
         return 0L
     }

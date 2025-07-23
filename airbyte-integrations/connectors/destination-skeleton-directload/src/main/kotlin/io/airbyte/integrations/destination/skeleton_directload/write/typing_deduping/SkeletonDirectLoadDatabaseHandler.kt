@@ -12,10 +12,17 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin is hard")
-class SkeletonDirectLoadDatabaseHandler(private val skeletonClient: SkeletonDirectLoadClient) :
+class SkeletonDirectLoadDatabaseHandler(
+    @Suppress("UNUSED_PARAMETER")
+    private val skeletonClient: SkeletonDirectLoadClient
+) :
     DatabaseHandler {
 
-    @Throws(InterruptedException::class) override fun execute(sql: Sql) {}
+    @Throws(InterruptedException::class)
+    override fun execute(@Suppress("UNUSED_PARAMETER") sql: Sql) {}
 
-    override suspend fun createNamespaces(namespaces: Collection<String>) {}
+    override suspend fun createNamespaces(
+        @Suppress("UNUSED_PARAMETER")
+        namespaces: Collection<String>
+    ) {}
 }

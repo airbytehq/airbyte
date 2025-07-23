@@ -99,6 +99,7 @@ class SkeletonDirectLoadBeansFactory {
 
     @Singleton
     fun getSkeletonDirectLoadClient(
+        @Suppress("UNUSED_PARAMETER")
         config: SkeletonDirectLoadConfiguration
     ): SkeletonDirectLoadClient {
         // This method should return a usable client. This could be a wrapper around an existing
