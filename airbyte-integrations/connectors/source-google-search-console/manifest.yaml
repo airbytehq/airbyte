@@ -243,6 +243,7 @@ spec:
             - authorization
             - client_secret
   config_normalization_rules:
+    type: ConfigNormalizationRules
     config_migrations:
       - type: ConfigMigration
         description: Migrate the custom_reports config to the new custom_reports_array format

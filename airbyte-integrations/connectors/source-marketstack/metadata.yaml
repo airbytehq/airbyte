@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-marketstack
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.59.2@sha256:89dcb86ee03b8d951b8a2a80a64d2c84a369dacef29346ec6a5f64c9fb7132f8
   connectorSubtype: api
   connectorType: source
   definitionId: 0caeba13-0807-46aa-a6c0-7e8d25d168be
-  dockerImageTag: 0.0.28
+  dockerImageTag: 0.0.29
   dockerRepository: airbyte/source-marketstack
   githubIssueLabel: source-marketstack
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Marketstack
   releaseDate: 2024-11-07
   releaseStage: alpha
