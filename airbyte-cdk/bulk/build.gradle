@@ -65,4 +65,3 @@ tasks.register('bulkCdkBuild').configure {
 tasks.register('bulkCdkPublish').configure {
     dependsOn allprojects.collect {it.tasks.named('publish')}
 }
-
