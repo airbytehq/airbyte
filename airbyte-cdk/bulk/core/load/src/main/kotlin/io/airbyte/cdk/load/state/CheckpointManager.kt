@@ -54,12 +54,6 @@ data class CheckpointKey(
     }
 }
 
-enum class CheckpointType {
-    GLOBAL,
-    SNAPSHOT,
-    STREAM
-}
-
 /**
  * Message-type agnostic streams checkpoint manager.
  *
@@ -86,7 +80,7 @@ class CheckpointManager(
 
     data class GlobalCheckpoint(val checkpointMessage: Reserved<CheckpointMessage>)
 
-    private val checkpointType: AtomicReference<CheckpointType?> = AtomicReference(null)
+    private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
         ConcurrentHashMap<
             DestinationStream.Descriptor, TreeMap<CheckpointKey, Reserved<CheckpointMessage>>> =
@@ -109,8 +103,7 @@ class CheckpointManager(
         checkpointMessage: Reserved<CheckpointMessage>,
     ) {
         storedCheckpointsLock.withLock {
-            val previousCheckpointType = checkpointType.getAndUpdate { CheckpointType.STREAM }
-            if (previousCheckpointType != null && previousCheckpointType != CheckpointType.STREAM) {
+            if (checkpointsAreGlobal.updateAndGet { it == true } != false) {
                 throw IllegalStateException(
                     "Global checkpoints cannot be mixed with non-global checkpoints"
                 )
@@ -129,12 +122,7 @@ class CheckpointManager(
         checkpointMessage: Reserved<CheckpointMessage>,
     ) {
         storedCheckpointsLock.withLock {
-            val previousCheckpointType = checkpointType.getAndUpdate { CheckpointType.SNAPSHOT }
-            if (
-                // CDC switches from global for incremental to snapshot for catch-up, so either are
-                // valid as a previous state
-                previousCheckpointType != null && previousCheckpointType == CheckpointType.STREAM
-            ) {
+            if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
                 throw IllegalStateException(
                     "Global checkpoints cannot be mixed with non-global checkpoints"
                 )
@@ -163,8 +151,7 @@ class CheckpointManager(
         checkpointMessage: Reserved<CheckpointMessage>
     ) {
         storedCheckpointsLock.withLock {
-            val previousCheckpointType = checkpointType.getAndUpdate { CheckpointType.GLOBAL }
-            if (previousCheckpointType != null && previousCheckpointType != CheckpointType.GLOBAL) {
+            if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
                 throw IllegalStateException(
                     "Global checkpoint cannot be mixed with non-global checkpoints"
                 )
@@ -183,11 +170,10 @@ class CheckpointManager(
                we can break the loop since the checkpoints are ordered. For global
                checkpoints, all streams must be persisted up to the checkpoint.
             */
-            when (checkpointType.get()) {
+            when (checkpointsAreGlobal.get()) {
                 null -> log.info { "No checkpoints to flush" }
-                CheckpointType.STREAM -> flushStreamCheckpoints()
-                CheckpointType.GLOBAL,
-                CheckpointType.SNAPSHOT -> flushGlobalCheckpoints()
+                true -> flushGlobalCheckpoints()
+                false -> flushStreamCheckpoints()
             }
         }
     }
