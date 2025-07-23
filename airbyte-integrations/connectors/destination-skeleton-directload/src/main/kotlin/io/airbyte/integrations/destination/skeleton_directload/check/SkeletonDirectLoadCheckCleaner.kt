@@ -10,6 +10,6 @@ import io.airbyte.integrations.destination.skeleton_directload.spec.SkeletonDire
 
 class SkeletonDirectLoadCheckCleaner : CheckCleaner<SkeletonDirectLoadConfiguration> {
     override fun cleanup(config: SkeletonDirectLoadConfiguration, stream: DestinationStream) {
-        // Here we cleanup whatever has been created during the DirectLoad operation
+        // Here we clean up whatever has been created during the DirectLoad operation
     }
 }

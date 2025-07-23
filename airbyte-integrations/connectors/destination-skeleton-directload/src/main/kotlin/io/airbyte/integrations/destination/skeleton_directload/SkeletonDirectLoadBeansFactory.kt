@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.integrations.destination.skeleton_directload.write.typing_deduping.direct_load_tables.SkeletonDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.skeleton_directload.write.typing_deduping.direct_load_tables.SkeletonDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.skeleton_directload.write.typing_deduping.SkeletonDirectLoadDatabaseHandler
@@ -82,11 +83,10 @@ class SkeletonDirectLoadBeansFactory {
                 ),
             destinationHandler = destinationHandler,
             nativeTableOperations =
-                BigqueryDirectLoadNativeTableOperations(
-                    bigquery,
+                SkeletonDirectLoadNativeTableOperations(
+                    skeletonClient,
                     sqlTableOperations,
                     destinationHandler,
-                    projectId = config.projectId,
                     tempTableNameGenerator,
                 ),
             sqlTableOperations = sqlTableOperations,

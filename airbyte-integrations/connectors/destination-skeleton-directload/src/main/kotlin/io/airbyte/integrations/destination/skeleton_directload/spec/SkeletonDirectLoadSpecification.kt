@@ -15,9 +15,17 @@ import jakarta.inject.Singleton
 class SkeletonDirectLoadSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Internal namespace")
     @get:JsonPropertyDescription(
-        """This Internal namespace""",
+        """The Internal namespace""",
     )
     @get:JsonProperty("internal_namespace")
     @get:JsonSchemaInject(json = """{"order": 0}""")
     val internalNamespace: String = ""
+
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace""",
+    )
+    @get:JsonProperty("namespace")
+    @get:JsonSchemaInject(json = """{"order": 0}""")
+    val namespace: String = ""
 }

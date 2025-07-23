@@ -4,45 +4,28 @@
 
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping
 
-import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
-import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
-import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.skeleton_directload.SkeletonDirectLoadSQLNameTransformer
+import io.airbyte.integrations.destination.skeleton_directload.spec.SkeletonDirectLoadConfiguration
 import java.util.Locale
 import javax.inject.Singleton
 
-private val nameTransformer = BigQuerySQLNameTransformer()
+private val nameTransformer = SkeletonDirectLoadSQLNameTransformer()
 
 @Singleton
-class BigqueryRawTableNameGenerator(val config: BigqueryConfiguration) : RawTableNameGenerator {
+class SkeletonDirectLoadFinalTableNameGenerator(val config: SkeletonDirectLoadConfiguration) : FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
-            nameTransformer.getNamespace(config.internalTableDataset),
-            nameTransformer.convertStreamName(
-                TypingDedupingUtil.concatenateRawTableName(
-                    streamDescriptor.namespace ?: config.datasetId,
-                    streamDescriptor.name,
-                )
-            ),
-        )
-}
-
-@Singleton
-class BigqueryFinalTableNameGenerator(val config: BigqueryConfiguration) : FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
-        TableName(
-            nameTransformer.getNamespace(streamDescriptor.namespace ?: config.datasetId),
+            nameTransformer.getNamespace(streamDescriptor.namespace ?: config.namespace),
             nameTransformer.convertStreamName(streamDescriptor.name),
         )
 }
 
 @Singleton
-class BigqueryColumnNameGenerator : ColumnNameGenerator {
+class SkeletonDirectLoadColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
         return ColumnNameGenerator.ColumnName(
             nameTransformer.convertStreamName(column),
