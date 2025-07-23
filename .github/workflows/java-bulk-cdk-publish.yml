@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Set Build Number [auto]
+      - name: Check version existence
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
