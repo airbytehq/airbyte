@@ -5,12 +5,9 @@
 package io.airbyte.cdk.load.discover
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 import io.airbyte.cdk.load.command.DestinationOperation
 import io.airbyte.cdk.load.command.ImportType

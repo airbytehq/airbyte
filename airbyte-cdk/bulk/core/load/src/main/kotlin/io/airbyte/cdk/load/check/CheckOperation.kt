@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.check
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer

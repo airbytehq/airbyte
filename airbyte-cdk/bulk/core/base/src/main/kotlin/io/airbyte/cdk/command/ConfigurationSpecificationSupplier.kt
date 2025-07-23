@@ -24,20 +24,28 @@ class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
     @Value("\${${CONNECTOR_CONFIG_PREFIX}.json}") private val jsonPropertyValue: String,
 ) : ConfigurationSpecificationSupplier<T> {
 
-    override val jsonSchema: JsonNode by lazy { buildJsonSchema(micronautPropertiesFallback.javaClass) }
+    override val jsonSchema: JsonNode by lazy {
+        buildJsonSchema(micronautPropertiesFallback.javaClass)
+    }
 
     override fun get(): T {
-        return ValidatedJsonUtils.parseUnvalidated(jsonPropertyValue, micronautPropertiesFallback.javaClass)
+        return ValidatedJsonUtils.parseUnvalidated(
+            jsonPropertyValue,
+            micronautPropertiesFallback.javaClass
+        )
     }
 }
 
-
 /**
- * This class is used during testing. The goal is to be able to create configuration without actually providing a JSON. In order to do so, you need to:
+ * This class is used during testing. The goal is to be able to create configuration without
+ * actually providing a JSON. In order to do so, you need to:
  * * Add `@ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)` annotation to your spec class
- * * Add `@Property(name = "airbyte.connector.config.<key>", value = <value>)` annotation to your test or test class
+ * * Add `@Property(name = "airbyte.connector.config.<key>", value = <value>)` annotation to your
+ * test or test class
  *
- * Note that during tests, you could still use `@Property(name = "$CONNECTOR_CONFIG_PREFIX.json", value = CONFIG_JSON)` in order to use the normal production flow with JsonConfigurationSpecificationProvider.
+ * Note that during tests, you could still use `@Property(name = "$CONNECTOR_CONFIG_PREFIX.json",
+ * value = CONFIG_JSON)` in order to use the normal production flow with
+ * JsonConfigurationSpecificationProvider.
  */
 @Singleton
 @Requires(missingProperty = "$CONNECTOR_CONFIG_PREFIX.json")
@@ -45,7 +53,9 @@ class MicronautTestConfigurationSpecificationProvider<T : ConfigurationSpecifica
     private val micronautPropertiesFallback: T,
 ) : ConfigurationSpecificationSupplier<T> {
 
-    override val jsonSchema: JsonNode by lazy { ValidatedJsonUtils.generateAirbyteJsonSchema(micronautPropertiesFallback.javaClass) }
+    override val jsonSchema: JsonNode by lazy {
+        ValidatedJsonUtils.generateAirbyteJsonSchema(micronautPropertiesFallback.javaClass)
+    }
 
     override fun get(): T {
         val jsonMicronautSpec: String by lazy {
@@ -55,7 +65,10 @@ class MicronautTestConfigurationSpecificationProvider<T : ConfigurationSpecifica
                 throw ConfigErrorException("failed to serialize fallback instance for $javaClass")
             }
         }
-        return ValidatedJsonUtils.parseUnvalidated(jsonMicronautSpec, micronautPropertiesFallback.javaClass)
+        return ValidatedJsonUtils.parseUnvalidated(
+            jsonMicronautSpec,
+            micronautPropertiesFallback.javaClass
+        )
     }
 }
 
