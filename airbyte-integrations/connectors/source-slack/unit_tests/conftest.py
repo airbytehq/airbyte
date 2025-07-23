@@ -9,15 +9,17 @@ from typing import MutableMapping
 import pytest
 
 
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
-
-
 @pytest.fixture(autouse=True)
 def conversations_list(requests_mock):
     return requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
-        json={"channels": [{"id": "airbyte-for-beginners", "is_member": True}, {"id": "good-reads", "is_member": True}]},
+        json={
+            "channels": [
+                {"id": "airbyte-for-beginners", "name": "airbyte-for-beginners", "is_member": True},
+                {"id": "good-reads", "name": "good-reads", "is_member": True},
+            ]
+        },
     )
 
 

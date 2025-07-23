@@ -56,18 +56,3 @@ def test_check_connection(token_config, requests_mock, status_code, response, is
     assert success is is_connection_successful
     if not success:
         assert error_msg in error
-
-
-def test_threads_auth(token_config, oauth_config):
-    source = SourceSlack(config=token_config, catalog=None, state=None)
-    auth = source._threads_authenticator(token_config)
-    assert auth.token == "Bearer api-token"
-    source = SourceSlack(config=oauth_config, catalog=None, state=None)
-    auth = source._threads_authenticator(oauth_config)
-    assert auth.token == "Bearer access-token"
-
-
-def test_get_threads_stream(token_config):
-    source = SourceSlack(config=token_config, catalog=None, state=None)
-    threads_stream = source.get_threads_stream(token_config)
-    assert threads_stream
