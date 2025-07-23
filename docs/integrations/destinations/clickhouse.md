@@ -95,6 +95,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.0.7   | 2025-07-22 | [\#63724](https://github.com/airbytehq/airbyte/pull/63724) | Set clickhouse as an airbyte connector.                                        |
 | 2.0.6   | 2025-07-22 | [\#63724](https://github.com/airbytehq/airbyte/pull/63724) | Apply clickhouse column name transformation for columns.                       |
 | 2.0.5   | 2025-07-22 | [\#63721](https://github.com/airbytehq/airbyte/pull/63721) | Fix schema change with PKs.                                                    |
 | 2.0.4   | 2025-07-21 | [\#62948](https://github.com/airbytehq/airbyte/pull/62948) | SSH support BETA.                                                              |
