@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 class DestinationOperationAssemblerTest {
 
     lateinit var schemaRequester: HttpRequester
-    lateinit var factory: DiscoveredPropertyFactory
+    lateinit var insertionMethod: InsertionMethod
     lateinit var property: DiscoveredProperty
 
     companion object {
@@ -34,8 +34,10 @@ class DestinationOperationAssemblerTest {
     fun setUp() {
         schemaRequester = mockk()
         property = mockk(relaxed = true)
-        factory = mockk()
-        every { factory.create(any()) } returns property
+        insertionMethod = mockk()
+        every { insertionMethod.getImportType() } returns SoftDelete
+        every { insertionMethod.requiresMatchingKey() } returns false
+        every { insertionMethod.createProperty(any()) } returns property
     }
 
     @Test
@@ -44,7 +46,7 @@ class DestinationOperationAssemblerTest {
         val assembler =
             DestinationOperationAssembler(
                 listOf(PROPERTY_PATH),
-                mapOf(SoftDelete to factory),
+                listOf(insertionMethod),
                 NO_SCHEMA_REQUESTER,
             )
 
@@ -60,7 +62,7 @@ class DestinationOperationAssemblerTest {
         val assembler =
             DestinationOperationAssembler(
                 listOf(PROPERTY_PATH),
-                mapOf(SoftDelete to factory),
+                listOf(insertionMethod),
                 NO_SCHEMA_REQUESTER,
             )
 
@@ -75,7 +77,7 @@ class DestinationOperationAssemblerTest {
         val assembler =
             DestinationOperationAssembler(
                 listOf(PROPERTY_PATH),
-                mapOf(SoftDelete to factory),
+                listOf(insertionMethod),
                 NO_SCHEMA_REQUESTER,
             )
 
@@ -94,11 +96,47 @@ class DestinationOperationAssemblerTest {
         val assembler =
             DestinationOperationAssembler(
                 listOf(PROPERTY_PATH),
-                mapOf(SoftDelete to factory),
+                listOf(insertionMethod),
                 schemaRequester,
             )
 
         val operations = assembler.assemble(DestinationObject(OBJECT_NAME, Jsons.objectNode()))
+
+        assertEquals(1, operations.size)
+    }
+
+    @Test
+    internal fun `test given matching keys expected but none found when assemble then do not return operation`() {
+        every { insertionMethod.requiresMatchingKey() } returns true
+        every { property.isMatchingKey() } returns false
+        every { property.isAvailable() } returns true
+        val assembler =
+            DestinationOperationAssembler(
+                listOf(PROPERTY_PATH),
+                listOf(insertionMethod),
+                NO_SCHEMA_REQUESTER,
+            )
+
+        val operations =
+            assembler.assemble(DestinationObject(OBJECT_NAME, apiRepresentationWithOneProperty()))
+
+        assertEquals(0, operations.size)
+    }
+
+    @Test
+    internal fun `test given matching keys expected and found when assemble then return operation`() {
+        every { insertionMethod.requiresMatchingKey() } returns true
+        every { property.isMatchingKey() } returns true
+        every { property.isAvailable() } returns true
+        val assembler =
+            DestinationOperationAssembler(
+                listOf(PROPERTY_PATH),
+                listOf(insertionMethod),
+                NO_SCHEMA_REQUESTER,
+            )
+
+        val operations =
+            assembler.assemble(DestinationObject(OBJECT_NAME, apiRepresentationWithOneProperty()))
 
         assertEquals(1, operations.size)
     }

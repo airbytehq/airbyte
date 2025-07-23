@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-formbricks
   githubIssueLabel: source-formbricks
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Formbricks
   releaseDate: 2024-11-08
   releaseStage: alpha

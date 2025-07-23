@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-jamf-pro
   githubIssueLabel: source-jamf-pro
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Jamf Pro
   releaseDate: 2025-04-08
   releaseStage: alpha

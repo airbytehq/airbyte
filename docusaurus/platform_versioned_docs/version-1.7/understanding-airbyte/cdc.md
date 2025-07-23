@@ -34,10 +34,13 @@ We add some metadata columns for CDC sources which all begin with the `_ab_cdc_`
 - [MySQL](/integrations/sources/mysql)
 - [Microsoft SQL Server / MSSQL](/integrations/sources/mssql)
 - [MongoDB](/integrations/sources/mongodb-v2)
+- [Oracle DB](/integrations/enterprise-connectors/source-oracle-enterprise)
+- [SAP HANA](/integrations/enterprise-connectors/source-sap-hana)
+- [IBM Db2](/integrations/enterprise-connectors/source-db2)
 
 ## Coming Soon
 
-- Oracle DB
+
 - Please [create a ticket](https://github.com/airbytehq/airbyte/issues/new/choose) if you need CDC support on another database!
 
 ## Additional information

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-bugsnag
   githubIssueLabel: source-bugsnag
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Bugsnag
   releaseDate: 2024-10-16
   releaseStage: alpha

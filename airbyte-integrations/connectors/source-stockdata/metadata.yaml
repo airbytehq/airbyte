@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-stockdata
   githubIssueLabel: source-stockdata
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: StockData
   releaseDate: 2024-11-08
   releaseStage: alpha

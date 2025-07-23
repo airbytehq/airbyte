@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-nutshell
   githubIssueLabel: source-nutshell
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Nutshell
   releaseDate: 2024-11-08
   releaseStage: alpha

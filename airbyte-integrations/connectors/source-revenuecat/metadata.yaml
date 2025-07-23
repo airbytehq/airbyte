@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-revenuecat
   githubIssueLabel: source-revenuecat
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: RevenueCat
   releaseDate: 2024-09-23
   releaseStage: alpha

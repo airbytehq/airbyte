@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-workflowmax
   githubIssueLabel: source-workflowmax
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Workflowmax
   releaseDate: 2024-10-13
   releaseStage: alpha

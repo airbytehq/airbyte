@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-deputy
   githubIssueLabel: source-deputy
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Deputy
   releaseDate: 2024-10-27
   releaseStage: alpha
