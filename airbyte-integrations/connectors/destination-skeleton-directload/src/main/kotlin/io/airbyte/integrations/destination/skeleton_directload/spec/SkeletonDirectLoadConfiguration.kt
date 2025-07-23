@@ -14,14 +14,14 @@ data class SkeletonDirectLoadConfiguration(val namespace: String) : DestinationC
 
 @Singleton
 class SkeletonDirectLoadConfigurationFactory :
-    DestinationConfigurationFactory<SkeletonDirectLoadSpecification, SkeletonDirectLoadConfiguration> {
-    override fun makeWithoutExceptionHandling(pojo: SkeletonDirectLoadSpecification): SkeletonDirectLoadConfiguration {
-        return SkeletonDirectLoadConfiguration(
-            namespace = pojo.namespace
-        )
+    DestinationConfigurationFactory<
+        SkeletonDirectLoadSpecification, SkeletonDirectLoadConfiguration> {
+    override fun makeWithoutExceptionHandling(
+        pojo: SkeletonDirectLoadSpecification
+    ): SkeletonDirectLoadConfiguration {
+        return SkeletonDirectLoadConfiguration(namespace = pojo.namespace)
     }
 }
-
 
 @Singleton
 class SkeletonDirectLoadSpecificationExtension : DestinationSpecificationExtension {

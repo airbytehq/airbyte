@@ -16,7 +16,8 @@ import javax.inject.Singleton
 private val nameTransformer = SkeletonDirectLoadSQLNameTransformer()
 
 @Singleton
-class SkeletonDirectLoadFinalTableNameGenerator(val config: SkeletonDirectLoadConfiguration) : FinalTableNameGenerator {
+class SkeletonDirectLoadFinalTableNameGenerator(val config: SkeletonDirectLoadConfiguration) :
+    FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
             nameTransformer.getNamespace(streamDescriptor.namespace ?: config.namespace),

@@ -15,12 +15,7 @@ private val logger = KotlinLogging.logger {}
 class SkeletonDirectLoadDatabaseHandler(private val skeletonClient: SkeletonDirectLoadClient) :
     DatabaseHandler {
 
-    @Throws(InterruptedException::class)
-    override fun execute(sql: Sql) {
+    @Throws(InterruptedException::class) override fun execute(sql: Sql) {}
 
-    }
-
-    override suspend fun createNamespaces(namespaces: Collection<String>) {
-
-    }
+    override suspend fun createNamespaces(namespaces: Collection<String>) {}
 }

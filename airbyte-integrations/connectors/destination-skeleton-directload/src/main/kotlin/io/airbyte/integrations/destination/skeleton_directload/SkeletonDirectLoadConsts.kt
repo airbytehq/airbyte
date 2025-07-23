@@ -3,6 +3,4 @@
  */
 package io.airbyte.integrations.destination.skeleton_directload
 
-object SkeletonDirectLoadConsts {
-
-}
+object SkeletonDirectLoadConsts {}

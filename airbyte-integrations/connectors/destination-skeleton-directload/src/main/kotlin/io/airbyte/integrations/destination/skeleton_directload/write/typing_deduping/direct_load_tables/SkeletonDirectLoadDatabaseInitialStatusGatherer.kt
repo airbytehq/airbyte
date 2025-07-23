@@ -32,8 +32,8 @@ class SkeletonDirectLoadDatabaseInitialStatusGatherer(
                     val tableName = tableNameInfo.tableNames.finalTableName!!
                     map[stream] =
                         DirectLoadInitialStatus(
-                            realTable = DirectLoadTableStatus(isEmpty=false),
-                            tempTable = DirectLoadTableStatus(isEmpty=false),
+                            realTable = DirectLoadTableStatus(isEmpty = false),
+                            tempTable = DirectLoadTableStatus(isEmpty = false),
                         )
                 }
             }
