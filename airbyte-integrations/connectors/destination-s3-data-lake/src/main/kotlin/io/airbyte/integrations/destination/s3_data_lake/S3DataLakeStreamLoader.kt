@@ -56,8 +56,7 @@ class S3DataLakeStreamLoader(
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
-                schema = incomingSchema,
-                properties = properties
+                schema = incomingSchema
             )
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
