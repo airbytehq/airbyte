@@ -76,8 +76,14 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             return {self.auth_header: self.token}
         return {}
 
-    def __call__(self, request):
-        """Attach the HTTP headers required to authenticate on the HTTP request"""
+    def find_available_token(self, request: requests.Request):
+        """
+        Iterates over each provided token and check their availability.
+        If no tokens are available or reset time is more than 10 minutes, an error is raised.
+        Method process_token() returns True is current token is available,
+        otherwise goes to the next token and sets it as current and checks for availability.
+        """
+
         while True:
             current_token = self._tokens[self.current_active_token]
             if "graphql" in request.path_url:
@@ -86,6 +92,11 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             else:
                 if self.process_token(current_token, "count_rest", "reset_at_rest"):
                     break
+
+    def __call__(self, request):
+        """Attach the HTTP headers required to authenticate on the HTTP request"""
+
+        self.find_available_token(request)
 
         request.headers.update(self.get_auth_header())
 
