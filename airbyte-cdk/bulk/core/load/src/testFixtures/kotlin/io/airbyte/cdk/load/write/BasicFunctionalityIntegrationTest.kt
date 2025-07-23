@@ -16,7 +16,6 @@ import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.airbyte.cdk.load.config.NamespaceMappingConfig
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -80,7 +79,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
@@ -297,7 +295,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val schematizedArrayBehavior: SchematizedNestedValueBehavior,
     val unionBehavior: UnionBehavior,
     val coercesLegacyUnions: Boolean = false,
-    val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
@@ -376,7 +373,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     InputRecord(
                         stream = stream,
-                        data = """{"id": 5678, "undeclared": "asdf"}""",
+                        data = """{"id": 5678}""",
                         emittedAtMs = 1234,
                         changes =
                             mutableListOf(
@@ -418,7 +415,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytesForMediumAndFormat(234L, 254L, 59L)
+                            totalBytes = expectedBytesForMediumAndFormat(214L, 234L, 59L)
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -437,12 +434,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             OutputRecord(
                                 extractedAt = 1234,
                                 generationId = 0,
-                                data =
-                                    if (preserveUndeclaredFields) {
-                                        mapOf("id" to 5678, "undeclared" to "asdf")
-                                    } else {
-                                        mapOf("id" to 5678)
-                                    },
+                                data = mapOf("id" to 5678),
                                 airbyteMeta =
                                     OutputRecord.Meta(
                                         changes =
@@ -2300,9 +2292,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 namespaceMapper = namespaceMapperForMedium()
             )
         val stream1 = makeStream("cursor1")
-        fun makeRecord(cursorName: String, emittedAtMs: Long) =
+        fun makeRecord(stream: DestinationStream, cursorName: String, emittedAtMs: Long) =
             InputRecord(
-                stream1,
+                stream,
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
                 emittedAtMs = emittedAtMs,
                 checkpointId = checkpointKeyForMedium()?.checkpointId
@@ -2310,10 +2302,10 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             updatedConfig,
             stream1,
-            listOf(makeRecord("cursor1", emittedAtMs = 100)),
+            listOf(makeRecord(stream1, "cursor1", emittedAtMs = 100)),
         )
         val stream2 = makeStream("cursor2")
-        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2", emittedAtMs = 200)))
+        runSync(updatedConfig, stream2, listOf(makeRecord(stream2, "cursor2", emittedAtMs = 200)))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
@@ -2525,7 +2517,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "string": "foo",
+                          "string": "fo\u0000o",
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
@@ -2807,7 +2799,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "string" to "foo",
+                            "string" to "fo\u0000o",
                             "number" to 42.1,
                             "integer" to 42,
                             "boolean" to true,
@@ -3781,7 +3773,7 @@ abstract class BasicFunctionalityIntegrationTest(
             listOf(
                 InputRecord(
                     stream,
-                    """{"foo": "bar"}""",
+                    """{}""",
                     emittedAtMs = 1000L,
                     checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
@@ -3791,12 +3783,7 @@ abstract class BasicFunctionalityIntegrationTest(
             OutputRecord(
                 extractedAt = 1000L,
                 generationId = 42,
-                data =
-                    if (preserveUndeclaredFields) {
-                        mapOf("foo" to "bar")
-                    } else {
-                        emptyMap()
-                    },
+                data = emptyMap(),
                 airbyteMeta = OutputRecord.Meta(syncId = 42),
             )
         dumpAndDiffRecords(
@@ -3916,134 +3903,11 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 updatedConfig,
                 stream,
-                messages = listOf(InputGlobalCheckpoint(null, checkpointKeyForMedium()))
-            )
-        }
-    }
-
-    private fun testNamespaceMapping(
-        namespaceMappingConfig: NamespaceMappingConfig,
-        namespaceValidator: (String?, String?, String, String) -> Unit
-    ) {
-        assumeTrue(dataChannelMedium == DataChannelMedium.SOCKET)
-        val stream =
-            DestinationStream(
-                unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_stream__$randomizedNamespace", // in case namespace == null
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 1,
-                minimumGenerationId = 1,
-                syncId = 42,
-                namespaceMapper =
-                    NamespaceMapper(
-                        namespaceDefinitionType = namespaceMappingConfig.namespaceDefinitionType,
-                        streamPrefix = namespaceMappingConfig.streamPrefix,
-                        namespaceFormat = namespaceMappingConfig.namespaceFormat
+                messages =
+                    listOf(
+                        InputGlobalCheckpoint(null, checkpointKeyForMedium(), sourceRecordCount = 0)
                     )
             )
-        namespaceValidator(
-            stream.unmappedNamespace,
-            stream.mappedDescriptor.namespace,
-            stream.unmappedName,
-            stream.mappedDescriptor.name,
-        )
-        runSync(
-            updatedConfig,
-            DestinationCatalog(listOf(stream)),
-            listOf(
-                InputRecord(
-                    stream,
-                    """{"id": 42}""",
-                    emittedAtMs = 1234L,
-                    checkpointId = checkpointKeyForMedium()?.checkpointId
-                )
-            ),
-            useFileTransfer = false,
-            destinationProcessFactory = destinationProcessFactory,
-            namespaceMappingConfig = namespaceMappingConfig
-        )
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 1234L,
-                    generationId = 1,
-                    data = mapOf("id" to 42),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
-            ),
-            stream,
-            primaryKey = listOf(listOf("id")),
-            cursor = null,
-        )
-    }
-
-    @Test
-    open fun testNamespaceMappingDestinationNoPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(namespaceDefinitionType = NamespaceDefinitionType.DESTINATION)
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For destination namespace mapping, the namespace should be the unmapped name.
-            assertNull(mappedNamespace)
-            assertEquals(unmappedName, mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingDestinationWithPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.DESTINATION,
-                streamPrefix = "prefix_",
-            )
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For destination namespace mapping, the namespace should be the unmapped name.
-            assertNull(mappedNamespace)
-            assertEquals("prefix_$unmappedName", mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingSourceWithPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.SOURCE,
-                streamPrefix = "prefix_",
-            )
-        ) { unmappedNamespace, mappedNamespace, unmappedName, mappedName ->
-            // For source namespace mapping, the namespace should be the unmapped namespace.
-            assertEquals(unmappedNamespace, mappedNamespace)
-            assertEquals("prefix_$unmappedName", mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingCustomFormatNoPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
-                namespaceFormat = "custom_\${SOURCE_NAMESPACE}_namespace",
-            )
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For custom namespace mapping, the namespace should be the custom format.
-            assertEquals("custom_${randomizedNamespace}_namespace", mappedNamespace)
-            assertEquals(unmappedName, mappedName)
-        }
-    }
-
-    @Test
-    open fun testNamespaceMappingCustomFormatNoMacroWithPrefix() {
-        testNamespaceMapping(
-            NamespaceMappingConfig(
-                namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
-                namespaceFormat = "custom_$randomizedNamespace",
-                streamPrefix = "prefix_",
-            )
-        ) { _, mappedNamespace, unmappedName, mappedName ->
-            // For custom namespace mapping, the namespace should be the custom format.
-            assertEquals("custom_${randomizedNamespace}", mappedNamespace)
-            assertEquals("prefix_$unmappedName", mappedName)
         }
     }
 

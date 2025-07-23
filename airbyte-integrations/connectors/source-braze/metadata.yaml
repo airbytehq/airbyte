@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/braze
   githubIssueLabel: source-braze
   icon: braze.svg
-  license: MIT
+  license: ELv2
   name: Braze
   remoteRegistries:
     pypi:

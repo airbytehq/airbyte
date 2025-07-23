@@ -230,14 +230,17 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.10.3 | 2025-07-12 | [63094](https://github.com/airbytehq/airbyte/pull/63094) | Update dependencies |
-| 1.10.2 | 2025-07-05 | [62613](https://github.com/airbytehq/airbyte/pull/62613) | Update dependencies |
-| 1.10.1 | 2025-06-28 | [62194](https://github.com/airbytehq/airbyte/pull/62194) | Update dependencies |
-| 1.10.0 | 2025-06-23 | [61425](https://github.com/airbytehq/airbyte/pull/61425) | Migrate to manifest-only |
-| 1.9.4 | 2025-06-21 | [61789](https://github.com/airbytehq/airbyte/pull/61789) | Update dependencies |
-| 1.9.3 | 2025-06-18 | [61706](https://github.com/airbytehq/airbyte/pull/61706) | Fix record serialization bug |
-| 1.9.2 | 2025-06-14 | [60663](https://github.com/airbytehq/airbyte/pull/60663) | Update dependencies |
-| 1.9.1 | 2025-06-10 | [61514](https://github.com/airbytehq/airbyte/pull/61514) | Promoting release candidate 1.9.1-rc.1 to a main version. |
+| 1.10.6      | 2025-07-22 | [63720](https://github.com/airbytehq/airbyte/pull/63720) | Ignore 403 "insufficient permission" errors                                                                                                                             |
+| 1.10.5      | 2025-07-19 | [63471](https://github.com/airbytehq/airbyte/pull/63471) | Update dependencies                                                                                                                                                    |
+| 1.10.4      | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest                                                                                                       |
+| 1.10.3      | 2025-07-12 | [63094](https://github.com/airbytehq/airbyte/pull/63094) | Update dependencies                                                                                                                                                    |
+| 1.10.2      | 2025-07-05 | [62613](https://github.com/airbytehq/airbyte/pull/62613) | Update dependencies                                                                                                                                                    |
+| 1.10.1      | 2025-06-28 | [62194](https://github.com/airbytehq/airbyte/pull/62194) | Update dependencies                                                                                                                                                    |
+| 1.10.0      | 2025-06-23 | [61425](https://github.com/airbytehq/airbyte/pull/61425) | Migrate to manifest-only                                                                                                                                               |
+| 1.9.4       | 2025-06-21 | [61789](https://github.com/airbytehq/airbyte/pull/61789) | Update dependencies                                                                                                                                                    |
+| 1.9.3       | 2025-06-18 | [61706](https://github.com/airbytehq/airbyte/pull/61706) | Fix record serialization bug                                                                                                                                           |
+| 1.9.2       | 2025-06-14 | [60663](https://github.com/airbytehq/airbyte/pull/60663) | Update dependencies                                                                                                                                                    |
+| 1.9.1       | 2025-06-10 | [61514](https://github.com/airbytehq/airbyte/pull/61514) | Promoting release candidate 1.9.1-rc.1 to a main version.                                                                                                              |
 | 1.9.1-rc.1  | 2025-06-10 | [61508](https://github.com/airbytehq/airbyte/pull/61508) | Add API budget, reduce concurrency levels, and catch 403 rate limiting errors                                                                                          |
 | 1.9.0       | 2025-06-06 | [61408](https://github.com/airbytehq/airbyte/pull/61408) | Migrate custom reports streams to low-code                                                                                                                             |
 | 1.8.0       | 2025-06-06 | [61335](https://github.com/airbytehq/airbyte/pull/61335) | Migrate `SearchAnalyticsAllFields`, `SearchAnalyticsByDate`, `SearchAnalyticsByDevice`, `SearchAnalyticsByPage`, and `SearchAnalyticsByQuery` to low-code              |

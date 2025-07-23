@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-alpaca-broker-api
   githubIssueLabel: source-alpaca-broker-api
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Alpaca Broker API
   releaseDate: 2025-04-02
   releaseStage: alpha

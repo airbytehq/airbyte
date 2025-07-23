@@ -16,12 +16,12 @@ data:
             type: GSM
   connectorType: source
   definitionId: 4fe962d0-a70e-4516-aa99-c551abf46352
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.12
   dockerRepository: airbyte/source-outbrain-amplify
   documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
   githubIssueLabel: source-outbrain-amplify
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Outbrain Amplify
   registryOverrides:
     cloud:

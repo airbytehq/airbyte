@@ -104,7 +104,9 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 6.2.26      | 2025-07-16 | [63342](https://github.com/airbytehq/airbyte/pull/63342) | Rendered name changed to `Sample Data`                                                                                              |
+| 6.2.28 | 2025-07-19 | [63534](https://github.com/airbytehq/airbyte/pull/63534) | Update dependencies |
+| 6.2.27 | 2025-07-17 | [63354](https://github.com/airbytehq/airbyte/pull/63354) | Updated icon |
+| 6.2.26 | 2025-07-16 | [63342](https://github.com/airbytehq/airbyte/pull/63342) | Rendered name changed to `Sample Data` |
 | 6.2.26-rc.1 | 2025-06-16 | [61645](https://github.com/airbytehq/airbyte/pull/61645) | Update for testing                                                                                              |
 | 6.2.25-rc.1 | 2025-04-07 | [57500](https://github.com/airbytehq/airbyte/pull/57500) | Update for testing                                                                                              |
 | 6.2.24      | 2025-04-05 | [57263](https://github.com/airbytehq/airbyte/pull/57263) | Update dependencies                                                                                             |

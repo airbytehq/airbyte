@@ -229,6 +229,28 @@ The following options allow you to fine-tune the column name conversion process.
 
 These options provide flexibility to tailor column name conversions to your specific database requirements. Adjust them as needed in the Airbyte UI when configuring the Google Sheets connector.
 
+---
+
+### Header Deduplication
+
+The Google Sheets connector automatically handles duplicate column headers by appending the cell position to create unique field names. This ensures that all columns are properly synced even when your spreadsheet contains duplicate header names.
+
+#### How it works
+
+- When duplicate headers are detected, the connector appends `_<cell_position>` to each duplicated header name
+- The cell position follows the standard Google Sheet naming convention (e.g., A1, B1, C1, etc.)
+- This creates unique field names while preserving the original header text
+
+#### Example
+
+If your spreadsheet has a header named `stats` in both columns C and Q (positions C1 and Q1), the connector will create two distinct fields:
+- `stats_C1` (for the column at position C1)
+- `stats_Q1` (for the column at position Q1)
+
+This ensures that data from both columns is properly captured and synced to your destination, with clear identification of which column each field represents.
+
+---
+
 ## Supported sync modes
 
 The Google Sheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -287,6 +309,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.2 | 2025-07-22 | [63334](https://github.com/airbytehq/airbyte/pull/63334) | Feature: Deduplicate Headers|
+| 0.12.1 | 2025-07-19 | [55490](https://github.com/airbytehq/airbyte/pull/55490) | Update dependencies |
 | 0.12.0 | 2025-07-15 | [63305](https://github.com/airbytehq/airbyte/pull/63305) | Promoting release candidate 0.12.0-rc.2 to a main version. |
 | 0.12.0-rc.2| 2025-07-11 | [62931](https://github.com/airbytehq/airbyte/pull/62931) | Fix: handle empty `propeties_to_match` in SchmemaMatchingExtractor |
 | 0.12.0-rc.1| 2025-07-02 | [62456](https://github.com/airbytehq/airbyte/pull/62456) | Feature: migrate connector to manifest-only format                                                                                                                     |

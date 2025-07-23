@@ -1,8 +1,14 @@
 # Connector Builder
 
 Connector Builder is a no-code tool that’s part of the Airbyte UI.
-It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and lets you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace.
+It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview), letting you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace. You can seamlessly switch between the visual UI and direct YAML editing as needed.
 Connector Builder offers the most straightforward method for building, contributing, and maintaining connectors.
+
+## How it works
+
+The Connector Builder provides a visual interface that has the same capabilities as writing [low-code YAML connectors](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) directly. Instead of writing YAML code, you configure your connector through intuitive forms with built-in validation and helpful guidance.
+
+When you build a connector in the UI, you're creating a YAML manifest behind the scenes. The Builder ensures your configuration is always valid and complete, with real-time feedback and clear error messages. You can export this YAML manifest at any time or switch to direct YAML editing if you prefer a code-first approach.
 
 ## When should I use Connector Builder?
 
@@ -14,8 +20,8 @@ If the connector you're looking for doesn't already exist and you'd like to try 
 The high-level process for using Connector Builder is as follows:
 
 1. Access Connector Builder in the Airbyte web app by selecting "Builder" in the left-hand sidebar
-2. Iterate on the connector by providing details for global configuration and user inputs, and streams
-3. Once the connector is ready, publish it to your workspace, or contribute it to Airbyte catalog
+2. Configure your connector using the schema-driven forms for global configuration, user inputs, and streams
+3. Once the connector is ready, publish it to your workspace, or contribute it to the Airbyte catalog
 4. Configure a Source based on the released connector
 5. Use the Source in a connection to sync data
 
@@ -37,7 +43,7 @@ If you'd like to share your connector with other Airbyte users, you can contribu
 
 Reviews typically take under a week.
 
-You can also export the YAML manifest file for your connector and share it with others. The manifest file contains all the information about the connector, including the global configuration, streams, and user inputs.
+You can also export the YAML manifest file for your connector and share it with others. The manifest file contains all the connector configuration structured according to the declarative component schema, including the global configuration, streams, and user inputs.
 
 ## Disabled in low-resource mode
 

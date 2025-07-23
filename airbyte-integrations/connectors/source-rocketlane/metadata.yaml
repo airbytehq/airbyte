@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-rocketlane
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.59.2@sha256:89dcb86ee03b8d951b8a2a80a64d2c84a369dacef29346ec6a5f64c9fb7132f8
   connectorSubtype: api
   connectorType: source
   definitionId: 6c817011-0b41-47ce-9b50-0274e0c6b127
-  dockerImageTag: 0.0.26
+  dockerImageTag: 0.0.27
   dockerRepository: airbyte/source-rocketlane
   githubIssueLabel: source-rocketlane
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Rocketlane
   releaseDate: 2024-11-08
   releaseStage: alpha
