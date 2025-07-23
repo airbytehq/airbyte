@@ -16,6 +16,8 @@ private val log = KotlinLogging.logger {}
 class AirbyteConnectorRunnable : Runnable {
     @Value("\${airbyte.connector.metadata.docker-repository}") lateinit var connectorName: String
 
+    @Value("\${airbyte.connector.operation}") lateinit var operationName: String
+
     @Inject lateinit var operationProvider: Provider<Operation>
 
     @Inject lateinit var outputConsumer: OutputConsumer
@@ -40,8 +42,15 @@ class AirbyteConnectorRunnable : Runnable {
                     "Failed ${operation::class} operation execution."
                 }
             }
-            outputConsumer.accept(exceptionHandler.handle(e))
-            throw e
+            if (operationName == "check") {
+                val exception: Throwable? = if (e.message == "Failed to initialize connector operation") e.cause else e
+                val (errorTraceMessage, connectionStatusMessage) = exceptionHandler.handleCheckFailure(exception ?: e)
+                outputConsumer.accept(errorTraceMessage)
+                outputConsumer.accept(connectionStatusMessage)
+            } else {
+                outputConsumer.accept(exceptionHandler.handle(e))
+                throw e
+            }
         } finally {
             log.info { "Flushing output consumer prior to shutdown." }
             outputConsumer.close()

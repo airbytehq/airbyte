@@ -48,9 +48,7 @@ class DiscoverOperation<C : DestinationConfiguration>(
     }
 
     private fun handleException(t: Throwable) {
-        val (traceMessage, statusMessage) = exceptionHandler.handleCheckFailure(t)
-        outputConsumer.accept(traceMessage)
-        outputConsumer.accept(statusMessage)
+        outputConsumer.accept(exceptionHandler.handle(t))
     }
 
     private fun DestinationDiscoverCatalog.toProtocol(): ProtocolDestinationCatalog =
