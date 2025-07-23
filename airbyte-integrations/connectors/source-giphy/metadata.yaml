@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-giphy
   githubIssueLabel: source-giphy
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Giphy
   releaseDate: 2025-04-07
   releaseStage: alpha

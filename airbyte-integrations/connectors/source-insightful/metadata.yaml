@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-insightful
   githubIssueLabel: source-insightful
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Insightful
   releaseDate: 2025-04-09
   releaseStage: alpha

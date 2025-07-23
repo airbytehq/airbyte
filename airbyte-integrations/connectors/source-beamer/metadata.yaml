@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-beamer
   githubIssueLabel: source-beamer
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Beamer
   releaseDate: 2024-09-17
   releaseStage: alpha

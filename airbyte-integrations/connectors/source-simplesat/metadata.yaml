@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-simplesat
   githubIssueLabel: source-simplesat
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Simplesat
   releaseDate: 2024-10-01
   releaseStage: alpha

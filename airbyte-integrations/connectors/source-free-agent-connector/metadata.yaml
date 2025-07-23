@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-free-agent-connector
   githubIssueLabel: source-free-agent-connector
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: FreeAgent
   releaseDate: 2024-09-24
   releaseStage: alpha

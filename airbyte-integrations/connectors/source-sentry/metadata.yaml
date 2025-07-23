@@ -15,7 +15,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   githubIssueLabel: source-sentry
   icon: sentry.svg
-  license: MIT
+  license: ELv2
   # Rate limit windows are returned in the response headers of the API requests.
   # Senty docs (https://docs.sentry.io/api/ratelimits/) state a per-second rate limit,
   # but the `x-rate-limit-reset` header has been observed to return a value of up to the next full minute from a request

@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/nytimes
   githubIssueLabel: source-nytimes
   icon: nytimes.svg
-  license: MIT
+  license: ELv2
   name: New York Times
   registryOverrides:
     cloud:

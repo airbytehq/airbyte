@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-calendly
   githubIssueLabel: source-calendly
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Calendly
   releaseDate: 2025-01-27
   releaseStage: alpha

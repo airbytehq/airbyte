@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-elasticemail
   githubIssueLabel: source-elasticemail
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Elasticemail
   releaseDate: 2024-11-08
   releaseStage: alpha

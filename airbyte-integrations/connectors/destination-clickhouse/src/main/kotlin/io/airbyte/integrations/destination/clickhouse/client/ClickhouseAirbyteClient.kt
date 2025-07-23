@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
+import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.model.hasApplicableAlterations
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -124,16 +125,7 @@ class ClickhouseAirbyteClient(
         }
 
         val airbyteSchemaWithClickhouseType: Map<String, String> =
-            stream.schema
-                .asColumns()
-                .map { (fieldName, fieldType) ->
-                    // We don't need to nullable information here because we are setting all fields
-                    // as
-                    // nullable in the destination
-                    // Add map key
-                    fieldName to fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
-                }
-                .toMap()
+            getAirbyteSchemaWithClickhouseType(stream)
 
         val clickhousePks: List<String> =
             tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
@@ -155,7 +147,7 @@ class ClickhouseAirbyteClient(
                 currentPKs,
             )
 
-        if (columnChanges.hasApplicableAlterations()) {
+        if (columnChanges.hasApplicableAlterations() && !columnChanges.hasDedupChange) {
             execute(
                 sqlGenerator.alterTable(
                     columnChanges,
@@ -189,6 +181,21 @@ class ClickhouseAirbyteClient(
             execute(sqlGenerator.dropTable(tempTableName))
         }
     }
+
+    internal fun getAirbyteSchemaWithClickhouseType(
+        stream: DestinationStream
+    ): Map<String, String> =
+        stream.schema
+            .asColumns()
+            .map { (fieldName, fieldType) ->
+                // We don't need to nullable information here because we are setting all fields
+                // as
+                // nullable in the destination
+                // Add map key
+                fieldName.toClickHouseCompatibleName() to
+                    fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+            }
+            .toMap()
 
     internal fun getChangedColumns(
         tableColumns: List<ClickHouseColumn>,

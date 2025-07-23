@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-tinyemail
   githubIssueLabel: source-tinyemail
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Tinyemail
   releaseDate: 2024-11-08
   releaseStage: alpha

@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pendo
   githubIssueLabel: source-pendo
   icon: pendo.svg
-  license: MIT
+  license: ELv2
   name: Pendo
   registryOverrides:
     cloud:
