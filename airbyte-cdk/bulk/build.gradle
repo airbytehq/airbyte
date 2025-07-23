@@ -88,8 +88,19 @@ tasks.register('checkBuildNumber') {
     }
 }
 
-tasks.named('assemble') {
-    dependsOn 'checkBuildNumber'
+gradle.taskGraph.whenReady { taskGraph ->
+    // Get the name of the task the user typed, e.g., "build", "clean", "assemble"
+    def requestedTask = gradle.startParameter.taskNames.find { taskGraph.hasTask(":$it") }
+
+    if (requestedTask) {
+        // Find the actual task object in the graph
+        def entryTask = taskGraph.allTasks.find { it.name == requestedTask }
+
+        // Add the dependency, but avoid adding it to itself or to 'clean'
+        if (entryTask && entryTask.name != 'checkBuildNumber' && entryTask.name != 'clean') {
+            entryTask.dependsOn(checkBuildNumber)
+        }
+    }
 }
 
 tasks.register('bulkCdkBuild').configure {
