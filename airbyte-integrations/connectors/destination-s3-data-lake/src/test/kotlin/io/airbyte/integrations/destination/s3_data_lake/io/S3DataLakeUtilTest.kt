@@ -111,8 +111,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema,
-                properties = properties
+                schema = schema
             )
         assertNotNull(table)
         verify(exactly = 1) {
@@ -148,8 +147,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema,
-                properties = properties
+                schema = schema
             )
         assertNotNull(table)
         verify(exactly = 0) {
@@ -176,8 +174,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema,
-                properties = properties
+                schema = schema
             )
         assertNotNull(table)
         verify(exactly = 0) {
