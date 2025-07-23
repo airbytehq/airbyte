@@ -9,6 +9,9 @@ import java.nio.file.Path
 
 val log = KotlinLogging.logger {}
 
+/**
+ * Make sure CI works
+ */
 object Utils {
     fun getConfigPath(relativePath: String): Path =
         Path.of(

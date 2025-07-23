@@ -111,6 +111,8 @@ class ClickhouseAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
+        throw RuntimeException("BOOOM")
+
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
         val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
 
