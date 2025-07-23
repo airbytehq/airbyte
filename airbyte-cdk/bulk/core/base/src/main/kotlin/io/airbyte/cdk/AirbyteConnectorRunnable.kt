@@ -43,8 +43,10 @@ class AirbyteConnectorRunnable : Runnable {
                 }
             }
             if (operationName == "check") {
-                val exception: Throwable? = if (e.message == "Failed to initialize connector operation") e.cause else e
-                val (errorTraceMessage, connectionStatusMessage) = exceptionHandler.handleCheckFailure(exception ?: e)
+                val exception: Throwable? =
+                    if (e.message == "Failed to initialize connector operation") e.cause else e
+                val (errorTraceMessage, connectionStatusMessage) =
+                    exceptionHandler.handleCheckFailure(exception ?: e)
                 outputConsumer.accept(errorTraceMessage)
                 outputConsumer.accept(connectionStatusMessage)
             } else {

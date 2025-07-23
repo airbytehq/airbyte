@@ -24,9 +24,7 @@ class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
     @Value("\${${CONNECTOR_CONFIG_PREFIX}.json}") private val jsonPropertyValue: String,
 ) : ConfigurationSpecificationSupplier<T> {
 
-    override val jsonSchema: JsonNode by lazy {
-        buildJsonSchema(micronautProvidedSpec.javaClass)
-    }
+    override val jsonSchema: JsonNode by lazy { buildJsonSchema(micronautProvidedSpec.javaClass) }
 
     override fun get(): T {
         return ValidatedJsonUtils.parseUnvalidated(
