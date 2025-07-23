@@ -890,7 +890,7 @@ definitions:
         type: DefaultPaginator
         pagination_strategy:
           type: CursorPagination
-          page_size: 100
+          page_size: 10
           cursor_value: '{{ response.get("next_page", {}) }}'
           stop_condition: '{{ response.get("end_of_stream") }}'
         page_token_option:
