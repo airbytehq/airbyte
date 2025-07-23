@@ -483,18 +483,14 @@ class ClickhouseAirbyteClientTest {
 
     @Test
     fun `test copyIntersectionColumn`() = runTest {
-        val chColumn1 = mockk<ClickHouseColumn>() {
-            every { columnName } returns "column1"
-        }
-        val chColumn2 = mockk<ClickHouseColumn>() {
-            every { columnName } returns "column2"
-        }
-        val tableSchemaWithoutAirbyteColumns = listOf(
-            chColumn1, chColumn2,
-        )
-        val columnNameMapping = ColumnNameMapping(
-            mapOf("2" to "column2", "3" to "column3")
-        )
+        val chColumn1 = mockk<ClickHouseColumn>() { every { columnName } returns "column1" }
+        val chColumn2 = mockk<ClickHouseColumn>() { every { columnName } returns "column2" }
+        val tableSchemaWithoutAirbyteColumns =
+            listOf(
+                chColumn1,
+                chColumn2,
+            )
+        val columnNameMapping = ColumnNameMapping(mapOf("2" to "column2", "3" to "column3"))
         val properTableName = TableName("table", "name")
         val tempTableName = TableName("table", "tmp")
 
@@ -507,11 +503,13 @@ class ClickhouseAirbyteClientTest {
             tempTableName,
         )
 
-        verify { clickhouseSqlGenerator.copyTable(
-            ColumnNameMapping(mapOf("2" to "column2")),
-            properTableName,
-            tempTableName,
-        ) }
+        verify {
+            clickhouseSqlGenerator.copyTable(
+                ColumnNameMapping(mapOf("2" to "column2")),
+                properTableName,
+                tempTableName,
+            )
+        }
     }
 
     companion object {

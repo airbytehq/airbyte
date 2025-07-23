@@ -160,7 +160,12 @@ class ClickhouseAirbyteClient(
             log.info {
                 "Detected deduplication change for table $properTableName, applying deduplication changes"
             }
-            applyDeduplicationChanges(stream, properTableName, columnNameMapping, tableSchemaWithoutAirbyteColumns)
+            applyDeduplicationChanges(
+                stream,
+                properTableName,
+                columnNameMapping,
+                tableSchemaWithoutAirbyteColumns
+            )
         }
     }
 
@@ -199,7 +204,9 @@ class ClickhouseAirbyteClient(
         val clickhouseColumnsName = tableSchemaWithoutAirbyteColumns.map { it.columnName }
         execute(
             sqlGenerator.copyTable(
-                ColumnNameMapping(columnNameMapping.filter { clickhouseColumnsName.contains(it.value) }),
+                ColumnNameMapping(
+                    columnNameMapping.filter { clickhouseColumnsName.contains(it.value) }
+                ),
                 properTableName,
                 tempTableName,
             ),
