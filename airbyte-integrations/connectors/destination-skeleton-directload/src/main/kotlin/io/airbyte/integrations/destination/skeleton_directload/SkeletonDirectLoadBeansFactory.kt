@@ -54,7 +54,7 @@ class SkeletonDirectLoadBeansFactory {
     @Singleton
     fun getWriter(
         skeletonClient: SkeletonDirectLoadClient,
-        config: SkeletonDirectLoadConfiguration,
+        @Suppress("UNUSED_PARAMETER") config: SkeletonDirectLoadConfiguration,
         names: TableCatalog,
         // micronaut will only instantiate a single instance of StreamStateStore,
         // so accept it as a * generic and cast as needed.
