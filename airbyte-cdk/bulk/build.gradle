@@ -88,6 +88,10 @@ tasks.register('checkBuildNumber') {
     }
 }
 
+tasks.named('assemble') {
+    dependsOn 'checkBuildNumber'
+}
+
 tasks.register('bulkCdkBuild').configure {
     dependsOn allprojects.collect {it.tasks.named('build')}
 }
