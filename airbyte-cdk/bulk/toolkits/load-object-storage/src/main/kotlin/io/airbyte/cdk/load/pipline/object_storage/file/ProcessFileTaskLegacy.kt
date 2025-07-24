@@ -49,7 +49,7 @@ class ProcessFileTaskLegacy(
                     acc.handleFileMessage(
                         message.file,
                         message.index,
-                        message.checkpointId,
+                        message.checkpointKey,
                     )
                 }
                 is FileTransferQueueEndOfStream -> {

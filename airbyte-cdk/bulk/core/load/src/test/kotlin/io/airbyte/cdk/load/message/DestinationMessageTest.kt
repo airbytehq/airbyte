@@ -661,7 +661,7 @@ class DestinationMessageTest {
 
         assertEquals("name", destinationRecord.stream.mappedDescriptor.name)
         assertEquals("namespace", destinationRecord.stream.mappedDescriptor.namespace)
-        assertEquals("checkpoint_id", destinationRecord.checkpointId?.value)
+        assertEquals("checkpoint_id", destinationRecord.checkpointKey!!.checkpointId.value)
         assertEquals(100L, destinationRecord.serializedSizeBytes)
         assertEquals(
             1234,

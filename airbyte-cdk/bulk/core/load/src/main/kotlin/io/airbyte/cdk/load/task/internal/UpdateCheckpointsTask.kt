@@ -47,7 +47,7 @@ class UpdateCheckpointsTask(
                 }
                 is GlobalSnapshotCheckpointWrapped -> {
                     val (checkpointKey, message) = it.value
-                    checkpointManager.addSnapshotCheckpoint(
+                    checkpointManager.addGlobalCheckpoint(
                         checkpointKey = checkpointKey,
                         checkpointMessage = it.replace(message)
                     )

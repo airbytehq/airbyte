@@ -28,7 +28,6 @@ import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.getEmittedAtMs
-import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
@@ -212,7 +211,7 @@ data class DestinationRecord(
     override val stream: DestinationStream,
     val message: DestinationRecordSource,
     val serializedSizeBytes: Long,
-    val checkpointId: CheckpointId? = null,
+    val checkpointKey: CheckpointKey? = null,
     val airbyteRawId: UUID,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
@@ -225,8 +224,11 @@ data class DestinationRecord(
                     .withEmittedAt(message.emittedAtMs)
                     .withData(message.asJsonRecord(stream.airbyteValueProxyFieldAccessors))
                     .also {
-                        if (checkpointId != null) {
-                            it.additionalProperties[CHECKPOINT_ID_NAME] = checkpointId.value
+                        if (checkpointKey != null) {
+                            it.additionalProperties[CHECKPOINT_ID_NAME] =
+                                checkpointKey.checkpointId.value
+                            it.additionalProperties[CHECKPOINT_INDEX_NAME] =
+                                checkpointKey.checkpointIndex.value
                         }
                     }
                     .withMeta(
@@ -249,7 +251,7 @@ data class DestinationRecord(
             stream = stream,
             rawData = message,
             serializedSizeBytes = serializedSizeBytes,
-            checkpointId = checkpointId,
+            checkpointKey = checkpointKey,
             airbyteRawId = airbyteRawId,
         )
     }
@@ -484,15 +486,22 @@ sealed interface CheckpointMessage : DestinationMessage {
         val unmappedNamespace: String?,
         val unmappedName: String,
         val state: JsonNode?,
+        val additionalProperties: Map<String, Any> = emptyMap()
     ) {
         fun asProtocolObject(): AirbyteStreamState =
             AirbyteStreamState()
                 .withStreamDescriptor(
-                    StreamDescriptor().withNamespace(unmappedNamespace).withName(unmappedName)
+                    StreamDescriptor().withNamespace(unmappedNamespace).withName(unmappedName),
                 )
-                .also {
-                    if (state != null) {
-                        it.streamState = state
+                .also { state ->
+                    if (this.state != null) {
+                        state.streamState = this.state
+                    }
+
+                    if (additionalProperties.isNotEmpty()) {
+                        additionalProperties.forEach {
+                            state.additionalProperties[it.key] = it.value
+                        }
                     }
                 }
     }
@@ -571,6 +580,7 @@ data class StreamCheckpoint(
         unmappedName: String,
         blob: String,
         sourceRecordCount: Long,
+        additionalProperties: Map<String, Any> = emptyMap(),
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
         totalRecords: Long? = null,
@@ -583,7 +593,7 @@ data class StreamCheckpoint(
         ),
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
-        emptyMap(),
+        additionalProperties,
         serializedSizeBytes = 0L,
         checkpointKey = checkpointKey,
         totalRecords = totalRecords,

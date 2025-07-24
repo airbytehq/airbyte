@@ -88,7 +88,7 @@ class PipelineEventBookkeepingRouterTest {
                     stream = stream1,
                     message = mockk(relaxed = true),
                     serializedSizeBytes = 0L,
-                    checkpointId = null,
+                    checkpointKey = null,
                     airbyteRawId = UUID.randomUUID()
                 ),
                 unopenedStreams = mutableSetOf(),
@@ -112,7 +112,7 @@ class PipelineEventBookkeepingRouterTest {
                         stream = stream1,
                         message = mockk(relaxed = true),
                         serializedSizeBytes = 0L,
-                        checkpointId = CheckpointId("bar"),
+                        checkpointKey = CheckpointId("bar"),
                         airbyteRawId = UUID.randomUUID()
                     ),
                     unopenedStreams = mutableSetOf(),

@@ -146,7 +146,7 @@ open class AbstractDlqWriteTest(
                 data = """{"id": $id}""",
                 emittedAtMs = 1234,
                 changes = mutableListOf(),
-                checkpointId = null,
+                checkpointKey = null,
             )
 
         fun checkpoint(stream: DestinationStream, sourceRecordCount: Long) =

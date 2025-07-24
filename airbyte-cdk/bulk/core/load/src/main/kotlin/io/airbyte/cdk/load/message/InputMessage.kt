@@ -20,7 +20,7 @@ import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
-import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToJsonBytes
@@ -71,7 +71,7 @@ data class InputRecord(
     val meta: Meta?,
     val serialized: String,
     val fileReference: AirbyteRecordMessageFileReference? = null,
-    val checkpointId: CheckpointId? = null,
+    val checkpointKey: CheckpointKey? = null,
     val unknownFieldNames: Set<String> = emptySet(),
 ) : InputMessage {
     /** Convenience constructor, primarily intended for use in tests. */
@@ -81,7 +81,7 @@ data class InputRecord(
         emittedAtMs: Long,
         changes: MutableList<Meta.Change> = mutableListOf(),
         fileReference: AirbyteRecordMessageFileReference? = null,
-        checkpointId: CheckpointId? = null,
+        checkpointKey: CheckpointKey? = null,
         unknownFieldNames: Set<String> = emptySet(),
     ) : this(
         stream = stream,
@@ -90,7 +90,7 @@ data class InputRecord(
         meta = Meta(changes),
         serialized = data,
         fileReference,
-        checkpointId,
+        checkpointKey,
         unknownFieldNames
     )
 
@@ -99,7 +99,10 @@ data class InputRecord(
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.unmappedName)
                 .setEmittedAtMs(emittedAtMs)
-        checkpointId?.let { recordBuilder.setPartitionId(it.value) }
+        checkpointKey?.let {
+            recordBuilder.setPartitionId(it.checkpointId.value)
+            recordBuilder.setIndex(it.checkpointIndex.value)
+        }
         stream.unmappedNamespace?.let { recordBuilder.setStreamNamespace(it) }
         meta?.let { meta ->
             recordBuilder.setMeta(
@@ -161,8 +164,11 @@ data class InputRecord(
                         if (fileReference != null) {
                             it.withFileReference(fileReference)
                         }
-                        if (checkpointId != null) {
-                            it.additionalProperties[CHECKPOINT_ID_NAME] = checkpointId.value
+                        if (checkpointKey != null) {
+                            it.additionalProperties[CHECKPOINT_ID_NAME] =
+                                checkpointKey.checkpointId.value
+                            it.additionalProperties[CHECKPOINT_INDEX_NAME] =
+                                checkpointKey.checkpointIndex.value
                         }
                     }
             )

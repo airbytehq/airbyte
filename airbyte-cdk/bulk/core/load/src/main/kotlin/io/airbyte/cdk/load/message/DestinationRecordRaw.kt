@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.protobuf.toAirbyteValue
-import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.util.*
 import kotlin.collections.LinkedHashMap
@@ -22,7 +22,7 @@ data class DestinationRecordRaw(
     val stream: DestinationStream,
     val rawData: DestinationRecordSource,
     val serializedSizeBytes: Long,
-    val checkpointId: CheckpointId? = null,
+    val checkpointKey: CheckpointKey? = null,
     val airbyteRawId: UUID,
 ) {
     // Currently file transfer is only supported for non-socket implementations

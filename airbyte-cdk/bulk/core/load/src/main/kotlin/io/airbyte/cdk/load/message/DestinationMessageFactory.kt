@@ -88,14 +88,21 @@ class DestinationMessageFactory(
                     // In socket mode, multiple sockets can run in parallel, which means that we
                     // depend on upstream to associate each record with the appropriate state
                     // message for us.
-                    val checkpointId =
+                    val checkpointKey =
                         if (requireCheckpointIdOnRecordAndKeyOnState) {
-                            val idSource =
+                            val partition_id =
                                 (message.record.additionalProperties[Meta.CHECKPOINT_ID_NAME]
                                     ?: throw IllegalStateException(
                                         "Expected `partition_id` on record"
                                     ))
-                            CheckpointId(idSource as String)
+
+                            val id =
+                                (message.record.additionalProperties[Meta.CHECKPOINT_INDEX_NAME]
+                                    ?: throw IllegalStateException("Expected `id` on record"))
+                            CheckpointKey(
+                                checkpointId = CheckpointId(partition_id as String),
+                                checkpointIndex = CheckpointIndex(id as Int)
+                            )
                         } else {
                             null
                         }
@@ -103,7 +110,7 @@ class DestinationMessageFactory(
                         stream = stream,
                         message = DestinationRecordJsonSource(message),
                         serializedSizeBytes = serializedSizeBytes,
-                        checkpointId = checkpointId,
+                        checkpointKey = checkpointKey,
                         airbyteRawId = uuidGenerator.v7(),
                     )
                 }
@@ -251,12 +258,7 @@ class DestinationMessageFactory(
                 it.streamDescriptor to keyFromAdditionalPropertiesMaybe(it.additionalProperties)
             }
             .filter { (_, value) -> value != null }
-            .associate {
-                DestinationStream.Descriptor(
-                    name = it.first.name,
-                    namespace = it.first.namespace
-                ) to it.second!!
-            }
+            .associate { namespaceMapper.map(it.first.namespace, it.first.name) to it.second!! }
 
     private fun isSnapshotCheckpoint(stateMessage: AirbyteStateMessage): Boolean =
         stateMessage.global.streamStates.any { streamState ->
@@ -312,7 +314,11 @@ class DestinationMessageFactory(
                 stream = stream,
                 message = DestinationRecordProtobufSource(message),
                 serializedSizeBytes = serializedSizeBytes,
-                checkpointId = CheckpointId(message.record.partitionId),
+                checkpointKey =
+                    CheckpointKey(
+                        checkpointId = CheckpointId(message.record.partitionId),
+                        checkpointIndex = CheckpointIndex(message.record.index),
+                    ),
                 airbyteRawId = uuidGenerator.v7(),
             )
         } else if (message.hasProbe()) {

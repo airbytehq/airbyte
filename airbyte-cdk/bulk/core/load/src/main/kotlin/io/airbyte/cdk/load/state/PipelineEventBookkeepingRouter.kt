@@ -37,6 +37,7 @@ import io.airbyte.cdk.load.util.CloseableCoroutine
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import org.apache.mina.util.ConcurrentHashSet
 
@@ -72,9 +73,22 @@ class PipelineEventBookkeepingRouter(
     private val log = KotlinLogging.logger {}
     private val clientCount = AtomicInteger(numDataChannels)
     private val sawEndOfStreamComplete = ConcurrentHashSet<DestinationStream.Descriptor>()
+    private val checkpointIndexes = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
 
     init {
         log.info { "Creating bookkeeping router for $numDataChannels data channels" }
+    }
+
+    private fun checkpointAtomic(descriptor: DestinationStream.Descriptor) =
+        checkpointIndexes.computeIfAbsent(descriptor) { AtomicInteger(1) }
+
+    private fun currentCheckpointKey(
+        descriptor: DestinationStream.Descriptor,
+    ): CheckpointKey {
+        val atomic = checkpointAtomic(descriptor)
+        val id = CheckpointId(atomic.get().toString())
+        val index = CheckpointIndex(atomic.get())
+        return CheckpointKey(checkpointId = id, checkpointIndex = index)
     }
 
     suspend fun handleStreamMessage(
@@ -98,14 +112,11 @@ class PipelineEventBookkeepingRouter(
         return when (message) {
             is DestinationRecord -> {
                 val record = message.asDestinationRecordRaw()
-                manager.incrementReadCount()
-                manager.incrementByteCount(record.serializedSizeBytes)
-                // Fallback to the manager if the record doesn't have a checkpoint ID.
-                // This should only happen in STDIO mode.
-                val checkpointId =
-                    record.checkpointId ?: manager.inferNextCheckpointKey().checkpointId
+                val key = resolveCheckpointKey(record.checkpointKey, stream.mappedDescriptor)
+                manager.incrementReadCount(key)
+                manager.incrementByteCount(record.serializedSizeBytes, key)
                 PipelineMessage(
-                    mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
+                    mapOf(key to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.mappedDescriptor),
                     record,
                     postProcessingCallback
@@ -122,11 +133,9 @@ class PipelineEventBookkeepingRouter(
 
             // DEPRECATED: Legacy file transfer
             is DestinationFile -> {
-                val index = manager.incrementReadCount()
-                val checkpointId = manager.inferNextCheckpointKey().checkpointId
-                fileTransferQueue.publish(
-                    FileTransferQueueRecord(stream, message, index, checkpointId)
-                )
+                val key = resolveCheckpointKey(null, stream.mappedDescriptor)
+                val index = manager.incrementReadCount(key)
+                fileTransferQueue.publish(FileTransferQueueRecord(stream, message, index, key))
                 PipelineHeartbeat()
             }
             is DestinationFileStreamComplete -> {
@@ -145,88 +154,113 @@ class PipelineEventBookkeepingRouter(
                         checkpoint.checkpoint.unmappedNamespace,
                         checkpoint.checkpoint.unmappedName,
                     )
+                val maybeKey = checkpoint.checkpointKey
+                if (maybeKey != null) {
+                    val expected = checkpointAtomic(mappedDescriptor).get()
+                    if (maybeKey.checkpointIndex.value != expected) {
+                        error(
+                            "Out of order state message, expected state message with id $expected but got ${maybeKey.checkpointIndex.value}"
+                        )
+                    }
+                }
                 val manager = syncManager.getStreamManager(mappedDescriptor)
-                val (checkpointKey, checkpointRecordCount) = getKeyAndCounts(checkpoint, manager)
+                val key = resolveCheckpointKey(maybeKey, mappedDescriptor)
+                val count = getCounts(key, manager)
+                incrementIndex(mappedDescriptor)
                 val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
+                    checkpoint.withDestinationStats(CheckpointMessage.Stats(count))
                 checkpointQueue.publish(
                     reservation.replace(
                         StreamCheckpointWrapped(
                             manager.stream.mappedDescriptor,
-                            checkpointKey,
+                            key,
                             messageWithCount
                         )
                     )
                 )
             }
-
-            /** For a global state message, gather the */
-            is GlobalSnapshotCheckpoint,
-            is GlobalCheckpoint -> {
-                val (checkpointKey, checkpointRecordCount) =
-                    if (checkpoint.checkpointKey == null) {
-                        val streamWithKeyAndCount =
-                            catalog.streams.map { stream ->
-                                val manager = syncManager.getStreamManager(stream.mappedDescriptor)
-                                getKeyAndCounts(checkpoint, manager)
-                            }
-                        val singleKey =
-                            streamWithKeyAndCount.map { (key, _) -> key }.toSet().singleOrNull()
-                        check(singleKey != null) {
-                            "For global state, all streams should have the same key: $streamWithKeyAndCount"
+            is GlobalSnapshotCheckpoint -> {
+                val snapshotKey =
+                    checkpoint.checkpointKey ?: error("checkpointKey should not be null")
+                log.debug { "Got a GlobalSnapshotCheckpoint state message" }
+                val streamWithKeyAndCount =
+                    catalog.streams.map { stream ->
+                        val expected = checkpointAtomic(stream.mappedDescriptor)
+                        if (snapshotKey.checkpointIndex.value != expected.get()) {
+                            error(
+                                "Out of order state message, expected state message with id $expected but got ${snapshotKey.checkpointIndex.value}"
+                            )
                         }
-                        val totalCounts = streamWithKeyAndCount.sumOf { (_, count) -> count }
-                        Pair(singleKey, totalCounts)
-                    } else {
-                        val sourceCounts =
-                            checkpoint.sourceStats?.recordCount
-                                ?: throw IllegalStateException(
-                                    "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
-                                )
-                        syncManager.setGlobalReadCountForCheckpoint(
-                            checkpoint.checkpointKey!!.checkpointId,
-                            sourceCounts
-                        )
-                        Pair(checkpoint.checkpointKey, sourceCounts)
-                    }
 
-                val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(checkpointRecordCount))
-                val wrappedCheckpoint =
-                    if (checkpoint is GlobalCheckpoint) {
-                        GlobalCheckpointWrapped(checkpointKey!!, messageWithCount)
-                    } else {
-                        GlobalSnapshotCheckpointWrapped(checkpointKey!!, messageWithCount)
+                        val innerKey = checkpoint.streamCheckpoints[stream.mappedDescriptor]
+                        incrementIndex(stream.mappedDescriptor)
+                        if (innerKey != null) {
+                            val counts =
+                                getCounts(
+                                    innerKey,
+                                    syncManager.getStreamManager(stream.mappedDescriptor)
+                                )
+                            Pair(snapshotKey, counts)
+                        } else Pair(snapshotKey, 0L)
                     }
-                checkpointQueue.publish(reservation.replace(wrappedCheckpoint))
+                val singleKey =
+                    streamWithKeyAndCount.map { (key, _) -> key }.toSet().singleOrNull()
+                        ?: error(
+                            "For global state, all streams should have the same key: $streamWithKeyAndCount"
+                        )
+                val totalCounts = streamWithKeyAndCount.sumOf { it.second }
+                val messageWithCount =
+                    checkpoint.withDestinationStats(CheckpointMessage.Stats(totalCounts))
+                checkpointQueue.publish(
+                    reservation.replace(
+                        GlobalSnapshotCheckpointWrapped(singleKey, messageWithCount)
+                    )
+                )
+            }
+            is GlobalCheckpoint -> {
+                val streamWithKeyAndCount =
+                    catalog.streams.map { stream ->
+                        val manager = syncManager.getStreamManager(stream.mappedDescriptor)
+                        val maybeKey = checkpoint.checkpointKey
+                        if (maybeKey != null) {
+                            val expected = checkpointAtomic(stream.mappedDescriptor).get()
+                            if (maybeKey.checkpointIndex.value != expected) {
+                                error(
+                                    "Out of order state message, expected state message with id $expected but got ${maybeKey.checkpointIndex.value}"
+                                )
+                            }
+                        }
+                        val key = resolveCheckpointKey(maybeKey, stream.mappedDescriptor)
+                        incrementIndex(stream.mappedDescriptor)
+                        Pair(key, getCounts(key, manager))
+                    }
+                val singleKey =
+                    streamWithKeyAndCount.map { (key, _) -> key }.toSet().singleOrNull()
+                        ?: error(
+                            "For global state, all streams should have the same key: $streamWithKeyAndCount"
+                        )
+                val totalCounts = streamWithKeyAndCount.sumOf { it.second }
+                val messageWithCount =
+                    checkpoint.withDestinationStats(CheckpointMessage.Stats(totalCounts))
+                checkpointQueue.publish(
+                    reservation.replace(GlobalCheckpointWrapped(singleKey, messageWithCount))
+                )
             }
         }
     }
 
-    // If the key is not on the record, assume we're expected to generate it.
-    private fun getKeyAndCounts(
-        checkpoint: CheckpointMessage,
-        manager: StreamManager
-    ): Pair<CheckpointKey, Long> {
-        // If the key is not on the record, assume we're expected to generate it.
-        // (Assume its presence will be appropriately enforced.)
-        return if (checkpoint.checkpointKey == null) {
-            val key = manager.inferNextCheckpointKey()
-            val (_, countSinceLast) = manager.markCheckpoint()
-            Pair(key, countSinceLast)
-        } else {
-            val sourceCounts =
-                checkpoint.sourceStats?.recordCount
-                    ?: throw IllegalStateException(
-                        "Checkpoint message must have sourceStats with recordCount when key and index are provided (ie, in SOCKET mode)"
-                    )
-            manager.setReadCountForCheckpointFromState(
-                checkpoint.checkpointKey!!.checkpointId,
-                sourceCounts
-            )
-            Pair(checkpoint.checkpointKey!!, sourceCounts)
-        }
+    private fun resolveCheckpointKey(
+        checkpointKey: CheckpointKey?,
+        mappedDescriptor: DestinationStream.Descriptor
+    ): CheckpointKey = checkpointKey ?: currentCheckpointKey(mappedDescriptor)
+
+    private fun incrementIndex(mappedDescriptor: DestinationStream.Descriptor) {
+        val next = checkpointAtomic(mappedDescriptor).incrementAndGet()
+        log.debug { "Setting nextInferredCheckpointIndex for $mappedDescriptor as $next" }
     }
+
+    private fun getCounts(checkpointKey: CheckpointKey, manager: StreamManager): Long =
+        manager.readCountForCheckpoint(checkpointKey = checkpointKey) ?: 0
 
     override suspend fun close() {
         log.info { "Maybe closing bookkeeping router ${clientCount.get()}" }

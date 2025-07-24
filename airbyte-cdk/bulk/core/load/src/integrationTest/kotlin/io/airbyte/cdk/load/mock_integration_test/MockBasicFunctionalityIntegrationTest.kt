@@ -214,7 +214,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                         stream,
                         """{"id": 42}""",
                         emittedAtMs = 1234,
-                        checkpointId = checkpointKeyForMedium()?.checkpointId
+                        checkpointKey = checkpointKeyForMedium()
                     ),
                     InputGlobalCheckpoint(
                         Jsons.readTree("""{"foo": "bar"}"""),
@@ -334,7 +334,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                     stream,
                     """{"id": 42}""",
                     emittedAtMs = 1234L,
-                    checkpointId = checkpointKeyForMedium()?.checkpointId
+                    checkpointKey = checkpointKeyForMedium()
                 )
             ),
             useFileTransfer = false,
