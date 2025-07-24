@@ -35,8 +35,14 @@ class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
 }
 
 /**
- * This class is used during testing. The goal is to be able to create configuration without
- * actually providing a JSON. In order to do so, you need to:
+ * This class is used during SPEC command or testing.
+ *
+ * During SPEC command, it goes by default to this implementation because
+ * `$CONNECTOR_CONFIG_PREFIX.json` is not defined because the config is not passed. Note that in
+ * that case, we always assume `get` will not be called and only `jsonSchema` is relevant.
+ *
+ * During testing, the goal is to be able to create configuration without actually providing a JSON.
+ * In order to do so, you need to:
  * * Add `@ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)` annotation to your spec class
  * * Add `@Property(name = "airbyte.connector.config.<key>", value = <value>)` annotation to your
  * test or test class
@@ -47,7 +53,7 @@ class JsonConfigurationSpecificationProvider<T : ConfigurationSpecification>(
  */
 @Singleton
 @Requires(missingProperty = "$CONNECTOR_CONFIG_PREFIX.json")
-class MicronautTestConfigurationSpecificationProvider<T : ConfigurationSpecification>(
+class SpecOrTestConfigurationSpecificationProvider<T : ConfigurationSpecification>(
     private val micronautProvidedSpec: T,
 ) : ConfigurationSpecificationSupplier<T> {
 
