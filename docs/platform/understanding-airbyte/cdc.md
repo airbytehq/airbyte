@@ -55,31 +55,6 @@ For an example of how to enable CDC on a new schema in MSSQL, visit our [MSSQL T
 
 :::
 
-### Adding New Schemas
-When using CDC, each schema included in the sync will first undergo an initial snapshot (equivalent to a full refresh).
-
-If you create a new schema that is not yet being synced, **it must first be snapshotted** before CDC can begin tracking changes.
-Upon schema updates, you should see a _**Schema changes detected**_ notice in the _Schema_ section.
-If the schema is not visible, click _**Refresh source schema**_ to retrieve the latest structure from your source.
-
-CDC tracks changes only for tables that are included in the sync. To add a new table:
-1. Review and approve the new schema changes.
-2. Enable the newly added schema(s).
-3. Navigate to the _Status_ page, locate your newly added stream, click the three dots (⋮) next to it, and choose _**Refresh Stream**_ to trigger a snapshot of the new schema(s).
-
-To avoid unintentional sync issues, we recommend enabling `Approve all schema changes myself` under the
-_Detect and propagate schema changes_ in the _Setting_ section. This prevents newly added tables from being included in the sync without a proper snapshot, 
-reducing the risk of LSN issues and sync failures.
-
-:::tip
-
-Creating a new schema in a CDC-enabled database does **not** automatically enable CDC for the tables within that schema.
-We recommend manually verifying that CDC is enabled on any newly created tables. Use the appropriate CDC commands for 
-your source database to ensure CDC is correctly configured.
-For an example of how to enable CDC on a new schema in MSSQL, visit our [MSSQL Troubleshooting](https://docs.airbyte.com/integrations/sources/mssql/mssql-troubleshooting) page.
-
-:::
-
 ## Current Support
 
 - [Postgres](/integrations/sources/postgres) \(For a quick video overview of CDC on Postgres, click [here](https://www.youtube.com/watch?v=NMODvLgZvuE&ab_channel=Airbyte)\)
