@@ -30,7 +30,7 @@ class DlqRecordBuilderTest {
                 stream = defaultStream,
                 rawData = DestinationRecordJsonSource(defaultRecordMessage),
                 serializedSizeBytes = 123L,
-                checkpointKey = CheckpointId("myCheckPoint"),
+                checkpointId = CheckpointId("myCheckPoint"),
                 airbyteRawId = UUID.randomUUID(),
             )
         val record =
@@ -54,7 +54,7 @@ class DlqRecordBuilderTest {
                 stream = defaultStream,
                 rawData = DestinationRecordJsonSource(defaultRecordMessage),
                 serializedSizeBytes = 123L,
-                checkpointKey = CheckpointId("myCheckPoint"),
+                checkpointId = CheckpointId("myCheckPoint"),
                 airbyteRawId = UUID.randomUUID(),
             )
         val record =
@@ -78,14 +78,14 @@ class DlqRecordBuilderTest {
                 stream = defaultStream,
                 rawData = DestinationRecordJsonSource(defaultRecordMessage),
                 serializedSizeBytes = 123L,
-                checkpointKey = CheckpointId("myCheckPoint"),
+                checkpointId = CheckpointId("myCheckPoint"),
                 airbyteRawId = UUID.randomUUID(),
             )
         val record = initialRecord.toDlqRecord(mapOf())
 
         assertEquals(initialRecord.stream, record.stream)
         assertEquals(initialRecord.serializedSizeBytes, record.serializedSizeBytes)
-        assertEquals(initialRecord.checkpointKey, record.checkpointKey)
+        assertEquals(initialRecord.checkpointId, record.checkpointId)
         assertEquals(initialRecord.airbyteRawId, record.airbyteRawId)
     }
 
@@ -101,7 +101,7 @@ class DlqRecordBuilderTest {
 
         assertEquals(defaultStream, record.stream)
         assertEquals(0, record.serializedSizeBytes)
-        assertNull(record.checkpointKey)
+        assertNull(record.checkpointId)
         assertNotNull(record.airbyteRawId)
     }
 

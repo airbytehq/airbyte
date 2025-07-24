@@ -15,12 +15,9 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-
-private val logger = KotlinLogging.logger {}
 
 @Singleton
 class DestinationMessageFactory(
@@ -88,21 +85,14 @@ class DestinationMessageFactory(
                     // In socket mode, multiple sockets can run in parallel, which means that we
                     // depend on upstream to associate each record with the appropriate state
                     // message for us.
-                    val checkpointKey =
+                    val checkpointId =
                         if (requireCheckpointIdOnRecordAndKeyOnState) {
-                            val partition_id =
+                            val idSource =
                                 (message.record.additionalProperties[Meta.CHECKPOINT_ID_NAME]
                                     ?: throw IllegalStateException(
                                         "Expected `partition_id` on record"
                                     ))
-
-                            val id =
-                                (message.record.additionalProperties[Meta.CHECKPOINT_INDEX_NAME]
-                                    ?: throw IllegalStateException("Expected `id` on record"))
-                            CheckpointKey(
-                                checkpointId = CheckpointId(partition_id as String),
-                                checkpointIndex = CheckpointIndex(id as Int)
-                            )
+                            CheckpointId(idSource as String)
                         } else {
                             null
                         }
@@ -110,7 +100,7 @@ class DestinationMessageFactory(
                         stream = stream,
                         message = DestinationRecordJsonSource(message),
                         serializedSizeBytes = serializedSizeBytes,
-                        checkpointKey = checkpointKey,
+                        checkpointId = checkpointId,
                         airbyteRawId = uuidGenerator.v7(),
                     )
                 }
@@ -314,11 +304,7 @@ class DestinationMessageFactory(
                 stream = stream,
                 message = DestinationRecordProtobufSource(message),
                 serializedSizeBytes = serializedSizeBytes,
-                checkpointKey =
-                    CheckpointKey(
-                        checkpointId = CheckpointId(message.record.partitionId),
-                        checkpointIndex = CheckpointIndex(message.record.index),
-                    ),
+                checkpointId = CheckpointId(message.record.partitionId),
                 airbyteRawId = uuidGenerator.v7(),
             )
         } else if (message.hasProbe()) {

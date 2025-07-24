@@ -58,28 +58,28 @@ class StreamManager(
 
     private val isClosed = AtomicBoolean(false)
 
-    private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointKey, Long> =
+    private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, Long> =
         ConcurrentHashMap()
-    private val bytesPerCheckpoint: ConcurrentHashMap<CheckpointKey, Long> = ConcurrentHashMap()
+    private val bytesPerCheckpoint: ConcurrentHashMap<CheckpointId, Long> = ConcurrentHashMap()
     private val checkpointCountsByState:
-        ConcurrentHashMap<BatchState, ConcurrentHashMap<CheckpointKey, CheckpointValue>> =
+        ConcurrentHashMap<BatchState, ConcurrentHashMap<CheckpointId, CheckpointValue>> =
         ConcurrentHashMap()
 
     /**
      * Count incoming record and return the record's *index*. If [markEndOfStream] has been called,
      * this should throw an exception.
      */
-    fun incrementReadCount(checkpointKey: CheckpointKey): Long {
+    fun incrementReadCount(checkpointId: CheckpointId): Long {
         if (markedEndOfStream.get()) error("Stream is closed for reading")
         println(
-            "Got a record for stream ${stream.mappedDescriptor} with checkpoint key $checkpointKey"
+            "Got a record for stream ${stream.mappedDescriptor} with checkpoint key $checkpointId"
         )
-        return recordsReadPerCheckpoint.merge(checkpointKey, 1L, Long::plus)!!
+        return recordsReadPerCheckpoint.merge(checkpointId, 1L, Long::plus)!!
     }
 
-    fun incrementByteCount(bytes: Long, checkpointKey: CheckpointKey): Long {
+    fun incrementByteCount(bytes: Long, checkpointId: CheckpointId): Long {
         if (markedEndOfStream.get()) error("Stream is closed for reading")
-        return bytesPerCheckpoint.merge(checkpointKey, bytes, Long::plus)!!
+        return bytesPerCheckpoint.merge(checkpointId, bytes, Long::plus)!!
     }
 
     fun readCount(): Long = recordsReadPerCheckpoint.values.sumOf { it }
@@ -152,7 +152,7 @@ class StreamManager(
 
     fun incrementCheckpointCounts(
         state: BatchState,
-        checkpointCounts: Map<CheckpointKey, CheckpointValue>,
+        checkpointCounts: Map<CheckpointId, CheckpointValue>,
     ) {
         val idToValue = checkpointCountsByState.getOrPut(state) { ConcurrentHashMap() }
 
@@ -162,13 +162,13 @@ class StreamManager(
     }
 
     private fun countByStateForCheckpoint(
-        checkpointKey: CheckpointKey,
+        checkpointId: CheckpointId,
         state: BatchState
     ): CheckpointValue {
         val countsForState = checkpointCountsByState.filter { (it.key == state) }.values
-        val recordCount = countsForState.sumOf { it[checkpointKey]?.records ?: 0L }
-        val serializedBytes = countsForState.sumOf { it[checkpointKey]?.serializedBytes ?: 0L }
-        val rejectedRecords = countsForState.sumOf { it[checkpointKey]?.rejectedRecords ?: 0L }
+        val recordCount = countsForState.sumOf { it[checkpointId]?.records ?: 0L }
+        val serializedBytes = countsForState.sumOf { it[checkpointId]?.serializedBytes ?: 0L }
+        val rejectedRecords = countsForState.sumOf { it[checkpointId]?.rejectedRecords ?: 0L }
         return CheckpointValue(
             records = recordCount,
             serializedBytes = serializedBytes,
@@ -176,9 +176,9 @@ class StreamManager(
         )
     }
 
-    fun committedCount(checkpointKey: CheckpointKey): CheckpointValue {
-        val persistedCount = countByStateForCheckpoint(checkpointKey, BatchState.PERSISTED)
-        val completedCount = countByStateForCheckpoint(checkpointKey, BatchState.COMPLETE)
+    fun committedCount(checkpointId: CheckpointId): CheckpointValue {
+        val persistedCount = countByStateForCheckpoint(checkpointId, BatchState.PERSISTED)
+        val completedCount = countByStateForCheckpoint(checkpointId, BatchState.COMPLETE)
 
         val records = maxOf(persistedCount.records, completedCount.records)
         val bytes = maxOf(persistedCount.serializedBytes, completedCount.serializedBytes)
@@ -192,22 +192,22 @@ class StreamManager(
     }
 
     /**
-     * True if persisted counts associated with the index [checkpointKey] are equal to the number of
+     * True if persisted counts associated with the index [checkpointId] are equal to the number of
      * records read.
      */
-    fun areRecordsPersistedForCheckpoint(checkpointKey: CheckpointKey): Boolean {
+    fun areRecordsPersistedForCheckpoint(checkpointId: CheckpointId): Boolean {
 
-        println("searching for ${checkpointKey} for stream ${stream.mappedDescriptor}")
+        println("searching for ${checkpointId} for stream ${stream.mappedDescriptor}")
 
         val readCount =
-            recordsReadPerCheckpoint[checkpointKey]
+            recordsReadPerCheckpoint[checkpointId]
                 ?: if (socketMode) 0L
                 else
                     throw IllegalStateException(
-                        "No read count for checkpoint $checkpointKey for stream ${stream.mappedDescriptor}",
+                        "No read count for checkpoint $checkpointId for stream ${stream.mappedDescriptor}",
                     )
 
-        val persistedRecordCount = persistedRecordCountForCheckpoint(checkpointKey)
+        val persistedRecordCount = persistedRecordCountForCheckpoint(checkpointId)
         return persistedRecordCount == readCount
     }
 
@@ -245,21 +245,21 @@ class StreamManager(
         return readCount() > 0
     }
 
-    fun persistedRecordCountForCheckpoint(checkpointKey: CheckpointKey): Long {
+    fun persistedRecordCountForCheckpoint(checkpointId: CheckpointId): Long {
         val persistedCount =
-            checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointKey)?.let {
+            checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
             }
                 ?: 0L
         val completeCount =
-            checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointKey)?.let {
+            checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
             }
                 ?: 0L
         return max(persistedCount, completeCount)
     }
 
-    fun readCountForCheckpoint(checkpointKey: CheckpointKey): Long? {
-        return recordsReadPerCheckpoint[checkpointKey]
+    fun readCountForCheckpoint(checkpointId: CheckpointId): Long? {
+        return recordsReadPerCheckpoint[checkpointId]
     }
 }

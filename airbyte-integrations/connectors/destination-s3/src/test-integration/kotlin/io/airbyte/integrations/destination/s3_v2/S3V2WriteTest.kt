@@ -567,31 +567,19 @@ class S3V2WriteTestCsvUncompressedProtoSocket :
                         stream = stream,
                         data = """{"id": 1}""",
                         emittedAtMs = 1234,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_1"),
-                                checkpointIndex = CheckpointIndex(1),
-                            ),
+                        checkpointId = CheckpointId("partition_1"),
                     ),
                     InputRecord(
                         stream = stream,
                         data = """{"id": 2}""",
                         emittedAtMs = 1234,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_1"),
-                                checkpointIndex = CheckpointIndex(1),
-                            ),
+                        checkpointId = CheckpointId("partition_1"),
                     ),
                     InputRecord(
                         stream = stream,
                         data = """{"id": 3}""",
                         emittedAtMs = 1234,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_1"),
-                                checkpointIndex = CheckpointIndex(1),
-                            ),
+                        checkpointId = CheckpointId("partition_1"),
                     ),
                 ),
             )
@@ -639,25 +627,26 @@ class S3V2WriteTestCsvUncompressedProtoSocket :
                 updatedConfig,
                 DestinationCatalog(listOf(stream, stream2, stream3)),
                 listOf(
+                    // record from snapshot
                     InputRecord(
                         stream = stream,
                         data = """{"id": 1}""",
                         emittedAtMs = 1234,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_1"),
-                                checkpointIndex = CheckpointIndex(1)
-                            )
+                        checkpointId = CheckpointId("partition_1"),
                     ),
+                    // record from snapshot
                     InputRecord(
                         stream = stream2,
                         data = """{"id": 2}""",
                         emittedAtMs = 1234,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_2"),
-                                checkpointIndex = CheckpointIndex(1)
-                            )
+                        checkpointId = CheckpointId("partition_2"),
+                    ),
+                    // record from snapshot
+                    InputRecord(
+                        stream = stream2,
+                        data = """{"id": 2}""",
+                        emittedAtMs = 1234,
+                        checkpointId = CheckpointId("outer_partition"),
                     ),
                     InputGlobalCheckpoint(
                         sharedState =
@@ -700,37 +689,25 @@ class S3V2WriteTestCsvUncompressedProtoSocket :
                                     state = io.airbyte.protocol.models.Jsons.emptyObject()
                                 )
                             ),
-                        sourceRecordCount = 2
+                        sourceRecordCount = 3
                     ),
                     InputRecord(
                         stream = stream,
                         data = """{"id": 3}""",
                         emittedAtMs = 5678,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_1"),
-                                checkpointIndex = CheckpointIndex(2)
-                            )
+                        checkpointId = CheckpointId("partition_5"),
                     ),
                     InputRecord(
                         stream = stream2,
                         data = """{"id": 4}""",
                         emittedAtMs = 5678,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_2"),
-                                checkpointIndex = CheckpointIndex(2)
-                            )
+                        checkpointId = CheckpointId("partition_6"),
                     ),
                     InputRecord(
                         stream = stream3,
                         data = """{"id": 4}""",
                         emittedAtMs = 5678,
-                        checkpointKey =
-                            CheckpointKey(
-                                checkpointId = CheckpointId("partition_5"),
-                                checkpointIndex = CheckpointIndex(1)
-                            )
+                        checkpointId = CheckpointId("partition_7"),
                     ),
                     InputGlobalCheckpoint(
                         sharedState =
@@ -747,7 +724,7 @@ class S3V2WriteTestCsvUncompressedProtoSocket :
                                             mapOf("stream1" to "state")
                                         ),
                                     additionalProperties =
-                                        mapOf("id" to 2, "partition_id" to "partition_1")
+                                        mapOf("id" to 2, "partition_id" to "partition_5")
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = stream2.unmappedNamespace,
@@ -757,7 +734,7 @@ class S3V2WriteTestCsvUncompressedProtoSocket :
                                             mapOf("stream2" to "state")
                                         ),
                                     additionalProperties =
-                                        mapOf("id" to 2, "partition_id" to "partition_2")
+                                        mapOf("id" to 2, "partition_id" to "partition_6")
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = stream3.unmappedNamespace,
@@ -767,7 +744,7 @@ class S3V2WriteTestCsvUncompressedProtoSocket :
                                             mapOf("stream3" to "state")
                                         ),
                                     additionalProperties =
-                                        mapOf("id" to 1, "partition_id" to "partition_5")
+                                        mapOf("id" to 1, "partition_id" to "partition_7")
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = "namespace-not-present-in-catalog",

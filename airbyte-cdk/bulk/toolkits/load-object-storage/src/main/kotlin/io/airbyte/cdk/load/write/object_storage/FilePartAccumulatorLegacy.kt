@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
-import io.airbyte.cdk.load.state.CheckpointKey
+import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -38,7 +38,7 @@ class FilePartAccumulatorLegacy(
     val partitioner =
         ObjectLoaderFormattedPartPartitioner<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>()
 
-    suspend fun handleFileMessage(file: DestinationFile, index: Long, checkpointId: CheckpointKey) {
+    suspend fun handleFileMessage(file: DestinationFile, index: Long, checkpointId: CheckpointId) {
         val key =
             Path.of(pathFactory.getFinalDirectory(stream), "${file.fileMessage.fileRelativePath}")
                 .toString()
@@ -80,7 +80,7 @@ class FilePartAccumulatorLegacy(
     private suspend fun handleFilePart(
         part: Part,
         streamDescriptor: DestinationStream.Descriptor,
-        checkpointId: CheckpointKey,
+        checkpointId: CheckpointId,
     ) {
         val objectKey = ObjectKey(streamDescriptor, part.key)
         val countMap =

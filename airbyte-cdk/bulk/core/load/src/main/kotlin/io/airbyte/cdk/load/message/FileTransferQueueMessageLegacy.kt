@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.CheckpointKey
+import io.airbyte.cdk.load.state.CheckpointId
 
 // DEPRECATED: Legacy file transfer
 sealed interface FileTransferQueueMessage {
@@ -16,7 +16,7 @@ data class FileTransferQueueRecord(
     override val stream: DestinationStream,
     val file: DestinationFile,
     val index: Long,
-    val checkpointKey: CheckpointKey
+    val checkpointId: CheckpointId
 ) : FileTransferQueueMessage
 
 data class FileTransferQueueEndOfStream(

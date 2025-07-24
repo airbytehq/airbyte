@@ -11,10 +11,9 @@ message AirbyteRecordMessageProtobuf {
   optional string stream_namespace = 1;
   string stream_name = 2;
   uint64 emitted_at_ms = 3;
-  string partition_id = 4; // Unique partition_id associating this record to a state message
-  int32 index = 5; // Unique index associating this record to a state message
-  repeated AirbyteValueProtobuf data = 6;
-  AirbyteRecordMessageMeta meta = 7;
+  string partition_id = 4; // Unique id associating this record to a state message
+  repeated AirbyteValueProtobuf data = 5;
+  AirbyteRecordMessageMeta meta = 6;
 };
 
 message AirbyteValueProtobuf {

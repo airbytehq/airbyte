@@ -189,13 +189,16 @@ class CheckpointManager(
             catalog.streams.all {
                 syncManager
                     .getStreamManager(it.mappedDescriptor)
-                    .areRecordsPersistedForCheckpoint(key)
+                    .areRecordsPersistedForCheckpoint(key.checkpointId)
             }
         if (!socketMode) return allCommitted
         if (!allCommitted) return false
         val total =
             catalog.streams.sumOf {
-                syncManager.getStreamManager(it.mappedDescriptor).committedCount(key).records
+                syncManager
+                    .getStreamManager(it.mappedDescriptor)
+                    .committedCount(key.checkpointId)
+                    .records
             }
         return total == sourceReportedCount!!.recordCount
     }
@@ -208,8 +211,8 @@ class CheckpointManager(
         val allPersisted =
             snapshot.streamCheckpoints.all { (descriptor, innerKey) ->
                 val manager = syncManager.getStreamManager(descriptor)
-                committedFromPartitions += manager.committedCount(innerKey).records
-                manager.areRecordsPersistedForCheckpoint(innerKey)
+                committedFromPartitions += manager.committedCount(innerKey.checkpointId).records
+                manager.areRecordsPersistedForCheckpoint(innerKey.checkpointId)
             }
         if (!allPersisted) return false
         val expected = snapshot.sourceStats!!.recordCount
@@ -229,29 +232,27 @@ class CheckpointManager(
     ) {
         log.info { "Flushing global checkpoint with key $checkpointKey" }
 
-        val aggregate =
-            if (checkpoint.checkpointMessage.value is GlobalSnapshotCheckpoint) {
-                checkpoint.checkpointMessage.value.streamCheckpoints
-                    .map { (mappedDescriptor, innerKey) ->
-                        val manager = syncManager.getStreamManager(mappedDescriptor)
+        if (checkpoint.checkpointMessage.value is GlobalSnapshotCheckpoint) {
+            checkpoint.checkpointMessage.value.streamCheckpoints.map { (mappedDescriptor, innerKey)
+                ->
+                val manager = syncManager.getStreamManager(mappedDescriptor)
 
-                        val checkPointValue = manager.committedCount(innerKey)
-                        committedCount.increment(mappedDescriptor, checkPointValue)
-                    }
-                    .reduce { acc, inc -> acc.plus(inc) }
-            } else {
-                catalog.streams
-                    .map { stream ->
-                        val delta =
-                            syncManager
-                                .getStreamManager(stream.mappedDescriptor)
-                                .committedCount(checkpointKey)
-
-                        /* increment() returns the new aggregate for this stream. */
-                        committedCount.increment(stream.mappedDescriptor, delta)
-                    }
-                    .reduce { acc, inc -> acc.plus(inc) }
+                val checkPointValue = manager.committedCount(innerKey.checkpointId)
+                committedCount.increment(mappedDescriptor, checkPointValue)
             }
+        }
+        val aggregate =
+            catalog.streams
+                .map { stream ->
+                    val delta =
+                        syncManager
+                            .getStreamManager(stream.mappedDescriptor)
+                            .committedCount(checkpointKey.checkpointId)
+
+                    /* increment() returns the new aggregate for this stream. */
+                    committedCount.increment(stream.mappedDescriptor, delta)
+                }
+                .reduce { acc, inc -> acc.plus(inc) }
 
         sendStateMessage(
             checkpoint.checkpointMessage,
@@ -292,9 +293,10 @@ class CheckpointManager(
                     break
                 }
 
-                val persisted = manager.areRecordsPersistedForCheckpoint(nextCheckpointKey)
+                val persisted =
+                    manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
                 if (persisted) {
-                    val delta = manager.committedCount(nextCheckpointKey)
+                    val delta = manager.committedCount(nextCheckpointKey.checkpointId)
                     if (
                         socketMode && delta.records != nextMessage.value.sourceStats!!.recordCount
                     ) {
@@ -326,9 +328,12 @@ class CheckpointManager(
                     streamCheckpoints.remove(nextCheckpointKey)
                 } else {
                     log.debug {
-                        val expectedCount = manager.readCountForCheckpoint(nextCheckpointKey)
+                        val expectedCount =
+                            manager.readCountForCheckpoint(nextCheckpointKey.checkpointId)
                         val committedCount =
-                            manager.persistedRecordCountForCheckpoint(nextCheckpointKey)
+                            manager.persistedRecordCountForCheckpoint(
+                                nextCheckpointKey.checkpointId
+                            )
                         "Not flushing next checkpoint for index $nextCheckpointKey (committed $committedCount records of expected $expectedCount)"
                     }
                     break

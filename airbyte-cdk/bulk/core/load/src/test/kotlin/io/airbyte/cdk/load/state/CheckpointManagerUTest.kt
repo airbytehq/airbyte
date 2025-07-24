@@ -64,7 +64,7 @@ class CheckpointManagerUTest {
     }
 
     private fun makeCheckpointManager(): CheckpointManager {
-        return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider)
+        return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider, true)
     }
 
     private fun makeKey(index: Int, id: String? = null) =
@@ -200,9 +200,9 @@ class CheckpointManagerUTest {
             streamManager2.areRecordsPersistedForCheckpoint(checkpointKey2.checkpointId)
         } returns true
 
-        checkpointManager.addSnapshotCheckpoint(checkpointKey2, message2)
+        checkpointManager.addGlobalCheckpoint(checkpointKey2, message2)
 
-        checkpointManager.addSnapshotCheckpoint(checkpointKey1, message1)
+        checkpointManager.addGlobalCheckpoint(checkpointKey1, message1)
 
         checkpointManager.flushReadyCheckpointMessages()
 
@@ -236,9 +236,9 @@ class CheckpointManagerUTest {
             streamManager2.areRecordsPersistedForCheckpoint(checkpointKey2.checkpointId)
         } returns false
 
-        checkpointManager.addSnapshotCheckpoint(checkpointKey2, message2)
+        checkpointManager.addGlobalCheckpoint(checkpointKey2, message2)
 
-        checkpointManager.addSnapshotCheckpoint(checkpointKey1, message1)
+        checkpointManager.addGlobalCheckpoint(checkpointKey1, message1)
 
         checkpointManager.flushReadyCheckpointMessages()
 

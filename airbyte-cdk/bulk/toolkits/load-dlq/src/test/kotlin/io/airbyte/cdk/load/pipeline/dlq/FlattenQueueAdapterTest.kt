@@ -157,7 +157,7 @@ class FlattenQueueAdapterTest {
                         )
                 ),
             serializedSizeBytes = 1,
-            checkpointKey = null,
+            checkpointId = null,
             airbyteRawId = UUID.randomUUID(),
         )
 }

@@ -385,7 +385,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                             .SOURCE_FIELD_SIZE_LIMITATION
                                 )
                             ),
-                        checkpointKey = checkpointKeyForMedium()
+                        checkpointId = checkpointKeyForMedium()?.checkpointId
                     ),
                     InputStreamCheckpoint(
                         unmappedName = stream.unmappedName,
@@ -498,7 +498,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 emittedAtMs = 1234,
                 changes = mutableListOf(),
                 fileReference = fileReference,
-                checkpointKey = checkpointKeyForMedium()
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
 
         val messages =
@@ -573,7 +573,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             stream = stream,
                             data = """{"id": 12}""",
                             emittedAtMs = 1234,
-                            checkpointKey = checkpointKeyForMedium()
+                            checkpointId = checkpointKeyForMedium()?.checkpointId
                         )
                     ),
                     StreamCheckpoint(
@@ -670,19 +670,19 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream = stream1,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     stream = stream2,
                     data = """{"id": 5678}""",
                     emittedAtMs = 1234,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     stream = streamWithDefaultNamespace,
                     data = """{"id": 91011}""",
                     emittedAtMs = 1234,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             )
         )
@@ -817,7 +817,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     emittedAtMs = 1234,
                     meta = null,
                     serialized = "",
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             }
         runSync(updatedConfig, catalog, messages)
@@ -899,7 +899,7 @@ abstract class BasicFunctionalityIntegrationTest(
                       "name~!@#${'$'}%^&*()`[]{}|;':\",./<>?": "Alice1"
                     }""".trimIndent(),
                     emittedAtMs = 1000,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -949,7 +949,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream = stream,
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -965,7 +965,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream = stream,
                     """{"id": 42, "name": "second_value"}""",
                     emittedAtMs = 2345,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             ),
             StreamCheckpoint(
@@ -1013,7 +1013,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream = stream,
                     """{"id": 42, "name": "third_value"}""",
                     emittedAtMs = 3456,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1080,7 +1080,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream = stream,
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             ),
             StreamCheckpoint(
@@ -1128,7 +1128,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream = stream,
                     """{"id": 43, "name": "second_value"}""",
                     emittedAtMs = 2345,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1183,7 +1183,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream1,
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
-                checkpointKey = checkpointKeyForMedium()
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         fun makeOutputRecord(
             id: Int,
@@ -1355,7 +1355,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
-                checkpointKey = checkpointKeyForMedium()
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         fun makeOutputRecord(
             id: Int,
@@ -1480,7 +1480,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream1,
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
                 emittedAtMs = extractedAt,
-                checkpointKey = checkpointKeyForMedium()
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         fun makeOutputRecord(
             id: Int,
@@ -1668,7 +1668,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1681,7 +1681,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     finalStream,
                     """{"id": 42, "name": "second_value"}""",
                     emittedAtMs = 5678L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1742,7 +1742,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
                     emittedAtMs = 1234L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1759,7 +1759,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     finalStream,
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
                     emittedAtMs = 2345,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1902,7 +1902,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
                     emittedAtMs = 1234L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1921,7 +1921,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     changedStream,
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
                     emittedAtMs = 1234L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -1953,7 +1953,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     finalStream,
                     """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
                     emittedAtMs = 5678L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -2017,7 +2017,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 sync1Stream,
                 data,
                 emittedAtMs = extractedAt,
-                checkpointKey = checkpointKeyForMedium()
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         runSync(
             updatedConfig,
@@ -2227,7 +2227,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     data = """{"id": 1234, "name": "a"}""",
                     emittedAtMs = 1234,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             ),
         )
@@ -2239,7 +2239,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     data = """{"id": 1234, "name": "b"}""",
                     emittedAtMs = 5678,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             ),
         )
@@ -2297,7 +2297,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
                 emittedAtMs = emittedAtMs,
-                checkpointKey = checkpointKeyForMedium()
+                checkpointId = checkpointKeyForMedium()?.checkpointId
             )
         runSync(
             updatedConfig,
@@ -2450,7 +2450,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     streams[i],
                     """{"id": 1, "name": "foo_$i"}""",
                     emittedAtMs = 100,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             }
         // Just verify that we don't crash.
@@ -2502,7 +2502,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 namespaceMapper = namespaceMapperForMedium()
             )
         fun makeRecord(data: String) =
-            InputRecord(stream, data, emittedAtMs = 100, checkpointKey = checkpointKeyForMedium())
+            InputRecord(
+                stream,
+                data,
+                emittedAtMs = 100,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
+            )
         runSync(
             updatedConfig,
             stream,
@@ -2945,7 +2950,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 namespaceMapper = namespaceMapperForMedium()
             )
         fun makeRecord(data: String) =
-            InputRecord(stream, data, emittedAtMs = 100, checkpointKey = checkpointKeyForMedium())
+            InputRecord(
+                stream,
+                data,
+                emittedAtMs = 100,
+                checkpointId = checkpointKeyForMedium()?.checkpointId
+            )
         // large numbers, 0, and -1 are already tested in testBasicTypes, but add them here also.
         // Eventually we should remove them from testBasicTypes, but that would require a less dumb
         // test config system.
@@ -3122,7 +3132,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ]
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     stream,
@@ -3136,7 +3146,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schemaless_array": []
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     stream,
@@ -3150,7 +3160,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schemaless_array": null
                         }""".trimIndent(),
                     emittedAtMs = 1602637589300,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             )
         )
@@ -3290,7 +3300,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "name": "ex falso quodlibet"
                         }""".trimIndent(),
                         emittedAtMs = 1602637589100,
-                        checkpointKey = checkpointKeyForMedium(),
+                        checkpointId = checkpointKeyForMedium()?.checkpointId,
                         unknownFieldNames = setOf("name")
                     )
                 )
@@ -3479,7 +3489,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "union_of_objects_with_properties_nonoverlapping": { "id": 30, "name": "Phil", "flagged": false, "description":"Very Phil" }
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     stream,
@@ -3493,7 +3503,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "union_of_objects_with_properties_contradicting": { "id": "seal-one-hippity", "name": "James" }
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
                 InputRecord(
                     stream,
@@ -3507,7 +3517,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "union_of_objects_with_properties_contradicting": null
                         }""".trimIndent(),
                     emittedAtMs = 1602637589300,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 ),
             )
         )
@@ -3765,7 +3775,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     """{}""",
                     emittedAtMs = 1000L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -3792,7 +3802,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     stream,
                     """{}""",
                     emittedAtMs = 2000L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )
@@ -3860,7 +3870,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     firstStream,
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
-                    checkpointKey = checkpointKeyForMedium()
+                    checkpointId = checkpointKeyForMedium()?.checkpointId
                 )
             )
         )

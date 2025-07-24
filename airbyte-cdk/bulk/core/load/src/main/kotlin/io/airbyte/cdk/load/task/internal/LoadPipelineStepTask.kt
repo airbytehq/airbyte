@@ -24,7 +24,7 @@ import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
-import io.airbyte.cdk.load.state.CheckpointKey
+import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.fold
  */
 data class StateWithCounts<S : AutoCloseable>(
     val accumulatorState: S,
-    val checkpointCounts: MutableMap<CheckpointKey, CheckpointValue> = mutableMapOf(),
+    val checkpointCounts: MutableMap<CheckpointId, CheckpointValue> = mutableMapOf(),
     val inputCount: Long = 0,
     val createdAtMs: Long = System.currentTimeMillis()
 ) : AutoCloseable {
@@ -291,7 +291,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     @VisibleForTesting
     suspend fun handleOutput(
         inputKey: K1,
-        checkpointCounts: Map<CheckpointKey, CheckpointValue>,
+        checkpointCounts: Map<CheckpointId, CheckpointValue>,
         output: U,
         inputCount: Long,
         context: PipelineContext? = null,

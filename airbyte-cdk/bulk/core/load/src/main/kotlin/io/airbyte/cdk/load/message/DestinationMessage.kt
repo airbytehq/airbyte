@@ -28,6 +28,7 @@ import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.getEmittedAtMs
+import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
@@ -211,7 +212,7 @@ data class DestinationRecord(
     override val stream: DestinationStream,
     val message: DestinationRecordSource,
     val serializedSizeBytes: Long,
-    val checkpointKey: CheckpointKey? = null,
+    val checkpointId: CheckpointId? = null,
     val airbyteRawId: UUID,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
@@ -224,11 +225,8 @@ data class DestinationRecord(
                     .withEmittedAt(message.emittedAtMs)
                     .withData(message.asJsonRecord(stream.airbyteValueProxyFieldAccessors))
                     .also {
-                        if (checkpointKey != null) {
-                            it.additionalProperties[CHECKPOINT_ID_NAME] =
-                                checkpointKey.checkpointId.value
-                            it.additionalProperties[CHECKPOINT_INDEX_NAME] =
-                                checkpointKey.checkpointIndex.value
+                        if (checkpointId != null) {
+                            it.additionalProperties[CHECKPOINT_ID_NAME] = checkpointId.value
                         }
                     }
                     .withMeta(
@@ -251,7 +249,7 @@ data class DestinationRecord(
             stream = stream,
             rawData = message,
             serializedSizeBytes = serializedSizeBytes,
-            checkpointKey = checkpointKey,
+            checkpointId = checkpointId,
             airbyteRawId = airbyteRawId,
         )
     }

@@ -112,11 +112,11 @@ class PipelineEventBookkeepingRouter(
         return when (message) {
             is DestinationRecord -> {
                 val record = message.asDestinationRecordRaw()
-                val key = resolveCheckpointKey(record.checkpointKey, stream.mappedDescriptor)
-                manager.incrementReadCount(key)
-                manager.incrementByteCount(record.serializedSizeBytes, key)
+                val checkpointId = resolveCheckpointId(record.checkpointId, stream.mappedDescriptor)
+                manager.incrementReadCount(checkpointId)
+                manager.incrementByteCount(record.serializedSizeBytes, checkpointId)
                 PipelineMessage(
-                    mapOf(key to CheckpointValue(1, record.serializedSizeBytes)),
+                    mapOf(checkpointId to CheckpointValue(1, record.serializedSizeBytes)),
                     StreamKey(stream.mappedDescriptor),
                     record,
                     postProcessingCallback
@@ -133,9 +133,11 @@ class PipelineEventBookkeepingRouter(
 
             // DEPRECATED: Legacy file transfer
             is DestinationFile -> {
-                val key = resolveCheckpointKey(null, stream.mappedDescriptor)
-                val index = manager.incrementReadCount(key)
-                fileTransferQueue.publish(FileTransferQueueRecord(stream, message, index, key))
+                val checkpointId = resolveCheckpointId(null, stream.mappedDescriptor)
+                val index = manager.incrementReadCount(checkpointId)
+                fileTransferQueue.publish(
+                    FileTransferQueueRecord(stream, message, index, checkpointId)
+                )
                 PipelineHeartbeat()
             }
             is DestinationFileStreamComplete -> {
@@ -159,7 +161,13 @@ class PipelineEventBookkeepingRouter(
                     val expected = checkpointAtomic(mappedDescriptor).get()
                     if (maybeKey.checkpointIndex.value != expected) {
                         error(
-                            "Out of order state message, expected state message with id $expected but got ${maybeKey.checkpointIndex.value}"
+                            "Out of order state message, expected state message with id $expected but got ${maybeKey.checkpointIndex.value}",
+                        )
+                    }
+
+                    if (checkpoint.sourceStats == null) {
+                        error(
+                            "Source stats should always be present when checkpoint key is provided"
                         )
                     }
                 }
@@ -192,16 +200,29 @@ class PipelineEventBookkeepingRouter(
                             )
                         }
 
+                        if (checkpoint.sourceStats == null) {
+                            error(
+                                "Source stats should always be present when checkpoint key is provided"
+                            )
+                        }
+
+                        val streamManager = syncManager.getStreamManager(stream.mappedDescriptor)
+
                         val innerKey = checkpoint.streamCheckpoints[stream.mappedDescriptor]
                         incrementIndex(stream.mappedDescriptor)
-                        if (innerKey != null) {
-                            val counts =
+                        val outerCount = getCounts(snapshotKey, streamManager)
+
+                        val innerCount =
+                            if (innerKey != null) {
                                 getCounts(
                                     innerKey,
-                                    syncManager.getStreamManager(stream.mappedDescriptor)
+                                    streamManager,
                                 )
-                            Pair(snapshotKey, counts)
-                        } else Pair(snapshotKey, 0L)
+                            } else {
+                                0L
+                            }
+
+                        Pair(snapshotKey, outerCount + innerCount)
                     }
                 val singleKey =
                     streamWithKeyAndCount.map { (key, _) -> key }.toSet().singleOrNull()
@@ -229,6 +250,12 @@ class PipelineEventBookkeepingRouter(
                                     "Out of order state message, expected state message with id $expected but got ${maybeKey.checkpointIndex.value}"
                                 )
                             }
+
+                            if (checkpoint.sourceStats == null) {
+                                error(
+                                    "Source stats should always be present when checkpoint key is provided"
+                                )
+                            }
                         }
                         val key = resolveCheckpointKey(maybeKey, stream.mappedDescriptor)
                         incrementIndex(stream.mappedDescriptor)
@@ -249,6 +276,11 @@ class PipelineEventBookkeepingRouter(
         }
     }
 
+    private fun resolveCheckpointId(
+        checkpointId: CheckpointId?,
+        mappedDescriptor: DestinationStream.Descriptor
+    ): CheckpointId = checkpointId ?: currentCheckpointKey(mappedDescriptor).checkpointId
+
     private fun resolveCheckpointKey(
         checkpointKey: CheckpointKey?,
         mappedDescriptor: DestinationStream.Descriptor
@@ -260,7 +292,7 @@ class PipelineEventBookkeepingRouter(
     }
 
     private fun getCounts(checkpointKey: CheckpointKey, manager: StreamManager): Long =
-        manager.readCountForCheckpoint(checkpointKey = checkpointKey) ?: 0
+        manager.readCountForCheckpoint(checkpointId = checkpointKey.checkpointId) ?: 0
 
     override suspend fun close() {
         log.info { "Maybe closing bookkeeping router ${clientCount.get()}" }
