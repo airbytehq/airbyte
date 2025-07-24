@@ -256,3 +256,10 @@ static def getKotlinCompilerArgs() {
         return ["-Xdebug"]
     }
 }
+
+// Apply the Direct Load template plugin
+apply from: "$rootDir/buildSrc/src/main/groovy/airbyte-directload-template.gradle"
+
+directLoadTemplate {
+    destinationName = project.hasProperty('destinationName') ? project.destinationName : null
+}
