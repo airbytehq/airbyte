@@ -12,15 +12,15 @@ After you add a [source](../using-airbyte/getting-started/add-a-source) and a [d
 
 ## ELT and data activation destinations are different
 
-You configure all connections in a similar way. However, the exact process is different for [data activation destinations](elt-data-activation). This page explains how to set up both.
+You configure all connections in a similar way. However, the exact process is different for [data activation](elt-data-activation) destinations. This page explains how to set up both.
 
-- **ELT databases, warehouses, and lakes**: These destinations are agnostic about schema. You can, for example, create tables with any number of columns and change those column types if you need to. This is typical of data warehouse and data lake types of destinations.
+- **ELT databases, warehouses, and lakes**: These destinations are agnostic about schema. You can, for example, create tables with any number of columns and change those column types if you need to. This is typical of data warehouses and data lakes.
 
-- **Data activation**: Some destinations have strict schemas that your connection must observe. For example, if you're syncing data to Salesforce, your Salesforce records might have specific fields for name, email, company, phone number, revenue, etc. Some of those fields may be optional, some may be required, and all expect data in a certain format. This means you need to map data from your source to your destination to ensure it arrives in the necessary format and structure.
+- **Data activation**: These destinations have stricter schemas that your connection must adhere to. For example, if you're syncing data to Salesforce, your Salesforce records have pre-existing fields for name, email, company, phone number, revenue, etc. Some of those fields may be optional, some may be required, and all expect data in a certain format. This means you need to map data from your source to your destination to ensure it arrives in the necessary format and structure.
 
 The unique needs of a destination account for why setting up some connections might be different than others.
 
-## Create a connection: databases, warehouses, and lakes
+## Create an ELT connection
 
 Follow these steps to create a connection to a database, warehouse, lake, or similar type of destination.
 
@@ -28,26 +28,82 @@ Follow these steps to create a connection to a database, warehouse, lake, or sim
 
 2. Click **New connection**.
 
-3. Click the source you want to add. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source).
+3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source).
 
-4. Click the destination you want to add. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-destination). Wait a moment while Airbyte fetches the schema of your data.
+4. Click the destination you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-destination). Wait a moment while Airbyte fetches the schema of your data.
 
 5. Under **Select sync mode**, select your sync mode. You can either replicate sources, which maintains an up-to-date copy of your source data in the destination, or you can append historical changes, allowing you to track changes to your data over time in your destination. Airbyte automatically selects the most appropriate sync mode for each stream based on this selection. However, you can update specific streams later.
 
 6. In the **Schema** table, configure your schema. 
 
-    1. Choose the specific streams and fields you want to sync.
+    1. Choose the specific streams and fields you want to sync. You may have data you don't want to sync. For example, you might consider that data irrelevant or it might be subject to security or compliance rules. If you're unsure, you can always add it later.
 
-    2. Choose the sync mode for each stream. To learn more, see [sync modes](/platform/using-airbyte/core-concepts/sync-modes/).
+    2. Choose the sync mode for each stream. For help, see [sync modes](/platform/using-airbyte/core-concepts/sync-modes/).
 
-    3. Set primary keys, if applicable.
+    3. Set primary keys for each stream, if applicable. If possible, Airbyte sets this for you automatically.
 
 7. Click **Next**.
 
 8. Under **Configure connection**, finalize the settings for this connection.
 
+    | Option                | Description                                                                                                             |
+    | --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+    | Connection name       | Give your connection a more meaningful name if the default `Source -> Destination` isn't sufficient.                     |
+    | Tags                  | Create and apply [tags](../using-airbyte/tagging) to organize your connections.                                         |
+    | Schedule type         | Choose if and how you want to [schedule this connection](../using-airbyte/core-concepts/sync-schedules).                |
+    | Destination namespace | The [location in the destination](../using-airbyte/core-concepts/namespaces) where you want Airbyte to write this data. |
+    | Stream prefix          | If you want to prefix each stream name with a unique value.                                                              |
+    | Advanced settings     | In most cases, you don't need to change these.                                                                          |
 
+9. Click **Set up connection**. Airbyte takes you to the page for that connection, where you can manage it and initiate syncs manually.
 
-## Create a connection: data activation
+## Create a data activation connection
+
+:::info
+Data activation is in early access. If you'd like to be an early adopter, [fill out this form](https://form.typeform.com/to/tupSnN3D) and we'll contact you soon.
+:::
 
 Follow these steps to create a connection to a data activation destination.
+
+### Choose your connectors
+
+1. Click **Connections** in the navigation.
+
+2. Click **New connection**.
+
+3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source).
+
+4. Click the destination you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-destination). Wait a moment while Airbyte fetches the schema of your data. When it's done, Airbyte asks you to set up mappings.
+
+### Set up mappings, sync modes, and insertion methods
+
+Data activation destinations have stricter schemas that your connection must adhere to. For example, if you're syncing data to Salesforce, your Salesforce records have pre-existing fields for name, email, company, phone number, revenue, etc. Some of those fields may be optional, some may be required, and all expect data in a certain format. This means you need to map data from your source to your destination to ensure it arrives in the necessary format and structure.
+
+1. Select the first field you want to map from your source.
+
+2. Select the sync mode and, if necessary, the cursor. For help, see [sync modes](/platform/using-airbyte/core-concepts/sync-modes/).
+
+3. Select the destination field to which you want to map that field.
+
+4. Select the insertion type. The insertion options available depend on the capabilities of the destination and its connector. Depending on your selection, Airbyte may require you to map other fields as well. In this case, it auto-populates those fields in the destination column.
+
+5. Continue mapping source fields to destination fields until you've mapped all required fields, plus any optional fields you want to include.
+
+### Configure your connection
+
+The final step is to configure details of your connection.
+
+| Option                | Description                                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Connection name       | Give your connection a more meaningful name if the default `Source -> Destination` isn't sufficient.                     |
+| Tags                  | Create and apply [tags](../using-airbyte/tagging) to organize your connections.                                         |
+| Schedule type         | Choose if and how you want to [schedule this connection](../using-airbyte/core-concepts/sync-schedules).                |
+| Destination namespace | The [location in the destination](../using-airbyte/core-concepts/namespaces) where you want Airbyte to write this data. |
+| Stream prefix          | If you want to prefix each stream name with a unique value.                                                              |
+| Advanced settings     | In most cases, you don't need to change these.                                                                          |
+
+When you're ready to create the connection, click **Set up connection**. Airbyte takes you to the page for that connection, where you can manage it and initiate syncs manually.
+
+### Review and manage rejected records {#da-rejected-records}
+
+See [Rejected records](rejected-records).
