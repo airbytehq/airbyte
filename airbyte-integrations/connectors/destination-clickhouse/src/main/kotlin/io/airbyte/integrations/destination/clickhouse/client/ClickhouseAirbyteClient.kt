@@ -21,7 +21,6 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
-import io.airbyte.cdk.output.ConfigError
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
@@ -116,10 +115,12 @@ class ClickhouseAirbyteClient(
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
         val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
 
-        val hasAllAirbyteColumn = tableSchema.columns.map { it.columnName }.containsAll(COLUMN_NAMES)
+        val hasAllAirbyteColumn =
+            tableSchema.columns.map { it.columnName }.containsAll(COLUMN_NAMES)
 
         if (!hasAllAirbyteColumn) {
-            val message = "The target table is already existing but doesn't contains the columns needed by airbyte. You need to either delete the target table or add a prefix in the connection configuration in order to change the name of the target table"
+            val message =
+                "The target table ($properTableName) already exists in the destination, but does not contain Airbyte's internal columns. Airbyte can only sync to Airbyte-controlled tables. To fix this error, you must either delete the target table or add a prefix in the connection configuration in order to sync to a separate table in the destination."
             log.error { message }
             throw ConfigErrorException(message)
         }
