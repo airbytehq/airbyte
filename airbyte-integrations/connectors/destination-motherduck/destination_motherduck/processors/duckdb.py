@@ -357,6 +357,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         sync_mode: DestinationSyncMode,
     ) -> None:
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
+        final_table_name = self.normalizer.normalize(stream_name)
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
         except Exception:
