@@ -90,5 +90,8 @@ To start activating your data with Airbyte, see the following topics.
 - [Set up a source](../using-airbyte/getting-started/add-a-source)
 - [Set up a destination](../using-airbyte/getting-started/add-a-destination)
 - [Set up a connection](add-connection)
+
+More resources:
+
 - [All Airbyte connectors](/integrations)
 - [dbt Core](https://www.getdbt.com/)
