@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.clickhouse.client
 
 import com.clickhouse.client.api.Client as ClickHouseClientRaw
 import com.clickhouse.client.api.command.CommandResponse
-import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
@@ -342,12 +341,13 @@ class ClickhouseAirbyteClientTest {
     private fun mockCHSchemaWithAirbyteColumns() {
         every { client.getTableSchema(any(), any()) } returns
             mockk {
-                every { columns } returns  listOf(
-                    mockk { every { columnName } returns Meta.COLUMN_NAME_AB_RAW_ID },
-                    mockk { every { columnName } returns Meta.COLUMN_NAME_AB_EXTRACTED_AT },
-                    mockk { every { columnName } returns Meta.COLUMN_NAME_AB_META },
-                    mockk { every { columnName } returns Meta.COLUMN_NAME_AB_GENERATION_ID },
-                )
+                every { columns } returns
+                    listOf(
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_RAW_ID },
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_EXTRACTED_AT },
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_META },
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_GENERATION_ID },
+                    )
             }
     }
 
@@ -465,7 +465,9 @@ class ClickhouseAirbyteClientTest {
                     }
             }
 
-        assertThrows<ConfigErrorException> { clickhouseAirbyteClient.ensureSchemaMatches(stream, finalTableName, columnMapping) }
+        assertThrows<ConfigErrorException> {
+            clickhouseAirbyteClient.ensureSchemaMatches(stream, finalTableName, columnMapping)
+        }
     }
 
     @Test
