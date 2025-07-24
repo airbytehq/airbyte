@@ -2,9 +2,7 @@
 products: all
 ---
 
-# Refreshes
-
-## Overview
+# Refreshing your data
 
 A Refresh Sync erases the current cursor you have set for any incremental streams, effectively ‘rewinding’ the sync back to the beginning. This is helpful in the following scenarios:
 

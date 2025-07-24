@@ -2,7 +2,7 @@
 products: cloud
 ---
 
-# Use the dbt Cloud integration
+# dbt Cloud integration
 
 By using the dbt Cloud integration, you can create and run dbt transformations immediately following syncs in Airbyte Cloud. This allows you to transform raw data into a format that is suitable for analysis and reporting, including cleaning and enriching the data.
 

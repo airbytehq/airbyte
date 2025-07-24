@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Review the Connection Timeline
+# Connection timeline
 
 The Connection Timeline displays historical information about relevant connection events. You can also view and download logs, find any relevant errors, and find a link to a job to share with Support.
 

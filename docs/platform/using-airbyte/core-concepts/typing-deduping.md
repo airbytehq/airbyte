@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Typing and Deduping
+# Typing and deduping
 
 :::warning
 **Typing and Deduping is currently being phased out in favor of [Direct-Load](direct-load-tables).**

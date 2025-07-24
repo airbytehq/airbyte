@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Schema Change Management
+# Schema change  management
 
 You can specify for each connection how Airbyte should handle any change of schema in the source. This process helps ensure accurate and efficient data syncs, minimizing errors and saving you time and effort in managing your data pipelines.
 

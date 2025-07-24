@@ -1,6 +1,6 @@
-# Direct-Load Tables
+# Direct loading tables
 
-Direct-load is an improvement to [Typing and Deduping](typing-deduping). Airbyte intends to eventually replace typing and deduping with direct-load. Under direct-load, the final tables in your destination are identical to their typed and deduped version, but without the need to store the raw tables in your destination.
+Direct loading is an improvement to [Typing and Deduping](typing-deduping). Airbyte intends to eventually replace typing and deduping with direct-load. Under direct-load, the final tables in your destination are identical to their typed and deduped version, but without the need to store the raw tables in your destination.
 
 ## Why direct-loading is superior to typing and deduping
 

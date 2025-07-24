@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Configuring Schemas
+# Configuring schemas
 
 A connection's schema typically consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream, there are typically several fields or columns. You can sync specific data from your sources by selecting which stream or fields.
 
