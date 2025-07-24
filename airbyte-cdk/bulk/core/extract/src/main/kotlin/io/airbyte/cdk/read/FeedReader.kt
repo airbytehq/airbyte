@@ -417,7 +417,6 @@ class FeedReader(
             attemptWithMessageRouter {
                 while (PartitionReader.pendingStates.isNotEmpty()) {
                     val message: Any = PartitionReader.pendingStates.poll() ?: break
-                    log.info { "checkpoint of $message" }
                     when (message) {
                         is AirbyteStateMessage -> {
                             it.acceptNonRecord(message)
