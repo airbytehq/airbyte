@@ -184,11 +184,13 @@ class CheckpointManagerUTest {
             mockk<GlobalSnapshotCheckpoint> {
                 every { streamCheckpoints } returns
                     mapOf(stream1.mappedDescriptor to checkpointKey3)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
             }
         val globalSnapshotCheckpoint2 =
             mockk<GlobalSnapshotCheckpoint> {
                 every { streamCheckpoints } returns
                     mapOf(stream2.mappedDescriptor to checkpointKey2)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
             }
         val message1 = mockMessage(globalSnapshotCheckpoint1)
         val message2 = mockMessage(globalSnapshotCheckpoint2)
@@ -220,18 +222,20 @@ class CheckpointManagerUTest {
             mockk<GlobalSnapshotCheckpoint> {
                 every { streamCheckpoints } returns
                     mapOf(stream1.mappedDescriptor to checkpointKey3)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
             }
         val globalSnapshotCheckpoint2 =
             mockk<GlobalSnapshotCheckpoint> {
                 every { streamCheckpoints } returns
                     mapOf(stream2.mappedDescriptor to checkpointKey2)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
             }
         val message1 = mockMessage(globalSnapshotCheckpoint1)
         val message2 = mockMessage(globalSnapshotCheckpoint2)
 
         coEvery {
             streamManager1.areRecordsPersistedForCheckpoint(checkpointKey3.checkpointId)
-        } returns true
+        } returns false
         coEvery {
             streamManager2.areRecordsPersistedForCheckpoint(checkpointKey2.checkpointId)
         } returns false
