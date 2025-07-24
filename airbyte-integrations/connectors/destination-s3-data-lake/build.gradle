@@ -63,7 +63,3 @@ dependencies {
     integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
     integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
 }
-
-test {
-    systemProperties(["mockk.junit.extension.keepmocks":"true", "mockk.junit.extension.requireParallelTesting":"true"])
-}
