@@ -326,9 +326,36 @@ module.exports = {
               },
               items: [
                 "move-data/add-connection",
+                {
+                  type: "category",
+                  label: "Manage connections",
+                  link: {
+                    type: "doc",
+                    id: "move-data/manage-connections",
+                  },
+                  items: [
+                    "cloud/managing-airbyte-cloud/review-connection-status",
+                    "cloud/managing-airbyte-cloud/review-connection-timeline",
+                    "using-airbyte/mappings",
+                    "operator-guides/refreshes",
+                    "operator-guides/clear",
+                    "operator-guides/browsing-output-logs",
+                    "cloud/managing-airbyte-cloud/manage-connection-state",
+                  ],
+                },
               ],
             },
-            "move-data/elt-data-activation"
+            {
+              type: "category",
+              label: "Data activation (reverse ETL)",
+              link: {
+                type: "doc",
+                id: "move-data/elt-data-activation",
+              },
+              items: [
+                "move-data/rejected-records"
+              ],
+            },
           ],
         },        
         buildAConnector,
@@ -343,25 +370,9 @@ module.exports = {
           id: "using-airbyte/delivery-methods",
         },
         {
-          type: "doc",
-          id: "using-airbyte/mappings",
-        },
-        {
           type: "category",
           label: "Transformations",
           items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
-        },
-        {
-          type: "category",
-          label: "Managing Syncs",
-          items: [
-            "cloud/managing-airbyte-cloud/review-connection-status",
-            "cloud/managing-airbyte-cloud/review-connection-timeline",
-            "operator-guides/refreshes",
-            "operator-guides/clear",
-            "operator-guides/browsing-output-logs",
-            "cloud/managing-airbyte-cloud/manage-connection-state",
-          ],
         },
         {
           type: "doc",
