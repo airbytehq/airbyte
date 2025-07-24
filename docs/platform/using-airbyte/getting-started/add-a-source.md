@@ -4,7 +4,7 @@ products: all
 
 # Add and manage sources
 
-A source is the database, API, or other system from which you sync data. Adding a source connector is easy, and the first step when you want to start syncing data with Airbyte.
+A source is the database, API, or other system from which you sync data. Adding a source connector is the first step when you want to start syncing data with Airbyte.
 
 ## Add a source connector
 
@@ -39,7 +39,7 @@ After you set up a source connector, you can modify it.
 You can delete a source you no longer need. 
 
 :::danger
-Deleting a source connector also deletes any connections that rely on it. Data that's already in your destination isn't affected.
+Deleting a source connector also deletes any connections that rely on it. Data that's already in your destination isn't affected. However, reestablishing this connection later requires a full re-sync.
 :::
 
 1. In the left navigation, click **Sources**.

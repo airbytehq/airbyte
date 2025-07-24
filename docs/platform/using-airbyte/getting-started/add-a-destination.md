@@ -7,7 +7,7 @@ import TabItem from "@theme/TabItem";
 
 # Add and manage destinations
 
-A destination is the data warehouse, data lake, database, or other system to which you sync data.
+A destination is the data warehouse, data lake, database, or other system to which you sync data. Adding a destination is the next step after you create [a source](add-a-source).
 
 ## Add a destination connector
 
@@ -42,7 +42,7 @@ After you set up a destination connector, you can modify it.
 You can delete a destination you no longer need.
 
 :::danger
-Deleting a destination connector also deletes any connections that rely on it. Data that's already in your destination isn't affected.
+Deleting a destination connector also deletes any connections that rely on it. Data that's already in your destination isn't affected. However, reestablishing this connection later requires a full re-sync.
 :::
 
 1. In the left navigation, click **Destinations**.

@@ -16,12 +16,12 @@ A **connection** is the relationship between a source connector and a destinatio
 - Where Airbyte should write replicated data
 - How Airbyte should handle schema drift
 
-A **stream** is a group of related records within a connection. Depending on the destination, a stream might be a table, file, or blob. Airbyte uses the term `stream` to generalize the flow of data to destinations of all types and formats. Examples of streams:
+Each iteration of a connection is called a **sync**. In most cases, you run syncs on an automated schedule, but you can also run them manually.
+
+A **stream** is a group of related records within a connection. Depending on the destination, a stream might be a table, file, multiple files, or blob. Airbyte uses the term `stream` to generalize the flow of data to destinations of all types and formats. You can configure each stream if you need granular control over specifics parts of your data. Examples of streams are:
 
 - A table in a relational database
 - A resource or API endpoint for a REST API
 - The records from a directory containing files in a filesystem
-
-Each iteration of a connection is called a **sync**. In most cases, you run syncs on an automated schedule, but you can also run them manually.
 
 <DocCardList/>

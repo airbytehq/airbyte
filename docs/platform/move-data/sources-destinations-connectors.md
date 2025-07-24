@@ -18,13 +18,13 @@ A **connector** is the component Airbyte uses to connect to and interact with yo
 
 Airbyte has two types of connectors: source connectors and destination connectors. Sometimes, people abbreviate these to "sources" and "destinations." That can be a little confusing, so to be clear, a connector isn't the same thing as the source or destination it connects to, but it's closely related to them.
 
-Connectors have [different support levels](/integrations/connector-support-levels).
+Connectors have [different support levels](/integrations/connector-support-levels). Some are built and maintained by Airbyte and some are contributed by members of Airbyte's community.
 
 ### Connectors are open source
 
 Airbyte provides over 600 connectors, almost all of which are open source. You can contribute to connectors to make them better or keep them up-to-date as third-parties make changes, or fork it to make it more suitable to your particular needs. 
 
-If you don't see the connector you need, you can build one from scratch. Airbyte provides a no-code and low-code Connector Builder as well as Connector Development Kits (CDKs), which are more traditional software development tools.
+If you don't see the connector you need, you can build one from scratch. Airbyte provides a no-code and low-code [Connector Builder](../connector-development/connector-builder-ui/overview). For advanced use cases, you can use Connector Development Kits (CDKs), which are more traditional software development tools.
 
 ## Add and manage sources and destinations
 
