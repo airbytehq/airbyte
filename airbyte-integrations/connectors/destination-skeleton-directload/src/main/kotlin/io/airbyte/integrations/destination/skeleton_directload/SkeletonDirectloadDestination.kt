@@ -5,11 +5,6 @@ package io.airbyte.integrations.destination.skeleton_directload
 
 import io.airbyte.cdk.AirbyteDestinationRunner
 
-class SkeletonDirectLoadDestination {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            AirbyteDestinationRunner.run(*args)
-        }
-    }
+fun main(args: Array<String>) {
+    AirbyteDestinationRunner.run(*args)
 }
