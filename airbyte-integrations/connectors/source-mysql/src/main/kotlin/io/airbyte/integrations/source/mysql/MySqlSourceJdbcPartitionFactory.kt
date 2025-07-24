@@ -531,19 +531,19 @@ class MySqlSourceJdbcPartitionFactory(
     private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? =
         when {
             lowerBound is Long? && upperBound is Long ->
-                calculateBoundaries(num, lowerBound, upperBound)
+                _calculateBoundaries(num, lowerBound, upperBound)
             lowerBound is Int? && upperBound is Int ->
-                calculateBoundaries(num, lowerBound, upperBound)
+                _calculateBoundaries(num, lowerBound?.toLong(), upperBound.toLong())
             lowerBound is String? && upperBound is String ->
-                calculateBoundaries(num, lowerBound, upperBound)
+                _calculateBoundaries(num, lowerBound, upperBound)
             lowerBound is Double? && upperBound is Double ->
-                calculateBoundaries(num, lowerBound, upperBound)
+                _calculateBoundaries(num, lowerBound, upperBound)
             lowerBound is OffsetDateTime? && upperBound is OffsetDateTime ->
-                calculateBoundaries(num, lowerBound, upperBound)
+                _calculateBoundaries(num, lowerBound, upperBound)
             else -> null
         }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: OffsetDateTime?,
         upperBound: OffsetDateTime
@@ -561,7 +561,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: Long?,
         upperBound: Long
@@ -579,7 +579,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: Double?,
         upperBound: Double
@@ -595,7 +595,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: String?,
         upperBound: String
