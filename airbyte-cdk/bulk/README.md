@@ -97,6 +97,8 @@ The contributor needs to manually bump the version before merging.
 
 In the build process, we are checking that the version of the bulk CDK doesn't exist already.
 
+There is now a changelog file which needs to be updated. Currently there is no enforcement but it will.
+
 ## Licensing
 
 The license for the Bulk CDK is Elastic License 2.0, as specified by the LICENSE file in the root
