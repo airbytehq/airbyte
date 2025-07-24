@@ -235,36 +235,6 @@ const deployAirbyte = {
   ],
 };
 
-const connectionConfigurations = {
-  type: "category",
-  label: "Data Transfer Options",
-  link: {
-    type: "doc",
-    id: "cloud/managing-airbyte-cloud/configuring-connections",
-  },
-  items: [
-    "using-airbyte/core-concepts/sync-schedules",
-    "using-airbyte/core-concepts/namespaces",
-    "using-airbyte/configuring-schema",
-    "using-airbyte/schema-change-management",
-    {
-      type: "category",
-      label: "Sync Modes",
-      link: {
-        type: "doc",
-        id: "using-airbyte/core-concepts/sync-modes/README",
-      },
-      items: [
-        "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
-        "using-airbyte/core-concepts/sync-modes/incremental-append",
-        "using-airbyte/core-concepts/sync-modes/full-refresh-append",
-        "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
-        "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
-      ],
-    },
-  ],
-};
-
 const understandingAirbyte = {
   type: "category",
   label: "Understand Airbyte",
@@ -313,7 +283,7 @@ module.exports = {
           type: "doc",
           id: "using-airbyte/getting-started/academy",
         },
-        sectionHeader("Moving and managing data"),
+        sectionHeader("Moving and Managing Data"),
         {
           type: "category",
           label: "Moving data",
@@ -333,6 +303,7 @@ module.exports = {
                 "using-airbyte/getting-started/add-a-source",
                 "using-airbyte/getting-started/add-a-destination",
                 "using-airbyte/oauth",
+                "using-airbyte/delivery-methods",
               ],
             },
             {
@@ -349,16 +320,40 @@ module.exports = {
                   label: "Manage connections",
                   link: {
                     type: "doc",
-                    id: "move-data/manage-connections",
+                    id: "cloud/managing-airbyte-cloud/configuring-connections",
                   },
                   items: [
                     "cloud/managing-airbyte-cloud/review-connection-status",
                     "cloud/managing-airbyte-cloud/review-connection-timeline",
+                    "using-airbyte/configuring-schema",
                     "using-airbyte/mappings",
+                    "cloud/managing-airbyte-cloud/dbt-cloud-integration",
                     "operator-guides/refreshes",
                     "operator-guides/clear",
                     "operator-guides/browsing-output-logs",
                     "cloud/managing-airbyte-cloud/manage-connection-state",
+                    "using-airbyte/core-concepts/sync-schedules",
+                    "using-airbyte/core-concepts/namespaces",
+                    "using-airbyte/schema-change-management",
+                    "using-airbyte/tagging",
+                    "using-airbyte/core-concepts/typing-deduping",
+                    "using-airbyte/core-concepts/direct-load-tables",
+                    "understanding-airbyte/airbyte-metadata-fields",
+                  ],
+                },
+                {
+                  type: "category",
+                  label: "Sync Modes",
+                  link: {
+                    type: "doc",
+                    id: "using-airbyte/core-concepts/sync-modes/README",
+                  },
+                  items: [
+                    "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
+                    "using-airbyte/core-concepts/sync-modes/incremental-append",
+                    "using-airbyte/core-concepts/sync-modes/full-refresh-append",
+                    "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+                    "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
                   ],
                 },
               ],
@@ -374,40 +369,10 @@ module.exports = {
                 "move-data/rejected-records"
               ],
             },
+            "using-airbyte/sync-files-and-records"
           ],
         },        
         buildAConnector,
-        sectionHeader("Using Airbyte"),
-        connectionConfigurations,
-        {
-          type: "doc",
-          id: "using-airbyte/core-concepts/direct-load-tables",
-        },
-        {
-          type: "doc",
-          id: "using-airbyte/core-concepts/typing-deduping",
-        },
-        {
-          type: "doc",
-          id: "using-airbyte/sync-files-and-records",
-        },
-        {
-          type: "doc",
-          id: "using-airbyte/delivery-methods",
-        },
-        {
-          type: "category",
-          label: "Transformations",
-          items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
-        },
-        {
-          type: "doc",
-          id: "using-airbyte/tagging",
-        },
-        {
-          type: "doc",
-          id: "understanding-airbyte/airbyte-metadata-fields",
-        },
         sectionHeader("Managing Airbyte"),
         deployAirbyte,
         {
