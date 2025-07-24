@@ -158,13 +158,6 @@ class PipelineEventBookkeepingRouter(
                     )
                 val maybeKey = checkpoint.checkpointKey
                 if (maybeKey != null) {
-                    val expected = checkpointAtomic(mappedDescriptor).get()
-                    if (maybeKey.checkpointIndex.value != expected) {
-                        error(
-                            "Out of order state message, expected state message with id $expected but got ${maybeKey.checkpointIndex.value}",
-                        )
-                    }
-
                     if (checkpoint.sourceStats == null) {
                         error(
                             "Source stats should always be present when checkpoint key is provided"
@@ -193,13 +186,6 @@ class PipelineEventBookkeepingRouter(
                 log.debug { "Got a GlobalSnapshotCheckpoint state message" }
                 val streamWithKeyAndCount =
                     catalog.streams.map { stream ->
-                        val expected = checkpointAtomic(stream.mappedDescriptor)
-                        if (snapshotKey.checkpointIndex.value != expected.get()) {
-                            error(
-                                "Out of order state message, expected state message with id $expected but got ${snapshotKey.checkpointIndex.value}"
-                            )
-                        }
-
                         if (checkpoint.sourceStats == null) {
                             error(
                                 "Source stats should always be present when checkpoint key is provided"
@@ -244,13 +230,6 @@ class PipelineEventBookkeepingRouter(
                         val manager = syncManager.getStreamManager(stream.mappedDescriptor)
                         val maybeKey = checkpoint.checkpointKey
                         if (maybeKey != null) {
-                            val expected = checkpointAtomic(stream.mappedDescriptor).get()
-                            if (maybeKey.checkpointIndex.value != expected) {
-                                error(
-                                    "Out of order state message, expected state message with id $expected but got ${maybeKey.checkpointIndex.value}"
-                                )
-                            }
-
                             if (checkpoint.sourceStats == null) {
                                 error(
                                     "Source stats should always be present when checkpoint key is provided"

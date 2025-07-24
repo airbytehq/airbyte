@@ -291,27 +291,6 @@ class PipelineEventBookkeepingRouterTest {
     }
 
     @Test
-    fun `out of order stream checkpoint throws`() = runTest {
-        val r = router(1)
-        val ck =
-            StreamCheckpoint(
-                unmappedNamespace = stream1.unmappedNamespace,
-                unmappedName = stream1.unmappedName,
-                blob = """{}""",
-                sourceRecordCount = 0L,
-                checkpointKey =
-                    CheckpointKey(
-                        checkpointIndex = CheckpointIndex(2),
-                        checkpointId = CheckpointId("bad")
-                    ),
-                destinationRecordCount = null,
-            )
-        val rm = ReservationManager(1)
-        val reserved: Reserved<CheckpointMessage> = rm.reserve(1, ck)
-        assertThrows<IllegalStateException> { r.handleCheckpoint(reserved) }
-    }
-
-    @Test
     fun `global checkpoint without key infers key and aggregates counts`() = runTest {
         val r = router(1)
         every { streamManager1.readCountForCheckpoint(CheckpointId("1")) } returns 4L
@@ -448,27 +427,6 @@ class PipelineEventBookkeepingRouterTest {
                 additionalProperties = emptyMap(),
                 serializedSizeBytes = 0L,
                 checkpointKey = null,
-                streamCheckpoints = emptyMap()
-            )
-        val rm = ReservationManager(1)
-        val reserved: Reserved<CheckpointMessage> = rm.reserve(1, snapshot)
-        assertThrows<IllegalStateException> { r.handleCheckpoint(reserved) }
-    }
-
-    @Test
-    fun `out of order global snapshot throws`() = runTest {
-        val r = router(1)
-        val snapshot =
-            GlobalSnapshotCheckpoint(
-                state = null,
-                sourceStats = CheckpointMessage.Stats(0),
-                additionalProperties = emptyMap(),
-                serializedSizeBytes = 0L,
-                checkpointKey =
-                    CheckpointKey(
-                        checkpointIndex = CheckpointIndex(2),
-                        checkpointId = CheckpointId("snap")
-                    ),
                 streamCheckpoints = emptyMap()
             )
         val rm = ReservationManager(1)
