@@ -5,7 +5,6 @@
 - [Airbyte CDK Development Concepts](https://docs.airbyte.com/connector-development/cdk-python/basic-concepts): To explain the fundamental concepts of developing connectors using the Airbyte CDK in Python.
 - [External Database Configuration](https://docs.airbyte.com/deploying-airbyte/integrations/database): Guide for configuring external databases with Airbyte for better reliability and backups.
 - [Using OAuth in Airbyte](https://docs.airbyte.com/using-airbyte/oauth): Guide on using OAuth for Airbyte connectors.
-- [Testing Airbyte Connectors](https://docs.airbyte.com/connector-development/testing-connectors/): Guide for testing Airbyte connectors through various testing suites and CI pipeline procedures.
 - [Airbyte Enterprise Setup](https://docs.airbyte.com/enterprise-setup/): Provide information on deploying and managing Airbyte Self-Managed Enterprise for organizations.
 - [Airbyte API Documentation](https://docs.airbyte.com/api-documentation): Documenting the Airbyte API for developers to programmatically interact with Airbyte products.
 - [Airbyte GCP Installation Guide](https://docs.airbyte.com/deploying-airbyte/infrastructure/gcp): Guide for installing Airbyte on Google Cloud Platform with necessary service account permissions.
