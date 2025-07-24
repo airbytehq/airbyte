@@ -58,9 +58,9 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
  * stream) per partition. So for a loader using the default partitioner (by stream), this will
  * result in at most num_streams unique loaders. For loaders partitioning by primary key/random/
  * round-robin, this will result in at most num_streams * num_partitions unique loaders. In both
- * cases, this will be clamped to the specified max. Meaning: syncs with a large number of inter-
- * leaved streams risk generating pathologically small batches, but will never break the specified
- * concurrency restrictions.
+ * cases, this will be clamped to the specified max. Meaning: syncs with a large number of
+ * interleaved streams risk generating pathologically small batches, but will never break the
+ * specified concurrency restrictions.
  */
 interface DirectLoader : AutoCloseable {
     sealed interface DirectLoadResult
@@ -71,14 +71,14 @@ interface DirectLoader : AutoCloseable {
      * Called once per record until it returns [Complete], after which [close] is called, the loader
      * is discarded, and the records are considered processed by the platform.
      */
-    fun accept(record: DestinationRecordRaw): DirectLoadResult
+    suspend fun accept(record: DestinationRecordRaw): DirectLoadResult
 
     /**
      * Called by the CDK to force work to finish. It will only be called if the last call to
      * [accept] did not return [Complete]. After which [close] is called, the loader is discarded,
      * and the records are considered processed by the platform.
      */
-    fun finish()
+    suspend fun finish()
 }
 
 interface DirectLoaderFactory<T : DirectLoader> : LoadStrategy {

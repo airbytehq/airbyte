@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
@@ -23,7 +22,7 @@ import jakarta.inject.Singleton
 @Secondary
 class UpdateCheckpointsTask(
     private val syncManager: SyncManager,
-    private val checkpointManager: CheckpointManager<Reserved<CheckpointMessage>>,
+    private val checkpointManager: CheckpointManager,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
 ) : Task {
     val log = KotlinLogging.logger {}
@@ -36,7 +35,9 @@ class UpdateCheckpointsTask(
             when (it.value) {
                 is StreamCheckpointWrapped -> {
                     val (stream, checkpointKey, message) = it.value
-                    log.info { "Updating checkpoint for stream $stream with id $checkpointKey" }
+                    log.info {
+                        "Updating stream checkpoint $stream:$checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
                     checkpointManager.addStreamCheckpoint(
                         stream,
                         checkpointKey,
@@ -45,7 +46,9 @@ class UpdateCheckpointsTask(
                 }
                 is GlobalCheckpointWrapped -> {
                     val (checkpointKey, message) = it.value
-                    log.info { "Updating global checkpoint with $checkpointKey" }
+                    log.info {
+                        "Updating global checkpoint with $checkpointKey:${it.value.checkpoint.sourceStats}"
+                    }
                     checkpointManager.addGlobalCheckpoint(checkpointKey, it.replace(message))
                 }
             }

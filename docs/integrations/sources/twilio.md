@@ -100,6 +100,8 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.12.1 | 2025-06-15 | [56258](https://github.com/airbytehq/airbyte/pull/56258) | Update dependencies |
+| 0.12.0 | 2025-05-13 | [49097](https://github.com/airbytehq/airbyte/pull/49097) | Fix per partition states for nested streams |
 | 0.11.17 | 2025-02-22 | [54486](https://github.com/airbytehq/airbyte/pull/54486) | Update dependencies |
 | 0.11.16 | 2025-01-22 | [52089](https://github.com/airbytehq/airbyte/pull/52089) | Fix typo to fix pagination for `TwilioStream` class |
 | 0.11.15 | 2025-01-18 | [51966](https://github.com/airbytehq/airbyte/pull/51966) | Update dependencies |

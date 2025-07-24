@@ -23,56 +23,74 @@ const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal"
 data class TableNameInfo(val tableNames: TableNames, val columnNameMapping: ColumnNameMapping)
 
 data class TableCatalog(private val catalog: Map<DestinationStream, TableNameInfo>) :
-    Map<DestinationStream, TableNameInfo> by catalog
+    Map<DestinationStream, TableNameInfo> by catalog {
+    fun getMappedColumnName(stream: DestinationStream, colName: String): String? =
+        this[stream]?.columnNameMapping?.get(colName)
+}
 
 data class TableCatalogByDescriptor(
     private val catalog: Map<DestinationStream.Descriptor, TableNameInfo>
-) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog
+) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog {
+    fun getFinalTableName(desc: DestinationStream.Descriptor): TableName? =
+        this[desc]?.tableNames?.finalTableName
+}
 
 @Factory
 class TableCatalogFactory {
     @Singleton
     fun getTableCatalog(
         catalog: DestinationCatalog,
-        rawTableNameGenerator: RawTableNameGenerator,
+        // Raw table generator is optional. Direct-load destinations don't need it
+        // (unless they were previously T+D destinations, in which case it's still required
+        // so that we maintain stable names with the T+D version)
+        rawTableNameGenerator: RawTableNameGenerator?,
         finalTableNameGenerator: FinalTableNameGenerator,
         finalTableColumnNameGenerator: ColumnNameGenerator,
     ): TableCatalog {
-        val processedRawTableNames = mutableSetOf<TableName>()
+        val processedRawTableNames =
+            if (rawTableNameGenerator != null) {
+                mutableSetOf<TableName>()
+            } else {
+                null
+            }
         val processedFinalTableNames = mutableSetOf<TableName>()
 
         val result = mutableMapOf<DestinationStream, TableNameInfo>()
 
         catalog.streams.forEach { stream ->
-            val originalRawTableName = rawTableNameGenerator.getTableName(stream.descriptor)
-            val originalFinalTableName = finalTableNameGenerator.getTableName(stream.descriptor)
-            val currentRawProcessedName: TableName
+            val originalRawTableName = rawTableNameGenerator?.getTableName(stream.mappedDescriptor)
+            val originalFinalTableName =
+                finalTableNameGenerator.getTableName(stream.mappedDescriptor)
+            val currentRawProcessedName: TableName?
             val currentFinalProcessedName: TableName
 
-            if (
-                originalRawTableName in processedRawTableNames ||
-                    originalFinalTableName in processedFinalTableNames
-            ) {
+            val rawTableNameColliding =
+                processedRawTableNames?.let { originalRawTableName in it } ?: false
+            val finalTableNameColliding = originalFinalTableName in processedFinalTableNames
+            if (rawTableNameColliding || finalTableNameColliding) {
                 LOGGER.info {
-                    "Detected table name collision for ${stream.descriptor.namespace}.${stream.descriptor.name}"
+                    "Detected table name collision for ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}"
                 }
                 // Create a hash-suffixed name to avoid collision
                 val hash =
                     DigestUtils.sha1Hex(
-                            "${originalFinalTableName.namespace}&airbyte&${stream.descriptor.name}"
+                            "${originalFinalTableName.namespace}&airbyte&${stream.mappedDescriptor.name}"
                         )
                         .substring(0, 3)
-                val newName = "${stream.descriptor.name}_$hash"
+                val newName = "${stream.mappedDescriptor.name}_$hash"
 
                 currentRawProcessedName =
-                    rawTableNameGenerator.getTableName(stream.descriptor.copy(name = newName))
-                processedRawTableNames.add(currentRawProcessedName)
-
+                    rawTableNameGenerator?.getTableName(
+                        stream.mappedDescriptor.copy(name = newName)
+                    )
+                processedRawTableNames?.add(currentRawProcessedName!!)
                 currentFinalProcessedName =
-                    finalTableNameGenerator.getTableName(stream.descriptor.copy(name = newName))
+                    finalTableNameGenerator.getTableName(
+                        stream.mappedDescriptor.copy(name = newName)
+                    )
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
-                processedRawTableNames.add(originalRawTableName)
+                processedRawTableNames?.add(originalRawTableName!!)
                 processedFinalTableNames.add(originalFinalTableName)
                 currentRawProcessedName = originalRawTableName
                 currentFinalProcessedName = originalFinalTableName
@@ -147,7 +165,7 @@ class TableCatalogFactory {
         }
 
         LOGGER.info {
-            "Detected column name collision for ${stream.descriptor.namespace}.${stream.descriptor.name}.$originalColumnName"
+            "Detected column name collision for ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}.$originalColumnName"
         }
 
         // Try adding incremental suffixes until we find a non-colliding name
@@ -226,7 +244,7 @@ class TableCatalogFactory {
 
     @Singleton
     fun getTableCatalogByDescriptor(map: TableCatalog): TableCatalogByDescriptor {
-        return TableCatalogByDescriptor(map.mapKeys { (k, _) -> k.descriptor })
+        return TableCatalogByDescriptor(map.mapKeys { (k, _) -> k.mappedDescriptor })
     }
 }
 

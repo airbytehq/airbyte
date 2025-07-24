@@ -352,6 +352,13 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.6 | 2025-07-19 | [63604](https://github.com/airbytehq/airbyte/pull/63604) | Update dependencies |
+| 3.5.5 | 2025-07-12 | [63029](https://github.com/airbytehq/airbyte/pull/63029) | Update dependencies |
+| 3.5.4 | 2025-07-05 | [62811](https://github.com/airbytehq/airbyte/pull/62811) | Update dependencies |
+| 3.5.3 | 2025-06-28 | [62413](https://github.com/airbytehq/airbyte/pull/62413) | Update dependencies |
+| 3.5.2 | 2025-06-21 | [61958](https://github.com/airbytehq/airbyte/pull/61958) | Update dependencies |
+| 3.5.1 | 2025-06-14 | [61290](https://github.com/airbytehq/airbyte/pull/61290) | Update dependencies |
+| 3.5.0 | 2025-06-09 | [61477](https://github.com/airbytehq/airbyte/pull/61477) | Removed action_report_time from spec as deprecated |
 | 3.4.9 | 2025-05-24 | [60025](https://github.com/airbytehq/airbyte/pull/60025) | Update dependencies |
 | 3.4.8 | 2025-05-03 | [58889](https://github.com/airbytehq/airbyte/pull/58889) | Update dependencies |
 | 3.4.7 | 2025-04-19 | [58296](https://github.com/airbytehq/airbyte/pull/58296) | Update dependencies |
@@ -369,7 +376,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 | 3.3.31 | 2025-02-11 | [53626](https://github.com/airbytehq/airbyte/pull/53626) | Log Utilization type |
 | 3.3.30 | 2025-02-08 | [53330](https://github.com/airbytehq/airbyte/pull/53330) | Update dependencies |
 | 3.3.29 | 2025-02-01 | [52835](https://github.com/airbytehq/airbyte/pull/52835) | Update dependencies |
-| 3.3.28 | 2025-01-27 | [52032](https://github.com/airbytehq/airbyte/pull/52032) | Update to API version 21
+| 3.3.28 | 2025-01-27 | [52032](https://github.com/airbytehq/airbyte/pull/52032) | Update to API version 21 |
 | 3.3.27 | 2025-01-25 | [52365](https://github.com/airbytehq/airbyte/pull/52365) | Update dependencies |
 | 3.3.26 | 2025-01-18 | [51706](https://github.com/airbytehq/airbyte/pull/51706) | Update dependencies |
 | 3.3.25 | 2025-01-11 | [51080](https://github.com/airbytehq/airbyte/pull/51080) | Update dependencies |

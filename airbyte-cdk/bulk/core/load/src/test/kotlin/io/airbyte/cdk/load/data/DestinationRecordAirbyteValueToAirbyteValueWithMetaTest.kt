@@ -7,10 +7,12 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
+import java.util.UUID
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
+    val airbyteRawId = UUID.randomUUID()
     val stream = MockDestinationCatalogFactory.stream1
     val emittedAtMs = 123456L
     val syncId = stream.syncId
@@ -42,7 +44,12 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
         val expected = LinkedHashMap(expectedMeta)
         expected[Meta.COLUMN_NAME_DATA] = data
         val mockRecord = DestinationRecordAirbyteValue(stream, data, emittedAtMs, Meta())
-        val withMeta = mockRecord.dataWithAirbyteMeta(stream, flatten = false)
+        val withMeta =
+            mockRecord.dataWithAirbyteMeta(
+                stream = stream,
+                flatten = false,
+                airbyteRawId = airbyteRawId
+            )
         val uuid = withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID) as StringValue
         Assertions.assertTrue(
             uuid.value.matches(
@@ -65,7 +72,12 @@ class DestinationRecordAirbyteValueToAirbyteValueWithMetaTest {
         val expected = LinkedHashMap(expectedMeta)
         data.values.forEach { (name, value) -> expected[name] = value }
         val mockRecord = DestinationRecordAirbyteValue(stream, data, emittedAtMs, Meta())
-        val withMeta = mockRecord.dataWithAirbyteMeta(stream, flatten = true)
+        val withMeta =
+            mockRecord.dataWithAirbyteMeta(
+                stream = stream,
+                flatten = true,
+                airbyteRawId = airbyteRawId
+            )
         withMeta.values.remove(Meta.COLUMN_NAME_AB_RAW_ID)
         Assertions.assertEquals(expected, withMeta.values)
     }

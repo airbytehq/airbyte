@@ -25,6 +25,12 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.27 | 2025-07-19 | [63486](https://github.com/airbytehq/airbyte/pull/63486) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63075](https://github.com/airbytehq/airbyte/pull/63075) | Update dependencies |
+| 0.0.25 | 2025-07-06 | [62522](https://github.com/airbytehq/airbyte/pull/62522) | Update rescheduled to rescheduledToUid field in GET Bookings |
+| 0.0.24 | 2025-07-05 | [62539](https://github.com/airbytehq/airbyte/pull/62539) | Update dependencies |
+| 0.0.23 | 2025-06-26 | [61717](https://github.com/airbytehq/airbyte/pull/61717) | Add support for createdAt, rescheduled and absentHost fields in GET Bookings |
+| 0.0.22 | 2025-06-15 | [61097](https://github.com/airbytehq/airbyte/pull/61097) | Update dependencies |
 | 0.0.21 | 2025-05-17 | [60707](https://github.com/airbytehq/airbyte/pull/60707) | Update dependencies |
 | 0.0.20 | 2025-05-10 | [59898](https://github.com/airbytehq/airbyte/pull/59898) | Update dependencies |
 | 0.0.19 | 2025-05-03 | [59325](https://github.com/airbytehq/airbyte/pull/59325) | Update dependencies |

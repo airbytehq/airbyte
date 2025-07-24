@@ -40,6 +40,7 @@ JavaScript
 ETL
 ELT
 [Dd]ata activation
+ID
 
 # Common acronyms and initialisms that don't need definitions
 
@@ -51,6 +52,11 @@ CSV
 CSVs
 API
 APIs
+OAuth
+DPath
+UUID
+URL
+SSO
 
 # Airbyte connectors
 
@@ -62,6 +68,11 @@ S3 Data Lake
 Glue
 [Gg]raph[Qq][Ll]
 \bDocker(?:'s)?\b
+npm
+HubSpot
+Zendesk
+Okta
+Entra
 
 # Acceptable non-words that shouldn't trigger spellcheck
 

@@ -47,8 +47,10 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
         : CHECKPOINT_INTERVAL;
   }
 
-  public String getDatabaseName() {
-    return getDatabaseConfig().has(DATABASE_CONFIGURATION_KEY) ? getDatabaseConfig().get(DATABASE_CONFIGURATION_KEY).asText() : null;
+  public java.util.List<String> getDatabaseNames() {
+    java.util.List<String> databases = new java.util.ArrayList<>();
+    getDatabaseConfig().get(DATABASE_CONFIGURATION_KEY).forEach(db -> databases.add(db.asText()));
+    return databases;
   }
 
   public OptionalInt getQueueSize() {
