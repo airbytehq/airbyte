@@ -350,12 +350,12 @@ class FeedReader(
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
     // Acquires resources for the OutputMessageRouter and executes the provided action with it
-    private fun doWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
-        val acquiredSocket: SocketResource.AcquiredSocket =
+    private fun attemptWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
+        val acquiredSocket: SocketResource.AcquiredSocket? =
             resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET)
                 as? SocketResource.AcquiredSocket
-                ?: throw IllegalStateException("No output socket available for checkpoint.")
-        acquiredSocket.use {
+
+        acquiredSocket?.use {
             OutputMessageRouter(
                     feedBootstrap.dataChannelMedium,
                     feedBootstrap.dataChannelFormat,
@@ -406,26 +406,18 @@ class FeedReader(
 
             // checkpoint state messages to stdout
             root.outputConsumer.accept(stateMessage)
-            when (finalCheckpoint) {
-                false -> {
-                    // While there are still active PartitionReader instances we use them to emit
-                    // state and status messages
-                    PartitionReader.pendingStates.add(stateMessage)
-                }
-                true -> {
-                    // If this is the final checkpoint, we initialize the OutputMessageRouter and
-                    // emit pending message thourgh it
-                    doWithMessageRouter { it.acceptNonRecord(stateMessage) }
-                }
-            }
+
+            // Queue the state message for transmission over sockets.
+            PartitionReader.pendingStates.add(stateMessage)
         }
 
         // If this is the final checkpoint, we initialize the OutputMessageRouter and emit all
         // pending messages through it
         if (finalCheckpoint) {
-            doWithMessageRouter {
+            attemptWithMessageRouter {
                 while (PartitionReader.pendingStates.isNotEmpty()) {
                     val message: Any = PartitionReader.pendingStates.poll() ?: break
+                    log.info { "checkpoint of $message" }
                     when (message) {
                         is AirbyteStateMessage -> {
                             it.acceptNonRecord(message)
