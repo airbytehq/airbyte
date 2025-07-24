@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
+import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.model.hasApplicableAlterations
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -124,16 +125,7 @@ class ClickhouseAirbyteClient(
         }
 
         val airbyteSchemaWithClickhouseType: Map<String, String> =
-            stream.schema
-                .asColumns()
-                .map { (fieldName, fieldType) ->
-                    // We don't need to nullable information here because we are setting all fields
-                    // as
-                    // nullable in the destination
-                    // Add map key
-                    fieldName to fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
-                }
-                .toMap()
+            getAirbyteSchemaWithClickhouseType(stream)
 
         val clickhousePks: List<String> =
             tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
@@ -155,7 +147,7 @@ class ClickhouseAirbyteClient(
                 currentPKs,
             )
 
-        if (columnChanges.hasApplicableAlterations()) {
+        if (columnChanges.hasApplicableAlterations() && !columnChanges.hasDedupChange) {
             execute(
                 sqlGenerator.alterTable(
                     columnChanges,
@@ -168,27 +160,73 @@ class ClickhouseAirbyteClient(
             log.info {
                 "Detected deduplication change for table $properTableName, applying deduplication changes"
             }
-            val tempTableName = tempTableNameGenerator.generate(properTableName)
-            execute(sqlGenerator.createNamespace(tempTableName.namespace))
-            execute(
-                sqlGenerator.createTable(
-                    stream,
-                    tempTableName,
-                    columnNameMapping,
-                    true,
-                ),
+            applyDeduplicationChanges(
+                stream,
+                properTableName,
+                columnNameMapping,
+                tableSchemaWithoutAirbyteColumns
             )
-            execute(
-                sqlGenerator.copyTable(
-                    columnNameMapping,
-                    properTableName,
-                    tempTableName,
-                ),
-            )
-            execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
-            execute(sqlGenerator.dropTable(tempTableName))
         }
     }
+
+    private suspend fun applyDeduplicationChanges(
+        stream: DestinationStream,
+        properTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>
+    ) {
+        val tempTableName = tempTableNameGenerator.generate(properTableName)
+        execute(sqlGenerator.createNamespace(tempTableName.namespace))
+        execute(
+            sqlGenerator.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                true,
+            ),
+        )
+        copyIntersectionColumn(
+            tableSchemaWithoutAirbyteColumns,
+            columnNameMapping,
+            properTableName,
+            tempTableName
+        )
+        execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
+        execute(sqlGenerator.dropTable(tempTableName))
+    }
+
+    internal suspend fun copyIntersectionColumn(
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>,
+        columnNameMapping: ColumnNameMapping,
+        properTableName: TableName,
+        tempTableName: TableName
+    ) {
+        val clickhouseColumnsName = tableSchemaWithoutAirbyteColumns.map { it.columnName }
+        execute(
+            sqlGenerator.copyTable(
+                ColumnNameMapping(
+                    columnNameMapping.filter { clickhouseColumnsName.contains(it.value) }
+                ),
+                properTableName,
+                tempTableName,
+            ),
+        )
+    }
+
+    internal fun getAirbyteSchemaWithClickhouseType(
+        stream: DestinationStream
+    ): Map<String, String> =
+        stream.schema
+            .asColumns()
+            .map { (fieldName, fieldType) ->
+                // We don't need to nullable information here because we are setting all fields
+                // as
+                // nullable in the destination
+                // Add map key
+                fieldName.toClickHouseCompatibleName() to
+                    fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+            }
+            .toMap()
 
     internal fun getChangedColumns(
         tableColumns: List<ClickHouseColumn>,

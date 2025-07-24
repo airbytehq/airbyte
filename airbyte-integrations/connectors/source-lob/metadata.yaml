@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-lob
   githubIssueLabel: source-lob
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Lob
   releaseDate: 2024-09-22
   releaseStage: alpha

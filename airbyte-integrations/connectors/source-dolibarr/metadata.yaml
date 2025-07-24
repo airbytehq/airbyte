@@ -26,7 +26,7 @@ data:
   dockerRepository: airbyte/source-dolibarr
   githubIssueLabel: source-dolibarr
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Dolibarr
   releaseDate: 2025-06-05
   releaseStage: alpha

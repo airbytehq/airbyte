@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-courier
   githubIssueLabel: source-courier
   icon: courier.svg
-  license: MIT
+  license: ELv2
   name: Courier
   remoteRegistries:
     pypi:

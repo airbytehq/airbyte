@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-incident-io
   githubIssueLabel: source-incident-io
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Incident
   releaseDate: 2024-10-03
   releaseStage: alpha

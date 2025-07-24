@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-dbt
   githubIssueLabel: source-dbt
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: DBT
   releaseDate: 2024-08-22
   releaseStage: alpha
