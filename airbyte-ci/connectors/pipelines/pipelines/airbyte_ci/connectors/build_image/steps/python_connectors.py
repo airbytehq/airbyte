@@ -3,11 +3,11 @@
 #
 
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from dagger import Container, Platform
+if TYPE_CHECKING:
+    import dagger
 
-from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
@@ -23,7 +23,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: Platform, *args: Any) -> Container:
+    async def _build_connector(self: "BuildConnectorImages", platform: "dagger.Platform", *args: Any) -> "dagger.Container":
         if (
             "connectorBuildOptions" in self.context.connector.metadata
             and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]
@@ -32,81 +32,63 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         else:
             return await self._build_from_dockerfile(platform)
 
-    def _get_base_container(self, platform: Platform) -> Container:
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
-        self.logger.info(f"Building connector from base image {base_image_name}")
-        return self.dagger_client.container(platform=platform).from_(base_image_name)
+    def _get_base_container(self: "BuildConnectorImages", platform: "dagger.Platform") -> "dagger.Container":
+        return self.context.connector.base_image_version.get_container(platform)
 
-    async def _create_builder_container(self, base_container: Container, user: str) -> Container:
-        """Pre install the connector dependencies in a builder container.
-
-        Args:
-            base_container (Container): The base container to use to build the connector.
-            user (str): The user to use in the container.
-        Returns:
-            Container: The builder container, with installed dependencies.
-        """
-        ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
-
-        builder = await with_python_connector_installed(
-            self.context,
-            base_container,
-            str(self.context.connector.code_directory),
-            user,
-            install_root_package=False,
-            include=ONLY_BUILD_FILES,
+    async def _create_builder_container(self: "BuildConnectorImages", platform: "dagger.Platform") -> "dagger.Container":
+        base_container = self._get_base_container(platform)
+        user = await self.get_image_user(base_container)
+        builder_container = await with_python_connector_installed(
+            self.context, base_container, str(self.context.connector.code_directory), user
         )
-        return builder
+        return builder_container
 
-    async def _build_from_base_image(self, platform: Platform) -> Container:
+    async def _build_from_base_image(self: "BuildConnectorImages", platform: "dagger.Platform") -> "dagger.Container":
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
 
         Returns:
             Container: The connector container built from the base image.
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
-        base = self._get_base_container(platform)
-        user = await self.get_image_user(base)
-        customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
-        main_file_name = build_customization.get_main_file_name(self.context.connector)
 
-        builder = await self._create_builder_container(customized_base, user)
-
-        # The snake case name of the connector corresponds to the python package name of the connector
-        # We want to mount it to the container under PATH_TO_INTEGRATION_CODE/connector_snake_case_name
-        connector_snake_case_name = self.context.connector.technical_name.replace("-", "_")
-
-        base_connector_container = (
-            # copy python dependencies from builder to connector container
-            customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
-            .with_workdir(self.PATH_TO_INTEGRATION_CODE)
-            .with_exec(["chown", "-R", f"{user}:{user}", "."])
-            .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name), owner=user)
-            .with_directory(
-                connector_snake_case_name,
-                (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
-                owner=user,
-            )
+        base_container = self.dagger_client.container(platform=platform).from_(
+            self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
         )
+        user = await self.get_image_user(base_container)
+        base_container = base_container.with_file(
+            f"{self.PATH_TO_INTEGRATION_CODE}/main.py",
+            (await self.context.get_connector_dir(include=["main.py"])).file("main.py"),
+            owner=user,
+        )
+        base_container = base_container.with_directory(
+            f"{self.PATH_TO_INTEGRATION_CODE}/{self.context.connector.technical_name.replace('-', '_')}",
+            (await self.context.get_connector_dir()).directory(self.context.connector.technical_name.replace("-", "_")),
+            owner=user,
+        )
+        connector_container = await apply_python_development_overrides(self.context, base_container, user)
+        return connector_container
 
-        connector_container = build_customization.apply_airbyte_entrypoint(base_connector_container, self.context.connector)
-        customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
-        # Make sure the user has access to /tmp
-        customized_connector = customized_connector.with_exec(["chown", "-R", f"{user}:{user}", "/tmp"])
-        return customized_connector.with_user(user)
-
-    async def _build_from_dockerfile(self, platform: Platform) -> Container:
-        """Build the connector container using its Dockerfile.
+    async def _build_from_dockerfile(self: "BuildConnectorImages", platform: "dagger.Platform") -> "dagger.Container":
+        """Build the connector container using the Dockerfile in the connector directory.
 
         Returns:
-            Container: The connector container built from its Dockerfile.
+            Container: The connector container built from the Dockerfile.
         """
-        self.logger.warn(
-            "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use our new build process."
+        self.logger.info(f"Building connector from Dockerfile for {platform}")
+        
+        dockerfile_path = self.context.connector.code_directory / "Dockerfile"
+        if not dockerfile_path.exists():
+            raise FileNotFoundError(f"Dockerfile not found at {dockerfile_path}")
+        
+        context_dir = await self.context.get_connector_dir()
+        
+        return (
+            self.dagger_client.container(platform=platform)
+            .build(
+                context=context_dir,
+                dockerfile="Dockerfile"
+            )
         )
-        container = self.dagger_client.container(platform=platform).build(await self.context.get_connector_dir())
-        container = await apply_python_development_overrides(self.context, container, "root")
-        return container
 
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:

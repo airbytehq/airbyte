@@ -3,6 +3,8 @@
 #
 from __future__ import annotations
 
+import subprocess
+from pathlib import Path
 from typing import Callable, Final
 
 import dagger
@@ -17,6 +19,39 @@ class AirbyteManifestOnlyConnectorBaseImage(bases.AirbyteConnectorBaseImage):
     """ManifestOnly base image class, only used to fetch the registry."""
 
     repository: Final[str] = "airbyte/source-declarative-manifest"
+
+    def get_container(self, platform: dagger.Platform) -> dagger.Container:
+        """Returns the container for the manifest-only connector base image.
+        
+        Args:
+            platform (dagger.Platform): The platform this container should be built for.
+            
+        Returns:
+            dagger.Container: The container for the base image.
+        """
+        docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent / "docker-images"
+        dockerfile_path = docker_images_dir / "Dockerfile.manifest-only-connector"
+        
+        return (
+            self.dagger_client.container(platform=platform)
+            .build(
+                context=self.dagger_client.host().directory(str(docker_images_dir)),
+                dockerfile=dockerfile_path.name
+            )
+        )
+
+    async def run_sanity_checks(self, platform: dagger.Platform):
+        """Runs sanity checks on the manifest-only base image container.
+        
+        Args:
+            platform (dagger.Platform): The platform on which the sanity checks should run.
+        """
+        container = self.get_container(platform)
+        await base_sanity_checks.check_timezone_is_utc(container)
+        await base_sanity_checks.check_a_command_is_available_using_version_option(container, "bash")
+        await base_sanity_checks.check_user_exists(container, self.USER, expected_uid=self.USER_ID, expected_gid=self.USER_ID)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+        await base_sanity_checks.check_user_can_write_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
 
 
 class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
@@ -36,82 +71,37 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         return f"{self.CACHE_DIR_PATH}/pip"
 
     def install_cdk_system_dependencies(self) -> Callable:
-        def get_nltk_data_dir() -> dagger.Directory:
-            """Returns a dagger directory containing the nltk data.
-
-            Returns:
-                dagger.Directory: A dagger directory containing the nltk data.
+        def with_file_based_connector_dependencies():
             """
-            data_container = self.dagger_client.container().from_("bash:latest")
-
-            for nltk_data_subfolder, nltk_data_urls in self.ntlk_data.items():
-                full_nltk_data_path = f"{self.nltk_data_path}/{nltk_data_subfolder}"
-                for nltk_data_url in nltk_data_urls:
-                    zip_file = self.dagger_client.http(nltk_data_url)
-                    data_container = (
-                        data_container.with_file("/tmp/data.zip", zip_file)
-                        .with_exec(["mkdir", "-p", full_nltk_data_path])
-                        .with_exec(["unzip", "-o", "/tmp/data.zip", "-d", full_nltk_data_path])
-                        .with_exec(["rm", "/tmp/data.zip"])
-                    )
-            return data_container.directory(self.nltk_data_path)
-
-        def with_tesseract_and_poppler(container: dagger.Container) -> dagger.Container:
+            Placeholder for CDK system dependencies installation.
+            This is now handled by the Dockerfile.
             """
-            Installs Tesseract-OCR and Poppler-utils in the base image.
-            These tools are necessary for OCR (Optical Character Recognition) processes and working with PDFs, respectively.
-            """
-
-            container = container.with_exec(
-                ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+deb12u1"]
-            )
-
-            return container
-
-        def with_file_based_connector_dependencies(container: dagger.Container) -> dagger.Container:
-            """
-            Installs the dependencies for file-based connectors. This includes:
-            - tesseract-ocr
-            - poppler-utils
-            - nltk data
-            """
-            container = with_tesseract_and_poppler(container)
-            container = container.with_exec(["mkdir", "-p", "755", self.nltk_data_path]).with_directory(
-                self.nltk_data_path, get_nltk_data_dir()
-            )
-            return container
+            pass
 
         return with_file_based_connector_dependencies
 
     def get_container(self, platform: dagger.Platform) -> dagger.Container:
-        """Returns the container used to build the base image.
-        We currently use the python:3.9.18-slim-bookworm image as a base.
-        We set the container system timezone to UTC.
-        We then upgrade pip and install poetry.
+        """Returns the container for the Python connector base image built with Docker.
 
         Args:
             platform (dagger.Platform): The platform this container should be built for.
 
         Returns:
-            dagger.Container: The container used to build the base image.
+            dagger.Container: The container for the base image.
         """
-        pip_cache_volume: dagger.CacheVolume = self.dagger_client.cache_volume(AirbytePythonConnectorBaseImage.pip_cache_name)
-
+        docker_images_dir = Path(__file__).parent.parent.parent.parent.parent.parent / "docker-images"
+        dockerfile_path = docker_images_dir / "Dockerfile.python-connector-base"
+        
+        pip_cache_volume: dagger.CacheVolume = self.dagger_client.cache_volume(self.pip_cache_name)
+        
         return (
-            self.get_base_container(platform)
+            self.dagger_client.container(platform=platform)
+            .build(
+                context=self.dagger_client.host().directory(str(docker_images_dir)),
+                dockerfile=dockerfile_path.name
+            )
             .with_mounted_cache(self.pip_cache_path, pip_cache_volume, owner=self.USER)
             .with_env_variable("PIP_CACHE_DIR", self.pip_cache_path)
-            # Upgrade pip to the expected version
-            .with_exec(["pip", "install", "--upgrade", "pip==24.0", "setuptools==70.0.0"])
-            # Declare poetry specific environment variables
-            .with_env_variable("POETRY_VIRTUALENVS_CREATE", "false")
-            .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
-            .with_env_variable("POETRY_NO_INTERACTION", "1")
-            .with_exec(["pip", "install", "poetry==1.8.4"])
-            .with_exec(["sh", "-c", "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean"])
-            .with_exec(["sh", "-c", "apt-get install -y socat=1.7.4.4-2"])
-            # Install CDK system dependencies
-            .with_(self.install_cdk_system_dependencies())
         )
 
     async def run_sanity_checks(self, platform: dagger.Platform):

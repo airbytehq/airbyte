@@ -10,7 +10,9 @@ import docker  # type: ignore
 from base_images.bases import AirbyteConnectorBaseImage  # type: ignore
 from click import UsageError
 from connector_ops.utils import Connector  # type: ignore
-from dagger import Container, ExecError, Platform, QueryError
+
+if TYPE_CHECKING:
+    import dagger
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.utils import export_container_to_tarball, sh_dash_c
@@ -22,7 +24,7 @@ if TYPE_CHECKING:
     T = TypeVar("T", bound="BuildConnectorImagesBase")
 
 
-def apply_airbyte_docker_labels(connector_container: Container, connector: Connector) -> Container:
+def apply_airbyte_docker_labels(connector_container: "dagger.Container", connector: Connector) -> "dagger.Container":
     return connector_container.with_label("io.airbyte.version", connector.metadata["dockerImageTag"]).with_label(
         "io.airbyte.name", connector.metadata["dockerRepository"]
     )
@@ -37,14 +39,14 @@ class BuildConnectorImagesBase(Step, ABC):
     USER = AirbyteConnectorBaseImage.USER
 
     @property
-    def title(self) -> str:
+    def title(self: "BuildConnectorImagesBase") -> str:
         return f"Build {self.context.connector.technical_name} docker image for platform(s) {', '.join(self.build_platforms)}"
 
-    def __init__(self, context: ConnectorContext) -> None:
+    def __init__(self: "BuildConnectorImagesBase", context: ConnectorContext) -> None:
         self.build_platforms = context.targeted_platforms
         super().__init__(context)
 
-    async def _run(self, *args: Any) -> StepResult:
+    async def _run(self: "BuildConnectorImagesBase", *args: Any) -> StepResult:
         build_results_per_platform = {}
         for platform in self.build_platforms:
             try:
@@ -52,7 +54,7 @@ class BuildConnectorImagesBase(Step, ABC):
                 connector_container = apply_airbyte_docker_labels(connector_container, self.context.connector)
                 try:
                     await connector_container.with_exec(["spec"], use_entrypoint=True)
-                except ExecError as e:
+                except Exception as e:
                     return StepResult(
                         step=self,
                         status=StepStatus.FAILURE,
@@ -61,7 +63,7 @@ class BuildConnectorImagesBase(Step, ABC):
                         exc_info=e,
                     )
                 build_results_per_platform[platform] = connector_container
-            except (QueryError, UsageError) as e:
+            except (Exception, UsageError) as e:
                 return StepResult(
                     step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}"
                 )
@@ -71,7 +73,7 @@ class BuildConnectorImagesBase(Step, ABC):
         )
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout=success_message, output=build_results_per_platform)
 
-    async def _build_connector(self, platform: Platform, *args: Any, **kwargs: Any) -> Container:
+    async def _build_connector(self: "BuildConnectorImagesBase", platform: "dagger.Platform", *args: Any, **kwargs: Any) -> "dagger.Container":
         """Implement the generation of the image for the platform and return the corresponding container.
 
         Returns:
@@ -80,7 +82,7 @@ class BuildConnectorImagesBase(Step, ABC):
         raise NotImplementedError("`BuildConnectorImagesBase`s must define a '_build_connector' attribute.")
 
     @classmethod
-    async def get_image_user(cls: Type[T], base_container: Container) -> str:
+    async def get_image_user(cls: Type[T], base_container: "dagger.Container") -> str:
         """If the base image in use has a user named 'airbyte', we will use it as the user for the connector image.
 
         Args:
@@ -98,11 +100,11 @@ class BuildConnectorImagesBase(Step, ABC):
 class LoadContainerToLocalDockerHost(Step):
     context: ConnectorContext
 
-    def __init__(self, context: ConnectorContext, image_tag: str = "dev") -> None:
+    def __init__(self: "LoadContainerToLocalDockerHost", context: ConnectorContext, image_tag: str = "dev") -> None:
         super().__init__(context)
         self.image_tag = image_tag
 
-    def _generate_dev_tag(self, platform: Platform, multi_platforms: bool) -> str:
+    def _generate_dev_tag(self: "LoadContainerToLocalDockerHost", platform: "dagger.Platform", multi_platforms: bool) -> str:
         """
         When building for multiple platforms, we need to tag the image with the platform name.
         There's no way to locally build a multi-arch image, so we need to tag the image with the platform name when the user passed multiple architecture options.
@@ -110,14 +112,14 @@ class LoadContainerToLocalDockerHost(Step):
         return f"{self.image_tag}-{platform.replace('/', '-')}" if multi_platforms else self.image_tag
 
     @property
-    def title(self) -> str:
+    def title(self: "LoadContainerToLocalDockerHost") -> str:
         return f"Load {self.image_name}:{self.image_tag} to the local docker host."
 
     @property
-    def image_name(self) -> str:
+    def image_name(self: "LoadContainerToLocalDockerHost") -> str:
         return f"airbyte/{self.context.connector.technical_name}"
 
-    async def _run(self, containers: dict[Platform, Container]) -> StepResult:
+    async def _run(self: "LoadContainerToLocalDockerHost", containers: dict["dagger.Platform", "dagger.Container"]) -> StepResult:
         loaded_images = []
         image_sha = None
         multi_platforms = len(containers) > 1
@@ -138,7 +140,7 @@ class LoadContainerToLocalDockerHost(Step):
                     new_image.tag(self.image_name, tag=image_tag)
                     image_sha = new_image.id
                     loaded_images.append(full_image_name)
-            except docker.errors.DockerException as e:
+            except Exception as e:
                 return StepResult(
                     step=self, status=StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}"
                 )
