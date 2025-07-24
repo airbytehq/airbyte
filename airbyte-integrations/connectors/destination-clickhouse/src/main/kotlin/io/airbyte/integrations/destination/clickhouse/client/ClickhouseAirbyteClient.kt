@@ -160,26 +160,57 @@ class ClickhouseAirbyteClient(
             log.info {
                 "Detected deduplication change for table $properTableName, applying deduplication changes"
             }
-            val tempTableName = tempTableNameGenerator.generate(properTableName)
-            execute(sqlGenerator.createNamespace(tempTableName.namespace))
-            execute(
-                sqlGenerator.createTable(
-                    stream,
-                    tempTableName,
-                    columnNameMapping,
-                    true,
-                ),
+            applyDeduplicationChanges(
+                stream,
+                properTableName,
+                columnNameMapping,
+                tableSchemaWithoutAirbyteColumns
             )
-            execute(
-                sqlGenerator.copyTable(
-                    columnNameMapping,
-                    properTableName,
-                    tempTableName,
-                ),
-            )
-            execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
-            execute(sqlGenerator.dropTable(tempTableName))
         }
+    }
+
+    private suspend fun applyDeduplicationChanges(
+        stream: DestinationStream,
+        properTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>
+    ) {
+        val tempTableName = tempTableNameGenerator.generate(properTableName)
+        execute(sqlGenerator.createNamespace(tempTableName.namespace))
+        execute(
+            sqlGenerator.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                true,
+            ),
+        )
+        copyIntersectionColumn(
+            tableSchemaWithoutAirbyteColumns,
+            columnNameMapping,
+            properTableName,
+            tempTableName
+        )
+        execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
+        execute(sqlGenerator.dropTable(tempTableName))
+    }
+
+    internal suspend fun copyIntersectionColumn(
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>,
+        columnNameMapping: ColumnNameMapping,
+        properTableName: TableName,
+        tempTableName: TableName
+    ) {
+        val clickhouseColumnsName = tableSchemaWithoutAirbyteColumns.map { it.columnName }
+        execute(
+            sqlGenerator.copyTable(
+                ColumnNameMapping(
+                    columnNameMapping.filter { clickhouseColumnsName.contains(it.value) }
+                ),
+                properTableName,
+                tempTableName,
+            ),
+        )
     }
 
     internal fun getAirbyteSchemaWithClickhouseType(

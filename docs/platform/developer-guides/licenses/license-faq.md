@@ -2,13 +2,9 @@
 
 ## Airbyte Licensing Overview
 
-- **Airbyte Connectors** are open sourced and available under the [MIT](https://opensource.org/license/mit/) or [Elastic License 2.0 (ELv2)](https://www.elastic.co/licensing/elastic-license/faq) License. Each connector's `metadata.yaml` file contains more information.
-- **Airbyte Protocol** is open sourced and available under the MIT License.
-- **Airbyte CDK** (Connector Development Kit) is open sourced and available under the MIT License.
-- **Airbyte Core** is licensed under the Elastic License 2.0 (ELv2).
+- **Airbyte Connectors** and everything in our public repos excluding the airbytehq/airbyte-protocol are open sourced and available under the [Elastic License 2.0 (ELv2)](https://www.elastic.co/licensing/elastic-license/faq) License. Each connector's `metadata.yaml` file contains more information.
+- **Airbyte Protocol** is open sourced and available under the [MIT License](https://opensource.org/license/mit/).
 - **Airbyte Cloud & Airbyte Enterprise** are both closed source and require a commercial license from Airbyte.
-
-![Diagram of license structure](/.gitbook/assets/license_faq_diagram.png)
 
 ## About Elastic License 2.0 (ELv2)
 
