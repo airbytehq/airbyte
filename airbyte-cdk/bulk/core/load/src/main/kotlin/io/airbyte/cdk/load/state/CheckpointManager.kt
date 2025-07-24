@@ -9,11 +9,12 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.output.OutputConsumer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.TreeMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -84,6 +85,10 @@ class CheckpointManager(
         ConcurrentHashMap<
             DestinationStream.Descriptor, TreeMap<CheckpointKey, Reserved<CheckpointMessage>>> =
         ConcurrentHashMap()
+    private val snapshotStreamCheckpoints:
+        ConcurrentHashMap<
+            DestinationStream.Descriptor, TreeMap<CheckpointKey, Reserved<CheckpointMessage>>> =
+        ConcurrentHashMap()
     private val globalCheckpoints: TreeMap<CheckpointKey, GlobalCheckpoint> = TreeMap()
     private val lastCheckpointKeyEmitted =
         ConcurrentHashMap<DestinationStream.Descriptor, CheckpointKey>()
@@ -109,6 +114,34 @@ class CheckpointManager(
             indexedMessages[checkpointKey] = checkpointMessage
 
             log.info { "Added checkpoint for stream: $streamDescriptor at index: $checkpointKey" }
+        }
+    }
+
+    suspend fun addSnapshotCheckpoint(
+        checkpointKey: CheckpointKey,
+        checkpointMessage: Reserved<CheckpointMessage>,
+    ) {
+        storedCheckpointsLock.withLock {
+            if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
+                throw IllegalStateException(
+                    "Global checkpoints cannot be mixed with non-global checkpoints"
+                )
+            }
+
+            if (checkpointMessage.value is GlobalSnapshotCheckpoint) {
+                checkpointMessage.value.streamCheckpoints.forEach {
+                    (streamDescriptor, checkpointKey) ->
+                    val indexedMessages: TreeMap<CheckpointKey, Reserved<CheckpointMessage>> =
+                        snapshotStreamCheckpoints.getOrPut(streamDescriptor) { TreeMap() }
+                    indexedMessages[checkpointKey] = checkpointMessage
+                    log.info {
+                        "Added snapshot checkpoint for stream: $streamDescriptor at index: $checkpointKey"
+                    }
+                }
+
+                globalCheckpoints[checkpointKey] = GlobalCheckpoint(checkpointMessage)
+                log.info { "Added global snapshot checkpoint with key $checkpointKey" }
+            }
         }
     }
 
@@ -150,7 +183,7 @@ class CheckpointManager(
             log.debug { "No global checkpoints to flush" }
             return
         }
-        while (!globalCheckpoints.isEmpty()) {
+        while (globalCheckpoints.isNotEmpty()) {
             val head = globalCheckpoints.firstEntry() ?: break
             val previousStateEmitted =
                 catalog.streams.all { stream ->
@@ -162,48 +195,96 @@ class CheckpointManager(
             }
 
             val allStreamsPersisted =
-                if (syncManager.hasGlobalCount(head.key.checkpointId)) {
-                    syncManager.areAllStreamsPersistedForGlobalCheckpoint(head.key.checkpointId)
+                if (snapshotStreamCheckpoints.isNotEmpty()) {
+                    checkSnapshotStreams()
                 } else {
-                    catalog.streams.all {
-                        syncManager
-                            .getStreamManager(it.mappedDescriptor)
-                            .areRecordsPersistedForCheckpoint(head.key.checkpointId)
-                    }
+                    checkGlobalStreams(head.key)
                 }
 
             if (allStreamsPersisted) {
-                log.info { "Flushing global checkpoint with key ${head.key}" }
-
-                val aggregate =
-                    catalog.streams
-                        .map { stream ->
-                            val delta =
-                                syncManager
-                                    .getStreamManager(stream.mappedDescriptor)
-                                    .committedCount(head.key.checkpointId)
-
-                            /* increment() returns the new aggregate for this stream. */
-                            committedCount.increment(stream.mappedDescriptor, delta)
-                        }
-                        .reduce { acc, inc -> acc.plus(inc) }
-
-                sendStateMessage(
-                    head.value.checkpointMessage,
-                    head.key,
-                    catalog.streams.map { it.mappedDescriptor },
-                    aggregate.records,
-                    aggregate.serializedBytes,
-                    aggregate.rejectedRecords,
-                )
-                globalCheckpoints.remove(
-                    head.key
-                ) // don't remove until after we've successfully sent
+                flushGlobalState(checkpointKey = head.key, checkpoint = head.value)
             } else {
-                log.debug { "Not flushing global checkpoint ${head.key}:" }
+                log.debug { "Not flushing global checkpoint ${head.key}" }
                 break
             }
         }
+    }
+
+    private fun checkGlobalStreams(key: CheckpointKey): Boolean {
+        return if (syncManager.hasGlobalCount(key.checkpointId)) {
+            syncManager.areAllStreamsPersistedForGlobalCheckpoint(key.checkpointId)
+        } else {
+            catalog.streams.all {
+                syncManager
+                    .getStreamManager(it.mappedDescriptor)
+                    .areRecordsPersistedForCheckpoint(key.checkpointId)
+            }
+        }
+    }
+
+    private fun checkSnapshotStreams(): Boolean {
+        return catalog.streams.all { stream ->
+            val manager = syncManager.getStreamManager(stream.mappedDescriptor)
+            val streamCheckpoints = snapshotStreamCheckpoints[stream.mappedDescriptor]
+            val persistedResults = mutableListOf<Boolean>()
+
+            streamCheckpoints?.let {
+                /*
+                 * If there are checkpoints for the given stream, check that records have been
+                 * persisted for each checkpoint ID for the stream.  If all are true/have been
+                 * persisted up to the associated checkpoint ID, then the stream is up to date.
+                 * If the stream does not have any checkpoints stored or is not currently tracked
+                 * by the manager, return true so that the flush will continue as there is
+                 * nothing for that stream to ensure that it has been persisted.
+                 */
+                while (streamCheckpoints.isNotEmpty()) {
+                    val (nextCheckpointKey, _) = streamCheckpoints.firstEntry() ?: break
+                    val persisted =
+                        manager.areRecordsPersistedForCheckpoint(nextCheckpointKey.checkpointId)
+                    persistedResults.add(persisted)
+                    if (persisted) {
+                        // If the stream has been persisted to the checkpoint ID, remove it from
+                        // the list so that we don't scan it again.
+                        streamCheckpoints.remove(nextCheckpointKey)
+                    } else {
+                        // If any stream has not been persisted, immediately break the loop
+                        break
+                    }
+                }
+            }
+
+            persistedResults.all { it }
+        }
+    }
+
+    private suspend fun flushGlobalState(
+        checkpointKey: CheckpointKey,
+        checkpoint: GlobalCheckpoint
+    ) {
+        log.info { "Flushing global checkpoint with key $checkpointKey" }
+
+        val aggregate =
+            catalog.streams
+                .map { stream ->
+                    val delta =
+                        syncManager
+                            .getStreamManager(stream.mappedDescriptor)
+                            .committedCount(checkpointKey.checkpointId)
+
+                    /* increment() returns the new aggregate for this stream. */
+                    committedCount.increment(stream.mappedDescriptor, delta)
+                }
+                .reduce { acc, inc -> acc.plus(inc) }
+
+        sendStateMessage(
+            checkpoint.checkpointMessage,
+            checkpointKey,
+            catalog.streams.map { it.mappedDescriptor },
+            aggregate.records,
+            aggregate.serializedBytes,
+            aggregate.rejectedRecords,
+        )
+        globalCheckpoints.remove(checkpointKey) // don't remove until after we've successfully sent
     }
 
     private fun ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue>.increment(
@@ -317,7 +398,9 @@ class CheckpointManager(
         while (true) {
             val allCheckpointsFlushed =
                 storedCheckpointsLock.withLock {
-                    globalCheckpoints.isEmpty() && streamCheckpoints.all { it.value.isEmpty() }
+                    globalCheckpoints.isEmpty() &&
+                        streamCheckpoints.all { it.value.isEmpty() } &&
+                        snapshotStreamCheckpoints.isEmpty()
                 }
             if (allCheckpointsFlushed) {
                 log.info { "All checkpoints flushed" }
