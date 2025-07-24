@@ -92,11 +92,7 @@ class ObjectStorageDataDumper(
                                     else -> error("Unsupported compressor")
                                 }
                             // Remove the "namespace/name/" prefix from the object key
-                            val truncatedKey =
-                                listedObject.key
-                                    .replace(prefix, "")
-                                    // Remove the dynamic date bit on the file path, if present
-                                    .replace("\\d{4}_\\d{2}_\\d{2}_\\d+_/".toRegex(), "")
+                            val truncatedKey = listedObject.key.replace(prefix, "")
                             truncatedKey to BufferedReader(decompressed.reader()).readText()
                         }
                     }
