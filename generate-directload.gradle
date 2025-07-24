@@ -1,0 +1,8 @@
+// This is a helper file to generate a new Direct Load destination from the skeleton template
+// Usage: ./gradlew -b generate-directload.gradle generateDirectLoadDestination -PdestinationName=my-connector
+
+apply plugin: 'airbyte-directload-template'
+
+directLoadTemplate {
+    destinationName = project.hasProperty('destinationName') ? project.destinationName : null
+}

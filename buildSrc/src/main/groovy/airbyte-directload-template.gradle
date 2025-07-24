@@ -1,0 +1,138 @@
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.TaskAction
+
+class DirectLoadTemplateExtension {
+    String destinationName
+}
+
+abstract class GenerateDirectLoadDestinationTask extends DefaultTask {
+    
+    @TaskAction
+    void generate() {
+        def extension = project.extensions.getByType(DirectLoadTemplateExtension)
+        
+        if (!extension.destinationName) {
+            throw new GradleException("Please specify destination name: -PdestinationName=myconnector")
+        }
+        
+        def destinationName = extension.destinationName.toLowerCase()
+        def destinationNameCapitalized = destinationName.split(/[-_]/).collect { it.capitalize() }.join('')
+        
+        def sourceDir = project.file("${project.rootDir}/airbyte-integrations/connectors/destination-skeleton-directload")
+        def targetDir = project.file("${project.rootDir}/airbyte-integrations/connectors/destination-${destinationName}")
+        
+        if (targetDir.exists()) {
+            throw new GradleException("Destination directory already exists: ${targetDir}")
+        }
+        
+        logger.lifecycle("Creating new Direct Load destination: ${destinationName}")
+        logger.lifecycle("Source: ${sourceDir}")
+        logger.lifecycle("Target: ${targetDir}")
+        
+        // Copy the entire skeleton directory
+        project.copy {
+            from sourceDir
+            into targetDir
+            
+            // Exclude build directories and IDE files
+            exclude 'build/**'
+            exclude '.gradle/**'
+            exclude '*.iml'
+            exclude '.idea/**'
+            
+            // Rename package directories
+            filesMatching('**/*.kt') {
+                path = path.replace('skeleton_directload', destinationName.replace('-', '_'))
+            }
+            
+            // Rename Kotlin files containing SkeletonDirectLoad
+            eachFile { details ->
+                if (details.name.contains('SkeletonDirectLoad') || details.name.contains('Skeleton')) {
+                    details.name = details.name
+                        .replace('SkeletonDirectLoad', destinationNameCapitalized)
+                        .replace('SkeletonDirectload', destinationNameCapitalized)
+                        .replace('Skeleton', destinationNameCapitalized)
+                        .replace('skeleton', destinationName)
+                }
+            }
+        }
+        
+        // Process all files to replace content
+        project.fileTree(targetDir).each { file ->
+            if (!file.isDirectory() && !file.name.endsWith('.class') && !file.name.endsWith('.jar')) {
+                try {
+                    def content = file.text
+                    def updatedContent = content
+                        // Replace package names
+                        .replaceAll('io\\.airbyte\\.integrations\\.destination\\.skeleton_directload', 
+                                   "io.airbyte.integrations.destination.${destinationName.replace('-', '_')}")
+                        // Replace class names and references
+                        .replaceAll('SkeletonDirectLoad', destinationNameCapitalized)
+                        .replaceAll('SkeletonDirectload', destinationNameCapitalized)
+                        .replaceAll('skeleton-directload', destinationName)
+                        .replaceAll('skeleton_directload', destinationName.replace('-', '_'))
+                        .replaceAll('Skeleton-DirectLoad', destinationName.split('-').collect { it.capitalize() }.join('-'))
+                        .replaceAll('SKELETON_DIRECTLOAD', destinationName.toUpperCase().replace('-', '_'))
+                        // Replace in metadata
+                        .replaceAll('destination-skeleton-directload', "destination-${destinationName}")
+                        // Replace standalone Skeleton references (but preserve if it's part of a larger word)
+                        .replaceAll('\\bSkeleton\\b', destinationNameCapitalized)
+                        .replaceAll('\\bskeleton\\b', destinationName)
+                    
+                    if (content != updatedContent) {
+                        file.text = updatedContent
+                        logger.debug("Updated: ${file.path}")
+                    }
+                } catch (Exception e) {
+                    logger.warn("Could not process file ${file.path}: ${e.message}")
+                }
+            }
+        }
+        
+        // Move files to correct package structure
+        def oldPackageDir = new File(targetDir, "src/main/kotlin/io/airbyte/integrations/destination/skeleton_directload")
+        def newPackageDir = new File(targetDir, "src/main/kotlin/io/airbyte/integrations/destination/${destinationName.replace('-', '_')}")
+        
+        if (oldPackageDir.exists() && oldPackageDir.path != newPackageDir.path) {
+            newPackageDir.parentFile.mkdirs()
+            oldPackageDir.renameTo(newPackageDir)
+        }
+        
+        // Do the same for test directories
+        def oldTestPackageDir = new File(targetDir, "src/test-integration/kotlin/io/airbyte/integrations/destination/skeleton_directload")
+        def newTestPackageDir = new File(targetDir, "src/test-integration/kotlin/io/airbyte/integrations/destination/${destinationName.replace('-', '_')}")
+        
+        if (oldTestPackageDir.exists() && oldTestPackageDir.path != newTestPackageDir.path) {
+            newTestPackageDir.parentFile.mkdirs()
+            oldTestPackageDir.renameTo(newTestPackageDir)
+        }
+        
+        // Generate a new UUID for the connector
+        def newUuid = UUID.randomUUID().toString()
+        def metadataFile = new File(targetDir, "metadata.yaml")
+        if (metadataFile.exists()) {
+            def metadataContent = metadataFile.text
+            metadataContent = metadataContent.replaceAll('c2927d6d-9c4b-42e4-ba51-618f459f46a9', newUuid)
+            metadataFile.text = metadataContent
+        }
+        
+        logger.lifecycle("✅ Successfully created Direct Load destination: ${destinationName}")
+        logger.lifecycle("📁 Location: ${targetDir}")
+        logger.lifecycle("🔑 Connector UUID: ${newUuid}")
+        logger.lifecycle("")
+        logger.lifecycle("Next steps:")
+        logger.lifecycle("1. cd ${targetDir}")
+        logger.lifecycle("2. Update the connector implementation")
+        logger.lifecycle("3. Run tests: ./gradlew :airbyte-integrations:connectors:destination-${destinationName}:integrationTest")
+    }
+}
+
+// Create extension
+extensions.create('directLoadTemplate', DirectLoadTemplateExtension)
+
+// Register task
+tasks.register('generateDirectLoadDestination', GenerateDirectLoadDestinationTask) {
+    group = 'Airbyte'
+    description = 'Generate a new Direct Load destination from skeleton template'
+}
