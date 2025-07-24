@@ -9,10 +9,12 @@ import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -30,6 +32,7 @@ import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class ClickhouseAirbyteClientTest {
     // Mocks
@@ -335,6 +338,19 @@ class ClickhouseAirbyteClientTest {
         Assertions.assertEquals(expected4, actual4)
     }
 
+    private fun mockCHSchemaWithAirbyteColumns() {
+        every { client.getTableSchema(any(), any()) } returns
+            mockk {
+                every { columns } returns
+                    listOf(
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_RAW_ID },
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_EXTRACTED_AT },
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_META },
+                        mockk { every { columnName } returns Meta.COLUMN_NAME_AB_GENERATION_ID },
+                    )
+            }
+    }
+
     @Test
     fun `test ensure schema matches`() = runTest {
         val alterationSummary =
@@ -355,6 +371,8 @@ class ClickhouseAirbyteClientTest {
         coEvery { clickhouseAirbyteClient.execute(alterTableStatement) } returns
             mockk(relaxed = true)
         every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns mockTableName
+
+        mockCHSchemaWithAirbyteColumns()
 
         val columnMapping = ColumnNameMapping(mapOf())
         val stream =
@@ -399,6 +417,8 @@ class ClickhouseAirbyteClientTest {
         every { tempTableNameGenerator.generate(any()) } returns tempTableName
         every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns finalTableName
 
+        mockCHSchemaWithAirbyteColumns()
+
         val columnMapping = ColumnNameMapping(mapOf())
         val stream =
             mockk<DestinationStream>() {
@@ -427,6 +447,27 @@ class ClickhouseAirbyteClientTest {
             clickhouseSqlGenerator.dropTable(tempTableName)
         }
         coVerify(exactly = 5) { clickhouseAirbyteClient.execute(any()) }
+    }
+
+    @Test
+    fun `test ensure schema matches fails if no airbyte columns`() = runTest {
+        val finalTableName = TableName("fin", "al")
+
+        every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns finalTableName
+
+        val columnMapping = ColumnNameMapping(mapOf())
+        val stream =
+            mockk<DestinationStream>() {
+                every { mappedDescriptor } returns
+                    mockk(relaxed = true) {
+                        every { name } returns "my_table"
+                        every { namespace } returns "my_namespace"
+                    }
+            }
+
+        assertThrows<ConfigErrorException> {
+            clickhouseAirbyteClient.ensureSchemaMatches(stream, finalTableName, columnMapping)
+        }
     }
 
     @Test
