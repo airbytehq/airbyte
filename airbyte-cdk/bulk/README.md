@@ -88,7 +88,7 @@ If there's truly a need to develop both simultaneously, then the way to go may b
 ## Publishing
 
 The CDK version is a SemVer version which is published here: [maven repository that the jars are published to](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/).
-Some legacy versions don't follow the SemVer format
+Some legacy versions don't follow the SemVer format. Any CDK version with 0.x e.g. 0.600 is an example.
 
 Artifact publication happens via a [github workflow](../../.github/workflows/publish-bulk-cdk.yml)
 which gets triggered by any push to the master branch, i.e. after merging a pull request.
