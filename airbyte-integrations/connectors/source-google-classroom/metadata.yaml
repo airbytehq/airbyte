@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-google-classroom
   githubIssueLabel: source-google-classroom
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Google Classroom
   releaseDate: 2024-10-26
   releaseStage: alpha

@@ -7,7 +7,7 @@ data:
   dockerRepository: airbyte/source-kyve
   githubIssueLabel: source-kyve
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: KYVE
   remoteRegistries:
     pypi:

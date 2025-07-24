@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-e-conomic
   githubIssueLabel: source-e-conomic
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: e-conomic
   releaseDate: 2024-10-28
   releaseStage: alpha

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-appcues
   githubIssueLabel: source-appcues
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Appcues
   releaseDate: 2024-09-03
   releaseStage: alpha

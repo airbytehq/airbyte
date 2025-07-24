@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-bluetally
   githubIssueLabel: source-bluetally
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Bluetally
   releaseDate: 2025-04-08
   releaseStage: alpha

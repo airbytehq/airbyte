@@ -230,7 +230,8 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.50.2      | 2025-07-17 | [62932](https://github.com/airbytehq/airbyte/pull/62932) | CDC fixes                                                                                                                                           |
+| 3.50.3 | 2025-07-18 | [63349](https://github.com/airbytehq/airbyte/pull/63349) | Make concurrency level match number of sockets in speed mode |
+| 3.50.2 | 2025-07-17 | [62932](https://github.com/airbytehq/airbyte/pull/62932) | CDC fixes |
 | 3.50.1-rc.1 | 2025-07-08 | [62862](https://github.com/airbytehq/airbyte/pull/62862) | Prepare to enable speed improvements                                                                                                            |
 | 3.50.0      | 2025-07-08 | [62863](https://github.com/airbytehq/airbyte/pull/62863) | Promoting release candidate 3.50.0-rc.1 to a main version.                                                                                      |
 | 3.50.0-rc.1 | 2025-07-08 | [60993](https://github.com/airbytehq/airbyte/pull/60993)   | Prepare to enable speed improvements                                                                                                            |

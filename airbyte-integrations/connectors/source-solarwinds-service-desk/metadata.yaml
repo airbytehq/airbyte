@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-solarwinds-service-desk
   githubIssueLabel: source-solarwinds-service-desk
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Solarwinds Service Desk
   releaseDate: 2024-10-10
   releaseStage: alpha

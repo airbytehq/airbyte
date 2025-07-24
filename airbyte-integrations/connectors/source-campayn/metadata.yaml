@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-campayn
   githubIssueLabel: source-campayn
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Campayn
   releaseDate: 2024-10-31
   releaseStage: alpha

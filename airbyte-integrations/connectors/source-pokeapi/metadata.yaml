@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
-  license: MIT
+  license: ELv2
   name: PokeAPI
   releaseDate: "2020-05-14"
   releaseStage: alpha
