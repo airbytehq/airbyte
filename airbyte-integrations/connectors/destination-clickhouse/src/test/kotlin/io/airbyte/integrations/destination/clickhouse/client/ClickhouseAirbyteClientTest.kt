@@ -11,6 +11,8 @@ import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -384,7 +386,7 @@ class ClickhouseAirbyteClientTest {
             AlterationSummary(
                 added = emptyMap(),
                 modified = emptyMap(),
-                deleted = emptySet(),
+                deleted = setOf("test"),
                 hasDedupChange = true
             )
 
@@ -413,6 +415,8 @@ class ClickhouseAirbyteClientTest {
                 every { importType } returns Append
             }
         clickhouseAirbyteClient.ensureSchemaMatches(stream, finalTableName, columnMapping)
+
+        coVerify(exactly = 0) { clickhouseSqlGenerator.alterTable(any(), any()) }
 
         coVerifyOrder {
             clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any())
@@ -446,6 +450,65 @@ class ClickhouseAirbyteClientTest {
         coVerifyOrder {
             clickhouseAirbyteClient.execute(exchangeTableSql)
             clickhouseAirbyteClient.execute(dropTableSql)
+        }
+    }
+
+    @Test
+    fun `test getAirbyteSchemaWithClickhouseType with simple schema`() {
+        val columns = LinkedHashMap.newLinkedHashMap<String, FieldType>(1)
+        columns["field 1"] = FieldType(StringType, true)
+
+        val stream =
+            mockk<DestinationStream>() {
+                every { mappedDescriptor } returns
+                    mockk(relaxed = true) {
+                        every { name } returns "my_table"
+                        every { namespace } returns "my_namespace"
+                    }
+                every { schema } returns
+                    mockk(relaxed = true) {
+                        every { isObject } returns true
+                        every { asColumns() } returns columns
+                    }
+                every { importType } returns Append
+            }
+
+        val expected =
+            mapOf(
+                "field_1" to "String",
+            )
+        val actual = clickhouseAirbyteClient.getAirbyteSchemaWithClickhouseType(stream)
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `test copyIntersectionColumn`() = runTest {
+        val chColumn1 = mockk<ClickHouseColumn>() { every { columnName } returns "column1" }
+        val chColumn2 = mockk<ClickHouseColumn>() { every { columnName } returns "column2" }
+        val tableSchemaWithoutAirbyteColumns =
+            listOf(
+                chColumn1,
+                chColumn2,
+            )
+        val columnNameMapping = ColumnNameMapping(mapOf("2" to "column2", "3" to "column3"))
+        val properTableName = TableName("table", "name")
+        val tempTableName = TableName("table", "tmp")
+
+        coEvery { clickhouseAirbyteClient.execute(any()) } returns mockk()
+
+        clickhouseAirbyteClient.copyIntersectionColumn(
+            tableSchemaWithoutAirbyteColumns,
+            columnNameMapping,
+            properTableName,
+            tempTableName,
+        )
+
+        verify {
+            clickhouseSqlGenerator.copyTable(
+                ColumnNameMapping(mapOf("2" to "column2")),
+                properTableName,
+                tempTableName,
+            )
         }
     }
 

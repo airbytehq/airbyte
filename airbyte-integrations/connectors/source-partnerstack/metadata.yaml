@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-partnerstack
   githubIssueLabel: source-partnerstack
   icon: partnerstack.svg
-  license: MIT
+  license: ELv2
   name: PartnerStack
   remoteRegistries:
     pypi:

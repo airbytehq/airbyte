@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-100ms
   githubIssueLabel: source-100ms
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: 100ms
   releaseDate: 2025-04-08
   releaseStage: alpha

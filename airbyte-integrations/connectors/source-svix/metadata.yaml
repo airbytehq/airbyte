@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-svix
   githubIssueLabel: source-svix
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Svix
   releaseDate: 2025-04-06
   releaseStage: alpha

@@ -72,9 +72,10 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.21 | 2025-07-22 | [63709](https://github.com/airbytehq/airbyte/pull/63709) | fix: resolve error "Can't find the home directory at '/nonexistent'" [#63710](https://github.com/airbytehq/airbyte/issues/63710)  |
-| 0.1.21 | 2025-07-06 | [62133](https://github.com/airbytehq/airbyte/pull/62133) | fix: when `primary_key` is not defined in the catalog, use `source_defined_primary_key` if available |
-| 0.1.20 | 2025-06-27 | [48673](https://github.com/airbytehq/airbyte/pull/48673) | Update dependencies |
+| 0.1.22 | 2025-07-22 | [63714](https://github.com/airbytehq/airbyte/pull/63714) | fix(destination-motherduck): handle special characters in stream name when creating tables |
+| 0.1.21 | 2025-07-22 | [63709](https://github.com/airbytehq/airbyte/pull/63709) | fix: resolve error "Can't find the home directory at '/nonexistent'" [#63710](https://github.com/airbytehq/airbyte/issues/63710) |
+| 0.1.20 | 2025-07-06 | [62133](https://github.com/airbytehq/airbyte/pull/62133) | fix: when `primary_key` is not defined in the catalog, use `source_defined_primary_key` if available |
+| n/a    | 2025-06-27 | [48673](https://github.com/airbytehq/airbyte/pull/48673) | Update dependencies |
 | 0.1.19 | 2025-05-25 | [60905](https://github.com/airbytehq/airbyte/pull/60905) | Allow unicode characters in database/table names |
 | 0.1.18 | 2025-03-01 | [54737](https://github.com/airbytehq/airbyte/pull/54737) | Update airbyte-cdk to ^6.0.0 in destination-motherduck |
 | 0.1.17 | 2024-12-26 | [50425](https://github.com/airbytehq/airbyte/pull/50425) | Fix bug overwrite write method not saving all batches |

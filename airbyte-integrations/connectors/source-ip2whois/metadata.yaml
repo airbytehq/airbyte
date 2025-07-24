@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
   githubIssueLabel: source-ip2whois
   icon: ip2whois.svg
-  license: MIT
+  license: ELv2
   name: IP2Whois
   registryOverrides:
     cloud:
