@@ -1,4 +1,4 @@
-version: 6.33.0
+version: 6.33.4
 
 type: DeclarativeSource
 
@@ -18,46 +18,50 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/deals
           http_method: GET
           request_parameters:
+            limit: "500"
+            sort_by: update_time
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: deal
+            sort_direction: asc
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            field_name: cursor
             inject_into: request_parameter
-            field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ response['additional_data']['next_cursor'] }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: updated_until
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -72,8 +76,8 @@ definitions:
           path: v1/dealFields
           http_method: GET
           request_parameters:
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,11 +88,14 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            stop_condition: >-
+              {{ response.additional_data.pagination.more_items_in_collection is
+              false }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -105,8 +112,8 @@ definitions:
           path: v1/goals/find
           http_method: GET
           request_parameters:
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -127,30 +134,30 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/files
           http_method: GET
           request_parameters:
+            sort: update_time
+            limit: "100"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: file
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            stop_condition: >-
+              {{ response.additional_data.pagination.more_items_in_collection is
+              false }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -159,14 +166,9 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -180,46 +182,16 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/filters
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: filter
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: update_time
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -235,7 +207,6 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -256,8 +227,9 @@ definitions:
           path: v1/leads
           http_method: GET
           request_parameters:
+            sort: update_time ASC
+            limit: "100"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -268,11 +240,25 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            stop_condition: >-
+              {{ response.additional_data.pagination.more_items_in_collection is
+              false }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -286,30 +272,30 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/notes
           http_method: GET
           request_parameters:
+            sort: update_time ASC
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: note
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            stop_condition: >-
+              {{ response.additional_data.pagination.more_items_in_collection is
+              false }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -318,14 +304,9 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -339,46 +320,51 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/activities
           http_method: GET
           request_parameters:
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: activity
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            field_name: cursor
             inject_into: request_parameter
-            field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("additional_data", {}).get("next_cursor", {})
+              }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: updated_until
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -394,7 +380,6 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -416,7 +401,6 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -427,8 +411,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
@@ -446,8 +430,8 @@ definitions:
           path: v1/currencies
           http_method: GET
           request_parameters:
+            limit: "100"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -458,9 +442,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/currencies"
-    mail:
+    mail_messages:
       type: DeclarativeStream
-      name: mail
+      name: mail_messages
       primary_key:
         - id
       retriever:
@@ -471,7 +455,6 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -482,11 +465,14 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            stop_condition: >-
+              {{ response.additional_data.pagination.more_items_in_collection is
+              false }}
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -494,11 +480,11 @@ definitions:
               parent_key: id
               partition_field: thread_id
               stream:
-                $ref: "#/definitions/streams/mailThreads"
+                $ref: "#/definitions/streams/mail_threads"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/mail"
+          $ref: "#/schemas/mail_messages"
     organizations:
       type: DeclarativeStream
       name: organizations
@@ -508,12 +494,12 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/organizations
+          path: api/v2/organizations
           http_method: GET
           request_parameters:
+            sort_by: update_time
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: organization
         record_selector:
           type: RecordSelector
           extractor:
@@ -524,11 +510,36 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            field_name: cursor
             inject_into: request_parameter
-            field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("additional_data", {}).get("next_cursor", {})
+              }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_since
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_until
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -543,8 +554,8 @@ definitions:
           path: v1/organizationFields
           http_method: GET
           request_parameters:
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -555,8 +566,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
@@ -575,7 +586,6 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -595,46 +605,52 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/persons
           http_method: GET
           request_parameters:
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: person
+            sort_by: update_time
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            field_name: cursor
             inject_into: request_parameter
-            field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("additional_data", {}).get("next_cursor", {})
+              }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: since_timestamp
+          field_name: updated_since
           inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_until
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -649,8 +665,8 @@ definitions:
           path: v1/personFields
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
+            api_token: "{{ config['api_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -661,8 +677,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
@@ -679,46 +695,41 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/pipelines
           http_method: GET
           request_parameters:
+            sort_by: update_time
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: pipeline
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            field_name: cursor
             inject_into: request_parameter
-            field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("additional_data", {}).get("next_cursor", {})
+              }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -732,46 +743,41 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/products
           http_method: GET
           request_parameters:
+            sort_by: update_time
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: product
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            field_name: cursor
             inject_into: request_parameter
-            field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("additional_data", {}).get("next_cursor", {})
+              }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -786,8 +792,8 @@ definitions:
           path: v1/productFields
           http_method: GET
           request_parameters:
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -798,8 +804,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
@@ -817,8 +823,8 @@ definitions:
           path: v1/roles
           http_method: GET
           request_parameters:
-            api_token: "{{ config['api_token'] }}"
             limit: "50"
+            api_token: "{{ config['api_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -829,8 +835,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
@@ -847,46 +853,41 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: api/v2/stages
           http_method: GET
           request_parameters:
+            sort_by: update_time
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: stage
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
+            type: DpathExtractor
             field_path:
               - data
-              - "*"
-            nullable_nested_field: data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            field_name: cursor
             inject_into: request_parameter
-            field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("additional_data", {}).get("next_cursor", {})
+              }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
         cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -900,46 +901,16 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v1/recents
+          path: v1/users
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
-            items: user
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-              - "*"
-              - data
-              - "*"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: modified
-        cursor_datetime_formats:
-          - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: since_timestamp
-          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -954,8 +925,8 @@ definitions:
           path: v1/deals/{{ stream_slice.parent_id }}/products
           http_method: GET
           request_parameters:
+            limit: "500"
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
         record_selector:
           type: RecordSelector
           extractor:
@@ -966,8 +937,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
@@ -983,9 +954,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/deal_products"
-    mailThreads:
+    mail_threads:
       type: DeclarativeStream
-      name: mailThreads
+      name: mail_threads
       primary_key:
         - id
       retriever:
@@ -996,7 +967,7 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            limit: "500"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1007,27 +978,46 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: start
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
-        partition_router:
-          type: ListPartitionRouter
-          values:
-            - inbox
-            - drafts
-            - sent
-            - archive
-          cursor_field: folder
-          request_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: folder
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/mailThreads"
+          $ref: "#/schemas/mail_threads"
+    organization_relationships:
+      type: DeclarativeStream
+      name: organization_relationships
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/organizationRelationships
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            org_id: "{{ stream_partition['org_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: org_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+              incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_relationships"
   base_requester:
     type: HttpRequester
     url_base: https://api.pipedrive.com/
@@ -1045,7 +1035,7 @@ streams:
   - $ref: "#/definitions/streams/activity_types"
   - $ref: "#/definitions/streams/activity_fields"
   - $ref: "#/definitions/streams/currencies"
-  - $ref: "#/definitions/streams/mail"
+  - $ref: "#/definitions/streams/mail_messages"
   - $ref: "#/definitions/streams/organizations"
   - $ref: "#/definitions/streams/organization_fields"
   - $ref: "#/definitions/streams/permission_sets"
@@ -1058,7 +1048,8 @@ streams:
   - $ref: "#/definitions/streams/stages"
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/deal_products"
-  - $ref: "#/definitions/streams/mailThreads"
+  - $ref: "#/definitions/streams/mail_threads"
+  - $ref: "#/definitions/streams/organization_relationships"
 
 spec:
   type: Spec
@@ -1067,182 +1058,236 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_token
-      - replication_start_date
+      - start_date
     properties:
       api_token:
         type: string
         description: The Pipedrive API Token.
+        order: 0
         title: API Token
         airbyte_secret: true
-        order: 0
-      replication_start_date:
+      start_date:
         type: string
-        description: >-
-          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
-          this date will not be replicated. When specified and not None, then
-          stream will behave as incremental
-        title: Start Date
-        examples:
-          - "2017-01-25 00:00:00Z"
         order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    deals: false
-    deal_fields: false
-    goals: false
-    files: false
-    filters: false
-    lead_labels: false
-    leads: false
-    notes: false
-    activities: false
-    activity_types: false
-    activity_fields: false
-    currencies: false
-    mail: false
-    organizations: false
-    organization_fields: false
-    permission_sets: false
-    persons: false
+    deals: true
+    deal_fields: true
+    goals: true
+    files: true
+    filters: true
+    lead_labels: true
+    leads: true
+    notes: true
+    activities: true
+    activity_types: true
+    activity_fields: true
+    currencies: true
+    mail_messages: true
+    organizations: true
+    organization_fields: true
+    permission_sets: true
+    persons: true
     person_fields: false
-    pipelines: false
-    products: false
-    product_fields: false
+    pipelines: true
+    products: true
+    product_fields: true
     roles: false
-    stages: false
-    users: false
-    deal_products: false
-    mailThreads: false
-  yamlComponents:
-    streams:
-      deals:
-        - recordSelector
-      files:
-        - recordSelector
-      filters:
-        - recordSelector
-      notes:
-        - recordSelector
-      activities:
-        - recordSelector
-      persons:
-        - recordSelector
-      pipelines:
-        - recordSelector
-      products:
-        - recordSelector
-      stages:
-        - recordSelector
+    stages: true
+    users: true
+    deal_products: true
+    mail_threads: true
+    organization_relationships: true
   testedStreams:
+    deals:
+      hasRecords: true
+      streamHash: 3d942398047d3c29d40682224cb58e50f90b7f0e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     deal_fields:
-      streamHash: 2dcceac0c36936299612f3ba221532446d068fd8
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 8403a9c75dd797ff2e26b4872037ac507d62dbda
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     goals:
-      streamHash: 5dd918304f44e9382ceddca3160722052db05c53
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 3099fa39207494f94c31a1f30f241c04f5f6f04f
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    files:
+      hasRecords: true
+      streamHash: 511332b49c8c809a997bc199e9562c4a45e5cb8c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    filters:
+      hasRecords: true
+      streamHash: d11e56164ec970069ca213219526f7a6d12407d3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     lead_labels:
-      streamHash: 4529273c02f87dec57267625c5314171b3f06154
+      streamHash: 1f710ceec543bba0f7f68e0cdb24594350fb502e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     leads:
-      streamHash: 7da898e49f0739935d862082377b1ed2d2e5b24d
+      streamHash: 1110e27198eb860d2ad7eb14dabe8f77fa6c6cbf
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+    notes:
+      streamHash: f3346b3b3c6cdda40f4f18e5289fa7377cc690a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activities:
+      hasRecords: true
+      streamHash: 4af7d6e9d244480d39d3222d2463058699105009
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     activity_types:
-      streamHash: 0bd30dcf4935c4668bd0a5569a199fe59d4ab04b
+      streamHash: 6caecc3b62825216cdc5febc4d20ccc5c185f42c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     activity_fields:
-      streamHash: 3a07394d800c448627c98ca20f03af8826a2ec48
+      streamHash: 72f3e3c0e57c4e3f8d6704a57728472b9e3c3f29
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     currencies:
-      streamHash: 18a725f171b6acdc8b82ac701280536d2451d7ae
+      streamHash: 3f1bf10d956dea29826140ca97aafc78f275ab5c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    mail:
-      streamHash: eaf13873356a147c0c8a1f821e4e988a14e27b09
+    mail_messages:
+      streamHash: 22283e0b7d183be5ee2aeee4aeef30cec1817a14
       hasResponse: false
       responsesAreSuccessful: false
       hasRecords: false
       primaryKeysArePresent: false
       primaryKeysAreUnique: false
     organizations:
-      streamHash: 166c80bf7becfb09d846f0d035caf3a785f5a560
+      streamHash: dafb49b7c98f0ec5cc3d4eef61b618b5959d798f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     organization_fields:
-      streamHash: af9484fdc43863ee7b41a8019b85325c025a3c28
+      streamHash: e495457d2b35af2a670b78cfb397130119a31807
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     permission_sets:
-      streamHash: bf8d0b57f92e7086c4f61ac9c5b58517fa01dd02
+      streamHash: 7098a207853abd8bfaba03c198eb5bba4113a86d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    persons:
+      streamHash: f7b134e8cc3bc1cefed7f5cda03a63554c09659f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     person_fields:
+      hasRecords: true
       streamHash: 730346f33e25f02858f0da1c34191062ce32fa0c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    pipelines:
+      streamHash: 27da1dae3516a90b129691d53a35290035b9fd39
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      streamHash: 37315e239a23d8d506d6456fb33c2f9d9dec5742
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     product_fields:
-      streamHash: def5f6bd4ee1046efbf27f5a3c185e7ca872dd92
+      streamHash: 0379e1a412a7755497f42ebcda4c92d8114e5b81
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     roles:
+      hasRecords: true
       streamHash: 0b7c02fef6ed17d9d18bbd4dde1669ab38ad497d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stages:
+      streamHash: 2a3a7303d9e3ad0adebc1a07372e862c81bdafe2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: 6f08d2ca937033de8e19f14ca30f80f863aa8a85
+      streamHash: 673e5fcae26791c297ed527d748bb6dc93843151
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    deal_products:
+      streamHash: bbaa813ba66565276fade777b24bb1e2538e7d77
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    mailThreads:
-      streamHash: 1fb532c7bd1e79a526829bc19b2728e65aff2893
+    mail_threads:
+      streamHash: de79b1fa519918433702e281f9977158a01d033f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organization_relationships:
+      streamHash: 387f9fdf2b5b2c406ac57fdd5cbe865285ab1b46
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: false
@@ -1253,391 +1298,331 @@ metadata:
 schemas:
   deals:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      active:
-        type:
-          - "null"
-          - boolean
-      activities_count:
-        type:
-          - "null"
-          - integer
       add_time:
         type:
-          - "null"
           - string
-      cc_email:
-        type:
           - "null"
-          - string
       close_time:
         type:
-          - "null"
           - string
+          - "null"
       creator_user_id:
         type:
+          - number
           - "null"
-          - integer
       currency:
         type:
-          - "null"
           - string
-      deleted:
-        type:
           - "null"
-          - boolean
-      done_activities_count:
+      custom_fields:
         type:
+          - object
           - "null"
-          - integer
-      email_messages_count:
-        type:
-          - "null"
-          - integer
+        properties:
+          17504397b61048bf0fc31275c0a4000a752b8c5a:
+            type:
+              - string
+              - "null"
+          30a55ee782924bcb794ef785eb7006bf6cc5db9f:
+            type:
+              - string
+              - "null"
+          5845a4d799d1a2a54cc19664a159b243fa100d70:
+            type:
+              - string
+              - "null"
+          5f55ed67ec3afa64819133c98685b59f7a9de3c3:
+            type:
+              - string
+              - "null"
+          7d58f51f3c05a99b6511f53a61955ebc8736305d:
+            type:
+              - string
+              - "null"
+          d3187f467746290b0f8b83989c080aadd7d9a938:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - number
+                  - "null"
+          dd69b88aee739721d8fa6012431bf20af89374a6:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
       expected_close_date:
         type:
-          - "null"
           - string
-        format: date
-      files_count:
-        type:
           - "null"
-          - integer
-      first_won_time:
-        type:
-          - "null"
-          - string
-      followers_count:
-        type:
-          - "null"
-          - integer
-      formatted_value:
-        type:
-          - "null"
-          - string
-      formatted_weighted_value:
-        type:
-          - "null"
-          - string
       id:
+        type: number
+      is_archived:
         type:
-          - "null"
-          - integer
-      label:
-        type:
-          - "null"
-          - string
-      last_activity_date:
-        type:
-          - "null"
-          - string
-        format: date
-      last_activity_id:
-        type:
-          - "null"
-          - integer
-      last_incoming_mail_time:
-        type:
-          - "null"
-          - string
-      last_outgoing_mail_time:
-        type:
-          - "null"
-          - string
-      lost_reason:
-        type:
-          - "null"
-          - string
-      lost_time:
-        type:
-          - "null"
-          - string
-      next_activity_date:
-        type:
-          - "null"
-          - string
-        format: date
-      next_activity_duration:
-        type:
-          - "null"
-          - string
-      next_activity_id:
-        type:
-          - "null"
-          - integer
-      next_activity_note:
-        type:
-          - "null"
-          - string
-      next_activity_subject:
-        type:
-          - "null"
-          - string
-      next_activity_time:
-        type:
-          - "null"
-          - string
-      next_activity_type:
-        type:
-          - "null"
-          - string
-      notes_count:
-        type:
-          - "null"
-          - integer
-      org_hidden:
-        type:
-          - "null"
           - boolean
+          - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      label_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
       org_id:
         type:
+          - number
           - "null"
-          - integer
-      org_name:
+      origin:
         type:
-          - "null"
           - string
-      owner_name:
-        type:
           - "null"
-          - string
-      participants_count:
+      owner_id:
         type:
+          - number
           - "null"
-          - integer
-      person_hidden:
-        type:
-          - "null"
-          - boolean
       person_id:
         type:
+          - number
           - "null"
-          - integer
-      person_name:
-        type:
-          - "null"
-          - string
       pipeline_id:
         type:
+          - number
           - "null"
-          - integer
       probability:
         type:
-          - "null"
           - number
-      products_count:
-        type:
           - "null"
-          - integer
-      rotten_time:
-        type:
-          - "null"
-          - string
       stage_change_time:
         type:
-          - "null"
           - string
+          - "null"
       stage_id:
         type:
+          - number
           - "null"
-          - integer
-      stage_order_nr:
-        type:
-          - "null"
-          - integer
       status:
         type:
-          - "null"
           - string
+          - "null"
       title:
         type:
-          - "null"
           - string
-      undone_activities_count:
-        type:
           - "null"
-          - integer
       update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
-      user_id:
-        type:
-          - "null"
-          - integer
+        type: string
       value:
         type:
-          - "null"
           - number
+          - "null"
       visible_to:
         type:
-          - "null"
-          - string
-      weighted_value:
-        type:
-          - "null"
           - number
-      weighted_value_currency:
-        type:
           - "null"
-          - string
       won_time:
         type:
-          - "null"
           - string
+          - "null"
+    required:
+      - id
+      - update_time
   deal_fields:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - string
+          - "null"
       active_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       add_time:
         type:
-          - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+          - "null"
       add_visible_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       bulk_edit_allowed:
         type:
-          - "null"
           - boolean
+          - "null"
+      created_by_user_id:
+        type:
+          - number
+          - "null"
       details_visible_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       edit_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       field_type:
         type:
-          - "null"
           - string
+          - "null"
       filtering_allowed:
         type:
-          - "null"
           - boolean
+          - "null"
       group_id:
         type:
+          - number
           - "null"
-          - integer
       id:
         type:
+          - number
           - "null"
-          - integer
       id_suffix:
         type:
-          - "null"
           - string
+          - "null"
       important_flag:
         type:
-          - "null"
           - boolean
-      index_visible_flag:
-        type:
           - "null"
-          - boolean
       is_subfield:
         type:
-          - "null"
           - boolean
+          - "null"
       json_column_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       key:
         type:
-          - "null"
           - string
+          - "null"
       last_updated_by_user_id:
         type:
+          - number
           - "null"
-          - integer
       link:
         type:
-          - "null"
           - string
-      mandatory_flag:
-        type:
           - "null"
-          - object
-          - boolean
-          - integer
+      mandatory_flag:
+        anyOf:
+          - type: boolean
+          - type: object
+            properties:
+              org_id:
+                type: string
+              person_id:
+                type: string
+              status:
+                type: string
       name:
         type:
-          - "null"
           - string
+          - "null"
       options:
         type:
-          - "null"
           - array
+          - "null"
         items:
-          type: object
-          additionalProperties: true
+          type:
+            - object
+            - "null"
+          properties:
+            alt_id:
+              type:
+                - string
+                - "null"
+            color:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - boolean
+                - number
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
       order_nr:
         type:
+          - number
           - "null"
-          - integer
       parent_id:
         type:
+          - number
           - "null"
-          - integer
       projects_detail_visible_flag:
         type:
-          - "null"
           - boolean
+          - "null"
+      restriction_settings:
+        type:
+          - array
+          - "null"
       searchable_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       show_in_pipelines:
         type:
-          - "null"
           - object
-        items:
+          - "null"
+        properties:
           pipeline_ids:
             type:
-              - "null"
               - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
           show_in_all:
             type:
-              - "null"
               - boolean
+              - "null"
       sortable_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       update_time:
         type:
-          - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+          - "null"
       use_field:
         type:
-          - "null"
           - string
+          - "null"
   goals:
-    type:
-      - object
-      - "null"
-    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
         type:
           - object
           - "null"
-        additionalProperties: true
         properties:
           name:
             type:
@@ -1664,11 +1649,14 @@ schemas:
                   type:
                     - number
                     - "null"
+              stage_id:
+                type:
+                  - number
+                  - "null"
       assignee:
         type:
           - object
           - "null"
-        additionalProperties: true
         properties:
           type:
             type:
@@ -1682,7 +1670,6 @@ schemas:
         type:
           - object
           - "null"
-        additionalProperties: true
         properties:
           end:
             type:
@@ -1696,7 +1683,6 @@ schemas:
         type:
           - object
           - "null"
-        additionalProperties: true
         properties:
           target:
             type:
@@ -1707,15 +1693,15 @@ schemas:
               - string
               - "null"
       id:
-        type:
-          - string
-          - "null"
+        type: string
       interval:
         type:
           - string
           - "null"
       is_active:
-        type: boolean
+        type:
+          - boolean
+          - "null"
       owner_id:
         type:
           - number
@@ -1732,7 +1718,8 @@ schemas:
         type:
           - string
           - "null"
-    title: Goals schema
+    required:
+      - id
   files:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1740,130 +1727,63 @@ schemas:
     properties:
       description:
         type:
-          - "null"
           - string
+          - "null"
       active_flag:
         type:
-          - "null"
           - boolean
-      activity_id:
-        type:
           - "null"
-          - integer
       add_time:
         type:
-          - "null"
           - string
-      cid:
-        type:
           - "null"
-          - integer
-      deal_id:
-        type:
-          - "null"
-          - integer
-      deal_name:
-        type:
-          - "null"
-          - string
       file_name:
         type:
-          - "null"
           - string
+          - "null"
       file_size:
         type:
+          - number
           - "null"
-          - integer
       file_type:
         type:
-          - "null"
           - string
-      id:
-        type:
           - "null"
-          - integer
+      id:
+        type: number
       inline_flag:
         type:
-          - "null"
           - boolean
-      lead_id:
-        type:
           - "null"
-          - integer
-      lead_name:
-        type:
-          - "null"
-          - string
-      log_id:
-        type:
-          - "null"
-          - integer
-      mail_message_id:
-        type:
-          - "null"
-          - integer
-      mail_template_id:
-        type:
-          - "null"
-          - integer
       name:
         type:
-          - "null"
           - string
-      org_id:
-        type:
           - "null"
-          - integer
-      org_name:
-        type:
-          - "null"
-          - string
-      people_name:
-        type:
-          - "null"
-          - string
-      person_id:
-        type:
-          - "null"
-          - integer
-      person_name:
-        type:
-          - "null"
-          - string
-      product_id:
-        type:
-          - "null"
-          - integer
-      product_name:
-        type:
-          - "null"
-          - string
       remote_id:
         type:
-          - "null"
           - string
+          - "null"
       remote_location:
         type:
-          - "null"
           - string
+          - "null"
       s3_bucket:
         type:
-          - "null"
           - string
+          - "null"
       update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
+        type: string
       url:
         type:
-          - "null"
           - string
+          - "null"
       user_id:
         type:
+          - number
           - "null"
-          - integer
+    required:
+      - id
+      - update_time
   filters:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1871,46 +1791,56 @@ schemas:
     properties:
       type:
         type:
-          - "null"
           - string
+          - "null"
       active_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       add_time:
         type:
-          - "null"
           - string
+          - "null"
       custom_view_id:
         type:
+          - number
           - "null"
-          - integer
-      id:
+      filter_code:
         type:
+          - string
           - "null"
-          - integer
+      id:
+        type: number
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      last_used_time:
+        type:
+          - string
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
       temporary_flag:
         type:
+          - boolean
           - "null"
-          - string
       update_time:
         type:
-          - "null"
           - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
+          - "null"
       user_id:
         type:
+          - number
           - "null"
-          - integer
       visible_to:
         type:
-          - "null"
           - string
+          - "null"
+    required:
+      - id
   lead_labels:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1938,79 +1868,102 @@ schemas:
           - string
   leads:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       add_time:
         type:
-          - "null"
           - string
+          - "null"
+      archive_time:
+        type:
+          - string
+          - "null"
+      cc_email:
+        type:
+          - string
+          - "null"
       creator_id:
         type:
+          - number
           - "null"
-          - integer
-      expected_close_date:
+      d3187f467746290b0f8b83989c080aadd7d9a938:
         type:
+          - number
           - "null"
+      d3187f467746290b0f8b83989c080aadd7d9a938_currency:
+        type:
           - string
-        format: date
+          - "null"
+      dd69b88aee739721d8fa6012431bf20af89374a6:
+        type:
+          - string
+          - "null"
       id:
         type:
-          - "null"
           - string
+          - "null"
       is_archived:
         type:
-          - "null"
           - boolean
+          - "null"
       label_ids:
         type:
-          - "null"
           - array
-      next_activity_id:
-        type:
           - "null"
-          - integer
+        items:
+          type:
+            - string
+            - "null"
       organization_id:
         type:
+          - number
           - "null"
-          - integer
+      origin:
+        type:
+          - string
+          - "null"
       owner_id:
         type:
+          - number
           - "null"
-          - integer
       person_id:
         type:
+          - number
           - "null"
-          - integer
       source_name:
         type:
-          - "null"
           - string
+          - "null"
       title:
         type:
-          - "null"
           - string
+          - "null"
       update_time:
-        type:
-          - "null"
-          - string
+        type: string
       value:
         type:
-          - "null"
           - object
+          - "null"
         properties:
           amount:
             type:
+              - number
               - "null"
-              - integer
           currency:
             type:
-              - "null"
               - string
+              - "null"
+      visible_to:
+        type:
+          - string
+          - "null"
       was_seen:
         type:
-          - "null"
           - boolean
+          - "null"
+    required:
+      - update_time
   notes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2018,428 +1971,196 @@ schemas:
     properties:
       active_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       add_time:
         type:
-          - "null"
           - string
+          - "null"
       content:
         type:
-          - "null"
           - string
+          - "null"
       deal:
         type:
-          - "null"
           - object
+          - "null"
         properties:
           title:
             type:
-              - "null"
               - string
+              - "null"
       deal_id:
         type:
+          - number
           - "null"
-          - integer
       id:
-        type:
-          - "null"
-          - integer
-      last_update_user_id:
-        type:
-          - "null"
-          - integer
-      lead:
-        type:
-          - "null"
-          - object
-      lead_id:
-        type:
-          - "null"
-          - integer
+        type: number
       org_id:
         type:
+          - number
           - "null"
-          - integer
       organization:
-        type: object
+        type:
+          - object
+          - "null"
         properties:
           name:
             type:
-              - "null"
               - string
+              - "null"
       person:
         type:
-          - "null"
           - object
+          - "null"
         properties:
           name:
             type:
-              - "null"
               - string
+              - "null"
       person_id:
         type:
+          - number
           - "null"
-          - integer
       pinned_to_deal_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       pinned_to_lead_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       pinned_to_organization_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       pinned_to_person_flag:
         type:
-          - "null"
           - boolean
-      update_time:
-        type:
           - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
+      update_time:
+        type: string
       user:
-        type: object
+        type:
+          - object
+          - "null"
         properties:
           email:
             type:
-              - "null"
               - string
+              - "null"
           icon_url:
             type:
-              - "null"
               - string
+              - "null"
           is_you:
             type:
-              - "null"
               - boolean
+              - "null"
           name:
             type:
-              - "null"
               - string
+              - "null"
       user_id:
         type:
+          - number
           - "null"
-          - integer
+    required:
+      - id
+      - update_time
   activities:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - "null"
           - string
-      active_flag:
-        type:
           - "null"
-          - boolean
       add_time:
         type:
-          - "null"
           - string
-      assigned_to_user_id:
-        type:
           - "null"
-          - integer
-      attendees:
+      busy:
         type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            email_address:
-              type:
-                - "null"
-                - string
-            is_organizer:
-              type:
-                - "null"
-                - integer
-            name:
-              type:
-                - "null"
-                - string
-            person_id:
-              type:
-                - "null"
-                - integer
-            status:
-              type:
-                - "null"
-                - string
-            user_id:
-              type:
-                - "null"
-                - integer
-      busy_flag:
-        type:
-          - "null"
           - boolean
-      calendar_sync_include_context:
-        type:
           - "null"
-          - boolean
-      company_id:
-        type:
-          - "null"
-          - integer
-      conference_meeting_client:
-        type:
-          - "null"
-          - string
-      conference_meeting_id:
-        type:
-          - "null"
-          - string
-      conference_meeting_url:
-        type:
-          - "null"
-          - string
-      created_by_user_id:
-        type:
-          - "null"
-          - integer
-      deal_dropbox_bcc:
-        type:
-          - "null"
-          - string
       deal_id:
         type:
+          - number
           - "null"
-          - integer
-      deal_title:
-        type:
-          - "null"
-          - string
       done:
         type:
-          - "null"
           - boolean
+          - "null"
       due_date:
         type:
-          - "null"
           - string
+          - "null"
       due_time:
         type:
-          - "null"
           - string
+          - "null"
       duration:
         type:
-          - "null"
           - string
-      file:
-        type:
           - "null"
-          - object
-        properties:
-          clean_name:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          url:
-            type:
-              - "null"
-              - string
-      gcal_event_id:
-        type:
-          - "null"
-          - string
-      google_calendar_etag:
-        type:
-          - "null"
-          - string
-      google_calendar_id:
-        type:
-          - "null"
-          - string
       id:
+        type: number
+      is_deleted:
         type:
+          - boolean
           - "null"
-          - integer
-      last_notification_time:
-        type:
-          - "null"
-          - string
-      last_notification_user_id:
-        type:
-          - "null"
-          - integer
-      lead_id:
-        type:
-          - "null"
-          - string
-      location:
-        type:
-          - "null"
-          - string
-      location_admin_area_level_1:
-        type:
-          - "null"
-          - string
-      location_admin_area_level_2:
-        type:
-          - "null"
-          - string
-      location_country:
-        type:
-          - "null"
-          - string
-      location_formatted_address:
-        type:
-          - "null"
-          - string
-      location_lat:
-        type:
-          - "null"
-          - number
-      location_locality:
-        type:
-          - "null"
-          - string
-      location_long:
-        type:
-          - "null"
-          - number
-      location_postal_code:
-        type:
-          - "null"
-          - string
-      location_route:
-        type:
-          - "null"
-          - string
-      location_street_number:
-        type:
-          - "null"
-          - string
-      location_sublocality:
-        type:
-          - "null"
-          - string
-      location_subpremise:
-        type:
-          - "null"
-          - string
       marked_as_done_time:
         type:
-          - "null"
           - string
+          - "null"
       note:
         type:
-          - "null"
           - string
-      notification_language_id:
-        type:
           - "null"
-          - integer
       org_id:
         type:
+          - number
           - "null"
-          - integer
-      org_name:
+      owner_id:
         type:
+          - number
           - "null"
-          - string
-      owner_name:
-        type:
-          - "null"
-          - string
       participants:
         type:
-          - "null"
           - array
+          - "null"
         items:
           type:
-            - "null"
             - object
+            - "null"
           properties:
             person_id:
               type:
+                - number
                 - "null"
-                - integer
-            primary_flag:
+            primary:
               type:
-                - "null"
                 - boolean
-      person_dropbox_bcc:
-        type:
-          - "null"
-          - string
+                - "null"
       person_id:
         type:
+          - number
           - "null"
-          - integer
-      person_name:
-        type:
-          - "null"
-          - string
       public_description:
         type:
-          - "null"
           - string
-      rec_master_activity_id:
-        type:
           - "null"
-          - integer
-      rec_rule:
-        type:
-          - "null"
-          - string
-      rec_rule_extension:
-        type:
-          - "null"
-          - string
-      reference_id:
-        type:
-          - "null"
-          - integer
-      reference_type:
-        type:
-          - "null"
-          - string
-      series:
-        type:
-          - "null"
-          - string
-      source_timezone:
-        type:
-          - "null"
-          - string
       subject:
         type:
-          - "null"
           - string
-      type_name:
-        type:
           - "null"
-          - string
       update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
-      update_user_id:
-        type:
-          - "null"
-          - integer
-      user_id:
-        type:
-          - "null"
-          - integer
+        type: string
+    required:
+      - id
+      - update_time
   activity_types:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2610,33 +2331,33 @@ schemas:
     properties:
       active_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       code:
         type:
-          - "null"
           - string
+          - "null"
       decimal_points:
         type:
+          - number
           - "null"
-          - integer
       id:
         type:
+          - number
           - "null"
-          - integer
       is_custom_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
       symbol:
         type:
-          - "null"
           - string
-  mail:
+          - "null"
+  mail_messages:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -2799,415 +2520,281 @@ schemas:
           - "null"
           - integer
   organizations:
-    type:
-      - "null"
-      - object
-    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      active_flag:
-        type:
-          - "null"
-          - boolean
-      activities_count:
-        type:
-          - "null"
-          - number
       add_time:
         type:
-          - "null"
           - string
+          - "null"
       address:
         type:
+          - object
           - "null"
-          - string
-      address_admin_area_level_1:
+        properties:
+          admin_area_level_1:
+            type:
+              - string
+              - "null"
+          admin_area_level_2:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          formatted_address:
+            type:
+              - string
+              - "null"
+          locality:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          route:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+          sublocality:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      custom_fields:
         type:
+          - object
           - "null"
-          - string
-      address_admin_area_level_2:
-        type:
-          - "null"
-          - string
-      address_country:
-        type:
-          - "null"
-          - string
-      address_formatted_address:
-        type:
-          - "null"
-          - string
-      address_locality:
-        type:
-          - "null"
-          - string
-      address_postal_code:
-        type:
-          - "null"
-          - string
-      address_route:
-        type:
-          - "null"
-          - string
-      address_street_number:
-        type:
-          - "null"
-          - string
-      address_sublocality:
-        type:
-          - "null"
-          - string
-      address_subpremise:
-        type:
-          - "null"
-          - string
-      category_id:
-        type:
-          - "null"
-          - integer
-      cc_email:
-        type:
-          - "null"
-          - string
-      closed_deals_count:
-        type:
-          - "null"
-          - number
-      company_id:
-        type:
-          - "null"
-          - number
-      country_code:
-        type:
-          - "null"
-          - string
-      delete_time:
-        type:
-          - "null"
-          - string
-      done_activities_count:
-        type:
-          - "null"
-          - number
-      email_messages_count:
-        type:
-          - "null"
-          - number
-      files_count:
-        type:
-          - "null"
-          - number
-      first_char:
-        type:
-          - "null"
-          - string
-      followers_count:
-        type:
-          - "null"
-          - number
+        properties:
+          001f2fae6fc94a9a48a25ed402d83ea6e1550327:
+            type:
+              - string
+              - "null"
+          118478247d078cc8fb1ed1d57e0f09893e2de268:
+            type:
+              - string
+              - "null"
+          290c70a4468356d17e42c389ce793a4e4e8347a7:
+            type:
+              - string
+              - "null"
+          46a6ee541306f0ff546371a234ee03fabaf48358:
+            type:
+              - string
+              - "null"
+          509d87f9aab8556ddb455b2a9863cdbafa2bd6d8:
+            type:
+              - string
+              - "null"
+          752b59b4a04b05133c7a1bfe8fd74a56120ba612:
+            type:
+              - string
+              - "null"
+          8475fb979f2f2b4a29ad16ec3fc0ead070c090cf:
+            type:
+              - number
+              - "null"
+          8caaed8fa975baaffb6a590ec218a89d214f80fc:
+            type:
+              - number
+              - "null"
+          b6ea48ad52ac3b051034365f85bfaa87006f4183:
+            type:
+              - string
+              - "null"
+          bd681009efcbf92bcffd94f297c7113859aee1f0:
+            type:
+              - number
+              - "null"
+          ccbb4c4d6b7643c9b3698e92e6051556a8b93de6:
+            type:
+              - string
+              - "null"
+          d1b2756c539a79ec330dc34024bad50118f124da:
+            type:
+              - number
+              - "null"
+          dfd9230b828b9210c0bb39582e3cbd2f702153ac:
+            type:
+              - string
+              - "null"
+          f58c1bdf4e718704f517f2b9b36a14e80f6be68c:
+            type:
+              - string
+              - "null"
       id:
+        type: number
+      is_deleted:
         type:
+          - boolean
           - "null"
-          - number
-      label:
+      label_ids:
         type:
+          - array
           - "null"
-          - number
-      last_activity_date:
-        type:
-          - "null"
-          - string
-      last_activity_id:
-        type:
-          - "null"
-          - number
-      lost_deals_count:
-        type:
-          - "null"
-          - number
       name:
         type:
-          - "null"
           - string
-      next_activity_date:
-        type:
           - "null"
-          - string
-      next_activity_id:
-        type:
-          - "null"
-          - number
-      next_activity_time:
-        type:
-          - "null"
-          - string
-      notes_count:
-        type:
-          - "null"
-          - number
-      open_deals_count:
-        type:
-          - "null"
-          - number
       owner_id:
         type:
-          - "null"
-          - object
           - number
-        properties:
-          active_flag:
-            type:
-              - "null"
-              - boolean
-          email:
-            type:
-              - "null"
-              - string
-          has_pic:
-            type:
-              - "null"
-              - number
-          id:
-            type:
-              - "null"
-              - number
-          name:
-            type:
-              - "null"
-              - string
-          pic_hash:
-            type:
-              - "null"
-              - string
-          value:
-            type:
-              - "null"
-              - number
-      owner_name:
-        type:
           - "null"
-          - string
-      people_count:
-        type:
-          - "null"
-          - number
-      picture_id:
-        type:
-          - "null"
-          - object
-        properties:
-          active_flag:
-            type:
-              - "null"
-              - boolean
-          add_time:
-            type:
-              - "null"
-              - string
-          added_by_user_id:
-            type:
-              - "null"
-              - number
-          item_id:
-            type:
-              - "null"
-              - number
-          item_type:
-            type:
-              - "null"
-              - string
-          pictures:
-            type:
-              - "null"
-              - object
-            properties:
-              "128":
-                type:
-                  - "null"
-                  - string
-              "512":
-                type:
-                  - "null"
-                  - string
-          update_time:
-            type:
-              - "null"
-              - string
-          value:
-            type:
-              - "null"
-              - number
-      related_closed_deals_count:
-        type:
-          - "null"
-          - number
-      related_lost_deals_count:
-        type:
-          - "null"
-          - number
-      related_open_deals_count:
-        type:
-          - "null"
-          - number
-      related_won_deals_count:
-        type:
-          - "null"
-          - number
-      undone_activities_count:
-        type:
-          - "null"
-          - number
       update_time:
-        type:
-          - "null"
-          - string
+        type: string
       visible_to:
         type:
-          - "null"
           - number
-          - string
-      won_deals_count:
-        type:
           - "null"
-          - number
+    required:
+      - id
+      - update_time
   organization_fields:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       active_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       add_time:
         type:
-          - "null"
           - string
+          - "null"
       add_visible_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       bulk_edit_allowed:
         type:
-          - "null"
           - boolean
+          - "null"
       details_visible_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       display_field:
         type:
-          - "null"
           - string
-      display_name:
-        type:
           - "null"
-          - string
       edit_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       field_type:
         type:
-          - "null"
           - string
+          - "null"
       filtering_allowed:
         type:
-          - "null"
           - boolean
-      group_id:
-        type:
           - "null"
-          - integer
       id:
         type:
+          - number
           - "null"
-          - integer
       id_suffix:
         type:
-          - "null"
           - string
+          - "null"
       important_flag:
         type:
-          - "null"
           - boolean
-      index_visible_flag:
-        type:
           - "null"
-          - boolean
       is_subfield:
         type:
-          - "null"
           - boolean
+          - "null"
       json_column_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       key:
         type:
-          - "null"
           - string
+          - "null"
       last_updated_by_user_id:
         type:
+          - number
           - "null"
-          - integer
       link:
         type:
-          - "null"
           - string
+          - "null"
       mandatory_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
       options:
         type:
-          - "null"
           - array
+          - "null"
         items:
           type:
-            - "null"
             - object
+            - "null"
           properties:
+            alt_id:
+              type:
+                - string
+                - "null"
+            color:
+              type:
+                - string
+                - "null"
             id:
               type:
+                - number
                 - "null"
-                - integer
-                - string
-                - boolean
             label:
               type:
-                - "null"
                 - string
+                - "null"
       order_nr:
         type:
+          - number
           - "null"
-          - integer
       parent_id:
         type:
+          - number
           - "null"
-          - integer
+      restriction_settings:
+        type:
+          - array
+          - "null"
       searchable_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       sortable_flag:
         type:
-          - "null"
           - boolean
+          - "null"
       update_time:
         type:
-          - "null"
           - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
+          - "null"
       use_field:
         type:
-          - "null"
           - string
+          - "null"
   permission_sets:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3235,269 +2822,204 @@ schemas:
           - string
   persons:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      active_flag:
-        type:
-          - "null"
-          - boolean
-      activities_count:
-        type:
-          - "null"
-          - integer
       add_time:
         type:
-          - "null"
           - string
-      cc_email:
-        type:
           - "null"
+      birthday:
+        type:
           - string
-      closed_deals_count:
-        type:
           - "null"
-          - integer
-      company_id:
+      custom_fields:
         type:
+          - object
           - "null"
-          - integer
-      delete_time:
+        properties:
+          1db65d24dd51933950b684c5e293e1cda48b88e3:
+            type:
+              - string
+              - "null"
+          52a873e9dd9b12208bf5225e382b370bcfe0dff9:
+            type:
+              - string
+              - "null"
+          610f17f12bab76524f547d578150f64050d7d978:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          868e470fb553eb65c775338769b33d93a350e31b:
+            type:
+              - string
+              - "null"
+          9153f81089e243037fd48484d51b4c6f10a7e45a:
+            type:
+              - string
+              - "null"
+          c91c3793acf6efd437ebbf9ed354496c01cfb270:
+            type:
+              - string
+              - "null"
+          e38287e1c14534828872f5e002d739a58baa087b:
+            type:
+              - string
+              - "null"
+          e4007278c6be0931a87fe3d84d204b796a37b74c:
+            type:
+              - number
+              - "null"
+          f3bbf5f396ed47f8dbea2b28a59cacee0df06405:
+            type:
+              - string
+              - "null"
+      emails:
         type:
-          - "null"
-          - string
-      done_activities_count:
-        type:
-          - "null"
-          - integer
-      email:
-        type:
-          - "null"
           - array
+          - "null"
         items:
           type:
-            - "null"
             - object
+            - "null"
           properties:
             label:
               type:
-                - "null"
                 - string
+                - "null"
             primary:
               type:
-                - "null"
                 - boolean
+                - "null"
             value:
               type:
-                - "null"
                 - string
-      email_messages_count:
-        type:
-          - "null"
-          - integer
-      files_count:
-        type:
-          - "null"
-          - integer
-      first_char:
-        type:
-          - "null"
-          - string
+                - "null"
       first_name:
         type:
-          - "null"
           - string
-      followers_count:
-        type:
           - "null"
-          - integer
       id:
+        type: number
+      im:
         type:
+          - array
           - "null"
-          - integer
-      label:
+      is_deleted:
         type:
+          - boolean
           - "null"
-          - integer
-      last_activity_date:
+      job_title:
         type:
-          - "null"
           - string
-      last_activity_id:
-        type:
           - "null"
-          - integer
-      last_incoming_mail_time:
+      label_ids:
         type:
+          - array
           - "null"
-          - string
       last_name:
         type:
-          - "null"
           - string
-      last_outgoing_mail_time:
-        type:
           - "null"
-          - string
-      lost_deals_count:
-        type:
-          - "null"
-          - integer
       name:
         type:
-          - "null"
           - string
-      next_activity_date:
-        type:
           - "null"
+      notes:
+        type:
           - string
-        format: date
-      next_activity_id:
-        type:
           - "null"
-          - integer
-      next_activity_time:
-        type:
-          - "null"
-          - string
-        format: time
-      notes_count:
-        type:
-          - "null"
-          - integer
-      open_deals_count:
-        type:
-          - "null"
-          - integer
       org_id:
         type:
+          - number
           - "null"
-          - integer
-      org_name:
-        type:
-          - "null"
-          - string
       owner_id:
         type:
+          - number
           - "null"
-          - integer
-      owner_name:
+      phones:
         type:
-          - "null"
-          - string
-      participant_closed_deals_count:
-        type:
-          - "null"
-          - integer
-      participant_open_deals_count:
-        type:
-          - "null"
-          - integer
-      phone:
-        type:
-          - "null"
           - array
+          - "null"
         items:
           type:
-            - "null"
             - object
+            - "null"
           properties:
             label:
               type:
-                - "null"
                 - string
+                - "null"
             primary:
               type:
-                - "null"
                 - boolean
+                - "null"
             value:
               type:
-                - "null"
                 - string
-      picture_128_url:
-        type:
-          - "null"
-          - string
+                - "null"
       picture_id:
         type:
+          - number
           - "null"
+      postal_address:
+        type:
           - object
+          - "null"
         properties:
-          active_flag:
+          admin_area_level_1:
             type:
-              - "null"
-              - boolean
-          add_time:
-            type:
-              - "null"
               - string
-          added_by_user_id:
-            type:
               - "null"
-              - integer
-          item_id:
+          admin_area_level_2:
             type:
-              - "null"
-              - integer
-          item_type:
-            type:
-              - "null"
               - string
-          pictures:
-            type:
               - "null"
-              - object
-            properties:
-              "128":
-                type:
-                  - "null"
-                  - string
-              "512":
-                type:
-                  - "null"
-                  - string
-          update_time:
+          country:
             type:
-              - "null"
               - string
+              - "null"
+          formatted_address:
+            type:
+              - string
+              - "null"
+          locality:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          route:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+          sublocality:
+            type:
+              - string
+              - "null"
           value:
             type:
+              - string
               - "null"
-              - integer
-      related_closed_deals_count:
-        type:
-          - "null"
-          - integer
-      related_lost_deals_count:
-        type:
-          - "null"
-          - integer
-      related_open_deals_count:
-        type:
-          - "null"
-          - integer
-      related_won_deals_count:
-        type:
-          - "null"
-          - integer
-      undone_activities_count:
-        type:
-          - "null"
-          - integer
       update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
+        type: string
       visible_to:
         type:
+          - number
           - "null"
-          - string
-      won_deals_count:
-        type:
-          - "null"
-          - integer
+    required:
+      - id
+      - update_time
   person_fields:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3613,147 +3135,129 @@ schemas:
           - string
   pipelines:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      active:
-        type:
-          - "null"
-          - boolean
       add_time:
         type:
-          - "null"
           - string
-      deal_probability:
-        type:
           - "null"
-          - boolean
       id:
+        type: number
+      is_deal_probability_enabled:
         type:
+          - boolean
           - "null"
-          - integer
+      is_deleted:
+        type:
+          - boolean
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
       order_nr:
         type:
+          - number
           - "null"
-          - integer
-      selected:
-        type:
-          - "null"
-          - boolean
       update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
-      url_title:
-        type:
-          - "null"
-          - string
+        type: string
+    required:
+      - id
+      - update_time
   products:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       description:
         type:
-          - "null"
           - string
-      active_flag:
-        type:
           - "null"
-          - boolean
       add_time:
         type:
-          - "null"
           - string
-      category:
+          - "null"
+      billing_frequency:
         type:
-          - "null"
           - string
+          - "null"
       code:
         type:
-          - "null"
           - string
-      files_count:
-        type:
           - "null"
-          - integer
-      first_char:
+      custom_fields:
         type:
+          - object
           - "null"
-          - string
       id:
+        type: number
+      is_deleted:
         type:
+          - boolean
           - "null"
-          - integer
+      is_linkable:
+        type:
+          - boolean
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
       owner_id:
         type:
+          - number
           - "null"
-          - integer
-      owner_name:
-        type:
-          - "null"
-          - string
       prices:
-        type: array
+        type:
+          - array
+          - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
             cost:
               type:
+                - number
                 - "null"
-                - integer
             currency:
               type:
-                - "null"
                 - string
-            id:
-              type:
                 - "null"
-                - integer
-            overhead_cost:
+            direct_cost:
               type:
+                - number
                 - "null"
-                - integer
+            notes:
+              type:
+                - string
+                - "null"
             price:
               type:
+                - number
                 - "null"
-                - integer
             product_id:
               type:
+                - number
                 - "null"
-                - integer
-      selectable:
-        type:
-          - "null"
-          - boolean
       tax:
         type:
+          - number
           - "null"
-          - integer
       unit:
         type:
-          - "null"
           - string
+          - "null"
       update_time:
-        type:
-          - "null"
-          - string
-        airbyte_type: timestamp_without_timezone
-        format: date-time
+        type: string
       visible_to:
         type:
+          - number
           - "null"
-          - string
+    required:
+      - id
+      - update_time
   product_fields:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -4138,7 +3642,7 @@ schemas:
         type:
           - "null"
           - number
-  mailThreads:
+  mail_threads:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -4270,3 +3774,8 @@ schemas:
         type: string
       user_id:
         type: integer
+  organization_relationships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
