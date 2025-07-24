@@ -231,6 +231,15 @@ class CheckpointManager(
         checkpoint: GlobalCheckpoint
     ) {
         log.info { "Flushing global checkpoint with key $checkpointKey" }
+        if (socketMode) {
+            // We have already verified before deciding to call flushGlobalState in socket mode that
+            // the destination
+            // and source counts match thus it's safe to set the destinationStats to source stats
+            // value
+            checkpoint.checkpointMessage.value.updateStats(
+                destinationStats = checkpoint.checkpointMessage.value.sourceStats
+            )
+        }
 
         if (checkpoint.checkpointMessage.value is GlobalSnapshotCheckpoint) {
             checkpoint.checkpointMessage.value.streamCheckpoints.map { (mappedDescriptor, innerKey)

@@ -292,15 +292,8 @@ class StreamManagerTest {
     }
 
     @Test
-    fun `areRecordsPersistedForCheckpoint throws if no reads and not socketMode`() {
-        val manager = StreamManager(stream1)
-        val ck = checkpoint("c1")
-        assertThrows<IllegalStateException> { manager.areRecordsPersistedForCheckpoint(ck) }
-    }
-
-    @Test
-    fun `areRecordsPersistedForCheckpoint does not throw in socketMode`() {
-        val manager = StreamManager(stream2, socketMode = true)
+    fun `areRecordsPersistedForCheckpoint does not throw`() {
+        val manager = StreamManager(stream2)
         val ck = checkpoint("c-socket")
         // No read counts set, but should not throw
         Assertions.assertDoesNotThrow { manager.areRecordsPersistedForCheckpoint(ck) }

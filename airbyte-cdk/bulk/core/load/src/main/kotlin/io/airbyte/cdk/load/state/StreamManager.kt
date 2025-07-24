@@ -50,7 +50,6 @@ data class CheckpointValue(
 /** Manages the state of a single stream. */
 class StreamManager(
     val stream: DestinationStream,
-    private val socketMode: Boolean = false,
 ) {
     private val streamResult = CompletableDeferred<StreamResult>()
     private val markedEndOfStream = AtomicBoolean(false)
@@ -71,9 +70,6 @@ class StreamManager(
      */
     fun incrementReadCount(checkpointId: CheckpointId): Long {
         if (markedEndOfStream.get()) error("Stream is closed for reading")
-        println(
-            "Got a record for stream ${stream.mappedDescriptor} with checkpoint key $checkpointId"
-        )
         return recordsReadPerCheckpoint.merge(checkpointId, 1L, Long::plus)!!
     }
 
@@ -196,16 +192,7 @@ class StreamManager(
      * records read.
      */
     fun areRecordsPersistedForCheckpoint(checkpointId: CheckpointId): Boolean {
-
-        println("searching for ${checkpointId} for stream ${stream.mappedDescriptor}")
-
-        val readCount =
-            recordsReadPerCheckpoint[checkpointId]
-                ?: if (socketMode) 0L
-                else
-                    throw IllegalStateException(
-                        "No read count for checkpoint $checkpointId for stream ${stream.mappedDescriptor}",
-                    )
+        val readCount = recordsReadPerCheckpoint[checkpointId] ?: 0L
 
         val persistedRecordCount = persistedRecordCountForCheckpoint(checkpointId)
         return persistedRecordCount == readCount

@@ -9,7 +9,6 @@ import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.StreamLoader
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CompletableDeferred
@@ -28,16 +27,9 @@ data class DestinationFailure(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "exception is guaranteed to be non-null by Kotlin's type system"
 )
-class SyncManager(
-    val catalog: DestinationCatalog,
-    @Named("requireCheckpointIdOnRecordAndKeyOnState") requireCheckpointIndexOnState: Boolean
-) {
+class SyncManager(val catalog: DestinationCatalog) {
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager> =
-        ConcurrentHashMap(
-            catalog.streams.associate {
-                it.mappedDescriptor to StreamManager(it, requireCheckpointIndexOnState)
-            }
-        )
+        ConcurrentHashMap(catalog.streams.associate { it.mappedDescriptor to StreamManager(it) })
 
     private val destinationResult = CompletableDeferred<DestinationResult>()
     private val streamLoaders =

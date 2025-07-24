@@ -471,8 +471,8 @@ data class DestinationFileStreamComplete(
 /** State. */
 sealed interface CheckpointMessage : DestinationMessage {
     companion object {
-        private const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
-        private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
+        const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
+        const val COMMITTED_BYTES_COUNT = "committedBytesCount"
         private const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
     }
     data class Stats(
