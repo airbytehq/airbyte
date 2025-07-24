@@ -75,7 +75,7 @@ Here's an example of how to query an external API with the proxy:
 curl -X POST -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
 -d {"method": "GET", "url": "https://api.stripe.com/v1/balance", "headers": {"additional_header_key": "value"}}' \
-'https://api.airbyte.ai/api/v1/proxy/api_sources/{SOURCE_ID}/passthrough'
+'https://api.airbyte.ai/api/v1/proxy/api_sources/{SOURCE_ID}/request'
 ```
 
 Here's an example of a POST:
@@ -84,7 +84,7 @@ Here's an example of a POST:
 curl -X POST -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
 -d {"method": "POST", "url": "https://api.stripe.com/v1/balance", "body": {"key": "value"}}' \
-'https://api.airbyte.ai/api/v1/proxy/api_sources/{SOURCE_ID}/passthrough'
+'https://api.airbyte.ai/api/v1/proxy/api_sources/{SOURCE_ID}/request'
 ```
 
 Airbyte's Authentication Proxy can be used to authenticate using a Source configured through the Widget.
