@@ -58,7 +58,7 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
-     # Help CDK Devs understand CDK version should be incremented on changes.
+      # Help CDK Devs understand CDK version should be incremented on changes.
       - name: Error if CDK Version Exists
         uses: burrunan/gradle-cache-action@v1
         env:
