@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.customerio
 
 import dev.failsafe.RetryPolicy
-import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -26,7 +26,7 @@ class CustomerIoBeanFactory {
     fun check(
         factory: DeclarativeDestinationFactory<CustomerIoConfiguration>,
         checker: DlqChecker,
-    ): DestinationChecker<CustomerIoConfiguration> = factory.createDestinationChecker(checker)
+    ): DestinationCheckerV2 = factory.createDestinationChecker(checker)
 
     @Singleton
     fun factory(

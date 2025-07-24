@@ -1,0 +1,6 @@
+airbyte:
+  destination:
+    core:
+      load:
+        check:
+          version: v2

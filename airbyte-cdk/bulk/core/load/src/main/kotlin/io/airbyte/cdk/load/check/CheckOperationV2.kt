@@ -1,11 +1,6 @@
-/*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
- */
-
 package io.airbyte.cdk.load.check
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
@@ -18,17 +13,16 @@ private val logger = KotlinLogging.logger {}
 
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "check")
-@Requires(missingProperty = "airbyte.destination.core.load.check.version")
+@Requires(property = "airbyte.destination.core.load.check.version", value = "v2")
 @Requires(env = ["destination"])
-class CheckOperation<C : DestinationConfiguration>(
-    val config: C,
-    val destinationChecker: DestinationChecker<C>,
+class CheckOperationV2(
+    val destinationChecker: DestinationCheckerV2,
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer,
-) : Operation {
+)  : Operation {
     override fun execute() {
         try {
-            destinationChecker.check(config)
+            destinationChecker.check()
             val successMessage =
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
@@ -41,7 +35,7 @@ class CheckOperation<C : DestinationConfiguration>(
             logger.warn(t) { "Caught throwable during CHECK" }
             handleException(t)
         } finally {
-            destinationChecker.cleanup(config)
+            destinationChecker.cleanup()
         }
     }
 
