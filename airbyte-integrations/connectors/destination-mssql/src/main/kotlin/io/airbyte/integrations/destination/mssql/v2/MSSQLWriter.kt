@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationFailure
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.InsertLoadTypeConfiguration
@@ -19,9 +19,9 @@ import javax.sql.DataSource
 
 @Singleton
 class MSSQLWriter(
-    private val config: MSSQLConfiguration,
-    private val dataSourceFactory: MSSQLDataSourceFactory,
-    private val streamStateStore: StreamStateStore<MSSQLStreamState>,
+  private val config: MSSQLConfiguration,
+  private val dataSourceFactory: MSSQLDataSourceFactory,
+  private val streamCdkStateStore: StreamCdkStateStore<MSSQLStreamState>,
 ) : DestinationWriter {
 
     /** Lazily initialized when [setup] is called. */
@@ -47,7 +47,7 @@ class MSSQLWriter(
                     defaultSchema = config.schema,
                     azureBlobClient =
                         AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig),
-                    streamStateStore = streamStateStore,
+                    streamCdkStateStore = streamCdkStateStore,
                 )
             }
             is InsertLoadTypeConfiguration -> {
@@ -55,7 +55,7 @@ class MSSQLWriter(
                     dataSource = dataSourceNotNull,
                     stream = stream,
                     sqlBuilder = sqlBuilder,
-                    streamStateStore = streamStateStore
+                    streamCdkStateStore = streamCdkStateStore
                 )
             }
         }

@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.fold
  *
  * Includes a count of the inputs seen since the state was created.
  */
-data class StateWithCounts<S : AutoCloseable>(
+data class CdkStateWithCounts<S : AutoCloseable>(
     val accumulatorState: S,
     val checkpointCounts: MutableMap<CheckpointId, CheckpointValue> = mutableMapOf(),
     val inputCount: Long = 0,
@@ -82,7 +82,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
      * something is likely wrong with our bookkeeping.)
      */
     data class StateStore<K1, S : AutoCloseable>(
-        val stateWithCounts: MutableMap<K1, StateWithCounts<S>> = mutableMapOf(),
+        val cdkStateWithCounts: MutableMap<K1, CdkStateWithCounts<S>> = mutableMapOf(),
         val streamCounts: MutableMap<DestinationStream.Descriptor, Long> = mutableMapOf(),
         val streamsEnded: MutableSet<DestinationStream.Descriptor> = mutableSetOf(),
     )
@@ -105,13 +105,13 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                          */
                         maxNumConcurrentKeys?.let { maxKeys ->
                             if (
-                                !stateStore.stateWithCounts.contains(input.key) &&
-                                    stateStore.stateWithCounts.size >= maxKeys
+                                !stateStore.cdkStateWithCounts.contains(input.key) &&
+                                    stateStore.cdkStateWithCounts.size >= maxKeys
                             ) {
                                 // Pick the key with the highest input count
                                 val (key, state) =
-                                    stateStore.stateWithCounts.maxByOrNull { it.value.inputCount }!!
-                                stateStore.stateWithCounts.remove(key)
+                                    stateStore.cdkStateWithCounts.maxByOrNull { it.value.inputCount }!!
+                                stateStore.cdkStateWithCounts.remove(key)
                                 log.info {
                                     "Saw greater than $maxNumConcurrentKeys keys, evicting highest accumulating $key (inputs=${state.inputCount})"
                                 }
@@ -129,10 +129,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         }
 
                         // Get or create the accumulator state associated w/ the input key.
-                        val stateWithCounts =
-                            stateStore.stateWithCounts
+                        val cdkStateWithCounts =
+                            stateStore.cdkStateWithCounts
                                 .getOrPut(input.key) {
-                                    StateWithCounts(
+                                    CdkStateWithCounts(
                                         accumulatorState = batchAccumulator.start(input.key, part)
                                     )
                                 }
@@ -142,7 +142,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         val result =
                             batchAccumulator.accept(
                                 input.value,
-                                stateWithCounts.accumulatorState,
+                                cdkStateWithCounts.accumulatorState,
                             )
 
                         // Update bookkeeping metadata
@@ -150,7 +150,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             it()
                         } // TODO: Accumulate and release when persisted
                         input.checkpointCounts.forEach {
-                            stateWithCounts.checkpointCounts.merge(it.key, it.value) { old, new ->
+                            cdkStateWithCounts.checkpointCounts.merge(it.key, it.value) { old, new ->
                                 old.plus(new)
                             }
                         }
@@ -161,8 +161,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 // Possibly force an output (and if so, discard the state)
                                 if (
                                     flushStrategy?.shouldFlush(
-                                        stateWithCounts.inputCount,
-                                        System.currentTimeMillis() - stateWithCounts.createdAtMs
+                                        cdkStateWithCounts.inputCount,
+                                        System.currentTimeMillis() - cdkStateWithCounts.createdAtMs
                                     ) == true
                                 ) {
                                     val finalResult = batchAccumulator.finish(result.nextState!!)
@@ -181,31 +181,31 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 // Publish the emitted output w/ bookkeeping counts & clear.
                                 handleOutput(
                                     input.key,
-                                    stateWithCounts.checkpointCounts,
+                                    cdkStateWithCounts.checkpointCounts,
                                     finalAccOutput,
-                                    stateWithCounts.inputCount,
+                                    cdkStateWithCounts.inputCount,
                                     input.context,
                                 )
-                                stateWithCounts.checkpointCounts.clear()
+                                cdkStateWithCounts.checkpointCounts.clear()
                                 0
                             } else {
-                                stateWithCounts.inputCount
+                                cdkStateWithCounts.inputCount
                             }
 
                         // Update the state if `accept` returned a new state, otherwise evict.
                         if (finalAccState != null) {
                             // If accept returned a new state, update the state store.
-                            stateStore.stateWithCounts[input.key] =
-                                stateWithCounts.copy(
+                            stateStore.cdkStateWithCounts[input.key] =
+                                cdkStateWithCounts.copy(
                                     accumulatorState = finalAccState,
                                     inputCount = inputCount
                                 )
                         } else {
-                            stateStore.stateWithCounts.remove(input.key)?.let {
+                            stateStore.cdkStateWithCounts.remove(input.key)?.let {
                                 check(inputCount == 0L || it.checkpointCounts.isEmpty()) {
                                     "State evicted with unhandled input ($inputCount) or checkpoint counts(${it.checkpointCounts})"
                                 }
-                                stateWithCounts.close()
+                                cdkStateWithCounts.close()
                             }
                         }
                         stateStore.streamCounts.merge(input.key.stream, 1) { old, new -> old + new }
@@ -215,7 +215,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         val inputCountEos = stateStore.streamCounts[input.stream] ?: 0
 
                         val keysToRemove =
-                            stateStore.stateWithCounts.keys.filter { it.stream == input.stream }
+                            stateStore.cdkStateWithCounts.keys.filter { it.stream == input.stream }
 
                         finishKeys(stateStore, keysToRemove, "end-of-stream")
 
@@ -247,7 +247,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         flushStrategy?.let { strategy ->
                             val now = System.currentTimeMillis()
                             val keysToRemove =
-                                stateStore.stateWithCounts
+                                stateStore.cdkStateWithCounts
                                     .filter { (_, v) ->
                                         strategy.shouldFlush(v.inputCount, now - v.createdAtMs)
                                     }
@@ -260,7 +260,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                 }
             } catch (t: Throwable) {
                 // Close the local state associated with the current batch.
-                stateStore.stateWithCounts.values
+                stateStore.cdkStateWithCounts.values
                     .map { runCatching { it.accumulatorState.close() } }
                     .forEach { it.getOrThrow() }
                 throw t
@@ -275,7 +275,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     ) {
         keys.forEach { key ->
             log.debug { "Finishing state for $key due to $reason" }
-            stateStore.stateWithCounts.remove(key)?.let { stateWithCounts ->
+            stateStore.cdkStateWithCounts.remove(key)?.let { stateWithCounts ->
                 val output = batchAccumulator.finish(stateWithCounts.accumulatorState).output
                 handleOutput(
                     key,

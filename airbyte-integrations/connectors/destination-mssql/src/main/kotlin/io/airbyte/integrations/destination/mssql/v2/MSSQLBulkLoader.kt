@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlob
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
-import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import io.airbyte.cdk.load.write.db.BulkLoader
 import io.airbyte.cdk.load.write.db.BulkLoaderFactory
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLBulkLoadConfiguration
@@ -112,7 +112,7 @@ class MSSQLBulkLoaderFactory(
     private val catalog: DestinationCatalog,
     private val config: MSSQLConfiguration,
     private val bulkLoadConfig: MSSQLBulkLoadConfiguration,
-    private val streamStateStore: StreamStateStore<MSSQLStreamState>
+    private val streamCdkStateStore: StreamCdkStateStore<MSSQLStreamState>
 ) : BulkLoaderFactory<StreamKey, AzureBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
@@ -129,13 +129,13 @@ class MSSQLBulkLoaderFactory(
         val stream = catalog.getStream(key.stream)
         val mssqlBulkLoadHandler =
             MSSQLBulkLoadHandler(
-                streamStateStore.get(key.stream)!!.dataSource,
+                streamCdkStateStore.get(key.stream)!!.dataSource,
                 stream.mappedDescriptor.namespace ?: defaultSchema,
                 stream.mappedDescriptor.name,
                 bulkLoadConfig.dataSource,
                 MSSQLQueryBuilder(config.schema, stream)
             )
-        val state = streamStateStore.get(key.stream)
+        val state = streamCdkStateStore.get(key.stream)
         check(state != null && state is MSSQLBulkLoaderStreamState) {
             "Stream state not properly initialized for stream ${key.stream}"
         }

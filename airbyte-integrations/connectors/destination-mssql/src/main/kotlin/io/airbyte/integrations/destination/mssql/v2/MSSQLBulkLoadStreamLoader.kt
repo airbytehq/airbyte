@@ -8,18 +8,18 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.state.StreamProcessingFailed
-import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class MSSQLBulkLoadStreamLoader(
-    override val stream: DestinationStream,
-    dataSource: DataSource,
-    sqlBuilder: MSSQLQueryBuilder,
-    private val defaultSchema: String,
-    private val azureBlobClient: AzureBlobClient,
-    private val streamStateStore: StreamStateStore<MSSQLStreamState>,
+  override val stream: DestinationStream,
+  dataSource: DataSource,
+  sqlBuilder: MSSQLQueryBuilder,
+  private val defaultSchema: String,
+  private val azureBlobClient: AzureBlobClient,
+  private val streamCdkStateStore: StreamCdkStateStore<MSSQLStreamState>,
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     // Bulk-load related collaborators
@@ -36,7 +36,7 @@ class MSSQLBulkLoadStreamLoader(
         super.start() // calls ensureTableExists()
         formatFilePath = mssqlFormatFileCreator.createAndUploadFormatFile(defaultSchema).key
         val state = MSSQLBulkLoaderStreamState(dataSource, formatFilePath)
-        streamStateStore.put(stream.mappedDescriptor, state)
+        streamCdkStateStore.put(stream.mappedDescriptor, state)
     }
 
     /**

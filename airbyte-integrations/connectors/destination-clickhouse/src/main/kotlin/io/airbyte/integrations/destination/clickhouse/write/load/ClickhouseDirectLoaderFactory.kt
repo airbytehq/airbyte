@@ -8,7 +8,7 @@ import com.clickhouse.client.api.Client
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.DirectLoaderFactory
-import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import io.airbyte.integrations.destination.clickhouse.write.transform.RecordMunger
 import jakarta.inject.Singleton
 
@@ -17,9 +17,9 @@ import jakarta.inject.Singleton
  */
 @Singleton
 class ClickhouseDirectLoaderFactory(
-    private val clickhouseClient: Client,
-    private val stateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
-    private val munger: RecordMunger,
+  private val clickhouseClient: Client,
+  private val stateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
+  private val munger: RecordMunger,
 ) : DirectLoaderFactory<ClickhouseDirectLoader> {
     override val maxNumOpenLoaders = 2
 

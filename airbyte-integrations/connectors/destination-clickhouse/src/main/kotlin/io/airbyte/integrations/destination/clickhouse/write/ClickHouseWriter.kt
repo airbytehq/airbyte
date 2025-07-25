@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExe
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseAirbyteClient
 import jakarta.inject.Singleton
 
@@ -23,7 +23,7 @@ import jakarta.inject.Singleton
 class ClickHouseWriter(
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
-    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
     private val clickhouseClient: ClickhouseAirbyteClient,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
@@ -53,7 +53,7 @@ class ClickHouseWriter(
                     columnNameMapping,
                     clickhouseClient,
                     clickhouseClient,
-                    streamStateStore,
+                    streamCdkStateStore,
                 )
             stream.generationId ->
                 DirectLoadTableAppendTruncateStreamLoader(
@@ -64,7 +64,7 @@ class ClickHouseWriter(
                     columnNameMapping,
                     clickhouseClient,
                     clickhouseClient,
-                    streamStateStore,
+                    streamCdkStateStore,
                 )
             else ->
                 throw SystemErrorException(
