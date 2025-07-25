@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -128,12 +128,12 @@ class StreamManagerTest {
 
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(checkpointId to CheckpointValue(5, 5)),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(checkpointId to CheckpointValue(5, 5)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId))
@@ -149,7 +149,7 @@ class StreamManagerTest {
 
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(
                 checkpointId to
                     CheckpointValue(
@@ -161,7 +161,7 @@ class StreamManagerTest {
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(
                 checkpointId to
                     CheckpointValue(
@@ -190,14 +190,14 @@ class StreamManagerTest {
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId2))
 
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(checkpointId1 to CheckpointValue(10, 10)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId2))
 
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(checkpointId2 to CheckpointValue(15, 15)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
@@ -222,14 +222,14 @@ class StreamManagerTest {
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId2))
 
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(checkpointId2 to CheckpointValue(15, 15)),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId2))
 
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(checkpointId1 to CheckpointValue(10, 10)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
@@ -247,19 +247,19 @@ class StreamManagerTest {
 
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         manager.incrementCheckpointCounts(
-            BatchState.COMPLETE,
+            BatchCdkState.COMPLETE,
             mapOf(checkpointId1 to CheckpointValue(4, 4)),
         )
         Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
         manager.incrementCheckpointCounts(
-            BatchState.COMPLETE,
+            BatchCdkState.COMPLETE,
             mapOf(checkpointId1 to CheckpointValue(6, 6)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
 
         // Can still count persisted (but without effect)
         manager.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(checkpointId1 to CheckpointValue(10, 10)),
         )
         Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
@@ -293,7 +293,7 @@ class StreamManagerTest {
                 when (step) {
                     "1" ->
                         manager.incrementCheckpointCounts(
-                            BatchState.COMPLETE,
+                            BatchCdkState.COMPLETE,
                             mapOf(
                                 checkpointId1 to
                                     CheckpointValue(
@@ -305,7 +305,7 @@ class StreamManagerTest {
                         )
                     "2" ->
                         manager.incrementCheckpointCounts(
-                            BatchState.COMPLETE,
+                            BatchCdkState.COMPLETE,
                             mapOf(checkpointId2 to CheckpointValue(20, 20)),
                         )
                     "end" -> manager.markEndOfStream(true)
@@ -333,7 +333,7 @@ class StreamManagerTest {
 
         repeat(10) { manager1.incrementReadCount() }
         manager1.incrementCheckpointCounts(
-            BatchState.PERSISTED,
+            BatchCdkState.PERSISTED,
             mapOf(manager1.inferNextCheckpointKey().checkpointId to CheckpointValue(10, 10)),
         )
         assertDoesNotThrow { manager1.markCheckpoint() }

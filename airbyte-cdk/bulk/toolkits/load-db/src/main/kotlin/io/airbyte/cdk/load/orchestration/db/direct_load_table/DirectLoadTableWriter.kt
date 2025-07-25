@@ -14,8 +14,8 @@ import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.write.StreamStateStore
 
 /**
  * @param directLoadTableTempTableNameMigration Iff you are implementing a destination which
@@ -29,7 +29,7 @@ class DirectLoadTableWriter(
     private val destinationHandler: DatabaseHandler,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
-    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
@@ -60,7 +60,7 @@ class DirectLoadTableWriter(
                             columnNameMapping,
                             nativeTableOperations,
                             sqlTableOperations,
-                            streamStateStore,
+                            streamCdkStateStore,
                         )
                     is Dedupe ->
                         DirectLoadTableDedupStreamLoader(
@@ -71,7 +71,7 @@ class DirectLoadTableWriter(
                             columnNameMapping,
                             nativeTableOperations,
                             sqlTableOperations,
-                            streamStateStore,
+                            streamCdkStateStore,
                         )
                     else -> throw SystemErrorException("Unsupported Sync Mode: $this")
                 }
@@ -87,7 +87,7 @@ class DirectLoadTableWriter(
                             columnNameMapping,
                             nativeTableOperations,
                             sqlTableOperations,
-                            streamStateStore,
+                            streamCdkStateStore,
                         )
                     is Dedupe ->
                         DirectLoadTableDedupTruncateStreamLoader(
@@ -98,7 +98,7 @@ class DirectLoadTableWriter(
                             columnNameMapping,
                             nativeTableOperations,
                             sqlTableOperations,
-                            streamStateStore,
+                            streamCdkStateStore,
                             tempTableNameGenerator,
                         )
                     else -> throw SystemErrorException("Unsupported Sync Mode: $this")

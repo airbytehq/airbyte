@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.write.db
 
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 
@@ -51,6 +51,6 @@ interface BulkLoaderFactory<K : WithStream, T : RemoteObject<*>> : ObjectLoader 
 
     // Override the bookkeeping state for objects in object storage
     // from the default of "COMPLETE". Connector devs can ignore this.
-    override val stateAfterUpload: BatchState
-        get() = BatchState.LOADED
+    override val stateAfterUpload: BatchCdkState
+        get() = BatchCdkState.LOADED
 }

@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
  * for making state generated during initialization generally available to the Loaders.
  */
 @Singleton
-class StreamStateStore<S> {
+class StreamCdkStateStore<S> {
     private val store = ConcurrentHashMap<DestinationStream.Descriptor, S>()
 
     fun put(stream: DestinationStream.Descriptor, state: S) {

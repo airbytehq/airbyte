@@ -21,7 +21,7 @@ import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.StatsEmitter
-import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
+import io.airbyte.cdk.load.task.internal.UpdateBatchCdkStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -76,7 +76,7 @@ class DestinationTaskLauncher(
     // Internal Tasks
     private val inputConsumerTask: InputConsumerTask? = null,
     private val heartbeatTask: HeartbeatTask? = null,
-    private val updateBatchTask: UpdateBatchStateTaskFactory,
+    private val updateBatchTask: UpdateBatchCdkStateTaskFactory,
     private val statsEmitter: StatsEmitter? = null,
 
     // Implementor Tasks

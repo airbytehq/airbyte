@@ -9,8 +9,8 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.write.StreamStateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -30,7 +30,7 @@ class DirectLoadTableAppendStreamLoader(
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
-    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
         logger.info {
@@ -54,7 +54,10 @@ class DirectLoadTableAppendStreamLoader(
             sqlTableOperations.dropTable(tempTableName)
         }
 
-        streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(realTableName))
+        streamCdkStateStore.put(
+            stream.mappedDescriptor,
+            DirectLoadTableExecutionConfig(realTableName)
+        )
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
@@ -78,7 +81,7 @@ class DirectLoadTableDedupStreamLoader(
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
-    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
         logger.info { "DedupStreamLoader starting for stream: ${stream.mappedDescriptor}" }
@@ -92,7 +95,10 @@ class DirectLoadTableDedupStreamLoader(
             sqlTableOperations.createTable(stream, tempTableName, columnNameMapping, replace = true)
         }
 
-        streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
+        streamCdkStateStore.put(
+            stream.mappedDescriptor,
+            DirectLoadTableExecutionConfig(tempTableName)
+        )
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
@@ -130,7 +136,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
-    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     // can't use lateinit because of weird kotlin reasons.
     /**
@@ -170,7 +176,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 }
             }
             isWritingToTemporaryTable = true
-            streamStateStore.put(
+            streamCdkStateStore.put(
                 stream.mappedDescriptor,
                 DirectLoadTableExecutionConfig(tempTableName)
             )
@@ -211,7 +217,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
         logger.info {
             "Target table: ${targetTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
         }
-        streamStateStore.put(
+        streamCdkStateStore.put(
             stream.mappedDescriptor,
             DirectLoadTableExecutionConfig(targetTableName)
         )
@@ -253,7 +259,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
     private val sqlTableOperations: DirectLoadTableSqlOperations,
-    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : StreamLoader {
     // can't use lateinit because of weird kotlin reasons.
@@ -304,7 +310,10 @@ class DirectLoadTableDedupTruncateStreamLoader(
             shouldCheckRealTableGeneration = true
         }
 
-        streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
+        streamCdkStateStore.put(
+            stream.mappedDescriptor,
+            DirectLoadTableExecutionConfig(tempTableName)
+        )
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {

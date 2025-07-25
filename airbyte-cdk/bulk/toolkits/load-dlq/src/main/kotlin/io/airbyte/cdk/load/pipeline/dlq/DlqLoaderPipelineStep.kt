@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline.dlq
 
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -48,7 +48,7 @@ class DlqLoaderPipelineStep<S : AutoCloseable>(
  * - [rejectedRecords] are records meant for the DeadLetterQueue.
  */
 class DlqStepOutput(
-    override val state: BatchState,
+    override val state: BatchCdkState,
     val rejectedRecords: List<DestinationRecordRaw>? = null,
 ) : WithBatchState
 
@@ -90,7 +90,7 @@ class DlqLoaderAccumulator<S>(
     private fun getOutput(rejectedRecords: List<DestinationRecordRaw>?) =
         when (rejectedRecords) {
             null,
-            emptyList<DestinationRecordRaw>() -> DlqStepOutput(BatchState.COMPLETE, null)
-            else -> DlqStepOutput(BatchState.STAGED, rejectedRecords)
+            emptyList<DestinationRecordRaw>() -> DlqStepOutput(BatchCdkState.COMPLETE, null)
+            else -> DlqStepOutput(BatchCdkState.STAGED, rejectedRecords)
         }
 }

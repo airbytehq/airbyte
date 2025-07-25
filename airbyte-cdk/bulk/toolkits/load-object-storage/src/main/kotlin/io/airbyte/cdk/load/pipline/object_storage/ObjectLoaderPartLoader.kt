@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
@@ -74,10 +74,10 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         // keep track of whether it's empty so the bookkeeper can ignore it
         val empty: Boolean = false,
     ) : PartResult<T> {
-        override val state: BatchState = BatchState.STAGED
+        override val state: BatchCdkState = BatchCdkState.STAGED
     }
     data class NoPart<T : RemoteObject<*>>(override val objectKey: String) : PartResult<T> {
-        override val state: BatchState = BatchState.STAGED
+        override val state: BatchCdkState = BatchCdkState.STAGED
     }
 
     override suspend fun start(key: ObjectKey, part: Int): State<T> {

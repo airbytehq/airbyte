@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.pipline.object_storage
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartBookkeeper
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
@@ -36,7 +36,7 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
         }
     }
 
-    data class UploadResult<T>(override val state: BatchState, val remoteObject: T?) :
+    data class UploadResult<T>(override val state: BatchCdkState, val remoteObject: T?) :
         WithBatchState
 
     override suspend fun start(key: ObjectKey, part: Int): State {

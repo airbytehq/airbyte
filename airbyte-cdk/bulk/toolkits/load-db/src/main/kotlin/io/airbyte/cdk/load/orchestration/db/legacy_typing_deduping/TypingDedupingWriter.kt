@@ -8,8 +8,8 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.write.DestinationWriter
+import io.airbyte.cdk.load.write.StreamCdkStateStore
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.write.StreamStateStore
 import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ class TypingDedupingWriter(
     private val rawTableOperations: TypingDedupingRawTableOperations,
     private val finalTableOperations: TypingDedupingFinalTableOperations,
     private val disableTypeDedupe: Boolean,
-    private val streamStateStore: StreamStateStore<TypingDedupingExecutionConfig>,
+    private val streamCdkStateStore: StreamCdkStateStore<TypingDedupingExecutionConfig>,
 ) : DestinationWriter {
     private lateinit var initialStatuses:
         Map<DestinationStream, TypingDedupingDatabaseInitialStatus>
@@ -82,7 +82,7 @@ class TypingDedupingWriter(
             rawTableOperations,
             finalTableOperations,
             disableTypeDedupe = disableTypeDedupe,
-            streamStateStore,
+            streamCdkStateStore,
         )
     }
 }

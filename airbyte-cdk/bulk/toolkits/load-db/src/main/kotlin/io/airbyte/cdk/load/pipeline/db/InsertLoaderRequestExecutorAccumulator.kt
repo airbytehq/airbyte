@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.pipeline.db
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
@@ -32,7 +32,7 @@ class InsertLoaderRequestExecutorAccumulator<Q : InsertLoaderRequest>(
     > {
 
     data object Result : WithBatchState {
-        override val state: BatchState = BatchState.COMPLETE
+        override val state: BatchCdkState = BatchCdkState.COMPLETE
     }
 
     override suspend fun start(key: StreamKey, part: Int): Closeable {
