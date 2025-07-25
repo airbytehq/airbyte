@@ -202,17 +202,18 @@ spec:
         fields:
           - type: AddedFieldDefinition
             path: ["customer_ids"]
-            value: "{{ config.get('customer_id').split(',') }}"
-        condition: "{{ config.get('customer_id', None) is not none }}"
+            value: "{{ config.get('customer_id', '').split(',') }}"
+        condition: "{{ config.get('customer_id', False) }}"
       - type: ConfigRemoveFields
-        field_pointers: ["end_date"]
+        field_pointers:
+          - ["end_date"]
         condition: "{{ config.get('end_date') == '' }}"
     validations:
       - type: DpathValidator
         field_path: ["custom_queries_array"]
         validation_strategy:
-          - type: CustomValidationStrategy
-            class_name: source_google_ads.components.ValidateCustomQueries
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateCustomQueries
 
 
 definitions:
@@ -239,7 +240,7 @@ definitions:
 
   stream_requester:
     type: CustomRequester
-    class_name: "source_google_ads.components.GoogleAdsHttpRequester"
+    class_name: "source_declarative_manifest.components.GoogleAdsHttpRequester"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -304,7 +305,7 @@ definitions:
             - results
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+          class_name: source_declarative_manifest.components.DoubleQuotedDictTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -314,12 +315,12 @@ definitions:
             partition_field: "customer_id"
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.GoogleAdsPerPartitionStateMigration
         customer_client_stream: "#/definitions/customer_client"
 
   incremental_stream_base:
@@ -335,7 +336,7 @@ definitions:
             - results
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+          class_name: source_declarative_manifest.components.DoubleQuotedDictTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -346,9 +347,9 @@ definitions:
             extra_fields: [["manager"]]
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: segments.date
@@ -366,7 +367,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.GoogleAdsPerPartitionStateMigration
         customer_client_stream: "#/definitions/customer_client"
 
   incremental_non_manager_stream_base:
@@ -389,7 +390,7 @@ definitions:
         $ref: "#/definitions/incremental_stream_base/retriever"
         requester:
           type: CustomRequester
-          class_name: "source_google_ads.components.CriterionFullRefreshRequester"
+          class_name: "source_declarative_manifest.components.CriterionFullRefreshRequester"
           schema_loader:
             type: InlineSchemaLoader
             schema:
@@ -410,9 +411,9 @@ definitions:
           datetime_format: "%Y-%m-%d"
       transformations:
         - type: CustomTransformation
-          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+          class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
         - type: CustomTransformation
-          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+          class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -422,10 +423,10 @@ definitions:
       $ref: "#/definitions/incremental_stream_base"
       retriever:
         type: CustomRetriever
-        class_name: "source_google_ads.components.CriterionRetriever"
+        class_name: "source_declarative_manifest.components.CriterionRetriever"
         requester:
           type: CustomRequester
-          class_name: "source_google_ads.components.CriterionIncrementalRequester"
+          class_name: "source_declarative_manifest.components.CriterionIncrementalRequester"
           schema_loader:
             type: InlineSchemaLoader
             schema:
@@ -444,7 +445,7 @@ definitions:
               - results
           schema_normalization:
             type: CustomSchemaNormalization
-            class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+            class_name: source_declarative_manifest.components.DoubleQuotedDictTypeTransformer
         partition_router:
           type: GroupingPartitionRouter
           group_size: 10000
@@ -465,9 +466,9 @@ definitions:
                 incremental_dependency: true
         transformations:
           - type: CustomTransformation
-            class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+            class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
           - type: CustomTransformation
-            class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+            class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: change_status.last_change_date_time
@@ -478,7 +479,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+          class_name: source_declarative_manifest.components.GoogleAdsCriterionParentStateMigration
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
@@ -494,7 +495,7 @@ definitions:
       record_selector:
         extractor:
           type: CustomRecordExtractor
-          class_name: "source_google_ads.components.AccessibleAccountsExtractor"
+          class_name: "source_declarative_manifest.components.AccessibleAccountsExtractor"
 
   customer_client:
     $ref: "#/definitions/stream_base"
@@ -524,7 +525,7 @@ definitions:
           field_path: ["results", "*", "customerClient"]
         record_filter:
           type: CustomRecordFilter
-          class_name: "source_google_ads.components.CustomerClientFilter"
+          class_name: "source_declarative_manifest.components.CustomerClientFilter"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -563,7 +564,7 @@ definitions:
           field_path: ["results", "*", "customerClient"]
         record_filter:
           type: CustomRecordFilter
-          class_name: "source_google_ads.components.CustomerClientFilter"
+          class_name: "source_declarative_manifest.components.CustomerClientFilter"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -592,7 +593,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         type: CustomRequester
-        class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
+        class_name: "source_declarative_manifest.components.CustomGAQueryHttpRequester"
         authenticator:
           $ref: "#/definitions/authenticator"
         url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
@@ -606,7 +607,7 @@ definitions:
             - results
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+          class_name: source_declarative_manifest.components.DoubleQuotedDictTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -618,20 +619,20 @@ definitions:
         type: NoPagination
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
         condition: "{{ record.get('metrics.interaction_event_types', False) }}"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.GoogleAdsPerPartitionStateMigration
         customer_client_stream: "#/definitions/customer_client"
     schema_loader:
       type: CustomSchemaLoader
-      class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
+      class_name: "source_declarative_manifest.components.CustomGAQuerySchemaLoader"
       requester:
         $ref: "#/definitions/base_requester"
         url: "https://googleads.googleapis.com/v18/googleAdsFields"
@@ -652,9 +653,9 @@ definitions:
       - segments.device
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -708,9 +709,9 @@ definitions:
       - segments.ad_network_type
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -773,9 +774,9 @@ definitions:
       - segments.ad_network_type
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -807,9 +808,9 @@ definitions:
       - segments.budget_campaign_association_status.status
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -840,7 +841,7 @@ definitions:
       $ref: "#/definitions/incremental_stream_base/retriever"
       requester:
         type: CustomRequester
-        class_name: "source_google_ads.components.ClickViewHttpRequester"
+        class_name: "source_declarative_manifest.components.ClickViewHttpRequester"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -923,9 +924,9 @@ definitions:
       - segments.device
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -956,9 +957,9 @@ definitions:
       - segments.date
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -986,9 +987,9 @@ definitions:
       - segments.device
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -1008,9 +1009,9 @@ definitions:
       - segments.ad_network_type
     transformations:
       - type: CustomTransformation
-        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
-        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+        class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
           $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
@@ -1024,10 +1025,10 @@ definitions:
     name: change_status
     retriever:
       type: CustomRetriever
-      class_name: "source_google_ads.components.ChangeStatusRetriever"
+      class_name: "source_declarative_manifest.components.ChangeStatusRetriever"
       requester:
         type: CustomRequester
-        class_name: "source_google_ads.components.ChangeStatusRequester"
+        class_name: "source_declarative_manifest.components.ChangeStatusRequester"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -1049,7 +1050,7 @@ definitions:
             - results
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+          class_name: source_declarative_manifest.components.DoubleQuotedDictTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1060,9 +1061,9 @@ definitions:
             extra_fields: [["manager"]]
       transformations:
         - type: CustomTransformation
-          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+          class_name: "source_declarative_manifest.components.KeysToSnakeCaseGoogleAdsTransformation"
         - type: CustomTransformation
-          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+          class_name: "source_declarative_manifest.components.FlattenNestedDictsTransformation"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: change_status.last_change_date_time
@@ -1079,7 +1080,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S.%f"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        class_name: source_declarative_manifest.components.GoogleAdsPerPartitionStateMigration
         customer_client_stream: "#/definitions/customer_client"
         cursor_field: change_status.last_change_date_time
     schema_loader:
