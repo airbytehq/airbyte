@@ -5,14 +5,15 @@
 from unittest.mock import Mock
 
 import pytest
-from source_google_ads.components import ClickViewHttpRequester, CustomGAQueryHttpRequester, CustomGAQuerySchemaLoader
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 
+from .conftest import get_source
+
 
 class TestCustomGAQuerySchemaLoader:
-    def test_custom_ga_query_schema_loader_returns_expected_schema(self, config_for_custom_query_tests, requests_mock):
+    def test_custom_ga_query_schema_loader_returns_expected_schema(self, config_for_custom_query_tests, requests_mock, components_module):
         requests_mock.get(
             "https://googleads.googleapis.com/v18/googleAdsFields/campaign_budget.name",
             json={
@@ -64,7 +65,7 @@ class TestCustomGAQuerySchemaLoader:
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"
         )
 
-        schema_loader = CustomGAQuerySchemaLoader(
+        schema_loader = components_module.CustomGAQuerySchemaLoader(
             config=config, requester=mock_requester, query=config["custom_queries_array"][0]["query"], cursor_field="{{ False }}"
         )
 
@@ -83,7 +84,7 @@ class TestCustomGAQuerySchemaLoader:
         }
         assert schema_loader.get_json_schema() == expected_schema
 
-    def test_custom_ga_query_schema_loader_with_cursor_field_returns_expected_schema(self, config_for_custom_query_tests, requests_mock):
+    def test_custom_ga_query_schema_loader_with_cursor_field_returns_expected_schema(self, config_for_custom_query_tests, requests_mock, components_module):
         requests_mock.get(
             "https://googleads.googleapis.com/v18/googleAdsFields/campaign_budget.name",
             json={
@@ -143,7 +144,7 @@ class TestCustomGAQuerySchemaLoader:
         )
         mock_requester = Mock()
         mock_requester.authenticator.get_auth_header.return_value = {}
-        schema_loader = CustomGAQuerySchemaLoader(
+        schema_loader = components_module.CustomGAQuerySchemaLoader(
             config=config_for_custom_query_tests,
             requester=mock_requester,
             query=config_for_custom_query_tests["custom_queries_array"][0]["query"],
@@ -165,7 +166,7 @@ class TestCustomGAQuerySchemaLoader:
         }
         assert schema_loader.get_json_schema() == expected_schema
 
-    def test_given_invalid_field_name_raises(self, config_for_custom_query_tests, requests_mock):
+    def test_given_invalid_field_name_raises(self, config_for_custom_query_tests, requests_mock, components_module):
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = "SELECT invalid_field FROM campaign_budget"
         requests_mock.get(
@@ -174,7 +175,7 @@ class TestCustomGAQuerySchemaLoader:
         )
         mock_requester = Mock()
         mock_requester.authenticator.get_auth_header.return_value = {}
-        schema_loader = CustomGAQuerySchemaLoader(
+        schema_loader = components_module.CustomGAQuerySchemaLoader(
             config=config_for_custom_query_tests,
             requester=mock_requester,
             query=config_for_custom_query_tests["custom_queries_array"][0]["query"],
@@ -187,34 +188,14 @@ class TestCustomGAQuerySchemaLoader:
             == "The provided field is invalid: Status: 'NOT_FOUND', Message: 'Requested entity was not found.', Field: 'invalid_field'"
         )
 
-    @pytest.mark.parametrize(
-        "query",
-        [
-            "campaign.name FROM campaign_budget",
-            "SELECT FROM campaign_budget WHERE segments.date = '2021-01-01'",
-            "SELECT campaign.name WHERE segments.date '2021-01-01'",
-            "SELECT fie ld1, field2 FROM table",
-        ],
-        ids=["malformed_query_1", "malformed_query_2", "malformed_query_3", "malformed_query_4"],
-    )
-    def test_given_malformed_query_raises(self, config_for_custom_query_tests, requests_mock, query):
-        config = config_for_custom_query_tests
-        config["custom_queries_array"][0]["query"] = query
-        mock_requester = Mock()
-        mock_requester.authenticator.get_auth_header.return_value = {}
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            CustomGAQuerySchemaLoader(
-                config=config, requester=mock_requester, query=config["custom_queries_array"][0]["query"], cursor_field="{{ False }}"
-            )
-
 
 class TestCustomGAQueryHttpRequester:
-    def test_given_valid_query_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock):
+    def test_given_valid_query_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock, components_module):
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = (
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"
         )
-        requester = CustomGAQueryHttpRequester(
+        requester = components_module.CustomGAQueryHttpRequester(
             name="test_custom_ga_query_http_requester",
             parameters={
                 "query": config["custom_queries_array"][0]["query"],
@@ -225,12 +206,12 @@ class TestCustomGAQueryHttpRequester:
         request_body = requester.get_request_body_json(stream_slice={})
         assert request_body == {"query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"}
 
-    def test_given_valid_query_with_cursor_field_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock):
+    def test_given_valid_query_with_cursor_field_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock, components_module):
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = (
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"
         )
-        requester = CustomGAQueryHttpRequester(
+        requester = components_module.CustomGAQueryHttpRequester(
             name="test_custom_ga_query_http_requester",
             parameters={
                 "query": config["custom_queries_array"][0]["query"],
@@ -252,8 +233,8 @@ class TestCustomGAQueryHttpRequester:
 
 
 class TestClickViewHttpRequester:
-    def test_click_view_http_requester_returns_expected_request_body(self, config):
-        requester = ClickViewHttpRequester(
+    def test_click_view_http_requester_returns_expected_request_body(self, config, components_module):
+        requester = components_module.ClickViewHttpRequester(
             name="test_click_view_http_requester",
             parameters={},
             config=config,
@@ -288,3 +269,27 @@ class TestClickViewHttpRequester:
         assert request_body == {
             "query": "SELECT ad_group.name, click_view.gclid, click_view.ad_group_ad, segments.date FROM click_view WHERE segments.date = '2025-07-18'"
         }
+
+
+class TestValidateCustomQueries:
+
+    @pytest.mark.parametrize(
+        "query",
+        [
+            "campaign.name FROM campaign_budget",
+            "SELECT FROM campaign_budget WHERE segments.date = '2021-01-01'",
+            "SELECT campaign.name WHERE segments.date '2021-01-01'",
+            "SELECT fie ld1, field2 FROM table",
+        ],
+        ids=["malformed_query_1", "malformed_query_2", "malformed_query_3", "malformed_query_4"],
+    )
+    def test_given_malformed_query_raises(self, config_for_custom_query_tests, query, components_module):
+        config = config_for_custom_query_tests
+        config["custom_queries_array"][0]["query"] = query
+        validation_strategy = components_module.ValidateCustomQueries()
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            validation_strategy.validate(value=config["custom_queries_array"])
+
+    def test_given_valid_query_does_not_raise(self, config, components_module):
+        validation_strategy = components_module.ValidateCustomQueries()
+        validation_strategy.validate(value=config["custom_queries_array"])

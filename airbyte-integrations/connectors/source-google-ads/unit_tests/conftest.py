@@ -1,14 +1,12 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 
 import sys
 from pathlib import Path
-
 import pytest
-from source_google_ads import SourceGoogleAds
-from source_google_ads.models import CustomerModel
+
 
 from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.models import SyncMode
@@ -16,34 +14,32 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 def _get_manifest_path() -> Path:
-    # TODO: uncomment once migrated to manifest-only
-    # source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
-    # if source_declarative_manifest_path.exists():
-    #     return source_declarative_manifest_path
-
-    return Path(__file__).parent.parent / "source_google_ads"
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
 
 
 _SOURCE_FOLDER_PATH = _get_manifest_path()
-_YAML_FILE_PATH = "manifest.yaml"
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 
-# sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def get_source(config, state=None) -> YamlDeclarativeSource:
+def get_source(config, state=None, config_path=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
-    return YamlDeclarativeSource(path_to_yaml=str(_SOURCE_FOLDER_PATH / _YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state, config_path=config_path)
 
 
-def find_stream(stream_name, config, state=None):
-    streams = SourceGoogleAds(config, None, state).streams(config=config)
-    for stream in streams:
-        if stream.name == stream_name:
+def get_stream_by_name(name: str, config: dict) -> Stream:
+    source = get_source(config)
+    for stream in source.streams(config):
+        if stream.name == name:
             return stream
-    raise ValueError(f"Stream {stream_name} not found")
 
 
 def read_full_refresh(stream_instance: Stream):
@@ -69,6 +65,8 @@ def test_config():
         },
         "customer_id": "123",
         "start_date": "2021-01-01",
+        "end_date": "",
+        "customer_id": "123,456,789",
         "conversion_window_days": 14,
         "custom_queries_array": [
             {
@@ -123,18 +121,3 @@ def mock_oauth_call(requests_mock):
         "https://accounts.google.com/o/oauth2/token",
         json={"access_token": "access_token", "refresh_token": "refresh_token", "expires_in": 0},
     )
-
-
-@pytest.fixture
-def customers(config):
-    return [CustomerModel(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]
-
-
-@pytest.fixture
-def additional_customers(config, customers):
-    return customers + [CustomerModel(id="789", time_zone="local", is_manager_account=False)]
-
-
-@pytest.fixture
-def customers_manager(config):
-    return [CustomerModel(id=_id, time_zone="local", is_manager_account=True) for _id in config["customer_id"].split(",")]

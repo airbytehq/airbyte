@@ -1,19 +1,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
-from unittest.mock import patch
 
-from source_google_ads.source import SourceGoogleAds
-
-from .conftest import find_stream, get_source, read_full_refresh
+from .conftest import get_stream_by_name, read_full_refresh
 
 
-@patch.object(SourceGoogleAds, "get_customers", return_value=[])
-def test_query_shopping_performance_view_stream(customers, config, requests_mock):
+def test_query_shopping_performance_view_stream(config, requests_mock):
     config["end_date"] = "2021-01-10"
     config["conversion_window_days"] = 3
     config["credentials"]["access_token"] = "access_token"
-    stream = find_stream("shopping_performance_view", config)
+    stream = get_stream_by_name("shopping_performance_view", config)
 
     # Mocked responses
     access_token_response = [{"json": {"access_token": "access_token"}, "status_code": 200}]
@@ -106,13 +102,11 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     assert request_json["query"] == expected_query
 
 
-@patch.object(SourceGoogleAds, "get_customers", return_value=[])
-def test_custom_query_stream(customers, config_for_custom_query_tests, requests_mock):
+def test_custom_query_stream(config_for_custom_query_tests, requests_mock):
     config_for_custom_query_tests["end_date"] = "2021-01-10"
     config_for_custom_query_tests["conversion_window_days"] = 1
     config_for_custom_query_tests["credentials"]["access_token"] = "access_token"
-    streams = get_source(config=config_for_custom_query_tests).streams(config=config_for_custom_query_tests)
-    stream = next(filter(lambda s: s.name == "custom_ga_query", streams))
+    stream = get_stream_by_name("custom_ga_query", config_for_custom_query_tests)
 
     # Mocked responses
     access_token_response = [{"json": {"access_token": "access_token"}, "status_code": 200}]
