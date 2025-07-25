@@ -256,6 +256,7 @@ private class GlobalStateManager(
         if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
         val stateMessages = mutableListOf<AirbyteStateMessage>()
         val multipleStreamsState = mutableListOf<MutableList<AirbyteStreamState>>()
+        val recordCounts = mutableListOf<Long>()
         val pendingFreshStates = mutableMapOf<StreamIdentifier, ArrayDeque<StateForCheckpoint>>()
         val staleStates = mutableMapOf<StreamIdentifier, StateForCheckpoint>()
         collectStatesForCheckpoints(pendingFreshStates, staleStates)
@@ -302,10 +303,12 @@ private class GlobalStateManager(
                 )
             }
             multipleStreamsState.add(streamStates)
+            recordCounts.add(totalNumRecords)
+            totalNumRecords = 0L
         } while (pendingFreshStates.any { it.value.isNotEmpty() })
 
         // Build a global state message for each set of stream states.
-        for (streamsState in multipleStreamsState) {
+        multipleStreamsState.zip(recordCounts).forEach { (streamsState, recordCount) ->
             val airbyteGlobalState =
                 AirbyteGlobalState()
                     .withSharedState(globalStateForCheckpoint.opaqueStateValue)
@@ -316,7 +319,7 @@ private class GlobalStateManager(
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                     .withGlobal(airbyteGlobalState)
                     .withSourceStats(
-                        AirbyteStateStats().withRecordCount(totalNumRecords.toDouble())
+                        AirbyteStateStats().withRecordCount(recordCount.toDouble())
                     )
                     // Only partition_id if not null (stdio mode compatibility).
                     // id is added before being sent to wire in FeedReader.maybeCheckpoint().
