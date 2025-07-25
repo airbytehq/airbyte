@@ -31,6 +31,7 @@ class ClockFactory {
 
     companion object {
         const val OFFSET_CLOCK = "offset-clock"
+        const val UNUSED_FOR_TRIGGERING_CI = "<>"
 
         /** Some convenient timestamp with an easy-to-read ISO8601 representation. */
         val fakeNow: Instant = Instant.ofEpochSecond(3133641600)
