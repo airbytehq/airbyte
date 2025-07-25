@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -18,7 +18,7 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
-import io.airbyte.cdk.load.pipeline.BatchStateUpdate
+import io.airbyte.cdk.load.pipeline.BatchCdkStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.NoOutput
@@ -63,7 +63,7 @@ class LoadPipelineStepTaskUTest {
         override fun close() {}
     }
 
-    data class MyBatch(override val state: BatchState) : WithBatchState
+    data class MyBatch(override val state: BatchCdkState) : WithBatchState
 
     data class TestKey(val output: Boolean, override val stream: DestinationStream.Descriptor) :
         WithStream
@@ -255,9 +255,9 @@ class LoadPipelineStepTaskUTest {
             {
                 when (acceptCalls++ % 4) {
                     0 -> NoOutput(Closeable())
-                    1 -> FinalOutput(MyBatch(BatchState.PROCESSED))
-                    2 -> FinalOutput(MyBatch(BatchState.PERSISTED))
-                    3 -> FinalOutput(MyBatch(BatchState.COMPLETE))
+                    1 -> FinalOutput(MyBatch(BatchCdkState.PROCESSED))
+                    2 -> FinalOutput(MyBatch(BatchCdkState.PERSISTED))
+                    3 -> FinalOutput(MyBatch(BatchCdkState.COMPLETE))
                     else -> error("unreachable")
                 }
             }
@@ -323,13 +323,13 @@ class LoadPipelineStepTaskUTest {
         repeat(10) {
             coEvery { batchAccumulatorWithUpdate.accept(any(), stream1States[it]) } returns
                 if (it % 3 == 0) {
-                    FinalOutput(MyBatch(BatchState.PERSISTED))
+                    FinalOutput(MyBatch(BatchCdkState.PERSISTED))
                 } else {
                     NoOutput(stream1States[it + 1])
                 }
             coEvery { batchAccumulatorWithUpdate.accept(any(), stream2States[it]) } returns
                 if (it % 2 == 0) {
-                    FinalOutput(MyBatch(BatchState.PERSISTED))
+                    FinalOutput(MyBatch(BatchCdkState.PERSISTED))
                 } else {
                     NoOutput(stream2States[it + 1])
                 }
@@ -349,7 +349,7 @@ class LoadPipelineStepTaskUTest {
             }
 
         coEvery { batchAccumulatorWithUpdate.finish(any()) } returns
-            FinalOutput(MyBatch(BatchState.COMPLETE))
+            FinalOutput(MyBatch(BatchCdkState.COMPLETE))
         coEvery { batchUpdateQueue.publish(any()) } returns Unit
 
         task.execute()
@@ -380,9 +380,9 @@ class LoadPipelineStepTaskUTest {
         coEvery { batchAccumulatorWithUpdate.accept("stream2_value", any()) } returns
             NoOutput(Closeable(2))
         coEvery { batchAccumulatorWithUpdate.finish(Closeable(1)) } returns
-            FinalOutput(MyBatch(BatchState.COMPLETE))
+            FinalOutput(MyBatch(BatchCdkState.COMPLETE))
         coEvery { batchAccumulatorWithUpdate.finish(Closeable(2)) } returns
-            FinalOutput(MyBatch(BatchState.PERSISTED))
+            FinalOutput(MyBatch(BatchCdkState.PERSISTED))
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -416,26 +416,26 @@ class LoadPipelineStepTaskUTest {
         task.execute()
 
         val expectedBatchUpdateStream1 =
-            BatchStateUpdate(
+            BatchCdkStateUpdate(
                 key1.stream,
                 mapOf(
                     CheckpointId("0") to CheckpointValue(15L, 15L),
                     CheckpointId("1") to CheckpointValue(51L, 51L)
                 ),
-                BatchState.COMPLETE,
+                BatchCdkState.COMPLETE,
                 taskId,
                 part,
                 inputCount = 12L
             )
         val expectedBatchUpdateStream2 =
-            BatchStateUpdate(
+            BatchCdkStateUpdate(
                 key2.stream,
                 mapOf(
                     CheckpointId("1") to CheckpointValue(6L, 6L),
                     CheckpointId("2") to CheckpointValue(22L, 22L),
                     CheckpointId("3") to CheckpointValue(38L, 38L)
                 ),
-                BatchState.PERSISTED,
+                BatchCdkState.PERSISTED,
                 taskId,
                 part,
                 inputCount = 12L

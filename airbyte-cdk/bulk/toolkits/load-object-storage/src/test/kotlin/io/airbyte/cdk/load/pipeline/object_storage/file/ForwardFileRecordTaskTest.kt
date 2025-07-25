@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -101,7 +101,7 @@ class ForwardFileRecordTaskTest {
                 )
             val result =
                 ObjectLoaderUploadCompleter.UploadResult<String>(
-                    state = BatchState.LOADED,
+                    state = BatchCdkState.LOADED,
                     remoteObject = null
                 )
             val input =
@@ -127,7 +127,7 @@ class ForwardFileRecordTaskTest {
             )
         val result =
             ObjectLoaderUploadCompleter.UploadResult(
-                state = BatchState.LOADED,
+                state = BatchCdkState.LOADED,
                 remoteObject = "uploaded thing"
             )
         val input =

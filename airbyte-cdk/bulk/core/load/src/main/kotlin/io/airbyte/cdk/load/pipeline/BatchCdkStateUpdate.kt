@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.pipeline
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 
@@ -16,10 +16,10 @@ sealed interface BatchUpdate {
     val part: Int
 }
 
-data class BatchStateUpdate(
+data class BatchCdkStateUpdate(
     override val stream: DestinationStream.Descriptor,
     val checkpointCounts: Map<CheckpointId, CheckpointValue>,
-    val state: BatchState,
+    val cdkState: BatchCdkState,
     override val taskName: String,
     override val part: Int,
     val inputCount: Long = 0L

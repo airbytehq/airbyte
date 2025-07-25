@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.pipeline.db
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
@@ -33,7 +33,7 @@ class BulkLoaderTableLoader<K : WithStream, T : RemoteObject<*>>(
         BulkLoaderTableLoader.LoadResult
     > {
     data object LoadResult : WithBatchState {
-        override val state: BatchState = BatchState.COMPLETE
+        override val state: BatchCdkState = BatchCdkState.COMPLETE
     }
 
     override suspend fun start(key: K, part: Int): BulkLoader<T> {

@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline.db
 
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
@@ -33,7 +33,7 @@ class InsertLoaderRequestBuilderAccumulator<Q : InsertLoaderRequest>(
     > {
 
     data class Result<Q>(val request: Q) : WithBatchState {
-        override val state: BatchState = BatchState.PROCESSED
+        override val state: BatchCdkState = BatchCdkState.PROCESSED
     }
 
     override suspend fun start(key: StreamKey, part: Int): InsertLoaderRequestBuilder<Q> {

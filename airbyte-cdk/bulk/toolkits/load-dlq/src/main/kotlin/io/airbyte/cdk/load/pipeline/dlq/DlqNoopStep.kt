@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline.dlq
 
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -22,7 +22,8 @@ import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
  *
  * This step skips through all records without doing anything. This is to make sure we update the
  * counts of rejected records properly by leveraging the [FlattenQueueAdapter] and the fact that the
- * LoadPipelineStepTask will update the rejected records count correctly on [BatchState.COMPLETE].
+ * LoadPipelineStepTask will update the rejected records count correctly on [BatchCdkState.COMPLETE]
+ * .
  */
 class DlqNoopPipelineStep(
     override val numWorkers: Int,
@@ -55,6 +56,6 @@ class DlqNoopAccumulator :
 
 /** See documentation of [DlqNoopPipelineStep]. */
 class DlqNoopState : WithBatchState, AutoCloseable {
-    override val state: BatchState = BatchState.COMPLETE
+    override val state: BatchCdkState = BatchCdkState.COMPLETE
     override fun close() {}
 }

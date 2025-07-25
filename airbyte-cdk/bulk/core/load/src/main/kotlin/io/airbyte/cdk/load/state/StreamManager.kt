@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.util.setOnce
@@ -69,7 +69,7 @@ class StreamManager(
     private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, Long> =
         ConcurrentHashMap()
     private val checkpointCountsByState:
-        ConcurrentHashMap<BatchState, ConcurrentHashMap<CheckpointId, CheckpointValue>> =
+        ConcurrentHashMap<BatchCdkState, ConcurrentHashMap<CheckpointId, CheckpointValue>> =
         ConcurrentHashMap()
 
     /**
@@ -215,7 +215,7 @@ class StreamManager(
     }
 
     fun incrementCheckpointCounts(
-        state: BatchState,
+        state: BatchCdkState,
         checkpointCounts: Map<CheckpointId, CheckpointValue>,
     ) {
         val idToValue = checkpointCountsByState.getOrPut(state) { ConcurrentHashMap() }
@@ -227,7 +227,7 @@ class StreamManager(
 
     private fun countByStateForCheckpoint(
         checkpointId: CheckpointId,
-        state: BatchState
+        state: BatchCdkState
     ): CheckpointValue {
         val countsForState = checkpointCountsByState.filter { (it.key == state) }.values
         val recordCount = countsForState.sumOf { it[checkpointId]?.records ?: 0L }
@@ -241,8 +241,8 @@ class StreamManager(
     }
 
     fun committedCount(checkpointId: CheckpointId): CheckpointValue {
-        val persistedCount = countByStateForCheckpoint(checkpointId, BatchState.PERSISTED)
-        val completedCount = countByStateForCheckpoint(checkpointId, BatchState.COMPLETE)
+        val persistedCount = countByStateForCheckpoint(checkpointId, BatchCdkState.PERSISTED)
+        val completedCount = countByStateForCheckpoint(checkpointId, BatchCdkState.COMPLETE)
 
         val records = maxOf(persistedCount.records, completedCount.records)
         val bytes = maxOf(persistedCount.serializedBytes, completedCount.serializedBytes)
@@ -291,7 +291,7 @@ class StreamManager(
 
         val completedCount =
             checkpointCountsByState
-                .filter { (state, _) -> state == BatchState.COMPLETE }
+                .filter { (state, _) -> state == BatchCdkState.COMPLETE }
                 .values
                 .flatMap { it.values }
                 // Make sure to consider rejected records as well for completion
@@ -311,12 +311,12 @@ class StreamManager(
 
     fun persistedRecordCountForCheckpoint(checkpointId: CheckpointId): Long {
         val persistedCount =
-            checkpointCountsByState[BatchState.PERSISTED]?.get(checkpointId)?.let {
+            checkpointCountsByState[BatchCdkState.PERSISTED]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
             }
                 ?: 0L
         val completeCount =
-            checkpointCountsByState[BatchState.COMPLETE]?.get(checkpointId)?.let {
+            checkpointCountsByState[BatchCdkState.COMPLETE]?.get(checkpointId)?.let {
                 it.records + it.rejectedRecords
             }
                 ?: 0L

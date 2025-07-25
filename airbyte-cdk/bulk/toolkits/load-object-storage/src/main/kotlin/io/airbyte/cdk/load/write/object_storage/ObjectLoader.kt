@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.write.LoadStrategy
 
 /**
@@ -67,9 +67,9 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * [io.airbyte.cdk.load.pipeline.db.BulkLoadCompletedUploadPartitioner] for an example.
  *
  * Additionally, CDK devs building new interfaces will should set [stateAfterUpload] to something
- * other than [BatchState.COMPLETE] to avoid prematurely closing the stream. Specifically, if the
- * destination can recover a loaded object after a failed sync, use [BatchState.PERSISTED] to
- * indicate records loaded objects can be checkpointed. Otherwise, use [BatchState.LOADED].
+ * other than [BatchCdkState.COMPLETE] to avoid prematurely closing the stream. Specifically, if the
+ * destination can recover a loaded object after a failed sync, use [BatchCdkState.PERSISTED] to
+ * indicate records loaded objects can be checkpointed. Otherwise, use [BatchCdkState.LOADED].
  */
 interface ObjectLoader : LoadStrategy {
     val numPartWorkers: Int
@@ -88,8 +88,8 @@ interface ObjectLoader : LoadStrategy {
     override val inputPartitions: Int
         get() = numPartWorkers
 
-    val stateAfterUpload: BatchState
-        get() = BatchState.COMPLETE
+    val stateAfterUpload: BatchCdkState
+        get() = BatchCdkState.COMPLETE
 }
 
 fun DestinationConfiguration.metadataFor(stream: DestinationStream): Map<String, String> =

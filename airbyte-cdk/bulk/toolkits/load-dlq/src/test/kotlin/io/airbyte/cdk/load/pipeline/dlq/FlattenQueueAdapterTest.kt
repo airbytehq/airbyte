@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -68,7 +68,7 @@ class FlattenQueueAdapterTest {
 
     @Test
     fun `flattening lists preserve the total count while counting rejected records`() {
-        val state = BatchState.COMPLETE
+        val state = BatchCdkState.COMPLETE
         val records =
             listOf(
                 record(1),

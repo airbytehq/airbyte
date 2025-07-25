@@ -19,8 +19,8 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
+import io.airbyte.cdk.load.pipeline.BatchCdkStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchEndOfStream
-import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
@@ -312,10 +312,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         // If the output contained a global batch state, publish an update.
         if (output is WithBatchState) {
             val update =
-                BatchStateUpdate(
+                BatchCdkStateUpdate(
                     stream = inputKey.stream,
                     checkpointCounts = checkpointCounts.toMap(),
-                    state = output.state,
+                    cdkState = output.state,
                     taskName = stepId,
                     part = part,
                     inputCount = inputCount

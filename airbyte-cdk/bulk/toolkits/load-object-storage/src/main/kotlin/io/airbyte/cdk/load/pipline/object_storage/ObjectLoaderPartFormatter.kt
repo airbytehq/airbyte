@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.file.object_storage.PathFactory
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
@@ -68,7 +68,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
     data class FormattedPart(
         val part: Part,
-        override val state: BatchState = BatchState.PROCESSED
+        override val state: BatchCdkState = BatchCdkState.PROCESSED
     ) : WithBatchState
 
     private suspend fun newState(stream: DestinationStream): State<T> {

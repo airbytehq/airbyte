@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.BatchCdkState
 import io.airbyte.cdk.load.message.QueueReader
+import io.airbyte.cdk.load.pipeline.BatchCdkStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchEndOfStream
-import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
@@ -19,7 +19,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 /** A long-running task that updates the state of record batches after they are processed. */
-class UpdateBatchStateTask(
+class UpdateBatchCdkStateTask(
     private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager,
@@ -32,26 +32,26 @@ class UpdateBatchStateTask(
     override suspend fun execute() {
         inputQueue.consume().collect { message ->
             val manager = syncManager.getStreamManager(message.stream)
-            val state =
+            val cdkState =
                 when (message) {
-                    is BatchStateUpdate -> {
+                    is BatchCdkStateUpdate -> {
                         log.debug {
-                            "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
+                            "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.cdkState}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
                         }
                         manager.incrementCheckpointCounts(
-                            message.state,
+                            message.cdkState,
                             message.checkpointCounts,
                         )
-                        message.state
+                        message.cdkState
                     }
                     is BatchEndOfStream -> {
                         log.info {
                             "End-of-stream checks for ${message.stream}: ${message.taskName}[${message.part}]"
                         }
-                        BatchState.COMPLETE
+                        BatchCdkState.COMPLETE
                     }
                 }
-            if (state.isPersisted()) {
+            if (cdkState.isPersisted()) {
                 checkpointManager.flushReadyCheckpointMessages()
             }
             if (manager.isBatchProcessingCompleteForCheckpoints()) {
@@ -65,12 +65,12 @@ class UpdateBatchStateTask(
 }
 
 @Singleton
-class UpdateBatchStateTaskFactory(
+class UpdateBatchCdkStateTaskFactory(
     @Named("batchStateUpdateQueue") private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager,
 ) {
-    fun make(taskLauncher: DestinationTaskLauncher): UpdateBatchStateTask {
-        return UpdateBatchStateTask(inputQueue, syncManager, checkpointManager, taskLauncher)
+    fun make(taskLauncher: DestinationTaskLauncher): UpdateBatchCdkStateTask {
+        return UpdateBatchCdkStateTask(inputQueue, syncManager, checkpointManager, taskLauncher)
     }
 }
