@@ -172,6 +172,10 @@ class CheckpointManager(
                     checkGlobalStreams(head.key, head.value.checkpointMessage.value.sourceStats)
                 }
 
+            log.info {
+                "flushGlobalCheckpoints - allStreamsPersisted : $allStreamsPersisted , head : $head"
+            }
+
             if (allStreamsPersisted) {
                 flushGlobalState(checkpointKey = head.key, checkpoint = head.value)
             } else {
@@ -185,12 +189,16 @@ class CheckpointManager(
         key: CheckpointKey,
         sourceReportedCount: CheckpointMessage.Stats?
     ): Boolean {
+        log.info {
+            "checkGlobalStreams - key : $key, sourceReportedCount : ${sourceReportedCount?.recordCount}"
+        }
         val allCommitted =
             catalog.streams.all {
                 syncManager
                     .getStreamManager(it.mappedDescriptor)
                     .areRecordsPersistedForCheckpoint(key.checkpointId)
             }
+        log.info { "checkGlobalStreams - key : $key, allCommitted : $allCommitted" }
         if (!socketMode) return allCommitted
         if (!allCommitted) return false
         val total =
@@ -200,12 +208,16 @@ class CheckpointManager(
                     .committedCount(key.checkpointId)
                     .records
             }
+        log.info { "checkGlobalStreams - key : $key, total : $total" }
         return total == sourceReportedCount!!.recordCount
     }
 
     private fun checkSnapshotStreams(
         entry: MutableMap.MutableEntry<CheckpointKey, GlobalCheckpoint>
     ): Boolean {
+        log.info {
+            "checkSnapshotStreams - checkpointKey : ${entry.key}, message : ${entry.value.checkpointMessage.value}"
+        }
         val snapshot = entry.value.checkpointMessage.value as GlobalSnapshotCheckpoint
         var committedFromPartitions = 0L
         val allPersisted =
@@ -214,8 +226,15 @@ class CheckpointManager(
                 committedFromPartitions += manager.committedCount(innerKey.checkpointId).records
                 manager.areRecordsPersistedForCheckpoint(innerKey.checkpointId)
             }
-        if (!allPersisted) return false
+
         val expected = snapshot.sourceStats!!.recordCount
+        log.info {
+            "checkSnapshotStreams - checkpointKey : ${entry.key}, sourceStats : $expected, committedFromPartitions : $committedFromPartitions"
+        }
+        log.info {
+            "checkSnapshotStreams - checkpointKey : ${entry.key}, allPersisted : $allPersisted"
+        }
+        if (!allPersisted) return false
         return if (committedFromPartitions == expected) {
             true
         } else {

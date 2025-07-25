@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.util.setOnce
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
@@ -54,7 +55,7 @@ class StreamManager(
     private val streamResult = CompletableDeferred<StreamResult>()
     private val markedEndOfStream = AtomicBoolean(false)
     private val receivedComplete = AtomicBoolean(false)
-
+    private val log = KotlinLogging.logger {}
     private val isClosed = AtomicBoolean(false)
 
     private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, Long> =
@@ -180,11 +181,16 @@ class StreamManager(
         val bytes = maxOf(persistedCount.serializedBytes, completedCount.serializedBytes)
         val rejectedRecords = maxOf(persistedCount.rejectedRecords, completedCount.rejectedRecords)
 
-        return CheckpointValue(
-            records = records,
-            serializedBytes = bytes,
-            rejectedRecords = rejectedRecords,
-        )
+        val checkpointValue =
+            CheckpointValue(
+                records = records,
+                serializedBytes = bytes,
+                rejectedRecords = rejectedRecords,
+            )
+        log.info {
+            "committedCount - stream : $stream, checkpointId : $checkpointId, checkpointValue : $checkpointValue"
+        }
+        return checkpointValue
     }
 
     /**
@@ -195,7 +201,11 @@ class StreamManager(
         val readCount = recordsReadPerCheckpoint[checkpointId] ?: 0L
 
         val persistedRecordCount = persistedRecordCountForCheckpoint(checkpointId)
-        return persistedRecordCount == readCount
+        val persisted = persistedRecordCount == readCount
+        log.info {
+            "areRecordsPersistedForCheckpoint - : stream : $stream, checkpointId : $checkpointId, readCount: $readCount, persistedRecordCount : $persistedRecordCount, persisted : $persisted"
+        }
+        return persisted
     }
 
     /**
