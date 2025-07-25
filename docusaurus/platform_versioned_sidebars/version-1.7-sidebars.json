@@ -226,6 +226,10 @@
         },
         {
           "type": "doc",
+          "id": "using-airbyte/core-concepts/direct-load-tables"
+        },
+        {
+          "type": "doc",
           "id": "using-airbyte/core-concepts/typing-deduping"
         },
         {
@@ -295,6 +299,7 @@
                 "deploying-airbyte/integrations/secrets",
                 "deploying-airbyte/integrations/database",
                 "deploying-airbyte/integrations/ingress",
+                "deploying-airbyte/integrations/ingress-1-7",
                 "deploying-airbyte/integrations/custom-image-registries"
               ]
             },

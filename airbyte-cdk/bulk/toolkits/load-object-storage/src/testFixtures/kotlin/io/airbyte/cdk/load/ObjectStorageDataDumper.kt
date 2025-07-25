@@ -29,7 +29,6 @@ import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import java.io.BufferedReader
 import java.io.InputStream
-import java.util.stream.Collectors.toMap
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
@@ -93,7 +92,11 @@ class ObjectStorageDataDumper(
                                     else -> error("Unsupported compressor")
                                 }
                             // Remove the "namespace/name/" prefix from the object key
-                            val truncatedKey = listedObject.key.replace(prefix, "")
+                            val truncatedKey =
+                                listedObject.key
+                                    .replace(prefix, "")
+                                    // Remove the dynamic date bit on the file path, if present
+                                    .replace("\\d{4}_\\d{2}_\\d{2}_\\d+_/".toRegex(), "")
                             truncatedKey to BufferedReader(decompressed.reader()).readText()
                         }
                     }
@@ -131,7 +134,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                inputStream.toAvroReader(stream.descriptor).use { reader ->
+                inputStream.toAvroReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
@@ -139,7 +142,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
-                inputStream.toParquetReader(stream.descriptor).use { reader ->
+                inputStream.toParquetReader(stream.mappedDescriptor).use { reader ->
                     reader
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }

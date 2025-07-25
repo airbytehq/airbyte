@@ -44,14 +44,14 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
             when (val importType = stream.importType) {
                 is Append -> {
                     MockDestinationBackend.commitFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor)
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor)
                     )
                 }
                 is Dedupe -> {
                     MockDestinationBackend.commitAndDedupeFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor),
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor),
                         importType.primaryKey,
                         importType.cursor,
                     )
@@ -59,12 +59,12 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 else -> throw IllegalArgumentException("Unsupported import type $importType")
             }
             MockDestinationBackend.deleteOldRecords(
-                getFilename(stream.descriptor),
+                getFilename(stream.mappedDescriptor),
                 stream.minimumGenerationId
             )
         } else {
             logger.info {
-                "Skipping commit because stream ${stream.descriptor.toPrettyString()} was not successful"
+                "Skipping commit because stream ${stream.mappedDescriptor.toPrettyString()} was not successful"
             }
         }
     }

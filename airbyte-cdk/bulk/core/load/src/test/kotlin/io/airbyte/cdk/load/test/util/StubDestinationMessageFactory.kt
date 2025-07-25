@@ -58,8 +58,9 @@ object StubDestinationMessageFactory {
         return StreamCheckpoint(
             checkpoint =
                 CheckpointMessage.Checkpoint(
-                    stream.descriptor,
-                    JsonNodeFactory.instance.objectNode()
+                    unmappedNamespace = stream.unmappedNamespace,
+                    unmappedName = stream.unmappedName,
+                    state = JsonNodeFactory.instance.objectNode()
                 ),
             sourceStats = CheckpointMessage.Stats(recordCount),
             serializedSizeBytes = 0L

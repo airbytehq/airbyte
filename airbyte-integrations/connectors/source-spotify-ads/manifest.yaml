@@ -1,0 +1,628 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+description: >-
+  potify Ads Connector
+
+  Extract campaign performance data from Spotify's advertising platform
+
+  This connector syncs advertising data from Spotify's Partner API, enabling you
+  to analyze campaign performance metrics and optimize your Spotify advertising
+  strategy. Perfect for marketers, agencies, and businesses running audio and
+  video advertising campaigns on Spotify.
+
+  Available Data
+
+
+  Ad Accounts: Basic account information and settings
+
+  Campaigns: Campaign details, names, and status
+
+  Campaign Performance: Daily metrics including:
+
+
+  Standard metrics: impressions, clicks, spend, CTR, reach, frequency
+
+  Audio-specific: streams, listeners, new listeners, paid listens
+
+  Video metrics: video views, expands, completion rates
+
+  Advanced: conversion rates, intent rates, frequency metrics
+
+
+
+
+  Requirements
+
+
+  Spotify Developer application with Partner API access
+
+  OAuth 2.0 credentials (Client ID, Client Secret, Refresh Token)
+
+  Valid Spotify Ad Account ID
+
+check:
+  type: CheckStream
+  stream_names:
+    - ad_accounts
+
+definitions:
+  streams:
+    ad_accounts:
+      type: DeclarativeStream
+      name: ad_accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ads/v3/ad_accounts/{{ config['ad_account_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_accounts"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ads/v3/ad_accounts/{{ config['ad_account_id'] }}/campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    campaign_performance:
+      type: DeclarativeStream
+      name: campaign_performance
+      primary_key:
+        - day
+        - campaign_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ads/v3/ad_accounts/{{ config['ad_account_id'] }}/aggregate_reports
+          http_method: GET
+          request_parameters:
+            granularity: DAY
+            entity_type: CAMPAIGN
+            entity_ids: "{{ stream_slice.campaign_id }}"
+            entity_ids_type: CAMPAIGN
+            fields: "{{ ','.join(config['fields']) }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: continuation_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.continuation_token }}"
+            stop_condition: "{{ not response.continuation_token }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: day
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: report_start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: report_end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - day
+              value: "{{ record.start_time[:10] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - campaign_id
+              value: "{{ record.entity_id }}"
+        - type: AddFields
+          fields:
+            - path:
+                - campaign_name
+              value: "{{ record.entity_name }}"
+        - type: AddFields
+          fields:
+            - path:
+                - campaign_status
+              value: "{{ record.entity_status }}"
+        - type: AddFields
+          fields:
+            - path:
+                - impressions
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'IMPRESSIONS') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - clicks
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'CLICKS')
+                | map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - spend
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'SPEND') |
+                map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - ctr
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'CTR') |
+                map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - reach
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'REACH') |
+                map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - frequency
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'FREQUENCY') | map(attribute='field_value') | first | default(0)
+                }}
+        - type: AddFields
+          fields:
+            - path:
+                - completion_rate
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'COMPLETION_RATE') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - completes
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'COMPLETES') | map(attribute='field_value') | first | default(0)
+                }}
+        - type: AddFields
+          fields:
+            - path:
+                - conversion_rate
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'CONVERSION_RATE') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - e_cpm
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'E_CPM') |
+                map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - e_cpcl
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'E_CPCL')
+                | map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - first_quartiles
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'FIRST_QUARTILES') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - intent_rate
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'INTENT_RATE') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - listeners
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'LISTENERS') | map(attribute='field_value') | first | default(0)
+                }}
+        - type: AddFields
+          fields:
+            - path:
+                - midpoints
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'MIDPOINTS') | map(attribute='field_value') | first | default(0)
+                }}
+        - type: AddFields
+          fields:
+            - path:
+                - new_listeners
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'NEW_LISTENERS') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - new_listener_conversion_rate
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'NEW_LISTENER_CONVERSION_RATE') | map(attribute='field_value') |
+                first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - new_listener_streams
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'NEW_LISTENER_STREAMS') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - off_spotify_impressions
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'OFF_SPOTIFY_IMPRESSIONS') | map(attribute='field_value') |
+                first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - paid_listens
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'PAID_LISTENS') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - paid_listens_frequency
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'PAID_LISTENS_FREQUENCY') | map(attribute='field_value') | first
+                | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - paid_listens_reach
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'PAID_LISTENS_REACH') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - skips
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'SKIPS') |
+                map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - starts
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'STARTS')
+                | map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - streams
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'STREAMS')
+                | map(attribute='field_value') | first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - streams_per_new_listener
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'STREAMS_PER_NEW_LISTENER') | map(attribute='field_value') |
+                first | default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - streams_per_user
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'STREAMS_PER_USER') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - third_quartiles
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'THIRD_QUARTILES') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - video_views
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'VIDEO_VIEWS') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - video_expands
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'VIDEO_EXPANDS') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - video_expand_rate
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto',
+                'VIDEO_EXPAND_RATE') | map(attribute='field_value') | first |
+                default(0) }}
+        - type: AddFields
+          fields:
+            - path:
+                - unmutes
+              value: >-
+                {{ record.stats | selectattr('field_type', 'equalto', 'UNMUTES')
+                | map(attribute='field_value') | first | default(0) }}
+        - type: RemoveFields
+          field_pointers:
+            - - stats
+        - type: RemoveFields
+          field_pointers:
+            - - entity_type
+        - type: RemoveFields
+          field_pointers:
+            - - parent_entity
+        - type: RemoveFields
+          field_pointers:
+            - - start_time
+        - type: RemoveFields
+          field_pointers:
+            - - end_time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaign_performance"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api-partner.spotify.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"refresh_token\"] }}"
+      grant_type: refresh_token
+      token_refresh_endpoint: https://accounts.spotify.com/api/token
+      refresh_request_body: {}
+
+streams:
+  - $ref: "#/definitions/streams/ad_accounts"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/campaign_performance"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+      - ad_account_id
+      - start_date
+      - fields
+    properties:
+      client_id:
+        type: string
+        description: The Client ID of your Spotify Developer application.
+        title: Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        description: The Client Secret of your Spotify Developer application.
+        title: Client Secret
+        airbyte_secret: true
+        order: 1
+      refresh_token:
+        type: string
+        description: >-
+          The Refresh Token obtained from the initial OAuth 2.0 authorization
+          flow.
+        title: Refresh Token
+        airbyte_secret: true
+        order: 2
+      ad_account_id:
+        type: string
+        description: The ID of the Spotify Ad Account you want to sync data from.
+        title: Ad Account ID
+        pattern: ^[a-zA-Z0-9\-]+$
+        examples:
+          - 03561a07-cb0a-4354-b751-88512a6f4d79
+        order: 3
+      start_date:
+        type: string
+        description: The date to start syncing data from, in YYYY-MM-DD format.
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2024-01-01"
+        order: 4
+      fields:
+        type: array
+        description: >-
+          List of fields to include in the campaign performance report. Choose
+          from available metrics.
+        title: Report Fields
+        items:
+          type: string
+          enum:
+            - CLICKS
+            - COMPLETES
+            - COMPLETION_RATE
+            - CONVERSION_RATE
+            - CTR
+            - E_CPM
+            - E_CPCL
+            - FIRST_QUARTILES
+            - FREQUENCY
+            - IMPRESSIONS
+            - INTENT_RATE
+            - LISTENERS
+            - MIDPOINTS
+            - NEW_LISTENERS
+            - NEW_LISTENER_CONVERSION_RATE
+            - NEW_LISTENER_STREAMS
+            - OFF_SPOTIFY_IMPRESSIONS
+            - PAID_LISTENS
+            - PAID_LISTENS_FREQUENCY
+            - PAID_LISTENS_REACH
+            - REACH
+            - SKIPS
+            - SPEND
+            - STARTS
+            - STREAMS
+            - STREAMS_PER_NEW_LISTENER
+            - STREAMS_PER_USER
+            - THIRD_QUARTILES
+            - VIDEO_VIEWS
+            - VIDEO_EXPANDS
+            - VIDEO_EXPAND_RATE
+            - UNMUTES
+        default:
+          - IMPRESSIONS
+          - CLICKS
+          - SPEND
+          - CTR
+          - REACH
+          - FREQUENCY
+          - COMPLETION_RATE
+        examples:
+          - - IMPRESSIONS
+            - CLICKS
+            - SPEND
+            - CTR
+          - - STREAMS
+            - NEW_LISTENERS
+            - PAID_LISTENS
+        order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    ad_accounts: false
+    campaigns: false
+    campaign_performance: false
+  testedStreams:
+    campaign_performance:
+      streamHash: d8885c1676d72d42e3e245d34207fc3052b91377
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ad_accounts:
+      streamHash: 5875c1c0f25b5120babb7b6ac26c3b98da1a79da
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaigns:
+      streamHash: dd65622267a6870a7028884e3a4c81d9248125b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  ad_accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  campaign_performance:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

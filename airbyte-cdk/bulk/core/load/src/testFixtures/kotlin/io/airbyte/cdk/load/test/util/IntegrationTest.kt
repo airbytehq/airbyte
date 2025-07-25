@@ -146,7 +146,7 @@ abstract class IntegrationTest(
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
             canonicalExpectedRecords.map { recordMangler.mapRecord(it, stream.schema) }
-        val descriptor = recordMangler.mapStreamDescriptor(stream.descriptor)
+        val descriptor = recordMangler.mapStreamDescriptor(stream.mappedDescriptor)
 
         RecordDiffer(
                 primaryKey = primaryKey.map { nameMapper.mapFieldName(it) },

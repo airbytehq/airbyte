@@ -5,7 +5,7 @@ products: all
 # Typing and Deduping
 
 :::warning
-**Typing and Deduping is currently being phased out in favor of Direct Loads.**
+**Typing and Deduping is currently being phased out in favor of [Direct-Load](direct-load-tables).**
 
 With Direct Loads, there is no intermediate table result containing the raw JSON blob. Instead, top-level fields are typed during time of insert, and there is only a single destination table maintained per stream.
 :::
@@ -61,7 +61,7 @@ The types of changes which will be stored in `_airbyte_meta.changes` include:
   Destinations V2 will allow us to trim records which cannot fit into destinations, but retain the
   primary key(s) and cursors and include "too big" changes messages.
 
-Also, sources can make use of the same tooling to denote that there was a problem emitting the Airbyte record to begin with, 
+Also, sources can make use of the same tooling to denote that there was a problem emitting the Airbyte record to begin with,
 possibly also creating an entry in `_airbyte_meta.changes`.
 
 Depending on your use-case, it may still be valuable to consider rows with changes, especially for

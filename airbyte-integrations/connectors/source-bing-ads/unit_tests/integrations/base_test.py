@@ -3,22 +3,17 @@ import json
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
 
-from bingads.v13.bulk import BulkServiceManager
-from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from client_builder import build_request, build_request_2, response_with_status
 from config_builder import ConfigBuilder
 from protocol_helpers import read_helper
 from request_builder import RequestBuilder
-from suds.transport.https import HttpAuthenticated
-from suds_response_mock import mock_http_authenticated_send
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStateMessage, Level, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -61,13 +56,6 @@ class BaseTest(TestCase):
         self._http_mocker.__exit__(None, None, None)
 
     @property
-    def service_manager(self) -> Union[ReportingServiceManager, BulkServiceManager]:
-        pass
-
-    def _download_file(self, file: Optional[str] = None) -> Path:
-        pass
-
-    @property
     def _config(self) -> dict[str, Any]:
         return ConfigBuilder().build()
 
@@ -84,7 +72,7 @@ class BaseTest(TestCase):
     def mock_user_query_api(self, response_template: str) -> None:
         http_mocker = self.http_mocker
         http_mocker.post(
-            RequestBuilder(resource="User/Query").with_body('{"UserId": null}').build(),
+            RequestBuilder(resource="User/Query", api="client_center").with_body('{"UserId": null}').build(),
             HttpResponse(json.dumps(find_template(response_template, __file__)), 200),
         )
 
@@ -118,14 +106,10 @@ class BaseTest(TestCase):
         stream_data_file: str = None,
         state: Optional[Dict[str, Any]] = None,
         expecting_exception: bool = False,
-    ) -> Tuple[EntrypointOutput, MagicMock]:
-        with patch.object(HttpAuthenticated, "send", mock_http_authenticated_send):
-            with patch.object(
-                self.service_manager, "download_file", return_value=self._download_file(stream_data_file)
-            ) as service_call_mock:
-                self.mock_get_report_request_api(stream_data_file)
-                catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-                return read_helper(config, catalog, state, expecting_exception), service_call_mock
+    ) -> EntrypointOutput:
+        self.mock_get_report_request_api(stream_data_file)
+        catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
+        return read_helper(config, catalog, state, expecting_exception)
 
     @property
     def http_mocker(self) -> HttpMocker:

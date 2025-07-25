@@ -222,7 +222,7 @@ class RecordDiffer(
                     "generationId: Expected ${expectedRecord.generationId}, got ${actualRecord.generationId}\n"
                 )
             }
-            if (expectedRecord.airbyteMeta != actualRecord.airbyteMeta) {
+            if (!compareMetaObjects(expectedRecord.airbyteMeta, actualRecord.airbyteMeta)) {
                 diff.append(
                     "airbyteMeta: Expected ${expectedRecord.airbyteMeta}, got ${actualRecord.airbyteMeta}\n"
                 )
@@ -266,6 +266,17 @@ class RecordDiffer(
             }
             return diff.toString().trim()
         }
+    }
+
+    fun compareMetaObjects(meta1: OutputRecord.Meta?, meta2: OutputRecord.Meta?): Boolean {
+        if (meta1 == null && meta2 == null) return true
+        if (meta1 == null || meta2 == null) return false
+
+        if (meta1.syncId != meta2.syncId) {
+            return false
+        }
+
+        return meta1.changes.toSet() == meta2.changes.toSet()
     }
 
     companion object {

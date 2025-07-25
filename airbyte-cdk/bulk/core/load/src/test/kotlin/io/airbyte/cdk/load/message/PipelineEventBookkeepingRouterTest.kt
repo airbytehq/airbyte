@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.message
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
@@ -60,13 +61,14 @@ class PipelineEventBookkeepingRouterTest {
             fileTransferQueue,
             batchStateUpdateQueue,
             numDataChannels,
-            markEndOfStreamAtEnd
+            markEndOfStreamAtEnd,
+            NamespaceMapper(NamespaceDefinitionType.SOURCE)
         )
 
     @BeforeEach
     fun setup() {
         every { catalog.streams } returns listOf(stream1)
-        every { syncManager.getStreamManager(stream1.descriptor) } returns streamManager
+        every { syncManager.getStreamManager(stream1.mappedDescriptor) } returns streamManager
         every { streamManager.incrementReadCount() } returns 1L
     }
 
@@ -129,7 +131,8 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.unmappedName } returns stream1.unmappedName
+        every { checkpointMessage.unmappedNamespace } returns stream1.unmappedNamespace
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))
@@ -155,7 +158,8 @@ class PipelineEventBookkeepingRouterTest {
         val reservationManager = ReservationManager(2)
         val checkpointMessage: CheckpointMessage.Checkpoint = mockk(relaxed = true)
 
-        every { checkpointMessage.stream } returns stream1.descriptor
+        every { checkpointMessage.unmappedName } returns stream1.unmappedName
+        every { checkpointMessage.unmappedNamespace } returns stream1.unmappedNamespace
 
         every { streamManager.inferNextCheckpointKey() } returns
             CheckpointKey(CheckpointIndex(1), CheckpointId("foo"))

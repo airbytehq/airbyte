@@ -249,8 +249,6 @@ Then, go to the schema tab of your connection and click **refresh source schema*
 Expand to see details about Hubspot connector limitations and troubleshooting.
 </summary>
 
-### Connector limitations
-
 ### Rate limiting
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
@@ -260,6 +258,10 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 | `Free & Starter`            | Burst: 100/10 seconds, Daily: 250,000   |
 | `Professional & Enterprise` | Burst: 150/10 seconds, Daily: 500,000   |
 | `API add-on (any tier)`     | Burst: 200/10 seconds, Daily: 1,000,000 |
+
+### Custom properties sync slowly
+
+If you use [custom properties](https://knowledge.hubspot.com/properties/create-and-edit-properties) in HubSpot, syncs take longer. Airbyte doesn't alert you to the presence of custom properties, but you can check if you're using them with HubSpot's UI.
 
 ### Troubleshooting
 
@@ -333,6 +335,14 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.15 | 2025-07-21 | [63341](https://github.com/airbytehq/airbyte/pull/63341) | Bump memory on Discover to 1GB |
+| 5.8.14 | 2025-07-19 | [63499](https://github.com/airbytehq/airbyte/pull/63499) | Update dependencies |
+| 5.8.13 | 2025-07-12 | [63115](https://github.com/airbytehq/airbyte/pull/63115) | Update dependencies |
+| 5.8.12 | 2025-07-08 | [62866](https://github.com/airbytehq/airbyte/pull/62866) | Handle non-numeric values in fields with declared numeric type |
+| 5.8.11 | 2025-07-07 | [62838](https://github.com/airbytehq/airbyte/pull/62838) | Promoting release candidate 5.8.11-rc.1 to a main version. |
+| 5.8.11-rc.1 | 2025-07-02 | [62481](https://github.com/airbytehq/airbyte/pull/62481) | For CRMSearch streams, fix retry behavior for the underlying associations HttpRequester to retry 401 errors |
+| 5.8.10 | 2025-06-28 | [62179](https://github.com/airbytehq/airbyte/pull/62179) | Update dependencies |
+| 5.8.9 | 2025-06-21 | [61842](https://github.com/airbytehq/airbyte/pull/61842) | Update dependencies |
 | 5.8.8 | 2025-06-14 | [60640](https://github.com/airbytehq/airbyte/pull/60640) | Update dependencies |
 | 5.8.7 | 2025-06-11 | [61543](https://github.com/airbytehq/airbyte/pull/61543) | Fix pagination for `contacts` and other CRM Search streams when paginating past 10,000 records streams |
 | 5.8.6 | 2025-06-10 | [61502](https://github.com/airbytehq/airbyte/pull/61502) | Set cursor based pagination for CRM object streams |

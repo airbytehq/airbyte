@@ -35,7 +35,7 @@ class SyncManager(
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager> =
         ConcurrentHashMap(
             catalog.streams.associate {
-                it.descriptor to StreamManager(it, requireCheckpointIndexOnState)
+                it.mappedDescriptor to StreamManager(it, requireCheckpointIndexOnState)
             }
         )
 

@@ -43,7 +43,7 @@ class ProcessFileTaskLegacy(
             when (message) {
                 is FileTransferQueueRecord -> {
                     val acc =
-                        accumulators.getOrPut(message.stream.descriptor) {
+                        accumulators.getOrPut(message.stream.mappedDescriptor) {
                             partAccumulatorFactory.make(message.stream)
                         }
                     acc.handleFileMessage(
@@ -53,7 +53,7 @@ class ProcessFileTaskLegacy(
                     )
                 }
                 is FileTransferQueueEndOfStream -> {
-                    outputQueue.broadcast(PipelineEndOfStream(message.stream.descriptor))
+                    outputQueue.broadcast(PipelineEndOfStream(message.stream.mappedDescriptor))
                 }
             }
         }
