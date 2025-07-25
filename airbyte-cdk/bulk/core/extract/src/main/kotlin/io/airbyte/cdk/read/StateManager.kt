@@ -318,9 +318,7 @@ private class GlobalStateManager(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                     .withGlobal(airbyteGlobalState)
-                    .withSourceStats(
-                        AirbyteStateStats().withRecordCount(recordCount.toDouble())
-                    )
+                    .withSourceStats(AirbyteStateStats().withRecordCount(recordCount.toDouble()))
                     // Only partition_id if not null (stdio mode compatibility).
                     // id is added before being sent to wire in FeedReader.maybeCheckpoint().
                     // As global state may be checkpointed multiple times, we use a unique id for
