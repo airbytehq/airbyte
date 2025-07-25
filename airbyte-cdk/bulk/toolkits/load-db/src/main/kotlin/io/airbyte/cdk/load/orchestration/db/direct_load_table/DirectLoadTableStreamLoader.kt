@@ -9,8 +9,8 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.state.StreamProcessingFailed
-import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamCdkStateStore
+import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -54,7 +54,10 @@ class DirectLoadTableAppendStreamLoader(
             sqlTableOperations.dropTable(tempTableName)
         }
 
-        streamCdkStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(realTableName))
+        streamCdkStateStore.put(
+            stream.mappedDescriptor,
+            DirectLoadTableExecutionConfig(realTableName)
+        )
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
@@ -92,7 +95,10 @@ class DirectLoadTableDedupStreamLoader(
             sqlTableOperations.createTable(stream, tempTableName, columnNameMapping, replace = true)
         }
 
-        streamCdkStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
+        streamCdkStateStore.put(
+            stream.mappedDescriptor,
+            DirectLoadTableExecutionConfig(tempTableName)
+        )
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
@@ -304,7 +310,10 @@ class DirectLoadTableDedupTruncateStreamLoader(
             shouldCheckRealTableGeneration = true
         }
 
-        streamCdkStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
+        streamCdkStateStore.put(
+            stream.mappedDescriptor,
+            DirectLoadTableExecutionConfig(tempTableName)
+        )
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {

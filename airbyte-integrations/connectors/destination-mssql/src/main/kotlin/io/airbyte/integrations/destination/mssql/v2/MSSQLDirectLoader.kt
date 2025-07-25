@@ -18,11 +18,11 @@ import jakarta.inject.Singleton
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class MSSQLDirectLoader(
-  config: MSSQLConfiguration,
-  stateStore: StreamCdkStateStore<MSSQLStreamState>,
-  private val streamDescriptor: DestinationStream.Descriptor,
-  private val batch: Int,
-  private val parent: MSSQLDirectLoaderFactory
+    config: MSSQLConfiguration,
+    stateStore: StreamCdkStateStore<MSSQLStreamState>,
+    private val streamDescriptor: DestinationStream.Descriptor,
+    private val batch: Int,
+    private val parent: MSSQLDirectLoaderFactory
 ) : DirectLoader {
     private val log = KotlinLogging.logger {}
     private val recordCommitBatchSize = config.batchEveryNRecords
@@ -96,8 +96,8 @@ class MSSQLDirectLoader(
 @Singleton
 @Requires(condition = MSSQLIsNotConfiguredForBulkLoad::class)
 class MSSQLDirectLoaderFactory(
-  val config: MSSQLConfiguration,
-  val stateStore: StreamCdkStateStore<MSSQLStreamState>,
+    val config: MSSQLConfiguration,
+    val stateStore: StreamCdkStateStore<MSSQLStreamState>,
 ) : DirectLoaderFactory<MSSQLDirectLoader> {
     private val log = KotlinLogging.logger {}
 

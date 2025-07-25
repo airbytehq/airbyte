@@ -14,12 +14,12 @@ import kotlinx.coroutines.runBlocking
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class MSSQLBulkLoadStreamLoader(
-  override val stream: DestinationStream,
-  dataSource: DataSource,
-  sqlBuilder: MSSQLQueryBuilder,
-  private val defaultSchema: String,
-  private val azureBlobClient: AzureBlobClient,
-  private val streamCdkStateStore: StreamCdkStateStore<MSSQLStreamState>,
+    override val stream: DestinationStream,
+    dataSource: DataSource,
+    sqlBuilder: MSSQLQueryBuilder,
+    private val defaultSchema: String,
+    private val azureBlobClient: AzureBlobClient,
+    private val streamCdkStateStore: StreamCdkStateStore<MSSQLStreamState>,
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     // Bulk-load related collaborators

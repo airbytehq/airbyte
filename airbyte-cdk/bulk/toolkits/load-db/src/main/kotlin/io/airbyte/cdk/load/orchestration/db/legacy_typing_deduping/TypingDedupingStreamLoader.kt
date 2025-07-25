@@ -10,22 +10,22 @@ import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.NO_SUFFIX
 import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.cdk.load.state.StreamProcessingFailed
-import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamCdkStateStore
+import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
 
 class TypingDedupingStreamLoader(
-  override val stream: DestinationStream,
-  private val initialStatus: TypingDedupingDatabaseInitialStatus,
-  private val tableNames: TableNames,
-  private val columnNameMapping: ColumnNameMapping,
-  private val rawTableOperations: TypingDedupingRawTableOperations,
-  private val finalTableOperations: TypingDedupingFinalTableOperations,
-  private val disableTypeDedupe: Boolean,
-  private val streamCdkStateStore: StreamCdkStateStore<TypingDedupingExecutionConfig>,
+    override val stream: DestinationStream,
+    private val initialStatus: TypingDedupingDatabaseInitialStatus,
+    private val tableNames: TableNames,
+    private val columnNameMapping: ColumnNameMapping,
+    private val rawTableOperations: TypingDedupingRawTableOperations,
+    private val finalTableOperations: TypingDedupingFinalTableOperations,
+    private val disableTypeDedupe: Boolean,
+    private val streamCdkStateStore: StreamCdkStateStore<TypingDedupingExecutionConfig>,
 ) : StreamLoader {
     private val isTruncateSync =
         when (stream.minimumGenerationId) {

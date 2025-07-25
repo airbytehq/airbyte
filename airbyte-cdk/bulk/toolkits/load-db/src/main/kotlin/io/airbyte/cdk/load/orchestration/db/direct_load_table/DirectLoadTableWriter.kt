@@ -14,8 +14,8 @@ import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
-import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamCdkStateStore
+import io.airbyte.cdk.load.write.StreamLoader
 
 /**
  * @param directLoadTableTempTableNameMigration Iff you are implementing a destination which
@@ -23,14 +23,14 @@ import io.airbyte.cdk.load.write.StreamCdkStateStore
  * with `_airbyte_tmp`), you MUST provide this object.
  */
 class DirectLoadTableWriter(
-  private val internalNamespace: String,
-  private val names: TableCatalog,
-  private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
-  private val destinationHandler: DatabaseHandler,
-  private val nativeTableOperations: DirectLoadTableNativeOperations,
-  private val sqlTableOperations: DirectLoadTableSqlOperations,
-  private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
-  private val tempTableNameGenerator: TempTableNameGenerator,
+    private val internalNamespace: String,
+    private val names: TableCatalog,
+    private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
+    private val destinationHandler: DatabaseHandler,
+    private val nativeTableOperations: DirectLoadTableNativeOperations,
+    private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val streamCdkStateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
     override suspend fun setup() {

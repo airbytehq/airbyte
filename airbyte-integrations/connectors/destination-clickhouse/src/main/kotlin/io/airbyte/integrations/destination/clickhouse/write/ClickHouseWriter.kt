@@ -14,8 +14,8 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableApp
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
-import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamCdkStateStore
+import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseAirbyteClient
 import jakarta.inject.Singleton
 

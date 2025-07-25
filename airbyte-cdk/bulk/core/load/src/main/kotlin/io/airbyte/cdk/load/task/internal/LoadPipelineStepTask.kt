@@ -110,7 +110,9 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             ) {
                                 // Pick the key with the highest input count
                                 val (key, state) =
-                                    stateStore.cdkStateWithCounts.maxByOrNull { it.value.inputCount }!!
+                                    stateStore.cdkStateWithCounts.maxByOrNull {
+                                        it.value.inputCount
+                                    }!!
                                 stateStore.cdkStateWithCounts.remove(key)
                                 log.info {
                                     "Saw greater than $maxNumConcurrentKeys keys, evicting highest accumulating $key (inputs=${state.inputCount})"
@@ -150,7 +152,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             it()
                         } // TODO: Accumulate and release when persisted
                         input.checkpointCounts.forEach {
-                            cdkStateWithCounts.checkpointCounts.merge(it.key, it.value) { old, new ->
+                            cdkStateWithCounts.checkpointCounts.merge(it.key, it.value) { old, new
+                                ->
                                 old.plus(new)
                             }
                         }

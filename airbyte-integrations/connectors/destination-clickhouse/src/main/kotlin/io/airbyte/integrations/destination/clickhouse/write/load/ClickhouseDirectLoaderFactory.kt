@@ -17,9 +17,9 @@ import jakarta.inject.Singleton
  */
 @Singleton
 class ClickhouseDirectLoaderFactory(
-  private val clickhouseClient: Client,
-  private val stateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
-  private val munger: RecordMunger,
+    private val clickhouseClient: Client,
+    private val stateStore: StreamCdkStateStore<DirectLoadTableExecutionConfig>,
+    private val munger: RecordMunger,
 ) : DirectLoaderFactory<ClickhouseDirectLoader> {
     override val maxNumOpenLoaders = 2
 
