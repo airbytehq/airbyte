@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-shutterstock
   githubIssueLabel: source-shutterstock
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Shutterstock
   releaseDate: 2025-04-03
   releaseStage: alpha

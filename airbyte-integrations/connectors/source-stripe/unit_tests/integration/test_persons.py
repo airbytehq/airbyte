@@ -8,9 +8,9 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-from source_stripe import SourceStripe
+from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStreamStatus, FailureType, StreamDescriptor, SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -113,7 +113,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -144,7 +144,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -174,7 +174,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -187,7 +187,7 @@ class PersonsTest(TestCase):
             a_response_with_status(400),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
         # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
         assert_stream_did_not_run(actual_messages, _STREAM_NAME, "Your account is not set up to use Issuing")
@@ -205,7 +205,7 @@ class PersonsTest(TestCase):
             a_response_with_status(400),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
@@ -218,7 +218,7 @@ class PersonsTest(TestCase):
             a_response_with_status(401),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
 
         assert actual_messages.errors[-1].trace.error.failure_type == FailureType.config_error
@@ -236,7 +236,7 @@ class PersonsTest(TestCase):
             a_response_with_status(401),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
 
         assert actual_messages.errors[-1].trace.error.failure_type == FailureType.config_error
@@ -254,7 +254,7 @@ class PersonsTest(TestCase):
             a_response_with_status(403),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
 
         # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
@@ -276,7 +276,7 @@ class PersonsTest(TestCase):
         )
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
+        source = get_source(config=_CONFIG, state=state)
         actual_messages = read(
             source,
             config=_CONFIG,
@@ -306,7 +306,7 @@ class PersonsTest(TestCase):
         )
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
+        source = get_source(config=_CONFIG, state=state)
         actual_messages = read(
             source,
             config=_CONFIG,
@@ -338,7 +338,7 @@ class PersonsTest(TestCase):
         )
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
-        source = SourceStripe(config=config, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
+        source = get_source(config=config, state=state)
         actual_messages = read(
             source,
             config=config,
@@ -367,7 +367,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -388,7 +388,7 @@ class PersonsTest(TestCase):
             ],
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -413,7 +413,7 @@ class PersonsTest(TestCase):
         )
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
+        source = get_source(config=_CONFIG, state=state)
         actual_messages = read(
             source,
             config=_CONFIG,
@@ -440,7 +440,7 @@ class PersonsTest(TestCase):
         )
 
         with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
-            source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+            source = get_source(config=_CONFIG, state=_NO_STATE)
             actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
             # first error is the actual error, second is to break the Python app with code != 0
@@ -466,7 +466,7 @@ class PersonsTest(TestCase):
         )
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
+        source = get_source(config=_CONFIG, state=state)
         with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
             actual_messages = read(
                 source,
@@ -493,7 +493,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -514,7 +514,7 @@ class PersonsTest(TestCase):
             ],
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -525,7 +525,7 @@ class PersonsTest(TestCase):
         http_mocker.get(_create_accounts_request().with_limit(100).build(), a_response_with_status(500))
 
         with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
-            source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+            source = get_source(config=_CONFIG, state=_NO_STATE)
             actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         # first error is the actual error, second is to break the Python app with code != 0

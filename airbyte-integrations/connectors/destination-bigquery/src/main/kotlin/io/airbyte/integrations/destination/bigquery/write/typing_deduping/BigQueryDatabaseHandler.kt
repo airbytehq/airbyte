@@ -174,7 +174,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
     private fun wrapWithConfigExceptionIfNeeded(e: Exception): Exception {
         when (e) {
             is BigQueryException -> {
-                if (e.reason.contains(BILLING_CONFIG_ERROR)) {
+                if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
                     return ConfigErrorException(e.reason, e)
                 }
             }

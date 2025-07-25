@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-scryfall
   githubIssueLabel: source-scryfall
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Scryfall
   releaseDate: 2024-08-28
   releaseStage: alpha

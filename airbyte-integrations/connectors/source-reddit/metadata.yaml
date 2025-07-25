@@ -22,7 +22,7 @@ data:
   dockerRepository: airbyte/source-reddit
   githubIssueLabel: source-reddit
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Reddit
   releaseDate: 2024-08-23
   releaseStage: alpha
