@@ -528,18 +528,22 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? {
-        return when (upperBound) {
-            is Long -> calculateBoundaries(num, lowerBound as Long?, upperBound)
-            is Int -> calculateBoundaries(num, lowerBound as Long?, upperBound.toLong())
-            is String -> calculateBoundaries(num, lowerBound as String?, upperBound)
-            is Double -> calculateBoundaries(num, lowerBound as Double?, upperBound)
-            is OffsetDateTime -> calculateBoundaries(num, lowerBound as? OffsetDateTime, upperBound)
+    private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? =
+        when {
+            lowerBound is Long? && upperBound is Long ->
+                _calculateBoundaries(num, lowerBound, upperBound)
+            lowerBound is Int? && upperBound is Int ->
+                _calculateBoundaries(num, lowerBound?.toLong(), upperBound.toLong())
+            lowerBound is String? && upperBound is String ->
+                _calculateBoundaries(num, lowerBound, upperBound)
+            lowerBound is Double? && upperBound is Double ->
+                _calculateBoundaries(num, lowerBound, upperBound)
+            lowerBound is OffsetDateTime? && upperBound is OffsetDateTime ->
+                _calculateBoundaries(num, lowerBound, upperBound)
             else -> null
         }
-    }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: OffsetDateTime?,
         upperBound: OffsetDateTime
@@ -557,7 +561,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: Long?,
         upperBound: Long
@@ -575,7 +579,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: Double?,
         upperBound: Double
@@ -591,7 +595,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun _calculateBoundaries(
         num: Int,
         lowerBound: String?,
         upperBound: String

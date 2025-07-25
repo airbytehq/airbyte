@@ -152,10 +152,21 @@ class StateManagerGlobalStatesTest {
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
                     |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
+                    |"stream_state":{"initial_sync":"ongoing"}},
+                    |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
+                    |"stream_state":{}}
+                    |]},"sourceStats":{"recordCount":456.0}
+                    |}
+                """.trimMargin(),
+                    """{
+                    |"type":"GLOBAL",
+                    |"global":{"shared_state":{"cdc":"starting"},
+                    |"stream_states":[
+                    |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
                     |"stream_state":{"initial_sync":"completed"}},
                     |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
                     |"stream_state":{}}
-                    |]},"sourceStats":{"recordCount":1245.0}
+                    |]},"sourceStats":{"recordCount":789.0}
                     |}
                 """.trimMargin(),
                 )

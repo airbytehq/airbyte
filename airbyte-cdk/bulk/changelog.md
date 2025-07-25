@@ -1,3 +1,7 @@
+## Version 0.1.1
+
+* **Changed:** Extract CDK fixes for CDC in socket mode.
+
 ## Version 0.1.0
 
 * **Changed:** Adopted Semantic Versioning (SemVer) for the CDK to provide more meaningful version numbers.

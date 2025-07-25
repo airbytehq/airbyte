@@ -21,6 +21,7 @@ import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
 import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
+import io.airbyte.cdk.read.generatePartitionId
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
@@ -67,9 +68,6 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numEventsWithoutSourceRecord = AtomicLong()
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
-    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') // TEMP
-    private fun generatePartitionId(length: Int): String =
-        (1..length).map { charPool.random() }.joinToString("")
 
     protected var partitionId: String = generatePartitionId(4)
     private lateinit var acceptors: Map<StreamIdentifier, (NativeRecordPayload) -> Unit>
