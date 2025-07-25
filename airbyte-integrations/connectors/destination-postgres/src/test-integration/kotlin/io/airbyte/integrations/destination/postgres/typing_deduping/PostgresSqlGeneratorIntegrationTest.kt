@@ -24,6 +24,7 @@ import org.jooq.impl.DSL
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 
@@ -167,22 +168,24 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
         )
     }
 
-    @Test
-    fun testUnconstrainedNumber() {
-        val generator =
-            PostgresSqlGenerator(
-                PostgresSQLNameTransformer(),
-                cascadeDrop = false,
-                unconstrainedNumber = true,
-            )
+    @Nested
+    inner class UnconstrainedNumber {
+        @Test
+        fun testUnconstrainedNumber() {
+            val generator =
+                PostgresSqlGenerator(
+                    PostgresSQLNameTransformer(),
+                    cascadeDrop = false,
+                    unconstrainedNumber = true,
+                )
 
-        createRawTable(streamId)
-        destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false))
-        insertRawTableRecords(
-            streamId,
-            listOf(
-                Jsons.deserialize(
-                    """
+            createRawTable(streamId)
+            destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false))
+            insertRawTableRecords(
+                streamId,
+                listOf(
+                    Jsons.deserializeExact(
+                        """
                         {
                           "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce",
                           "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
@@ -194,22 +197,22 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
                           }
                         }
                     """.trimIndent()
+                    )
                 )
             )
-        )
 
-        executeTypeAndDedupe(
-            generator,
-            destinationHandler,
-            incrementalDedupStream,
-            Optional.empty(),
-            ""
-        )
+            executeTypeAndDedupe(
+                generator,
+                destinationHandler,
+                incrementalDedupStream,
+                Optional.empty(),
+                ""
+            )
 
-        DIFFER.diffFinalTableRecords(
-            listOf(
-                Jsons.deserialize(
-                    """
+            DIFFER.diffFinalTableRecords(
+                listOf(
+                    Jsons.deserializeExact(
+                        """
                         {
                           "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce",
                           "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z",
@@ -220,10 +223,69 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
                           "number": 10325.876543219876543
                         }
                     """.trimIndent()
+                    )
+                ),
+                dumpFinalTableRecords(streamId, ""),
+            )
+        }
+        @Test
+        fun testUnconstrainedStringifiedNumber() {
+            val generator =
+                PostgresSqlGenerator(
+                    PostgresSQLNameTransformer(),
+                    cascadeDrop = false,
+                    unconstrainedNumber = true,
                 )
-            ),
-            dumpFinalTableRecords(streamId, ""),
-        )
+
+            createRawTable(streamId)
+            destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false))
+            insertRawTableRecords(
+                streamId,
+                listOf(
+                    Jsons.deserializeExact(
+                        """
+                        {
+                          "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce",
+                          "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                          "_airbyte_data": {
+                            "id1": 6,
+                            "id2": 100,
+                            "updated_at": "2023-01-01T01:00:00Z",
+                            "number": "10325.876543219876543"
+                          }
+                        }
+                    """.trimIndent()
+                    )
+                )
+            )
+
+            executeTypeAndDedupe(
+                generator,
+                destinationHandler,
+                incrementalDedupStream,
+                Optional.empty(),
+                ""
+            )
+
+            DIFFER.diffFinalTableRecords(
+                listOf(
+                    Jsons.deserializeExact(
+                        """
+                        {
+                          "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce",
+                          "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z",
+                          "_airbyte_meta": {"changes":[],"sync_id":null},
+                          "id1": 6,
+                          "id2": 100,
+                          "updated_at": "2023-01-01T01:00:00.000000Z",
+                          "number": 10325.876543219876543
+                        }
+                    """.trimIndent()
+                    )
+                ),
+                dumpFinalTableRecords(streamId, ""),
+            )
+        }
     }
 
     companion object {
