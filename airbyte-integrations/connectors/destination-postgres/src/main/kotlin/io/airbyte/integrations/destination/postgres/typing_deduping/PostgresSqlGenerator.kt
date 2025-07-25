@@ -209,7 +209,7 @@ class PostgresSqlGenerator(
                     .else_(DSL.cast(field, SQLDataType.VARCHAR))
             var cleanedText = extractAsText
             if (type == AirbyteProtocolType.NUMBER) {
-                cleanedText = DSL.trim(extractAsText, "\"");
+                cleanedText = DSL.trim(extractAsText, "\"")
             }
             return if (useExpensiveSaferCasting) {
                 DSL.function(
