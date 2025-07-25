@@ -396,6 +396,7 @@ abstract class IntegrationTest(
     fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
+        // this
         const val NUM_SOCKETS = 2
 
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")

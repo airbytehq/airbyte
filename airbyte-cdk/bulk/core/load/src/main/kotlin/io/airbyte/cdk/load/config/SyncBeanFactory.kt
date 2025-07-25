@@ -59,12 +59,14 @@ class SyncBeanFactory {
         syncManager: SyncManager,
         outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit,
         timeProvider: TimeProvider,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium
     ): CheckpointManager =
         CheckpointManager(
             catalog,
             syncManager,
             outputConsumer,
             timeProvider,
+            dataChannelMedium == DataChannelMedium.SOCKET
         )
 
     /* ********************
