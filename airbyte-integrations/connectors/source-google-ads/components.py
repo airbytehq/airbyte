@@ -31,6 +31,7 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRe
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.validators import ValidationStrategy
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -754,8 +755,12 @@ class CustomGAQueryHttpRequester(HttpRequester):
     def _validate_query(self, query: str):
         try:
             GAQL.parse(query)
-        except ValueError:
-            raise ValueError("GAQL query validation failed.")
+        except ValueError as e:
+            raise AirbyteTracedException(
+                failure_type=FailureType.system_error,
+                internal_message=f"GAQL query validation failed after parsing and rebuilding the query. {e}",
+                message=f"GAQL query validation failed. {e}",
+            )
 
 
 @dataclass()
@@ -772,7 +777,6 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
     def __post_init__(self):
         self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
-        self._validate_query(self.query)
 
     def get_json_schema(self) -> Dict[str, Any]:
         local_json_schema = {
@@ -853,16 +857,6 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
         headers["developer-token"] = self.config["credentials"]["developer_token"]
         return headers
-
-    def _validate_query(self, query: str):
-        try:
-            GAQL.parse(query)
-        except ValueError:
-            raise AirbyteTracedException(
-                failure_type=FailureType.config_error,
-                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
-                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
-            )
 
 
 @dataclass(repr=False, eq=False, frozen=True)
@@ -951,3 +945,25 @@ class GAQL:
         fields = list(self.fields)
         fields.append(value)
         return self.__class__(tuple(fields), self.resource_name, self.where, self.order_by, self.limit, self.parameters)
+
+
+@dataclass
+class ValidateCustomQueries(ValidationStrategy):
+    def validate(
+            self,
+            value: Any,
+    ) -> None:
+        custom_queries_array = value
+        if not isinstance(custom_queries_array, list):
+            raise ValueError("custom_queries_array must be a list")
+        for custom_query in custom_queries_array:
+            query = custom_query.get("query")
+            table_name = custom_query.get("table_name")
+            try:
+                GAQL.parse(query)
+            except ValueError:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message=f"The provided custom query for `{table_name}` table is invalid: `{custom_query}`. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
+                    message=f"The provided custom query for `{table_name}` table is invalid: `{custom_query}`. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
+                )
