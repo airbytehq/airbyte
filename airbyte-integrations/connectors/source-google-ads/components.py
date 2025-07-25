@@ -950,8 +950,8 @@ class GAQL:
 @dataclass
 class ValidateCustomQueries(ValidationStrategy):
     def validate(
-            self,
-            value: Any,
+        self,
+        value: Any,
     ) -> None:
         custom_queries_array = value
         if not isinstance(custom_queries_array, list):

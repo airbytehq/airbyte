@@ -84,7 +84,9 @@ class TestCustomGAQuerySchemaLoader:
         }
         assert schema_loader.get_json_schema() == expected_schema
 
-    def test_custom_ga_query_schema_loader_with_cursor_field_returns_expected_schema(self, config_for_custom_query_tests, requests_mock, components_module):
+    def test_custom_ga_query_schema_loader_with_cursor_field_returns_expected_schema(
+        self, config_for_custom_query_tests, requests_mock, components_module
+    ):
         requests_mock.get(
             "https://googleads.googleapis.com/v18/googleAdsFields/campaign_budget.name",
             json={
@@ -206,7 +208,9 @@ class TestCustomGAQueryHttpRequester:
         request_body = requester.get_request_body_json(stream_slice={})
         assert request_body == {"query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"}
 
-    def test_given_valid_query_with_cursor_field_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock, components_module):
+    def test_given_valid_query_with_cursor_field_returns_expected_request_body(
+        self, config_for_custom_query_tests, requests_mock, components_module
+    ):
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = (
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"
@@ -272,7 +276,6 @@ class TestClickViewHttpRequester:
 
 
 class TestValidateCustomQueries:
-
     @pytest.mark.parametrize(
         "query",
         [

@@ -5,8 +5,8 @@
 
 import sys
 from pathlib import Path
-import pytest
 
+import pytest
 
 from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.models import SyncMode
@@ -14,7 +14,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
+
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
 
 def _get_manifest_path() -> Path:
     source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")

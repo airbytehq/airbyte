@@ -38,7 +38,6 @@ class TestConfigTransformations:
 
 
 class TestConfigValidations:
-
     def test_given_valid_custom_queries_returns_expected_streams(self, config):
         copy_config = config.copy()
 
