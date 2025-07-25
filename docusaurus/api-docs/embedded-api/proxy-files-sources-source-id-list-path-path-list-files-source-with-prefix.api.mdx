@@ -1,0 +1,71 @@
+---
+id: proxy-files-sources-source-id-list-path-path-list-files-source-with-prefix
+title: "List Files Source With Prefix"
+description: "List Files Source With Prefix"
+sidebar_label: "List Files Source With Prefix"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1v4zYQ/SsCTy1gR066vfiWLJI2QLcbbNL2EBgCLVEWd6mPJSlvBEP/fWdIyqYi2bGDHn2JJWVm3puZR4qjDdF0pcj8maRcMBWpspYxU2QxIWXFJNW8LO4TMieVLF+aac9ourEXEU/aqeBKTzcV1dkc/9gHkW8f/eA6iyrJUv5CJkSxuJZcN4C9IX8+PT3cMCqZhNtFC+gVlTRnmkllDAq4ARZbQAjAC6QFWHAt2feaSwZEtawZBI8zllMy3xDdVMZRS16swDItZU41PKlrEyVhKpa8wjz9+AHYBT8yHmeBLgPMJTC5gIfmWmDIR2MbQHXa08O0k21OLoX3pdPH/WwuqAhslRET4KCIA/IPCDTg/Za/xzouC82L2ggk0uU3VnQ5fK+ZbHpJpFSoE7J4wmimchVd8cJAeNQ/esiBsR0mMhrCYy94zvXphHmh2Qo0+hruLww3ZJywlNYCxHY5m+34G+Mh5dEYuBIkU1VZKCg/ELmazfCn7/pYx7AcVVqL4IszBnTsECs0mtOqEjw2IcOvCn02XnKwtGGpa24RCvZifYrmc2rWXr9bWEX3pKiFMBS71P5GX8jMqgWCcM1yNcRYNtpeDEC6Ch9CuTHeDiaSTEBiaxaZtTMirs7tDqyhPtY66BZAXiY85dj0/Sl7u0ZCNZtqDiI6xPBTFxQA3F5guNZSHGLodhRD9B8wbcHd2ZbLryzWPZE+uzKO1sFLbEhh4YtRacRTFvse+kV2qFRK2rwqoXqTlu3+fhC1FWnbYqwPY5q+oUmAQZnS79dyDquCrth75fzJuQNHJmUpD0kaSi0OiugQ0J1xRjX+v4SjuEzeHewWIwQfMcJYxzuz64obywOyubXF8zZEeMcfEXKgk9+GOrkr5ZIniXn9nFVyVgn5cHU1VMm/VPDEnhgsjbNYzmIB89/HXj33IAyJp+BHJtdw9j0r5qwYp5iRUzuMdOZsE7jT238w5QYP3ZQLI2xW4vy8YhjcnlFJSCseri9DM1SHvaE69IbqEAfG0AzVrZmYUY52HjYnSZJpXal5iOEuKJd4HoTfwXhybf8V3OZLBq/KJLh+uDdV7mbwR5SulZA/iW/bgjjEzUN4v7QGWA5epKWx7Mo2hnUUoQnB7KzB7GJ2cYnNrEqlc2rWlxvd3qp4D2mbgYbJJKwE5WZYdOdw241nWM1Ys/UlNgg74o7Uu68hEzL3vzxgW/CZ8YcyZkAS42w2S6oYnNzbFh/buRK7lXBFl8KbLF+R3O4se2ffsSy+sWbfIL6mokYHs7aOR98zxx5A7wbpHeACbyRHxBNz/+WLGyJ+DY76DjPGqlv8ReOT6tjumnhaXTxmR3xiOZ2XEVK7ALuM0cR8BNu4f13DaF/5FR68erDi223mj9snsKV1bxR2y3XSXXhbcJ8QCNhYGBW27ZaflRUQbNufAPHykg==
+sidebar_class_name: "get api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Files Source With Prefix"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/proxy/files_sources/{source_id}/list/{path}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+List Files Source With Prefix
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"source_id","in":"path","required":true,"schema":{"type":"string","format":"uuid","description":"source_id for which to list files","title":"Source Id"},"description":"source_id for which to list files"},{"name":"path","in":"path","required":true,"schema":{"type":"string","description":"Optional prefix to filter files","title":"Path"},"description":"Optional prefix to filter files"},{"name":"continuation_token","in":"query","required":false,"schema":{"type":"string","description":"Token for pagination","title":"Continuation Token"},"description":"Token for pagination"},{"name":"limit","in":"query","required":false,"schema":{"type":"integer","description":"Limit for pagination","default":100,"title":"Limit"},"description":"Limit for pagination"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"next":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Next"},"files":{"items":{"properties":{"bytes":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Bytes"},"file_relative_path":{"type":"string","title":"File Relative Path"},"modified":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Modified"},"source_file_url":{"type":"string","title":"Source File Url"}},"type":"object","required":["bytes","file_relative_path","modified","source_file_url"],"title":"ListFilesSourceItem"},"type":"array","title":"Files"}},"type":"object","required":["files"],"title":"ListFilesSourcesResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

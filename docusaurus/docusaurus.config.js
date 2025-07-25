@@ -362,7 +362,7 @@ const config = {
             position: "left",
             docsPluginId: "embedded",
             sidebarId: "embedded",
-            label: "Airbyte Embedded",
+            label: "Developer Tools",
           },
           {
             href: "https://support.airbyte.com/",

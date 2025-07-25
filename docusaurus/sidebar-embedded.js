@@ -9,10 +9,37 @@ export default {
         id: "README",
       },
       items: [
-        "prerequisites-setup",
-        "develop-your-app",
-        "use-embedded",
-        "managing-embedded",
+        {
+          type: "category",
+          label: "PyAirbyte MCP",
+          items: [
+            "pyairbyte-mcp/README",
+          ],
+        },
+        {
+          type: "category",
+          label: "Airbyte Embedded",
+          items: [
+            {
+              type: "category",
+              label: "Airbyte Widget",
+              items: [
+        "embedded/widget/prerequisites-setup",
+        "embedded/widget/develop-your-app",
+        "embedded/widget/use-embedded",
+        "embedded/widget/managing-embedded",
+              ],
+            },
+            {
+              type: "category",
+              label: "Embedded API",
+              items: [
+                "embedded/api/connection-templates",
+                "embedded/api/source-templates",
+              ],
+            },
+          ],
+        },
         {
           type: "link",
           label: "API Reference",

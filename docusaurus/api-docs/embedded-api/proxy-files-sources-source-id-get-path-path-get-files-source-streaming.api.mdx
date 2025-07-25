@@ -1,0 +1,71 @@
+---
+id: proxy-files-sources-source-id-get-path-path-get-files-source-streaming
+title: "Get Files Source Streaming"
+description: "Get Files Source Streaming"
+sidebar_label: "Get Files Source Streaming"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV8Fu2zAM/RVDpw1I6rTbLrmlQ9v1MKxosl2KIlBsOlYrW5okZw0M//tI2XHtOivaYMf00EgORT6ST85jyRxfWza9Y4mQYJdWFSYCy+5HTGkw3AmVX8dsyrRRT9txz2hc1ouliKvxGty41NylU/rn98uu9dI6AzwT+ZqNmIWoMMJtMW7Jvi0WN+fADRjc3lcYWXPDM3BgrDfIcYMI2mDoQOQECQPh2sDvQhhAkM4UgM6jFDLOpiVzW+0POlOHTZTJuMMnReG9xGAjIzTl2PUfoF3wJxVRGjgVYCIBJYL2TjhJDufeMsC6VO91Uo3afBr4h6XSj3qDxymMS8GHaUJ2IJPFEO2/zlETDFitcotcwPBnkwl99E/PiwhZYJNCBreNMUaMVO4gd2TOtZYi8hwKHyydKZ9TqvBvxD7vc3zO44BKAda9wyFRFCnrRA05Q2h8Df5Yvv2ReCr1y0jNaJ7khZQ+7V3BvjfHESMYo4z3KRxkdhgqESDjQwNd+sMY5j8DXkYqPtjZBXkIvpIH6lJjplYPEHVZNdPCW7JnG24M37IXnqxnbMIL6fwdf4PLllE7nnwa8uRSmZWIY8iPLDmyxLPk7GzIkl9citizIahhHMlyJAuaf9n303ONxDA5l8EczAbMkTFHxuwYM1BPVyjqLkniBo0gnHckLurXVJFwrnWYF3hTFnItws1p6NV02FPTYUdNh3go9Gq68mqZqFhr4cJIdJM6p+00JG8nXJjV1gF+DmThrP4quMhWgD+TcTC7ufYV3unvOdG2pk9XhbctoTiskaG0X9UGVAqRJ8pb7kq2L9abAI0YZVcbTE4mJ6fUSK2sy7i/W41cfrXavTAtfAdPLtSSo8RGl750ZdOJO7zGVLDNKTWHukHzQW8EGrFpd+So++inG5qOUgRIbspyxS38NLKq6DGKVkNjDS433Ai+ouJg32JhaY2ESLi0MEDcvl/Yh9tmCPgYvGEi2Zfo7hLklNOGy4J2uHyEbW+Mort3EK5Xxo334/EFre7RLgUe+yGwbL6a4XyhXefQ4NVLZG5v2tXFAm15Qf1tOdBQdrRbdF5BfUDYSG+xUI+QV1WLz9GeAFbVX/dNMf4=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Files Source Streaming"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/proxy/files_sources/{source_id}/get/{path}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get Files Source Streaming
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"source_id","in":"path","required":true,"schema":{"type":"string","format":"uuid","description":"source_id for which to get file","title":"Source Id"},"description":"source_id for which to get file"},{"name":"path","in":"path","required":true,"schema":{"type":"string","description":"Path to the file to get","title":"Path"},"description":"Path to the file to get"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

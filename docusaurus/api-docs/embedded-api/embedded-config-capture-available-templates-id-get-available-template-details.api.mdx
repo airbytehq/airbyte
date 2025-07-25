@@ -1,0 +1,71 @@
+---
+id: embedded-config-capture-available-templates-id-get-available-template-details
+title: "Get Available Template Details"
+description: "Get Available Template Details"
+sidebar_label: "Get Available Template Details"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWEtz2zYQ/iscTA7NjGzZbnvRTX4lnk5jTyT34slwIHJpI6EIFgDVqhr+9+4CIEWK1CNKjrpIJLiPb3c/gMtdMcNfNRu9sEhmiXgNI56bQgH7MmAyB8WNkNlDzEYM5jOIY4jP2oJnfMFFymcphAbmecoN6LOViMuzD2CCcfUwmPqHwS0YXNNswDREhRJmid5X7ON0+nQNXIHC2y8lus+54nMwoLQVyPAGYYgYNUWGVzk3b3it4O9CKECIRhWAVqM3mHM2WjGzzElDGyWyV5RMpJpzgytFYa0YYVISwPBKcqhA5zLToEn56uKC/mLQkRI5ZQElJ0UUgdZJkQafvTDawYQYyAyJ8zxPRWSTNvyqSWfVAJQrSqkRzgNi+E6QA5+ErlYl9Ymeo5yInG+eLR8Tm762RjmoV7IiTRmFX3siXbShZaEiCGNIRCYoovD7EE+sPta70g9cDIUGFXoS6RyibmZiGRVzzKjN47NKj43ktmmnQDulLVYGES1M0LdIfLW6INa8wlIhtXU3djTnF7hSfNmI/XOljCJts15Bzr4iiobG01oKdVq0OzL4hgm0yOPYFoGnTy08HdMzKVPg2U7b49pY3oLtnx8HeGr/65xuJ/mU1lHu3XpnHePv3cSpl+sy1lVZF/+lWT8v2DBys4VOtH+KPJfK6E+0P1LxH99azUNSPvHWspa1hpvb6+kPG49nxnFlwbMI4pAXeMS2jLbJTM/DJJX/hPtqNkbJ4B4lg6p6OaaXsgXhN1i2nRy43XZF9FRZD/6AZdvdgqfF0SRd2/3LmkHL0mahcaDtOFScrD0BRZYXJkyUnIf+TJJqq5UOVM/UXVAfyVfwjL6CB/IV3KOv4KbyRVfoK+jwto7HY3JAfyKkNQSHq4Mgktgr4Js/dFBkYXoRbDtKb7x64Nw9WvUNL3TEJrxI6a1ddl1i0hawNfQDHU+skd4gD3P/g4F7/wfE33MC1iWjneuoslGnPcfmxtmwc5+0Xi3u7CG3PVza53Xb6717ZEvV4R12nEbwNPSp8Vh3vrWdBjU5pOH31N7c2D7J9nK+VdvSbfU0S1tRNiLEzts1Xw5O1XrXLWtpK/5bX4d7zeOAkII2x3e2c+yR+evRZ+yfXh0xglJS6VYL1naVCEjjYx3dW2V085MBY0nio43dkQUkUgy9NKr3SS6s5I4m9M4lr7HVX3r3z6bJDk9+7fLkXqqZwM/B7MSSE0ssS66uuizBHknElg2Bg3Eiy4ksKP5736vnAYmh8JOy6ltOjDkxxjNmcyLC9s4W52DeJI0tX8HYnok+ZNmQ52K4uBxWs8xhe5Y57JllDmmWaYeVREo3iqRR0oi9GZPr0ZBsnnOhZksD+M82oY7do+DO+wzGTw8219X4044hHJGaQ9C6OOSH+bmm/aB3ApQUkSXSSlbJ6/N1EKABo+icwMX5xfml7YelNnNud5mfvu7N+8bgyodg4F8zRFFh2+zCTfRcTfBDIaekLS7xp6qL2/XNcfSA9dQGV0fYJWMu3xAp2VqtZlzDs0rLkpaxj1U0XsbLBVeCtG0BY6HpGvmR8FRDB3Z95LBfqkne+4AN+sOpiJ8R7f1wgeGlHWtQq49fLYgQeGxn2yv/YBxFkJuGSudwI5LUPP5wN6Uk+IFMNdtxVBhUF41N3oaDebESU/kNsrKs0Rm6t59V5f9ytVsg
+sidebar_class_name: "get api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Available Template Details"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/config_capture/available_templates/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get Available Template Details
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"name":{"type":"string","title":"Name"},"icon":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Icon"},"source_definition_id":{"type":"string","format":"uuid","title":"Source Definition Id"},"user_config_spec":{"properties":{"documentationUrl":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Documentationurl"},"connectionSpecification":{"properties":{"required":{"items":{"type":"string"},"type":"array","title":"Required"},"properties":{"type":"object","title":"Properties"},"description":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Description"},"additionalProperties":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Additionalproperties"},"title":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Title"},"type":{"type":"string","title":"Type"},"$schema":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"$Schema"}},"type":"object","required":["properties","type"],"title":"ConnectionSpecification"},"supportsNormalization":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Supportsnormalization"},"supportsDBT":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Supportsdbt"},"advanced_auth":{"anyOf":[{"properties":{"auth_flow_type":{"type":"string","title":"Auth Flow Type"},"predicate_key":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"title":"Predicate Key"},"predicate_value":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Predicate Value"},"oauth_config_specification":{"properties":{"oauth_user_input_from_connector_config_specification":{"anyOf":[{"type":"object"},{"type":"null"}],"title":"Oauth User Input From Connector Config Specification"},"oauth_connector_input_specification":{"anyOf":[{"type":"object"},{"type":"null"}],"title":"Oauth Connector Input Specification"},"complete_oauth_output_specification":{"type":"object","title":"Complete Oauth Output Specification","default":{}},"complete_oauth_server_input_specification":{"type":"object","title":"Complete Oauth Server Input Specification","default":{}},"complete_oauth_server_output_specification":{"type":"object","title":"Complete Oauth Server Output Specification","default":{}}},"type":"object","title":"OAuthConfigSpecification"}},"type":"object","required":["auth_flow_type","oauth_config_specification"],"title":"AdvancedAuth"},{"type":"null"}]}},"type":"object","required":["connectionSpecification"],"title":"ConnectorSpecification"},"partial_default_config":{"type":"object","title":"Partial Default Config"}},"type":"object","required":["id","name","icon","source_definition_id","user_config_spec","partial_default_config"],"title":"GetSourceConfigTemplateResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
