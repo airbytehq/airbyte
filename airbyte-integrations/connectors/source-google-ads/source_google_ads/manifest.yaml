@@ -74,7 +74,15 @@ definitions:
     record_selector:
       $ref: "#/definitions/base_selector"
     paginator:
-      type: NoPagination
+      type: DefaultPaginator
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ response.get('nextPageToken') }}"
+        stop_condition: "{{ not response.get('nextPageToken') }}"
+        page_token_option:
+          type: RequestOption
+          field_name: "page_token"
+          inject_into: "body_json"
     decoder:
       type: JsonDecoder
 
