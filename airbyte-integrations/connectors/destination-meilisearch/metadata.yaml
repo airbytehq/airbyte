@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-meilisearch
   githubIssueLabel: destination-meilisearch
   icon: meilisearch.svg
-  license: MIT
+  license: ELv2
   name: MeiliSearch
   registryOverrides:
     cloud:

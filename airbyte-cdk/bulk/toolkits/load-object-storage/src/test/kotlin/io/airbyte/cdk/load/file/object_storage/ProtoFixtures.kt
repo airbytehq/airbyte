@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.file.object_storage
 
 import com.google.protobuf.kotlin.toByteString
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.computeUnknownColumnChanges
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.ArrayType
@@ -216,6 +217,8 @@ abstract class ProtoFixtures(private val addUnknownTypeToSchema: Boolean) {
             every { this@mockk.generationId } returns this@ProtoFixtures.generationId
             every { this@mockk.schema } returns dummyType
             every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor("", "dummy")
+            every { this@mockk.unknownColumnChanges } returns
+                dummyType.computeUnknownColumnChanges()
         }
 
         record =

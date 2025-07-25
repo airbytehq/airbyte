@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-smaily
   githubIssueLabel: source-smaily
   icon: smaily.svg
-  license: MIT
+  license: ELv2
   name: Smaily
   remoteRegistries:
     pypi:

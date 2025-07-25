@@ -18,7 +18,7 @@ data:
   dockerRepository: airbyte/source-pagerduty
   githubIssueLabel: source-pagerduty
   icon: pagerduty.svg
-  license: MIT
+  license: ELv2
   name: Pagerduty
   releaseDate: 2023-10-10
   releaseStage: alpha
