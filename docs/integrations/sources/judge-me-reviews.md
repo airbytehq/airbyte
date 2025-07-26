@@ -22,6 +22,7 @@ API: https://judge.me/api/docs#tag/Reviews/operation/reviews#index
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2025-07-26 | [63890](https://github.com/airbytehq/airbyte/pull/63890) | Update dependencies |
 | 0.0.3 | 2025-07-19 | [63466](https://github.com/airbytehq/airbyte/pull/63466) | Update dependencies |
 | 0.0.2 | 2025-07-12 | [63143](https://github.com/airbytehq/airbyte/pull/63143) | Update dependencies |
 | 0.0.1 | 2025-06-18 | | Initial release by [@nmtruong93](https://github.com/nmtruong93) via Connector Builder |
