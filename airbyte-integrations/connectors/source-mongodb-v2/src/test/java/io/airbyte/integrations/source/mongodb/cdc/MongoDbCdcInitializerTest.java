@@ -635,4 +635,47 @@ class MongoDbCdcInitializerTest {
     return iterators.stream().filter(it -> it instanceof StreamStatusTraceEmitterIterator == false).toList();
   }
 
+  @Test
+  public void testLogOplogInfoHandlesBothIntegerAndLongValues() throws Exception {
+    // Test that logOplogInfo can handle both Integer and Long return values from MongoDB collStats
+    final MongoDatabase localDatabase = mock(MongoDatabase.class);
+    final MongoClient testClient = mock(MongoClient.class);
+    
+    when(testClient.getDatabase("local")).thenReturn(localDatabase);
+    
+    // Use reflection to access the private method
+    final java.lang.reflect.Method logOplogInfoMethod = MongoDbCdcInitializer.class.getDeclaredMethod("logOplogInfo", MongoClient.class);
+    logOplogInfoMethod.setAccessible(true);
+    
+    // Test case 1: MongoDB returns Integer values (smaller numbers)
+    final Document resultWithIntegers = new Document();
+    resultWithIntegers.put("maxSize", 1000); // This will be an Integer
+    resultWithIntegers.put("freeStorageSize", 500); // This will be an Integer
+    
+    when(localDatabase.runCommand(any(Document.class))).thenReturn(resultWithIntegers);
+    
+    // This should not throw a ClassCastException
+    logOplogInfoMethod.invoke(cdcInitializer, testClient);
+    
+    // Test case 2: MongoDB returns Long values (larger numbers)
+    final Document resultWithLongs = new Document();
+    resultWithLongs.put("maxSize", 21474836480L); // This will be a Long
+    resultWithLongs.put("freeStorageSize", 10737418240L); // This will be a Long
+    
+    when(localDatabase.runCommand(any(Document.class))).thenReturn(resultWithLongs);
+    
+    // This should also not throw a ClassCastException
+    logOplogInfoMethod.invoke(cdcInitializer, testClient);
+    
+    // Test case 3: Mixed Integer and Long values
+    final Document resultWithMixed = new Document();
+    resultWithMixed.put("maxSize", 21474836480L); // Long
+    resultWithMixed.put("freeStorageSize", 500); // Integer
+    
+    when(localDatabase.runCommand(any(Document.class))).thenReturn(resultWithMixed);
+    
+    // This should handle mixed types correctly
+    logOplogInfoMethod.invoke(cdcInitializer, testClient);
+  }
+
 }

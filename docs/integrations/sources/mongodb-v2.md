@@ -50,13 +50,20 @@ access to the database.
 
 ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
-7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`. 
+7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add the following privileges:
+   - `readAnyDatabase` (required for monitoring the entire cluster)
+   - `read` on the `local` database (required for oplog statistics collection)
 
 :::info
 Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
 This allows you to sync multiple collections across different databases using a single source.
 
-The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
+The MongoDB connector requires two types of database access:
+
+- `readAnyDatabase@admin`: For monitoring collections across all databases in the cluster
+- `read@local`: For accessing oplog statistics used in Change Data Capture operations
+
+Without these privileges, the connection will fail with an authorization error.
 :::
 
 ![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
@@ -87,14 +94,21 @@ test> use admin
 switched to db admin
 ```
 
-3. Create the `READ_ONLY_USER` user with the `read` role:
+3. Create the `READ_ONLY_USER` user with the required roles:
 
 ```shell
-admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
+admin> db.createUser({
+  user: "READ_ONLY_USER",
+  pwd: "READ_ONLY_PASSWORD",
+  roles: [
+    {role: "readAnyDatabase", db: "admin"},
+    {role: "read", db: "local"}
+  ]
+})
 ```
 
 :::note
-Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated.
+Replace `READ_ONLY_PASSWORD` with a password of your choice. The `readAnyDatabase` role allows monitoring collections across all databases, while the `read` role on the `local` database is required for oplog statistics collection used in Change Data Capture operations.
 :::
 
 4. Next, enable authentication, if not already enabled. Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
@@ -191,7 +205,7 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 | :----------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                                                                                          |
 | Connection String                          | The connection string of the source MongoDB cluster. For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string. For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
-| Database Names                             | The names of the MongoDB databases that contain the source collection(s) to sync. Allows specifying multiple databases to discover and sync collections from.                                                                                                                                                                                                                                                                                |
+| Database Names                             | The names of the MongoDB databases that contain the source collection(s) to sync. Allows specifying multiple databases to discover and sync collections from.                                                                                                                                                                                                                                                                              |
 | Username                                   | The username which is used to access the database. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                    |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                           |
 | Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                            |
@@ -209,7 +223,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
 | 2.0.2   | 2025-07-14 | [62938](https://github.com/airbytehq/airbyte/pull/62938) | Only require a single database read permission when configured to sync a single database.                 |
 | 2.0.1   | 2025-06-04 | [61369](https://github.com/airbytehq/airbyte/pull/61369) | Do not pin on 1.5.17                                                                                      |
 | 2.0.0   | 2025-05-27 | [60252](https://github.com/airbytehq/airbyte/pull/60252) | Add support for multiple databases                                                                        |
