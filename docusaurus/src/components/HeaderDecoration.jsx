@@ -334,10 +334,10 @@ const ConnectorMetadataCallout = ({
   </Callout>
 );
 
-const ConnectorTitle = ({ iconUrl, originalTitle, originalId, isArchived }) => (
+const ConnectorTitle = ({ iconUrl, originalTitle, isArchived }) => (
   <div className={styles.header}>
     <img src={iconUrl} alt="" className={styles.connectorIcon} />
-    <h1 id={originalId}>
+    <h1>
       {isArchived ? (
         <span>
           {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
@@ -357,7 +357,6 @@ export const HeaderDecoration = ({
   supportLevel,
   iconUrl,
   originalTitle,
-  originalId,
   github_url,
   cdkVersion,
   isLatestCDKString,
@@ -382,7 +381,6 @@ export const HeaderDecoration = ({
         <ConnectorTitle
           iconUrl={iconUrl}
           originalTitle={originalTitle}
-          originalId={originalId}
           isArchived={isArchived}
         />
         <CopyPageButton />
