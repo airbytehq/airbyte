@@ -86,12 +86,14 @@ class StateManagerFactory(
                 when (stream.configuredSyncMode) {
                     ConfiguredSyncMode.INCREMENTAL ->
                         stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
-                    ConfiguredSyncMode.FULL_REFRESH -> when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                        DataChannelMedium.SOCKET -> stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
-                        DataChannelMedium.STDIO -> stream
-                    }
-
-
+                    ConfiguredSyncMode.FULL_REFRESH ->
+                        when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                            DataChannelMedium.SOCKET ->
+                                stream.copy(
+                                    schema = stream.schema + metaFieldDecorator.globalMetaFields
+                                )
+                            DataChannelMedium.STDIO -> stream
+                        }
                 }
             }
         val globalStreams: List<Stream> =
