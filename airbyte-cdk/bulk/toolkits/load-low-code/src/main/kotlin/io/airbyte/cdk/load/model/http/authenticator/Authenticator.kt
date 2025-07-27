@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 /** Base interface for all authenticator types in declarative destinations. */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = BasicAccessAuthenticator::class, name = "BasicAccessAuthenticator")
+    JsonSubTypes.Type(value = BasicAccessAuthenticator::class, name = "BasicAccessAuthenticator"),
+    JsonSubTypes.Type(value = OAuthAuthenticator::class, name = "OAuthAuthenticator"),
 )
 sealed interface Authenticator

@@ -112,6 +112,9 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.4 | 2025-07-26 | [63913](https://github.com/airbytehq/airbyte/pull/63913) | Update dependencies |
+| 4.4.3 | 2025-07-19 | [63489](https://github.com/airbytehq/airbyte/pull/63489) | Update dependencies |
+| 4.4.2 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
 | 4.4.1 | 2025-07-12 | [61471](https://github.com/airbytehq/airbyte/pull/61471) | Update dependencies |
 | 4.4.0 | 2025-07-07 | [62831](https://github.com/airbytehq/airbyte/pull/62831) | Promoting release candidate 4.4.0-rc.1 to a main version. |
 | 4.4.0-rc.1 | 2025-07-02 | [62480](https://github.com/airbytehq/airbyte/pull/62480) | Migrate to manifest-only |

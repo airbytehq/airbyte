@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-dremio
   githubIssueLabel: source-dremio
   icon: dremio.svg
-  license: MIT
+  license: ELv2
   name: Dremio
   remoteRegistries:
     pypi:

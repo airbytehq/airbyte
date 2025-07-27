@@ -335,6 +335,10 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.14.1 | 2025-07-26 | [61472](https://github.com/airbytehq/airbyte/pull/61472) | Update dependencies |
+| 3.14.0 | 2025-07-23 | [63733](https://github.com/airbytehq/airbyte/pull/63733) | Promoting release candidate 3.14.0-rc.1 to a main version. |
+| 3.14.0-rc.1 | 2025-07-18 | [63357](https://github.com/airbytehq/airbyte/pull/63357) | Migrate incremental events streams                                                                                                                                     |
+| 3.13.0 | 2025-07-18 | [63369](https://github.com/airbytehq/airbyte/pull/63369) | Promoting release candidate 3.13.0-rc.2 to a main version. |
 | 3.13.0-rc.2| 2025-07-16 | [63348](https://github.com/airbytehq/airbyte/pull/63348) | Minor metadata update                                                                                                                             |
 | 3.13.0-rc.1| 2025-07-16 | [62510](https://github.com/airbytehq/airbyte/pull/62510) | Migrate `click_view`, `campaign_bidding_strategy`, and `ad_group_bidding_strategy` streams to low-code                                                                                                                             |
 | 3.12.0 | 2025-07-16 | [63335](https://github.com/airbytehq/airbyte/pull/63335) | Promoting release candidate 3.12.0-rc.2 to a main version. |

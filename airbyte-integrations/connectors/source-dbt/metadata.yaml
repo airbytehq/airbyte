@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-dbt
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.0@sha256:8a01d4fabdc7cbee92a583cc30fe08bb8ebba0e8d54569920d29378772b31699
   connectorSubtype: api
   connectorType: source
   definitionId: 6eaa4fc5-cf11-413d-a0d6-0023402f71f6
-  dockerImageTag: 0.0.25
+  dockerImageTag: 0.0.27
   dockerRepository: airbyte/source-dbt
   githubIssueLabel: source-dbt
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: DBT
   releaseDate: 2024-08-22
   releaseStage: alpha

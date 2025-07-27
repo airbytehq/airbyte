@@ -11,6 +11,13 @@ import org.junit.jupiter.api.Test
 class StringInterpolationTest {
 
     @Test
+    internal fun `test given string without interpolation when eval then return same string`() {
+        val string = "this is a string"
+        val interpolatedValue = StringInterpolator().interpolate(string, emptyMap())
+        assertEquals(string, interpolatedValue)
+    }
+
+    @Test
     internal fun `test given if statement true when eval then return proper value`() {
         val interpolatedValue =
             StringInterpolator()
