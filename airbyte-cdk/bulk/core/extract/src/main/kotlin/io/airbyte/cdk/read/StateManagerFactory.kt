@@ -88,6 +88,9 @@ class StateManagerFactory(
                         stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
                     ConfiguredSyncMode.FULL_REFRESH ->
                         when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                            // Because socket protobuf mode is using a sorted list of fields
+                            // Without including field id's we need to always send the full
+                            // set of fields as in the schema so sorting is maintained.
                             DataChannelMedium.SOCKET ->
                                 stream.copy(
                                     schema = stream.schema + metaFieldDecorator.globalMetaFields

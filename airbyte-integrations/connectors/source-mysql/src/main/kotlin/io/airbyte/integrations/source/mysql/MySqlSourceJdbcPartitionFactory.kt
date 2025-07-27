@@ -520,7 +520,7 @@ class MySqlSourceJdbcPartitionFactory(
             }
 
         return calculateBoundaries(num, lowerBound, upperBound)?.map { (l, u) ->
-            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+            MySqlSourceJdbcSplittableRfrSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
                 checkpointColumns,
