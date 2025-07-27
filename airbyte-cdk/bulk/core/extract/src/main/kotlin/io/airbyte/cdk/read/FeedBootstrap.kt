@@ -234,7 +234,7 @@ sealed class FeedBootstrap<T : Feed>(
             changes: Map<Field, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData.toProtobuf(defaultRecordData, valueVBuilder))
+                acceptWithoutChanges(recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder))
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
                 val c =
@@ -246,7 +246,7 @@ sealed class FeedBootstrap<T : Feed>(
                         .setReason(fieldValueChange.protobufReason())
                     rm.addChanges(c)
                 }
-                acceptWithChanges(recordData.toProtobuf(defaultRecordData, valueVBuilder), rm)
+                acceptWithChanges(recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder), rm)
             }
         }
 

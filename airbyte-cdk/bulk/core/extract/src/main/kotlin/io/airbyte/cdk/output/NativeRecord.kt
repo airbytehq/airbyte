@@ -29,6 +29,7 @@ import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -163,14 +164,28 @@ val anyProtoEncoder = textProtoEncoder
 // typealias AnyProtoEncoder = TextProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
+    schema: Set<FieldOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
+        schema.sortedBy { it.id }.forEachIndexed { index, field ->
+            this@toProtobuf[field.id]?.let { value ->
+                setData(
+                    index,
+                    value.fieldValue?.let {
+                        (value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                            valueBuilder.clear(),
+                            value.fieldValue!!
+                        )
+                    } ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
+                )
+            }
+        }
         // We use toSortedMap() to ensure that the order is consistent
         // Since protobuf has no field name the contract with destination is that
         // field are alphabetically ordered.
-        this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
+        /*this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
             @Suppress("UNCHECKED_CAST")
             setData(
                 index,
@@ -182,6 +197,6 @@ fun NativeRecordPayload.toProtobuf(
                 }
                     ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
             )
-        }
+        }*/
     }
 }
