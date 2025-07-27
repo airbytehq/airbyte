@@ -1,3 +1,7 @@
+---
+products: embedded
+---
+
 # Collecting credentials 
 
 When using Airbyte Embedded to collect credentials from your users, we recommend requesting an access token that only has permissions to read and modify integrations in their specific workspaces.
@@ -54,19 +58,4 @@ curl 'https://api.airbyte.ai/api/v1/embedded/partial_user_configs/' \
 The connection configuration should include all required fields from the connector specification, except for the ones included as default values in your source template.
 You can find the full connector specification in the [Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
-# Deleting Templates
- 
-You can delete Source Templates using <> # FIXME link to the API endpoint docs.
-
-Sources created from a deleted Source Template will stop showing up in the Widget.
-
-When deleting a Source Template, you can decide whether to keep existing Airbyte Sources and Syncs or to delete them using the <> parameter. # FIXME: add the link.
-
-Here is an example request:
-```
-```
-///// FIXME: add an example.
-
-# Updating Templates
-
-
+You can find the [reference docs for creating a source here](https://api.airbyte.ai/api/v1/redoc#tag/Embedded/operation/create_embedded_sources)
