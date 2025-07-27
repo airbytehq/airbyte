@@ -452,6 +452,8 @@ class MySqlSourceJdbcPartitionFactory(
                 unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
             is MySqlSourceJdbcCdcSnapshotPartition ->
                 unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
+            is MySqlSourceJdbcCdcRfrSnapshotPartition ->
+                unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
             else -> null
         }
             ?: listOf(unsplitPartition)
@@ -496,6 +498,29 @@ class MySqlSourceJdbcPartitionFactory(
 
         return calculateBoundaries(num, lowerBound, upperBound)?.map { (l, u) ->
             MySqlSourceJdbcSplittableRfrSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                checkpointColumns,
+                listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
+                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
+            )
+        }
+    }
+
+    private fun MySqlSourceJdbcCdcRfrSnapshotPartition.split(
+        num: Int,
+        upperBound: Any?,
+        effectiveLowerBound: Any?
+    ): List<MySqlSourceJdbcResumablePartition>? {
+        val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
+        val lowerBound =
+            when (lowerBound.isNullOrEmpty()) {
+                true -> effectiveLowerBound
+                false -> type.jsonDecoder.decode(lowerBound[0])
+            }
+
+        return calculateBoundaries(num, lowerBound, upperBound)?.map { (l, u) ->
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
                 checkpointColumns,
