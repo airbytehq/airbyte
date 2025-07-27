@@ -26,7 +26,7 @@ data:
   dockerRepository: airbyte/source-everhour
   githubIssueLabel: source-everhour
   icon: everhour.svg
-  license: MIT
+  license: ELv2
   name: Everhour
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/everhour

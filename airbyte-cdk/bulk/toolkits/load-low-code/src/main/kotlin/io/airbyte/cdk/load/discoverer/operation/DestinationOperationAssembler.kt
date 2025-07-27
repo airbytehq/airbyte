@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.discoverer.operation
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.load.command.DestinationOperation
-import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.discoverer.destinationobject.DestinationObject
@@ -27,7 +26,7 @@ private val logger = KotlinLogging.logger {}
  */
 class DestinationOperationAssembler(
     private val propertiesPath: List<String>,
-    private val propertyFactoriesByImportType: Map<ImportType, DiscoveredPropertyFactory>,
+    private val insertionMethods: List<InsertionMethod>,
     private val schemaRequester: HttpRequester?,
 ) {
     // FIXME once we figure out the decoder interface, we should have this configurable and/or move
@@ -55,8 +54,8 @@ class DestinationOperationAssembler(
             throw IllegalStateException("The schema returned by the API does not have properties")
         }
 
-        return propertyFactoriesByImportType.mapNotNull { (importType, propertyFactory) ->
-            createOperation(destinationObject.name, apiSchema, importType, propertyFactory)
+        return insertionMethods.mapNotNull {
+            createOperation(destinationObject.name, apiSchema, it)
         }
     }
 
@@ -73,11 +72,10 @@ class DestinationOperationAssembler(
     private fun createOperation(
         objectName: String,
         schemaFromApi: JsonNode,
-        importType: ImportType,
-        propertyFactory: DiscoveredPropertyFactory
+        insertionMethod: InsertionMethod
     ): DestinationOperation? {
         val properties =
-            schemaFromApi.extractArray(propertiesPath).map { propertyFactory.create(it) }
+            schemaFromApi.extractArray(propertiesPath).map { insertionMethod.createProperty(it) }
         val matchingKeys =
             properties.filter {
                 it.isMatchingKey()
@@ -86,13 +84,18 @@ class DestinationOperationAssembler(
 
         if (propertiesForSyncMode.isEmpty()) {
             logger.warn {
-                "Object $objectName with operation $importType has no properties and therefore will not be added to the catalog"
+                "Object $objectName with operation ${insertionMethod.getImportType()} has no properties and therefore will not be added to the catalog"
+            }
+            return null
+        } else if (insertionMethod.requiresMatchingKey() && matchingKeys.isEmpty()) {
+            logger.warn {
+                "Object $objectName with operation ${insertionMethod.getImportType()} requires at least one matching key but none was found"
             }
             return null
         }
         return DestinationOperation(
             objectName,
-            importType,
+            insertionMethod.getImportType(),
             getSchema(propertiesForSyncMode),
             matchingKeys.map { listOf(it.getName()) },
         )

@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
-  license: MIT
+  license: ELv2
   name: Aircall
   remoteRegistries:
     pypi:
