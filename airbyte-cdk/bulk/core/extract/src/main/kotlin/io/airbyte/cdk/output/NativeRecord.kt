@@ -171,6 +171,7 @@ fun NativeRecordPayload.toProtobuf(
     return recordMessageBuilder.apply {
         schema.sortedBy { it.id }.forEachIndexed { index, field ->
             this@toProtobuf[field.id]?.let { value ->
+                @Suppress("UNCHECKED_CAST")
                 setData(
                     index,
                     value.fieldValue?.let {

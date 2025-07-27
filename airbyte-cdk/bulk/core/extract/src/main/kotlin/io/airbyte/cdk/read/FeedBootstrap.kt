@@ -316,6 +316,7 @@ sealed class FeedBootstrap<T : Feed>(
                             builder.addData(
                                 when {
                                     decoratingFields.keys.contains(field.id) -> {
+                                        @Suppress("UNCHECKED_CAST")
                                         (decoratingFields[field.id]!!.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any> )
                                             .encode(
                                                 valueVBuilder.clear(),
