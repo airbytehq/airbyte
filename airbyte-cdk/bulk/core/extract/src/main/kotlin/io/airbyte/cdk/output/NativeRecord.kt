@@ -179,7 +179,7 @@ fun NativeRecordPayload.toProtobuf(
                         value.fieldValue?.let {
                             (value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
                                 valueBuilder.clear(),
-                                value.fieldValue!!
+                                value.fieldValue
                             )
                         }
                             ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
