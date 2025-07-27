@@ -82,61 +82,61 @@ files = [
 
 [[package]]
 name = "bracex"
-version = "2.5.post1"
+version = "2.6"
 description = "Bash style brace expander."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "bracex-2.5.post1-py3-none-any.whl", hash = "sha256:13e5732fec27828d6af308628285ad358047cec36801598368cb28bc631dbaf6"},
-    {file = "bracex-2.5.post1.tar.gz", hash = "sha256:12c50952415bfa773d2d9ccb8e79651b8cdb1f31a42f6091b804f6ba2b4a66b6"},
+    {file = "bracex-2.6-py3-none-any.whl", hash = "sha256:0b0049264e7340b3ec782b5cb99beb325f36c3782a32e36e876452fd49a09952"},
+    {file = "bracex-2.6.tar.gz", hash = "sha256:98f1347cd77e22ee8d967a30ad4e310b233f7754dbf31ff3fceb76145ba47dc7"},
 ]
 
 [[package]]
 name = "cachetools"
-version = "6.0.0"
+version = "6.1.0"
 description = "Extensible memoizing collections and decorators"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "cachetools-6.0.0-py3-none-any.whl", hash = "sha256:82e73ba88f7b30228b5507dce1a1f878498fc669d972aef2dde4f3a3c24f103e"},
-    {file = "cachetools-6.0.0.tar.gz", hash = "sha256:f225782b84438f828328fc2ad74346522f27e5b1440f4e9fd18b20ebfd1aa2cf"},
+    {file = "cachetools-6.1.0-py3-none-any.whl", hash = "sha256:1c7bb3cf9193deaf3508b7c5f2a79986c13ea38965c5adcff1f84519cf39163e"},
+    {file = "cachetools-6.1.0.tar.gz", hash = "sha256:b4c4f404392848db3ce7aac34950d17be4d864da4b8b66911008e430bc544587"},
 ]
 
 [[package]]
 name = "cattrs"
-version = "24.1.3"
+version = "25.1.1"
 description = "Composable complex class support for attrs and dataclasses."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "cattrs-24.1.3-py3-none-any.whl", hash = "sha256:adf957dddd26840f27ffbd060a6c4dd3b2192c5b7c2c0525ef1bd8131d8a83f5"},
-    {file = "cattrs-24.1.3.tar.gz", hash = "sha256:981a6ef05875b5bb0c7fb68885546186d306f10f0f6718fe9b96c226e68821ff"},
+    {file = "cattrs-25.1.1-py3-none-any.whl", hash = "sha256:1b40b2d3402af7be79a7e7e097a9b4cd16d4c06e6d526644b0b26a063a1cc064"},
+    {file = "cattrs-25.1.1.tar.gz", hash = "sha256:c914b734e0f2d59e5b720d145ee010f1fd9a13ee93900922a2f3f9d593b8382c"},
 ]
 
 [package.dependencies]
-attrs = ">=23.1.0"
+attrs = ">=24.3.0"
 exceptiongroup = {version = ">=1.1.1", markers = "python_version < \"3.11\""}
-typing-extensions = {version = ">=4.1.0,<4.6.3 || >4.6.3", markers = "python_version < \"3.11\""}
+typing-extensions = ">=4.12.2"
 
 [package.extras]
 bson = ["pymongo (>=4.4.0)"]
 cbor2 = ["cbor2 (>=5.4.6)"]
 msgpack = ["msgpack (>=1.0.5)"]
-msgspec = ["msgspec (>=0.18.5)"]
-orjson = ["orjson (>=3.9.2)"]
+msgspec = ["msgspec (>=0.19.0)"]
+orjson = ["orjson (>=3.10.7)"]
 pyyaml = ["pyyaml (>=6.0)"]
 tomlkit = ["tomlkit (>=0.11.8)"]
-ujson = ["ujson (>=5.7.0)"]
+ujson = ["ujson (>=5.10.0)"]
 
 [[package]]
 name = "certifi"
-version = "2025.4.26"
+version = "2025.7.14"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "certifi-2025.4.26-py3-none-any.whl", hash = "sha256:30350364dfe371162649852c63336a15c70c6510c2ad5015b21c2345311805f3"},
-    {file = "certifi-2025.4.26.tar.gz", hash = "sha256:0a816057ea3cdefcef70270d2c515e4506bbc954f417fa5ade2021213bb8f0c6"},
+    {file = "certifi-2025.7.14-py3-none-any.whl", hash = "sha256:6b31f564a415d79ee77df69d757bb49a5bb53bd9f756cbbe24394ffd6fc1f4b2"},
+    {file = "certifi-2025.7.14.tar.gz", hash = "sha256:8ea99dbdfaaf2ba2f9bac77b9249ef62ec5218e7c2b2e903378ed5fccf765995"},
 ]
 
 [[package]]
@@ -253,42 +253,42 @@ files = [
 
 [[package]]
 name = "couchbase"
-version = "4.3.6"
+version = "4.4.0"
 description = "Python Client for Couchbase"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "couchbase-4.3.6-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:5be316966474ea3ed270a5849dd220d05bc8ebdf4925bfc7f692981914e303a4"},
-    {file = "couchbase-4.3.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:9ffe7b8638c892139d3b4ab35d37f8f62387baf0143777695d94c681924cb9df"},
-    {file = "couchbase-4.3.6-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:bf71053d171058195a42b4a15c1c3142c7bf34c77994ba7771bdce5820bd6909"},
-    {file = "couchbase-4.3.6-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:80e5bd967d10349b71ad4f79b394c431bead5fcadee5b9bd6124baa7011926bc"},
-    {file = "couchbase-4.3.6-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:a23946b8878c42ba0a76e70dea473ac638ee5d274ee2b8fa8360a63bf3ca8c9a"},
-    {file = "couchbase-4.3.6-cp310-cp310-win_amd64.whl", hash = "sha256:bdd6894578dbfb8b8a5ff591de8f75abba32ee782fa073e3a7276afb5932b9d6"},
-    {file = "couchbase-4.3.6-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:4c10fd26271c5630196b9bcc0dd7e17a45fa9c7e46ed5756e5690d125423160c"},
-    {file = "couchbase-4.3.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:811eee7a6013cea7b15a718e201ee1188df162c656d27c7882b618ab57a08f3a"},
-    {file = "couchbase-4.3.6-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2fc177e0161beb1e6e8c4b9561efcb97c51aed55a77ee11836ca194d33ae22b7"},
-    {file = "couchbase-4.3.6-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:02afb1c1edd6b215f702510412b5177ed609df8135930c23789bbc5901dd1b45"},
-    {file = "couchbase-4.3.6-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:594e9eb17bb76ba8e10eeee17a16aef897dd90d33c6771cf2b5b4091da415b32"},
-    {file = "couchbase-4.3.6-cp311-cp311-win_amd64.whl", hash = "sha256:db22c56e38b8313f65807aa48309c8b8c7c44d5517b9ff1d8b4404d4740ec286"},
-    {file = "couchbase-4.3.6-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:a2ae13432b859f513485d4cee691e1e4fce4af23ed4218b9355874b146343f8c"},
-    {file = "couchbase-4.3.6-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4ea5ca7e34b5d023c8bab406211ab5d71e74a976ba25fa693b4f8e6c74f85aa2"},
-    {file = "couchbase-4.3.6-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:6eaca0a71fd8f9af4344b7d6474d7b74d1784ae9a658f6bc3751df5f9a4185ae"},
-    {file = "couchbase-4.3.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:0470378b986f69368caed6d668ac6530e635b0c1abaef3d3f524cfac0dacd878"},
-    {file = "couchbase-4.3.6-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:374ce392558f1688ac073aa0b15c256b1a441201d965811fd862357ff05d27a9"},
-    {file = "couchbase-4.3.6-cp312-cp312-win_amd64.whl", hash = "sha256:cd734333de34d8594504c163bb6c47aea9cc1f2cefdf8e91875dd9bf14e61e29"},
-    {file = "couchbase-4.3.6-cp313-cp313-macosx_10_15_x86_64.whl", hash = "sha256:fc4ca18893c5b73852c724113681019c409737db78c5a4f68f1e3e2981b80bf4"},
-    {file = "couchbase-4.3.6-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:eb4706b4bd1eded822faccb58a1d894931bf44d3a7b7e412f743226ea769cee3"},
-    {file = "couchbase-4.3.6-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:b82ffd2673e400c781d8c8f5b1655cf7ce8aae8d0287bb5dc28c10882ff8516e"},
-    {file = "couchbase-4.3.6-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:1546c44b30927509e834aff254574c58ac9c4d8928fb1b4c224fec7daa4b5d05"},
-    {file = "couchbase-4.3.6-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:4a8655a37471a443eab1d90b3afb4b7e8ef1a17cd26cdf9ed767aca82e73bd65"},
-    {file = "couchbase-4.3.6-cp313-cp313-win_amd64.whl", hash = "sha256:29cf14c44f84d109869f6e1c03907b5efe01482902c110509dbd9f37e238d035"},
-    {file = "couchbase-4.3.6-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:3c738685191684467086f13c74086f5c04eef7c515216fd59486177224b04e66"},
-    {file = "couchbase-4.3.6-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:0cc8f92f02cf20ea770cb3ccb08f0cacc4ceec06d8f9582f4d1d8aefee90bbee"},
-    {file = "couchbase-4.3.6-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2a329451eff8ff1fea2058fd9a3afc9df2994c03483145422f8690bb86b4fde6"},
-    {file = "couchbase-4.3.6-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5c4bf6b7b5bc24a7e2e068b7ad7e6b25b04053bef2ef597bdda3cb4eb04755f0"},
-    {file = "couchbase-4.3.6-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:978a6927d1fc45474792238d7885f3ad3f6493cc662db098caf5786a4a339aec"},
-    {file = "couchbase-4.3.6-cp39-cp39-win_amd64.whl", hash = "sha256:1e13e35bf8c3db0a96b835f663c47f99a29ead5f0e818509b2a50c5fa5828513"},
-    {file = "couchbase-4.3.6.tar.gz", hash = "sha256:d58c5ccdad5d85fc026f328bf4190c4fc0041fdbe68ad900fb32fc5497c3f061"},
+    {file = "couchbase-4.4.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:b287bf9a6780545d0c0f68b27f2957d17d7672a2f11b8c27a210fb70538e061a"},
+    {file = "couchbase-4.4.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a16813b6329ca0c8e4aad68e801bf8c8ef3c60383dfb7db88a8d9e193a8d0924"},
+    {file = "couchbase-4.4.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:3c4327e9c2ac4f968aef0d63ebfdf4fec667163b0560d340b3b50b27a44186cf"},
+    {file = "couchbase-4.4.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:82cde7cca3039d84c30242ce739042afcc6e713e9dbe6e29f2cedb8fd09ff29b"},
+    {file = "couchbase-4.4.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:d4314fe9bfad09002c8359fcb11811b152760ec812db689104154e329ed0f19d"},
+    {file = "couchbase-4.4.0-cp310-cp310-win_amd64.whl", hash = "sha256:5a099e46584240b9c73c47e33928333a7ec2d60ad5286cffb211290ac74407c1"},
+    {file = "couchbase-4.4.0-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:8b068c5e0fe25f51fb5e4d7411a8d0df5d571f858e5a1df25f8ef6dda52acf78"},
+    {file = "couchbase-4.4.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:ad5d45d74473951b1c7c7a580279dec390750d760dfd9f2b709fc51a88fc7644"},
+    {file = "couchbase-4.4.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:5782f50d8612b04a5f03875003a50344b47df5357a046db044ee04d0d8bdf66f"},
+    {file = "couchbase-4.4.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:95906185b789d98d345210a318eccdb8a1f8f810f90a2d61be0ca210708cfe19"},
+    {file = "couchbase-4.4.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:5bd9d5130f27621557df7e80c54d3ef98b86d86a58f4daa61939c0b5e584e726"},
+    {file = "couchbase-4.4.0-cp311-cp311-win_amd64.whl", hash = "sha256:b867e4071c94193af0e19fe08c23d06d894e2fb7920c1d732681ac63ca15c46a"},
+    {file = "couchbase-4.4.0-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:f30555553ef45ac86dbf26e4d52eaf23545e9e0ea88420a6fccfc5a1f05fd035"},
+    {file = "couchbase-4.4.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:ff4d1a963440e8a3095368b8c9a6a06a6c009ae9bcbea25b4f43b9c0cbecf867"},
+    {file = "couchbase-4.4.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:f5fba44d95092018dc9e716cc2c38591931d4329136729a0d8dd59a709335305"},
+    {file = "couchbase-4.4.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:40b6896dac903185668953597cebc4c4cf825393da76611d67e1b7173433406b"},
+    {file = "couchbase-4.4.0-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:2b178cce7e3ea0f97596c4368bdc7a5ed2a491d5cea2dc12be788535a30ddc5a"},
+    {file = "couchbase-4.4.0-cp312-cp312-win_amd64.whl", hash = "sha256:54d949da4dd8afe30458dc30b2a85a12e6a1bdc5c4d1c97d04907e37db642b67"},
+    {file = "couchbase-4.4.0-cp313-cp313-macosx_10_15_x86_64.whl", hash = "sha256:40d38e482b8250614e5ae3631d5e7c7738597053598f73ccb2426da1d4cdb196"},
+    {file = "couchbase-4.4.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:9e1ae9df770f9248a85148683306fad80126ad5c34cc591b346577a08517ed78"},
+    {file = "couchbase-4.4.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:5c0661cd5e95b03525077ce97b40ee9aa0bfc6cf3d1a71ea29fc39636030dbd0"},
+    {file = "couchbase-4.4.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:aadfdd7c920ddcfb0b6491eeadc63dceeda2f74360fea4971c011b2c7b4d18f2"},
+    {file = "couchbase-4.4.0-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:43884a5cb0ccaadb6d484e0a0d8adc11bdd6b617ca0cd66854d63eaebda3bf73"},
+    {file = "couchbase-4.4.0-cp313-cp313-win_amd64.whl", hash = "sha256:671bdfc74383f76890744bef12b06721faccc3206c689058a2c5c72eaccfb0bc"},
+    {file = "couchbase-4.4.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:ec3f39c52aacc3274ce139336f62fbe71eb8e3a1c0d91a2312d0f6291c5814c0"},
+    {file = "couchbase-4.4.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:22efd68e086923da20ed2f05e0085a1818e37e95548f1e067d76a16e18180cdb"},
+    {file = "couchbase-4.4.0-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:b957d4e455f0128f80514748c066d488cbbc2a58ab7c7db0b72f2d254745bffa"},
+    {file = "couchbase-4.4.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:40977de413c8ce25e1400e741af0bc7ab013fd101e9a5bc0c35aa54154846237"},
+    {file = "couchbase-4.4.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:c26f609570d849f46415d00457ce805bb111074c15c0e2ac2c54c2405f2e87dc"},
+    {file = "couchbase-4.4.0-cp39-cp39-win_amd64.whl", hash = "sha256:9cc46792d0dc7d552268c0e731a175740f787830e26896f936995cd556e601e9"},
+    {file = "couchbase-4.4.0.tar.gz", hash = "sha256:5234dfa0a500ec1dd9b89318b8ca6303f587cc2d2b4772341f937f1473bbaa96"},
 ]
 
 [[package]]
@@ -647,6 +647,20 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
+name = "pygments"
+version = "2.19.2"
+description = "Pygments is a syntax highlighting package written in Python."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b"},
+    {file = "pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887"},
+]
+
+[package.extras]
+windows-terminal = ["colorama (>=0.4.6)"]
+
+[[package]]
 name = "pyrate-limiter"
 version = "3.1.1"
 description = "Python Rate-Limiter using Leaky-Bucket Algorithm"
@@ -704,35 +718,36 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.3.5"
+version = "8.4.1"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820"},
-    {file = "pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"},
+    {file = "pytest-8.4.1-py3-none-any.whl", hash = "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7"},
+    {file = "pytest-8.4.1.tar.gz", hash = "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c"},
 ]
 
 [package.dependencies]
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
-exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
-iniconfig = "*"
-packaging = "*"
+colorama = {version = ">=0.4", markers = "sys_platform == \"win32\""}
+exceptiongroup = {version = ">=1", markers = "python_version < \"3.11\""}
+iniconfig = ">=1"
+packaging = ">=20"
 pluggy = ">=1.5,<2"
+pygments = ">=2.7.2"
 tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 
 [package.extras]
-dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "pytest-mock"
-version = "3.14.0"
+version = "3.14.1"
 description = "Thin-wrapper around the mock package for easier use with pytest"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0"},
-    {file = "pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f"},
+    {file = "pytest_mock-3.14.1-py3-none-any.whl", hash = "sha256:178aefcd11307d874b4cd3100344e7e2d888d9791a6a1d9bfe90fbc1b74fd1d0"},
+    {file = "pytest_mock-3.14.1.tar.gz", hash = "sha256:159e9edac4c451ce77a5cdb9fc5d1100708d2dd4ba3c3df572f14097351af80e"},
 ]
 
 [package.dependencies]
@@ -830,18 +845,18 @@ files = [
 
 [[package]]
 name = "requests"
-version = "2.32.3"
+version = "2.32.4"
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
-    {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
+    {file = "requests-2.32.4-py3-none-any.whl", hash = "sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c"},
+    {file = "requests-2.32.4.tar.gz", hash = "sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422"},
 ]
 
 [package.dependencies]
 certifi = ">=2017.4.17"
-charset-normalizer = ">=2,<4"
+charset_normalizer = ">=2,<4"
 idna = ">=2.5,<4"
 urllib3 = ">=1.21.1,<3"
 
@@ -898,13 +913,13 @@ fixture = ["fixtures"]
 
 [[package]]
 name = "setuptools"
-version = "80.8.0"
+version = "80.9.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "setuptools-80.8.0-py3-none-any.whl", hash = "sha256:95a60484590d24103af13b686121328cc2736bee85de8936383111e421b9edc0"},
-    {file = "setuptools-80.8.0.tar.gz", hash = "sha256:49f7af965996f26d43c8ae34539c8d99c5042fbff34302ea151eaa9c207cd257"},
+    {file = "setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922"},
+    {file = "setuptools-80.9.0.tar.gz", hash = "sha256:f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c"},
 ]
 
 [package.extras]
@@ -970,13 +985,13 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.13.2"
-description = "Backported and Experimental Type Hints for Python 3.8+"
+version = "4.14.1"
+description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "typing_extensions-4.13.2-py3-none-any.whl", hash = "sha256:a439e7c04b49fec3e5d3e2beaa21755cadbbdc391694e28ccdd36ca4a1408f8c"},
-    {file = "typing_extensions-4.13.2.tar.gz", hash = "sha256:e6c81219bd689f51865d9e372991c540bda33a0379d5573cddb9a3a23f7caaef"},
+    {file = "typing_extensions-4.14.1-py3-none-any.whl", hash = "sha256:d1e1e3b58374dc93031d6eda2420a48ea44a36c2b4766a4fdeb3710755731d76"},
+    {file = "typing_extensions-4.14.1.tar.gz", hash = "sha256:38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36"},
 ]
 
 [[package]]
@@ -998,13 +1013,13 @@ dev = ["mypy", "pre-commit", "pytest", "pytest-cov", "pytest-socket", "ruff"]
 
 [[package]]
 name = "urllib3"
-version = "2.4.0"
+version = "2.5.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "urllib3-2.4.0-py3-none-any.whl", hash = "sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813"},
-    {file = "urllib3-2.4.0.tar.gz", hash = "sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466"},
+    {file = "urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc"},
+    {file = "urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"},
 ]
 
 [package.extras]
