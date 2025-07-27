@@ -169,20 +169,23 @@ fun NativeRecordPayload.toProtobuf(
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
-        schema.sortedBy { it.id }.forEachIndexed { index, field ->
-            this@toProtobuf[field.id]?.let { value ->
-                @Suppress("UNCHECKED_CAST")
-                setData(
-                    index,
-                    value.fieldValue?.let {
-                        (value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
-                            valueBuilder.clear(),
-                            value.fieldValue!!
-                        )
-                    } ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
-                )
+        schema
+            .sortedBy { it.id }
+            .forEachIndexed { index, field ->
+                this@toProtobuf[field.id]?.let { value ->
+                    @Suppress("UNCHECKED_CAST")
+                    setData(
+                        index,
+                        value.fieldValue?.let {
+                            (value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                                valueBuilder.clear(),
+                                value.fieldValue!!
+                            )
+                        }
+                            ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
+                    )
+                }
             }
-        }
         // We use toSortedMap() to ensure that the order is consistent
         // Since protobuf has no field name the contract with destination is that
         // field are alphabetically ordered.

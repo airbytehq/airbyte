@@ -95,7 +95,8 @@ class MySqlSourceOperations :
     ) {
         recordData.set(
             CommonMetaField.CDC_UPDATED_AT.id,
-            FieldValueEncoder(timestamp, CdcOffsetDateTimeMetaFieldType.jsonEncoder))
+            FieldValueEncoder(timestamp, CdcOffsetDateTimeMetaFieldType.jsonEncoder)
+        )
         recordData.set(
             MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             FieldValueEncoder(0, CdcIntegerMetaFieldType.jsonEncoder)
@@ -108,7 +109,8 @@ class MySqlSourceOperations :
         val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
         recordData.set(
             MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
-            FieldValueEncoder(position.fileName, CdcStringMetaFieldType.jsonEncoder))
+            FieldValueEncoder(position.fileName, CdcStringMetaFieldType.jsonEncoder)
+        )
         recordData.set(
             MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             FieldValueEncoder(position.position, CdcIntegerMetaFieldType.jsonEncoder)

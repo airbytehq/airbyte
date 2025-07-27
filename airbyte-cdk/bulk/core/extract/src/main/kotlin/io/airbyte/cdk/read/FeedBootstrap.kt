@@ -234,7 +234,9 @@ sealed class FeedBootstrap<T : Feed>(
             changes: Map<Field, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder))
+                acceptWithoutChanges(
+                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder)
+                )
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
                 val c =
@@ -246,7 +248,10 @@ sealed class FeedBootstrap<T : Feed>(
                         .setReason(fieldValueChange.protobufReason())
                     rm.addChanges(c)
                 }
-                acceptWithChanges(recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder), rm)
+                acceptWithChanges(
+                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder),
+                    rm
+                )
             }
         }
 
@@ -300,7 +305,10 @@ sealed class FeedBootstrap<T : Feed>(
                     val decoratingFields: NativeRecordPayload = mutableMapOf()
                     if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
                         metaFieldDecorator.decorateRecordData(
-                            timestamp = socketProtobufOutputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC),
+                            timestamp =
+                                socketProtobufOutputConsumer.recordEmittedAt.atOffset(
+                                    ZoneOffset.UTC
+                                ),
                             globalStateValue =
                                 if (precedingGlobalFeed != null)
                                     stateManager.scoped(precedingGlobalFeed).current()
@@ -317,7 +325,9 @@ sealed class FeedBootstrap<T : Feed>(
                                 when {
                                     decoratingFields.keys.contains(field.id) -> {
                                         @Suppress("UNCHECKED_CAST")
-                                        (decoratingFields[field.id]!!.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any> )
+                                        (decoratingFields[field.id]!!
+                                                .jsonEncoder
+                                                .toProtobufEncoder() as ProtoEncoder<Any>)
                                             .encode(
                                                 valueVBuilder.clear(),
                                                 /*decoratingFields[field.id]!!.fieldValue*/
