@@ -187,14 +187,68 @@ class IAMSAMLProvidersStream(BaseIAMStream):
             "properties": {
                 "Arn": {"type": "string"},
                 "ValidUntil": {"type": ["string", "null"], "format": "date-time"},
-                "CreateDate": {"type": ["string", "null"], "format": "date-time"}
+                "CreateDate": {"type": ["string", "null"], "format": "date-time"},
+                "SAMLProviderUUID": {"type": ["string", "null"]},
+                "SAMLMetadataDocument": {"type": ["string", "null"]},
+                "AssertionEncryptionMode": {"type": ["string", "null"]},
+                "Tags": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Key": {"type": "string"},
+                            "Value": {"type": "string"}
+                        }
+                    }
+                },
+                "PrivateKeyList": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "KeyId": {"type": "string"},
+                            "Timestamp": {"type": "string", "format": "date-time"}
+                        }
+                    }
+                }
             }
         }
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # First, list all SAML providers
         response = self.iam.list_saml_providers()
         for provider in response.get("SAMLProviderList", []):
-            yield provider
+            # Get detailed information for each provider
+            try:
+                detailed_response = self.iam.get_saml_provider(
+                    SAMLProviderArn=provider["Arn"]
+                )
+                
+                # Merge the basic info from list_saml_providers with detailed info from get_saml_provider
+                detailed_provider = {
+                    "Arn": provider["Arn"],
+                    "ValidUntil": provider.get("ValidUntil"),
+                    "CreateDate": provider.get("CreateDate"),
+                    "SAMLProviderUUID": detailed_response.get("SAMLProviderUUID"),
+                    "SAMLMetadataDocument": detailed_response.get("SAMLMetadataDocument"),
+                    "AssertionEncryptionMode": detailed_response.get("AssertionEncryptionMode"),
+                    "Tags": detailed_response.get("Tags"),
+                    "PrivateKeyList": detailed_response.get("PrivateKeyList")
+                }
+                
+                yield detailed_provider
+            except Exception as e:
+                # If we can't fetch detailed info, return the basic info from list_saml_providers
+                # This ensures backward compatibility and robustness
+                provider_copy = provider.copy()
+                provider_copy.update({
+                    "SAMLProviderUUID": None,
+                    "SAMLMetadataDocument": None,
+                    "AssertionEncryptionMode": None,
+                    "Tags": None,
+                    "PrivateKeyList": None
+                })
+                yield provider_copy
 
 
 class IAMUserInlinePoliciesStream(BaseIAMStream):

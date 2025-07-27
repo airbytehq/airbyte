@@ -2,6 +2,22 @@
   "streams": [
     {
       "stream": {
+        "name": "saml_provider",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "Arn": {"type": "string"},
+            "ValidUntil": {"type": ["string", "null"], "format": "date-time"},
+            "CreateDate": {"type": ["string", "null"], "format": "date-time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "policy",
         "json_schema": {
           "type": "object",
@@ -75,22 +91,6 @@
             "Arn": {"type": "string"},
             "Path": {"type": "string"},
             "CreateDate": {"type": "string", "format": "date-time"}
-          }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "saml_provider",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "Arn": {"type": "string"},
-            "ValidUntil": {"type": ["string", "null"], "format": "date-time"},
-            "CreateDate": {"type": ["string", "null"], "format": "date-time"}
           }
         },
         "supported_sync_modes": ["full_refresh"]
