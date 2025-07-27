@@ -446,17 +446,17 @@ definitions:
       failed:
         - failed
       running:
-        - pending
+        - running
       timeout:
         - timeout
       completed:
-        - ready
+        - completed
     download_target_extractor:
       type: CustomRecordExtractor
       class_name: source_declarative_manifest.components.DownloadTargetExtractor
     download_requester:
       $ref: "#/definitions/base_requester"
-      path: "{{ stream_slice.extra_fields['download_target'] }}"
+      path: "{{ download_target }}"
       http_method: GET
       request_headers:
         Accept-Encoding: gzip
@@ -480,9 +480,33 @@ definitions:
       refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
-    error_handlers:
-      type: CustomErrorHandler
-      class_name: "source_declarative_manifest.components.YoutubeAnalyticsErrorHandler"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          error_message: Authentication failed. Please verify your credentials.
+        - type: HttpResponseFilter
+          http_codes:
+            - 403
+          error_message: >-
+            Authorization failed. Please ensure you have the correct
+            permissions.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: []
+          predicate: >-
+            {{ 'code' in response and response['error']['code'] >= 500 and
+            response['error']['code'] < 600 }}
+        - type: HttpResponseFilter
+          action: RETRY
+          predicate: >-
+            {{ 'code' in response and response['error']['code'] == 429 and
+            'FreeQuotaRequestsPerDayPerProject' not in response }}
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 30
 
 streams:
   - $ref: "#/definitions/streams/channel_annotations_a1"
