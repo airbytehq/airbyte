@@ -318,19 +318,22 @@ sealed class FeedBootstrap<T : Feed>(
                         )
                     }
 
+                    // Unlike STDIO mode, in socket mode we always include all scehma fields
+                    // Including decoraiton even when it has to value.
+                    // This is necessary beacuse in PROTOBUF mode we don't have field names so
+                    // the sorted order of fields is used to determine the field position on the
+                    // other side.
                     stream.schema
                         .sortedBy { it.id }
                         .forEach { field ->
                             builder.addData(
                                 when {
                                     decoratingFields.keys.contains(field.id) -> {
-                                        @Suppress("UNCHECKED_CAST")
                                         (decoratingFields[field.id]!!
                                                 .jsonEncoder
                                                 .toProtobufEncoder() as ProtoEncoder<Any>)
                                             .encode(
                                                 valueVBuilder.clear(),
-                                                /*decoratingFields[field.id]!!.fieldValue*/
                                                 decoratingFields[field.id]!!.fieldValue!!
                                             )
                                     }
