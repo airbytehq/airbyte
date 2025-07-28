@@ -335,6 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.14.2 | 2025-07-28 | [63753](https://github.com/airbytehq/airbyte/pull/63753) | Switching `click_view` to paginated endpoint for improved reliability |
 | 3.14.1 | 2025-07-26 | [61472](https://github.com/airbytehq/airbyte/pull/61472) | Update dependencies |
 | 3.14.0 | 2025-07-23 | [63733](https://github.com/airbytehq/airbyte/pull/63733) | Promoting release candidate 3.14.0-rc.1 to a main version. |
 | 3.14.0-rc.1 | 2025-07-18 | [63357](https://github.com/airbytehq/airbyte/pull/63357) | Migrate incremental events streams                                                                                                                                     |

@@ -6,7 +6,6 @@ import copy
 import json
 import logging
 import re
-from collections import defaultdict
 from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
