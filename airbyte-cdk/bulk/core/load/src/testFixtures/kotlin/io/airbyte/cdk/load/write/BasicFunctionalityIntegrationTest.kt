@@ -393,10 +393,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     .toString(),
                             sourceRecordCount = 0,
                             additionalProperties =
-                                mapOf(
-                                    CHECKPOINT_INDEX_NAME to 5,
-                                    CHECKPOINT_ID_NAME to "1"
-                                ),
+                                mapOf(CHECKPOINT_INDEX_NAME to 5, CHECKPOINT_ID_NAME to "1"),
                         ),
                     ),
                     InputStreamCheckpoint(
@@ -410,10 +407,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     .toString(),
                             sourceRecordCount = 0,
                             additionalProperties =
-                                mapOf(
-                                    CHECKPOINT_INDEX_NAME to 4,
-                                    CHECKPOINT_ID_NAME to "2"
-                                ),
+                                mapOf(CHECKPOINT_INDEX_NAME to 4, CHECKPOINT_ID_NAME to "2"),
                         ),
                     ),
                     InputStreamCheckpoint(
@@ -427,10 +421,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     .toString(),
                             sourceRecordCount = 0,
                             additionalProperties =
-                                mapOf(
-                                    CHECKPOINT_INDEX_NAME to 3,
-                                    CHECKPOINT_ID_NAME to "3"
-                                ),
+                                mapOf(CHECKPOINT_INDEX_NAME to 3, CHECKPOINT_ID_NAME to "3"),
                         ),
                     ),
                     InputStreamCheckpoint(
@@ -444,10 +435,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     .toString(),
                             sourceRecordCount = 0,
                             additionalProperties =
-                                mapOf(
-                                    CHECKPOINT_INDEX_NAME to 2,
-                                    CHECKPOINT_ID_NAME to "4"
-                                ),
+                                mapOf(CHECKPOINT_INDEX_NAME to 2, CHECKPOINT_ID_NAME to "4"),
                         ),
                     ),
                     InputStreamCheckpoint(
@@ -461,10 +449,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     .toString(),
                             sourceRecordCount = 0,
                             additionalProperties =
-                                mapOf(
-                                    CHECKPOINT_INDEX_NAME to 1,
-                                    CHECKPOINT_ID_NAME to "5"
-                                ),
+                                mapOf(CHECKPOINT_INDEX_NAME to 1, CHECKPOINT_ID_NAME to "5"),
                         ),
                     ),
                 ),

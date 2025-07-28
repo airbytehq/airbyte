@@ -17,7 +17,6 @@ import org.junit.jupiter.api.assertThrows
 
 class StreamManagerTest {
 
-    /** Adjust this helper to match the real CheckpointId implementation. */
     private fun checkpoint(id: String) = CheckpointId(id)
 
     @Test
