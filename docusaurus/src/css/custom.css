@@ -406,6 +406,3 @@ nav a.navbar__link--active {
 header h1 {
   margin-bottom: 0;
 }
-html {
-  scroll-padding-top: calc(var(--ifm-navbar-height) + 50px);
-}
