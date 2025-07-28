@@ -172,6 +172,9 @@ fun NativeRecordPayload.toProtobuf(
         schema
             .sortedBy { it.id }
             .forEachIndexed { index, field ->
+                // Protobuf does not have field names, so we use a sorted order of fields
+                // So for destination to know which fields it is, we order the fields alphabetically
+                // to make sure that the order is consistent.
                 this@toProtobuf[field.id]?.let { value ->
                     @Suppress("UNCHECKED_CAST")
                     setData(
@@ -186,21 +189,5 @@ fun NativeRecordPayload.toProtobuf(
                     )
                 }
             }
-        // We use toSortedMap() to ensure that the order is consistent
-        // Since protobuf has no field name the contract with destination is that
-        // field are alphabetically ordered.
-        /*this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
-            @Suppress("UNCHECKED_CAST")
-            setData(
-                index,
-                entry.value.fieldValue?.let {
-                    (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
-                        valueBuilder.clear(),
-                        entry.value.fieldValue!!
-                    )
-                }
-                    ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
-            )
-        }*/
     }
 }
