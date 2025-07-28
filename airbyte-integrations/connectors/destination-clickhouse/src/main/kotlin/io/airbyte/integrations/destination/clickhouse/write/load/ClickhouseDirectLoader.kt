@@ -17,12 +17,18 @@ import io.airbyte.integrations.destination.clickhouse.write.transform.RecordMung
 class ClickhouseDirectLoader(
     @VisibleForTesting val munger: RecordMunger,
     @VisibleForTesting val buffer: BinaryRowInsertBuffer,
+    @VisibleForTesting val configuredRecordCountWindow: Long?,
+    @VisibleForTesting val configuredBytesWindow: Long?,
 ) : DirectLoader {
-    private var recordCountWindow = SizedWindow(Constants.MAX_BATCH_SIZE_RECORDS)
+    private var recordCountWindow =
+        SizedWindow(configuredRecordCountWindow ?: Constants.MAX_BATCH_SIZE_RECORDS)
     // the sum of serialized json bytes we've accumulated
-    private var bytesWindow = SizedWindow(Constants.MAX_BATCH_SIZE_BYTES)
+    private var bytesWindow = SizedWindow(configuredBytesWindow ?: Constants.MAX_BATCH_SIZE_BYTES)
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        io.airbyte.integrations.destination.clickhouse.client.log.error {
+            "recordCountWindow: $configuredRecordCountWindow, bytesWindow: $configuredBytesWindow"
+        }
         val munged = munger.transformForDest(record)
         buffer.accumulate(munged)
 

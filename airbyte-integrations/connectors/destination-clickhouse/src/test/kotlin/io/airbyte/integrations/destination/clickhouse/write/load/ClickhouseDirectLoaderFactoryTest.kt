@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.write.transform.RecordMunger
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -28,11 +29,19 @@ class ClickhouseDirectLoaderFactoryTest {
 
     @MockK lateinit var munger: RecordMunger
 
+    @MockK(relaxed = true) lateinit var clickhouseConfiguration: ClickhouseConfiguration
+
     private lateinit var factory: ClickhouseDirectLoaderFactory
 
     @BeforeEach
     fun setup() {
-        factory = ClickhouseDirectLoaderFactory(clickhouseClient, stateStore, munger)
+        factory =
+            ClickhouseDirectLoaderFactory(
+                clickhouseClient,
+                stateStore,
+                munger,
+                clickhouseConfiguration
+            )
     }
 
     @ParameterizedTest
@@ -43,10 +52,17 @@ class ClickhouseDirectLoaderFactoryTest {
     ) {
         every { stateStore.get(stream) } returns DirectLoadTableExecutionConfig(table)
 
+        val recordWindowSized = 123L
+        val bytesWindowSized = 456L
+        every { clickhouseConfiguration.recordWindowSize } returns recordWindowSized
+        every { clickhouseConfiguration.bytesWindowSize } returns bytesWindowSized
+
         val result = factory.create(stream, 0) // part isn't used
 
         assertEquals(table, result.buffer.tableName)
         assertEquals(munger, result.munger)
+        assertEquals(recordWindowSized, result.configuredRecordCountWindow)
+        assertEquals(bytesWindowSized, result.configuredBytesWindow)
     }
 
     companion object {

@@ -17,6 +17,8 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_BYTES
+import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_RECORDS
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.Requires
@@ -31,6 +33,8 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val password: String
     abstract val enableJson: Boolean?
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
+    abstract val recordWindowSize: Long?
+    abstract val bytesWindowSize: Long?
 }
 
 @Singleton
@@ -100,6 +104,18 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @JsonSchemaInject(json = """{"order":5}""")
     override fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
+
+    @get:JsonSchemaTitle("Record Sized Window")
+    @get:JsonPropertyDescription("The maximum number of records that should be written to a batch.")
+    @get:JsonProperty("record_sized_window")
+    @get:JsonSchemaInject(json = """{"order": 8}""")
+    override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
+
+    @get:JsonSchemaTitle("Bytes Sized Window")
+    @get:JsonPropertyDescription("The maximum number of bytes that should be written to a batch.")
+    @get:JsonProperty("bytes_sized_window")
+    @get:JsonSchemaInject(json = """{"order": 9}""")
+    override val bytesWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
 }
 
 @Singleton
@@ -169,6 +185,22 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @JsonSchemaInject(json = """{"order":7}""")
     override fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
+
+    @get:JsonSchemaTitle("Record Window Size")
+    @get:JsonPropertyDescription(
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch."
+    )
+    @get:JsonProperty("record_window_size")
+    @get:JsonSchemaInject(json = """{"order": 8}""")
+    override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
+
+    @get:JsonSchemaTitle("Bytes Window Size")
+    @get:JsonPropertyDescription(
+        "Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
+    )
+    @get:JsonProperty("bytes_window_size")
+    @get:JsonSchemaInject(json = """{"order": 9}""")
+    override val bytesWindowSize: Long? = MAX_BATCH_SIZE_BYTES
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {

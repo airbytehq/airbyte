@@ -31,7 +31,7 @@ class ClickhouseDirectLoaderTest {
     @BeforeEach
     fun setup() {
         every { munger.transformForDest(any()) } returns Fixtures.mungedRecord
-        loader = ClickhouseDirectLoader(munger, buffer)
+        loader = ClickhouseDirectLoader(munger, buffer, 42, 42)
     }
 
     @Test
