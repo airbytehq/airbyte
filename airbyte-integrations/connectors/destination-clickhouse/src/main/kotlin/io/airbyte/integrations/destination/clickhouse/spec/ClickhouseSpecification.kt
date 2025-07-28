@@ -17,7 +17,6 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
-import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_BYTES
 import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_RECORDS
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.ConfigurationBuilder
