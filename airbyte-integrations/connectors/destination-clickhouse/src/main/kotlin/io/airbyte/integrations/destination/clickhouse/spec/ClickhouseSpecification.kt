@@ -115,7 +115,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Bytes Window Size")
     @get:JsonPropertyDescription(
-        "Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
+        "Warning: Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
     )
     @get:JsonProperty("bytes_window_size")
     @get:JsonSchemaInject(json = """{"order": 9}""")
@@ -200,7 +200,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Bytes Window Size")
     @get:JsonPropertyDescription(
-        "Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
+        "Warning: Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
     )
     @get:JsonProperty("bytes_window_size")
     @get:JsonSchemaInject(json = """{"order": 9}""")
