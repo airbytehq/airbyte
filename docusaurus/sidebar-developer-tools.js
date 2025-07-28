@@ -11,6 +11,10 @@ export default {
       items: [
         {
           type: "category",
+          label: "Embedded",
+          items: [
+        {
+          type: "category",
           label: "Widget",
           items: [
             "prerequisites-setup",
@@ -29,6 +33,19 @@ export default {
             "embedded/api/configuring-sources",
           ]
         },
+
+          ]
+        },
+        {
+          type: "doc",
+          id: "pyairbyte-mcp/README",
+          label: "PyAirbyte MCP",
+        },
+        {
+          type: "doc",
+          id: "authentication-proxy/README",
+          label: "Authentication Proxy",
+        }
       ]
     }
   ],
