@@ -55,16 +55,16 @@
         "order" : 6,
         "default" : false
       },
-      "record_sized_window" : {
+      "record_window_size" : {
         "type" : "integer",
-        "description" : "The maximum number of records that should be written to a batch.",
-        "title" : "Record Sized Window",
+        "description" : "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch.",
+        "title" : "Record Window Size",
         "order" : 8
       },
-      "bytes_sized_window" : {
+      "bytes_window_size" : {
         "type" : "integer",
-        "description" : "The maximum number of bytes that should be written to a batch.",
-        "title" : "Bytes Sized Window",
+        "description" : "Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch.",
+        "title" : "Bytes Window Size",
         "order" : 9
       },
       "tunnel_method" : {

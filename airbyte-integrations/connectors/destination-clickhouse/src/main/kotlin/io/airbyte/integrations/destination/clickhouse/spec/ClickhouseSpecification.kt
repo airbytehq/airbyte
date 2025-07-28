@@ -105,17 +105,21 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     override fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
 
-    @get:JsonSchemaTitle("Record Sized Window")
-    @get:JsonPropertyDescription("The maximum number of records that should be written to a batch.")
-    @get:JsonProperty("record_sized_window")
+    @get:JsonSchemaTitle("Record Window Size")
+    @get:JsonPropertyDescription(
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch."
+    )
+    @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
 
-    @get:JsonSchemaTitle("Bytes Sized Window")
-    @get:JsonPropertyDescription("The maximum number of bytes that should be written to a batch.")
-    @get:JsonProperty("bytes_sized_window")
+    @get:JsonSchemaTitle("Bytes Window Size")
+    @get:JsonPropertyDescription(
+        "Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
+    )
+    @get:JsonProperty("bytes_window_size")
     @get:JsonSchemaInject(json = """{"order": 9}""")
-    override val bytesWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
+    override val bytesWindowSize: Long? = MAX_BATCH_SIZE_BYTES
 }
 
 @Singleton
