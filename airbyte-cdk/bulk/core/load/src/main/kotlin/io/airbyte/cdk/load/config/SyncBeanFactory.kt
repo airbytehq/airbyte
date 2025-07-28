@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.config
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -59,12 +60,16 @@ class SyncBeanFactory {
         syncManager: SyncManager,
         outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit,
         timeProvider: TimeProvider,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+        namespaceMapper: NamespaceMapper
     ): CheckpointManager =
         CheckpointManager(
             catalog,
             syncManager,
             outputConsumer,
             timeProvider,
+            dataChannelMedium == DataChannelMedium.SOCKET,
+            namespaceMapper
         )
 
     /* ********************
