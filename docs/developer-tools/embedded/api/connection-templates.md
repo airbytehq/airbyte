@@ -4,9 +4,14 @@ products: embedded
 
 # Connection Templates
 
-The first thing to configure when using Airbyte Embedded is a connection template. Connections define where your customer data will be moved, as when as the sync frequency.
 
-When one of your user configures a Source, we'll automatically create a connection to your destination according to the templates your configured.
+A *connection template* pre-defines the **Destination side** of every pipeline your customers spin up through the Embedded widget. It answers two questions up-front:
+
+1. Where should the data land?  
+2. How often should it sync?
+
+When a customer finishes configuring a Source, Airbyte automatically creates the connection by combining their source settings with *your* template.
+
 
 You'll need the following to create a connection template:
 - Your organization ID

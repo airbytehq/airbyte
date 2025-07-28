@@ -4,7 +4,7 @@ products: embedded
 
 # Source Templates
 
-Source Templates define which sources are available for your users. They represent Airbyte Sources. with optionally pre-configured fields to streamline their setup.
+A source template controls which connectors appear in the Embedded widget and how their config screens look. When a customer opens the widget, only the sources backed by a template are selectable—so you can pre‑set sensible defaults or restrict advanced settings.
 
 The Airbyte platform comes with ready to use templates. You can also create templates specific to your organization if you need access to more integrations or if you want different default values.
 
