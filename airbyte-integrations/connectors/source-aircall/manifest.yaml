@@ -381,6 +381,17 @@ spec:
           - "2022-03-01T00:00:00.000Z"
         format: date-time
         order: 2
+      end_date:
+        type: string
+        description: >-
+          Date time filter for incremental filter, Specify which date to extract
+          to.
+        title: Date-To Filter
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+          - "2022-03-01T00:00:00.000Z"
+        format: date-time
+        order: 3
     additionalProperties: true
 
 metadata:
