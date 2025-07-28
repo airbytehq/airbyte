@@ -95,6 +95,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.0.10  | 2025-07-23 | [\#64104](https://github.com/airbytehq/airbyte/pull/64104) | Add an option to configure the batch size (both bytes and number of records).  |
 | 2.0.9   | 2025-07-23 | [\#63738](https://github.com/airbytehq/airbyte/pull/63738) | Set clickhouse as an airbyte connector.                                        |
 | 2.0.8   | 2025-07-23 | [\#63760](https://github.com/airbytehq/airbyte/pull/63760) | Throw an error if an invalid target table exist before the first sync.         |
 | 2.0.7   | 2025-07-23 | [\#63751](https://github.com/airbytehq/airbyte/pull/63751) | Only copy intersection columns when there is a dedup change.                   |
