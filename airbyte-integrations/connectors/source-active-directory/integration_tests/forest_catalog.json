@@ -1,0 +1,27 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "forest",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Forest's unique identifier"},
+            "name": {"type": ["string"], "description": "Forest DNS name"},
+            "forest_mode": {"type": ["string", "null"], "description": "Forest functional level"},
+            "schema_version": {"type": ["string", "null"], "description": "Schema version"},
+            "root_domain": {"type": ["string", "null"], "description": "Forest root domain"},
+            "domains": {"type": ["array"], "items": {"type": "string"}, "description": "List of domain names in forest"},
+            "global_catalogs": {"type": ["array"], "items": {"type": "string"}, "description": "Global catalog servers"},
+            "sites": {"type": ["array"], "items": {"type": "string"}, "description": "AD sites in forest"},
+            "created_at": {"type": ["string", "null"], "description": "Forest creation time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "group_memberships",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Unique identifier for this membership relationship"},
+            "user_id": {"type": ["string"], "description": "User's objectGUID identifier"},
+            "group_id": {"type": ["string"], "description": "Group's objectGUID identifier"},
+            "user_name": {"type": ["string", "null"], "description": "User's display name"},
+            "user_username": {"type": ["string", "null"], "description": "User's sAMAccountName"},
+            "group_name": {"type": ["string", "null"], "description": "Group's display name"},
+            "group_description": {"type": ["string", "null"], "description": "Group's description"},
+            "group_type": {"type": ["string", "null"], "description": "Group type (security/distribution)"},
+            "group_scope": {"type": ["string", "null"], "description": "Group scope (global/domain local/universal)"},
+            "membership_added_at": {"type": ["string", "null"], "description": "When the membership was added"},
+            "is_primary_group": {"type": ["boolean"], "description": "Whether this is the user's primary group"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
