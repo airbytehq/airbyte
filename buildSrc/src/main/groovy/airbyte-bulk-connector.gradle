@@ -266,6 +266,11 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
         }
 
+        project.tasks.named('test').configure {
+            // enable the "don't be evil" option, which for some reason is disabled by default
+            systemProperties(["mockk.junit.extension.requireParallelTesting": "true"])
+        }
+
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
     }
 }

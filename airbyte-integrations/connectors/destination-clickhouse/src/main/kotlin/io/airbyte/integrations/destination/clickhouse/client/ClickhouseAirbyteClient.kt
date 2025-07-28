@@ -11,6 +11,7 @@ import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -114,6 +115,16 @@ class ClickhouseAirbyteClient(
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
         val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
 
+        val hasAllAirbyteColumn =
+            tableSchema.columns.map { it.columnName }.containsAll(COLUMN_NAMES)
+
+        if (!hasAllAirbyteColumn) {
+            val message =
+                "The target table ($properTableName) already exists in the destination, but does not contain Airbyte's internal columns. Airbyte can only sync to Airbyte-controlled tables. To fix this error, you must either delete the target table or add a prefix in the connection configuration in order to sync to a separate table in the destination."
+            log.error { message }
+            throw ConfigErrorException(message)
+        }
+
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
             tableSchema.columns.filterNot { column -> column.columnName in COLUMN_NAMES }
 
@@ -160,26 +171,57 @@ class ClickhouseAirbyteClient(
             log.info {
                 "Detected deduplication change for table $properTableName, applying deduplication changes"
             }
-            val tempTableName = tempTableNameGenerator.generate(properTableName)
-            execute(sqlGenerator.createNamespace(tempTableName.namespace))
-            execute(
-                sqlGenerator.createTable(
-                    stream,
-                    tempTableName,
-                    columnNameMapping,
-                    true,
-                ),
+            applyDeduplicationChanges(
+                stream,
+                properTableName,
+                columnNameMapping,
+                tableSchemaWithoutAirbyteColumns
             )
-            execute(
-                sqlGenerator.copyTable(
-                    columnNameMapping,
-                    properTableName,
-                    tempTableName,
-                ),
-            )
-            execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
-            execute(sqlGenerator.dropTable(tempTableName))
         }
+    }
+
+    private suspend fun applyDeduplicationChanges(
+        stream: DestinationStream,
+        properTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>
+    ) {
+        val tempTableName = tempTableNameGenerator.generate(properTableName)
+        execute(sqlGenerator.createNamespace(tempTableName.namespace))
+        execute(
+            sqlGenerator.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                true,
+            ),
+        )
+        copyIntersectionColumn(
+            tableSchemaWithoutAirbyteColumns,
+            columnNameMapping,
+            properTableName,
+            tempTableName
+        )
+        execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
+        execute(sqlGenerator.dropTable(tempTableName))
+    }
+
+    internal suspend fun copyIntersectionColumn(
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>,
+        columnNameMapping: ColumnNameMapping,
+        properTableName: TableName,
+        tempTableName: TableName
+    ) {
+        val clickhouseColumnsName = tableSchemaWithoutAirbyteColumns.map { it.columnName }
+        execute(
+            sqlGenerator.copyTable(
+                ColumnNameMapping(
+                    columnNameMapping.filter { clickhouseColumnsName.contains(it.value) }
+                ),
+                properTableName,
+                tempTableName,
+            ),
+        )
     }
 
     internal fun getAirbyteSchemaWithClickhouseType(
