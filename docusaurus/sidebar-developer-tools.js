@@ -17,10 +17,10 @@ export default {
           type: "category",
           label: "Widget",
           items: [
-            "prerequisites-setup",
-            "develop-your-app",
-            "use-embedded",
-            "managing-embedded",
+            "embedded/widget/prerequisites-setup",
+            "embedded/widget/develop-your-app",
+            "embedded/widget/use-embedded",
+            "embedded/widget/managing-embedded",
           ]
         },
         {
@@ -40,11 +40,6 @@ export default {
           type: "doc",
           id: "pyairbyte-mcp/README",
           label: "PyAirbyte MCP",
-        },
-        {
-          type: "doc",
-          id: "authentication-proxy/README",
-          label: "Authentication Proxy",
         }
       ]
     }
