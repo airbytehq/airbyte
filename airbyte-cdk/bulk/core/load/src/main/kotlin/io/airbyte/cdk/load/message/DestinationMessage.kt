@@ -473,7 +473,7 @@ sealed interface CheckpointMessage : DestinationMessage {
     companion object {
         const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
         const val COMMITTED_BYTES_COUNT = "committedBytesCount"
-        private const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
+        const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
     }
     data class Stats(
         val recordCount: Long,
@@ -484,7 +484,7 @@ sealed interface CheckpointMessage : DestinationMessage {
         val unmappedNamespace: String?,
         val unmappedName: String,
         val state: JsonNode?,
-        val additionalProperties: Map<String, Any> = emptyMap()
+        val additionalProperties: LinkedHashMap<String, Any> = LinkedHashMap()
     ) {
         fun asProtocolObject(): AirbyteStreamState =
             AirbyteStreamState()

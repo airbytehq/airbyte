@@ -8,15 +8,18 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.mockk.Ordering
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -64,7 +67,14 @@ class CheckpointManagerUTest {
     }
 
     private fun makeCheckpointManager(): CheckpointManager {
-        return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider, true)
+        return CheckpointManager(
+            catalog,
+            syncManager,
+            outputConsumer,
+            timeProvider,
+            true,
+            NamespaceMapper(NamespaceDefinitionType.SOURCE)
+        )
     }
 
     private fun makeKey(index: Int, id: String? = null) =
@@ -185,12 +195,16 @@ class CheckpointManagerUTest {
                 every { streamCheckpoints } returns
                     mapOf(stream1.mappedDescriptor to checkpointKey3)
                 every { sourceStats } returns CheckpointMessage.Stats(0)
+                every { updateStats(any()) } just Runs
+                every { checkpoints } returns emptyList()
             }
         val globalSnapshotCheckpoint2 =
             mockk<GlobalSnapshotCheckpoint> {
                 every { streamCheckpoints } returns
                     mapOf(stream2.mappedDescriptor to checkpointKey2)
                 every { sourceStats } returns CheckpointMessage.Stats(0)
+                every { updateStats(any()) } just Runs
+                every { checkpoints } returns emptyList()
             }
         val message1 = mockMessage(globalSnapshotCheckpoint1)
         val message2 = mockMessage(globalSnapshotCheckpoint2)

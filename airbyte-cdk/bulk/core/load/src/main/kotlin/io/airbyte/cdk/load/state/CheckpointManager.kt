@@ -7,8 +7,13 @@ package io.airbyte.cdk.load.state
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.message.CheckpointMessage.Companion.COMMITTED_BYTES_COUNT
+import io.airbyte.cdk.load.message.CheckpointMessage.Companion.COMMITTED_RECORDS_COUNT
+import io.airbyte.cdk.load.message.CheckpointMessage.Companion.REJECTED_RECORDS_COUNT
+import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.output.OutputConsumer
@@ -71,7 +76,8 @@ class CheckpointManager(
     val syncManager: SyncManager,
     val outputConsumer: suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit,
     val timeProvider: TimeProvider,
-    val socketMode: Boolean
+    val socketMode: Boolean,
+    val namespaceMapper: NamespaceMapper
 ) {
     private val log = KotlinLogging.logger {}
     private val storedCheckpointsLock = Mutex()
@@ -79,7 +85,7 @@ class CheckpointManager(
     private val committedCount: ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue> =
         ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue>()
 
-    data class GlobalCheckpoint(val checkpointMessage: Reserved<CheckpointMessage>)
+    data class GlobalCheckpointHolder(val checkpointMessage: Reserved<CheckpointMessage>)
 
     private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
@@ -88,7 +94,7 @@ class CheckpointManager(
             ConcurrentSkipListMap<CheckpointKey, Reserved<CheckpointMessage>>
         > =
         ConcurrentHashMap()
-    private val globalCheckpoints = ConcurrentSkipListMap<CheckpointKey, GlobalCheckpoint>()
+    private val globalCheckpoints = ConcurrentSkipListMap<CheckpointKey, GlobalCheckpointHolder>()
     private val lastCheckpointKeyEmitted =
         ConcurrentHashMap<DestinationStream.Descriptor, CheckpointKey>()
 
@@ -128,7 +134,7 @@ class CheckpointManager(
                 )
             }
 
-            globalCheckpoints[checkpointKey] = GlobalCheckpoint(checkpointMessage)
+            globalCheckpoints[checkpointKey] = GlobalCheckpointHolder(checkpointMessage)
             log.info { "Added global checkpoint with key $checkpointKey" }
         }
     }
@@ -213,7 +219,7 @@ class CheckpointManager(
     }
 
     private fun checkSnapshotStreams(
-        entry: MutableMap.MutableEntry<CheckpointKey, GlobalCheckpoint>
+        entry: MutableMap.MutableEntry<CheckpointKey, GlobalCheckpointHolder>
     ): Boolean {
         log.info {
             "checkSnapshotStreams - checkpointKey : ${entry.key}, message : ${entry.value.checkpointMessage.value}"
@@ -247,7 +253,7 @@ class CheckpointManager(
 
     private suspend fun flushGlobalState(
         checkpointKey: CheckpointKey,
-        checkpoint: GlobalCheckpoint
+        checkpoint: GlobalCheckpointHolder
     ) {
         log.info { "Flushing global checkpoint with key $checkpointKey" }
         if (socketMode) {
@@ -282,6 +288,10 @@ class CheckpointManager(
                 }
                 .reduce { acc, inc -> acc.plus(inc) }
 
+        if (socketMode) {
+            updateCountsForStreamsWithinGlobalMessage(checkpoint)
+        }
+
         sendStateMessage(
             checkpoint.checkpointMessage,
             checkpointKey,
@@ -291,6 +301,34 @@ class CheckpointManager(
             aggregate.rejectedRecords,
         )
         globalCheckpoints.remove(checkpointKey) // don't remove until after we've successfully sent
+    }
+
+    private fun updateCountsForStreamsWithinGlobalMessage(checkpoint: GlobalCheckpointHolder) {
+        val checkpointMap: Map<DestinationStream.Descriptor, CheckpointMessage.Checkpoint> =
+            when (val value = checkpoint.checkpointMessage.value) {
+                is GlobalSnapshotCheckpoint -> value.checkpoints
+                is GlobalCheckpoint -> value.checkpoints
+                else -> error("Unsupported checkpoint type: ${value::class.simpleName}")
+            }.associateBy { namespaceMapper.map(namespace = it.unmappedNamespace, it.unmappedName) }
+
+        catalog.streams
+            .mapNotNull { stream ->
+                val committedData = committedCount[stream.mappedDescriptor]
+                val streamLevelCheckpoint = checkpointMap[stream.mappedDescriptor]
+
+                if (committedData != null && streamLevelCheckpoint != null) {
+                    Pair(streamLevelCheckpoint, committedData)
+                } else null
+            }
+            .forEach { (checkpoint, committedData) ->
+                checkpoint.additionalProperties.apply {
+                    put(COMMITTED_RECORDS_COUNT, committedData.records)
+                    put(COMMITTED_BYTES_COUNT, committedData.serializedBytes)
+                    if (committedData.rejectedRecords > 0) {
+                        put(REJECTED_RECORDS_COUNT, committedData.rejectedRecords)
+                    }
+                }
+            }
     }
 
     private fun ConcurrentHashMap<DestinationStream.Descriptor, CheckpointValue>.increment(

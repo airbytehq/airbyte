@@ -71,6 +71,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateStats
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -358,6 +359,133 @@ abstract class BasicFunctionalityIntegrationTest(
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
     @Test
+    open fun testOutOfOrderStateMessages() {
+        if (
+            dataChannelMedium != DataChannelMedium.SOCKET ||
+                dataChannelFormat != DataChannelFormat.PROTOBUF
+        ) {
+            return
+        }
+        val stream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+            )
+        val messages =
+            runSync(
+                updatedConfig,
+                DestinationCatalog(listOf(stream)),
+                listOf(
+                    InputStreamCheckpoint(
+                        StreamCheckpoint(
+                            unmappedNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            blob =
+                                io.airbyte.protocol.models.Jsons.jsonNode(
+                                        mapOf("stream1" to "state"),
+                                    )
+                                    .toString(),
+                            sourceRecordCount = 0,
+                            additionalProperties =
+                                mapOf(
+                                    CHECKPOINT_INDEX_NAME to 5,
+                                    CHECKPOINT_ID_NAME to "partition_5"
+                                ),
+                        ),
+                    ),
+                    InputStreamCheckpoint(
+                        StreamCheckpoint(
+                            unmappedNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            blob =
+                                io.airbyte.protocol.models.Jsons.jsonNode(
+                                        mapOf("stream1" to "state"),
+                                    )
+                                    .toString(),
+                            sourceRecordCount = 0,
+                            additionalProperties =
+                                mapOf(
+                                    CHECKPOINT_INDEX_NAME to 4,
+                                    CHECKPOINT_ID_NAME to "partition_4"
+                                ),
+                        ),
+                    ),
+                    InputStreamCheckpoint(
+                        StreamCheckpoint(
+                            unmappedNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            blob =
+                                io.airbyte.protocol.models.Jsons.jsonNode(
+                                        mapOf("stream1" to "state"),
+                                    )
+                                    .toString(),
+                            sourceRecordCount = 0,
+                            additionalProperties =
+                                mapOf(
+                                    CHECKPOINT_INDEX_NAME to 3,
+                                    CHECKPOINT_ID_NAME to "partition_3"
+                                ),
+                        ),
+                    ),
+                    InputStreamCheckpoint(
+                        StreamCheckpoint(
+                            unmappedNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            blob =
+                                io.airbyte.protocol.models.Jsons.jsonNode(
+                                        mapOf("stream1" to "state"),
+                                    )
+                                    .toString(),
+                            sourceRecordCount = 0,
+                            additionalProperties =
+                                mapOf(
+                                    CHECKPOINT_INDEX_NAME to 2,
+                                    CHECKPOINT_ID_NAME to "partition_2"
+                                ),
+                        ),
+                    ),
+                    InputStreamCheckpoint(
+                        StreamCheckpoint(
+                            unmappedNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            blob =
+                                io.airbyte.protocol.models.Jsons.jsonNode(
+                                        mapOf("stream1" to "state"),
+                                    )
+                                    .toString(),
+                            sourceRecordCount = 0,
+                            additionalProperties =
+                                mapOf(
+                                    CHECKPOINT_INDEX_NAME to 1,
+                                    CHECKPOINT_ID_NAME to "partition_1"
+                                ),
+                        ),
+                    ),
+                ),
+            )
+
+        val stateMessages =
+            messages
+                .filter { it.type == AirbyteMessage.Type.STATE }
+                .withIndex()
+                .associate { (index, message) ->
+                    index to
+                        message.state.additionalProperties[CHECKPOINT_INDEX_NAME]!!
+                            .toString()
+                            .toInt()
+                }
+        assertEquals(5, stateMessages.size)
+
+        stateMessages.forEach { state -> assertEquals(state.key + 1, state.value) }
+    }
+
+    @Test
     open fun testStateMessageBeforeRecords() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
@@ -389,8 +517,25 @@ abstract class BasicFunctionalityIntegrationTest(
                                 io.airbyte.protocol.models.Jsons.jsonNode(
                                         mapOf("stream1" to "state"),
                                     )
-                                    .asText(),
-                            sourceRecordCount = 3,
+                                    .toString(),
+                            sourceRecordCount = 2,
+                            additionalProperties =
+                                mapOf(
+                                    CHECKPOINT_INDEX_NAME to 2,
+                                    CHECKPOINT_ID_NAME to "partition_2"
+                                ),
+                        ),
+                    ),
+                    InputStreamCheckpoint(
+                        StreamCheckpoint(
+                            unmappedNamespace = stream.unmappedNamespace,
+                            unmappedName = stream.unmappedName,
+                            blob =
+                                io.airbyte.protocol.models.Jsons.jsonNode(
+                                        mapOf("stream1" to "state"),
+                                    )
+                                    .toString(),
+                            sourceRecordCount = 1,
                             additionalProperties =
                                 mapOf(
                                     CHECKPOINT_INDEX_NAME to 1,
@@ -408,38 +553,109 @@ abstract class BasicFunctionalityIntegrationTest(
                         stream = stream,
                         data = """{"id": 2}""",
                         emittedAtMs = 1234,
-                        checkpointId = CheckpointId("partition_1"),
+                        checkpointId = CheckpointId("partition_2"),
                     ),
                     InputRecord(
                         stream = stream,
                         data = """{"id": 3}""",
                         emittedAtMs = 1234,
-                        checkpointId = CheckpointId("partition_1"),
+                        checkpointId = CheckpointId("partition_2"),
                     ),
                 ),
             )
 
-        val stateMessages = messages.filter { m -> m.type == AirbyteMessage.Type.STATE }
-        assertEquals(1, stateMessages.size)
-        assertEquals(
-            mapOf(
-                CHECKPOINT_ID_NAME to "partition_1",
-                CheckpointMessage.COMMITTED_BYTES_COUNT to 171,
-                CHECKPOINT_INDEX_NAME to 1,
-                CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
-            ),
-            stateMessages[0].state.additionalProperties,
-        )
+        val stateMessages =
+            messages
+                .filter { m -> m.type == AirbyteMessage.Type.STATE }
+                .associateBy(
+                    keySelector = {
+                        it.state.additionalProperties[CHECKPOINT_INDEX_NAME]!!.toString().toInt()
+                    },
+                    valueTransform = { it.state.stream },
+                )
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(3.0),
-            stateMessages[0].state.destinationStats,
-        )
+        val stateMessagesOuter =
+            messages
+                .filter { m -> m.type == AirbyteMessage.Type.STATE }
+                .associateBy(
+                    keySelector = {
+                        it.state.additionalProperties[CHECKPOINT_INDEX_NAME]!!.toString().toInt()
+                    },
+                    valueTransform = { it.state },
+                )
+        assertEquals(2, stateMessages.size)
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(3.0),
-            stateMessages[0].state.sourceStats,
-        )
+        stateMessages[1]!!.also { state ->
+            assertEquals(
+                StreamDescriptor().withNamespace(randomizedNamespace).withName("test_stream"),
+                state.streamDescriptor
+            )
+
+            assertEquals(
+                io.airbyte.protocol.models.Jsons.jsonNode(
+                    mapOf("stream1" to "state"),
+                ),
+                state.streamState
+            )
+
+            stateMessagesOuter[1]!!.also { outer ->
+                assertEquals(
+                    mapOf(
+                        CHECKPOINT_ID_NAME to "partition_1",
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 57,
+                        CHECKPOINT_INDEX_NAME to 1,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 1,
+                    ),
+                    outer.additionalProperties,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(1.0),
+                    outer.destinationStats,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(1.0),
+                    outer.sourceStats,
+                )
+            }
+        }
+
+        stateMessages[2]!!.also { state ->
+            assertEquals(
+                StreamDescriptor().withNamespace(randomizedNamespace).withName("test_stream"),
+                state.streamDescriptor
+            )
+
+            assertEquals(
+                io.airbyte.protocol.models.Jsons.jsonNode(
+                    mapOf("stream1" to "state"),
+                ),
+                state.streamState
+            )
+
+            stateMessagesOuter[2]!!.also { outer ->
+                assertEquals(
+                    mapOf(
+                        CHECKPOINT_ID_NAME to "partition_2",
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 171,
+                        CHECKPOINT_INDEX_NAME to 2,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
+                    ),
+                    outer.additionalProperties,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(2.0),
+                    outer.destinationStats,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(2.0),
+                    outer.sourceStats,
+                )
+            }
+        }
     }
     @Test
     fun testCDCStateTypes() {
@@ -529,10 +745,10 @@ abstract class BasicFunctionalityIntegrationTest(
                                             mapOf("stream1" to "state"),
                                         ),
                                     additionalProperties =
-                                        mapOf(
+                                        linkedMapOf(
                                             CHECKPOINT_INDEX_NAME to 1,
                                             CHECKPOINT_ID_NAME to "partition_1",
-                                        )
+                                        ),
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = stream2.unmappedNamespace,
@@ -542,10 +758,10 @@ abstract class BasicFunctionalityIntegrationTest(
                                             mapOf("stream2" to "state"),
                                         ),
                                     additionalProperties =
-                                        mapOf(
+                                        linkedMapOf(
                                             CHECKPOINT_INDEX_NAME to 1,
                                             CHECKPOINT_ID_NAME to "partition_2",
-                                        )
+                                        ),
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = stream3.unmappedNamespace,
@@ -567,7 +783,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         stream = stream,
                         data = """{"id": 5}""",
                         emittedAtMs = 5678,
-                        checkpointId = checkpointKeyForMedium(2, "partition_5")?.checkpointId
+                        checkpointId = checkpointKeyForMedium(2, "partition_5")?.checkpointId,
                     ),
                     InputRecord(
                         stream = stream2,
@@ -595,10 +811,10 @@ abstract class BasicFunctionalityIntegrationTest(
                                             mapOf("stream1" to "state"),
                                         ),
                                     additionalProperties =
-                                        mapOf(
+                                        linkedMapOf(
                                             CHECKPOINT_INDEX_NAME to 2,
                                             CHECKPOINT_ID_NAME to "partition_5",
-                                        )
+                                        ),
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = stream2.unmappedNamespace,
@@ -608,10 +824,10 @@ abstract class BasicFunctionalityIntegrationTest(
                                             mapOf("stream2" to "state"),
                                         ),
                                     additionalProperties =
-                                        mapOf(
+                                        linkedMapOf(
                                             CHECKPOINT_INDEX_NAME to 2,
                                             CHECKPOINT_ID_NAME to "partition_6",
-                                        )
+                                        ),
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = stream3.unmappedNamespace,
@@ -621,10 +837,10 @@ abstract class BasicFunctionalityIntegrationTest(
                                             mapOf("stream3" to "state"),
                                         ),
                                     additionalProperties =
-                                        mapOf(
+                                        linkedMapOf(
                                             CHECKPOINT_INDEX_NAME to 2,
                                             CHECKPOINT_ID_NAME to "partition_7",
-                                        )
+                                        ),
                                 ),
                                 CheckpointMessage.Checkpoint(
                                     unmappedNamespace = "namespace-not-present-in-catalog",
@@ -693,68 +909,262 @@ abstract class BasicFunctionalityIntegrationTest(
                 ),
             )
 
-        val stateMessages = messages.filter { m -> m.type == AirbyteMessage.Type.STATE }
+        val stateMessages =
+            messages
+                .filter { m -> m.type == AirbyteMessage.Type.STATE }
+                .associateBy(
+                    keySelector = {
+                        it.state.additionalProperties[CHECKPOINT_INDEX_NAME]!!.toString().toInt()
+                    },
+                    valueTransform = { it.state.global },
+                )
+
+        val stateMessagesOuter =
+            messages
+                .filter { m -> m.type == AirbyteMessage.Type.STATE }
+                .associateBy(
+                    keySelector = {
+                        it.state.additionalProperties[CHECKPOINT_INDEX_NAME]!!.toString().toInt()
+                    },
+                    valueTransform = { it.state },
+                )
+
+        val firstStream =
+            StreamDescriptor().withName("test_stream").withNamespace(randomizedNamespace)
+        val secondStream =
+            StreamDescriptor().withName("test_stream_2").withNamespace(randomizedNamespace)
+        val thirdStream =
+            StreamDescriptor().withName("test_stream_3").withNamespace(randomizedNamespace)
 
         assertEquals(3, stateMessages.size)
-        assertEquals(
-            mapOf(
-                CHECKPOINT_ID_NAME to "outer_partition",
-                CheckpointMessage.COMMITTED_BYTES_COUNT to 242,
-                CHECKPOINT_INDEX_NAME to 1,
-                CheckpointMessage.COMMITTED_RECORDS_COUNT to 4,
-            ),
-            stateMessages[0].state.additionalProperties,
-        )
+        val firstStateMessage = stateMessages[1]!!
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(4.0),
-            stateMessages[0].state.destinationStats,
-        )
+        firstStateMessage.also { state ->
+            assertEquals(
+                io.airbyte.protocol.models.Jsons.jsonNode(mapOf("shared" to "state")),
+                state.sharedState,
+            )
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(4.0),
-            stateMessages[0].state.sourceStats,
-        )
+            val streamStatesMappedByStreamNames =
+                state.streamStates.associateBy { it.streamDescriptor }
 
-        assertEquals(
-            mapOf(
-                CHECKPOINT_ID_NAME to "outer_partition_2",
-                CheckpointMessage.COMMITTED_BYTES_COUNT to 417,
-                CHECKPOINT_INDEX_NAME to 2,
-                CheckpointMessage.COMMITTED_RECORDS_COUNT to 7,
-            ),
-            stateMessages[1].state.additionalProperties,
-        )
+            assertEquals(4, streamStatesMappedByStreamNames.size)
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(3.0),
-            stateMessages[1].state.destinationStats,
-        )
+            streamStatesMappedByStreamNames.also {
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream1" to "state")),
+                    it[firstStream]!!.streamState,
+                )
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(3.0),
-            stateMessages[1].state.sourceStats,
-        )
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 57,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 1,
+                    ),
+                    it[firstStream]!!.additionalProperties,
+                )
 
-        assertEquals(
-            mapOf(
-                CHECKPOINT_ID_NAME to "outer_partition_3",
-                CheckpointMessage.COMMITTED_BYTES_COUNT to 611,
-                CHECKPOINT_INDEX_NAME to 3,
-                CheckpointMessage.COMMITTED_RECORDS_COUNT to 10,
-            ),
-            stateMessages[2].state.additionalProperties,
-        )
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream2" to "state")),
+                    it[secondStream]!!.streamState,
+                )
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(3.0),
-            stateMessages[2].state.destinationStats,
-        )
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 122,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 2,
+                    ),
+                    it[secondStream]!!.additionalProperties,
+                )
 
-        assertEquals(
-            AirbyteStateStats().withRecordCount(3.0),
-            stateMessages[2].state.sourceStats,
-        )
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream3" to "state")),
+                    it[thirdStream]!!.streamState,
+                )
+
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 63,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 1,
+                    ),
+                    it[thirdStream]!!.additionalProperties,
+                )
+            }
+
+            stateMessagesOuter[1]!!.also { outer ->
+                assertEquals(
+                    mapOf(
+                        CHECKPOINT_ID_NAME to "outer_partition",
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 242,
+                        CHECKPOINT_INDEX_NAME to 1,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 4,
+                    ),
+                    outer.additionalProperties,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(4.0),
+                    outer.destinationStats,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(4.0),
+                    outer.sourceStats,
+                )
+            }
+        }
+
+        val secondStateMessage = stateMessages[2]!!
+        secondStateMessage.also { state ->
+            assertEquals(
+                io.airbyte.protocol.models.Jsons.jsonNode(mapOf("shared" to "state")),
+                state.sharedState,
+            )
+
+            val streamStatesMappedByStreamNames =
+                state.streamStates.associateBy { it.streamDescriptor }
+
+            assertEquals(4, streamStatesMappedByStreamNames.size)
+
+            streamStatesMappedByStreamNames.also {
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream1" to "state")),
+                    it[firstStream]!!.streamState,
+                )
+
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 114,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 2,
+                    ),
+                    it[firstStream]!!.additionalProperties,
+                )
+
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream2" to "state")),
+                    it[secondStream]!!.streamState,
+                )
+
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 181,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
+                    ),
+                    it[secondStream]!!.additionalProperties,
+                )
+
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream3" to "state")),
+                    it[thirdStream]!!.streamState,
+                )
+
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 122,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 2,
+                    ),
+                    it[thirdStream]!!.additionalProperties,
+                )
+            }
+
+            stateMessagesOuter[2]!!.also { outer ->
+                assertEquals(
+                    mapOf(
+                        CHECKPOINT_ID_NAME to "outer_partition_2",
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 417,
+                        CHECKPOINT_INDEX_NAME to 2,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 7,
+                    ),
+                    outer.additionalProperties,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(3.0),
+                    outer.destinationStats,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(3.0),
+                    outer.sourceStats,
+                )
+            }
+        }
+
+        val thirdStateMessage = stateMessages[3]!!
+        thirdStateMessage.also { state ->
+            assertEquals(
+                io.airbyte.protocol.models.Jsons.jsonNode(mapOf("shared" to "state")),
+                state.sharedState,
+            )
+
+            val streamStatesMappedByStreamNames =
+                state.streamStates.associateBy { it.streamDescriptor }
+
+            assertEquals(4, streamStatesMappedByStreamNames.size)
+
+            streamStatesMappedByStreamNames.also {
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream1" to "state")),
+                    it[firstStream]!!.streamState,
+                )
+
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 177,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
+                    ),
+                    it[firstStream]!!.additionalProperties,
+                )
+
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream2" to "state")),
+                    it[secondStream]!!.streamState,
+                )
+
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 246,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 4,
+                    ),
+                    it[secondStream]!!.additionalProperties,
+                )
+
+                assertEquals(
+                    io.airbyte.protocol.models.Jsons.jsonNode(mapOf("stream3" to "state")),
+                    it[thirdStream]!!.streamState,
+                )
+
+                assertEquals(
+                    mapOf(
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 188,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
+                    ),
+                    it[thirdStream]!!.additionalProperties,
+                )
+            }
+
+            stateMessagesOuter[3]!!.also { outer ->
+                assertEquals(
+                    mapOf(
+                        CHECKPOINT_ID_NAME to "outer_partition_3",
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 611,
+                        CHECKPOINT_INDEX_NAME to 3,
+                        CheckpointMessage.COMMITTED_RECORDS_COUNT to 10,
+                    ),
+                    outer.additionalProperties,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(3.0),
+                    outer.destinationStats,
+                )
+
+                assertEquals(
+                    AirbyteStateStats().withRecordCount(3.0),
+                    outer.sourceStats,
+                )
+            }
+        }
     }
 
     @Test
