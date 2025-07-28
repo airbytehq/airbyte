@@ -25,6 +25,7 @@ API Reference: https://www.assemblyai.com/docs/api-reference/overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-07-26 | [63808](https://github.com/airbytehq/airbyte/pull/63808) | Update dependencies |
 | 0.0.9 | 2025-07-19 | [63452](https://github.com/airbytehq/airbyte/pull/63452) | Update dependencies |
 | 0.0.8 | 2025-07-05 | [62533](https://github.com/airbytehq/airbyte/pull/62533) | Update dependencies |
 | 0.0.7 | 2025-06-21 | [61881](https://github.com/airbytehq/airbyte/pull/61881) | Update dependencies |
