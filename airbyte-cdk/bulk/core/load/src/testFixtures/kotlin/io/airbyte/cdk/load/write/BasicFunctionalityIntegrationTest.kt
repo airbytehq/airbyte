@@ -395,7 +395,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             additionalProperties =
                                 mapOf(
                                     CHECKPOINT_INDEX_NAME to 5,
-                                    CHECKPOINT_ID_NAME to "partition_5"
+                                    CHECKPOINT_ID_NAME to "1"
                                 ),
                         ),
                     ),
@@ -412,7 +412,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             additionalProperties =
                                 mapOf(
                                     CHECKPOINT_INDEX_NAME to 4,
-                                    CHECKPOINT_ID_NAME to "partition_4"
+                                    CHECKPOINT_ID_NAME to "2"
                                 ),
                         ),
                     ),
@@ -429,7 +429,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             additionalProperties =
                                 mapOf(
                                     CHECKPOINT_INDEX_NAME to 3,
-                                    CHECKPOINT_ID_NAME to "partition_3"
+                                    CHECKPOINT_ID_NAME to "3"
                                 ),
                         ),
                     ),
@@ -446,7 +446,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             additionalProperties =
                                 mapOf(
                                     CHECKPOINT_INDEX_NAME to 2,
-                                    CHECKPOINT_ID_NAME to "partition_2"
+                                    CHECKPOINT_ID_NAME to "4"
                                 ),
                         ),
                     ),
@@ -463,7 +463,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             additionalProperties =
                                 mapOf(
                                     CHECKPOINT_INDEX_NAME to 1,
-                                    CHECKPOINT_ID_NAME to "partition_1"
+                                    CHECKPOINT_ID_NAME to "5"
                                 ),
                         ),
                     ),
