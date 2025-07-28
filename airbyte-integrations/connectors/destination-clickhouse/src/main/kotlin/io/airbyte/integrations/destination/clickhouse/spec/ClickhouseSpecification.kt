@@ -34,7 +34,6 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val enableJson: Boolean?
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
     abstract val recordWindowSize: Long?
-    abstract val bytesWindowSize: Long?
 }
 
 @Singleton
@@ -107,19 +106,11 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Record Window Size")
     @get:JsonPropertyDescription(
-        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch."
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb"
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
-
-    @get:JsonSchemaTitle("Bytes Window Size")
-    @get:JsonPropertyDescription(
-        "Warning: Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
-    )
-    @get:JsonProperty("bytes_window_size")
-    @get:JsonSchemaInject(json = """{"order": 9}""")
-    override val bytesWindowSize: Long? = MAX_BATCH_SIZE_BYTES
 }
 
 @Singleton
@@ -192,19 +183,11 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Record Window Size")
     @get:JsonPropertyDescription(
-        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch."
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb"
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
-
-    @get:JsonSchemaTitle("Bytes Window Size")
-    @get:JsonPropertyDescription(
-        "Warning: Tuning this parameter can impact the performances. The maximum number of bytes that should be written to a batch."
-    )
-    @get:JsonProperty("bytes_window_size")
-    @get:JsonSchemaInject(json = """{"order": 9}""")
-    override val bytesWindowSize: Long? = MAX_BATCH_SIZE_BYTES
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {

@@ -53,16 +53,13 @@ class ClickhouseDirectLoaderFactoryTest {
         every { stateStore.get(stream) } returns DirectLoadTableExecutionConfig(table)
 
         val recordWindowSized = 123L
-        val bytesWindowSized = 456L
         every { clickhouseConfiguration.recordWindowSize } returns recordWindowSized
-        every { clickhouseConfiguration.bytesWindowSize } returns bytesWindowSized
 
         val result = factory.create(stream, 0) // part isn't used
 
         assertEquals(table, result.buffer.tableName)
         assertEquals(munger, result.munger)
         assertEquals(recordWindowSized, result.configuredRecordCountWindow)
-        assertEquals(bytesWindowSized, result.configuredBytesWindow)
     }
 
     companion object {

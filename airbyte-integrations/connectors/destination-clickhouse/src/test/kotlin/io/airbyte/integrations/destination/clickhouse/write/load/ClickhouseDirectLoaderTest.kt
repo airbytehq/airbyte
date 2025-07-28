@@ -28,10 +28,12 @@ class ClickhouseDirectLoaderTest {
 
     private lateinit var loader: ClickhouseDirectLoader
 
+    private val configuredRecordBatchSize = 42L
+
     @BeforeEach
     fun setup() {
         every { munger.transformForDest(any()) } returns Fixtures.mungedRecord
-        loader = ClickhouseDirectLoader(munger, buffer, 42, 42)
+        loader = ClickhouseDirectLoader(munger, buffer, configuredRecordBatchSize)
     }
 
     @Test
@@ -65,7 +67,7 @@ class ClickhouseDirectLoaderTest {
             val input = mockk<DestinationRecordRaw>(relaxed = true)
 
             // fill the batch minuses one
-            val batchSize = ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_RECORDS.toInt()
+            val batchSize = configuredRecordBatchSize.toInt()
             var result: DirectLoader.DirectLoadResult = DirectLoader.Incomplete
             repeat(batchSize - 1) { result = loader.accept(input) }
             // we're still incomplete

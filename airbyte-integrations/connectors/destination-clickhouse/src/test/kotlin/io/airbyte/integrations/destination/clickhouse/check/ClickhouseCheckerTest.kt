@@ -143,7 +143,6 @@ class ClickhouseCheckerTest {
             password: String = "password",
             enableJson: Boolean = false,
             recordWindow: Long = 42000,
-            bytesWindow: Long = 42000000
         ): ClickhouseConfiguration =
             ClickhouseConfiguration(
                 hostname = hostname,
@@ -155,7 +154,6 @@ class ClickhouseCheckerTest {
                 enableJson = enableJson,
                 tunnelConfig = null,
                 recordWindowSize = recordWindow,
-                bytesWindowSize = bytesWindow,
             )
     }
 }

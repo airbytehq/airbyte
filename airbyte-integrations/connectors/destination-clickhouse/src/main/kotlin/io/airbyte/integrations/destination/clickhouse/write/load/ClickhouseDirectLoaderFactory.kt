@@ -36,7 +36,6 @@ class ClickhouseDirectLoaderFactory(
             munger = munger,
             buffer = buffer,
             configuredRecordCountWindow = clickhouseConfiguration.recordWindowSize,
-            configuredBytesWindow = clickhouseConfiguration.bytesWindowSize,
         )
     }
 }
