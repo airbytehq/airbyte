@@ -30,6 +30,11 @@ data object SnowflakeOffsetDateTimeFieldType :
         },
         OffsetDateTimeCodec,
         OffsetDateTimeCodec,
-        // Setter can use the standard approach
-        { stmt, paramIdx, value -> stmt.setObject(paramIdx, value) }
+        // Convert OffsetDateTime to Timestamp for Snowflake JDBC compatibility
+        { stmt, paramIdx, value ->
+            val instant = value.toInstant()
+            val timestamp = java.sql.Timestamp.from(instant)
+            timestamp.nanos = instant.nano
+            stmt.setTimestamp(paramIdx, timestamp)
+        }
     )
