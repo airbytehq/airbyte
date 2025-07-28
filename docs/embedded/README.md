@@ -3,6 +3,7 @@ products: embedded
 ---
 
 # Airbyte Embedded
+test
 
 [Airbyte Embedded](https://airbyte.com/ai) provides product and software teams the tools and services to move data to provide context for AI applications. Embedded provides the following:
 
