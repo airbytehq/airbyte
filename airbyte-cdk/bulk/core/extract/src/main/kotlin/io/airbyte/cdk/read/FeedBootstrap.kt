@@ -319,7 +319,7 @@ sealed class FeedBootstrap<T : Feed>(
                     }
 
                     // Unlike STDIO mode, in socket mode we always include all scehma fields
-                    // Including decoraiton even when it has to value.
+                    // Including decorating field even when it has NULL value.
                     // This is necessary beacuse in PROTOBUF mode we don't have field names so
                     // the sorted order of fields is used to determine the field position on the
                     // other side.
