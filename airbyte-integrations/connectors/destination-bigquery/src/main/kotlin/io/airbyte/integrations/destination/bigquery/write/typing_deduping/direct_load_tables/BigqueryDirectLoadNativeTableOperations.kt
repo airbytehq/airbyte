@@ -400,11 +400,32 @@ class BigqueryDirectLoadNativeTableOperations(
             columnNameMapping: ColumnNameMapping,
             existingTable: StandardTableDefinition,
         ): Boolean {
-            return (existingTable.clustering != null &&
+            // We always want to set a clustering config, so if the table doesn't have one,
+            // then we should fix it.
+            if (existingTable.clustering == null) {
+                return false
+            }
+
+            val existingClusteringFields = HashSet<String>(existingTable.clustering!!.fields)
+            // We're OK with a column being in the clustering config that we don't expect
+            // (e.g. user set a composite PK, then makes one of those fields no longer a PK).
+            // It doesn't really hurt us to have that extra clustering config.
+            val clusteringConfigIsSupersetOfExpectedConfig =
                 containsAllIgnoreCase(
-                    HashSet<String>(existingTable.clustering!!.fields),
+                    existingClusteringFields,
                     BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping),
-                ))
+                )
+            // We do, however, validate that all the clustering fields actually exist in the
+            // intended schema.
+            // This is so that we don't try to drop columns that bigquery is clustering against
+            // (because bigquery throws an error in that case).
+            val clusteringConfigReferencesExistingFields =
+                containsAllIgnoreCase(
+                    columnNameMapping.values + Meta.COLUMN_NAMES,
+                    existingClusteringFields,
+                )
+            return clusteringConfigIsSupersetOfExpectedConfig &&
+                clusteringConfigReferencesExistingFields
         }
 
         @VisibleForTesting

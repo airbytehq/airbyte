@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
   githubIssueLabel: source-k6-cloud
   icon: k6cloud.svg
-  license: MIT
+  license: ELv2
   name: K6 Cloud
   registryOverrides:
     cloud:

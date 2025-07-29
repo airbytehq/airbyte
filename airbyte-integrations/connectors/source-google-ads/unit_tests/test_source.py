@@ -6,22 +6,23 @@
 import logging
 import re
 from collections import namedtuple
-from unittest.mock import Mock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pendulum
 import pytest
 from pendulum import duration, today
+from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
-from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupAdLegacy, chunk_date_range
+from source_google_ads.streams import chunk_date_range
 from source_google_ads.utils import GAQL
 
-from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, StreamSlice
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
 
 from .common import MockGoogleAdsClient
+from .conftest import find_stream
 
 
 @pytest.fixture
@@ -30,19 +31,6 @@ def mock_get_customers(mocker):
         "source_google_ads.source.SourceGoogleAds.get_customers",
         Mock(return_value=[CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="8765")]),
     )
-
-
-@pytest.fixture()
-def stream_mock(mocker, config, customers):
-    def mock(latest_record):
-        mocker.patch("source_google_ads.streams.GoogleAdsStream.read_records", Mock(return_value=[latest_record]))
-        google_api = GoogleAds(credentials=config["credentials"])
-        client = AdGroupAdLegacy(
-            start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], customers=customers
-        )
-        return client
-
-    return mock
 
 
 @pytest.fixture()
@@ -120,7 +108,6 @@ def test_streams_count(config, mock_get_customers):
     source = SourceGoogleAds(config, None, None)
     streams = source.streams(config)
     expected_streams_number = 30
-    print(f"{config=} \n{streams=}")
     assert len(streams) == expected_streams_number
 
 
@@ -159,22 +146,6 @@ def test_read_missing_stream(config, mock_get_customers):
 def test_metrics_in_custom_query(config, query, is_metrics_in_query):
     source = SourceGoogleAds(config, None, None)
     assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
-
-
-@pytest.mark.parametrize(
-    ("latest_record", "current_state", "expected_state"),
-    (
-        ({"segments.date": "2020-01-01"}, {}, {"segments.date": "2020-01-01"}),
-        ({"segments.date": "2020-02-01"}, {"segments.date": "2020-01-01"}, {"segments.date": "2020-02-01"}),
-        ({"segments.date": "2021-03-03"}, {"1234567890": {"segments.date": "2020-02-01"}}, {"segments.date": "2021-03-03"}),
-    ),
-)
-def test_updated_state(stream_mock, latest_record, current_state, expected_state):
-    mocked_stream = stream_mock(latest_record=latest_record)
-    mocked_stream.state = current_state
-    for _ in mocked_stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890"}):
-        pass
-    assert mocked_stream.state["1234567890"] == expected_state
 
 
 def stream_instance(query, api_mock, **kwargs):
@@ -428,24 +399,6 @@ def test_end_date_is_not_in_the_future(config, customers):
     assert config.get("end_date") == today().to_date_string()
 
 
-def test_stream_slices(config, customers):
-    google_api = GoogleAds(credentials=config["credentials"])
-    stream = AdGroupAdLegacy(
-        start_date=config["start_date"],
-        api=google_api,
-        conversion_window_days=config["conversion_window_days"],
-        customers=customers,
-        end_date="2021-02-10",
-    )
-    slices = list(stream.stream_slices())
-    assert slices == [
-        {"start_date": "2020-12-18", "end_date": "2021-01-01", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-01-02", "end_date": "2021-01-16", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-01-17", "end_date": "2021-01-31", "customer_id": "123", "login_customer_id": None},
-        {"start_date": "2021-02-01", "end_date": "2021-02-10", "customer_id": "123", "login_customer_id": None},
-    ]
-
-
 def mock_send_request(query: str, customer_id: str, login_customer_id: str = "default"):
     print(query, customer_id, login_customer_id)
     if customer_id == "123":
@@ -535,3 +488,125 @@ def test_set_retention_period_and_slice_duration(mock_fields_meta_data):
 
     assert updated_stream.days_of_data_storage == 90
     assert updated_stream.slice_duration == duration(days=0)
+
+
+@pytest.mark.parametrize(
+    "input_state, records_and_slices, expected",
+    [
+        # no partitions ⇒ empty
+        ({}, [], {}),
+        # single partition ⇒ one migrated state
+        (
+            {"123": {"segments.date": "2120-10-10"}},
+            [
+                # (record, slice)
+                ({"id": "123", "clientCustomer": "123"}, {"customer_id": "456"})
+            ],
+            {
+                "states": [
+                    {
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "456", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2120-10-10"},
+                    }
+                ],
+                "state": {"segments.date": "2120-10-10"},
+            },
+        ),
+        # multiple partitions ⇒ only those matching state, with earliest date
+        (
+            {"a": {"segments.date": "2020-01-02"}, "b": {"segments.date": "2020-01-01"}, "z": {"segments.date": "2021-01-01"}},
+            [
+                ({"id": "b", "clientCustomer": "b"}, {"customer_id": "p1"}),
+                ({"id": "a", "clientCustomer": "a"}, {"customer_id": "p2"}),
+                # a record that won't match legacy state
+                ({"id": "x", "clientCustomer": "x"}, {"customer_id": "p3"}),
+            ],
+            {
+                "states": [
+                    {
+                        "partition": {"customer_id": "b", "parent_slice": {"customer_id": "p1", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-01"},
+                    },
+                    {
+                        "partition": {"customer_id": "a", "parent_slice": {"customer_id": "p2", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2020-01-02"},
+                    },
+                ],
+                "state": {"segments.date": "2020-01-01"},
+            },
+        ),
+        # none have the cursor field ⇒ empty
+        ({"x": {"foo": "bar"}, "y": {"baz": 42}}, [], {}),
+        # already migrated state ⇒ unchanged
+        (
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+            [],
+            {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+        ),
+    ],
+)
+def test_state_migration(input_state, records_and_slices, expected):
+    # Create a fake customer_client_stream
+    stream_mock = MagicMock()
+
+    # Define what _read_parent_stream will yield
+    stream_mock.stream_slices.return_value = (s for _, s in records_and_slices)
+
+    def fake_read_records(stream_slice, sync_mode):
+        return (r for r, s in records_and_slices if s == stream_slice)
+
+    stream_mock.read_records.side_effect = fake_read_records
+
+    migrator = GoogleAdsPerPartitionStateMigration(config=None, customer_client_stream=stream_mock)
+
+    assert migrator.migrate(input_state) == expected
+
+
+_ANY_VALUE = -1
+
+
+@pytest.mark.parametrize(
+    "input_keys, expected_keys",
+    [
+        (
+            {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+            {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+        ),
+        (
+            {"123Number": _ANY_VALUE, "456Another123": _ANY_VALUE},
+            {"123number": _ANY_VALUE, "456another123": _ANY_VALUE},
+        ),
+        (
+            {
+                "NestedRecord": {"FirstName": _ANY_VALUE, "lastName": _ANY_VALUE},
+                "456Another123": _ANY_VALUE,
+            },
+            {
+                "nested_record": {"first_name": _ANY_VALUE, "last_name": _ANY_VALUE},
+                "456another123": _ANY_VALUE,
+            },
+        ),
+        (
+            {"hello@world": _ANY_VALUE, "test#case": _ANY_VALUE},
+            {"hello_world": _ANY_VALUE, "test_case": _ANY_VALUE},
+        ),
+        (
+            {"MixedUPCase123": _ANY_VALUE, "lowercaseAnd123": _ANY_VALUE},
+            {"mixed_upcase123": _ANY_VALUE, "lowercase_and123": _ANY_VALUE},
+        ),
+        ({"Café": _ANY_VALUE, "Naïve": _ANY_VALUE}, {"cafe": _ANY_VALUE, "naive": _ANY_VALUE}),
+        (
+            {
+                "This is a full sentence": _ANY_VALUE,
+                "Another full sentence with more words": _ANY_VALUE,
+            },
+            {
+                "this_is_a_full_sentence": _ANY_VALUE,
+                "another_full_sentence_with_more_words": _ANY_VALUE,
+            },
+        ),
+    ],
+)
+def test_keys_transformation(input_keys, expected_keys):
+    KeysToSnakeCaseGoogleAdsTransformation().transform(input_keys)
+    assert input_keys == expected_keys

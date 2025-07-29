@@ -18,7 +18,7 @@ data:
   dockerRepository: airbyte/source-harness
   githubIssueLabel: source-harness
   icon: harness.svg
-  license: MIT
+  license: ELv2
   name: Harness
   releaseDate: 2023-10-10
   releaseStage: alpha

@@ -23,6 +23,10 @@ Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.29 | 2025-07-26 | [63917](https://github.com/airbytehq/airbyte/pull/63917) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63503](https://github.com/airbytehq/airbyte/pull/63503) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63096](https://github.com/airbytehq/airbyte/pull/63096) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62652](https://github.com/airbytehq/airbyte/pull/62652) | Update dependencies |
 | 0.0.25 | 2025-06-21 | [61825](https://github.com/airbytehq/airbyte/pull/61825) | Update dependencies |
 | 0.0.24 | 2025-06-14 | [61131](https://github.com/airbytehq/airbyte/pull/61131) | Update dependencies |
 | 0.0.23 | 2025-05-24 | [60604](https://github.com/airbytehq/airbyte/pull/60604) | Update dependencies |
