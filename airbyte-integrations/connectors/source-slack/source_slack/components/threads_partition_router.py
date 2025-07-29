@@ -35,7 +35,7 @@ class ThreadsPartitionRouter(SubstreamPartitionRouter):
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
 
-        lookback_window = timedelta(days=self.config.get("lookback_window", 0)) # lookback window in days
+        lookback_window = timedelta(days=self.config.get("lookback_window", 0))  # lookback window in days
         final_state = {"float_ts": (ab_datetime_parse(int(start_date_state)) - lookback_window).timestamp()}
         # Set state for each parent stream with an incremental dependency
         for parent_config in self.parent_stream_configs:
