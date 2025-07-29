@@ -595,7 +595,7 @@ class MySqlSourceJdbcPartitionFactory(
         val effectiveLowerBound = lowerBound ?: Long.MIN_VALUE
         val eachStep: Long = (upperBound - effectiveLowerBound) / num
         for (i in 1..(num - 1)) {
-            queryPlan.add(i * eachStep)
+            queryPlan.add(effectiveLowerBound + i * eachStep)
         }
 
         val lbs: List<Long> = listOf(effectiveLowerBound) + queryPlan
@@ -613,7 +613,7 @@ class MySqlSourceJdbcPartitionFactory(
         val effectiveLowerBound = lowerBound ?: Double.MIN_VALUE
         val eachStep: Double = (upperBound - effectiveLowerBound) / num
         for (i in 1..(num - 1)) {
-            queryPlan.add(i * eachStep)
+            queryPlan.add(effectiveLowerBound + i * eachStep)
         }
         val lbs: List<Double> = listOf(effectiveLowerBound) + queryPlan
         val ubs: List<Double?> = queryPlan + null
