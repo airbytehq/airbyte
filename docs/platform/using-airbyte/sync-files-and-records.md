@@ -18,7 +18,11 @@ The process to move files and records depends on whether your data source is str
 
 ## Which connectors support file transfers
 
-Connectors that support file transfers have `supportsFileTransfer: true` in their metadata. Airbyte's UI doesn't currently make this obvious, but the following sources support file transfers.
+Connectors that support file transfers have `supportsFileTransfer: true` in their metadata. Airbyte's UI marks file streams in the connection's Schema tab.
+
+![A file stream in the schema with a "File stream" badge beside it](assets/file-based-stream.png)
+
+The following sources support file transfers.
 
 - Zendesk Support
 - S3
