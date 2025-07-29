@@ -59,7 +59,7 @@ class UnixDomainSocketDataChannel(
     private val probePacket: ProbePacket
 ) : SocketDataChannel {
 
-    private var socketStatus = AtomicReference<SocketDataChannel.SocketStatus>(SOCKET_CLOSED)
+    private var socketStatus = AtomicReference(SOCKET_CLOSED)
     private var socketBound = AtomicBoolean(false)
 
     override var outputStream: OutputStream? = null
