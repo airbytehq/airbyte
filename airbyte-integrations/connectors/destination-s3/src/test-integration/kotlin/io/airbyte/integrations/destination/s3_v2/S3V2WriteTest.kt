@@ -522,6 +522,22 @@ class S3V2WriteTestParquetUncompressed :
         mergesUnions = true,
     )
 
+class S3V2WriteTestParquetUncompressedProto :
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET
+    )
+
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
@@ -534,6 +550,22 @@ class S3V2WriteTestParquetSnappy :
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true,
+    )
+
+class S3V2WriteTestParquetSnappyProto :
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET
     )
 
 class S3V2WriteTestEndpointURL :
