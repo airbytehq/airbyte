@@ -1,0 +1,28 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "domains",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Domain's unique objectGUID identifier"},
+            "name": {"type": ["string"], "description": "Domain name (DNS name)"},
+            "netbios_name": {"type": ["string", "null"], "description": "NetBIOS domain name"},
+            "distinguished_name": {"type": ["string"], "description": "Domain distinguished name"},
+            "functional_level": {"type": ["string", "null"], "description": "Domain functional level"},
+            "forest_name": {"type": ["string", "null"], "description": "Forest DNS name"},
+            "created_at": {"type": ["string", "null"], "description": "Domain creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Last modification time"},
+            "domain_controllers": {"type": ["array"], "items": {"type": "string"}, "description": "Domain controller object IDs"},
+            "trust_relationships": {"type": ["array"], "items": {"type": "object"}, "description": "Trust relationships"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

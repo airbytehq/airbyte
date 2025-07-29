@@ -1,0 +1,37 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/active-directory
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Active Directory Connection Specification
+  type: object
+  required:
+    - username
+    - password
+    - domain
+    - domain_ip
+  properties:
+    username:
+      type: string
+      title: Username
+      description: The username for authentication
+      examples:
+        - FabrixScanner
+      order: 0
+    password:
+      type: string
+      title: Password
+      description: The password for authentication
+      airbyte_secret: true
+      order: 1
+    domain:
+      type: string
+      title: Root Domain
+      description: The root domain to start scanning
+      examples:
+        - fabrix.local
+      order: 2
+    domain_ip:
+      type: string
+      title: Domain IP
+      description: The IP address of the domain controller
+      order: 3
+
