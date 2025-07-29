@@ -7,10 +7,14 @@ from bloodhound.ad.authentication import ADAuthentication
 from ldap3 import Connection
 
 from .streams import (
+    DomainOrganizationalUnits,
     Domains,
     Forest,
+    ForestDomains,
     GroupMemberships,
     Groups,
+    OrganizationalUnitObjects,
+    OrganizationalUnits,
     Sites,
     Users,
 )
@@ -29,10 +33,14 @@ class SourceActiveDirectory(AbstractSource):
         return [
             Forest(conn=self._get_ldap_connection(config)),
             Domains(conn=self._get_ldap_connection(config)),
+            ForestDomains(conn=self._get_ldap_connection(config)),
             Sites(conn=self._get_ldap_connection(config)),
+            OrganizationalUnits(conn=self._get_ldap_connection(config)),
+            DomainOrganizationalUnits(conn=self._get_ldap_connection(config)),
             Users(conn=self._get_ldap_connection(config)),
             Groups(conn=self._get_ldap_connection(config)),
             GroupMemberships(conn=self._get_ldap_connection(config)),
+            OrganizationalUnitObjects(conn=self._get_ldap_connection(config)),
         ]
 
     def _get_ldap_connection(self, config: Mapping[str, Any]) -> Connection:

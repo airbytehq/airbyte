@@ -1,0 +1,34 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "organizational_units",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "OU's unique objectGUID identifier"},
+            "name": {"type": ["string"], "description": "OU name"},
+            "distinguished_name": {"type": ["string"], "description": "OU distinguished name"},
+            "description": {"type": ["string", "null"], "description": "OU description"},
+            "canonical_name": {"type": ["string", "null"], "description": "OU canonical name"},
+            "parent_ou_id": {"type": ["string", "null"], "description": "Parent OU's objectGUID (if any)"},
+            "domain_id": {"type": ["string", "null"], "description": "Domain objectGUID this OU belongs to"},
+            "created_at": {"type": ["string", "null"], "description": "OU creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Last modification time"},
+            "gpo_links": {"type": ["array"], "items": {"type": "string"}, "description": "Group Policy Object links"},
+            "managed_by": {"type": ["string", "null"], "description": "Distinguished name of managing object"},
+            "street_address": {"type": ["string", "null"], "description": "Street address"},
+            "city": {"type": ["string", "null"], "description": "City/locality"},
+            "state": {"type": ["string", "null"], "description": "State/province"},
+            "postal_code": {"type": ["string", "null"], "description": "Postal code"},
+            "country": {"type": ["string", "null"], "description": "Country"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
