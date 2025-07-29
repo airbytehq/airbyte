@@ -26,7 +26,7 @@ class DestinationLifecycle(
         // Initialize the destination to make sure that it is ready for the data ingestion
         initializeDestination()
 
-        // Create prepare individual streams for the data ingestion. E.g create table and propagate the schema updates
+        // Create prepare individual streams for the data ingestion. E.g create tables and propagate the schema updates
         initializeIndividualStream()
     }
 
