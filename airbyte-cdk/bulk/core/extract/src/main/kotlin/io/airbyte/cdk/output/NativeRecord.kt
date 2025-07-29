@@ -121,7 +121,7 @@ val offsetTimeProtoEncoder =
     }
 val localDateTimeProtoEncoder =
     generateProtoEncoder<LocalDateTime> { builder, value ->
-        builder.setString(value.format(OffsetTimeCodec.formatter))
+        builder.setString(value.format(LocalDateTimeCodec.formatter))
     }
 val localTimeProtoEncoder =
     generateProtoEncoder<LocalTime> { builder, time ->
