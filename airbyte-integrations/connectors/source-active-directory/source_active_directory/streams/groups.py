@@ -97,7 +97,7 @@ class Groups(ActiveDirectoryStream):
                             if member_search_success and self._conn.entries:
                                 member_entry = self._conn.entries[0]
                                 if hasattr(member_entry, 'objectGUID') and member_entry.objectGUID:
-                                    member_object_ids.append(str(member_entry.objectGUID))
+                                    member_object_ids.append(self._strip_guid_parents(str(member_entry.objectGUID)))
                         except Exception as e:
                             self.logger.warning(f"Failed to get objectGUID for member {member_dn}: {str(e)}")
                             continue
@@ -118,7 +118,7 @@ class Groups(ActiveDirectoryStream):
                             if group_search_success and self._conn.entries:
                                 group_entry = self._conn.entries[0]
                                 if hasattr(group_entry, 'objectGUID') and group_entry.objectGUID:
-                                    parent_group_object_ids.append(str(group_entry.objectGUID))
+                                    parent_group_object_ids.append(self._strip_guid_parents(str(group_entry.objectGUID)))
                         except Exception as e:
                             self.logger.warning(f"Failed to get objectGUID for parent group {group_dn}: {str(e)}")
                             continue
@@ -128,7 +128,7 @@ class Groups(ActiveDirectoryStream):
                 
                 # Build the group record
                 group_record = {
-                    "id": str(object_guid),
+                    "id": self._strip_guid_parents(str(object_guid)),
                     "name": str(entry.displayName) if entry.displayName else str(entry.cn) if entry.cn else None,
                     "sam_account_name": str(entry.sAMAccountName) if entry.sAMAccountName else None,
                     "description": str(entry.description) if entry.description else None,

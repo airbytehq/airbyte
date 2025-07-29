@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Tuple
 
 from ldap3 import SUBTREE
 
@@ -58,8 +58,10 @@ class Forest(ActiveDirectoryStream):
     def _get_forest_info(self, config_context: str, root_domain_context: str) -> dict:
         """Get comprehensive forest information."""
         try:
-            # Get forest root domain name
-            forest_name = self._get_forest_name(config_context)
+            # Get forest root domain name and object ID
+            forest_name, forest_id = self._get_forest_name_and_id(config_context)
+            if not forest_id:
+                raise ValueError("Forest ID not found. Ensure the connection is to a valid Active Directory forest.")
             
             # Get forest functional level
             forest_mode = self._get_forest_functional_level(config_context)
@@ -80,7 +82,7 @@ class Forest(ActiveDirectoryStream):
             creation_time = self._get_forest_creation_time(root_domain_context)
             
             forest_record = {
-                "id": f"forest-{forest_name}" if forest_name else "forest-unknown",
+                "id": forest_id,
                 "name": forest_name,
                 "forest_mode": forest_mode,
                 "schema_version": schema_version,
@@ -97,8 +99,8 @@ class Forest(ActiveDirectoryStream):
             self.logger.error(f"Error getting forest info: {str(e)}")
             return None
     
-    def _get_forest_name(self, config_context: str) -> Optional[str]:
-        """Get the forest DNS name."""
+    def _get_forest_name_and_id(self, config_context: str) -> Tuple[Optional[str], Optional[str]]:
+        """Get the forest DNS name and object ID."""
         try:
             search_base = f"CN=Partitions,{config_context}"
             
@@ -106,17 +108,25 @@ class Forest(ActiveDirectoryStream):
                 search_base=search_base,
                 search_filter="(&(objectClass=crossRef)(systemFlags:1.2.840.113556.1.4.803:=2)(nETBIOSName=*))",
                 search_scope=SUBTREE,
-                attributes=['dnsRoot']
+                attributes=['dnsRoot', 'objectGUID']
             )
             
             if success and self._conn.entries:
                 # The first domain is typically the forest root
                 entry = self._conn.entries[0]
+                forest_name = None
+                forest_id = None
+                
                 if hasattr(entry, 'dnsRoot') and entry.dnsRoot:
-                    return str(entry.dnsRoot.value)
-            return None
+                    forest_name = str(entry.dnsRoot.value)
+                
+                if hasattr(entry, 'objectGUID') and entry.objectGUID:
+                    forest_id = str(entry.objectGUID.value)
+                    
+                return forest_name, self._strip_guid_parents(forest_id)
+            return None, None
         except:
-            return None
+            return None, None
     
     def _get_forest_functional_level(self, config_context: str) -> Optional[str]:
         """Get forest functional level."""
