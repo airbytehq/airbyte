@@ -76,7 +76,7 @@ definitions:
     page_token_option:
       type: RequestOption
       inject_into: body_json
-      field_path: [ "page_token" ]
+      field_path: ["page_token"]
 
   base_retriever:
     type: SimpleRetriever
