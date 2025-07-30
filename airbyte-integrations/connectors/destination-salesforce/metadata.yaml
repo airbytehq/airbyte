@@ -12,7 +12,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: c0b24000-d34d-b33f-fea7-6b96dc0e5f0d
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/destination-salesforce
   githubIssueLabel: destination-salesforce
   icon: salesforce.svg

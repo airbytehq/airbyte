@@ -65,7 +65,6 @@ class SalesforceWriterTest() :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
-        preserveUndeclaredFields = true,
         supportFileTransfer = false,
     ) {
     private val accountStream: DestinationStream =
@@ -170,12 +169,7 @@ class SalesforceWriterTest() :
                             OutputRecord(
                                 extractedAt = 1234,
                                 generationId = 0,
-                                data =
-                                    if (preserveUndeclaredFields) {
-                                        mapOf("id" to 5678, "undeclared" to "asdf")
-                                    } else {
-                                        mapOf("id" to 5678)
-                                    },
+                                data = mapOf("id" to 5678),
                                 airbyteMeta =
                                     OutputRecord.Meta(
                                         changes =

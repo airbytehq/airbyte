@@ -179,11 +179,12 @@ class SalesforceOperationRepository(
             logger.warn {
                 "Object $objectName has no fields and therefore will not be added to the catalog"
             }
+            return null
         }
         return DestinationOperation(
             objectName,
             importType,
-            getSchema(fieldsForSyncMode, importType, matchingKeysFlattened),
+            getSchema(fieldsForSyncMode, matchingKeysFlattened),
             matchingKeys,
         )
     }
@@ -210,7 +211,6 @@ class SalesforceOperationRepository(
 
     private fun getSchema(
         fieldsForSyncMode: List<JsonNode>,
-        importType: ImportType,
         matchingKeysFlattened: Set<String>
     ): AirbyteType {
         return ObjectType(
@@ -221,7 +221,7 @@ class SalesforceOperationRepository(
             additionalProperties = false,
             required =
                 fieldsForSyncMode
-                    .filter { isFieldMandatory(importType, it) }
+                    .filter { isFieldMandatory() }
                     .filter { it.get("name").asText() !in matchingKeysFlattened }
                     .map { it.get("name").asText() }
         )
@@ -250,15 +250,13 @@ class SalesforceOperationRepository(
         }
     }
 
-    private fun isFieldMandatory(importType: ImportType, field: JsonNode): Boolean {
-        return when (importType) {
-            is Append,
-            is Dedupe ->
-                !field.get("defaultedOnCreate").asBoolean() && !field.get("nillable").asBoolean()
-            is Update,
-            is SoftDelete -> false
-            else -> throw IllegalArgumentException("unsupported DestinationSyncMode $importType")
-        }
+    private fun isFieldMandatory(): Boolean {
+        // Based on case https://help.salesforce.com/s/case-view?caseId=500Hx00000ruQVxIAM, the most
+        // accurate solution was `F.isCreateable() && !F.isNillable() && !F.isDefaultedOnCreate() &&
+        // F.isSortable()` but there were some false positives i.e. fields that would match this
+        // criteria but would not be required. An Idea was posted to Salesforce
+        // [here](https://ideas.salesforce.com/s/idea/a0BHp000016L3jKMAS/describe-api-return-isrequired) as a feature request. In the meanwhile, we will let users figure out what are the mandatory fields.
+        return false
     }
 
     private fun getMatchingKeys(importType: ImportType, fields: JsonNode): List<List<String>> {

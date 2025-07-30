@@ -63,13 +63,6 @@ class SalesforceOperationRepositoryTest {
                             .withCreateable(true)
                             .withDefaultedOnCreate(true)
                     )
-                    .withField(
-                        SalesforceFieldBuilder()
-                            .withName("mandatoryField")
-                            .withCreateable(true)
-                            .withDefaultedOnCreate(false)
-                            .withNillable(false)
-                    )
                     .build()
             )
 
@@ -78,12 +71,12 @@ class SalesforceOperationRepositoryTest {
         assertEquals(1, operations.size)
         val operation = operations[0]
         assertEquals(Append, operation.syncMode)
-        assertEquals(2, operation.schema.asColumns().size)
+        assertEquals(1, operation.schema.asColumns().size)
         assertEquals(emptyList<List<String>>(), operation.matchingKeys)
         assertIs<ObjectType>(operation.schema)
         val schema = operation.schema as ObjectType
         assertFalse(schema.additionalProperties)
-        assertEquals(listOf<String>("mandatoryField"), schema.required)
+        assertEquals(emptyList(), schema.required)
     }
 
     @Test
@@ -160,14 +153,6 @@ class SalesforceOperationRepositoryTest {
                     )
                     .withField(
                         SalesforceFieldBuilder()
-                            .withName("upsertableMandatoryField")
-                            .withCreateable(true)
-                            .withUpdateable(true)
-                            .withDefaultedOnCreate(false)
-                            .withNillable(false)
-                    )
-                    .withField(
-                        SalesforceFieldBuilder()
                             .withName("createableField")
                             .withCreateable(true)
                             .withUpdateable(false)
@@ -196,14 +181,14 @@ class SalesforceOperationRepositoryTest {
         val operation = upsertOperations[0]
         assertEquals(Dedupe(emptyList(), emptyList()), operation.syncMode)
         assertEquals(
-            listOf("upsertableField", "upsertableMandatoryField", "matchingField"),
+            listOf("upsertableField", "matchingField"),
             operation.schema.asColumns().map { it.key }
         )
         assertEquals(listOf<List<String>>(listOf<String>("matchingField")), operation.matchingKeys)
         assertIs<ObjectType>(operation.schema)
         val schema = operation.schema as ObjectType
         assertFalse(schema.additionalProperties)
-        assertEquals(listOf<String>("upsertableMandatoryField"), schema.required)
+        assertEquals(emptyList(), schema.required)
     }
 
     @Test
@@ -300,6 +285,7 @@ class SalesforceOperationRepositoryTest {
                 SalesforceSObjectDescribeResponseBuilder()
                     .withName("Contact")
                     .withDeletable(true)
+                    .withField(SalesforceFieldBuilder().withName("Id"))
                     .build()
             )
         every {
@@ -315,6 +301,7 @@ class SalesforceOperationRepositoryTest {
                 SalesforceSObjectDescribeResponseBuilder()
                     .withName("Lead")
                     .withDeletable(true)
+                    .withField(SalesforceFieldBuilder().withName("Id"))
                     .build()
             )
 
