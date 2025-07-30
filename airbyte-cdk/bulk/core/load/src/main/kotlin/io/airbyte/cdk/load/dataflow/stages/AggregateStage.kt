@@ -10,7 +10,7 @@ class AggregateStage(
     val store: AggregateStore,
 ): DataFlowStage {
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
-        val streamDescriptor: DestinationStream.Descriptor = input.rec!!.stream.mappedDescriptor
+        val streamDescriptor: DestinationStream.Descriptor = input.raw!!.stream.mappedDescriptor
 
         val aggregateToFlush =  if (!store.canAggregate(streamDescriptor)) {
             store.getAndRemoveBiggestAggregate()
@@ -18,7 +18,7 @@ class AggregateStage(
             null
         }
 
-        val agg = store.getOrCreate(input.rec!!.stream.mappedDescriptor)
+        val agg = store.getOrCreate(streamDescriptor)
 
         val result = agg.accept(input.munged!!)
 
