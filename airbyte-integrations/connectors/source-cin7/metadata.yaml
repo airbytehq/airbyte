@@ -22,6 +22,7 @@ data:
         secretStore:
           type: GSM
           alias: airbyte-connector-testing-secret-store
+  connectorSubtype: api
   connectorType: source
   definitionId: ff48bf15-f917-4fff-ba28-cbab56ef892f
   dockerImageTag: 0.3.11
