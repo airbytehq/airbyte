@@ -56,11 +56,15 @@ jobs:
             matrix=$(echo '${{ steps.find-prs.outputs.prs }}' | jq -r 'map({pr_number: .number, pr_title: .title})')
             echo "matrix={\"include\":$(echo "$matrix")}" >> $GITHUB_OUTPUT
             echo "has_prs=true" >> $GITHUB_OUTPUT
+            
+            # Debug output for troubleshooting
             echo "Found PRs to approve: $(echo "$matrix" | jq length)"
+            echo "Generated matrix:" | tee -a $GITHUB_STEP_SUMMARY
+            echo "$matrix" | jq '.' | tee -a $GITHUB_STEP_SUMMARY
           else
             echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
             echo "has_prs=false" >> $GITHUB_OUTPUT
-            echo "No PRs found to approve"
+            echo "No PRs found to approve" | tee -a $GITHUB_STEP_SUMMARY
           fi
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
