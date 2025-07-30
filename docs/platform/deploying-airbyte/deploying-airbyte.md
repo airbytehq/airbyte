@@ -103,8 +103,7 @@ airbyte-v2/airbyte	2.0.7        	1.7.1      	Helm chart to deploy airbyte
 
 ### 2. Create a Namespace for Airbyte
 
-While it is not strictly necessary to isolate the Airbyte installation into its own namespace, it is good practice and recommended as a part of the installation.
-This documentation assumes that you chose the name `airbyte` for the namespace, but you may choose a different name if required.
+While it's not strictly necessary to isolate the Airbyte installation into its own namespace, it's good practice and recommended as a part of the installation. This documentation assumes that you chose the name `airbyte` or `airbyte-v2` for the namespace, but you may choose a different name if required.
 
 To create a namespace run the following:
 
