@@ -11,7 +11,7 @@ class StateStage(
         val stateUpdates = input.stateHist!!
 
         stateStore.updateOrCreate(
-            input.rec!!.stream.mappedDescriptor,
+            input.munged!!.stateId,
             stateUpdates,
         )
 

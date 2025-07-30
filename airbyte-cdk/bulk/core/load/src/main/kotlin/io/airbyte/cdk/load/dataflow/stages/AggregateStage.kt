@@ -9,7 +9,7 @@ class AggregateStage(
     val store: AggregateStore,
 ): DataFlowStage {
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
-        val agg = store.getOrCreate(input.rec!!.stream.mappedDescriptor)
+        val agg = store.getOrCreate(input.raw!!.stream.mappedDescriptor)
 
         val result = agg.accept(input.munged!!)
 

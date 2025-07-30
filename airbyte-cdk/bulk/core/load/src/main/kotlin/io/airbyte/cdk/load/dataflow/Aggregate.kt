@@ -1,7 +1,7 @@
 package io.airbyte.cdk.load.dataflow
 
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.state.StateHistogram
+import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 
 interface Aggregate {
     enum class Status {
@@ -9,7 +9,7 @@ interface Aggregate {
         INCOMPLETE,
     }
 
-    fun accept(fields: Map<String, AirbyteValue>): Status
+    fun accept(fields: RecordDTO): Status
 
     fun getStateHistogram(): StateHistogram
 
