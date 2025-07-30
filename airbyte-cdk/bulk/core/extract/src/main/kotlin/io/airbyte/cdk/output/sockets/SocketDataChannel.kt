@@ -119,6 +119,8 @@ class UnixDomainSocketDataChannel(
             logger.info { "Waiting to connect..." }
             // accept blocks until a listener connects
             val socketChannel: SocketChannel = serverSocketChannel.accept()
+            // close the server socket channel after accepting a connection
+            serverSocketChannel.close()
             socketStatus.set(SOCKET_READY)
             outputStream = Channels.newOutputStream(socketChannel)
             logger.info { "Connected to server socket" }
