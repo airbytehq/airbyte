@@ -18,6 +18,10 @@ import java.net.UnixDomainSocketAddress
 import java.nio.channels.Channels
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermission
+import java.util.EnumSet
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Singleton
@@ -94,18 +98,38 @@ class UnixDomainSocketDataChannel(
         get() = socketBound.get()
         set(value) = socketBound.set(value)
 
+    private var serverSocketChannel: ServerSocketChannel? = null
+
     override suspend fun initialize() = coroutineScope {
         logger.info { "Initializing socket at $socketFilePath" }
         val socketFile = File(socketFilePath)
+        val socketPath: Path = socketFile.toPath()
+        val dirPath: Path? = socketPath.parent
+        try {
+            if (dirPath != null) {
+                Files.createDirectories(dirPath)
+            }
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to create socket directory for $socketFilePath (continuing)" }
+        }
         if (socketFile.exists()) {
             socketFile.delete()
         }
-        val socketAddress: UnixDomainSocketAddress? =
-            UnixDomainSocketAddress.of(socketFile.toPath())
-
-        val serverSocketChannel: ServerSocketChannel =
-            ServerSocketChannel.open(StandardProtocolFamily.UNIX)
-        serverSocketChannel.bind(socketAddress)
+        val socketAddress: UnixDomainSocketAddress = UnixDomainSocketAddress.of(socketPath)
+        serverSocketChannel = ServerSocketChannel.open(StandardProtocolFamily.UNIX)
+        serverSocketChannel!!.bind(socketAddress)
+        try {
+            val sockPerms =
+                EnumSet.of(
+                    PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
+                    PosixFilePermission.GROUP_READ,
+                    PosixFilePermission.GROUP_WRITE
+                )
+            Files.setPosixFilePermissions(socketPath, sockPerms)
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
         socketStatus.set(SOCKET_INITIALIZED)
         // Socket is initialized and waiting for a listener to connect.
         // In order to let the outer RunBlocking {} to exit immediately,
@@ -118,7 +142,7 @@ class UnixDomainSocketDataChannel(
             socketStatus.set(SOCKET_WAITING_LISTENER)
             logger.info { "Waiting to connect..." }
             // accept blocks until a listener connects
-            val socketChannel: SocketChannel = serverSocketChannel.accept()
+            val socketChannel: SocketChannel = serverSocketChannel!!.accept()
             socketStatus.set(SOCKET_READY)
             outputStream = Channels.newOutputStream(socketChannel)
             logger.info { "Connected to server socket" }
@@ -130,6 +154,8 @@ class UnixDomainSocketDataChannel(
         socketStatus.set(SOCKET_CLOSED)
         outputStream?.close()
         outputStream = null
+        serverSocketChannel?.close()
+        serverSocketChannel = null
         unbind()
     }
 
