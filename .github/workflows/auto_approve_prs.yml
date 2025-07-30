@@ -1,3 +1,16 @@
+# Auto Approve PRs Workflow
+#
+# This workflow automatically approves pull requests that have specific auto-merge labels attached.
+# It is intended to eventually replace the existing auto_merge workflow by splitting approval and merge
+# into separate workflows.
+#
+# Labels that trigger auto-approval:
+# - "auto-merge": Standard auto-merge label for PRs that should be automatically approved and merged
+# - "auto-merge/bypass-ci-checks": Auto-merge label that bypasses certain CI checks
+#
+# The workflow runs every 15 minutes and searches for open PRs targeting the master branch with
+# these labels, then approves each matching PR using the octavia-bot GitHub App.
+
 name: Auto Approve PRs
 
 on:
@@ -14,9 +27,6 @@ jobs:
   find_prs:
     name: Find PRs to approve
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      has_prs: ${{ steps.set-matrix.outputs.has_prs }}
     steps:
       - name: Find PRs with auto-merge labels
         id: find-prs
@@ -28,7 +38,7 @@ jobs:
             --method GET \
             --field q="repo:airbytehq/airbyte is:pr label:auto-merge OR label:auto-merge/bypass-ci-checks base:master state:open" \
             --jq '.items[] | {number: .number, title: .title}')
-          
+
           # Convert to JSON array for matrix
           if [ -n "$prs" ]; then
             echo "prs<<EOF" >> $GITHUB_OUTPUT
@@ -52,6 +62,9 @@ jobs:
             echo "has_prs=false" >> $GITHUB_OUTPUT
             echo "No PRs found to approve"
           fi
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_prs: ${{ steps.set-matrix.outputs.has_prs }}
 
   approve_prs:
     name: Approve PR #${{ matrix.pr_number }}
@@ -84,5 +97,5 @@ jobs:
           issue-number: ${{ matrix.pr_number }}
           body: |
             ✅ **Auto-approved by octavia-bot**
-            
+
             This PR has been automatically approved based on its labels. The PR can now be merged when all other requirements are met.
