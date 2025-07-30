@@ -75,27 +75,20 @@ jobs:
       max-parallel: 30
       matrix: ${{ fromJson(needs.find_prs.outputs.matrix) }}
     steps:
-      - name: Generate octavia-bot token
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-
       - name: Approve Pull Request #${{ matrix.pr_number }}
         uses: juliangruber/approve-pull-request-action@v2
         with:
-          github-token: ${{ steps.app-token.outputs.token }}
+          github-token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           repo: airbytehq/airbyte
           number: ${{ matrix.pr_number }}
 
       - name: Add approval comment
         uses: peter-evans/create-or-update-comment@v2
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           repository: airbytehq/airbyte
           issue-number: ${{ matrix.pr_number }}
           body: |
-            ✅ **Auto-approved by octavia-bot**
+            ✅ **Auto-approved by maintenance bot**
 
             This PR has been automatically approved based on its labels. The PR can now be merged when all other requirements are met.
