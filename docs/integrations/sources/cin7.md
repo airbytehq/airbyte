@@ -39,6 +39,7 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.11 | 2025-01-27 | [64118] |(https://github.com/airbytehq/airbyte/pull/64118) | Fix product_availability primary key to support multi-location inventory tracking by using composite key [ID, Location] instead of just [ID] 
 | 0.3.10 | 2025-07-26 | [64046](https://github.com/airbytehq/airbyte/pull/64046) | Update dependencies |
 | 0.3.9 | 2025-07-19 | [63536](https://github.com/airbytehq/airbyte/pull/63536) | Update dependencies |
 | 0.3.8 | 2025-07-12 | [62997](https://github.com/airbytehq/airbyte/pull/62997) | Update dependencies |
