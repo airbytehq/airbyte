@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.transform
 
 @Singleton
 class RecordAccumulator(
-    // TODO: redo the directLoader and factoruy (No generic)
     val openLoaders: MutableMap<DestinationStream.Descriptor, DirectLoader>,
+    // TODO: redo the directLoader and factory (No generic)
     val directLoaderFactory: DirectLoaderFactory<DirectLoader>) {
 
     data class AccumulatorState(
@@ -35,7 +35,16 @@ class RecordAccumulator(
                 // TODO: In the flush we need to block
                 emit(biggestDirectLoader.key)
                 recordPerStreamDescriptor.remove(biggestDirectLoader.key)
-
+                // TODO: Part or new interface
+                val newDirectLoader = directLoaderFactory.create(mungedRecord.stream.mappedDescriptor, 0)
+                openLoaders.put(mungedRecord.stream.mappedDescriptor, newDirectLoader)
+            }
+            if (openLoaders.containsKey(mungedRecord.stream.mappedDescriptor)) {
+                // TODO: new interface
+                val result = openLoaders[mungedRecord.stream.mappedDescriptor]!!.accept(mungedRecord.mungedRecord)
+                if (result == DirectLoader.Complete) {
+                    // emit()
+                }
             }
         }
     }
