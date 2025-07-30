@@ -10,14 +10,14 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.util.Jsons
 
-class Db2SourceJdbcStreamStateValue(
+class Db2SourceStreamStateValue(
     @JsonProperty("primary_key") val primaryKey: Map<String, JsonNode> = mapOf(),
     @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
 ) {
     companion object {
         /** Empty json representing the completion of a FULL_REFRESH snapshot. */
         val snapshotCompleted: OpaqueStateValue
-            get() = Jsons.valueToTree(Db2SourceJdbcStreamStateValue())
+            get() = Jsons.valueToTree(Db2SourceStreamStateValue())
 
         /** Value representing the progress of an ongoing snapshot not involving cursor columns. */
         fun snapshotCheckpoint(
@@ -25,7 +25,7 @@ class Db2SourceJdbcStreamStateValue(
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue =
             Jsons.valueToTree(
-                Db2SourceJdbcStreamStateValue(
+                Db2SourceStreamStateValue(
                     primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
                 )
             )
@@ -38,7 +38,7 @@ class Db2SourceJdbcStreamStateValue(
             cursorUpperBound: JsonNode,
         ): OpaqueStateValue =
             Jsons.valueToTree(
-                Db2SourceJdbcStreamStateValue(
+                Db2SourceStreamStateValue(
                     primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
                     cursors = mapOf(cursor.id to cursorUpperBound),
                 )
@@ -50,7 +50,7 @@ class Db2SourceJdbcStreamStateValue(
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue =
             Jsons.valueToTree(
-                Db2SourceJdbcStreamStateValue(
+                Db2SourceStreamStateValue(
                     cursors = mapOf(cursor.id to cursorCheckpoint),
                 )
             )

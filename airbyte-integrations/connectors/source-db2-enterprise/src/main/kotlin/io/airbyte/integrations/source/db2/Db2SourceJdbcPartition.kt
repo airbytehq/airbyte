@@ -70,7 +70,7 @@ class Db2JdbcUnsplittableSnapshotPartition(
     streamState: Db2JdbcStreamState,
 ) : Db2JdbcUnsplittablePartition(selectQueryGenerator, streamState) {
 
-    override val completeState: OpaqueStateValue = Db2SourceJdbcStreamStateValue.snapshotCompleted
+    override val completeState: OpaqueStateValue = Db2SourceStreamStateValue.snapshotCompleted
 }
 
 /**
@@ -87,7 +87,7 @@ class Db2JdbcUnsplittableSnapshotWithCursorPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            Db2SourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            Db2SourceStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = streamState.cursorUpperBound!!,
             )
@@ -225,16 +225,16 @@ class Db2JdbcSplittableSnapshotPartition(
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
-                null -> Db2SourceJdbcStreamStateValue.snapshotCompleted
+                null -> Db2SourceStreamStateValue.snapshotCompleted
                 else ->
-                    Db2SourceJdbcStreamStateValue.snapshotCheckpoint(
+                    Db2SourceStreamStateValue.snapshotCheckpoint(
                         primaryKey = checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                     )
             }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        Db2SourceJdbcStreamStateValue.snapshotCheckpoint(
+        Db2SourceStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
@@ -303,12 +303,12 @@ class Db2JdbcSplittableSnapshotWithCursorPartition(
         get() =
             when (upperBound) {
                 null ->
-                    Db2SourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                    Db2SourceStreamStateValue.cursorIncrementalCheckpoint(
                         cursor,
                         cursorUpperBound,
                     )
                 else ->
-                    Db2SourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                    Db2SourceStreamStateValue.snapshotWithCursorCheckpoint(
                         primaryKey = checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                         cursor,
@@ -317,7 +317,7 @@ class Db2JdbcSplittableSnapshotWithCursorPartition(
             }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        Db2SourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+        Db2SourceStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
             cursor,
@@ -353,13 +353,13 @@ class Db2JdbcCursorIncrementalPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            Db2SourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            Db2SourceStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = cursorUpperBound,
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        Db2SourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+        Db2SourceStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
             cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
         )

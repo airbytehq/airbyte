@@ -53,8 +53,8 @@ class Db2SourceJdbcPartitionFactory(
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
-        val sv: Db2SourceJdbcStreamStateValue =
-            Jsons.treeToValue(opaqueStateValue, Db2SourceJdbcStreamStateValue::class.java)
+        val sv: Db2SourceStreamStateValue =
+            Jsons.treeToValue(opaqueStateValue, Db2SourceStreamStateValue::class.java)
         val pkMap: Map<Field, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
@@ -136,7 +136,7 @@ class Db2SourceJdbcPartitionFactory(
         }
     }
 
-    private fun Db2SourceJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
+    private fun Db2SourceStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
         if (primaryKey.isEmpty()) {
             return mapOf()
         }
@@ -150,7 +150,7 @@ class Db2SourceJdbcPartitionFactory(
         return fields.associateWith { primaryKey[it.id]!! }
     }
 
-    private fun Db2SourceJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
+    private fun Db2SourceStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -223,10 +223,8 @@ class Db2SourceJdbcPartitionFactory(
         unsplitPartition: Db2SourceJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
     ): List<Db2SourceJdbcPartition> {
-        val splitPartitionBoundaries: List<Db2SourceJdbcStreamStateValue> by lazy {
-            opaqueStateValues.map {
-                Jsons.treeToValue(it, Db2SourceJdbcStreamStateValue::class.java)
-            }
+        val splitPartitionBoundaries: List<Db2SourceStreamStateValue> by lazy {
+            opaqueStateValues.map { Jsons.treeToValue(it, Db2SourceStreamStateValue::class.java) }
         }
         return when (unsplitPartition) {
             is Db2JdbcSplittableSnapshotPartition ->
@@ -240,7 +238,7 @@ class Db2SourceJdbcPartitionFactory(
     }
 
     private fun Db2JdbcSplittableSnapshotPartition.split(
-        splitPointValues: List<Db2SourceJdbcStreamStateValue>
+        splitPointValues: List<Db2SourceStreamStateValue>
     ): List<Db2JdbcSplittableSnapshotPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -259,7 +257,7 @@ class Db2SourceJdbcPartitionFactory(
     }
 
     private fun Db2JdbcSplittableSnapshotWithCursorPartition.split(
-        splitPointValues: List<Db2SourceJdbcStreamStateValue>
+        splitPointValues: List<Db2SourceStreamStateValue>
     ): List<Db2JdbcSplittableSnapshotWithCursorPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -280,7 +278,7 @@ class Db2SourceJdbcPartitionFactory(
     }
 
     private fun Db2JdbcCursorIncrementalPartition.split(
-        splitPointValues: List<Db2SourceJdbcStreamStateValue>
+        splitPointValues: List<Db2SourceStreamStateValue>
     ): List<Db2JdbcCursorIncrementalPartition> {
         val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
         val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners

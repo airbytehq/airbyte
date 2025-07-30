@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.sap_hana
+package io.airbyte.integrations.source.db2
 
 import io.airbyte.cdk.jdbc.JDBC_PROPERTY_PREFIX
 import io.airbyte.cdk.read.CreateNoPartitions
@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
 /** Concurrent JDBC implementation of [PartitionsCreatorFactory]. Support trigger based CDC only */
 @Singleton
 @Requires(property = MODE_PROPERTY, value = "concurrent_with_cdc")
-class SapHanaJdbcPartitionsCreatorFactory<
+class Db2PartitionsCreatorFactory<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
@@ -32,7 +32,7 @@ class SapHanaJdbcPartitionsCreatorFactory<
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is StreamFeedBootstrap) return null
         val partition: P = partitionFactory.create(feedBootstrap) ?: return CreateNoPartitions
-        return SapHanaJdbcPartitionsCreator(partition, partitionFactory, deleteQuerier)
+        return Db2PartitionsCreator(partition, partitionFactory, deleteQuerier)
     }
 }
 

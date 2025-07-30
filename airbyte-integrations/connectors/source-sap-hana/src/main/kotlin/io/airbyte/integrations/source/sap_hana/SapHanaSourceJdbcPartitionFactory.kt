@@ -51,8 +51,8 @@ class SapHanaSourceJdbcPartitionFactory(
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
-        val sv: SapHanaSourceJdbcStreamStateValue =
-            Jsons.treeToValue(opaqueStateValue, SapHanaSourceJdbcStreamStateValue::class.java)
+        val sv: SapHanaSourceStreamStateValue =
+            Jsons.treeToValue(opaqueStateValue, SapHanaSourceStreamStateValue::class.java)
         val pkMap: Map<Field, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
@@ -134,7 +134,7 @@ class SapHanaSourceJdbcPartitionFactory(
         }
     }
 
-    private fun SapHanaSourceJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
+    private fun SapHanaSourceStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
         if (primaryKey.isEmpty()) {
             return mapOf()
         }
@@ -148,9 +148,7 @@ class SapHanaSourceJdbcPartitionFactory(
         return fields.associateWith { primaryKey[it.id]!! }
     }
 
-    private fun SapHanaSourceJdbcStreamStateValue.cursorPair(
-        stream: Stream
-    ): Pair<Field, JsonNode>? {
+    private fun SapHanaSourceStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -224,9 +222,9 @@ class SapHanaSourceJdbcPartitionFactory(
         unsplitPartition: SapHanaSourceJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
     ): List<SapHanaSourceJdbcPartition> {
-        val splitPartitionBoundaries: List<SapHanaSourceJdbcStreamStateValue> by lazy {
+        val splitPartitionBoundaries: List<SapHanaSourceStreamStateValue> by lazy {
             opaqueStateValues.map {
-                Jsons.treeToValue(it, SapHanaSourceJdbcStreamStateValue::class.java)
+                Jsons.treeToValue(it, SapHanaSourceStreamStateValue::class.java)
             }
         }
         return when (unsplitPartition) {
@@ -242,7 +240,7 @@ class SapHanaSourceJdbcPartitionFactory(
     }
 
     private fun SapHanaJdbcSplittableSnapshotPartition.split(
-        splitPointValues: List<SapHanaSourceJdbcStreamStateValue>
+        splitPointValues: List<SapHanaSourceStreamStateValue>
     ): List<SapHanaJdbcSplittableSnapshotPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -261,7 +259,7 @@ class SapHanaSourceJdbcPartitionFactory(
     }
 
     private fun SapHanaJdbcSplittableSnapshotWithCursorPartition.split(
-        splitPointValues: List<SapHanaSourceJdbcStreamStateValue>
+        splitPointValues: List<SapHanaSourceStreamStateValue>
     ): List<SapHanaJdbcSplittableSnapshotWithCursorPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -282,7 +280,7 @@ class SapHanaSourceJdbcPartitionFactory(
     }
 
     private fun SapHanaJdbcCursorIncrementalPartition.split(
-        splitPointValues: List<SapHanaSourceJdbcStreamStateValue>
+        splitPointValues: List<SapHanaSourceStreamStateValue>
     ): List<SapHanaJdbcCursorIncrementalPartition> {
         val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
         val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners

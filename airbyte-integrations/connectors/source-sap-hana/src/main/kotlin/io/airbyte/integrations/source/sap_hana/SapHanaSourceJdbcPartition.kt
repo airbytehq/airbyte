@@ -70,8 +70,7 @@ class SapHanaJdbcUnsplittableSnapshotPartition(
     streamState: SapHanaJdbcStreamState,
 ) : SapHanaJdbcUnsplittablePartition(selectQueryGenerator, streamState) {
 
-    override val completeState: OpaqueStateValue =
-        SapHanaSourceJdbcStreamStateValue.snapshotCompleted
+    override val completeState: OpaqueStateValue = SapHanaSourceStreamStateValue.snapshotCompleted
 }
 
 /**
@@ -88,7 +87,7 @@ class SapHanaJdbcUnsplittableSnapshotWithCursorPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            SapHanaSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            SapHanaSourceStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = streamState.cursorUpperBound!!,
             )
@@ -226,16 +225,16 @@ class SapHanaJdbcSplittableSnapshotPartition(
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
-                null -> SapHanaSourceJdbcStreamStateValue.snapshotCompleted
+                null -> SapHanaSourceStreamStateValue.snapshotCompleted
                 else ->
-                    SapHanaSourceJdbcStreamStateValue.snapshotCheckpoint(
+                    SapHanaSourceStreamStateValue.snapshotCheckpoint(
                         primaryKey = checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                     )
             }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        SapHanaSourceJdbcStreamStateValue.snapshotCheckpoint(
+        SapHanaSourceStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
@@ -304,12 +303,12 @@ class SapHanaJdbcSplittableSnapshotWithCursorPartition(
         get() =
             when (upperBound) {
                 null ->
-                    SapHanaSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                    SapHanaSourceStreamStateValue.cursorIncrementalCheckpoint(
                         cursor,
                         cursorUpperBound,
                     )
                 else ->
-                    SapHanaSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                    SapHanaSourceStreamStateValue.snapshotWithCursorCheckpoint(
                         primaryKey = checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                         cursor,
@@ -318,7 +317,7 @@ class SapHanaJdbcSplittableSnapshotWithCursorPartition(
             }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        SapHanaSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+        SapHanaSourceStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
             cursor,
@@ -354,13 +353,13 @@ class SapHanaJdbcCursorIncrementalPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            SapHanaSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            SapHanaSourceStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = cursorUpperBound,
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        SapHanaSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+        SapHanaSourceStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
             cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
         )

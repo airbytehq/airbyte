@@ -4,8 +4,8 @@ plugins {
 
 airbyteBulkConnector {
     core = 'extract'
-    toolkits = ['extract-jdbc' /* TODO: add CDC , 'extract-cdc'*/]
-    cdk = '0.409'
+    toolkits = ['extract-jdbc']
+    cdk = '0.601'
 }
 
 application {
@@ -16,9 +16,6 @@ dependencies {
 
     // TODO: this driver is for LUW installations only
     implementation 'com.ibm.db2:jcc:12.1.0.0'
-
-    // TODO: add CDC
-    //implementation 'io.debezium:debezium-connector-db2:3.0.8.Final'
 
     testImplementation 'org.testcontainers:db2:1.20.6'
 }

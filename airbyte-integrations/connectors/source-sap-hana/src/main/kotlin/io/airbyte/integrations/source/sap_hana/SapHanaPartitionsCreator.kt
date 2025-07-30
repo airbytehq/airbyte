@@ -2,11 +2,12 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.db2
+package io.airbyte.integrations.source.sap_hana
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.JdbcCursorPartition
 import io.airbyte.cdk.read.JdbcPartition
 import io.airbyte.cdk.read.JdbcPartitionFactory
@@ -27,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 /** Concurrent JDBC implementation of [PartitionsCreator]. */
-class Db2JdbcPartitionsCreator<
+class SapHanaPartitionsCreator<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
@@ -80,7 +81,7 @@ class Db2JdbcPartitionsCreator<
         log.info { "Querying maximum cursor column value." }
         val record: ObjectNode? =
             selectQuerier.executeQuery(cursorUpperBoundQuery).use {
-                if (it.hasNext()) it.next().data else null
+                if (it.hasNext()) it.next().data.toJson() else null
             }
         if (record == null) {
             streamState.cursorUpperBound = Jsons.nullNode()
@@ -116,7 +117,7 @@ class Db2JdbcPartitionsCreator<
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
             selectQuerier.executeQuery(samplingQuery).use {
                 for (row in it) {
-                    values.add(recordMapper(row.data))
+                    values.add(recordMapper(row.data.toJson()))
                 }
             }
             if (values.size < sharedState.maxSampleSize) {
@@ -154,7 +155,7 @@ class Db2JdbcPartitionsCreator<
                 "Table cannot be read by concurrent partition readers because it cannot be sampled."
             }
             // TODO: adaptive fetchSize computation?
-            return listOf(Db2JdbcNonResumablePartitionReader(partition, deleteQuerier))
+            return listOf(SapHanaNonResumablePartitionReader(partition, deleteQuerier))
         }
         // Sample the table for partition split boundaries and for record byte sizes.
         val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: ObjectNode ->
@@ -176,7 +177,7 @@ class Db2JdbcPartitionsCreator<
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be split."
             }
-            return listOf(Db2JdbcNonResumablePartitionReader(partition, deleteQuerier))
+            return listOf(SapHanaNonResumablePartitionReader(partition, deleteQuerier))
         }
         // Happy path.
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
@@ -200,6 +201,6 @@ class Db2JdbcPartitionsCreator<
                 .distinct()
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
-        return partitions.map { Db2JdbcNonResumablePartitionReader(it, deleteQuerier) }
+        return partitions.map { SapHanaNonResumablePartitionReader(it, deleteQuerier) }
     }
 }
