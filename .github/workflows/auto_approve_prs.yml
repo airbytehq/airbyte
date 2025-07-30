@@ -14,9 +14,9 @@
 name: Auto Approve PRs
 
 on:
-  schedule:
-    # Every 15 minutes
-    - cron: "*/15 * * * *"
+  # schedule:
+  #   # Every 15 minutes
+  #   - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
