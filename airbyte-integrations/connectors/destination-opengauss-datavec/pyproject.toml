@@ -1,0 +1,18 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "destination-opengauss-datavec"
+version = "0.1.0"
+description = "Airbyte Destination Connector for OpenGauss with vector support"
+authors = ["hly<liyanhu03@163.com>"]
+license = "MIT"
+readme = "README.md"
+
+[[tool.poetry.packages]]
+include = "destination_pinecone"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = {version = "^1.8.0", extras = ["vector-db-based"]}
