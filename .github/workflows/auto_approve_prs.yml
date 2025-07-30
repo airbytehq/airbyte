@@ -43,7 +43,7 @@ jobs:
         run: |
           if [ -n "${{ steps.find-prs.outputs.prs }}" ]; then
             # Build matrix from PR data
-            matrix=$(echo '${{ steps.find-prs.outputs.prs }}' | jq -s 'map({pr_number: .number, pr_title: .title})')
+            matrix=$(echo '${{ steps.find-prs.outputs.prs }}' | jq -r 'map({pr_number: .number, pr_title: .title})')
             echo "matrix={\"include\":$(echo "$matrix")}" >> $GITHUB_OUTPUT
             echo "has_prs=true" >> $GITHUB_OUTPUT
             echo "Found PRs to approve: $(echo "$matrix" | jq length)"
