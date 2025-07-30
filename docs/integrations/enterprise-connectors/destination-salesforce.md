@@ -5,7 +5,7 @@ dockerRepository: airbyte/destination-salesforce
 
 ## Overview
 
-The Salesforce destination connector enables [data activation](/platform/move-data/elt-data-activation) by syncing data from your data warehouse to Salesforce objects. This connector is designed for operational workflows where you need to deliver modeled data directly to your CRM for sales, marketing, and customer success teams.
+The Salesforce destination connector enables [data activation](elt-data-activation) by syncing data from your data warehouse to Salesforce objects. This connector is designed for operational workflows where you need to deliver modeled data directly to your CRM for sales, marketing, and customer success teams.
 
 The connector uses the [Salesforce Bulk API v62.0](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) for efficient data loading and supports OAuth 2.0 authentication with comprehensive error handling through Dead Letter Queue (DLQ) functionality.
 
@@ -131,7 +131,7 @@ While the underlying implementation supports additional operations (update, upse
 
 ## Data Activation
 
-This connector is specifically designed for [data activation](/platform/move-data/elt-data-activation) workflows. Common patterns include:
+This connector is specifically designed for [data activation](elt-data-activation) workflows. Common patterns include:
 
 ### Revenue Operations Example
 
@@ -216,8 +216,8 @@ For programmatic configuration, use these parameter names:
 
 ## Related Documentation
 
-- [Data Activation Overview](/platform/move-data/elt-data-activation)
+- [Data Activation Overview](elt-data-activation)
 - [Salesforce Bulk API Documentation](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm)
 - [Salesforce Connected Apps](https://help.salesforce.com/s/articleView?id=sf.connected_app_create.htm)
-- [Rejected Records](/platform/move-data/rejected-records)
+- [Rejected Records](rejected-records)
 
