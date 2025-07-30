@@ -241,6 +241,8 @@ definitions:
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
         record_selector:
           type: RecordSelector
           extractor:
