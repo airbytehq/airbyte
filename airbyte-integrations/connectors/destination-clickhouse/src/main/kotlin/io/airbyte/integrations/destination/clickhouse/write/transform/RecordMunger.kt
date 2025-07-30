@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.clickhouse.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.lifecycle.steps.RecordMungingStep
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import jakarta.inject.Singleton
@@ -21,8 +22,8 @@ import jakarta.inject.Singleton
 class RecordMunger(
     private val catalogInfo: TableCatalog,
     private val coercer: ClickhouseCoercer,
-) {
-    fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
+): RecordMungingStep {
+    override fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
         val enriched =
             record.asEnrichedDestinationRecordAirbyteValue(
