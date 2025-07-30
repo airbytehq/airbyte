@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -59,6 +60,7 @@ class S3DataLakeDirectLoaderFactory(
     }
 }
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class S3DataLakeDirectLoader(
     private val stream: DestinationStream,
     private val table: Table,
@@ -75,7 +77,7 @@ class S3DataLakeDirectLoader(
         val commitLock: Any = Any()
     }
 
-    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+    override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val enrichedRecordAirbyteValue = record.asEnrichedDestinationRecordAirbyteValue()
 
         val icebergRecord =
@@ -98,7 +100,7 @@ class S3DataLakeDirectLoader(
         return DirectLoader.Complete
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         log.info { "Finishing writing to $stagingBranchName" }
         val writeResult = writer.complete()
         if (writeResult.deleteFiles().isNotEmpty()) {

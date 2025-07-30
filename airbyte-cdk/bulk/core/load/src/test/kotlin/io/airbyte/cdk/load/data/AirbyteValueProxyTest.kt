@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
@@ -84,13 +85,15 @@ class AirbyteValueProxyTest {
 
     val stream: DestinationStream =
         DestinationStream(
-            descriptor = DestinationStream.Descriptor("namespace", "name"),
+            unmappedNamespace = "namespace",
+            unmappedName = "name",
             importType = Append,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
             includeFiles = false,
-            schema = ALL_TYPES_SCHEMA
+            schema = ALL_TYPES_SCHEMA,
+            namespaceMapper = NamespaceMapper()
         )
 
     private fun ifNull(value: JsonNode?): JsonNode? {

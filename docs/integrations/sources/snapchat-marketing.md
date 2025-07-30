@@ -143,6 +143,9 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.14 | 2025-07-26 | [63088](https://github.com/airbytehq/airbyte/pull/63088) | Update dependencies |
+| 1.5.13 | 2025-07-02 | [62488](https://github.com/airbytehq/airbyte/pull/62488) | Fix end datetime to include today |
+| 1.5.12 | 2025-06-28 | [60513](https://github.com/airbytehq/airbyte/pull/60513) | Update dependencies |
 | 1.5.11 | 2025-05-10 | [60113](https://github.com/airbytehq/airbyte/pull/60113) | Update dependencies |
 | 1.5.10 | 2025-05-04 | [59625](https://github.com/airbytehq/airbyte/pull/59625) | Update dependencies |
 | 1.5.9 | 2025-04-27 | [58395](https://github.com/airbytehq/airbyte/pull/58395) | Update dependencies |

@@ -4,12 +4,15 @@
 
 package io.airbyte.cdk.load.message
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.micronaut.context.annotation.Value
@@ -22,7 +25,9 @@ class DestinationMessageFactory(
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false
+    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    private val namespaceMapper: NamespaceMapper,
+    private val uuidGenerator: UUIDGenerator,
 ) {
 
     fun fromAirbyteProtocolMessage(
@@ -46,11 +51,12 @@ class DestinationMessageFactory(
 
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
-                val stream =
-                    catalog.getStream(
+                val descriptor =
+                    namespaceMapper.map(
                         namespace = message.record.namespace,
-                        name = message.record.stream,
+                        name = message.record.stream
                     )
+                val stream = catalog.getStream(descriptor)
                 if (fileTransferEnabled) {
                     try {
                         @Suppress("UNCHECKED_CAST")
@@ -91,10 +97,11 @@ class DestinationMessageFactory(
                             null
                         }
                     DestinationRecord(
-                        stream,
-                        DestinationRecordJsonSource(message),
-                        serializedSizeBytes,
-                        checkpointId
+                        stream = stream,
+                        message = DestinationRecordJsonSource(message),
+                        serializedSizeBytes = serializedSizeBytes,
+                        checkpointId = checkpointId,
+                        airbyteRawId = uuidGenerator.v7(),
                     )
                 }
             }
@@ -104,11 +111,12 @@ class DestinationMessageFactory(
                     message.trace.type == null ||
                         message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
                 ) {
-                    val stream =
-                        catalog.getStream(
+                    val descriptor =
+                        namespaceMapper.map(
                             namespace = status.streamDescriptor.namespace,
                             name = status.streamDescriptor.name,
                         )
+                    val stream = catalog.getStream(descriptor)
                     when (status.status) {
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE ->
                             if (fileTransferEnabled) {
@@ -123,17 +131,9 @@ class DestinationMessageFactory(
                                 )
                             }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            if (fileTransferEnabled) {
-                                DestinationFileStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            } else {
-                                DestinationRecordStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            }
+                            throw ConfigErrorException(
+                                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message: $message"
+                            )
                         else -> Undefined
                     }
                 } else {
@@ -158,22 +158,55 @@ class DestinationMessageFactory(
                     }
                     null,
                     AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
-                        val additionalProperties = message.state.additionalProperties
-                        GlobalCheckpoint(
-                            sourceStats =
-                                message.state.sourceStats?.recordCount?.let {
-                                    CheckpointMessage.Stats(recordCount = it.toLong())
-                                },
-                            state = message.state.global.sharedState,
-                            checkpoints =
-                                message.state.global.streamStates.map {
-                                    fromAirbyteStreamState(it)
-                                },
-                            additionalProperties = message.state.additionalProperties,
-                            originalTypeField = message.state.type,
-                            serializedSizeBytes = serializedSizeBytes,
-                            checkpointKey = keyFromAdditionalPropertiesMaybe(additionalProperties)
-                        )
+                        /*
+                         * If any of the stream states within a global state message contain
+                         * a checkpoint ID in the additionalProperties of that stream, then
+                         * we have a CDC snapshot checkpoint state message.  Otherwise, treat
+                         * the state message as a general global state message.  This distinction
+                         * is necessary because a CDC snapshot state message is a global state
+                         * message with nested per-stream state messages and needs to be tracked
+                         * separately.
+                         */
+                        if (isSnapshotCheckpoint(message.state)) {
+                            GlobalSnapshotCheckpoint(
+                                sourceStats =
+                                    message.state.sourceStats?.recordCount?.let {
+                                        CheckpointMessage.Stats(recordCount = it.toLong())
+                                    },
+                                state = message.state.global.sharedState,
+                                checkpoints =
+                                    message.state.global.streamStates.map {
+                                        fromAirbyteStreamState(it)
+                                    },
+                                additionalProperties = message.state.additionalProperties,
+                                originalTypeField = message.state.type,
+                                serializedSizeBytes = serializedSizeBytes,
+                                checkpointKey =
+                                    keyFromAdditionalPropertiesMaybe(
+                                        message.state.additionalProperties
+                                    ),
+                                streamCheckpoints = snapshotStreamCheckpoints(message.state)
+                            )
+                        } else {
+                            GlobalCheckpoint(
+                                sourceStats =
+                                    message.state.sourceStats?.recordCount?.let {
+                                        CheckpointMessage.Stats(recordCount = it.toLong())
+                                    },
+                                state = message.state.global.sharedState,
+                                checkpoints =
+                                    message.state.global.streamStates.map {
+                                        fromAirbyteStreamState(it)
+                                    },
+                                additionalProperties = message.state.additionalProperties,
+                                originalTypeField = message.state.type,
+                                serializedSizeBytes = serializedSizeBytes,
+                                checkpointKey =
+                                    keyFromAdditionalPropertiesMaybe(
+                                        message.state.additionalProperties
+                                    )
+                            )
+                        }
                     }
                     else -> // TODO: Do we still need to handle LEGACY?
                     Undefined
@@ -188,9 +221,7 @@ class DestinationMessageFactory(
     ): CheckpointKey? {
         val id = additionalProperties[Meta.CHECKPOINT_ID_NAME]?.let { CheckpointId(it as String) }
         val index =
-            additionalProperties[Meta.CHECKPOINT_INDEX_NAME]?.let {
-                CheckpointIndex((it as Int).toInt())
-            }
+            additionalProperties[Meta.CHECKPOINT_INDEX_NAME]?.let { CheckpointIndex(it as Int) }
         return if (id != null && index != null) {
             CheckpointKey(index, id)
         } else {
@@ -201,12 +232,49 @@ class DestinationMessageFactory(
         }
     }
 
+    private fun snapshotStreamCheckpoints(
+        stateMessage: AirbyteStateMessage,
+    ): Map<DestinationStream.Descriptor, CheckpointKey> =
+        stateMessage.global.streamStates
+            .filter {
+                /*
+                 * Streams that have not made any progress since the last state message will not include the checkpoint ID's.
+                 * Filter these streams out so that they do not fail the check in keyFromAdditionalPropertiesMaybe().
+                 */
+                it.additionalProperties.containsKey(Meta.CHECKPOINT_ID_NAME) &&
+                    it.additionalProperties.containsKey(Meta.CHECKPOINT_INDEX_NAME)
+            }
+            .map {
+                it.streamDescriptor to keyFromAdditionalPropertiesMaybe(it.additionalProperties)
+            }
+            .filter { (_, value) -> value != null }
+            .associate { namespaceMapper.map(it.first.namespace, it.first.name) to it.second!! }
+
+    private fun isSnapshotCheckpoint(stateMessage: AirbyteStateMessage): Boolean =
+        stateMessage.global.streamStates.any { streamState ->
+            streamState.additionalProperties.containsKey(Meta.CHECKPOINT_ID_NAME)
+        }
+
     private fun fromAirbyteStreamState(
         streamState: AirbyteStreamState
     ): CheckpointMessage.Checkpoint {
-        val descriptor = streamState.streamDescriptor
+        val descriptor =
+            namespaceMapper.map(
+                namespace = streamState.streamDescriptor.namespace,
+                name = streamState.streamDescriptor.name,
+            )
+
+        val (unmappedNamespace: String?, unmappedName: String) =
+            try {
+                val stream = catalog.getStream(descriptor)
+                stream.unmappedNamespace to stream.unmappedName
+            } catch (_: Exception) {
+                streamState.streamDescriptor.namespace to streamState.streamDescriptor.name
+            }
+
         return CheckpointMessage.Checkpoint(
-            stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
+            unmappedNamespace = unmappedNamespace,
+            unmappedName = unmappedName,
             state = runCatching { streamState.streamState }.getOrNull(),
         )
     }
@@ -215,26 +283,29 @@ class DestinationMessageFactory(
         message: AirbyteMessageProtobuf,
         serializedSizeBytes: Long,
     ): DestinationMessage {
-        // Control messages will be sent as serialized json.
+        // Control messages will be sent as serialized JSON.
         return if (message.hasAirbyteProtocolMessage()) {
             val airbyteMessage =
                 Jsons.readValue(message.airbyteProtocolMessage, AirbyteMessage::class.java)
             fromAirbyteProtocolMessage(airbyteMessage, serializedSizeBytes)
         } else if (message.hasRecord()) {
-            val stream =
-                catalog.getStream(
-                    message.record.streamName,
-                    if (message.record.hasStreamNamespace()) {
-                        message.record.streamNamespace // defaults to "", not null
-                    } else {
-                        null
-                    }
+            val descriptor =
+                namespaceMapper.map(
+                    namespace =
+                        if (message.record.hasStreamNamespace()) {
+                            message.record.streamNamespace // defaults to "", not null
+                        } else {
+                            null
+                        },
+                    name = message.record.streamName
                 )
+            val stream = catalog.getStream(descriptor)
             DestinationRecord(
-                stream,
-                DestinationRecordProtobufSource(message),
-                serializedSizeBytes,
-                CheckpointId(message.record.partitionId)
+                stream = stream,
+                message = DestinationRecordProtobufSource(message),
+                serializedSizeBytes = serializedSizeBytes,
+                checkpointId = CheckpointId(message.record.partitionId),
+                airbyteRawId = uuidGenerator.v7(),
             )
         } else if (message.hasProbe()) {
             ProbeMessage

@@ -18,6 +18,7 @@
         "type": "integer"
       },
       "concurrency": {
+        "airbyte_hidden": true,
         "default": 1,
         "description": "Maximum number of concurrent queries to the database.",
         "order": 12,
@@ -42,6 +43,12 @@
         "order": 7,
         "title": "JDBC URL Params",
         "type": "string"
+      },
+      "max_db_connections": {
+        "description": "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
+        "order": 12,
+        "title": "Max Database Connections",
+        "type": "integer"
       },
       "password": {
         "airbyte_secret": true,

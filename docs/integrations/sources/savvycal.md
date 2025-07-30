@@ -21,6 +21,11 @@ Sync your scheduled meetings and scheduling links from SavvyCal!
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.29 | 2025-07-26 | [63946](https://github.com/airbytehq/airbyte/pull/63946) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63045](https://github.com/airbytehq/airbyte/pull/63045) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62705](https://github.com/airbytehq/airbyte/pull/62705) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62272](https://github.com/airbytehq/airbyte/pull/62272) | Update dependencies |
+| 0.0.25 | 2025-06-14 | [61457](https://github.com/airbytehq/airbyte/pull/61457) | Update dependencies |
 | 0.0.24 | 2025-05-24 | [60464](https://github.com/airbytehq/airbyte/pull/60464) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [60066](https://github.com/airbytehq/airbyte/pull/60066) | Update dependencies |
 | 0.0.22 | 2025-05-04 | [59591](https://github.com/airbytehq/airbyte/pull/59591) | Update dependencies |

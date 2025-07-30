@@ -1,4 +1,4 @@
-version: 6.41.5
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -24,8 +24,8 @@ definitions:
           http_method: GET
           request_parameters:
             mode: "0"
-            sortfield: t.ref
-            sortorder: ASC
+            sortfield: t.tms
+            sortorder: DESC
             pagination_data: "false"
             includestockdata: "1"
         record_selector:
@@ -50,6 +50,17 @@ definitions:
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
@@ -86,6 +97,7 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/Products list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -139,8 +151,8 @@ definitions:
           http_method: GET
           request_parameters:
             type: product
-            sortfield: t.rowid
-            sortorder: ASC
+            sortfield: t.tms
+            sortorder: DESC
         record_selector:
           type: RecordSelector
           extractor:
@@ -163,6 +175,17 @@ definitions:
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
@@ -190,8 +213,8 @@ definitions:
           path: /invoices
           http_method: GET
           request_parameters:
-            sortfield: t.rowid
-            sortorder: ASC
+            sortfield: t.tms
+            sortorder: DESC
         record_selector:
           type: RecordSelector
           extractor:
@@ -214,6 +237,17 @@ definitions:
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -256,6 +290,7 @@ definitions:
               partition_field: invoice_id
               stream:
                 $ref: "#/definitions/streams/Customer invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -314,9 +349,9 @@ definitions:
           path: /thirdparties
           http_method: GET
           request_parameters:
-            sortfield: t.rowid
-            sortorder: ASC
             mode: "1"
+            sortfield: t.tms
+            sortorder: DESC
         record_selector:
           type: RecordSelector
           extractor:
@@ -326,12 +361,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 1000
@@ -339,6 +374,17 @@ definitions:
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
@@ -362,8 +408,8 @@ definitions:
           path: /supplierinvoices
           http_method: GET
           request_parameters:
-            sortfield: t.rowid
-            sortorder: ASC
+            sortfield: t.tms
+            sortorder: DESC
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,15 +423,26 @@ definitions:
             inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
+            page_size: 1000
             start_from_page: 0
             inject_on_first_request: true
-            page_size: 1000
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: tms
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -428,6 +485,7 @@ definitions:
               partition_field: supp_invoice_id
               stream:
                 $ref: "#/definitions/streams/Supplier invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -486,9 +544,9 @@ definitions:
           path: /thirdparties
           http_method: GET
           request_parameters:
-            sortfield: t.rowid
-            sortorder: ASC
             mode: "4"
+            sortfield: t.tms
+            sortorder: DESC
         record_selector:
           type: RecordSelector
           extractor:
@@ -498,12 +556,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 100
@@ -511,6 +569,17 @@ definitions:
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modification
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
@@ -534,8 +603,8 @@ definitions:
           path: /users
           http_method: GET
           request_parameters:
-            sortfield: t.rowid
-            sortorder: ASC
+            sortfield: t.tms
+            sortorder: DESC
         record_selector:
           type: RecordSelector
           extractor:
@@ -545,12 +614,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 100
@@ -558,6 +627,17 @@ definitions:
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datem
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
@@ -620,6 +700,7 @@ definitions:
               partition_field: invoice_id
               stream:
                 $ref: "#/definitions/streams/Customer invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -657,6 +738,7 @@ definitions:
               partition_field: supp_invoice_id
               stream:
                 $ref: "#/definitions/streams/Supplier invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -704,6 +786,7 @@ spec:
     required:
       - api_key
       - my_dolibarr_domain_url
+      - start_date
     properties:
       api_key:
         type: string
@@ -717,6 +800,12 @@ spec:
           mydomain.com/dolibarr
         order: 1
         title: my_dolibarr_domain/url
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
@@ -736,91 +825,91 @@ metadata:
     Supplier invoices payments list: true
   testedStreams:
     Products list:
-      hasRecords: true
-      streamHash: 4bb1928f2d6316f4fd834f8c15e441fbdc0378eb
+      streamHash: 2fb5b057bb75f280b0df1142cc2d1aabba5d5d86
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Products category id list:
-      hasRecords: true
-      streamHash: c07d3db13974d61150ab55ce6d962c57e781d599
+      streamHash: a99b70328eec5c81f2843999437935786a578800
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Product categories list:
-      hasRecords: true
-      streamHash: e8f18924daad8b4e8defc21067dafebf36cf8c65
+      streamHash: 65170488480eec6ca692495a47de3e0c416649dc
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Customer invoices list:
-      streamHash: 2a9f640801d2717f12116c56e69925089c22dd4d
+      streamHash: 7a9744e22fe9d2bd0d3053a983bc42370903ec03
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customer invoices lines list:
-      streamHash: 71f75fe35e28cd9376b652e9ca7b4f1ffba9e27a
+      streamHash: f2a3dec92e92859d2a3728eada618a340c451041
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customers list:
-      streamHash: 996ed698f9b1787171507bea90614d53f90523d0
+      streamHash: 1110c4da83605a812f22b8916e9eaed010439bbc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Supplier invoices list:
-      streamHash: f8f25bc2ed0e843bd60dd290097063501ed91128
+      streamHash: b5ea9172c9cea0544ae4dbb649be66f2b9fc2065
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Supplier invoices lines list:
-      streamHash: 614a15e64669ac9e82339d9d96662a43a6ea138c
+      streamHash: 5b3d27544315fc0ed034f4ddb5f50cba0836f2cb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Suppliers list:
-      streamHash: 840eb989699f7b3c0f3e7f379465a484722931de
+      streamHash: 2466a202e4ca90f796b9435038e2cc5b78088f25
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Internal Users:
-      streamHash: 22e65080b6c6c48bffac91dc3b3743e420f84f81
+      streamHash: e3c17621660a0841b984b10c6a158ce5959b04b6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Company profile data:
-      streamHash: 522f4167ed17eeeb40fb9f3184386f1135e9e168
+      streamHash: 832a4eef42341e70f364bf401cbbb07fe9570c27
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customer invoices payments list:
-      streamHash: 5d1f83380281a7c04f740791cb2549b7db3c9b12
+      streamHash: b658014ec61af37eec4577bcb0bc7caebe2a61be
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Supplier invoices payments list:
-      streamHash: 97b4dc22058d635347b52de0783bf3b29c60be41
+      streamHash: 606b0f811c07ba18ee8173c5568539ae831338b3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -868,8 +957,9 @@ schemas:
           - "null"
       array_options:
         type:
-          - array
+          - object
           - "null"
+        properties: {}
       barcode:
         type:
           - string
@@ -904,13 +994,7 @@ schemas:
           - string
           - "null"
       date_modification:
-        type:
-          - number
-          - "null"
-      default_vat_code:
-        type:
-          - string
-          - "null"
+        type: number
       desiredstock:
         type:
           - string
@@ -1164,6 +1248,7 @@ schemas:
           - "null"
     required:
       - product_id
+      - date_modification
   Products category id list:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1221,9 +1306,7 @@ schemas:
           - number
           - "null"
       date_modification:
-        type:
-          - number
-          - "null"
+        type: number
       entity:
         type:
           - number
@@ -1270,6 +1353,7 @@ schemas:
           - "null"
     required:
       - category_id
+      - date_modification
   Customer invoices list:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1316,9 +1400,7 @@ schemas:
           - number
           - "null"
       date_modification:
-        type:
-          - number
-          - "null"
+        type: number
       date_pointoftax:
         type:
           - string
@@ -1340,6 +1422,10 @@ schemas:
           - array
           - "null"
       fk_account:
+        type:
+          - string
+          - "null"
+      fk_facture_source:
         type:
           - string
           - "null"
@@ -1462,6 +1548,10 @@ schemas:
         type:
           - string
           - "null"
+      sumcreditnote:
+        type:
+          - string
+          - "null"
       sumpayed:
         type:
           - string
@@ -1494,6 +1584,10 @@ schemas:
         type:
           - string
           - "null"
+      totalcreditnotes:
+        type:
+          - string
+          - "null"
       totalpaid:
         type:
           - number
@@ -1508,6 +1602,7 @@ schemas:
           - "null"
     required:
       - invoice_id
+      - date_modification
   Customer invoices lines list:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1758,6 +1853,10 @@ schemas:
         type:
           - string
           - "null"
+      code_fournisseur:
+        type:
+          - string
+          - "null"
       country_code:
         type:
           - string
@@ -1773,9 +1872,7 @@ schemas:
           - number
           - "null"
       date_modification:
-        type:
-          - number
-          - "null"
+        type: number
       effectif:
         type:
           - string
@@ -1964,8 +2061,13 @@ schemas:
         type:
           - number
           - "null"
+      zip:
+        type:
+          - string
+          - "null"
     required:
       - customer_id
+      - date_modification
   Supplier invoices list:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1985,6 +2087,10 @@ schemas:
           - array
           - "null"
       close_code:
+        type:
+          - string
+          - "null"
+      close_note:
         type:
           - string
           - "null"
@@ -2113,6 +2219,10 @@ schemas:
         type:
           - string
           - "null"
+      ref_ext:
+        type:
+          - string
+          - "null"
       ref_supplier:
         type:
           - string
@@ -2148,9 +2258,7 @@ schemas:
           - number
           - "null"
       tms:
-        type:
-          - number
-          - "null"
+        type: number
       total_ht:
         type:
           - string
@@ -2185,6 +2293,7 @@ schemas:
           - "null"
     required:
       - supp_invoice_id
+      - tms
   Supplier invoices lines list:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2412,9 +2521,7 @@ schemas:
           - number
           - "null"
       date_modification:
-        type:
-          - number
-          - "null"
+        type: number
       effectif:
         type:
           - string
@@ -2611,6 +2718,7 @@ schemas:
           - "null"
     required:
       - supplier_id
+      - date_modification
   Internal Users:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2638,6 +2746,7 @@ schemas:
           - "null"
       birth:
         type:
+          - number
           - string
           - "null"
       civility_code:
@@ -2666,6 +2775,7 @@ schemas:
           - "null"
       dateemployment:
         type:
+          - number
           - string
           - "null"
       dateemploymentend:
@@ -2682,9 +2792,7 @@ schemas:
           - string
           - "null"
       datem:
-        type:
-          - number
-          - "null"
+        type: number
       datepreviouslogin:
         type:
           - number
@@ -2704,7 +2812,6 @@ schemas:
           - "null"
       entity:
         type:
-          - number
           - string
           - "null"
       extraparams:
@@ -2866,6 +2973,7 @@ schemas:
           - "null"
     required:
       - user_id
+      - datem
   Company profile data:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2885,7 +2993,7 @@ schemas:
           - "null"
       capital:
         type:
-          - string
+          - number
           - "null"
       company_id:
         type:
@@ -2897,7 +3005,7 @@ schemas:
           - "null"
       country_id:
         type:
-          - string
+          - number
           - "null"
       default_lang:
         type:
@@ -2927,6 +3035,10 @@ schemas:
         type:
           - string
           - "null"
+      idprof10:
+        type:
+          - string
+          - "null"
       idprof2:
         type:
           - string
@@ -2947,13 +3059,17 @@ schemas:
         type:
           - string
           - "null"
-      labelStatus:
+      idprof7:
         type:
-          - array
+          - string
           - "null"
-      labelStatusShort:
+      idprof8:
         type:
-          - array
+          - string
+          - "null"
+      idprof9:
+        type:
+          - string
           - "null"
       localtax1_assuj:
         type:
@@ -2999,10 +3115,6 @@ schemas:
         type:
           - string
           - "null"
-      nb:
-        type:
-          - array
-          - "null"
       note_private:
         type:
           - string
@@ -3012,6 +3124,10 @@ schemas:
           - array
           - "null"
       phone:
+        type:
+          - string
+          - "null"
+      phone_mobile:
         type:
           - string
           - "null"
@@ -3042,11 +3158,15 @@ schemas:
           - "null"
       state_id:
         type:
-          - string
+          - number
           - "null"
       status:
         type:
           - number
+          - "null"
+      termsofsale:
+        type:
+          - string
           - "null"
       town:
         type:
@@ -3054,7 +3174,7 @@ schemas:
           - "null"
       tva_assuj:
         type:
-          - string
+          - number
           - "null"
       tva_intra:
         type:
@@ -3111,6 +3231,10 @@ schemas:
         type:
           - string
           - "null"
+      typeline:
+        type:
+          - string
+          - "null"
     required:
       - ref
   Supplier invoices payments list:
@@ -3143,6 +3267,10 @@ schemas:
       supp_invoice_id:
         type:
           - number
+          - "null"
+      typeline:
+        type:
+          - string
           - "null"
     required:
       - ref

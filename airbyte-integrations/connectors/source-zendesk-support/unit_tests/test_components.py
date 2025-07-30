@@ -4,10 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_zendesk_support.components import (
-    ZendeskSupportAttributeDefinitionsExtractor,
-    ZendeskSupportExtractorEvents,
-)
 
 
 @pytest.mark.parametrize(
@@ -57,9 +53,9 @@ from source_zendesk_support.components import (
         ),
     ],
 )
-def test_extraсtor_events(response_data, expected_events):
+def test_extraсtor_events(response_data, expected_events, components_module):
     # Create an instance of the extractor
-    extractor = ZendeskSupportExtractorEvents()
+    extractor = components_module.ZendeskSupportExtractorEvents()
 
     # Mock the response from requests
     response = MagicMock(spec=requests.Response)
@@ -90,9 +86,9 @@ def test_extraсtor_events(response_data, expected_events):
         (None, []),  # This will be used to mock an exception in the response.json() call
     ],
 )
-def test_attribute_definitions_extractor(response_data, expected_records):
+def test_attribute_definitions_extractor(response_data, expected_records, components_module):
     # Create an instance of the extractor
-    extractor = ZendeskSupportAttributeDefinitionsExtractor()
+    extractor = components_module.ZendeskSupportAttributeDefinitionsExtractor()
 
     # Mock the response from requests
     response = MagicMock(spec=requests.Response)

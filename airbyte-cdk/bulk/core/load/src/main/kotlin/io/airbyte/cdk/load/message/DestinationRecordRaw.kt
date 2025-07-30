@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.data.protobuf.toAirbyteValue
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.util.*
@@ -21,12 +22,19 @@ data class DestinationRecordRaw(
     val stream: DestinationStream,
     val rawData: DestinationRecordSource,
     val serializedSizeBytes: Long,
-    val checkpointId: CheckpointId? = null
+    val checkpointId: CheckpointId? = null,
+    val airbyteRawId: UUID,
 ) {
-    val schema = stream.schema
-
     // Currently file transfer is only supported for non-socket implementations
     val fileReference: FileReference? = rawData.fileReference
+
+    val schema = stream.schema
+
+    val schemaFields: SequencedMap<String, FieldType> =
+        when (schema) {
+            is ObjectType -> schema.properties
+            else -> linkedMapOf()
+        }
 
     /**
      * DEPRECATED: Now that we support multiple formats for speed, this is no longer an
@@ -36,10 +44,13 @@ data class DestinationRecordRaw(
 
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
-            stream,
-            asJsonRecord().toAirbyteValue(),
-            rawData.emittedAtMs,
-            rawData.sourceMeta
+            stream = stream,
+            data =
+                if (rawData is DestinationRecordProtobufSource) {
+                    rawData.toAirbyteValue(stream.airbyteValueProxyFieldAccessors)
+                } else asJsonRecord().toAirbyteValue(),
+            emittedAtMs = rawData.emittedAtMs,
+            meta = rawData.sourceMeta,
         )
     }
 
@@ -50,15 +61,11 @@ data class DestinationRecordRaw(
      * (e.g. if `type` is [TimestampTypeWithTimezone], then `value` is either `NullValue`, or
      * [TimestampWithTimezoneValue]).
      */
-    fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
+    fun asEnrichedDestinationRecordAirbyteValue(
+        extractedAtAsTimestampWithTimezone: Boolean = false,
+        respectLegacyUnions: Boolean = false,
+    ): EnrichedDestinationRecordAirbyteValue {
         val rawJson = asJsonRecord()
-
-        // Get the fields from the schema
-        val schemaFields: SequencedMap<String, FieldType> =
-            when (schema) {
-                is ObjectType -> schema.properties
-                else -> linkedMapOf()
-            }
 
         val declaredFields = LinkedHashMap<String, EnrichedAirbyteValue>()
         val undeclaredFields = LinkedHashMap<String, JsonNode>()
@@ -78,9 +85,12 @@ data class DestinationRecordRaw(
                     name = fieldName,
                     airbyteMetaField = null,
                 )
-            AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType.type)?.let {
-                enrichedValue.abValue = it
-            }
+            AirbyteValueCoercer.coerce(
+                    fieldValue.toAirbyteValue(),
+                    fieldType.type,
+                    respectLegacyUnions = respectLegacyUnions,
+                )
+                ?.let { enrichedValue.abValue = it }
                 ?: enrichedValue.nullify(
                     AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
@@ -100,7 +110,9 @@ data class DestinationRecordRaw(
             undeclaredFields = undeclaredFields,
             emittedAtMs = rawData.emittedAtMs,
             sourceMeta = rawData.sourceMeta,
-            serializedSizeBytes = serializedSizeBytes
+            serializedSizeBytes = serializedSizeBytes,
+            extractedAtAsTimestampWithTimezone = extractedAtAsTimestampWithTimezone,
+            airbyteRawId = airbyteRawId,
         )
     }
 

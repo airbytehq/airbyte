@@ -61,16 +61,16 @@ class FilePartAccumulatorLegacy(
             if (read == -1) {
                 val filePart: ByteArray? = null
                 val part = partFactory.nextPart(filePart, isFinal = true)
-                handleFilePart(part, stream.descriptor, checkpointId)
+                handleFilePart(part, stream.mappedDescriptor, checkpointId)
                 break
             } else if (read < bytePart.size) {
                 val filePart: ByteArray = bytePart.copyOfRange(0, read)
                 val part = partFactory.nextPart(filePart, isFinal = true)
-                handleFilePart(part, stream.descriptor, checkpointId)
+                handleFilePart(part, stream.mappedDescriptor, checkpointId)
                 break
             } else {
                 val part = partFactory.nextPart(bytePart, isFinal = false)
-                handleFilePart(part, stream.descriptor, checkpointId)
+                handleFilePart(part, stream.mappedDescriptor, checkpointId)
             }
         }
         fileInputStream.close()
