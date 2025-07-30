@@ -26,26 +26,26 @@ class RecordAccumulator(
      * Accumulate records in a Loader, once all the record have been accumulated it return the StreamDescriptor to flush
      */
     fun accumulateRecord(/*recordFlow: Flow<TransformDataStep.MungedRecordWrapper>*/) {
-        // recordFlow.transform { mungedRecord ->
-        //     val recordPerStreamDescriptor = accumulatorState.recordPerStreamDescriptor
-        //     // TODO: Check num of open loader, flush if needed. Return the COMPLETED stream descriptor if needed or the forced flush one
-        //     if (recordPerStreamDescriptor.containsKey(mungedRecord.stream.mappedDescriptor) &&
-        //         recordPerStreamDescriptor.size >= maxNumConcurrentKeys) {
-        //         val biggestDirectLoader = recordPerStreamDescriptor.maxBy { it.value }
-        //         // TODO: In the flush we need to block
-        //         emit(biggestDirectLoader.key)
-        //         recordPerStreamDescriptor.remove(biggestDirectLoader.key)
-        //         // TODO: Part or new interface
-        //         val newDirectLoader = directLoaderFactory.create(mungedRecord.stream.mappedDescriptor, 0)
-        //         openLoaders.put(mungedRecord.stream.mappedDescriptor, newDirectLoader)
-        //     }
-        //     if (openLoaders.containsKey(mungedRecord.stream.mappedDescriptor)) {
-        //         // TODO: new interface
-        //         val result = openLoaders[mungedRecord.stream.mappedDescriptor]!!.accept(mungedRecord.mungedRecord)
-        //         if (result == DirectLoader.Complete) {
-        //             // emit()
-        //         }
-        //     }
-        // }
+        recordFlow.transform { mungedRecord ->
+            val recordPerStreamDescriptor = accumulatorState.recordPerStreamDescriptor
+            // TODO: Check num of open loader, flush if needed. Return the COMPLETED stream descriptor if needed or the forced flush one
+            if (recordPerStreamDescriptor.containsKey(mungedRecord.stream.mappedDescriptor) &&
+                recordPerStreamDescriptor.size >= maxNumConcurrentKeys) {
+                val biggestDirectLoader = recordPerStreamDescriptor.maxBy { it.value }
+                // TODO: In the flush we need to block
+                emit(biggestDirectLoader.key)
+                recordPerStreamDescriptor.remove(biggestDirectLoader.key)
+                // TODO: Part or new interface
+                val newDirectLoader = directLoaderFactory.create(mungedRecord.stream.mappedDescriptor, 0)
+                openLoaders.put(mungedRecord.stream.mappedDescriptor, newDirectLoader)
+            }
+            if (openLoaders.containsKey(mungedRecord.stream.mappedDescriptor)) {
+                // TODO: new interface
+                val result = openLoaders[mungedRecord.stream.mappedDescriptor]!!.accept(mungedRecord.mungedRecord)
+                if (result == DirectLoader.Complete) {
+                    // emit()
+                }
+            }
+        }
     }
 }

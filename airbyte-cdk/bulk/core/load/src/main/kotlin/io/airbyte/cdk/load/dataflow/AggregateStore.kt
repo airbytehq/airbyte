@@ -7,6 +7,8 @@ typealias StoreKey = DestinationStream.Descriptor
 
 class AggregateStore(
     private val aggFactory: (StoreKey) -> Aggregate,
+    // TODO: Inject
+    private val maxConcurrentAggregates: Int = 42,
 ) {
     private val aggregates = ConcurrentHashMap<StoreKey, Aggregate>()
 
@@ -15,7 +17,16 @@ class AggregateStore(
     }
 
     fun remove(desc: StoreKey): Aggregate {
-        return aggregates.computeIfPresent(desc) { _, _ -> null }!!
+        return aggregates.remove(desc)!!
     }
 
+    fun getAndRemoveBiggestAggregate(): Aggregate {
+        val (descriptorToRemove, aggregate) = aggregates.maxBy { it.value.size() }
+        aggregates.remove(descriptorToRemove)
+        return aggregate
+    }
+
+    fun canAggregate(desc: StoreKey): Boolean {
+        return aggregates.containsKey(desc) || aggregates.size < maxConcurrentAggregates
+    }
 }

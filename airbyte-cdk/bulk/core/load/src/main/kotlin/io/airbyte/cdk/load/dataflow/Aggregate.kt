@@ -14,4 +14,6 @@ interface Aggregate {
     fun getStateHistogram(): StateHistogram
 
     suspend fun flush() // Maybe we want some sort of generalizable result
+
+    fun size(): Int
 }
