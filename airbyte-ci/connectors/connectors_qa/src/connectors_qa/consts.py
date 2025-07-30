@@ -1,7 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from base_images.python.bases import AirbytePythonConnectorBaseImage  # type: ignore
-
 CONNECTORS_QA_DOC_TEMPLATE_NAME = "qa_checks.md.j2"
 DOCKER_HUB_PASSWORD_ENV_VAR_NAME = "DOCKER_HUB_PASSWORD"
 DOCKER_HUB_USERNAME_ENV_VAR_NAME = "DOCKER_HUB_USERNAME"
@@ -20,6 +18,3 @@ PYPROJECT_FILE_NAME = "pyproject.toml"
 SEMVER_FOR_CONNECTORS_DOC_URL = "https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors"
 SETUP_PY_FILE_NAME = "setup.py"
 VALID_LICENSES = {"MIT", "ELV2", "AIRBYTE ENTERPRISE"}
-
-# Derived from other constants
-AIRBYTE_PYTHON_CONNECTOR_BASE_IMAGE_NAME = f"{DOCKER_INDEX}/{AirbytePythonConnectorBaseImage.repository}"

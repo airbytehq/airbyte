@@ -13,7 +13,6 @@ import asyncclick as click
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 
 from pipelines import consts
-from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, is_automerge_pull_request, update_commit_status_check
 
 if TYPE_CHECKING:
@@ -130,16 +129,4 @@ def do_regression_test_status_check(ctx: click.Context, status_check_name: str, 
 
 
 def determine_changelog_entry_comment(upgrade_base_image_in_metadata_result: StepResult, default_comment: str) -> str:
-    assert isinstance(
-        upgrade_base_image_in_metadata_result.step, UpdateBaseImageMetadata
-    ), "StepResult's step must be instance of UpdateBaseImageMetadata"
-    if upgrade_base_image_in_metadata_result.output is not None and upgrade_base_image_in_metadata_result.output.get(
-        "updated_base_image_address"
-    ):
-        updated_base_image_address = upgrade_base_image_in_metadata_result.output.get("updated_base_image_address")
-        if (
-            "airbyte/python-connector-base:3.0.0" in updated_base_image_address
-            or "airbyte/source-declarative-manifest:6.9.2" in updated_base_image_address
-        ):
-            return "Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64"
     return default_comment

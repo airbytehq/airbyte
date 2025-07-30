@@ -120,7 +120,7 @@ class CheckConnectorUsesPythonBaseImage(SecurityCheck):
     name = (
         f"Python connectors must not use a {consts.DOCKERFILE_NAME} and must declare their base image in {consts.METADATA_FILE_NAME} file"
     )
-    description = f"Connectors must use our Python connector base image (`{consts.AIRBYTE_PYTHON_CONNECTOR_BASE_IMAGE_NAME}`), declared through the `connectorBuildOptions.baseImage` in their `{consts.METADATA_FILE_NAME}`.\nThis is to ensure that all connectors use a base image which is maintained and has security updates."
+    description = f"Connectors must use our Python connector base image, declared through the `connectorBuildOptions.baseImage` in their `{consts.METADATA_FILE_NAME}`.\nThis is to ensure that all connectors use a base image which is maintained and has security updates."
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,
