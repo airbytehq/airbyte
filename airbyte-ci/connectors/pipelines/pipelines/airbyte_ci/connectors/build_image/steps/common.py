@@ -34,7 +34,7 @@ class BuildConnectorImagesBase(Step, ABC):
     """
 
     context: ConnectorContext
-    USER = AirbyteConnectorBaseImage.USER
+    USER = "airbyte"
 
     @property
     def title(self) -> str:
