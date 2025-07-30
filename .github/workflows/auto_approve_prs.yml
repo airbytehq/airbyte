@@ -26,7 +26,7 @@ jobs:
           # Search for open PRs with auto-merge labels targeting master branch
           prs=$(gh api search/issues \
             --method GET \
-            --field q="repo:airbytehq/airbyte is:pr label:auto-merge,auto-merge/bypass-ci-checks base:master state:open" \
+            --field q="repo:airbytehq/airbyte is:pr label:auto-merge OR label:auto-merge/bypass-ci-checks base:master state:open" \
             --jq '.items[] | {number: .number, title: .title}')
           
           # Convert to JSON array for matrix
