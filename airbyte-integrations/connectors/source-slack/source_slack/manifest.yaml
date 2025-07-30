@@ -281,7 +281,8 @@ definitions:
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: source_slack.components.threads_partition_router.ThreadsPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
@@ -289,7 +290,8 @@ definitions:
             # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
             # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
             # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
-            incremental_dependency: false
+            # incremental_dependency set to true to read parent state incrementally with custom substream partition router
+            incremental_dependency: true
             parent_key: ts
             partition_field: float_ts
             request_option:
