@@ -1,6 +1,7 @@
 package io.airbyte.cdk.load.lifecycle
 
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.dataflow.DataFlowPipeline
 import io.airbyte.cdk.load.lifecycle.steps.CreateInputFlowStep
 import io.airbyte.cdk.load.lifecycle.steps.TransformDataStep
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -15,11 +16,12 @@ import kotlinx.coroutines.runBlocking
 
 @Singleton
 class DestinationLifecycle(
-  private val createInputFlowStep: CreateInputFlowStep,
-  private val destinationInitializer: DestinationWriter,
-  private val syncManager: SyncManager,
-  private val destinationCatalog: DestinationCatalog,
-  private val transformDataStep: TransformDataStep,
+    private val createInputFlowStep: CreateInputFlowStep,
+    private val destinationInitializer: DestinationWriter,
+    private val syncManager: SyncManager,
+    private val destinationCatalog: DestinationCatalog,
+    private val transformDataStep: TransformDataStep,
+    private val dfp: DataFlowPipeline,
 ) {
 
     private val log = KotlinLogging.logger {}
@@ -34,7 +36,10 @@ class DestinationLifecycle(
         val flow = startInputConsumerTask()
 
         // Start the data ingestion
-        val tansformedDataFlow: Flow<TransformDataStep.MungedRecordWrapper> = transformDataStep.transformData(flow)
+//        val tansformedDataFlow: Flow<TransformDataStep.MungedRecordWrapper> = transformDataStep.transformData(flow)
+        runBlocking {
+            dfp.run()
+        }
     }
 
     private fun startInputConsumerTask(): Flow<DestinationRecordRaw> {
