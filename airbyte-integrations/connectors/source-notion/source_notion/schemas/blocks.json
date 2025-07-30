@@ -25,6 +25,10 @@
         },
         "workspace": {
           "type": "boolean"
+        },
+        "sequence_number": {
+          "description": "The sequence number of a given block within the parent block.",
+          "type": "integer"
         }
       }
     },
