@@ -98,8 +98,6 @@ class UnixDomainSocketDataChannel(
         get() = socketBound.get()
         set(value) = socketBound.set(value)
 
-    private var serverSocketChannel: ServerSocketChannel? = null
-
     override suspend fun initialize() = coroutineScope {
         logger.info { "Initializing socket at $socketFilePath" }
         val socketFile = File(socketFilePath)
@@ -115,9 +113,12 @@ class UnixDomainSocketDataChannel(
         if (socketFile.exists()) {
             socketFile.delete()
         }
-        val socketAddress: UnixDomainSocketAddress = UnixDomainSocketAddress.of(socketPath)
-        serverSocketChannel = ServerSocketChannel.open(StandardProtocolFamily.UNIX)
-        serverSocketChannel!!.bind(socketAddress)
+        val socketAddress: UnixDomainSocketAddress? =
+            UnixDomainSocketAddress.of(socketFile.toPath())
+
+        val serverSocketChannel: ServerSocketChannel =
+            ServerSocketChannel.open(StandardProtocolFamily.UNIX)
+        serverSocketChannel.bind(socketAddress)
         try {
             val sockPerms =
                 EnumSet.of(
@@ -142,7 +143,9 @@ class UnixDomainSocketDataChannel(
             socketStatus.set(SOCKET_WAITING_LISTENER)
             logger.info { "Waiting to connect..." }
             // accept blocks until a listener connects
-            val socketChannel: SocketChannel = serverSocketChannel!!.accept()
+            val socketChannel: SocketChannel = serverSocketChannel.accept()
+            // close the server socket channel after accepting a connection
+            serverSocketChannel.close()
             socketStatus.set(SOCKET_READY)
             outputStream = Channels.newOutputStream(socketChannel)
             logger.info { "Connected to server socket" }
@@ -154,8 +157,6 @@ class UnixDomainSocketDataChannel(
         socketStatus.set(SOCKET_CLOSED)
         outputStream?.close()
         outputStream = null
-        serverSocketChannel?.close()
-        serverSocketChannel = null
         unbind()
     }
 
