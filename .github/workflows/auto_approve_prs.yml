@@ -18,6 +18,12 @@ on:
     # Every 15 minutes
     - cron: "*/15 * * * *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (find PRs but do not approve them)'
+        required: false
+        default: 'false'
+        type: boolean
 
 concurrency:
   group: auto-approve-prs
@@ -71,7 +77,7 @@ jobs:
       has_prs: ${{ steps.set-matrix.outputs.has_prs }}
 
   approve_prs:
-    name: Approve PR #${{ matrix.pr_number }}
+    name: ${{ inputs.dry_run == true && 'Dry-run: Would approve' || 'Approve' }} PR #${{ matrix.pr_number }}
     runs-on: ubuntu-latest
     needs: find_prs
     if: needs.find_prs.outputs.has_prs == 'true'
@@ -79,7 +85,14 @@ jobs:
       max-parallel: 30
       matrix: ${{ fromJson(needs.find_prs.outputs.matrix) }}
     steps:
+      - name: Dry-run check
+        if: ${{ inputs.dry_run == true }}
+        run: |
+          echo "🔍 DRY-RUN MODE: Would approve PR #${{ matrix.pr_number }}: ${{ matrix.pr_title }}"
+          echo "In normal mode, this PR would be automatically approved."
+          
       - name: Approve Pull Request #${{ matrix.pr_number }}
+        if: ${{ inputs.dry_run != true }}
         uses: juliangruber/approve-pull-request-action@v2
         with:
           github-token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
@@ -87,6 +100,7 @@ jobs:
           number: ${{ matrix.pr_number }}
 
       - name: Add approval comment
+        if: ${{ inputs.dry_run != true }}
         uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
