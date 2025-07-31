@@ -29,7 +29,7 @@ interface CsvSheetGenerator {
 
     fun getDataRow(
         id: UUID,
-        formattedString: String,
+        data: List<String>,
         emittedAt: Long,
         formattedAirbyteMetaString: String,
         generationId: Long,
