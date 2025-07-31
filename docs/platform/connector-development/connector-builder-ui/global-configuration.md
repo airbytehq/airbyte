@@ -33,13 +33,13 @@ Concurrency Level controls how many simultaneous requests your connector can mak
 The Default Concurrency setting determines the baseline number of concurrent requests your connector will make. This can be configured as:
 
 - **Integer value**: A fixed number of concurrent requests (e.g., `5` for 5 simultaneous requests)
-- **String value**: A reference to a user configuration field (e.g., `"{{ config.concurrency }}"` to let users control concurrency)
+- **String value**: A reference to a user configuration field (e.g., `"{{ config['concurrency'] }}"` to let users control concurrency)
 
 ### Max Concurrency
 
 Max Concurrency acts as a safety limit when Default Concurrency is derived from user configuration. This prevents users from setting unreasonably high concurrency levels that could overwhelm the API or cause performance issues.
 
-**Example:** If Default Concurrency is set to `"{{ config.max_workers }}"` and Max Concurrency is set to `10`, the connector will use the user's configured value but never exceed 10 concurrent requests.
+**Example:** If Default Concurrency is set to `"{{ config['max_workers'] }}"` and Max Concurrency is set to `10`, the connector will use the user's configured value but never exceed 10 concurrent requests.
 
 ## HTTP API Budget
 
@@ -88,11 +88,3 @@ Specifies which HTTP response header contains the number of remaining requests a
 Configure which HTTP status codes indicate that a rate limit has been exceeded. The most common is `429 Too Many Requests`, but some APIs use other codes like `420` or `503`.
 
 When these status codes are encountered, the connector will automatically pause requests and retry according to the rate limiting policy.
-
-## Related Documentation
-
-For more technical details about these configurations in YAML format, see:
-- [Rate limiting (API Budget)](../config-based/understanding-the-yaml-file/rate-limit-api-budget.md) - Comprehensive guide to HTTP API Budget policies and configuration options
-- [Low-code CDK Overview](../config-based/low-code-cdk-overview.md) - Understanding the underlying YAML specification
-
-The Connector Builder UI provides an intuitive interface for these configurations, but you can always switch to YAML editing mode for more advanced customization.
