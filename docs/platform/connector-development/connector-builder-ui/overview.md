@@ -25,7 +25,7 @@ The high-level process for using Connector Builder is as follows:
 4. Configure a Source based on the released connector
 5. Use the Source in a connection to sync data
 
-The concept pages in this section of the docs share more details related to the following topics: [authentication](./authentication.md), [record processing](./record-processing.mdx), [pagination](./pagination.md), [incremental sync](./incremental-sync.md), [partitioning](./partitioning.md), and [error handling](./error-handling.md).
+The concept pages in this section of the docs share more details related to the following topics: [global configuration](./global-configuration.md), [authentication](./authentication.md), [record processing](./record-processing.mdx), [pagination](./pagination.md), [incremental sync](./incremental-sync.md), [partitioning](./partitioning.md), and [error handling](./error-handling.md).
 
 :::tip
 Do not hardcode things like API keys or passwords while configuring a connector in the builder. They will be used, but not saved, during development when you provide them as Testing Values. For use in production, these should be passed in as user inputs after publishing the connector to the workspace, when you configure a source using your connector.
