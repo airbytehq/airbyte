@@ -30,6 +30,14 @@ class MySqlSourceMetadataQuerier(
 
     override fun extraChecks() {
         base.extraChecks()
+        try {
+            val metadata = base.conn.metaData
+            log.info {
+                "Connected to database: ${metadata.databaseProductName} version ${metadata.databaseProductVersion}"
+            }
+        } catch (e: SQLException) {
+            log.warn(e) { "Unable to retrieve database version information" }
+        }
         if (base.config.global) {
             // Extra checks for CDC
             var cdcVariableCheckQueries: List<Triple<String, String, String>> =
