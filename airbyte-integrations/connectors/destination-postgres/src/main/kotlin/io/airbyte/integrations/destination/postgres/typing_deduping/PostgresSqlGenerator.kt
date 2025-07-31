@@ -85,6 +85,11 @@ class PostgresSqlGenerator(
             return SQLDataType.DECIMAL
         }
 
+        if (airbyteProtocolType == AirbyteProtocolType.GEOMETRY) {
+            // Use PostGIS geometry type - for now defaulting to geometry, could be made configurable
+            return GEOMETRY_TYPE
+        }
+
         return super.toDialectType(airbyteProtocolType)
     }
 
@@ -196,6 +201,14 @@ class PostgresSqlGenerator(
             // '{}' is an empty json path (it's an empty array literal), so it just stringifies the
             // json value.
             return DSL.field("{0} #>> '{}'", String::class.java, field)
+        } else if (type === AirbyteProtocolType.GEOMETRY) {
+            // Convert GeoJSON FeatureCollection to PostGIS geometry using ST_GeomFromGeoJSON
+            // PostGIS can handle the entire GeoJSON structure directly
+            return DSL.function(
+                "ST_GeomFromGeoJSON",
+                GEOMETRY_TYPE,
+                DSL.cast(field, SQLDataType.VARCHAR)
+            )
         } else {
             val dialectType = toDialectType(type)
             // jsonb can't directly cast to most types, so convert to text first.
@@ -369,6 +382,14 @@ class PostgresSqlGenerator(
         @JvmField
         val JSONB_TYPE: DataType<Any> =
             DefaultDataType(SQLDialect.POSTGRES, Any::class.java, "jsonb")
+        
+        @JvmField
+        val GEOMETRY_TYPE: DataType<Any> =
+            DefaultDataType(SQLDialect.POSTGRES, Any::class.java, "geometry")
+        
+        @JvmField
+        val GEOGRAPHY_TYPE: DataType<Any> =
+            DefaultDataType(SQLDialect.POSTGRES, Any::class.java, "geography")
 
         const val CASE_STATEMENT_SQL_TEMPLATE: String = "CASE WHEN {0} THEN {1} ELSE {2} END "
 
