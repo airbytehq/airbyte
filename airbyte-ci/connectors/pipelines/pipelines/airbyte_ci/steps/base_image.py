@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, List, Optional
 import dagger
 import semver
 import yaml
-from base_images import console, version_registry  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage  # type: ignore
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -67,7 +66,7 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
             return str(max(valid_versions))
         return None
 
-    async def get_latest_base_image_address_v2(self) -> Optional[str]:
+    async def get_latest_base_image_address(self) -> Optional[str]:
         try:
             if not (self.context.docker_hub_username and self.context.docker_hub_password):
                 raise ValueError("Docker Hub credentials are required to get the latest base image address")
@@ -85,23 +84,7 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
                 digest_output = await crane_container.with_exec(["crane", "digest", f"docker.io/{repository}:{latest_tag}"]).stdout()
                 digest = digest_output.strip()
                 return f"docker.io/{repository}:{latest_tag}@{digest}"
-            else:
-                console.log(f"No stable tags found for repository {repository}.")
             return None
-        except NotImplementedError:
-            return None
-
-    async def get_latest_base_image_address(self) -> Optional[str]:
-        try:
-            if self.context.docker_hub_username is None or self.context.docker_hub_password is None:
-                raise ValueError("Docker Hub credentials are required to get the latest base image address")
-            version_registry_for_language = await version_registry.get_registry_for_language(
-                self.dagger_client,
-                self.context.connector.language,
-                (self.context.docker_hub_username.value, self.context.docker_hub_password.value),
-                cache_ttl_seconds=self.BASE_IMAGE_LIST_CACHE_TTL_SECONDS,
-            )
-            return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
         except NotImplementedError:
             return None
 
