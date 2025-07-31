@@ -527,14 +527,12 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
     version_path = f"{gcp_connector_dir}/{connector_version}/{METADATA_FILE_NAME}"
     rc_path = f"{gcp_connector_dir}/{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"
 
-    version_blob = gsc_client.get_blob(version_path)
-    rc_blob = gsc_client.get_blob(rc_path)
-
-    if not version_blob.exists():
+    if not gsc_client.blob_exists(version_path):
         raise FileNotFoundError(f"Version metadata file {version_path} does not exist in the bucket. ")
-    if not rc_blob.exists():
+    if not gsc_client.blob_exists(rc_path):
         raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket. ")
-    if rc_blob.md5_hash != version_blob.md5_hash:
+
+    if gsc_client.get_blob_md5(rc_path) != gsc_client.get_blob_md5(version_path):
         raise ValueError(
             f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to delete. Please check the Remote Release Candidate to confirm its the version you would like to remove and rerun with --force"
         )
@@ -546,7 +544,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
             id="release_candidate_metadata",
             deleted=True,
             description="release candidate metadata",
-            blob_id=rc_blob.id,
+            blob_id=gsc_client.get_blob_id(rc_path),
         )
     )
     gsc_client.delete_blob(version_path)
@@ -555,7 +553,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
             id="version_metadata",
             deleted=True,
             description="versioned metadata",
-            blob_id=version_blob.id,
+            blob_id=gsc_client.get_blob_id(version_path),
         )
     )
 
@@ -590,7 +588,7 @@ def promote_release_candidate_in_gcs(
     if not gsc_client.blob_exists(rc_path):
         raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket.")
 
-    if gsc_client.get_blob(rc_path).md5_hash != gsc_client.get_blob(version_path).md5_hash:
+    if gsc_client.get_blob_md5(rc_path) != gsc_client.get_blob_md5(version_path):
         raise ValueError(
             f"""Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to promote.
             It's likely that something changed the release candidate hash but have not changed the metadata for the lastest matching version."""
@@ -604,7 +602,7 @@ def promote_release_candidate_in_gcs(
         UploadedFile(
             id="latest_metadata",
             uploaded=True,
-            blob_id=gsc_client.get_blob(latest_path).id,
+            blob_id=gsc_client.get_blob_id(latest_path),
         )
     )
 
@@ -614,7 +612,7 @@ def promote_release_candidate_in_gcs(
             id="release_candidate_metadata",
             deleted=True,
             description="release candidate metadata",
-            blob_id=gsc_client.get_blob(rc_path).id,
+            blob_id=gsc_client.get_blob_id(rc_path),
         )
     )
 

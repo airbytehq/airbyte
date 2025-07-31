@@ -11,7 +11,6 @@ from typing import NamedTuple, Optional
 
 from google.cloud import storage
 from google.oauth2 import service_account
-from google.cloud.storage import Blob
 
 from metadata_service.helpers.files import compute_gcs_md5
 
@@ -61,9 +60,9 @@ class GCSClient:
             self._bucket = self._storage_client.bucket(self.bucket_name)
         return self._bucket
 
-    def get_blob(self, blob_path: str) -> Blob:
+    def get_blob_id(self, blob_path: str) -> str:
         """Get a blob from GCS."""
-        return self.bucket.blob(blob_path)
+        return self.bucket.blob(blob_path).id
 
     def blob_exists(self, blob_path: str) -> bool:
         """Check if a blob exists in GCS."""
