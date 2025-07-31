@@ -1,6 +1,12 @@
-## Version 0.1.1
+## Version 0.1.3
 
 * **Changed:** Extract CDK fixes for CDC in socket mode - state, partitioning and full refresh streams.
+
+## Version 0.1.3
+
+## Version 0.1.2
+
+## Version 0.1.1
 
 ## Version 0.1.0
 
