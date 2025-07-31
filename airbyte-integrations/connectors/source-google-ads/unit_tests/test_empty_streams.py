@@ -71,7 +71,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v18/customers/123/googleAds:searchStream",
+        "https://googleads.googleapis.com/v18/customers/123/googleAds:search",
         shopping_performance_view_response,
     )
 
