@@ -9,9 +9,10 @@ typealias StoreKey = DestinationStream.Descriptor
 @Singleton
 class AggregateStore(
     private val aggFactory: AggregateFactory,
-    // TODO: Inject
-    private val maxConcurrentAggregates: Int = 42,
 ) {
+    // TODO: Inject
+    private val maxConcurrentAggregates: Int = 42
+
     private val aggregates = ConcurrentHashMap<StoreKey, Aggregate>()
 
     fun getOrCreate(desc: StoreKey): Aggregate {

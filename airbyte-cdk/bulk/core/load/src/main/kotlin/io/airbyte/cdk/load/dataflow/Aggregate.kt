@@ -11,9 +11,9 @@ interface Aggregate {
 
     fun accept(fields: RecordDTO): Status
 
-    fun getStateHistogram(): StateHistogram
-
     suspend fun flush() // Maybe we want some sort of generalizable result
+
+    fun getStateHistogram(): StateHistogram
 
     fun size(): Int
 }

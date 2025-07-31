@@ -13,13 +13,16 @@ class DataFlowPipeline(
     @Named("flush") val flush: DataFlowStage,
     @Named("state") val state: DataFlowStage,
 ) {
-    fun run() {
+    suspend fun run() {
         input
             .buffer(capacity = 128)
             .applyStage(parse)
             .applyStage(aggregate)
-            .buffer(capacity = 10)
+            .buffer(capacity = 8)
             .applyStage(flush)
             .applyStage(state)
+            .collect { value ->
+                println("Collecting $value on: ${Thread.currentThread().name}")
+            }
     }
 }
