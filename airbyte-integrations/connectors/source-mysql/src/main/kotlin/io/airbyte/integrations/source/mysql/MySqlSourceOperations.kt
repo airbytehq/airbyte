@@ -34,6 +34,8 @@ import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
@@ -84,6 +86,36 @@ class MySqlSourceOperations :
             MySqlSourceCdcMetaFields.CDC_LOG_FILE,
             MySqlSourceCdcMetaFields.CDC_LOG_POS
         )
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        recordData.set(
+            CommonMetaField.CDC_UPDATED_AT.id,
+            FieldValueEncoder(timestamp, CdcOffsetDateTimeMetaFieldType.jsonEncoder)
+        )
+        recordData.set(
+            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
+            FieldValueEncoder(0, CdcIntegerMetaFieldType.jsonEncoder)
+        )
+        if (globalStateValue == null) {
+            return
+        }
+        val offset: DebeziumOffset =
+            MySqlSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue).offset
+        val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
+        recordData.set(
+            MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
+            FieldValueEncoder(position.fileName, CdcStringMetaFieldType.jsonEncoder)
+        )
+        recordData.set(
+            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
+            FieldValueEncoder(position.position, CdcIntegerMetaFieldType.jsonEncoder)
+        )
+    }
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
