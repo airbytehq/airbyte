@@ -7352,6 +7352,7 @@
               "hs_engagement_source_id": { "type": ["null", "string"] },
               "hs_follow_up_action": { "type": ["null", "string"] },
               "hs_gdpr_deleted": { "type": ["null", "boolean"] },
+              "hs_hd_ticket_ids": { "type": ["null", "string"] },
               "hs_lastmodifieddate": {
                 "type": ["null", "string"],
                 "format": "date-time"
@@ -7418,6 +7419,7 @@
           "properties_hs_engagement_source_id": { "type": ["null", "string"] },
           "properties_hs_follow_up_action": { "type": ["null", "string"] },
           "properties_hs_gdpr_deleted": { "type": ["null", "boolean"] },
+          "properties_hs_hd_ticket_ids": { "type": ["null", "string"] },
           "properties_hs_lastmodifieddate": {
             "type": ["null", "string"],
             "format": "date-time"
@@ -7645,7 +7647,7 @@
               "hs_task_relative_reminders": { "type": ["null", "string"] },
               "hs_task_reminders": { "type": ["null", "string"] },
               "hs_task_repeat_interval": { "type": ["null", "string"] },
-              "hs_task_send_default_reminder": { "type": ["null", "boolean"] },
+              "hs_task_send_default_reminder": { "type": ["null", "string"] },
               "hs_task_sequence_enrollment_active": {
                 "type": ["null", "boolean"]
               },
@@ -7775,7 +7777,7 @@
           "properties_hs_task_reminders": { "type": ["null", "string"] },
           "properties_hs_task_repeat_interval": { "type": ["null", "string"] },
           "properties_hs_task_send_default_reminder": {
-            "type": ["null", "boolean"]
+            "type": ["null", "string"]
           },
           "properties_hs_task_sequence_enrollment_active": {
             "type": ["null", "boolean"]

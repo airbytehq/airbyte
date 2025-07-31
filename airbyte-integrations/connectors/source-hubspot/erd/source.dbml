@@ -1535,6 +1535,7 @@ Table "engagements_notes" {
     "properties_hs_engagement_source_id" string
     "properties_hs_follow_up_action" string
     "properties_hs_gdpr_deleted" boolean
+    "properties_hs_hd_ticket_ids" string
     "properties_hs_lastmodifieddate" string
     "properties_hs_merged_object_ids" string
     "properties_hs_modified_by" number
@@ -1618,7 +1619,7 @@ Table "engagements_tasks" {
     "properties_hs_task_relative_reminders" string
     "properties_hs_task_reminders" string
     "properties_hs_task_repeat_interval" string
-    "properties_hs_task_send_default_reminder" boolean
+    "properties_hs_task_send_default_reminder" string
     "properties_hs_task_sequence_enrollment_active" boolean
     "properties_hs_task_sequence_step_enrollment_id" string
     "properties_hs_task_sequence_step_order" number
