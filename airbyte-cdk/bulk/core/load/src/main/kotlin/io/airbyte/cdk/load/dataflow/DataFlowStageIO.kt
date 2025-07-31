@@ -5,9 +5,9 @@ import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 
 data class DataFlowStageIO(
-    var skip: Boolean,
-    var raw: DestinationRecordRaw?,
-    var munged: RecordDTO?,
-    var aggregate: Aggregate?,
-    var stateHist: StateHistogram?,
+    var skip: Boolean = false,
+    var raw: DestinationRecordRaw? = null,
+    var munged: RecordDTO? = null,
+    var aggregate: Aggregate? = null,
+    var stateHist: StateHistogram? = null,
 )
