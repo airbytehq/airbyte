@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "acuityscheduling.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-acuity-scheduling
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.57.0@sha256:d3e766c04130e607773c1ed8e3ef82b1b932ad514e15b3bb78f0ee13ab59d03d
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bc7db25c-bdfb-4ec2-96ae-a4687cead916
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-acuity-scheduling
+  githubIssueLabel: source-acuity-scheduling
+  icon: icon.svg
+  license: MIT
+  name: Acuity Scheduling
+  releaseDate: 2025-07-02
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/acuity-scheduling
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
