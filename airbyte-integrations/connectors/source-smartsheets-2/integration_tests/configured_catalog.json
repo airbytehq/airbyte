@@ -1,0 +1,36 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "folder_id": {
+              "type": "string"
+            },
+            "sheet_path": {
+              "type": "string"
+            },
+            "sheet_id": {
+              "type": "string"
+            },
+            "sheet_name": {
+              "type": "string"
+            },
+            "sheet_permalink": {
+              "type": "string"
+            },
+            "row_id": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
