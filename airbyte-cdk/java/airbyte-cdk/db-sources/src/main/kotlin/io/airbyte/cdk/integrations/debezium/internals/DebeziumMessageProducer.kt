@@ -43,9 +43,7 @@ class DebeziumMessageProducer<T>(
     private val offsetManager: AirbyteFileOffsetBackingStore?
     private val targetPosition: CdcTargetPosition<T>
     private val schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
-
-    private var shouldEmitStateMessage = false
-
+    
     private val eventConverter: DebeziumEventConverter
 
     init {
@@ -68,7 +66,6 @@ class DebeziumMessageProducer<T>(
         previousCheckpointOffset.clear()
         previousCheckpointOffset.putAll(checkpointOffsetToSend)
         checkpointOffsetToSend.clear()
-        shouldEmitStateMessage = false
         return stateMessage
     }
 
@@ -94,12 +91,6 @@ class DebeziumMessageProducer<T>(
             }
         }
 
-        if (checkpointOffsetToSend.size == 1 && !message.isSnapshotEvent) {
-            if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, message)) {
-                shouldEmitStateMessage = true
-            }
-        }
-
         return eventConverter.toAirbyteMessage(message)
     }
 
@@ -119,7 +110,7 @@ class DebeziumMessageProducer<T>(
     }
 
     override fun shouldEmitStateMessage(stream: ConfiguredAirbyteStream?): Boolean {
-        return shouldEmitStateMessage
+        return true
     }
 
     /**
