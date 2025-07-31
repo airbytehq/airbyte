@@ -17,11 +17,12 @@ class DataFlowPipelineInputFlow {
         return reservingFlow
             .filter { it.second.value is DestinationRecord }
             .map {
-                val msg = it.second.value as DestinationRecord
-                it.second.release()
+                val (_, reserved) = it
+                val msg = reserved.value as DestinationRecord
 
                 DataFlowStageIO(
                     raw = msg.asDestinationRecordRaw(),
+                    reservation = reserved.replace(Unit),
                 )
             }
     }

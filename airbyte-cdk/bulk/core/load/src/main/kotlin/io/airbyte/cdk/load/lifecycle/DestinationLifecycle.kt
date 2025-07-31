@@ -2,14 +2,11 @@ package io.airbyte.cdk.load.lifecycle
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.DataFlowPipeline
-import io.airbyte.cdk.load.lifecycle.steps.CreateInputFlowStep
-import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 @Singleton
