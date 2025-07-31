@@ -5,6 +5,8 @@ import io.airbyte.cdk.load.dataflow.Aggregate
 import io.airbyte.cdk.load.dataflow.AggregateStore
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.state.Reserved
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -24,6 +26,7 @@ class AggregateStageTest {
         val streamDescriptor = DestinationStream.Descriptor("test_namespace", "test_name")
         val aggregate = mockk<Aggregate>()
         val recordDto = mockk<RecordDTO>()
+        val reservation = mockk<Reserved<Unit>>(relaxUnitFun = true)
         val input = DataFlowStageIO(
             raw = mockk {
                 every { stream } returns mockk {
@@ -31,6 +34,7 @@ class AggregateStageTest {
                 }
             },
             munged = recordDto,
+            reservation = reservation,
         )
 
         every { store.canAggregate(streamDescriptor) } returns true
@@ -42,6 +46,7 @@ class AggregateStageTest {
 
         assertEquals(aggregate, result.aggregate)
         verify { store.remove(streamDescriptor) }
+        coVerify { reservation.release() }
     }
 
     @Test
@@ -49,6 +54,7 @@ class AggregateStageTest {
         val streamDescriptor = DestinationStream.Descriptor("test_namespace", "test_name")
         val aggregate = mockk<Aggregate>()
         val recordDto = mockk<RecordDTO>()
+        val reservation = mockk<Reserved<Unit>>(relaxUnitFun = true)
         val input = DataFlowStageIO(
             raw = mockk {
                 every { stream } returns mockk {
@@ -56,6 +62,7 @@ class AggregateStageTest {
                 }
             },
             munged = recordDto,
+            reservation = reservation,
         )
 
         every { store.canAggregate(streamDescriptor) } returns true
@@ -66,6 +73,7 @@ class AggregateStageTest {
 
         assertTrue(result.skip)
         assertNull(result.aggregate)
+        coVerify { reservation.release() }
     }
 
     @Test
@@ -74,6 +82,7 @@ class AggregateStageTest {
         val aggregateToFlush = mockk<Aggregate>()
         val aggregate = mockk<Aggregate>()
         val recordDto = mockk<RecordDTO>()
+        val reservation = mockk<Reserved<Unit>>(relaxUnitFun = true)
         val input = DataFlowStageIO(
             raw = mockk {
                 every { stream } returns mockk {
@@ -81,6 +90,7 @@ class AggregateStageTest {
                 }
             },
             munged = recordDto,
+            reservation = reservation,
         )
 
         every { store.canAggregate(streamDescriptor) } returns false
@@ -91,5 +101,6 @@ class AggregateStageTest {
         val result = stage.apply(input)
 
         assertEquals(aggregateToFlush, result.aggregate)
+        coVerify { reservation.release() }
     }
 }
