@@ -522,14 +522,13 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
         MetadataDeleteInfo: Information about the files that were deleted.
     """
     gsc_client = GCSClient(bucket_name)
-    bucket = gsc_client.bucket
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"
     version_path = f"{gcp_connector_dir}/{connector_version}/{METADATA_FILE_NAME}"
     rc_path = f"{gcp_connector_dir}/{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"
 
-    version_blob = bucket.blob(version_path)
-    rc_blob = bucket.blob(rc_path)
+    version_blob = gsc_client.get_blob(version_path)
+    rc_blob = gsc_client.get_blob(rc_path)
 
     if not version_blob.exists():
         raise FileNotFoundError(f"Version metadata file {version_path} does not exist in the bucket. ")
@@ -541,7 +540,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
         )
 
     deleted_files = []
-    rc_blob.delete()
+    gsc_client.delete_blob(rc_path)
     deleted_files.append(
         DeletedFile(
             id="release_candidate_metadata",
@@ -550,7 +549,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
             blob_id=rc_blob.id,
         )
     )
-    version_blob.delete()
+    gsc_client.delete_blob(version_path)
     deleted_files.append(
         DeletedFile(
             id="version_metadata",
@@ -580,23 +579,18 @@ def promote_release_candidate_in_gcs(
         Tuple[MetadataUploadInfo, MetadataDeleteInfo]: Information about the files that were uploaded (new latest version) and deleted (release candidate).
     """
     gsc_client = GCSClient(bucket_name)
-    bucket = gsc_client.bucket
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"
     version_path = f"{gcp_connector_dir}/{connector_version}/{METADATA_FILE_NAME}"
     rc_path = f"{gcp_connector_dir}/{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"
     latest_path = f"{gcp_connector_dir}/{LATEST_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"
 
-    version_blob = bucket.blob(version_path)
-    latest_blob = bucket.blob(latest_path)
-    rc_blob = bucket.blob(rc_path)
-
-    if not version_blob.exists():
+    if not gsc_client.blob_exists(version_path):
         raise FileNotFoundError(f"Version metadata file {version_path} does not exist in the bucket.")
-    if not rc_blob.exists():
+    if not gsc_client.blob_exists(rc_path):
         raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket.")
 
-    if rc_blob.md5_hash != version_blob.md5_hash:
+    if gsc_client.get_blob(rc_path).md5_hash != gsc_client.get_blob(version_path).md5_hash:
         raise ValueError(
             f"""Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to promote.
             It's likely that something changed the release candidate hash but have not changed the metadata for the lastest matching version."""
@@ -605,22 +599,22 @@ def promote_release_candidate_in_gcs(
     uploaded_files = []
     deleted_files = []
 
-    bucket.copy_blob(rc_blob, bucket, latest_blob)
+    gsc_client.copy_blob(rc_path, latest_path)
     uploaded_files.append(
         UploadedFile(
             id="latest_metadata",
             uploaded=True,
-            blob_id=latest_blob.id,
+            blob_id=gsc_client.get_blob(latest_path).id,
         )
     )
 
-    rc_blob.delete()
+    gsc_client.delete_blob(rc_path)
     deleted_files.append(
         DeletedFile(
             id="release_candidate_metadata",
             deleted=True,
             description="release candidate metadata",
-            blob_id=rc_blob.id,
+            blob_id=gsc_client.get_blob(rc_path).id,
         )
     )
 

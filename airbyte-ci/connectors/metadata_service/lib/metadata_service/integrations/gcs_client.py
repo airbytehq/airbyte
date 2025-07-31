@@ -61,8 +61,33 @@ class GCSClient:
             self._bucket = self._storage_client.bucket(self.bucket_name)
         return self._bucket
 
-    def get_blob_md5(self, blob: Blob) -> Optional[str]:
+    def get_blob(self, blob_path: str) -> Blob:
+        """Get a blob from GCS."""
+        return self.bucket.blob(blob_path)
+
+    def blob_exists(self, blob_path: str) -> bool:
+        """Check if a blob exists in GCS."""
+        blob = self.bucket.blob(blob_path)
+        return blob.exists()
+
+    def delete_blob(self, blob_path: str) -> bool:
+        """Delete a blob from GCS."""
+        blob = self.bucket.blob(blob_path)
+        if blob.exists():
+            blob.delete()
+            return True
+        return False
+
+    def copy_blob(self, source_blob_path: str, destination_blob_path: str) -> bool:
+        """Copy a blob from GCS."""
+        source_blob = self.get_blob(source_blob_path)
+        destination_blob = self.get_blob(destination_blob_path)
+        destination_blob.copy_from(source_blob)
+        return True
+
+    def get_blob_md5(self, blob_path: str) -> Optional[str]:
         """Get the MD5 hash of a blob."""
+        blob = self.bucket.blob(blob_path)
         if blob.exists():
             blob.reload()
             return blob.md5_hash
@@ -121,8 +146,8 @@ class GCSClient:
         """
         local_file_md5_hash = compute_gcs_md5(local_file_path)
 
-        remote_blob = self.bucket.blob(blob_path)
-        remote_blob_md5_hash = self.get_blob_md5(remote_blob)
+        remote_blob = self.get_blob(blob_path)
+        remote_blob_md5_hash = self.get_blob_md5(blob_path)
 
         print(f"Local {local_file_path} md5_hash: {local_file_md5_hash}")
         print(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
