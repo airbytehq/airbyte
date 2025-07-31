@@ -83,8 +83,6 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    val pkLowerBoundQuery = "SELECT MIN(`%s`) FROM `%s`.`%s`"
-
     private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
