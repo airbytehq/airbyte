@@ -418,7 +418,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-Connectors must use our Python connector base image (`docker.io/airbyte/python-connector-base`), declared through the `connectorBuildOptions.baseImage` in their `metadata.yaml`.
+Connectors must use our Python connector base image, declared through the `connectorBuildOptions.baseImage` in their `metadata.yaml`.
 This is to ensure that all connectors use a base image which is maintained and has security updates.
 
 ## 🧪 Testing

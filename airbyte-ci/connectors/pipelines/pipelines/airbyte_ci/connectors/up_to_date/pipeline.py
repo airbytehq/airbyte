@@ -13,7 +13,6 @@ from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
 from pipelines.airbyte_ci.steps.bump_version import BumpConnectorVersion
 from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
 from pipelines.airbyte_ci.steps.pull_request import CreateOrUpdatePullRequest
@@ -91,14 +90,6 @@ async def run_connector_up_to_date_pipeline(
             new_version: str | None = None
 
             connector_directory = await context.get_connector_dir()
-            upgrade_base_image_in_metadata = UpdateBaseImageMetadata(context, connector_directory)
-            upgrade_base_image_in_metadata_result = await upgrade_base_image_in_metadata.run()
-            step_results.append(upgrade_base_image_in_metadata_result)
-            if upgrade_base_image_in_metadata_result.success:
-                connector_directory = upgrade_base_image_in_metadata_result.output["updated_connector_directory"]
-                exported_modified_files = await upgrade_base_image_in_metadata.export_modified_files(context.connector.code_directory)
-                context.logger.info(f"Exported files following the base image upgrade: {exported_modified_files}")
-                all_modified_files.update(exported_modified_files)
 
             if context.connector.is_using_poetry:
                 # We run the poetry update step after the base image upgrade because the base image upgrade may change the python environment
@@ -167,9 +158,7 @@ async def run_connector_up_to_date_pipeline(
                     include=[str(context.connector.local_connector_documentation_directory)]
                 ).directory(str(context.connector.local_connector_documentation_directory))
 
-                changelog_entry_comment = hacks.determine_changelog_entry_comment(
-                    upgrade_base_image_in_metadata_result, CHANGELOG_ENTRY_COMMENT
-                )
+                changelog_entry_comment = CHANGELOG_ENTRY_COMMENT
                 add_changelog_entry = AddChangelogEntry(
                     context, documentation_directory, new_version, changelog_entry_comment, created_pr.number
                 )
