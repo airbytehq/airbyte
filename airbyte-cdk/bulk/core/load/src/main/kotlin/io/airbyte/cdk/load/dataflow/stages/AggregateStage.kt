@@ -24,6 +24,7 @@ class AggregateStage(
         val agg = store.getOrCreate(key)
 
         val result = agg.accept(input.munged!!)
+        input.reservation!!.release()
 
         return when (result) {
             Aggregate.Status.COMPLETE -> {

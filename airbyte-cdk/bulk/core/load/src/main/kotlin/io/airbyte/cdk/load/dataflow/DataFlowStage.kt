@@ -13,4 +13,3 @@ fun Flow<DataFlowStageIO>.applyStage(
 ): Flow<DataFlowStageIO> =
     this.map(mapper::apply)
         .filterNot { it.skip }
-
