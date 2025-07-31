@@ -1,21 +1,24 @@
 package io.airbyte.cdk.load.dataflow
 
+import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import jakarta.inject.Named
+import kotlinx.coroutines.flow.buffer
 
+@Singleton
 class DataFlowPipeline(
     val input: Flow<DataFlowStageIO>,
-    val parse: DataFlowStage,
-    val aggregate: DataFlowStage,
-    val flush: DataFlowStage,
-    val state: DataFlowStage,
+    @Named("parse") val parse: DataFlowStage,
+    @Named("aggregate") val aggregate: DataFlowStage,
+    @Named("flush") val flush: DataFlowStage,
+    @Named("state") val state: DataFlowStage,
 ) {
     fun run() {
         input
-            .map(parse::apply)
-            .map(aggregate::apply)
-            .map(flush::apply)
-            .map(state::apply)
+            .applyStage(parse)
+            .applyStage(aggregate)
+            .buffer()
+            .applyStage(flush)
+            .applyStage(state)
     }
-
 }

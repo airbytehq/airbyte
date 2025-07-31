@@ -17,3 +17,7 @@ interface Aggregate {
 
     fun size(): Int
 }
+
+interface AggregateFactory {
+    fun create(key: StoreKey): Aggregate
+}

@@ -9,15 +9,16 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 @Factory
-class DataFlowPipelineInputFlow(
-    private val reservingFlow: ReservingDeserializingInputFlow,
-) {
+class DataFlowPipelineInputFlow {
     @Singleton
-    fun ioFlow(): Flow<DataFlowStageIO> {
+    fun ioFlow(
+        reservingFlow: ReservingDeserializingInputFlow,
+    ): Flow<DataFlowStageIO> {
         return reservingFlow
             .filter { it.second.value is DestinationRecord }
             .map {
                 val msg = it.second.value as DestinationRecord
+                it.second.release()
 
                 DataFlowStageIO(
                     raw = msg.asDestinationRecordRaw(),

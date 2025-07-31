@@ -1,32 +1,35 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationStream
+import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 typealias StoreKey = DestinationStream.Descriptor
 
-open class AggregateStore(
-    private val aggFactory: (StoreKey) -> Aggregate,
+
+@Singleton
+class AggregateStore(
+    private val aggFactory: AggregateFactory,
     // TODO: Inject
     private val maxConcurrentAggregates: Int = 42,
 ) {
     private val aggregates = ConcurrentHashMap<StoreKey, Aggregate>()
 
-    open fun getOrCreate(desc: StoreKey): Aggregate {
-        return aggregates.computeIfAbsent(desc, aggFactory)
+    fun getOrCreate(desc: StoreKey): Aggregate {
+        return aggregates.computeIfAbsent(desc, aggFactory::create)
     }
 
-    open fun remove(desc: StoreKey): Aggregate {
+    fun remove(desc: StoreKey): Aggregate {
         return aggregates.remove(desc)!!
     }
 
-    open fun getAndRemoveBiggestAggregate(): Aggregate {
+    fun getAndRemoveBiggestAggregate(): Aggregate {
         val (descriptorToRemove, aggregate) = aggregates.maxBy { it.value.size() }
         aggregates.remove(descriptorToRemove)
         return aggregate
     }
 
-    open fun canAggregate(desc: StoreKey): Boolean {
+    fun canAggregate(desc: StoreKey): Boolean {
         return aggregates.containsKey(desc) || aggregates.size < maxConcurrentAggregates
     }
 }
