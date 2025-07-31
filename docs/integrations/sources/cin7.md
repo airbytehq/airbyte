@@ -39,6 +39,7 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.10 | 2025-07-26 | [64046](https://github.com/airbytehq/airbyte/pull/64046) | Update dependencies |
 | 0.3.9 | 2025-07-19 | [63536](https://github.com/airbytehq/airbyte/pull/63536) | Update dependencies |
 | 0.3.8 | 2025-07-12 | [62997](https://github.com/airbytehq/airbyte/pull/62997) | Update dependencies |
 | 0.3.7 | 2025-07-05 | [62760](https://github.com/airbytehq/airbyte/pull/62760) | Update dependencies |
