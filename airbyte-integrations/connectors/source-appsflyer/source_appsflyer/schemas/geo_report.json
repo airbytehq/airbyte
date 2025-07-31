@@ -5,7 +5,7 @@
       "type": ["null", "string"],
       "format": "date"
     },
-    "country_code": {
+    "country": {
       "type": ["null", "string"]
     },
     "af_prt": {
