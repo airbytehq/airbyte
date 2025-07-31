@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 typealias StoreKey = DestinationStream.Descriptor
 
+
 @Singleton
 class AggregateStore(
     private val aggFactory: AggregateFactory,
