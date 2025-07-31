@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test
 @Property(name = "airbyte.connector.config.database", value = "testdb")
 @Property(name = "airbyte.connector.config.cursor.cursor_method", value = "user_defined")
 @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+@Property(name = "airbyte.connector.data-channel.medium", value = "STDIO")
 class StateManagerStreamStatesTest {
     @Inject lateinit var config: SourceConfiguration
 

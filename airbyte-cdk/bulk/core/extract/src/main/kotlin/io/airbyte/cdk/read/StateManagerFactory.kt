@@ -20,6 +20,7 @@ import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.FieldNotFound
 import io.airbyte.cdk.output.FieldTypeMismatch
 import io.airbyte.cdk.output.InvalidIncrementalSyncMode
@@ -28,11 +29,13 @@ import io.airbyte.cdk.output.MultipleStreamsFound
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
+import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
 /**
@@ -45,6 +48,7 @@ class StateManagerFactory(
     val metaFieldDecorator: MetaFieldDecorator,
     val outputConsumer: OutputConsumer,
     val handler: CatalogValidationFailureHandler,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String,
 ) {
     /** Generates a [StateManager] instance based on the provided inputs. */
     fun create(
@@ -82,7 +86,17 @@ class StateManagerFactory(
                 when (stream.configuredSyncMode) {
                     ConfiguredSyncMode.INCREMENTAL ->
                         stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
-                    ConfiguredSyncMode.FULL_REFRESH -> stream
+                    ConfiguredSyncMode.FULL_REFRESH ->
+                        when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                            // Because socket protobuf mode is using a sorted list of fields
+                            // Without including field id's we need to always send the full
+                            // set of fields as in the schema so sorting is maintained.
+                            DataChannelMedium.SOCKET ->
+                                stream.copy(
+                                    schema = stream.schema + metaFieldDecorator.globalMetaFields
+                                )
+                            DataChannelMedium.STDIO -> stream
+                        }
                 }
             }
         val globalStreams: List<Stream> =

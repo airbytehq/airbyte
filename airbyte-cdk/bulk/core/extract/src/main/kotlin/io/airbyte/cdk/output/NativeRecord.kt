@@ -29,6 +29,7 @@ import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -120,7 +121,7 @@ val offsetTimeProtoEncoder =
     }
 val localDateTimeProtoEncoder =
     generateProtoEncoder<LocalDateTime> { builder, value ->
-        builder.setString(value.format(OffsetTimeCodec.formatter))
+        builder.setString(value.format(LocalDateTimeCodec.formatter))
     }
 val localTimeProtoEncoder =
     generateProtoEncoder<LocalTime> { builder, time ->
@@ -163,25 +164,30 @@ val anyProtoEncoder = textProtoEncoder
 // typealias AnyProtoEncoder = TextProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
+    schema: Set<FieldOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
-        // We use toSortedMap() to ensure that the order is consistent
-        // Since protobuf has no field name the contract with destination is that
-        // field are alphabetically ordered.
-        this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
-            @Suppress("UNCHECKED_CAST")
-            setData(
-                index,
-                entry.value.fieldValue?.let {
-                    (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
-                        valueBuilder.clear(),
-                        entry.value.fieldValue!!
+        schema
+            .sortedBy { it.id }
+            .forEachIndexed { index, field ->
+                // Protobuf does not have field names, so we use a sorted order of fields
+                // So for destination to know which fields it is, we order the fields alphabetically
+                // to make sure that the order is consistent.
+                this@toProtobuf[field.id]?.let { value ->
+                    @Suppress("UNCHECKED_CAST")
+                    setData(
+                        index,
+                        value.fieldValue?.let {
+                            (value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                                valueBuilder.clear(),
+                                value.fieldValue
+                            )
+                        }
+                            ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
                     )
                 }
-                    ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
-            )
-        }
+            }
     }
 }
