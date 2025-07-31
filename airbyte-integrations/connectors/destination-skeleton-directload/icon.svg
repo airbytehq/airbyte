@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Skull -->
+  <ellipse cx="50" cy="35" rx="18" ry="20" fill="none" stroke="#2c3e50" stroke-width="2"/>
+  
+  <!-- Eye sockets -->
+  <circle cx="43" cy="32" r="4" fill="#2c3e50"/>
+  <circle cx="57" cy="32" r="4" fill="#2c3e50"/>
+  
+  <!-- Nasal cavity -->
+  <path d="M50 38 L48 44 L50 46 L52 44 Z" fill="#2c3e50"/>
+  
+  <!-- Jaw/teeth indication -->
+  <line x1="44" y1="48" x2="56" y2="48" stroke="#2c3e50" stroke-width="1.5"/>
+  <line x1="46" y1="48" x2="46" y2="51" stroke="#2c3e50" stroke-width="1"/>
+  <line x1="50" y1="48" x2="50" y2="51" stroke="#2c3e50" stroke-width="1"/>
+  <line x1="54" y1="48" x2="54" y2="51" stroke="#2c3e50" stroke-width="1"/>
+  
+  <!-- Spine -->
+  <line x1="50" y1="55" x2="50" y2="85" stroke="#2c3e50" stroke-width="2"/>
+  
+  <!-- Ribs -->
+  <path d="M50 60 Q40 58 38 65 Q40 72 50 70" fill="none" stroke="#2c3e50" stroke-width="1.5"/>
+  <path d="M50 60 Q60 58 62 65 Q60 72 50 70" fill="none" stroke="#2c3e50" stroke-width="1.5"/>
+  <path d="M50 65 Q42 63 40 70 Q42 77 50 75" fill="none" stroke="#2c3e50" stroke-width="1.5"/>
+  <path d="M50 65 Q58 63 60 70 Q58 77 50 75" fill="none" stroke="#2c3e50" stroke-width="1.5"/>
+  <path d="M50 70 Q44 68 42 75 Q44 82 50 80" fill="none" stroke="#2c3e50" stroke-width="1.5"/>
+  <path d="M50 70 Q56 68 58 75 Q56 82 50 80" fill="none" stroke="#2c3e50" stroke-width="1.5"/>
+  
+  <!-- Arms -->
+  <line x1="50" y1="62" x2="30" y2="68" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="50" y1="62" x2="70" y2="68" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="30" y1="68" x2="25" y2="80" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="70" y1="68" x2="75" y2="80" stroke="#2c3e50" stroke-width="2"/>
+  
+  <!-- Legs -->
+  <line x1="50" y1="85" x2="40" y2="95" stroke="#2c3e50" stroke-width="2"/>
+  <line x1="50" y1="85" x2="60" y2="95" stroke="#2c3e50" stroke-width="2"/>
+</svg>
