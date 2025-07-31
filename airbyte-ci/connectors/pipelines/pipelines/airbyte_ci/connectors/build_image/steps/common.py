@@ -7,7 +7,6 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 import docker  # type: ignore
-from base_images.bases import AirbyteConnectorBaseImage  # type: ignore
 from click import UsageError
 from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, ExecError, Platform, QueryError
