@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Review connection statuses
+# Connection status
 
 The Connections page, and each connection within, give you tools to monitor the health of your connections. If something goes wrong, you can investigate further and find the root of the problem.
 
