@@ -2,7 +2,7 @@
 products: embedded
 ---
 
-# Developer Tools
+# AI Tools
 Airbyte provides multiple tools to help you build data applications.
 
 - **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embed Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
