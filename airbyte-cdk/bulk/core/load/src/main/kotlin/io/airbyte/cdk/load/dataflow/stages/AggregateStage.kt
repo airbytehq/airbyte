@@ -23,7 +23,10 @@ class AggregateStage(
         val result = agg.accept(input.munged!!)
 
         return when (result) {
-            Aggregate.Status.COMPLETE -> input.apply { aggregate = agg }
+            Aggregate.Status.COMPLETE -> {
+                store.remove(streamDescriptor)
+                input.apply { aggregate = agg }
+            }
             Aggregate.Status.INCOMPLETE ->
                 // This is working because we are assuming that the accept function doesn't return COMPLETE on the fist call.
                 // It could be solved by having a list of aggregate or a transform operation.
