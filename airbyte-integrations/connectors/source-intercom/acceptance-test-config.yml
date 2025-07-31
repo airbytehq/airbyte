@@ -25,6 +25,12 @@ acceptance_tests:
         empty_streams:
           - name: tickets
             bypass_reason: "no data for this stream in our sandbox account (premium)"
+          - name: activity_logs
+            bypass_reason: "no data for this stream in our sandbox account (premium)"
+          - name: admins
+            bypass_reason: "no data for this stream in our sandbox account (premium)"
+          - name: tags
+            bypass_reason: "no data for this stream in our sandbox account (premium)"
   incremental:
     tests:
       - config_path: "secrets/config.json"
