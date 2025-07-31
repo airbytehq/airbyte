@@ -1,79 +1,57 @@
-version: 6.48.15
+version: 6.5.0 # Ensure this matches your pyproject.toml and base image
 
 type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - "datasets"
-##Do not check the actual endpoint here, just add one endpoint here only to check the follwoing
-    ##Authentication
-    ##Connectivity
-    ##User Permissions (may be covered with authentication above)
-    ##probably like /rest/310/analytics
+    - "datasets" # Assuming "datasets" is your primary data stream
 
 definitions:
-  streams:
-    datasets:
-      type: DeclarativeStream
-      name: datasets
-      $parameters:
-        path: "{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode={{ config['mode'] }}"
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        decoder:
-          type: JsonlDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/datasets"
-    records:
-      type: DeclarativeStream
-      name: records
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://03100670-8969-4472-a593-d7a8cef4488b-00-15uejhh5ki8b9.janeway.replit.dev
-          path: /api/export
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        decoder:
-          type: JsonlDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/datasets"
-    
+  # Base Requester with Authentication
   base_requester:
     type: HttpRequester
     url_base: "{{ config['base_url'] }}"
-    http_method: "GET"
+    http_method: GET
     authenticator:
       type: CustomAuthenticator
-      class_name: source_nexus_datasets.auth.NexusCustomAuthenticator
+      class_name: source_nexus_datasets.auth.NexusCustomAuthenticator # Ensure this Python class exists and is correctly implemented
       config: "{{ config }}"
 
 streams:
-  - "#/definitions/streams/datasets"
-  - "#/definitions/streams/records"
-  
+  - type: DeclarativeStream
+    name: datasets # Name of your data stream
+    $parameters:
+      # Dynamic path construction using config properties
+      path: "{{ config['dataset_path'] }}/{{ config['dataset_name'] }}/{{ config['dataset_export_prefix'] }}?mode={{ config['mode'] }}"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [] # Assuming the records are at the root of the response, adjust if nested
+      requester:
+        $ref: "#/definitions/base_requester" # Reference the shared requester
+      decoder:
+        type: CustomDecoder # Now using CustomDecoder
+        class_name: source_nexus_datasets.components.decorder.FlexibleDecoder # Pointing to your new Python class
+        $parameters: # Parameters passed to FlexibleDecoder's __init__
+          # file_type is removed from here as it's inferred from Content-Type header
+          config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
+          # csv_options is removed from here as it's hardcoded in the decoder class
+          # If you want to pass other parameters that FlexibleDecoder's __init__ accepts,
+          # they would go here. The 'parameters: InitVar' will catch them.
+
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/datasets" # Reference the schema defined below
 
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/nexus-datasets
+  documentation_url: https://docs.airbyte.com/integrations/sources/nexus-datasets # Replace with your connector's documentation URL
   connection_specification:
     title: Nexus Datasets Spec
     type: object
@@ -86,62 +64,92 @@ spec:
       - api_key
       - dataset_path
       - dataset_name
+      # file_type is no longer a required config field for the decoder,
+      # but you might want to keep it if it's used elsewhere or for user clarity.
+      # If it's only for decoder, you can remove it from 'required' and 'properties'.
+      - file_type
     additionalProperties: true
     properties:
-      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
       base_url:
         type: "string"
         description: "The base URL of the Nexus API."
-        #default: "https://fte-6e684ff308644fdfa46f4cd4d56e720f-infornexus.fte.gtnexus.info/rest/3.1"
         default: "https://fte-8faff6f82b424ed489e48095f4e58e91-infornexus.fte.gtnexus.info"
         pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
       user_id:
         type: "string"
-        description: "The user id of the Nexus API."
+        description: "The user ID for the Nexus API."
         default: "DataApiAgent@5717988960038861"
       access_key_id:
         type: "string"
-        description: "The access key id of the Nexus API."
-        #ifte access key : 1002n4gZdrcg92foZad
-        #default: "1002n4gZdsbiu8fnZ8o"
+        description: "The access key ID for the Nexus API."
         default: "1002n4gZe6nns3onZtu"
       secret_key:
         type: "string"
         description: "The secret key for HMAC authentication."
-        #ifte key : ptojjqg3pn6yff5tjpzkkhz3f7rkmabz6f6es5l2rv7poq2k27i22h55k7c3nw43dqrzcpsheuvy4xq4bw2rcxt6f5fex6twk2j4ppq
-        #default: "nm4ufrysnrtm35itswpn7p4xyusixk33td44hjt4a25uxtm3mtqwrukc5n4xmjlatojpcsrpwufs7qtd6kvi7al4bhtolzze3qsuc3q"
         default: "uqhc7uqfmqwnyzmxd4fuskgotad4cl7xhdj6ac5rkf7eecphk22zpkc5lmhct75bcwpwi6hrnc6zos46hwks55ggha57o2wnskuolfa"
       api_key:
         type: string
-        description: "The nexus data API Key"
+        description: "The Nexus Data API Key."
         default: "4354c1f5a341853211138ad8afb740ffdafc6527"
       dataset_path:
         type: string
-        description: "Data Set Path"
+        description: "Data Set Path."
         default: "rest/3.1/analytics/dataset"
-        airbyte_hidden: true
+        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
       dataset_name:
         type: string
-        description: "Data Set Name"
+        description: "The name of the dataset to export."
         default: "ExportDataSetSeven_PurchaseOrderTest3"
       dataset_export_prefix:
         type: string
-        description: "Data Export Prefix"
+        description: "Data Export Prefix."
         default: "export"
-        airbyte_hidden: true
+        airbyte_hidden: true # Hide this from UI if it's a fixed internal path
       mode:
         type: string
         title: Mode
-        description: Sync mode
+        description: "Sync mode (Full or Incremental)."
         enum:
           - Full
           - Incremental
         default: Full
-        
+      file_type: # Keep this if it's used for path construction or other logic, but not decoder selection
+        type: string
+        title: File Type
+        description: "Select the file type for the dataset export."
+        enum:
+          - JSONL
+          - CSV
+          - Parquet
+        default: JSONL
+      csv_options: # This section is no longer used by FlexibleDecoder if hardcoded
+        type: object
+        title: CSV Options
+        description: "Options for parsing CSV files. Only applicable if File Type is CSV."
+        properties:
+          delimiter:
+            type: string
+            description: "Delimiter character for CSV files (default: ',')."
+            default: ","
+          quote_char:
+            type: string
+            description: "Quote character for CSV files (default: '\"')."
+            default: "\""
+          encoding:
+            type: string
+            description: "Encoding for CSV files (default: 'utf-8')."
+            default: "utf-8"
+          skip_rows_before_header:
+            type: integer
+            description: "Number of rows to skip before the header (default: 0)."
+            default: 0
+        additionalProperties: false # Set to false if you want to strictly define CSV options
 schemas:
   datasets:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-      
+    additionalProperties: false # IMPORTANT: Set to false if you only want the 'raw_data' column
+    properties:
+      raw_data: # Define a single property for the entire record as a JSON string
+        type: ["string", "null"]
+        description: "The entire record as a JSON string."
