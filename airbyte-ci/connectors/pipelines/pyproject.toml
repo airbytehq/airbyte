@@ -23,7 +23,6 @@ airbyte-protocol-models = "^0.16.0"
 jinja2 = "^3.1.6"
 MarkupSafe = "==2.1.5"  # pin transitive dependency to avoid issues with version resolution
 requests = "^2.31"
-airbyte-connectors-base-images = { path = "../base_images", develop = true }
 connector-ops = { path = "../connector_ops", develop = true }
 toml = "^0.10.2"
 types-requests = "^2.31"

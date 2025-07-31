@@ -12,7 +12,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-airbyte-connectors-base-images = { path = "../base_images", develop = false }
 connector-ops = { path = "../connector_ops", develop = false }
 metadata-service = { path = "../metadata_service/lib", develop = false }
 pydash = "^6.0.2"
