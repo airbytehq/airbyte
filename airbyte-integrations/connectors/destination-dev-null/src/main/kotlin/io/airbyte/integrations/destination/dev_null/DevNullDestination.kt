@@ -5,9 +5,6 @@
 package io.airbyte.integrations.destination.dev_null
 
 import io.airbyte.cdk.AirbyteDestinationRunner
-import io.github.oshai.kotlinlogging.KotlinLogging
-
-private val LOGGER = KotlinLogging.logger {}
 
 class DevNullDestination {
     companion object {

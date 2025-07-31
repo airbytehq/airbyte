@@ -12,9 +12,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.random.Random
 
-private val LOGGER = KotlinLogging.logger {}
-
-
 /** Wraps the configured operation in logic that acks all state so far every N records */
 abstract class DevNullDirectLoader(
     private val config: DevNullConfiguration,
@@ -24,7 +21,6 @@ abstract class DevNullDirectLoader(
     abstract fun acceptInner(record: DestinationRecordRaw)
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
-        LOGGER.debug {"THIS I SIS ALJKHKSJALGKSKHAGJKLASH" }
 
         acceptInner(record)
         return if (++recordCount % config.ackRatePerRecord == 0L) {
