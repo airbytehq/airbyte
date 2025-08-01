@@ -69,7 +69,7 @@ Sync summary: {
 
 ### When Airbyte can't display rejected record statistics
 
-Airbyte can only display rejected records statistics if the source connector sends state messages back to Airbyte correctly.
+Airbyte can only display rejected records statistics and a link to your storage bucket if the source connector sends state messages back to Airbyte correctly.
 
 - [Airbyte connectors](/integrations/connector-support-levels) implement this correctly for all sync modes.
 
