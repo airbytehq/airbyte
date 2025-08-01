@@ -31,12 +31,12 @@ def test_validated_sql_name() -> None:
 
 @patch("duckdb.connect")
 @patch("os.makedirs")
-def test_check(mock_connect, mock_makedirs) -> None:
+def test_check(mock_connect, mock_makedirs, monkeypatch) -> None:
     mock_connect.return_value.execute.return_value = True
+    monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
     logger = Mock()
     temp_dir = tempfile.mkdtemp()
-    config = {"destination_path": "/local/test"}
-    # config = {"destination_path": f"{temp_dir}/testdb.db"}
+    config = {"destination_path": f"{temp_dir}/testdb.db"}
     destination = DestinationMotherDuck()
     result = destination.check(logger, config)
     assert result.status == Status.SUCCEEDED
@@ -44,10 +44,12 @@ def test_check(mock_connect, mock_makedirs) -> None:
 
 @patch("duckdb.connect")
 @patch("os.makedirs")
-def test_check_failure(mock_connect, mock_makedirs) -> None:
+def test_check_failure(mock_connect, mock_makedirs, monkeypatch) -> None:
     mock_connect.side_effect = Exception("Test exception")
+    monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
     logger = Mock()
-    config = {"destination_path": "/local/test"}
+    temp_dir = tempfile.mkdtemp()
+    config = {"destination_path": f"{temp_dir}/testdb.db"}
     destination = DestinationMotherDuck()
     result = destination.check(logger, config)
     assert result.status == Status.FAILED
@@ -56,9 +58,11 @@ def test_check_failure(mock_connect, mock_makedirs) -> None:
 
 @patch("duckdb.connect")
 @patch("os.makedirs")
-def test_write(mock_connect, mock_makedirs) -> None:
+def test_write(mock_connect, mock_makedirs, monkeypatch) -> None:
     mock_connect.return_value.execute.return_value = True
-    config = {"destination_path": "/local/test", "schema": CONFIG_DEFAULT_SCHEMA}
+    monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
+    temp_dir = tempfile.mkdtemp()
+    config = {"destination_path": f"{temp_dir}/testdb.db", "schema": CONFIG_DEFAULT_SCHEMA}
     catalog = ConfiguredAirbyteCatalog(streams=[])
     messages = [AirbyteMessage(type=Type.STATE, record=None)]
     destination = DestinationMotherDuck()
