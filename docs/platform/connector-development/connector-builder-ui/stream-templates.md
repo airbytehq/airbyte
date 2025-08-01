@@ -88,7 +88,7 @@ To demonstrate how stream templates work, build a connector that fetches issues 
 
 ### Step 3: Configure Generated Stream Template
 
-Because each repository has a unique need and URL, you need to set up component mappings to account for this.
+Because each repository has a unique name and URL, you need to set up component mappings to allow generated streams to reflect these values.
 
 Under **Produce Data for Template**, in the Components Mapping section, create two component mappings.
 
@@ -102,9 +102,9 @@ Under **Produce Data for Template**, in the Components Mapping section, create t
 
 5. Set **Value** to `https://api.github.com/repositories/{{ components_values.id }}/issues`.
 
-![Two component mappings set up in the UI](assets/stream-templates/component-mappings.png)
+    ![Two component mappings set up in the UI](assets/stream-templates/component-mappings.png)
 
-In the **Generated Stream Template** section, provide a **Name**. It doesn't matter what you call it. Any static value works.
+6. In the **Generated Stream Template** section, provide a **Name**. It doesn't matter what you call it. Any static value works.
 
 ### Step 4: Generate streams
 
