@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.dataflow.StoreKey
 import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
 import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader
 import io.airbyte.integrations.destination.clickhouse.write.load.SizedWindow
@@ -33,6 +34,10 @@ class ClickhouseAggregate(
 
         recordCountWindow.increment(1)
         bytesWindow.increment(fields.sizeBytes)
+
+        if (bytesWindow.isComplete() || recordCountWindow.isComplete()) {
+            return Aggregate.Status.COMPLETE
+        }
 
         return Aggregate.Status.INCOMPLETE
     }

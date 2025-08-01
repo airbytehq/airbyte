@@ -3,6 +3,7 @@ package io.airbyte.cdk.load.dataflow
 import io.airbyte.cdk.load.command.DestinationStream
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.runBlocking
 
 typealias StoreKey = DestinationStream.Descriptor
 
@@ -32,5 +33,9 @@ class AggregateStore(
 
     fun canAggregate(desc: StoreKey): Boolean {
         return aggregates.containsKey(desc) || aggregates.size < maxConcurrentAggregates
+    }
+
+    fun flushAll() {
+        runBlocking { aggregates.values.forEach { it.flush() } }
     }
 }
