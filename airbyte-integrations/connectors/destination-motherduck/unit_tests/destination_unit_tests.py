@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import tempfile
 from datetime import datetime
+from typing import Dict
 from unittest.mock import Mock, patch
 
 import pytest
@@ -11,6 +12,7 @@ from destination_motherduck.destination import CONFIG_DEFAULT_SCHEMA, Destinatio
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -65,52 +67,85 @@ def test_write(mock_connect, mock_makedirs) -> None:
     assert result[0].type == Type.STATE
 
 
-def test_null_primary_key_handling() -> None:
-    """Test that records with null primary key values can be processed."""
-    import duckdb
+def test_null_primary_key_handling(monkeypatch) -> None:
+    """Integration test that records with null primary key values can be processed through the connector."""
 
-    conn = duckdb.connect(":memory:")
+    monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
 
-    try:
-        conn.execute("""
-            CREATE TABLE test_stream (
-                id VARCHAR,
-                name VARCHAR,
-                _airbyte_extracted_at TIMESTAMP
-            )
-        """)
+    temp_dir = tempfile.mkdtemp()
+    config = {"destination_path": f"{temp_dir}/test_null_pk.duckdb", "schema": "test_schema"}
+    test_table_name = "test_null_pk_table"
+    test_schema_name = "test_schema"
 
-        conn.execute("""
-            INSERT INTO test_stream (id, name, _airbyte_extracted_at)
-            VALUES (NULL, 'record1', CURRENT_TIMESTAMP)
-        """)
+    table_schema = {
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+            "name": {"type": ["null", "string"]},
+        },
+    }
 
-        conn.execute("""
-            INSERT INTO test_stream (id, name, _airbyte_extracted_at)
-            VALUES ('valid_id', 'record2', CURRENT_TIMESTAMP)
-        """)
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(
+            name=test_table_name,
+            json_schema=table_schema,
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        ),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append_dedup,
+        primary_key=[["id"]],
+    )
 
-        conn.execute("""
-            INSERT INTO test_stream (id, name, _airbyte_extracted_at)
-            VALUES (NULL, 'record3', CURRENT_TIMESTAMP)
-        """)
+    configured_catalog = ConfiguredAirbyteCatalog(streams=[configured_stream])
 
-        result = conn.execute("SELECT COUNT(*) FROM test_stream").fetchone()
-        assert result[0] == 3, f"Expected 3 records, got {result[0]}"
+    messages = [
+        AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                stream=test_table_name,
+                data={"id": None, "name": "record_with_null_pk_1"},
+                emitted_at=int(datetime.now().timestamp()) * 1000,
+            ),
+        ),
+        AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                stream=test_table_name,
+                data={"id": "valid_id", "name": "record_with_valid_pk"},
+                emitted_at=int(datetime.now().timestamp()) * 1000,
+            ),
+        ),
+        AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                stream=test_table_name,
+                data={"id": None, "name": "record_with_null_pk_2"},
+                emitted_at=int(datetime.now().timestamp()) * 1000,
+            ),
+        ),
+        AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"})),
+    ]
 
-        dedup_result = conn.execute("""
-            SELECT * FROM test_stream
-            QUALIFY row_number() OVER (PARTITION BY id ORDER BY _airbyte_extracted_at DESC) = 1
-            ORDER BY _airbyte_extracted_at
-        """).fetchall()
+    destination = DestinationMotherDuck()
+    result = list(destination.write(config, configured_catalog, messages))
 
-        assert len(dedup_result) == 2, f"Expected 2 records after deduplication, got {len(dedup_result)}"
+    assert len(result) == 1
+    assert result[0].type == Type.STATE
 
-        ids = [row[0] for row in dedup_result]
-        assert "valid_id" in ids, "Expected to find record with valid_id"
-        assert None in ids, "Expected to find record with NULL id"
+    processor = destination._get_sql_processor(
+        configured_catalog=configured_catalog,
+        schema_name=test_schema_name,
+        db_path=config.get("destination_path", ":memory:"),
+    )
 
-        print("Successfully inserted and deduplicated records with null primary keys")
+    sql_result = processor._execute_sql(f"SELECT id, name FROM {test_schema_name}.{test_table_name} ORDER BY name")
 
-    finally:
-        conn.close()
+    assert len(sql_result) == 2, f"Expected 2 records after deduplication, got {len(sql_result)}"
+
+    ids = [row[0] for row in sql_result]
+    names = [row[1] for row in sql_result]
+
+    assert "valid_id" in ids, "Expected to find record with valid_id"
+    assert None in ids, "Expected to find record with NULL id"
+    assert "record_with_valid_pk" in names, "Expected to find record with valid primary key"
+    assert "record_with_null_pk_2" in names, "Expected to find the latest null primary key record (record_with_null_pk_2)"
