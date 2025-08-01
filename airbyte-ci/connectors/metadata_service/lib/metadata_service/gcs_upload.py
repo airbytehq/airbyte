@@ -2,20 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
-import os
 import re
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, NamedTuple, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import git
 import requests
 import yaml
-from google.cloud import storage
-from google.oauth2 import service_account
 from pydash import set_
 from pydash.objects import get
 
@@ -32,7 +28,8 @@ from metadata_service.constants import (
     METADATA_FOLDER,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
-from metadata_service.helpers.files import compute_gcs_md5, create_zip_and_get_sha256
+from metadata_service.helpers.files import create_zip_and_get_sha256
+from metadata_service.integrations.gcs_client import GCSClient
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
@@ -67,11 +64,6 @@ class MetadataUploadInfo:
 class MetadataDeleteInfo:
     metadata_deleted: bool
     deleted_files: List[DeletedFile]
-
-
-class MaybeUpload(NamedTuple):
-    uploaded: bool
-    blob_id: str
 
 
 @dataclass
@@ -136,17 +128,6 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
 # 🛠️ HELPERS
 
 
-def _get_storage_client() -> storage.Client:
-    """Get the GCS storage client using credentials form GCS_CREDENTIALS env variable."""
-    gcs_creds = os.environ.get("GCS_CREDENTIALS")
-    if not gcs_creds:
-        raise ValueError("Please set the GCS_CREDENTIALS env var.")
-
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    return storage.Client(credentials=credentials)
-
-
 def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
     try:
         metadata = yaml.safe_load(metadata_file_path.read_text())
@@ -203,48 +184,10 @@ def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInf
 # 🚀 UPLOAD
 
 
-def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: Path, disable_cache: bool = False) -> bool:
-    """Uploads a file to the bucket."""
-    print(f"Uploading {file_path} to {blob_to_save.name}...")
-
-    # Set Cache-Control header to no-cache to avoid caching issues
-    # This is IMPORTANT because if we don't set this header, the metadata file will be cached by GCS
-    # and the next time we try to download it, we will get the stale version
-    if disable_cache:
-        blob_to_save.cache_control = "no-cache"
-
-    blob_to_save.upload_from_filename(file_path)
-
-    return True
-
-
-def upload_file_if_changed(
-    local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False
-) -> MaybeUpload:
-    """Upload a file to GCS if it has changed."""
-    local_file_md5_hash = compute_gcs_md5(local_file_path)
-    remote_blob = bucket.blob(blob_path)
-
-    # reload the blob to get the md5_hash
-    if remote_blob.exists():
-        remote_blob.reload()
-
-    remote_blob_md5_hash = remote_blob.md5_hash if remote_blob.exists() else None
-
-    print(f"Local {local_file_path} md5_hash: {local_file_md5_hash}")
-    print(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
-
-    if local_file_md5_hash != remote_blob_md5_hash:
-        uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
-        return MaybeUpload(uploaded, remote_blob.id)
-
-    return MaybeUpload(False, remote_blob.id)
-
-
 def _file_upload(
     local_path: Path | None,
     gcp_connector_dir: str,
-    bucket: storage.bucket.Bucket,
+    client: GCSClient,
     file_key: str,
     *,
     upload_as_version: bool,
@@ -262,7 +205,7 @@ def _file_upload(
         local_path: Path to the file to upload.
         gcp_connector_dir: Path to the connector folder in GCS. This is the parent folder,
             containing the versioned and "latest" folders as its subdirectories.
-        bucket: GCS bucket to upload the file to.
+        client: GCS client used to upload the file.
         upload_as_version: The version to upload the file as or 'False' to skip uploading
             the versioned copy.
         upload_as_latest: Whether to upload the file as the latest version.
@@ -292,9 +235,8 @@ def _file_upload(
 
     if upload_as_version:
         remote_upload_path = f"{gcp_connector_dir}/{version_folder}"
-        versioned_uploaded, versioned_blob_id = upload_file_if_changed(
+        versioned_uploaded, versioned_blob_id = client.upload_file_if_changed(
             local_file_path=local_path,
-            bucket=bucket,
             blob_path=f"{remote_upload_path}/{file_name}",
             disable_cache=disable_cache,
         )
@@ -302,9 +244,8 @@ def _file_upload(
 
     if upload_as_latest:
         remote_upload_path = f"{gcp_connector_dir}/{LATEST_GCS_FOLDER_NAME}"
-        latest_uploaded, latest_blob_id = upload_file_if_changed(
+        latest_uploaded, latest_blob_id = client.upload_file_if_changed(
             local_file_path=local_path,
-            bucket=bucket,
             blob_path=f"{remote_upload_path}/{file_name}",
             disable_cache=disable_cache,
         )
@@ -434,8 +375,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     should_upload_release_candidate = is_release_candidate and not is_pre_release
     should_upload_latest = not is_release_candidate and not is_pre_release
 
-    storage_client = _get_storage_client()
-    bucket = storage_client.bucket(bucket_name)
+    gsc_client = GCSClient(bucket_name)
+
     docs_path = Path(validator_opts.docs_path)
     gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
 
@@ -452,7 +393,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         file_key="metadata",
         local_path=metadata_file_path,
         gcp_connector_dir=gcp_connector_dir,
-        bucket=bucket,
+        client=gsc_client,
         version_folder=version_folder,
         upload_as_version=True,
         upload_as_latest=should_upload_latest,
@@ -469,7 +410,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             file_key="release_candidate",
             local_path=metadata_file_path,
             gcp_connector_dir=gcp_connector_dir,
-            bucket=bucket,
+            client=gsc_client,
             version_folder=RELEASE_CANDIDATE_GCS_FOLDER_NAME,
             upload_as_version=True,
             upload_as_latest=False,
@@ -484,7 +425,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         file_key="icon",
         local_path=working_directory / ICON_FILE_NAME,
         gcp_connector_dir=gcp_connector_dir,
-        bucket=bucket,
+        client=gsc_client,
         upload_as_version=False,
         upload_as_latest=should_upload_latest,
     )
@@ -497,7 +438,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         file_key="doc",
         local_path=local_doc_path,
         gcp_connector_dir=gcp_connector_dir,
-        bucket=bucket,
+        client=gsc_client,
         upload_as_version=True,
         version_folder=version_folder,
         upload_as_latest=should_upload_latest,
@@ -510,7 +451,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         file_key="inapp_doc",
         local_path=local_inapp_doc_path,
         gcp_connector_dir=gcp_connector_dir,
-        bucket=bucket,
+        client=gsc_client,
         upload_as_version=True,
         version_folder=version_folder,
         upload_as_latest=should_upload_latest,
@@ -524,7 +465,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         file_key="manifest",
         local_path=manifest_only_file_info.manifest_file_path,
         gcp_connector_dir=gcp_connector_dir,
-        bucket=bucket,
+        client=gsc_client,
         upload_as_version=True,
         version_folder=version_folder,
         upload_as_latest=should_upload_latest,
@@ -536,7 +477,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         file_key="components_zip_sha256",
         local_path=manifest_only_file_info.sha256_file_path,
         gcp_connector_dir=gcp_connector_dir,
-        bucket=bucket,
+        client=gsc_client,
         upload_as_version=True,
         version_folder=version_folder,
         upload_as_latest=should_upload_latest,
@@ -548,7 +489,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         file_key="components_zip",
         local_path=manifest_only_file_info.zip_file_path,
         gcp_connector_dir=gcp_connector_dir,
-        bucket=bucket,
+        client=gsc_client,
         upload_as_version=True,
         version_folder=version_folder,
         upload_as_latest=should_upload_latest,
@@ -582,42 +523,39 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
     Returns:
         MetadataDeleteInfo: Information about the files that were deleted.
     """
-    storage_client = _get_storage_client()
-    bucket = storage_client.bucket(bucket_name)
+    gsc_client = GCSClient(bucket_name)
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"
     version_path = f"{gcp_connector_dir}/{connector_version}/{METADATA_FILE_NAME}"
     rc_path = f"{gcp_connector_dir}/{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"
 
-    version_blob = bucket.blob(version_path)
-    rc_blob = bucket.blob(rc_path)
-
-    if not version_blob.exists():
+    if not gsc_client.blob_exists(version_path):
         raise FileNotFoundError(f"Version metadata file {version_path} does not exist in the bucket. ")
-    if not rc_blob.exists():
+    if not gsc_client.blob_exists(rc_path):
         raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket. ")
-    if rc_blob.md5_hash != version_blob.md5_hash:
+
+    if gsc_client.get_blob_md5(rc_path) != gsc_client.get_blob_md5(version_path):
         raise ValueError(
             f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to delete. Please check the Remote Release Candidate to confirm its the version you would like to remove and rerun with --force"
         )
 
     deleted_files = []
-    rc_blob.delete()
+    gsc_client.delete_blob(rc_path)
     deleted_files.append(
         DeletedFile(
             id="release_candidate_metadata",
             deleted=True,
             description="release candidate metadata",
-            blob_id=rc_blob.id,
+            blob_id=gsc_client.get_blob_id(rc_path),
         )
     )
-    version_blob.delete()
+    gsc_client.delete_blob(version_path)
     deleted_files.append(
         DeletedFile(
             id="version_metadata",
             deleted=True,
             description="versioned metadata",
-            blob_id=version_blob.id,
+            blob_id=gsc_client.get_blob_id(version_path),
         )
     )
 
@@ -640,25 +578,19 @@ def promote_release_candidate_in_gcs(
     Returns:
         Tuple[MetadataUploadInfo, MetadataDeleteInfo]: Information about the files that were uploaded (new latest version) and deleted (release candidate).
     """
-
-    storage_client = _get_storage_client()
-    bucket = storage_client.bucket(bucket_name)
+    gsc_client = GCSClient(bucket_name)
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"
     version_path = f"{gcp_connector_dir}/{connector_version}/{METADATA_FILE_NAME}"
     rc_path = f"{gcp_connector_dir}/{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"
     latest_path = f"{gcp_connector_dir}/{LATEST_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"
 
-    version_blob = bucket.blob(version_path)
-    latest_blob = bucket.blob(latest_path)
-    rc_blob = bucket.blob(rc_path)
-
-    if not version_blob.exists():
+    if not gsc_client.blob_exists(version_path):
         raise FileNotFoundError(f"Version metadata file {version_path} does not exist in the bucket.")
-    if not rc_blob.exists():
+    if not gsc_client.blob_exists(rc_path):
         raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket.")
 
-    if rc_blob.md5_hash != version_blob.md5_hash:
+    if gsc_client.get_blob_md5(rc_path) != gsc_client.get_blob_md5(version_path):
         raise ValueError(
             f"""Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to promote.
             It's likely that something changed the release candidate hash but have not changed the metadata for the lastest matching version."""
@@ -667,22 +599,22 @@ def promote_release_candidate_in_gcs(
     uploaded_files = []
     deleted_files = []
 
-    bucket.copy_blob(rc_blob, bucket, latest_blob)
+    gsc_client.copy_blob(rc_path, latest_path)
     uploaded_files.append(
         UploadedFile(
             id="latest_metadata",
             uploaded=True,
-            blob_id=latest_blob.id,
+            blob_id=gsc_client.get_blob_id(latest_path),
         )
     )
 
-    rc_blob.delete()
+    gsc_client.delete_blob(rc_path)
     deleted_files.append(
         DeletedFile(
             id="release_candidate_metadata",
             deleted=True,
             description="release candidate metadata",
-            blob_id=rc_blob.id,
+            blob_id=gsc_client.get_blob_id(rc_path),
         )
     )
 
