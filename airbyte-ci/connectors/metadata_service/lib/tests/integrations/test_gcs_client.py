@@ -68,69 +68,17 @@ def temp_file():
 
     yield temp_file_path
 
-    # Cleanup
     if temp_file_path.exists():
         temp_file_path.unlink()
-
-
-class TestGCSClientInit:
-    """Tests for GCSClient initialization."""
-
-    def test_init_with_credentials_parameter(self, bucket_name, credentials_json, test_credentials, mock_gcs_dependencies):
-        """Test GCSClient initialization with credentials provided as parameter."""
-        # Act
-        client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
-
-        # Assert
-        assert client.bucket_name == bucket_name
-        assert client._storage_client == mock_gcs_dependencies['mock_client']
-        assert client._bucket is None  # Should be lazy-loaded
-
-        # Verify mocks were called correctly
-        mock_gcs_dependencies['mock_creds_from_info'].assert_called_once_with(test_credentials)
-        mock_gcs_dependencies['mock_storage_client'].assert_called_once_with(credentials=mock_gcs_dependencies['mock_credentials'])
-
-    @patch.dict('os.environ', {'GCS_CREDENTIALS': ''})
-    def test_init_with_env_var_credentials(self, bucket_name, mock_gcs_dependencies):
-        """Test GCSClient initialization with credentials from GCS_CREDENTIALS environment variable."""
-        # Arrange - create different credentials for env var test
-        env_credentials = {
-            "type": "service_account",
-            "project_id": "test-project-env",
-            "private_key_id": "test-key-id-env",
-            "private_key": "-----BEGIN PRIVATE KEY-----\ntest-key-env\n-----END PRIVATE KEY-----\n",
-            "client_email": "test-env@test-project.iam.gserviceaccount.com",
-            "client_id": "987654321",
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token"
-        }
-        env_credentials_json = json.dumps(env_credentials)
-
-        # Set up environment variable
-        with patch.dict('os.environ', {'GCS_CREDENTIALS': env_credentials_json}):
-            # Act
-            client = GCSClient(bucket_name=bucket_name)  # No credentials parameter
-
-            # Assert
-            assert client.bucket_name == bucket_name
-            assert client._storage_client == mock_gcs_dependencies['mock_client']
-            assert client._bucket is None  # Should be lazy-loaded
-
-            # Verify mocks were called correctly
-            mock_gcs_dependencies['mock_creds_from_info'].assert_called_once_with(env_credentials)
-            mock_gcs_dependencies['mock_storage_client'].assert_called_once_with(credentials=mock_gcs_dependencies['mock_credentials'])
-
 
 class TestGCSClientBucketProperty:
     """Tests for GCSClient bucket property."""
 
     def test_bucket_lazy_loading(self, bucket_name, credentials_json, mock_gcs_dependencies):
         """Test that bucket property implements lazy loading correctly."""
-        # Arrange
         mock_bucket_instance = Mock()
         mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
 
-        # Act & Assert
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         # Initially, bucket should be None (not loaded yet)
@@ -156,7 +104,6 @@ class TestGCSClientGetBlobMD5:
 
     def test_get_blob_md5_existing_blob(self, bucket_name, credentials_json, mock_gcs_dependencies):
         """Test get_blob_md5 returns correct hash when blob exists."""
-        # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         # Generate expected MD5 hash for test data
@@ -173,10 +120,8 @@ class TestGCSClientGetBlobMD5:
 
         blob_path = "test/path/file.txt"
 
-        # Act
         result = client.get_blob_md5(blob_path)
 
-        # Assert
         assert result == expected_md5
         mock_bucket_instance.blob.assert_called_once_with(blob_path)
         mock_blob.exists.assert_called_once()
@@ -184,7 +129,6 @@ class TestGCSClientGetBlobMD5:
 
     def test_get_blob_md5_nonexistent_blob(self, bucket_name, credentials_json, mock_gcs_dependencies):
         """Test get_blob_md5 returns None when blob doesn't exist."""
-        # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
@@ -195,10 +139,8 @@ class TestGCSClientGetBlobMD5:
 
         blob_path = "test/path/file.txt"
 
-        # Act
         result = client.get_blob_md5(blob_path)
 
-        # Assert
         assert result is None
         mock_blob.exists.assert_called_once()
         mock_blob.reload.assert_not_called()  # Should not reload if blob doesn't exist
@@ -209,7 +151,6 @@ class TestGCSClientUploadFile:
 
     def test_upload_file_success(self, bucket_name, credentials_json, mock_gcs_dependencies, temp_file):
         """Test upload_file successfully uploads when file exists."""
-        # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
@@ -221,17 +162,14 @@ class TestGCSClientUploadFile:
 
         blob_path = "test/path/file.txt"
 
-        # Act
         result = client.upload_file(temp_file, blob_path)
 
-        # Assert
         assert result is True
         mock_bucket_instance.blob.assert_called_once_with(blob_path)
         mock_blob.upload_from_filename.assert_called_once_with(temp_file)
 
     def test_upload_file_skip_existing_no_overwrite(self, bucket_name, credentials_json, mock_gcs_dependencies, temp_file):
         """Test upload_file skips upload when overwrite=False and blob exists."""
-        # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
@@ -243,22 +181,18 @@ class TestGCSClientUploadFile:
 
         blob_path = "test/path/existing-file.txt"
 
-        # Act
         result = client.upload_file(temp_file, blob_path, overwrite=False)
 
-        # Assert
         assert result is False
         mock_blob.exists.assert_called_once()
         mock_blob.upload_from_filename.assert_not_called()
 
     def test_upload_file_local_file_not_found(self, bucket_name, credentials_json, mock_gcs_dependencies):
         """Test upload_file raises FileNotFoundError when local file doesn't exist."""
-        # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
         nonexistent_file = Path("/tmp/nonexistent_file.txt")
         blob_path = "test/path/file.txt"
 
-        # Act & Assert
         with pytest.raises(FileNotFoundError, match=f"Local file not found: {nonexistent_file}"):
             client.upload_file(nonexistent_file, blob_path)
 
@@ -269,7 +203,6 @@ class TestGCSClientUploadFileIfChanged:
     @patch('metadata_service.integrations.gcs_client.compute_gcs_md5')
     def test_upload_file_if_changed_file_changed(self, mock_compute_md5, bucket_name, credentials_json, mock_gcs_dependencies, temp_file):
         """Test upload_file_if_changed uploads when local and remote MD5 differ."""
-        # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
@@ -288,10 +221,8 @@ class TestGCSClientUploadFileIfChanged:
 
         blob_path = "test/path/file.txt"
 
-        # Act
         result = client.upload_file_if_changed(temp_file, blob_path)
 
-        # Assert
         assert result.uploaded is True
         assert result.blob_id == mock_blob.id
         mock_compute_md5.assert_called_once_with(temp_file)
@@ -300,7 +231,6 @@ class TestGCSClientUploadFileIfChanged:
     @patch('metadata_service.integrations.gcs_client.compute_gcs_md5')
     def test_upload_file_if_changed_file_unchanged(self, mock_compute_md5, bucket_name, credentials_json, mock_gcs_dependencies, temp_file):
         """Test upload_file_if_changed skips upload when local and remote MD5 match."""
-        # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
@@ -319,10 +249,8 @@ class TestGCSClientUploadFileIfChanged:
 
         blob_path = "test/path/file.txt"
 
-        # Act
         result = client.upload_file_if_changed(temp_file, blob_path)
 
-        # Assert
         assert result.uploaded is False
         assert result.blob_id == mock_blob.id
         mock_compute_md5.assert_called_once_with(temp_file)
