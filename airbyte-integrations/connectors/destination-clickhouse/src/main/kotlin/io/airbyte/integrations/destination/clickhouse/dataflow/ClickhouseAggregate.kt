@@ -9,34 +9,16 @@ import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
-import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader
-import io.airbyte.integrations.destination.clickhouse.write.load.SizedWindow
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 
 class ClickhouseAggregate(
     @VisibleForTesting val buffer: BinaryRowInsertBuffer,
 ) : Aggregate {
-    private val log = KotlinLogging.logger {}
 
     private val stateHistogram: StateHistogram = StateHistogram()
 
-    private var recordCountWindow =
-        SizedWindow(150)
-    // the sum of serialized json bytes we'''ve accumulated
-    private var bytesWindow = SizedWindow(ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_BYTES)
-
-    override fun accept(fields: RecordDTO): Aggregate.Status {
-        buffer.accumulate(fields.fields)
-
-        recordCountWindow.increment(1)
-        bytesWindow.increment(fields.sizeBytes)
-
-        if (bytesWindow.isComplete() || recordCountWindow.isComplete()) {
-            return Aggregate.Status.COMPLETE
-        }
-
-        return Aggregate.Status.INCOMPLETE
+    override fun accept(record: RecordDTO) {
+        buffer.accumulate(record.fields)
     }
 
     override suspend fun flush() {
@@ -45,9 +27,6 @@ class ClickhouseAggregate(
     }
 
     override fun getStateHistogram(): StateHistogram = stateHistogram
-
-    // TODO: Decide if we want to push the aggregator wit the most records or the most bytes
-    override fun size(): Int = buffer.numRecords
 }
 
 @Factory
@@ -56,7 +35,7 @@ class ClickhouseAggregateFactory(private val clickhouseClient: Client,): Aggrega
         val tableName = TableName(name = key.name, namespace = key.namespace ?: "default")
         val binaryRowInsertBuffer = BinaryRowInsertBuffer(
             tableName,
-            clickhouseClient
+            clickhouseClient,
         )
 
         return ClickhouseAggregate(binaryRowInsertBuffer)
