@@ -110,12 +110,6 @@ class ChannelsRetriever(SimpleRetriever):
             if self.should_join_to_channel(self.config, stream_data):
                 self.join_channel(self.config, stream_data)
 
-            current_record = self._extract_record(stream_data, _slice)
-            if self.cursor and current_record:
-                self.cursor.observe(_slice, current_record)
-
             yield stream_data
 
-        if self.cursor:
-            self.cursor.observe(_slice)
         return
