@@ -1,33 +1,24 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import json
+
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
-import pendulum
 import pytest
 from requests import Response
-from source_slack import SourceSlack
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source, get_stream_by_name
 
 
 @pytest.fixture
 def authenticator(token_config):
     return TokenAuthenticator(token_config["credentials"]["api_token"])
-
-
-def get_stream_by_name(stream_name, config):
-    streams = SourceSlack(catalog={}, config=config, state={}).streams(config=config)
-    for stream in streams:
-        if stream.name == stream_name:
-            return stream
-    raise ValueError(f"Stream {stream_name} not found")
 
 
 @pytest.mark.parametrize(
@@ -133,7 +124,7 @@ def test_get_updated_state(requests_mock, authenticator, token_config, current_s
         }
     )
     state = StateBuilder().with_stream_state("threads", current_state).build()
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     assert output.records
     assert output.most_recent_state.stream_state.state == expected_state
@@ -203,7 +194,7 @@ def test_threads_parse_response(requests_mock, authenticator, token_config):
         }
     )
     state = StateBuilder().with_stream_state("threads", {}).build()
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     actual_response = output.records
     assert len(actual_response) == 1
@@ -266,7 +257,7 @@ def test_backoff(requests_mock, token_config, authenticator, headers, expected_r
         }
     )
     state = StateBuilder().with_stream_state("threads", {}).build()
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     assert len([log.log.message for log in output.logs if "Retrying. Sleeping for 15.0 seconds" == log.log.message]) == 1
     assert len(output.records) == expected_result
@@ -297,7 +288,7 @@ def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
             ]
         }
     )
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     assert [record.record.data for record in output.records] == expected
 
