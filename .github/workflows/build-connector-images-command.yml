@@ -25,6 +25,21 @@ on:
         description: "The pull request number, if applicable"
         required: false
         type: number
+      publish_to_production:
+        default: 'false'
+        type: choice
+        options:
+          - 'false' # Do not publish the production image (default)
+          - 'true'  # Publish the production image (fail if already exists)
+          - 'force' # Force publish the production image (overwrite if already exists)
+        description: |
+          Whether to build and publish the production image. If `false` (default), only GHCR test
+          images will be published. If `true`, the image will be published with the `latest`
+          tag, as well as the version specified by `dockerImageTag` in `metadata.yaml`.
+
+          If `force`, the image will be published even if the image already
+          exists. Otherwise, if `true` is set, the workflow will fail if the version specified by
+          `dockerImageTag` has already been published.
 
 jobs:
   init-workflow:
@@ -90,6 +105,7 @@ jobs:
       comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
       pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
       connector: ${{ matrix.connector }}
+      publish_to_production: ${{ inputs.publish_to_production || 'false' }}
     secrets: inherit
 
   post-end-comment:

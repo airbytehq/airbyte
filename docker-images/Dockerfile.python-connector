@@ -34,6 +34,10 @@ RUN poetry config virtualenvs.create false && \
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_NAME
 ARG BASE_IMAGE
+ARG CONNECTOR_VERSION=""
+
+LABEL io.airbyte.name="airbyte/${CONNECTOR_NAME}" \
+      io.airbyte.version="${CONNECTOR_VERSION}"
 
 WORKDIR /airbyte/integration_code
 
