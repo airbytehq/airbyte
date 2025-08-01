@@ -2,9 +2,9 @@ package io.airbyte.integrations.destination.clickhouse.dataflow
 
 import com.clickhouse.client.api.Client
 import com.google.common.annotations.VisibleForTesting
-import io.airbyte.cdk.load.dataflow.Aggregate
-import io.airbyte.cdk.load.dataflow.AggregateFactory
-import io.airbyte.cdk.load.dataflow.StoreKey
+import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
+import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
+import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -13,7 +13,6 @@ import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirec
 import io.airbyte.integrations.destination.clickhouse.write.load.SizedWindow
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import jakarta.inject.Singleton
 
 class ClickhouseAggregate(
     @VisibleForTesting val buffer: BinaryRowInsertBuffer,

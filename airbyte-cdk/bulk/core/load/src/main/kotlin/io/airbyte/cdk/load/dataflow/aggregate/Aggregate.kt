@@ -1,4 +1,4 @@
-package io.airbyte.cdk.load.dataflow
+package io.airbyte.cdk.load.dataflow.aggregate
 
 import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO

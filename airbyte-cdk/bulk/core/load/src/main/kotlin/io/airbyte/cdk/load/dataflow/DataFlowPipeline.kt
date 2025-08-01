@@ -4,6 +4,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import jakarta.inject.Named
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.transform
 
 @Singleton
 class DataFlowPipeline(
@@ -16,9 +17,10 @@ class DataFlowPipeline(
     suspend fun run() {
         input
             .applyStage(parse)
-            .applyStage(aggregate)
+            .transform {
+                emit(aggregate.apply(it))
+            }
             .buffer(capacity = 5)
-            .applyStage(flush)
             .applyStage(state)
             .collect { value ->
                 println("Collecting $value on: ${Thread.currentThread().name}")

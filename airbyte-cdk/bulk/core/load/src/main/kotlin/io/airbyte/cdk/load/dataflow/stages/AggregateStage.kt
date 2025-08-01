@@ -1,7 +1,7 @@
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.dataflow.Aggregate
-import io.airbyte.cdk.load.dataflow.AggregateStore
+import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
+import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.DataFlowStage
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import jakarta.inject.Named
