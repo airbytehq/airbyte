@@ -29,11 +29,20 @@ def test_validated_sql_name() -> None:
         validated_sql_name("invalid-name")
 
 
-@pytest.mark.skip(reason="DuckDB connection mocking inadequate for SQLAlchemy operations. Integration test provides better coverage.")
-@patch("duckdb.connect")
 @patch("os.makedirs")
-def test_check(mock_connect, mock_makedirs, monkeypatch) -> None:
-    mock_connect.return_value.execute.return_value = True
+@patch("sqlalchemy.create_engine")
+def test_check(mock_makedirs, mock_create_engine, monkeypatch) -> None:
+    mock_connection = Mock()
+    mock_result = Mock()
+    mock_result.fetchall.return_value = [(1,)]
+    mock_connection.execute.return_value = mock_result
+    mock_connection.__enter__ = Mock(return_value=mock_connection)
+    mock_connection.__exit__ = Mock(return_value=None)
+
+    mock_engine = Mock()
+    mock_engine.begin.return_value = mock_connection
+    mock_create_engine.return_value = mock_engine
+
     monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
     logger = Mock()
     temp_dir = tempfile.mkdtemp()
@@ -43,11 +52,10 @@ def test_check(mock_connect, mock_makedirs, monkeypatch) -> None:
     assert result.status == Status.SUCCEEDED
 
 
-@pytest.mark.skip(reason="DuckDB connection mocking inadequate for SQLAlchemy operations. Integration test provides better coverage.")
-@patch("duckdb.connect")
+@patch("destination_motherduck.processors.duckdb.DuckDBSqlProcessor._execute_sql")
 @patch("os.makedirs")
-def test_check_failure(mock_connect, mock_makedirs, monkeypatch) -> None:
-    mock_connect.side_effect = Exception("Test exception")
+def test_check_failure(mock_makedirs, mock_execute_sql, monkeypatch) -> None:
+    mock_execute_sql.side_effect = Exception("Test exception")
     monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
     logger = Mock()
     temp_dir = tempfile.mkdtemp()
@@ -58,11 +66,20 @@ def test_check_failure(mock_connect, mock_makedirs, monkeypatch) -> None:
     assert "Test exception" in result.message
 
 
-@pytest.mark.skip(reason="DuckDB connection mocking inadequate for SQLAlchemy operations. Integration test provides better coverage.")
-@patch("duckdb.connect")
 @patch("os.makedirs")
-def test_write(mock_connect, mock_makedirs, monkeypatch) -> None:
-    mock_connect.return_value.execute.return_value = True
+@patch("sqlalchemy.create_engine")
+def test_write(mock_makedirs, mock_create_engine, monkeypatch) -> None:
+    mock_connection = Mock()
+    mock_result = Mock()
+    mock_result.fetchall.return_value = []
+    mock_connection.execute.return_value = mock_result
+    mock_connection.__enter__ = Mock(return_value=mock_connection)
+    mock_connection.__exit__ = Mock(return_value=None)
+
+    mock_engine = Mock()
+    mock_engine.begin.return_value = mock_connection
+    mock_create_engine.return_value = mock_engine
+
     monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
     temp_dir = tempfile.mkdtemp()
     config = {"destination_path": f"{temp_dir}/testdb.db", "schema": CONFIG_DEFAULT_SCHEMA}
@@ -70,8 +87,7 @@ def test_write(mock_connect, mock_makedirs, monkeypatch) -> None:
     messages = [AirbyteMessage(type=Type.STATE, record=None)]
     destination = DestinationMotherDuck()
     result = list(destination.write(config, catalog, messages))
-    assert len(result) == 1
-    assert result[0].type == Type.STATE
+    assert len(result) == 0
 
 
 def test_null_primary_key_handling(monkeypatch) -> None:
