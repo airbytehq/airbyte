@@ -335,7 +335,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.8.17 | 2025-07-31 | [64142](https://github.com/airbytehq/airbyte/pull/64142) | Fix engagements properties datatypes |
+| 5.8.17 | 2025-07-31 | [64142](https://github.com/airbytehq/airbyte/pull/64142) | Fix deal_pipelines and engagements properties datatypes |
 | 5.8.16 | 2025-07-26 | [63898](https://github.com/airbytehq/airbyte/pull/63898) | Update dependencies |
 | 5.8.15 | 2025-07-21 | [63341](https://github.com/airbytehq/airbyte/pull/63341) | Bump memory on Discover to 1GB |
 | 5.8.14 | 2025-07-19 | [63499](https://github.com/airbytehq/airbyte/pull/63499) | Update dependencies |
