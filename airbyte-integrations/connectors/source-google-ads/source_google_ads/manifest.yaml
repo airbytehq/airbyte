@@ -40,7 +40,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:search"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -67,6 +67,17 @@ definitions:
       field_path:
         - results
 
+  cursor_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('nextPageToken', '') }}"
+      stop_condition: "{{ response.get('nextPageToken', '') is none }}"
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_path: ["page_token"]
+
   base_retriever:
     type: SimpleRetriever
     requester:
@@ -74,7 +85,7 @@ definitions:
     record_selector:
       $ref: "#/definitions/base_selector"
     paginator:
-      type: NoPagination
+      $ref: "#/definitions/cursor_paginator"
     decoder:
       type: JsonDecoder
 
@@ -190,7 +201,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:search"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -214,6 +225,8 @@ definitions:
               value: "{{ today_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
     incremental_stream:
       $ref: "#/definitions/incremental_stream_base"
+      $parameters:
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:search"
       retriever:
         type: CustomRetriever
         class_name: "source_google_ads.components.CriterionRetriever"
@@ -226,10 +239,11 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -586,10 +600,12 @@ definitions:
             $ref: "#/schemas/click_view"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:search"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: segments.date
@@ -761,6 +777,8 @@ definitions:
   change_status_stream:
     $ref: "#/definitions/incremental_stream_base"
     name: change_status
+    $parameters:
+      url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:search"
     retriever:
       type: CustomRetriever
       class_name: "source_google_ads.components.ChangeStatusRetriever"
@@ -773,11 +791,12 @@ definitions:
             $ref: "#/schemas"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
         name: change_status
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
       record_selector:
         type: RecordSelector
         $parameters:

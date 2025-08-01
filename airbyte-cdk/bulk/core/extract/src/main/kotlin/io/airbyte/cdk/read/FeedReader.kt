@@ -5,6 +5,7 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -328,8 +329,8 @@ class FeedReader(
                             partitionId,
                             when (dataChannelMedium) {
                                 // State messages in SOCKET mode have an incrementing integer ID.
-                                DataChannelMedium.SOCKET -> stateId.getAndIncrement()
-                                DataChannelMedium.STDIO -> null
+                                SOCKET -> stateId.getAndIncrement()
+                                STDIO -> null
                             }
                         )
                     log.info {
@@ -349,12 +350,12 @@ class FeedReader(
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
     // Acquires resources for the OutputMessageRouter and executes the provided action with it
-    private fun doWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
-        val acquiredSocket: SocketResource.AcquiredSocket =
+    private fun attemptWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
+        val acquiredSocket: SocketResource.AcquiredSocket? =
             resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET)
                 as? SocketResource.AcquiredSocket
-                ?: throw IllegalStateException("No output socket available for checkpoint.")
-        acquiredSocket.use {
+
+        acquiredSocket?.use {
             OutputMessageRouter(
                     feedBootstrap.dataChannelMedium,
                     feedBootstrap.dataChannelFormat,
@@ -382,7 +383,7 @@ class FeedReader(
         }
 
         // Legacy flow - checkpoint state messages to stdout
-        if (dataChannelMedium == DataChannelMedium.STDIO) {
+        if (dataChannelMedium == STDIO) {
             log.info { "checkpoint of ${stateMessages.size} state message(s)" }
             for (stateMessage in stateMessages) {
                 root.outputConsumer.accept(stateMessage)
@@ -394,27 +395,26 @@ class FeedReader(
         for (stateMessage in stateMessages) {
             if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
                 stateMessage.setAdditionalProperty("id", globalStateId.getAndIncrement())
+                // Every global state message has a global partition ID, even if it's not
+                // checkpointing the global partition.
+                // This is requirement from destination in socket mode.
+                if (stateMessage.additionalProperties["partition_id"] == null) {
+                    // If the global partition ID is not set, we generate a new unique one.
+                    stateMessage.setAdditionalProperty("partition_id", generatePartitionId(4))
+                }
             }
+
             // checkpoint state messages to stdout
             root.outputConsumer.accept(stateMessage)
-            when (finalCheckpoint) {
-                false -> {
-                    // While there are still active PartitionReader instances we use them to emit
-                    // state and status messages
-                    PartitionReader.pendingStates.add(stateMessage)
-                }
-                true -> {
-                    // If this is the final checkpoint, we initialize the OutputMessageRouter and
-                    // emit pending message thourgh it
-                    doWithMessageRouter { it.acceptNonRecord(stateMessage) }
-                }
-            }
+
+            // Queue the state message for transmission over sockets.
+            PartitionReader.pendingStates.add(stateMessage)
         }
 
-        // If this is the final checkpoint, we initialzie the OutputMessageRouter and emit all
+        // If this is the final checkpoint, we initialize the OutputMessageRouter and emit all
         // pending messages through it
         if (finalCheckpoint) {
-            doWithMessageRouter {
+            attemptWithMessageRouter {
                 while (PartitionReader.pendingStates.isNotEmpty()) {
                     val message: Any = PartitionReader.pendingStates.poll() ?: break
                     when (message) {
