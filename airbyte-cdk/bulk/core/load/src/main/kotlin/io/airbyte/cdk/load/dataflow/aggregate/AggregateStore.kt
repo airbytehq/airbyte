@@ -3,6 +3,7 @@ package io.airbyte.cdk.load.dataflow.aggregate
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -12,10 +13,12 @@ typealias StoreKey = DestinationStream.Descriptor
 class AggregateStore(
     private val aggFactory: AggregateFactory,
 ) {
+    private val log = KotlinLogging.logger {}
+
     // TODO: Inject
     private val maxConcurrentAggregates = 5L
     private val stalenessDeadlinePerAggMs = 5L * 60000
-    private val maxRecordsPerAgg = 100_000L
+    private val maxRecordsPerAgg = 1000L
     private val maxEstBytesPerAgg = 70_000_000L
 
     private val aggregates = ConcurrentHashMap<StoreKey, AggregateEntry>()
@@ -30,14 +33,20 @@ class AggregateStore(
     }
 
     fun removeNextComplete(timestampMs: Long): Aggregate? {
-        // remove complete
         for ((key, entry) in aggregates) {
-            if (entry.isComplete(timestampMs)) {
+            // remove complete
+            if (entry.isComplete()) {
+                log.info { "PUBLISH — Reason: Complete" }
+                return remove(key)
+            }
+           if (entry.isStale(timestampMs)) {
+                log.info { "PUBLISH — Reason: Stale" }
                 return remove(key)
             }
         }
         // evict largest in case of concurrency
         if (aggregates.size > maxConcurrentAggregates) {
+            log.info { "PUBLISH — Reason: Cardinality" }
             val largest = aggregates.entries.maxBy { it.value.estimatedBytesTrigger.watermark() }
             return remove(largest.key)
         }
@@ -74,9 +83,12 @@ data class AggregateEntry(
     val recordCountTrigger: SizeTrigger,
     val estimatedBytesTrigger: SizeTrigger,
 ) {
-    fun isComplete(ts: Long): Boolean {
-        return stalenessTrigger.isComplete(ts)
-            || recordCountTrigger.isComplete()
+    fun isComplete(): Boolean {
+        return recordCountTrigger.isComplete()
             || estimatedBytesTrigger.isComplete()
+    }
+
+    fun isStale(ts: Long): Boolean {
+        return stalenessTrigger.isComplete(ts)
     }
 }

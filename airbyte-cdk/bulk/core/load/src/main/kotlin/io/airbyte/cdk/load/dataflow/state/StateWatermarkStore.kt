@@ -9,6 +9,8 @@ typealias StateId = String
 class StateWatermarkStore {
     private val watermarks = ConcurrentHashMap<StateId, StateHistogram>()
 
+    fun accept(stateHistogram: StateHistogram) {}
+
     fun updateOrCreate(desc: StateId, stateHistogram: StateHistogram): StateHistogram {
         return watermarks.compute(desc) { _, w -> w?.merge(stateHistogram) ?: stateHistogram }!!
     }

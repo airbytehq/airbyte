@@ -1,42 +1,32 @@
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
-import io.airbyte.cdk.load.dataflow.DataFlowStage
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlinx.coroutines.flow.FlowCollector
+
+typealias AggAndPublish = suspend FlowCollector<DataFlowStageIO>.(DataFlowStageIO) -> Unit
 
 @Named("aggregate")
 @Singleton
 class AggregateStage(
     val store: AggregateStore,
-): DataFlowStage {
-    override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
+): AggAndPublish {
+    override suspend fun invoke(
+        ouputFlow: FlowCollector<DataFlowStageIO>,
+        input: DataFlowStageIO,
+    ) {
         val key = input.raw!!.stream.mappedDescriptor
+        val rec = input.munged!!
 
-        val aggregateToFlush = if (!store.canAggregate(key)) {
-            store.getAndRemoveBiggestAggregate()
-        } else {
-            null
+        store.acceptFor(key, rec)
+
+        var next = store.removeNextComplete(rec.emittedAtMs)
+
+        while (next != null) {
+            ouputFlow.emit(DataFlowStageIO(aggregate = next))
+            next = store.removeNextComplete(rec.emittedAtMs)
         }
-
-        val agg = store.getOrCreate(key)
-
-        val result = agg.accept(input.munged!!)
-
-        return when (result) {
-            Aggregate.Status.COMPLETE -> {
-                store.remove(key)
-                input.apply { aggregate = agg }
-            }
-            Aggregate.Status.INCOMPLETE ->
-                // This is working because we are assuming that the accept function doesn't return COMPLETE on the fist call.
-                // It could be solved by having a list of aggregate or a transform operation.
-                if (aggregateToFlush == null)
-                    input.apply { skip = true }
-                else
-                    input.apply { aggregate = aggregateToFlush }
-            }
     }
 }

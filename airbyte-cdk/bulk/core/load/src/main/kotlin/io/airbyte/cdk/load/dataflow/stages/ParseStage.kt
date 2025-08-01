@@ -21,6 +21,7 @@ class ParseStage(
 //                stateId = raw.checkpointId!!.value,
                 stateId = "dummy",
                 sizeBytes = raw.serializedSizeBytes,
+                emittedAtMs = raw.rawData.emittedAtMs,
             )
         }
     }
