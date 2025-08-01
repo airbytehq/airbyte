@@ -29,11 +29,11 @@ from metadata_service.constants import (
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
 from metadata_service.helpers.files import create_zip_and_get_sha256
+from metadata_service.integrations.gcs_client import GCSClient
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
-from metadata_service.integrations.gcs_client import GCSClient
 
 # 🧩 TYPES
 
@@ -127,6 +127,7 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
 
 # 🛠️ HELPERS
 
+
 def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
     try:
         metadata = yaml.safe_load(metadata_file_path.read_text())
@@ -181,6 +182,7 @@ def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInf
 
 
 # 🚀 UPLOAD
+
 
 def _file_upload(
     local_path: Path | None,

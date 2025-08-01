@@ -2,7 +2,7 @@
 name = "metadata-service"
 version = "0.27.0"
 description = ""
-authors = ["Ben Church <ben@airbyte.io>"]
+authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
 packages = [{ include = "metadata_service" }]
 
