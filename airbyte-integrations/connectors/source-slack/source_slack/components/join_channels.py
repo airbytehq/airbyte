@@ -98,7 +98,6 @@ class ChannelsRetriever(SimpleRetriever):
     ) -> Iterable[StreamData]:
         _slice = stream_slice or StreamSlice(partition={}, cursor_slice={})  # None-check
 
-        most_recent_record_from_slice = None
         record_generator = partial(
             self._parse_records,
             stream_state=self.state or {},
@@ -115,9 +114,8 @@ class ChannelsRetriever(SimpleRetriever):
             if self.cursor and current_record:
                 self.cursor.observe(_slice, current_record)
 
-            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
             yield stream_data
 
         if self.cursor:
-            self.cursor.observe(_slice, most_recent_record_from_slice)
+            self.cursor.observe(_slice)
         return
