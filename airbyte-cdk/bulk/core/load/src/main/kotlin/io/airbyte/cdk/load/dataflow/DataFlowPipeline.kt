@@ -5,6 +5,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import jakarta.inject.Named
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transform
 
@@ -19,11 +20,11 @@ class DataFlowPipeline(
 ) {
     suspend fun run() {
         input
-            .applyStage(parse)
+            .map(parse::apply)
             .transform { aggregate.apply(it, this) }
             .buffer(capacity = 5)
-            .applyStage(flush)
-            .applyStage(state)
+            .map(flush::apply)
+            .map(state::apply)
             .onCompletion { completionHandler.apply(it) }
             .collect {}
     }
