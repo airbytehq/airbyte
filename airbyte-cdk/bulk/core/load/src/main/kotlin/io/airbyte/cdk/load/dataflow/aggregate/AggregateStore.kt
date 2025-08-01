@@ -18,7 +18,7 @@ class AggregateStore(
     // TODO: Inject
     private val maxConcurrentAggregates = 5L
     private val stalenessDeadlinePerAggMs = 5L * 60000
-    private val maxRecordsPerAgg = 1000L
+    private val maxRecordsPerAgg = 100_000L
     private val maxEstBytesPerAgg = 70_000_000L
 
     private val aggregates = ConcurrentHashMap<StoreKey, AggregateEntry>()

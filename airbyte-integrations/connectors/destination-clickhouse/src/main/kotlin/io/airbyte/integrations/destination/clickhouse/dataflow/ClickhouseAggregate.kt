@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
 import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader
 import io.airbyte.integrations.destination.clickhouse.write.load.SizedWindow
@@ -28,7 +27,6 @@ class ClickhouseAggregate(
     private var bytesWindow = SizedWindow(ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_BYTES)
 
     override fun accept(fields: RecordDTO): Aggregate.Status {
-        log.info { "Accumulate" }
         buffer.accumulate(fields.fields)
 
         recordCountWindow.increment(1)
@@ -42,7 +40,6 @@ class ClickhouseAggregate(
     }
 
     override suspend fun flush() {
-        log.info { "Flush" }
         buffer.flush()
         buffer.reset()
     }
