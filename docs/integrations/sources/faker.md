@@ -104,6 +104,7 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 6.2.30 | 2025-08-01 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Update for testing |
 | 6.2.29 | 2025-07-26 | [63953](https://github.com/airbytehq/airbyte/pull/63953) | Update dependencies |
 | 6.2.28 | 2025-07-19 | [63534](https://github.com/airbytehq/airbyte/pull/63534) | Update dependencies |
 | 6.2.27 | 2025-07-17 | [63354](https://github.com/airbytehq/airbyte/pull/63354) | Updated icon |
