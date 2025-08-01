@@ -90,13 +90,7 @@ class GCSClient:
             return blob.md5_hash
         return None
 
-    def upload_file(
-        self,
-        local_file_path: Path,
-        blob_path: str,
-        disable_cache: bool = False,
-        overwrite: bool = True
-    ) -> bool:
+    def upload_file(self, local_file_path: Path, blob_path: str, disable_cache: bool = False, overwrite: bool = True) -> bool:
         """
         Upload a blob to GCS.
 
@@ -129,12 +123,7 @@ class GCSClient:
         blob.upload_from_filename(local_file_path)
         return True
 
-    def upload_file_if_changed(
-        self,
-        local_file_path: Path,
-        blob_path: str,
-        disable_cache: bool = False
-    ) -> UploadResult:
+    def upload_file_if_changed(self, local_file_path: Path, blob_path: str, disable_cache: bool = False) -> UploadResult:
         """
         Upload a file to GCS only if it has changed.
 

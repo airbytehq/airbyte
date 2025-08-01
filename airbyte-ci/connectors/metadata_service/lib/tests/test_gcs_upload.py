@@ -6,12 +6,10 @@ from pathlib import Path
 from typing import Optional
 from unittest.mock import call
 
-from google.cloud import storage
-from google.oauth2 import service_account
-from metadata_service.integrations import gcs_client
-from metadata_service.integrations.gcs_client import GCSClient, UploadResult
 import pytest
 import yaml
+from google.cloud import storage
+from google.oauth2 import service_account
 
 from metadata_service import gcs_upload
 from metadata_service.constants import (
@@ -25,6 +23,8 @@ from metadata_service.constants import (
     METADATA_FILE_NAME,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
+from metadata_service.integrations import gcs_client
+from metadata_service.integrations.gcs_client import GCSClient, UploadResult
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.validators.metadata_validator import ValidatorOptions
 
@@ -226,6 +226,7 @@ def setup_upload_mocks(
         "service_account_json": service_account_json,
     }
 
+
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
     metadata_file_path = Path("./i_dont_exist.yaml")
     with pytest.raises(ValueError, match="No such file or directory"):
@@ -239,20 +240,14 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
 @pytest.mark.parametrize(
     "is_release_candidate,is_prerelease,expect_latest_upload,expect_rc_upload",
     [
-        (False, False, True, False),   # Normal release - upload latest
-        (True, False, False, True),    # Release candidate - upload RC
-        (False, True, False, False),   # Prerelease - no latest or RC
-        (True, True, False, False),    # Prerelease RC - no latest or RC
+        (False, False, True, False),  # Normal release - upload latest
+        (True, False, False, True),  # Release candidate - upload RC
+        (False, True, False, False),  # Prerelease - no latest or RC
+        (True, True, False, False),  # Prerelease RC - no latest or RC
     ],
 )
 def test_upload_metadata_to_gcs_file_upload_calls(
-    mocker,
-    valid_metadata_upload_files,
-    tmp_path,
-    is_release_candidate,
-    is_prerelease,
-    expect_latest_upload,
-    expect_rc_upload
+    mocker, valid_metadata_upload_files, tmp_path, is_release_candidate, is_prerelease, expect_latest_upload, expect_rc_upload
 ):
     """Test that _file_upload is called with expected arguments for different scenarios."""
 
@@ -301,8 +296,11 @@ def test_upload_metadata_to_gcs_file_upload_calls(
     # Mock doc path
     docs_path = Path(DOCS_PATH)
     expected_doc_path = docs_path / "integrations/sources/existingsource.md"
-    mocker.patch.object(gcs_upload, "get_doc_local_file_path", side_effect=lambda metadata, docs_path, inapp:
-                       expected_doc_path if not inapp else expected_doc_path.with_suffix(".inapp.md"))
+    mocker.patch.object(
+        gcs_upload,
+        "get_doc_local_file_path",
+        side_effect=lambda metadata, docs_path, inapp: expected_doc_path if not inapp else expected_doc_path.with_suffix(".inapp.md"),
+    )
 
     # Call the function under test
     validator_opts = ValidatorOptions(docs_path=DOCS_PATH, prerelease_tag=prerelease_tag)
@@ -316,101 +314,117 @@ def test_upload_metadata_to_gcs_file_upload_calls(
     expected_calls = []
 
     # 1. Metadata upload (always happens)
-    expected_calls.append(call(
-        file_key="metadata",
-        local_path=tmp_metadata_file,
-        gcp_connector_dir=expected_gcp_connector_dir,
-        client=mock_gcs_client,
-        version_folder=expected_version_folder,
-        upload_as_version=True,
-        upload_as_latest=expect_latest_upload,
-        disable_cache=True,
-        override_destination_file_name=METADATA_FILE_NAME,
-    ))
-
-    # 2. Release candidate upload (only for RC and not prerelease)
-    if expect_rc_upload:
-        expected_calls.append(call(
-            file_key="release_candidate",
+    expected_calls.append(
+        call(
+            file_key="metadata",
             local_path=tmp_metadata_file,
             gcp_connector_dir=expected_gcp_connector_dir,
             client=mock_gcs_client,
-            version_folder=RELEASE_CANDIDATE_GCS_FOLDER_NAME,
+            version_folder=expected_version_folder,
             upload_as_version=True,
-            upload_as_latest=False,
+            upload_as_latest=expect_latest_upload,
             disable_cache=True,
             override_destination_file_name=METADATA_FILE_NAME,
-        ))
+        )
+    )
+
+    # 2. Release candidate upload (only for RC and not prerelease)
+    if expect_rc_upload:
+        expected_calls.append(
+            call(
+                file_key="release_candidate",
+                local_path=tmp_metadata_file,
+                gcp_connector_dir=expected_gcp_connector_dir,
+                client=mock_gcs_client,
+                version_folder=RELEASE_CANDIDATE_GCS_FOLDER_NAME,
+                upload_as_version=True,
+                upload_as_latest=False,
+                disable_cache=True,
+                override_destination_file_name=METADATA_FILE_NAME,
+            )
+        )
 
     # 3. Icon upload (latest only)
-    expected_calls.append(call(
-        file_key="icon",
-        local_path=metadata_file_path.parent / ICON_FILE_NAME,
-        gcp_connector_dir=expected_gcp_connector_dir,
-        client=mock_gcs_client,
-        upload_as_version=False,
-        upload_as_latest=expect_latest_upload,
-    ))
+    expected_calls.append(
+        call(
+            file_key="icon",
+            local_path=metadata_file_path.parent / ICON_FILE_NAME,
+            gcp_connector_dir=expected_gcp_connector_dir,
+            client=mock_gcs_client,
+            upload_as_version=False,
+            upload_as_latest=expect_latest_upload,
+        )
+    )
 
     # 4. Doc upload (always happens)
-    expected_calls.append(call(
-        file_key="doc",
-        local_path=expected_doc_path,
-        gcp_connector_dir=expected_gcp_connector_dir,
-        client=mock_gcs_client,
-        upload_as_version=True,
-        version_folder=expected_version_folder,
-        upload_as_latest=expect_latest_upload,
-        override_destination_file_name=DOC_FILE_NAME,
-    ))
+    expected_calls.append(
+        call(
+            file_key="doc",
+            local_path=expected_doc_path,
+            gcp_connector_dir=expected_gcp_connector_dir,
+            client=mock_gcs_client,
+            upload_as_version=True,
+            version_folder=expected_version_folder,
+            upload_as_latest=expect_latest_upload,
+            override_destination_file_name=DOC_FILE_NAME,
+        )
+    )
 
     # 5. In-app doc upload (always happens)
-    expected_calls.append(call(
-        file_key="inapp_doc",
-        local_path=expected_doc_path.with_suffix(".inapp.md"),
-        gcp_connector_dir=expected_gcp_connector_dir,
-        client=mock_gcs_client,
-        upload_as_version=True,
-        version_folder=expected_version_folder,
-        upload_as_latest=expect_latest_upload,
-        override_destination_file_name=DOC_INAPP_FILE_NAME,
-    ))
+    expected_calls.append(
+        call(
+            file_key="inapp_doc",
+            local_path=expected_doc_path.with_suffix(".inapp.md"),
+            gcp_connector_dir=expected_gcp_connector_dir,
+            client=mock_gcs_client,
+            upload_as_version=True,
+            version_folder=expected_version_folder,
+            upload_as_latest=expect_latest_upload,
+            override_destination_file_name=DOC_INAPP_FILE_NAME,
+        )
+    )
 
     # 6. Manifest upload (always happens)
-    expected_calls.append(call(
-        file_key="manifest",
-        local_path=mock_manifest_paths.manifest_file_path,
-        gcp_connector_dir=expected_gcp_connector_dir,
-        client=mock_gcs_client,
-        upload_as_version=True,
-        version_folder=expected_version_folder,
-        upload_as_latest=expect_latest_upload,
-        override_destination_file_name=MANIFEST_FILE_NAME,
-    ))
+    expected_calls.append(
+        call(
+            file_key="manifest",
+            local_path=mock_manifest_paths.manifest_file_path,
+            gcp_connector_dir=expected_gcp_connector_dir,
+            client=mock_gcs_client,
+            upload_as_version=True,
+            version_folder=expected_version_folder,
+            upload_as_latest=expect_latest_upload,
+            override_destination_file_name=MANIFEST_FILE_NAME,
+        )
+    )
 
     # 7. Components ZIP SHA256 upload (when zip_file_path is None, this should still be called)
-    expected_calls.append(call(
-        file_key="components_zip_sha256",
-        local_path=mock_manifest_paths.sha256_file_path,
-        gcp_connector_dir=expected_gcp_connector_dir,
-        client=mock_gcs_client,
-        upload_as_version=True,
-        version_folder=expected_version_folder,
-        upload_as_latest=expect_latest_upload,
-        override_destination_file_name=COMPONENTS_ZIP_SHA256_FILE_NAME,
-    ))
+    expected_calls.append(
+        call(
+            file_key="components_zip_sha256",
+            local_path=mock_manifest_paths.sha256_file_path,
+            gcp_connector_dir=expected_gcp_connector_dir,
+            client=mock_gcs_client,
+            upload_as_version=True,
+            version_folder=expected_version_folder,
+            upload_as_latest=expect_latest_upload,
+            override_destination_file_name=COMPONENTS_ZIP_SHA256_FILE_NAME,
+        )
+    )
 
     # 8. Components ZIP upload (when zip_file_path is None, this should still be called)
-    expected_calls.append(call(
-        file_key="components_zip",
-        local_path=mock_manifest_paths.zip_file_path,
-        gcp_connector_dir=expected_gcp_connector_dir,
-        client=mock_gcs_client,
-        upload_as_version=True,
-        version_folder=expected_version_folder,
-        upload_as_latest=expect_latest_upload,
-        override_destination_file_name="components.zip",
-    ))
+    expected_calls.append(
+        call(
+            file_key="components_zip",
+            local_path=mock_manifest_paths.zip_file_path,
+            gcp_connector_dir=expected_gcp_connector_dir,
+            client=mock_gcs_client,
+            upload_as_version=True,
+            version_folder=expected_version_folder,
+            upload_as_latest=expect_latest_upload,
+            override_destination_file_name="components.zip",
+        )
+    )
 
     # Assert all expected calls were made
     mock_file_upload.assert_has_calls(expected_calls, any_order=False)
@@ -463,27 +477,30 @@ def test_upload_metadata_to_gcs_with_components_py(mocker, valid_metadata_upload
     # Mock doc path
     docs_path = Path(DOCS_PATH)
     expected_doc_path = docs_path / "integrations/sources/existingsource.md"
-    mocker.patch.object(gcs_upload, "get_doc_local_file_path", side_effect=lambda metadata, docs_path, inapp:
-                       expected_doc_path if not inapp else expected_doc_path.with_suffix(".inapp.md"))
+    mocker.patch.object(
+        gcs_upload,
+        "get_doc_local_file_path",
+        side_effect=lambda metadata, docs_path, inapp: expected_doc_path if not inapp else expected_doc_path.with_suffix(".inapp.md"),
+    )
 
     # Call the function under test
     validator_opts = ValidatorOptions(docs_path=DOCS_PATH)
     gcs_upload.upload_metadata_to_gcs("test-bucket", metadata_file_path, validator_opts)
 
     # Verify that components ZIP files are uploaded correctly
-    components_zip_calls = [call for call in mock_file_upload.call_args_list if call[1]['file_key'] == 'components_zip']
-    components_sha256_calls = [call for call in mock_file_upload.call_args_list if call[1]['file_key'] == 'components_zip_sha256']
+    components_zip_calls = [call for call in mock_file_upload.call_args_list if call[1]["file_key"] == "components_zip"]
+    components_sha256_calls = [call for call in mock_file_upload.call_args_list if call[1]["file_key"] == "components_zip_sha256"]
 
     assert len(components_zip_calls) == 1
     assert len(components_sha256_calls) == 1
 
     # Verify the ZIP file path is correct
     zip_call = components_zip_calls[0]
-    assert zip_call[1]['local_path'] == tmp_zip_file
+    assert zip_call[1]["local_path"] == tmp_zip_file
 
     # Verify the SHA256 file path is correct
     sha256_call = components_sha256_calls[0]
-    assert sha256_call[1]['local_path'] == tmp_sha256_file
+    assert sha256_call[1]["local_path"] == tmp_sha256_file
 
 
 def test_upload_metadata_to_gcs_validation_failure(mocker, valid_metadata_upload_files, tmp_path):

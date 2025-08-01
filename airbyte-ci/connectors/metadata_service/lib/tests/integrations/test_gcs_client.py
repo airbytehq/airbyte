@@ -3,12 +3,13 @@
 #
 
 
-import json
-import pytest
 import hashlib
+import json
 import tempfile
-from unittest.mock import Mock, patch
 from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
 
 from metadata_service.integrations.gcs_client import GCSClient
 
@@ -30,7 +31,7 @@ def test_credentials():
         "client_email": "test@test-project.iam.gserviceaccount.com",
         "client_id": "123456789",
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token"
+        "token_uri": "https://oauth2.googleapis.com/token",
     }
 
 
@@ -43,26 +44,27 @@ def credentials_json(test_credentials):
 @pytest.fixture
 def mock_gcs_dependencies():
     """Fixture providing mocked Google Cloud Storage dependencies."""
-    with patch('metadata_service.integrations.gcs_client.storage.Client') as mock_storage_client, \
-         patch('metadata_service.integrations.gcs_client.service_account.Credentials.from_service_account_info') as mock_creds_from_info:
-
+    with (
+        patch("metadata_service.integrations.gcs_client.storage.Client") as mock_storage_client,
+        patch("metadata_service.integrations.gcs_client.service_account.Credentials.from_service_account_info") as mock_creds_from_info,
+    ):
         mock_credentials = Mock()
         mock_creds_from_info.return_value = mock_credentials
         mock_client = Mock()
         mock_storage_client.return_value = mock_client
 
         yield {
-            'mock_storage_client': mock_storage_client,
-            'mock_creds_from_info': mock_creds_from_info,
-            'mock_credentials': mock_credentials,
-            'mock_client': mock_client
+            "mock_storage_client": mock_storage_client,
+            "mock_creds_from_info": mock_creds_from_info,
+            "mock_credentials": mock_credentials,
+            "mock_client": mock_client,
         }
 
 
 @pytest.fixture
 def temp_file():
     """Fixture providing a temporary file for testing."""
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as temp_file:
         temp_file.write("test file content for upload")
         temp_file_path = Path(temp_file.name)
 
@@ -71,13 +73,14 @@ def temp_file():
     if temp_file_path.exists():
         temp_file_path.unlink()
 
+
 class TestGCSClientBucketProperty:
     """Tests for GCSClient bucket property."""
 
     def test_bucket_lazy_loading(self, bucket_name, credentials_json, mock_gcs_dependencies):
         """Test that bucket property implements lazy loading correctly."""
         mock_bucket_instance = Mock()
-        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+        mock_gcs_dependencies["mock_client"].bucket.return_value = mock_bucket_instance
 
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
@@ -89,14 +92,14 @@ class TestGCSClientBucketProperty:
         assert client._bucket is not None
         assert client._bucket == mock_bucket_instance
         assert bucket1 == mock_bucket_instance
-        mock_gcs_dependencies['mock_client'].bucket.assert_called_once_with(bucket_name)
+        mock_gcs_dependencies["mock_client"].bucket.assert_called_once_with(bucket_name)
 
         # Second access should return the cached instance without calling bucket() again
         bucket2 = client.bucket
         assert bucket2 == bucket1
         assert bucket2 == mock_bucket_instance
         # bucket() should still only have been called once
-        mock_gcs_dependencies['mock_client'].bucket.assert_called_once_with(bucket_name)
+        mock_gcs_dependencies["mock_client"].bucket.assert_called_once_with(bucket_name)
 
 
 class TestGCSClientGetBlobMD5:
@@ -111,7 +114,7 @@ class TestGCSClientGetBlobMD5:
         expected_md5 = hashlib.md5(test_content.encode()).hexdigest()
 
         mock_bucket_instance = Mock()
-        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+        mock_gcs_dependencies["mock_client"].bucket.return_value = mock_bucket_instance
 
         mock_blob = Mock()
         mock_blob.exists.return_value = True
@@ -132,7 +135,7 @@ class TestGCSClientGetBlobMD5:
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
-        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+        mock_gcs_dependencies["mock_client"].bucket.return_value = mock_bucket_instance
         mock_blob = Mock()
         mock_bucket_instance.blob.return_value = mock_blob
         mock_blob.exists.return_value = False
@@ -154,7 +157,7 @@ class TestGCSClientUploadFile:
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
-        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+        mock_gcs_dependencies["mock_client"].bucket.return_value = mock_bucket_instance
 
         mock_blob = Mock()
         mock_bucket_instance.blob.return_value = mock_blob
@@ -173,7 +176,7 @@ class TestGCSClientUploadFile:
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
-        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+        mock_gcs_dependencies["mock_client"].bucket.return_value = mock_bucket_instance
 
         mock_blob = Mock()
         mock_bucket_instance.blob.return_value = mock_blob
@@ -200,13 +203,13 @@ class TestGCSClientUploadFile:
 class TestGCSClientUploadFileIfChanged:
     """Tests for GCSClient upload_file_if_changed method."""
 
-    @patch('metadata_service.integrations.gcs_client.compute_gcs_md5')
+    @patch("metadata_service.integrations.gcs_client.compute_gcs_md5")
     def test_upload_file_if_changed_file_changed(self, mock_compute_md5, bucket_name, credentials_json, mock_gcs_dependencies, temp_file):
         """Test upload_file_if_changed uploads when local and remote MD5 differ."""
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
-        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+        mock_gcs_dependencies["mock_client"].bucket.return_value = mock_bucket_instance
 
         # Mock local file MD5
         local_md5 = "abc123def456"
@@ -228,13 +231,13 @@ class TestGCSClientUploadFileIfChanged:
         mock_compute_md5.assert_called_once_with(temp_file)
         mock_blob.upload_from_filename.assert_called_once_with(temp_file)
 
-    @patch('metadata_service.integrations.gcs_client.compute_gcs_md5')
+    @patch("metadata_service.integrations.gcs_client.compute_gcs_md5")
     def test_upload_file_if_changed_file_unchanged(self, mock_compute_md5, bucket_name, credentials_json, mock_gcs_dependencies, temp_file):
         """Test upload_file_if_changed skips upload when local and remote MD5 match."""
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
         mock_bucket_instance = Mock()
-        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+        mock_gcs_dependencies["mock_client"].bucket.return_value = mock_bucket_instance
 
         # Mock local file MD5
         same_md5 = "abc123def456"
