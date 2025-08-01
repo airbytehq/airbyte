@@ -3,6 +3,7 @@ import requests
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 from airbyte_cdk.sources.streams.http import HttpStream
+import logging
 
 from .authenticator import GainsightCsAuthenticator
 import json
@@ -58,9 +59,22 @@ class GainsightCsObjectStream(GainsightCsStream):
         return self._primary_key
 
     def dynamic_schema(self, full_schema, metadata):
+        logger = logging.getLogger(__name__)
+        is_scorecard_object = "scorecard" in self.object_name.lower()
+        
         for field in metadata:
             field_name = field['fieldName']
-            field_type = self.gainsight_airbyte_type_map.get(field['dataType'], ["null", "string"])
+            data_type = field['dataType']
+            field_type = self.gainsight_airbyte_type_map.get(data_type, ["null", "string"])
+            
+            if data_type not in self.gainsight_airbyte_type_map:
+                logger.warning(f"Object '{self.object_name}' field '{field_name}' with dataType '{data_type}' not found in type mapping, defaulting to ['null', 'string']")
+            
+            # Override field Id to be number type for scorecard objects
+            if is_scorecard_object and field_name == "Id":
+                field_type = ["null", "number"]
+                logger.info(f"Object '{self.object_name}' field 'Id' overridden to ['null', 'number'] for scorecard object")
+            
             full_schema['properties'][field_name] = {
                 "type": field_type
             }
