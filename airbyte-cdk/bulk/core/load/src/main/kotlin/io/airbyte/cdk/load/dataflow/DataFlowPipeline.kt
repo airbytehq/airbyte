@@ -15,10 +15,9 @@ class DataFlowPipeline(
 ) {
     suspend fun run() {
         input
-            .buffer(capacity = 128)
             .applyStage(parse)
             .applyStage(aggregate)
-            .buffer(capacity = 8)
+            .buffer(capacity = 5)
             .applyStage(flush)
             .applyStage(state)
             .collect { value ->
