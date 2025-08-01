@@ -26,11 +26,11 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --name=*)
-      connectors=("${1#*=}")
+      connectors+=("${1#*=}")
       shift
       ;;
     --name)
-      connectors=("$2")
+      connectors+=("$2")
       shift 2
       ;;
     --*)

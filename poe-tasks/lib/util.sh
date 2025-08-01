@@ -3,6 +3,18 @@
 # You can't just `source lib/util.sh`, because the current working directory probably isn't `poe-tasks`.
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
+DOCS_BASE_DIR="docs/integrations"
+
+# Usage: connector_docs_path "source-foo"
+# Returns a string "docs/integrations/sources/foo.md"
+connector_docs_path() {
+  # The regex '^(source|destination)-(.*)' matches strings like source-whatever or destination-something-like-this,
+  # capturing the connector type (source/destination) and the connector name (whatever / something-like-this).
+  # We then output '\1s/\2.md', which inserts the captured values as `\1` and `\2`.
+  # This produces a string like `sources/whatever.md`.
+  # Then we prepend the 'docs/integrations/' path.
+  echo $DOCS_BASE_DIR/$(echo $1 | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
+}
 
 # ---------- helper: collect connector names ----------
 # Read a list of connector names from a variable, or parse stdin.
