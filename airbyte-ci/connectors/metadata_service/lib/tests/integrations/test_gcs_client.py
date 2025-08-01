@@ -9,9 +9,8 @@ import hashlib
 import tempfile
 from unittest.mock import Mock, patch
 from pathlib import Path
-import os
 
-from metadata_service.integrations.gcs_client import GCSClient, UploadResult
+from metadata_service.integrations.gcs_client import GCSClient
 
 
 @pytest.fixture
@@ -164,15 +163,22 @@ class TestGCSClientGetBlobMD5:
         test_content = "test blob content for md5 calculation"
         expected_md5 = hashlib.md5(test_content.encode()).hexdigest()
 
+        mock_bucket_instance = Mock()
+        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
+
         mock_blob = Mock()
         mock_blob.exists.return_value = True
         mock_blob.md5_hash = expected_md5
+        mock_bucket_instance.blob.return_value = mock_blob
+
+        blob_path = "test/path/file.txt"
 
         # Act
-        result = client.get_blob_md5(mock_blob)
+        result = client.get_blob_md5(blob_path)
 
         # Assert
         assert result == expected_md5
+        mock_bucket_instance.blob.assert_called_once_with(blob_path)
         mock_blob.exists.assert_called_once()
         mock_blob.reload.assert_called_once()
 
@@ -181,11 +187,16 @@ class TestGCSClientGetBlobMD5:
         # Arrange
         client = GCSClient(bucket_name=bucket_name, gcs_credentials=credentials_json)
 
+        mock_bucket_instance = Mock()
+        mock_gcs_dependencies['mock_client'].bucket.return_value = mock_bucket_instance
         mock_blob = Mock()
+        mock_bucket_instance.blob.return_value = mock_blob
         mock_blob.exists.return_value = False
 
+        blob_path = "test/path/file.txt"
+
         # Act
-        result = client.get_blob_md5(mock_blob)
+        result = client.get_blob_md5(blob_path)
 
         # Assert
         assert result is None

@@ -54,7 +54,6 @@ class GCSClient:
 
     @property
     def bucket(self) -> storage.Bucket:
-        """Lazy-loaded bucket instance."""
         if self._bucket is None:
             logger.info(f"Connecting to GCS bucket: {self.bucket_name}")
             self._bucket = self._storage_client.bucket(self.bucket_name)
@@ -66,8 +65,7 @@ class GCSClient:
 
     def blob_exists(self, blob_path: str) -> bool:
         """Check if a blob exists in GCS."""
-        blob = self.bucket.blob(blob_path)
-        return blob.exists()
+        return self.bucket.blob(blob_path).exists()
 
     def delete_blob(self, blob_path: str) -> bool:
         """Delete a blob from GCS."""
@@ -79,8 +77,8 @@ class GCSClient:
 
     def copy_blob(self, source_blob_path: str, destination_blob_path: str) -> bool:
         """Copy a blob from GCS."""
-        source_blob = self.get_blob(source_blob_path)
-        destination_blob = self.get_blob(destination_blob_path)
+        source_blob = self.bucket.blob(source_blob_path)
+        destination_blob = self.bucket.blob(destination_blob_path)
         destination_blob.copy_from(source_blob)
         return True
 
@@ -145,7 +143,7 @@ class GCSClient:
         """
         local_file_md5_hash = compute_gcs_md5(local_file_path)
 
-        remote_blob = self.get_blob(blob_path)
+        remote_blob = self.bucket.blob(blob_path)
         remote_blob_md5_hash = self.get_blob_md5(blob_path)
 
         print(f"Local {local_file_path} md5_hash: {local_file_md5_hash}")
