@@ -146,6 +146,7 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.2 | 2025-08-02 | [64281](https://github.com/airbytehq/airbyte/pull/64281) | Update dependencies |
 | 4.2.1 | 2025-07-19 | [60614](https://github.com/airbytehq/airbyte/pull/60614) | Update dependencies |
 | 4.2.0 | 2025-07-17 | [63358](https://github.com/airbytehq/airbyte/pull/63358) | Promoting release candidate 4.2.0-rc.1 to a main version. |
 | 4.2.0-rc.1 | 2025-07-16 | [62954](https://github.com/airbytehq/airbyte/pull/62954)     | Migrate to manifest-only format.                                                                                                                                       |
