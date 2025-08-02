@@ -1647,13 +1647,13 @@ test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
 name = "textual"
-version = "5.0.1"
+version = "5.2.0"
 description = "Modern Text User Interface framework"
 optional = false
 python-versions = "<4.0.0,>=3.8.1"
 files = [
-    {file = "textual-5.0.1-py3-none-any.whl", hash = "sha256:816eab21d22a702b3858ee23615abccaf157c05d386e82968000084c3c2c26aa"},
-    {file = "textual-5.0.1.tar.gz", hash = "sha256:c6e20489ee585ec3fa43b011aa575f52e4fafad550e040bff9f53a464897feb6"},
+    {file = "textual-5.2.0-py3-none-any.whl", hash = "sha256:5df1ef970a88ac9a266cbcace098f595f22706990f2506f6e545d9bb55983f1d"},
+    {file = "textual-5.2.0.tar.gz", hash = "sha256:6d4a77fddde7aa659acc25c3e14ed27ff75e125c6730c6f57263cf91b60e0d50"},
 ]
 
 [package.dependencies]
