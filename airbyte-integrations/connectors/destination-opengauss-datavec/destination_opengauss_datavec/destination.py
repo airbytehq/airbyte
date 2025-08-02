@@ -13,20 +13,20 @@ from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from destination_milvus.config import ConfigModel
-from destination_milvus.indexer import MilvusIndexer
+from destination_opengauss_datavec.config import ConfigModel
+from destination_opengauss_datavec.indexer import OpenGaussDataVecIndexer
 
 
-BATCH_SIZE = 128
+BATCH_SIZE = 128 # todo
 
 
-class DestinationMilvus(Destination):
+class DestinationOpenGaussDataVec(Destination):
     indexer: Indexer
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = create_from_config(config.embedding, config.processing)
-        self.indexer = MilvusIndexer(config.indexing, self.embedder.embedding_dimensions)
+        self.indexer = OpenGaussDataVecIndexer(config.indexing, self.embedder.embedding_dimensions)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
@@ -50,7 +50,7 @@ class DestinationMilvus(Destination):
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.com/integrations/destinations/milvus",
+            # documentationUrl="https://docs.airbyte.com/integrations/destinations/milvus",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=ConfigModel.schema(),  # type: ignore[attr-defined]

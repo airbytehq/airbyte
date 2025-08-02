@@ -7,45 +7,109 @@ import os
 from multiprocessing import Process
 from typing import Optional
 
-from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
+import psycopg2
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from destination_milvus.config import MilvusIndexingConfigModel
+from destination_opengauss_datavec.config import OpenGaussDatavecIndexingModel
 
 
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
-class MilvusIndexer(Indexer):
-    config: MilvusIndexingConfigModel
+class OpenGaussDataVecIndexer(Indexer):
+    config: OpenGaussDatavecIndexingModel
 
-    def __init__(self, config: MilvusIndexingConfigModel, embedder_dimensions: int):
+    def __init__(self, config: OpenGaussDatavecIndexingModel, embedder_dimensions: int):
         super().__init__(config)
         self.embedder_dimensions = embedder_dimensions
+        self._conn = None  # 初始化连接为None
+
+    def __del__(self):
+        """析构函数，确保连接被关闭"""
+        self._close_connection()
 
     def _connect(self):
-        connections.connect(
-            uri=self.config.host,
-            db_name=self.config.db if self.config.db else "",
-            user=self.config.auth.username if self.config.auth.mode == "username_password" else "",
-            password=self.config.auth.password if self.config.auth.mode == "username_password" else "",
-            token=self.config.auth.token if self.config.auth.mode == "token" else "",
-        )
+        """连接到OpenGauss"""
+        try:
+            self._conn = psycopg2.connect(
+                dbname=self.config.database, 
+                user=self.config.username, 
+                password=self.config.password, 
+                host=self.config.host, 
+                port=self.config.port
+            )
+        except Exception as e:
+            raise Exception(f"Failed to connect to database: {str(e)}")
+
+    def _close_connection(self):
+        """关闭数据库连接"""
+        if hasattr(self, '_conn') and self._conn:
+            try:
+                self._conn.close()
+            except Exception:
+                pass  # 忽略关闭时的错误
+            finally:
+                self._conn = None
+
+    def _check_schemas_exist(self):
+        """检查配置的default schema是否存在"""
+        if not hasattr(self.config, 'default_schema') or not self.config.default_schema:
+            return
+        
+        # 分割多个schema（用逗号分隔）
+        schemas = [schema.strip() for schema in self.config.default_schema.split(',')]
+        missing_schemas = []
+        
+        try:
+            with self._conn.cursor() as cur:
+                for schema in schemas:
+                    # 检查schema是否存在
+                    cur.execute("""
+                        SELECT 1 FROM information_schema.schemata 
+                        WHERE schema_name = %s
+                    """, (schema,))
+                    
+                    if cur.fetchone() is None:
+                        missing_schemas.append(schema)
+            
+            # 如果有缺失的schema，抛出异常
+            if missing_schemas:
+                missing_list = ', '.join(missing_schemas)
+                raise Exception(f"Schema(s) not found in database: {missing_list}. Please create them first.")
+                
+        except Exception as e:
+            # 重新抛出异常，让上层处理
+            raise Exception(f"Failed to check schemas: {str(e)}")
 
     def _connect_with_timeout(self):
-        # Run connect in a separate process as it will hang if the token is invalid.
-        proc = Process(target=self._connect)
+        """带超时的连接测试，避免连接卡住"""
+        def _test_connect():
+            """测试连接的内部函数"""
+            try:
+                test_conn = psycopg2.connect(
+                    dbname=self.config.database, 
+                    user=self.config.username, 
+                    password=self.config.password, 
+                    host=self.config.host, 
+                    port=self.config.port
+                )
+                test_conn.close()  # 立即关闭测试连接
+            except Exception as e:
+                raise Exception(f"Connection test failed: {str(e)}")
+        
+        # 在子进程中测试连接
+        proc = Process(target=_test_connect)
         proc.start()
         proc.join(5)
         if proc.is_alive():
-            # If the process is still alive after 5 seconds, terminate it and raise an exception
+            # 如果5秒后进程还在运行，强制终止
             proc.terminate()
             proc.join()
-            raise Exception("Connection timed out, check your host and credentials")
+            raise Exception("Connection timed out, please try again later or check your host and credentials")
 
     def _create_index(self, collection: Collection):
         """
@@ -58,38 +122,25 @@ class MilvusIndexer(Indexer):
         )
 
     def _create_client(self):
+        """创建数据库客户端连接"""
+        # 先关闭可能存在的旧连接
+        self._close_connection()
+        
+        # 测试连接是否可达
         self._connect_with_timeout()
-        # If the process exited within 5 seconds, it's safe to connect on the main process to execute the command
+        
+        # 在主进程中建立正式连接
         self._connect()
 
-        if not utility.has_collection(self.config.collection):
-            pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
-            vector = FieldSchema(name=self.config.vector_field, dtype=DataType.FLOAT_VECTOR, dim=self.embedder_dimensions)
-            schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
-            collection = Collection(name=self.config.collection, schema=schema)
-            self._create_index(collection)
-
-        self._collection = Collection(self.config.collection)
-        self._collection.load()
-        self._primary_key = self._collection.primary_field.name
+        
 
     def check(self) -> Optional[str]:
-        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
-        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_safe_config():
-            return "Host must start with https:// and authentication must be enabled on cloud deployment."
+        """检查OpenGauss连接和表结构"""
         try:
             self._create_client()
+            # 检查default schema是否存在
+            self._check_schemas_exist()
 
-            description = self._collection.describe()
-            if not description["auto_id"]:
-                return "Only collections with auto_id are supported"
-            vector_field = next((field for field in description["fields"] if field["name"] == self.config.vector_field), None)
-            if vector_field is None:
-                return f"Vector field {self.config.vector_field} not found"
-            if vector_field["type"] != DataType.FLOAT_VECTOR:
-                return f"Vector field {self.config.vector_field} is not a vector"
-            if vector_field["params"]["dim"] != self.embedder_dimensions:
-                return f"Vector field {self.config.vector_field} is not a {self.embedder_dimensions}-dimensional vector"
         except Exception as e:
             return format_exception(e)
         return None
