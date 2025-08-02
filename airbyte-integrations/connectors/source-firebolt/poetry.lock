@@ -515,13 +515,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "firebolt-sdk"
-version = "1.13.0"
+version = "1.14.0"
 description = "Python SDK for Firebolt"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "firebolt_sdk-1.13.0-py3-none-any.whl", hash = "sha256:daeeb7f4f53e37122777a53246afa30aef9eab2a4f9347a03dc7c572699dd188"},
-    {file = "firebolt_sdk-1.13.0.tar.gz", hash = "sha256:e8b93d125d405a2dde7e919a093c702ace1b3d501efa92a5922b4c012277001f"},
+    {file = "firebolt_sdk-1.14.0-py3-none-any.whl", hash = "sha256:1dfe8f14381f1933f85c3b101fe15210557ca14a15bf188cdcf2517eb82e19eb"},
+    {file = "firebolt_sdk-1.14.0.tar.gz", hash = "sha256:0bb7fc58adcfe016e01d1873d7c117a2c571264915d8f23ad3d7c7f015ab44dc"},
 ]
 
 [package.dependencies]
@@ -1635,13 +1635,13 @@ sortedcontainers = "*"
 
 [[package]]
 name = "truststore"
-version = "0.10.1"
+version = "0.10.3"
 description = "Verify certificates using native system trust stores"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "truststore-0.10.1-py3-none-any.whl", hash = "sha256:b64e6025a409a43ebdd2807b0c41c8bff49ea7ae6550b5087ac6df6619352d4c"},
-    {file = "truststore-0.10.1.tar.gz", hash = "sha256:eda021616b59021812e800fa0a071e51b266721bef3ce092db8a699e21c63539"},
+    {file = "truststore-0.10.3-py3-none-any.whl", hash = "sha256:5bcc0889390f7b69e56be3df02f4912cfbb5a8bdb77a63fdcacb91049707879b"},
+    {file = "truststore-0.10.3.tar.gz", hash = "sha256:16ff5f6faf692acca470f9b92e66b4c0faccb9b702d0b0486d3d465932b6b3b1"},
 ]
 
 [[package]]
