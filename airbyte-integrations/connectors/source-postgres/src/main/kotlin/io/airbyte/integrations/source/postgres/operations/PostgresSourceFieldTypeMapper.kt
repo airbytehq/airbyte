@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.postgres.operations
 
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.jdbc.StringFieldType
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
@@ -12,6 +13,6 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
 
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType {
         // TODO: implement field type mapping
-        throw NotImplementedError()
+        return StringFieldType
     }
 }

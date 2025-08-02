@@ -5,17 +5,15 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
-import io.airbyte.cdk.discover.CdcNumberMetaFieldType
-import io.airbyte.cdk.discover.CdcStringMetaFieldType
+import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.MetaField
 
 enum class PostgresSourceCdcMetaFields(
     override val type: FieldType,
 ) : MetaField {
-    CDC_CURSOR(CdcIntegerMetaFieldType),
-    CDC_LOG_POS(CdcNumberMetaFieldType),
-    CDC_LOG_FILE(CdcStringMetaFieldType),
+    UPDATED_AT(CdcOffsetDateTimeMetaFieldType),
+    DELETED_AT(CdcOffsetDateTimeMetaFieldType),
     CDC_LSN(CdcIntegerMetaFieldType),
     ;
 

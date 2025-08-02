@@ -71,14 +71,20 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("username")
     @JsonSchemaTitle("User")
     @JsonPropertyDescription("The username which is used to access the database.")
-    @JsonSchemaInject(json = """{"order":4}""")
+    @JsonSchemaInject(json = """{"order":3}""")
     lateinit var username: String
 
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
     @JsonPropertyDescription("The password associated with the username.")
-    @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
+    @JsonSchemaInject(json = """{"order":4,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
+
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("The database name.")
+    @JsonSchemaInject(json = """{"order":5,"always_show":true}""")
+    lateinit var database: String
 
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
