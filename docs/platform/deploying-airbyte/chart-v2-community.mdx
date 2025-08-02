@@ -1,6 +1,5 @@
 ---
 products: oss-community
-draft: true
 ---
 
 import Tabs from '@theme/Tabs';
@@ -30,7 +29,7 @@ Upgrading to the new Helm chart now has the following benefits.
 
 The following versions of Airbyte can use Helm chart V2:
 
-- Airbyte version 1.6.0 and later, if installed and managed with Helm _and_ connected to an external database and external storage bucket
+- Airbyte version 1.6.0 and later, if installed and managed with Helm
 
 The following versions of Airbyte _can't_ use Helm chart V2:
 
@@ -38,17 +37,11 @@ The following versions of Airbyte _can't_ use Helm chart V2:
 
 - Airbyte versions installed and managed with abctl
 
-- Airbyte versions that aren't connected to an external database and storage bucket
-
-:::danger
-Don't migrate to Helm chart V2 if you haven't set up an external database and storage. These resources contain the data your Airbyte deployment needs to operate and a fresh deployment won't work without them. Airbyte is evaluating possible migration paths for open source deployments that don't meet this requirement.
-:::
-
 ## How to upgrade
 
 In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you complete the following steps.
 
-1. Ensure you have configured Airbyte to use an external database and external bucket storage.
+1. Ensure you have configured Airbyte to use an external database and external bucket storage. If you haven't, backup Airbyte's internal Postgres database to ensure you don't lose your data.
 
 2. Prepare to deploy a fresh installation of Airbyte.
 
@@ -56,18 +49,80 @@ In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you co
 
 4. Deploy a new version of Airbyte using your new `values.yaml` file and the new Helm chart version.
 
-<!-- ### Configure external database and bucket storage -->
+### Backup Airbyte's internal Postgres database
 
-<!-- This might be a non-starter for community. Can we reasonably ask them to do this? -->
+<Tabs groupId="external-db">
+<TabItem value='db-yes' label='External database' default>
 
-<!-- Although Airbyte provides its own basic database and storage, most people opt to use their own. If you don't already do this, you must enable these before migrating.
+If you have configured an external database, skip this step. However, it is a good idea to backup your database on a regular cadence.
 
-- [Configure an external database](integrations/database)
-- [Configure external storage](integrations/storage) -->
+</TabItem>
+<TabItem value='db-no' label='No external database' default>
+
+If you haven't configured an external database, you must backup Airbyte's internal Postgres database. If you fail to do this, and something goes wrong during your upgrade, you could lose all your connections and states.
+
+1. Get your database pod name. It's probably `airbyte-db-0`, but you can check for it with the following command.
+
+    ```bash
+    kubectl get pods --all-namespaces | grep db
+    ```
+
+2. Get your database credentials. They're probably in `airbyte-airbyte-secrets`, but you can check for them with the following command.
+
+    ```bash
+    kubectl get secrets -n <namespace>
+    ```
+
+    Now decode them.
+
+    ```
+    kubectl get secret airbyte-airbyte-secrets -n airbyte -o jsonpath='{.data.POSTGRES_USER}' | base64 --decode
+    kubectl get secret airbyte-airbyte-secrets -n airbyte -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 --decode
+    ```
+
+    By default, the values are as follows.
+
+    ```bash
+    POSTGRES_USER: airbyte
+    POSTGRES_PASSWORD: airbyte
+    DB name: airbyte
+    ```
+
+3. Run `pg_dump` inside the Postgres pod and copy the dump locally.
+
+    ```bash
+    # Variables
+    NAMESPACE=<your-airbyte-namespace>
+    POSTGRES_POD=$(kubectl get pod -n $NAMESPACE -l app=airbyte-db -o jsonpath='{.items[0].metadata.name}')
+
+    # Exec pg_dump inside the pod
+    kubectl exec -n $NAMESPACE $POSTGRES_POD -- \
+      bash -c "pg_dump -U airbyte airbyte > /tmp/airbyte_backup.sql"
+
+    # Copy backup to local machine
+    kubectl cp $NAMESPACE/$POSTGRES_POD:/tmp/airbyte_backup.sql ./airbyte_backup.sql
+
+    # (Optional) Compress backup
+    gzip airbyte_backup.sql
+    ```
+
+</TabItem>
+</Tabs>
 
 ### Prepare a fresh deployment of Airbyte
 
+<Tabs groupId="external-db">
+<TabItem value='db-yes' label='External database' default>
+
 When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different Airbyte users have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
+
+</TabItem>
+<TabItem value='db-no' label='No external database' default>
+
+If you're not using an external database, skip this step. At deployment time, you will reinstall Airbyte in your existing namespace.
+
+</TabItem>
+</Tabs>
 
 ### Add V2 chart repo
 
@@ -116,16 +171,16 @@ global:
   airbyteUrl: "" # The URL where Airbyte will be reached; This should match your Ingress host
 ```
 
-Optional: [deploy Airbyte](#deploy-airbyte) before you add additional configurations. If there are issues with your deployment, troubleshooting them is easier before you integrate additional services.
-
 </details>
 
 <details>
 <summary>
-Add your database
+Add your database (if applicable)
 </summary>
 
-Disable Airbyte's default Postgres database and add your own. The main difference in Helm chart V2 is the `global.database.database` key has changed to `global.database.name`.
+If you're not using an external database, skip this step.
+
+If you are using an external database, disable Airbyte's default Postgres database and add your own. The main difference in Helm chart V2 is the `global.database.database` key has changed to `global.database.name`.
 
 ```yaml title="values.yaml"
 global: 
@@ -159,8 +214,10 @@ postgresql:
 
 <details>
 <summary>
-Add external logging
+Add external log storage (if applicable)
 </summary>
+
+If you're using external log storage, implement it. If you aren't, skip this step.
 
 ```yaml
 global:
@@ -170,7 +227,6 @@ global:
 
     bucket:
       log: airbyte-bucket
-      auditLogging: airbyte-bucket # Version 1.7 or later, only if you're using audit logging
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
       activityPayload: airbyte-bucket
@@ -203,6 +259,8 @@ global:
 <summary>
 Add external connector secret management
 </summary>
+
+If you're using external secret management, implement it. If you aren't, skip this step.
 
 ```yaml
 global:
@@ -321,20 +379,55 @@ workloadLauncher:
 
 ### Deploy Airbyte {#deploy-airbyte}
 
-Before you deploy, validate your values.yaml file.
+<Tabs groupId="external-db">
+<TabItem value='db-yes' label='External database' default>
 
-```bash
-helm template airbyte airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
-```
+1. Before you deploy, validate your values.yaml file.
 
-Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+    ```bash
+    helm template airbyte airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
+    ```
 
-```bash
-helm upgrade airbyte airbyte-v2/airbyte \
-  --namespace airbyte-v2 \       # Target Kubernetes namespace
-  --values ./values.yaml \       # Custom configuration values
-  --version 2.0.3 \              # Helm chart version to use
-  --set global.image.tag=1.7.0   # Airbyte version to use
-```
+2. Deploy Airbyte. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
 
-<!-- I am realizing the decoupling the chart from the platform may create weird scenarios where it's unclear which version/chart combination to use. -->
+    ```bash
+    helm install airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.3 \              # Helm chart version to use
+      --set global.image.tag=1.7.0   # Airbyte version to use
+    ```
+
+</TabItem>
+<TabItem value='db-no' label='No external database' default>
+
+:::danger
+Do not proceed if you have not backed up Airbyte's internal Postgres database.
+:::
+
+1. Before you deploy, validate your values.yaml file.
+
+    ```bash
+    helm template airbyte airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
+    ```
+  
+2. Uninstall Airbyte, but preserve its namespace. This example assumes you installed Airbyte in the `airbyte` namespace.
+
+    ```bash
+    helm uninstall airbyte -n airbyte
+    ```
+
+3. Reinstall Airbyte into the same namespace as before. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+
+    ```bash
+    helm install airbyte airbyte-v2/airbyte \
+    --namespace airbyte \          # Target Kubernetes namespace
+    --values ./values.yaml \       # Custom configuration values
+    --version 2.0.3 \              # Helm chart version to use
+    --set global.image.tag=1.7.0   # Airbyte version to use
+    ```
+
+Airbyte continues in this namespace as before, now running on Helm Chart V2. If there is an issue with your deployment, you can restore your database, which you backed up earlier.
+
+</TabItem>
+</Tabs>
