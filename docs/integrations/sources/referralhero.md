@@ -30,6 +30,7 @@ Please follow the instructions in the following [referralhero](https://support.r
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-08-02 | [64443](https://github.com/airbytehq/airbyte/pull/64443) | Update dependencies |
 | 0.0.19 | 2025-07-26 | [63995](https://github.com/airbytehq/airbyte/pull/63995) | Update dependencies |
 | 0.0.18 | 2025-07-20 | [63659](https://github.com/airbytehq/airbyte/pull/63659) | Update dependencies |
 | 0.0.17 | 2025-07-05 | [62698](https://github.com/airbytehq/airbyte/pull/62698) | Update dependencies |
