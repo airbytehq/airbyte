@@ -2,9 +2,7 @@
 
 File syncing enables connectors to download and transfer files from API sources when an API endpoint returns a file. This capability supports all common file formats including documents, images, and structured data.
 
-:::info
-File syncing is experimental. It isn't available in the Connector Builder UI. You must implement this using manifest.yaml files in a manifest-only or hybrid connector.
-:::
+If you're using the Connector Builder UI, file syncing is available from a stream's **Advanced** > **File Uploader** option.
 
 ## Overview
 
