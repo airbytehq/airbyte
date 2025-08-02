@@ -35,6 +35,7 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.29 | 2025-08-02 | [64370](https://github.com/airbytehq/airbyte/pull/64370) | Update dependencies |
 | 0.0.28 | 2025-07-26 | [63937](https://github.com/airbytehq/airbyte/pull/63937) | Update dependencies |
 | 0.0.27 | 2025-07-19 | [63595](https://github.com/airbytehq/airbyte/pull/63595) | Update dependencies |
 | 0.0.26 | 2025-07-17 | [63315](https://github.com/airbytehq/airbyte/pull/63315) | source-float contribution from cvd |
