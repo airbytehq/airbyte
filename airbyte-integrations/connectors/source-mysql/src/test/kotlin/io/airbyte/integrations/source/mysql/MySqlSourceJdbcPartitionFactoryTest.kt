@@ -20,6 +20,7 @@ import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
@@ -154,6 +155,15 @@ class MySqlSourceJdbcPartitionFactoryTest {
                             stream: Stream,
                             recordData: ObjectNode
                         ) {}
+
+                        override fun decorateRecordData(
+                            timestamp: OffsetDateTime,
+                            globalStateValue: OpaqueStateValue?,
+                            stream: Stream,
+                            recordData: NativeRecordPayload
+                        ) {
+                            // no-op
+                        }
                     },
                 stateManager =
                     StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
