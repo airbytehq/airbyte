@@ -275,7 +275,7 @@ class IAMUserInlinePoliciesStream(BaseIAMStream):
                     for policy_name in policy_page.get("PolicyNames", []):
                         policy = self.iam.get_user_policy(UserName=user_name, PolicyName=policy_name)
                         yield {
-                            "Arn": f"user_arn/{policy_name}",
+                            "Arn": f"{user['Arn']}/{policy_name}",
                             "UserArn": user["Arn"],
                             "UserName": user_name,
                             "PolicyName": policy_name,
@@ -310,7 +310,7 @@ class IAMRoleInlinePoliciesStream(BaseIAMStream):
                     for policy_name in policy_page.get("PolicyNames", []):
                         policy = self.iam.get_role_policy(RoleName=role_name, PolicyName=policy_name)
                         yield {
-                            "Arn": f"role_arn/{policy_name}",
+                            "Arn": f"{role_arn}/{policy_name}",
                             "RoleArn": role_arn,
                             "RoleName": role_name,
                             "PolicyName": policy_name,
@@ -345,7 +345,7 @@ class IAMGroupInlinePoliciesStream(BaseIAMStream):
                     for policy_name in policy_page.get("PolicyNames", []):
                         policy = self.iam.get_group_policy(GroupName=group_name, PolicyName=policy_name)
                         yield {
-                            "Arn": f"group_arn/{policy_name}",
+                            "Arn": f"{group_arn}/{policy_name}",
                             "GroupArn": group_arn,
                             "GroupName": group_name,
                             "PolicyName": policy_name,
