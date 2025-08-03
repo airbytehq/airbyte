@@ -523,3 +523,47 @@ class IAMGroupPolicyBindingsStream(BaseIAMStream):
                             "PolicyArn": policy["PolicyArn"],
                             "PolicyName": policy["PolicyName"]
                         }
+
+
+# Stream: link IAM groups and IAM users (group membership)
+class IAMGroupUserMembershipStream(BaseIAMStream):
+    """Stream returning which users belong to which IAM groups."""
+    name = "group_user_membership"
+    primary_key = None
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "GroupName": {"type": "string"},
+                "GroupArn": {"type": "string"},
+                "UserName": {"type": "string"},
+                "UserArn": {"type": "string"}
+            }
+        }
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # List all groups
+        groups_paginator = self.iam.get_paginator("list_groups")
+        for page in groups_paginator.paginate():
+            for group in page.get("Groups", []):
+                group_name = group.get("GroupName")
+                group_arn = group.get("Arn")
+                # Get users in this group, handling pagination
+                marker = None
+                while True:
+                    params = {"GroupName": group_name}
+                    if marker:
+                        params["Marker"] = marker
+                    response = self.iam.get_group(**params)
+                    for user in response.get("Users", []):
+                        yield {
+                            "GroupName": group_name,
+                            "GroupArn": group_arn,
+                            "UserName": user.get("UserName"),
+                            "UserArn": user.get("Arn")
+                        }
+                    if response.get("IsTruncated"):
+                        marker = response.get("Marker")
+                    else:
+                        break

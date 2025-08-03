@@ -1,0 +1,21 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "group_user_membership",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "GroupName": { "type": "string" },
+            "GroupArn": { "type": "string" },
+            "UserName": { "type": "string" },
+            "UserArn": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -30,6 +30,7 @@ from .streams import (
     IAMUserPolicyBindingsStream,
     IAMRolePolicyBindingsStream,
     IAMGroupPolicyBindingsStream,
+    IAMGroupUserMembershipStream,
 )
 
 
@@ -50,7 +51,7 @@ class SourceAwsIam(ConcurrentSourceAdapter):
             concurrency_level = _DEFAULT_CONCURRENCY
             
         logger.info(f"Using concurrent AWS IAM source with concurrency level {concurrency_level}")
-        
+    
         # Create the concurrent source
         concurrent_source = ConcurrentSource.create(
             concurrency_level, 
@@ -149,6 +150,7 @@ class SourceAwsIam(ConcurrentSourceAdapter):
             IAMUserPolicyBindingsStream(client),
             IAMRolePolicyBindingsStream(client),
             IAMGroupPolicyBindingsStream(client),
+            IAMGroupUserMembershipStream(client),
         ]
         
         # Wrap streams for concurrent execution
