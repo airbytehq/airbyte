@@ -80,6 +80,7 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     val cursor: Field,
+    val cursorCutoffTime: JsonNode? = null,
 ) :
     MsSqlServerJdbcPartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<DefaultJdbcStreamState> {
@@ -95,7 +96,32 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
 
-    val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+    val cursorUpperBoundQuerySpec: SelectQuerySpec
+        get() =
+            if (cursorCutoffTime != null) {
+                // When excluding today's data, apply cutoff constraint to upper bound query too
+                SelectQuerySpec(
+                    SelectColumnMaxValue(cursor),
+                    from,
+                    Where(Lesser(cursor, cursorCutoffTime))
+                )
+            } else {
+                SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+            }
+
+    override val nonResumableQuerySpec: SelectQuerySpec
+        get() {
+            // Add cutoff time constraint if present
+            return if (cursorCutoffTime != null) {
+                SelectQuerySpec(
+                    SelectColumns(stream.fields),
+                    from,
+                    Where(Lesser(cursor, cursorCutoffTime))
+                )
+            } else {
+                SelectQuerySpec(SelectColumns(stream.fields), from)
+            }
+        }
 }
 
 /** Base class for default implementations of [JdbcPartition] for partitions. */
@@ -174,10 +200,19 @@ sealed class MsSqlServerJdbcResumablePartition(
                         } + listOf(lastLeaf),
                     )
                 }
-            return Where(And(Or(lowerBoundDisj), Or(upperBoundDisj)))
+            val baseClause = And(Or(lowerBoundDisj), Or(upperBoundDisj))
+            // Add additional where clause if present
+            val additional = additionalWhereClause
+            return if (additional != null) {
+                Where(And(baseClause, additional))
+            } else {
+                Where(baseClause)
+            }
         }
 
     open val isLowerBoundIncluded: Boolean = false
+
+    open val additionalWhereClause: WhereClauseNode? = null
 }
 
 /** RFR for cursor based read. */
@@ -259,6 +294,7 @@ sealed class MsSqlServerJdbcCursorPartition(
     checkpointColumns: List<Field>,
     val cursor: Field,
     private val explicitCursorUpperBound: JsonNode?,
+    val cursorCutoffTime: JsonNode? = null,
 ) :
     MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, checkpointColumns),
     JdbcCursorPartition<DefaultJdbcStreamState> {
@@ -269,7 +305,27 @@ sealed class MsSqlServerJdbcCursorPartition(
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
 
-    val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+    val cursorUpperBoundQuerySpec: SelectQuerySpec
+        get() =
+            if (cursorCutoffTime != null && checkpointColumns.contains(cursor)) {
+                // When excluding today's data, apply cutoff constraint to upper bound query too
+                SelectQuerySpec(
+                    SelectColumnMaxValue(cursor),
+                    from,
+                    Where(Lesser(cursor, cursorCutoffTime))
+                )
+            } else {
+                SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+            }
+
+    override val additionalWhereClause: WhereClauseNode?
+        get() =
+            if (cursorCutoffTime != null && checkpointColumns.contains(cursor)) {
+                // Add an additional constraint for the cutoff time
+                Lesser(cursor, cursorCutoffTime)
+            } else {
+                null
+            }
 }
 
 /**
@@ -283,13 +339,15 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
     override val lowerBound: List<JsonNode>?,
     cursor: Field,
     cursorUpperBound: JsonNode?,
+    cursorCutoffTime: JsonNode? = null,
 ) :
     MsSqlServerJdbcCursorPartition(
         selectQueryGenerator,
         streamState,
         primaryKey,
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
+        cursorCutoffTime
     ) {
     // UpperBound is not used because the partition is not splittable.
     override val upperBound: List<JsonNode>? = null
@@ -322,25 +380,41 @@ class MsSqlServerJdbcCursorIncrementalPartition(
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
+    cursorCutoffTime: JsonNode? = null,
 ) :
     MsSqlServerJdbcCursorPartition(
         selectQueryGenerator,
         streamState,
         listOf(cursor),
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
+        cursorCutoffTime
     ) {
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)
 
     override val completeState: OpaqueStateValue
-        get() =
-            MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
+        get() {
+            // When we have a cutoff time that's less than the upper bound,
+            // use the cutoff as the checkpoint since that's where we actually stopped reading
+            val effectiveCheckpoint =
+                if (
+                    cursorCutoffTime != null &&
+                        !cursorCutoffTime.isNull &&
+                        !cursorUpperBound.isNull &&
+                        cursorCutoffTime.asText() < cursorUpperBound.asText()
+                ) {
+                    cursorCutoffTime
+                } else {
+                    cursorUpperBound
+                }
+            return MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                cursorCheckpoint = cursorUpperBound,
+                cursorCheckpoint = effectiveCheckpoint,
                 stream,
             )
+        }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(

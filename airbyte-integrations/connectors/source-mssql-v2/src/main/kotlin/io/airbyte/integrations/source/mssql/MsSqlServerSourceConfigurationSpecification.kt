@@ -189,6 +189,10 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     ) {
         additionalPropertiesMap[name] = value
     }
+
+    companion object {
+        const val DEFAULT_HEARTBEAT_INTERVAL_MS = 15000L
+    }
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
@@ -275,7 +279,16 @@ sealed interface IncrementalConfigurationSpecification
         "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
         "(e.g. created_at, updated_at).",
 )
-data object UserDefinedCursor : IncrementalConfigurationSpecification
+class UserDefinedCursor : IncrementalConfigurationSpecification {
+    @JsonProperty("exclude_todays_data")
+    @JsonSchemaTitle("Exclude Today's Data")
+    @JsonPropertyDescription(
+        "When enabled incremental syncs using a cursor of a temporal types (date or datetime) will include cursor values only up until last midnight"
+    )
+    @JsonSchemaDefault("false")
+    @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
+    var excludeTodaysData: Boolean? = false
+}
 
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
@@ -321,6 +334,15 @@ class Cdc : IncrementalConfigurationSpecification {
     @JsonSchemaDefault("8")
     @JsonSchemaInject(json = """{"order":4, "max": 24, "min": 4,"always_show": true}""")
     var initialLoadTimeoutHours: Int? = 8
+
+    @JsonProperty("poll_interval_ms")
+    @JsonSchemaTitle("Poll Interval in Milliseconds (Advanced)")
+    @JsonPropertyDescription(
+        "How often (in milliseconds) Debezium should poll for new data. Must be smaller than heartbeat interval (15000ms). Lower values provide more responsive data capture but may increase database load.",
+    )
+    @JsonSchemaDefault("500")
+    @JsonSchemaInject(json = """{"order":5, "max": 14999, "min": 100,"always_show": true}""")
+    var pollIntervalMs: Int? = 500
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.replication_method")
@@ -329,7 +351,7 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
 
     fun asCursorMethodConfiguration(): IncrementalConfigurationSpecification =
         when (method) {
-            "STANDARD" -> UserDefinedCursor
+            "STANDARD" -> UserDefinedCursor()
             "CDC" -> Cdc()
             else -> throw ConfigErrorException("invalid value $method")
         }

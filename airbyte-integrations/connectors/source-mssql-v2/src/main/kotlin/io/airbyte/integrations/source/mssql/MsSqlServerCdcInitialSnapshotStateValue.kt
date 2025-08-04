@@ -27,7 +27,8 @@ data class MsSqlServerCdcInitialSnapshotStateValue(
             Jsons.valueToTree(
                 MsSqlServerCdcInitialSnapshotStateValue(
                     streamName = stream.name,
-                    cursorField = listOf(),
+                    cursorField =
+                        stream.configuredCursor?.id.let { it?.let { listOf(it) } ?: emptyList() },
                     streamNamespace = stream.namespace
                 )
             )
@@ -38,13 +39,17 @@ data class MsSqlServerCdcInitialSnapshotStateValue(
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return Jsons.valueToTree(
-                MsSqlServerCdcInitialSnapshotStateValue(
-                    pkName = primaryKeyField.id,
-                    pkVal = primaryKeyCheckpoint.first().asText(),
-                    stateType = "primary_key",
-                )
-            )
+            return when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MsSqlServerCdcInitialSnapshotStateValue(
+                            pkName = primaryKeyField.id,
+                            pkVal = primaryKeyCheckpoint.first().asText(),
+                            stateType = "primary_key",
+                        )
+                    )
+            }
         }
     }
 }

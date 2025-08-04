@@ -10,17 +10,18 @@ application {
 
 airbyteBulkConnector {
     core = 'extract'
-    toolkits = ['extract-jdbc']
-    cdk = '0.443'
+    toolkits = ['extract-jdbc', 'extract-cdc']
+    cdk = 'local'
 }
 
 dependencies {
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.6.1.jre11'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.10.1.jre11'
+    implementation 'com.azure:azure-identity:1.15.3'
     implementation 'io.debezium:debezium-embedded:3.0.0.Final'
-    implementation 'io.debezium:debezium-connector-sqlserver:2.6.2.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:3.0.0.Final'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
-    api 'org.apache.commons:commons-lang3:3.17.0'
-    implementation 'org.apache.commons:commons-lang3:3.17.0'
+    api 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
 
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
