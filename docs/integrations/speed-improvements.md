@@ -21,6 +21,14 @@ The following platform versions are eligible to use these speed enhancements.
 
 Improved speed isn't widely usable with most connectors yet. To benefit from faster sync speeds, a connection needs to use a source connector _and_ destination connector for which Airbyte has turned on faster syncs. You also need to upgrade to the version of that connector that supports faster speed.
 
+## What connectors use improved speeds
+
 Airbyte may enable additional connector combinations as the team works toward general availability. If you're using the latest connector versions, you might notice increases in sync speed for certain connections. This is Airbyte expanding the roll out.
 
-## What connectors use improved speeds
+### Sources
+
+- MySQL
+
+### Destinations
+
+- S3
