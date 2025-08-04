@@ -116,11 +116,23 @@ jobs:
 
       # Alternative deployment method using a GitHub Action:
       - name: Deploy to Vercel
+        id: deploy-vercel
         uses: amondnet/vercel-action@v41.1.4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
           vercel-args: --archive=tgz
           # working-directory: ./docusaurus
+
+      - name: Create Custom Check
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "Vercel Docs Preview"
+          conclusion: success
+          details_url: ${{ steps.deploy-vercel.outputs.preview-url }}
+          output: |
+            title: Vercel Preview Deployed
+            summary: Click "Details" to view preview
