@@ -4,6 +4,7 @@
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
 DOCS_BASE_DIR="docs/integrations"
+METADATA_SERVICE_PATH='airbyte-ci/connectors/metadata_service/lib'
 
 # Usage: connector_docs_path "source-foo"
 # Returns a string "docs/integrations/sources/foo.md"
