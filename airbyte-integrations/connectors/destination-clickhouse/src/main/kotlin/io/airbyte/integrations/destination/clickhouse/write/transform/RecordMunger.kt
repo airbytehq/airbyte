@@ -23,17 +23,17 @@ class RecordMunger(
     private val catalogInfo: TableCatalog,
     private val coercer: ClickhouseCoercer,
 ) : DataMunger {
-    override fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
+    override fun transformForDest(msg: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
         val enriched =
-            record.asEnrichedDestinationRecordAirbyteValue(
+            msg.asEnrichedDestinationRecordAirbyteValue(
                 extractedAtAsTimestampWithTimezone = true
             )
 
         val munged = HashMap<String, AirbyteValue>()
         enriched.declaredFields.forEach { field ->
-            val mappedKey = catalogInfo.getMappedColumnName(record.stream, field.key)!!
-            val fieldType = record.schemaFields[field.key]!!
+            val mappedKey = catalogInfo.getMappedColumnName(msg.stream, field.key)!!
+            val fieldType = msg.schemaFields[field.key]!!
 
             var mappedValue =
                 field.value
