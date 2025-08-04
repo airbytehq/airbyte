@@ -9,7 +9,7 @@ import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
 
 # Upgrade to Helm chart V2 (Self-Managed Community)
 
-Airbyte has upgraded its Helm chart to a new version called "V2." Using Helm chart V2 is currently optional. At some future date the V2 Helm chart will become the standard, so we advise that you upgrade your existing deployment to use the new chart before the transition. If you're a new Airbyte customer, you can skip the upgrade altogether and start with the new chart.
+Airbyte has upgraded its Helm chart to a new version called "V2." Using Helm chart V2 is currently optional. At some future date the V2 Helm chart will become the standard, so we advise that you upgrade your existing deployment to use the new chart before the transition. If you're a new Airbyte user, you can skip the upgrade altogether and start with the new chart.
 
 :::important Enterprise customers
 Follow the [Self-Managed Enterprise guide](../enterprise-setup/chart-v2-enterprise) instead.
@@ -41,9 +41,9 @@ The following versions of Airbyte _can't_ use Helm chart V2:
 
 In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you complete the following steps.
 
-1. Ensure you have configured Airbyte to use an external database and external bucket storage. If you haven't, backup Airbyte's internal Postgres database to ensure you don't lose your data.
+1. Ensure you have configured Airbyte to use an external database and external bucket storage. If you haven't, backup Airbyte's internal Postgres database.
 
-2. Prepare to deploy a fresh installation of Airbyte.
+2. Prepare to deploy a fresh installation of Airbyte in a new namespace, but only if you're using an external database. If you're using Airbyte's internal Postgres database, you'll reuse your existing namespace.
 
 3. Create a new `values.yaml` file.
 
@@ -67,54 +67,59 @@ If you haven't configured an external database, you must backup Airbyte's intern
     kubectl get pods --all-namespaces | grep db
     ```
 
-2. Get your database credentials. They're probably in `airbyte-airbyte-secrets`, but you can check for them with the following command.
+2. Get the name of your database. It's probably `db-airbyte`, but you can check for it with the following command.
+
+    ```bash
+    kubectl exec -n airbyte -it airbyte-db-0 -- psql -U airbyte postgres
+    ```
+
+3. Get your database credentials. They're probably in `airbyte-airbyte-secrets`, but you can check for them with the following command.
 
     ```bash
     kubectl get secrets -n <namespace>
     ```
 
-    Now decode them.
+    Now print them to the terminal.
 
     ```
-    kubectl get secret airbyte-airbyte-secrets -n airbyte -o jsonpath='{.data.POSTGRES_USER}' | base64 --decode
-    kubectl get secret airbyte-airbyte-secrets -n airbyte -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 --decode
+    kubectl get secret airbyte-airbyte-secrets -n airbyte -o jsonpath='{.data}'
     ```
 
-    By default, the values are as follows.
+    You should see a result that's similar to this.
 
     ```bash
-    POSTGRES_USER: airbyte
-    POSTGRES_PASSWORD: airbyte
-    DB name: airbyte
+    {"DATABASE_PASSWORD":"<username>","DATABASE_USER":"<password>","MINIO_ACCESS_KEY_ID":"<key>","MINIO_SECRET_ACCESS_KEY":"<key>","WORKLOAD_API_BEARER_TOKEN":"<key>"}%   
     ```
 
-3. Run `pg_dump` inside the Postgres pod and copy the dump locally.
+    Note your `DATABASE_PASSWORD` and `DATABASE_USER`.
+
+4. Run `pg_dump` inside the Postgres pod and copy the dump locally.
 
     ```bash
-    # Variables
-    NAMESPACE=<your-airbyte-namespace>
-    POSTGRES_POD=$(kubectl get pod -n $NAMESPACE -l app=airbyte-db -o jsonpath='{.items[0].metadata.name}')
-
-    # Exec pg_dump inside the pod
-    kubectl exec -n $NAMESPACE $POSTGRES_POD -- \
-      bash -c "pg_dump -U airbyte airbyte > /tmp/airbyte_backup.sql"
-
-    # Copy backup to local machine
-    kubectl cp $NAMESPACE/$POSTGRES_POD:/tmp/airbyte_backup.sql ./airbyte_backup.sql
-
-    # (Optional) Compress backup
-    gzip airbyte_backup.sql
+    kubectl exec -n <namespace> -it <database_pod> -- bash -c "pg_dump -U airbyte db-airbyte > /tmp/airbyte_backup.sql"
     ```
+
+    Copy your backup out of the pod and to the destination of your choice. In this example, you copy it to your local machine.
+
+    ```bash
+    kubectl cp airbyte/airbyte-db-0:/tmp/airbyte_backup.sql ./airbyte_backup.sql
+    ```
+
+It's important you safeguard this SQL database. Although problems after upgrades are rare, if they do happen, your backup is critical to restoring Airbyte.
 
 </TabItem>
 </Tabs>
 
-### Prepare a fresh deployment of Airbyte
+### Prepare a new namespace for Airbyte
 
 <Tabs groupId="external-db">
 <TabItem value='db-yes' label='External database' default>
 
 When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different Airbyte users have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
+
+```bash
+kubectl create namespace airbyte-v2
+```
 
 </TabItem>
 <TabItem value='db-no' label='No external database' default>
@@ -382,21 +387,15 @@ workloadLauncher:
 <Tabs groupId="external-db">
 <TabItem value='db-yes' label='External database' default>
 
-1. Before you deploy, validate your values.yaml file.
+Deploy Airbyte. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
 
-    ```bash
-    helm template airbyte airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
-    ```
-
-2. Deploy Airbyte. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
-
-    ```bash
-    helm install airbyte airbyte-v2/airbyte \
-      --namespace airbyte-v2 \       # Target Kubernetes namespace
-      --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
-    ```
+```bash
+helm install airbyte airbyte-v2/airbyte \
+  --namespace airbyte-v2 \       # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.0.3 \              # Helm chart version to use
+  --set global.image.tag=1.7.0   # Airbyte version to use
+```
 
 </TabItem>
 <TabItem value='db-no' label='No external database' default>
@@ -404,20 +403,14 @@ workloadLauncher:
 :::danger
 Do not proceed if you have not backed up Airbyte's internal Postgres database.
 :::
-
-1. Before you deploy, validate your values.yaml file.
-
-    ```bash
-    helm template airbyte airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
-    ```
   
-2. Uninstall Airbyte, but preserve its namespace. This example assumes you installed Airbyte in the `airbyte` namespace.
+1. Uninstall Airbyte. **Do not delete the Airbyte namespace**. This example assumes you installed Airbyte in the `airbyte` namespace.
 
     ```bash
     helm uninstall airbyte -n airbyte
     ```
 
-3. Reinstall Airbyte into the same namespace as before. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+2. Reinstall Airbyte into the same namespace as before. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
 
     ```bash
     helm install airbyte airbyte-v2/airbyte \
@@ -427,7 +420,31 @@ Do not proceed if you have not backed up Airbyte's internal Postgres database.
     --set global.image.tag=1.7.0   # Airbyte version to use
     ```
 
-Airbyte continues in this namespace as before, now running on Helm Chart V2. If there is an issue with your deployment, you can restore your database, which you backed up earlier.
+Airbyte continues in this namespace as before, now running on Helm Chart V2.
+
+#### Restoring your database
+
+You do not need to restore your database except in exceptional circumstances. Only restore your database if there is an issue with your deployment that isn't related to your configurations. The restoration process is essentially the reverse of the backup process you went through above.
+
+These examples assume your namespace is still `airbyte` and your database pod name is still `airbyte-db-0`.
+
+1. Copy the SQL backup file into your poid's /tmp directory.
+
+    ```bash
+    kubectl cp ./airbyte_backup.sql airbyte/airbyte-db-0:/tmp/airbyte_backup.sql
+    ```
+
+2. Since your original database probably already contains data, drop and recreate the schema. This erases all data in the database.
+
+    ```bash
+    kubectl exec -n airbyte -it airbyte-db-0 -- bash -c "psql -U airbyte -d db-airbyte -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'"
+    ```
+
+3. Restore the database.
+
+    ```bash
+    kubectl exec -n airbyte -it airbyte-db-0 -- bash -c "psql -U airbyte -d db-airbyte < /tmp/airbyte_backup.sql"
+    ```
 
 </TabItem>
 </Tabs>

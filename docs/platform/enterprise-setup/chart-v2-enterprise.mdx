@@ -61,9 +61,13 @@ In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you co
 
 Airbyte's solutions team guides Enterprise customers to configure your own external database and external storage, as explained in the [implementation guide](implementation-guide). Verify that you've set these up, but you almost certainly have.
 
-### Prepare for a fresh deployment of Airbyte
+### Prepare a new namespace for Airbyte
 
-When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different customers have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
+When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different Airbyte users have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
+
+```bash
+kubectl create namespace airbyte-v2
+```
 
 ### Add and index the repo
 
