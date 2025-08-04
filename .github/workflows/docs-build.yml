@@ -126,13 +126,11 @@ jobs:
           vercel-args: --archive=tgz
           # working-directory: ./docusaurus
 
-      - name: Create Custom Check
+      # If successful, post a check status with the Preview URL as its "details" link
+      - name: Post Custom Check with Preview URL
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: "Vercel Docs Preview"
+          name: "Vercel Preview Deployed" # << Name of the check
           conclusion: success
           details_url: ${{ steps.deploy-vercel.outputs.preview-url }}
-          output: |
-            title: Vercel Preview Deployed
-            summary: Click "Details" to view preview
+          token: ${{ secrets.GITHUB_TOKEN }}
