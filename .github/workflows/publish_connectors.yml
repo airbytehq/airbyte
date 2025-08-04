@@ -72,7 +72,7 @@ jobs:
           version: 1.8.5
 
       - name: Install metadata_service
-        run: ./poe-tasks/setup-metadata-service.sh
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
 
       # If you modify this step, remember to also modify validate-connector-metadata-manual.
       - name: Validate connector metadata [On merge to master]
