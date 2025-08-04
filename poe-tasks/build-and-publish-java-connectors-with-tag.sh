@@ -36,77 +36,6 @@ set -euo pipefail
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
 
-# Function to check if a connector is in the whitelist
-is_in_whitelist() {
-  local connector="$1"
-  case "$connector" in
-    destination-azure-blob-storage|\
-    destination-bigquery|\
-    destination-csv|\
-    destination-clickhouse|\
-    destination-clickhouse-strict-encrypt|\
-    destination-databricks|\
-    destination-dev-null|\
-    destination-dynamodb|\
-    destination-elasticsearch-strict-encrypt|\
-    destination-elasticsearch|\
-    destination-gcs|\
-    destination-kafka|\
-    destination-local-json|\
-    destination-mongodb-strict-encrypt|\
-    destination-mongodb|\
-    destination-mssql|\
-    destination-mysql-strict-encrypt|\
-    destination-mysql|\
-    destination-oracle-strict-encrypt|\
-    destination-oracle|\
-    destination-postgres-strict-encrypt|\
-    destination-postgres|\
-    destination-pubsub|\
-    destination-redis|\
-    destination-redshift|\
-    destination-s3-data-lake|\
-    destination-s3|\
-    destination-singlestore|\
-    destination-snowflake|\
-    destination-starburst-galaxy|\
-    destination-teradata|\
-    destination-yellowbrick|\
-    source-e2e-test|\
-    source-postgres|\
-    source-mysql|\
-    source-mssql|\
-    source-mongodb|\
-    source-db2-enterprise|\
-    source-sap-hana|\
-    source-netsuite|\
-    source-oracle-enterprise|\
-    source-bigquery|\
-    source-clickhouse|\
-    source-clickhouse-strict-encrypt|\
-    source-cockroachdb|\
-    source-db2|\
-    source-dynamodb|\
-    source-e2e-test-cloud|\
-    source-elasticsearch|\
-    source-kafka|\
-    source-oracle|\
-    source-oracle-strict-encrypt|\
-    source-scaffold-java-jdbc|\
-    source-sftp|\
-    source-snowflake|\
-    source-teradata|\
-    source-tidb|\
-    source-redshift|\
-    source-singlestore)
-      return 0
-      ;;
-    *)
-      return 1
-      ;;
-  esac
-}
-
 # ------ Defaults & arg parsing -------
 publish_mode="pre-release"
 do_publish=false
@@ -209,12 +138,6 @@ generate_dev_tag() {
 
 # ---------- main loop ----------
 while read -r connector; do
-  # only publish if connector is in whitelist
-  if ! is_in_whitelist "$connector"; then
-    echo "ℹ️  Skipping '$connector'; not in rollout whitelist"
-    continue
-  fi
-
   meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
   if [[ ! -f "$meta" ]]; then
     echo "Error: metadata.yaml not found for ${connector}" >&2
