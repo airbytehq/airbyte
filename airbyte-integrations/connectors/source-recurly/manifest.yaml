@@ -52,6 +52,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P{{ config.get('accounts_step_days', 30) }}D"
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -119,6 +121,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
@@ -194,6 +197,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
@@ -336,6 +340,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: account_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/accounts"
       incremental_sync:
@@ -1263,18 +1268,50 @@ spec:
           ISO8601 timestamp from which the replication from Recurly API will
           start from.
         order: 1
-        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
-          - "2021-12-01T00:00:00"
+          - "2021-12-01T00:00:00Z"
       end_time:
         type: string
         description: >-
           ISO8601 timestamp to which the replication from Recurly API will stop.
           Records after that date won't be imported.
         order: 2
-        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
-          - "2021-12-01T00:00:00"
+          - "2021-12-01T00:00:00Z"
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 20
+        default: 10
+        order: 3
+        examples:
+        - 1
+        - 2
+        - 3
+        description: The number of worker threads to use for the sync.
+      accounts_step_days:
+        type: integer
+        title: Days in length for each API call to get data
+        minimum: 1
+        maximum: 365
+        order: 4
+        default: 30
+        examples:
+        - 7
+        - 30
+        - 90
+        description: Days in length for each API call to get data from the accounts stream. Smaller values will result in more API calls but better concurrency.
+      is_sandbox:
+        type: boolean
+        description: >-
+          Set to true for sandbox accounts (400 requests/min, all types). Defaults to false for production accounts (1,000 GET requests/min).
+        default: false
+        order: 5
+        title: Use Sandbox Environment
+    
     additionalProperties: true
 
 metadata:
@@ -1357,6 +1394,38 @@ metadata:
       primaryKeysAreUnique: true
   assist: {}
 
+# Rate Limits: https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits
+#
+# In order to provide a fast response time to all our customers, we may rate limit excessive requests. By default, new Recurly sites have the following API rate limits:
+#
+# Sandbox sites: 400 requests/min (all request types count), or 2,000 requests over a 5-minute sliding window.
+# Production sites: 1,000 GET requests/min, or 5,000 GET requests over a 5-minute sliding window. POST, PUT, DELETE requests are not rate-limited in production.
+#
+# The rate limit is calculated over a 5-minute sliding window. A production site could make 4,000 GET requests in one minute without hitting the limit if prior minutes have fewer than 1,000 requests.
+#
+# If an API request exceeds the rate limit, the API returns a 429 Too Many Requests HTTP status. The rate limit is indicated by X-RateLimit-Limit, remaining requests by X-RateLimit-Remaining, and reset time by X-RateLimit-Reset (UNIX epoch seconds).
+#
+# We set default_concurrency to 10, assuming ~250ms per request (4 requests/sec per stream), resulting in 10 streams × 4 requests/sec = 2,400 requests/min. This exceeds the sandbox limit (400 requests/min) and production limit (1,000 GET requests/min),
+# but the api_budget throttles requests to stay within the 400 (sandbox) or 1,000 (production) requests per 5-minute window, with backoff handling for 429 errors.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 20
+
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_reset_header: "X-RateLimit-Reset"
+  ratelimit_remaining_header: "X-RateLimit-Remaining"
+  status_codes_for_ratelimit_hit: [429]
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ 400 if config.get('is_sandbox', false) else 1000 }}"
+          interval: "PT5M"  # 5-minute sliding window
+      matchers:
+        - method: "GET"
+          url_base: "{{ config['subdomain'] }}"
+          url_path_pattern: ".*"  # Match all paths
 schemas:
   accounts:
     type: object
@@ -1407,6 +1476,35 @@ schemas:
             description: Second line of the street address
             maxLength: 256
             title: Street 2
+      acquisition:
+        type: object
+        description: Acquisition details of the account
+        properties:
+          acquired_at:
+            type: string
+            description: The date and time when the account was acquired
+            format: date-time
+          campaign:
+            type: string
+            description: The campaign associated with the acquisition
+            maxLength: 256
+          channel:
+            type: string
+            description: The channel through which the account was acquired
+          cost:
+            type: object
+            description: Cost details associated with the acquisition
+            properties:
+              amount:
+                type: number
+                description: The amount of the cost
+              currency:
+                type: string
+                description: The currency of the cost amount
+                maxLength: 3
+          subchannel:
+            type: string
+            description: The subchannel associated with the acquisition
       bill_to:
         type:
           - "null"
@@ -1717,6 +1815,11 @@ schemas:
           - string
         description: Email address of the account holder
         maxLength: 256
+      entity_use_code:
+        type:
+          - "null"
+          - string
+        description: Entity use code for tax exemption
       exemption_certificate:
         type:
           - "null"
@@ -1830,6 +1933,12 @@ schemas:
           - string
         description: ID of the parent account
         maxLength: 13
+      parent_account_code:
+        type:
+          - "null"
+          - string
+        description: Code of the parent account
+        maxLength: 50
       preferred_locale:
         type:
           - "null"
@@ -1933,6 +2042,11 @@ schemas:
           - "null"
           - boolean
         description: Flag indicating if the account is tax exempt
+      transaction_type:
+        type:
+          - "null"
+          - string
+        description: Type of transaction associated with the account
       updated_at:
         type:
           - "null"

@@ -68,7 +68,7 @@ abstract class DestinationConfiguration : Configuration {
     open val heartbeatIntervalSeconds: Long = DEFAULT_HEARTBEAT_INTERVAL_SECONDS
 
     /** Memory queue settings */
-    open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
+    open val maxMessageQueueMemoryUsageRatio: Double = 0.4 // 0 => No limit, 1.0 => 100% of JVM heap
     // 1 (for the preserved serialized string)
     // + 6.5 (approximate ratio of jackson tree to string)
     // + 0.5 cushion

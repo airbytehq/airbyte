@@ -3,9 +3,12 @@ package io.airbyte.cdk.read
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.discover.MetaFieldDecorator
-import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Clock
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
@@ -31,10 +34,19 @@ class RootReader(
     val stateManager: StateManager,
     val resourceAcquisitionHeartbeat: Duration,
     val timeout: Duration,
-    val outputConsumer: OutputConsumer,
+    val outputConsumer: StandardOutputConsumer,
     val metaFieldDecorator: MetaFieldDecorator,
+    val resourceAcquirer: ResourceAcquirer,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
+    val dataChannelFormat: DataChannelFormat,
+    val dataChannelMedium: DataChannelMedium,
+    val bufferByteSizeThresholdForFlush: Int,
+    private val clock: Clock,
 ) {
+    init {
+        ensureDataChannelMediumFormat()
+    }
+
     private val log = KotlinLogging.logger {}
 
     /** [Mutex] ensuring that resource acquisition always happens serially. */
@@ -47,6 +59,17 @@ class RootReader(
         resourceReleaseFlow.update { it + 1 }
     }
 
+    // We currently only support STDIO with JSONL format.
+    private fun ensureDataChannelMediumFormat() {
+        if (dataChannelMedium == DataChannelMedium.STDIO) {
+            if (dataChannelFormat != DataChannelFormat.JSONL) {
+                throw IllegalArgumentException(
+                    "Data channel format must be JSONL when medium is STDIO."
+                )
+            }
+        }
+    }
+
     /** Wait until an availability notification arrives or a timeout is reached. */
     suspend fun waitForResourceAvailability() {
         withTimeoutOrNull(resourceAcquisitionHeartbeat.toKotlinDuration()) {
@@ -54,10 +77,20 @@ class RootReader(
         }
     }
 
-    val streamStatusManager = StreamStatusManager(stateManager.feeds, outputConsumer::accept)
-
+    val streamStatusManager =
+        StreamStatusManager(
+            stateManager.feeds,
+            {
+                outputConsumer.accept(it)
+                if (dataChannelMedium == DataChannelMedium.SOCKET)
+                    PartitionReader.pendingStates.add(it)
+            }
+        )
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Collection<Job>) -> Unit = {}) {
+        log.info {
+            "Read configured with data channel medium: $dataChannelMedium. data channel format: $dataChannelFormat"
+        }
         readFeeds<Global>(listener)
         readFeeds<Stream>(listener)
     }
@@ -74,7 +107,18 @@ class RootReader(
                 feeds.map { feed: T ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
+                    launch(coroutineName + handler) {
+                        FeedReader(
+                                this@RootReader,
+                                feed,
+                                resourceAcquirer,
+                                dataChannelFormat,
+                                dataChannelMedium,
+                                bufferByteSizeThresholdForFlush,
+                                clock
+                            )
+                            .read()
+                    }
                 }
             // Call listener hook.
             listener(feedJobs)

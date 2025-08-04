@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-looker
   githubIssueLabel: source-looker
   icon: looker.svg
-  license: MIT
+  license: ELv2
   name: Looker
   remoteRegistries:
     pypi:

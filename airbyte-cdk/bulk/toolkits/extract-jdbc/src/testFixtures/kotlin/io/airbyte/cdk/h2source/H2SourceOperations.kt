@@ -35,6 +35,7 @@ import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.jdbc.UrlFieldType
 import io.airbyte.cdk.jdbc.XmlFieldType
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
@@ -102,6 +103,15 @@ class H2SourceOperations :
         recordData.putNull(CommonMetaField.CDC_DELETED_AT.id)
     }
 
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        // no-op
+    }
+
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
             JDBCType.BIT,
@@ -157,7 +167,7 @@ class H2SourceOperations :
 
     fun SelectNode.sql(): String =
         when (this) {
-            is SelectColumns -> "SELECT " + columns.map { it.id }.joinToString(", ")
+            is SelectColumns -> "SELECT " + columns.joinToString(", ") { it.id }
             is SelectColumnMaxValue -> "SELECT MAX(${column.id})"
         }
 
@@ -181,8 +191,8 @@ class H2SourceOperations :
 
     fun WhereClauseNode.sql(): String =
         when (this) {
-            is And -> conj.map { it.sql() }.joinToString(") AND (", "(", ")")
-            is Or -> disj.map { it.sql() }.joinToString(") OR (", "(", ")")
+            is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
+            is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
             is Equal -> "${column.id} = ?"
             is GreaterOrEqual -> "${column.id} >= ?"
             is Greater -> "${column.id} > ?"
@@ -193,7 +203,7 @@ class H2SourceOperations :
     fun OrderByNode.sql(): String =
         when (this) {
             NoOrderBy -> ""
-            is OrderBy -> "ORDER BY " + columns.map { it.id }.joinToString(", ")
+            is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.id }
         }
 
     fun LimitNode.sql(): String =
