@@ -124,7 +124,6 @@ class BinaryRowInsertBufferTest {
 
     @Test
     fun `flush inserts the internal buffer clickhouse`() = runTest {
-        buffer.numRecords = 1
         every {
             clickhouseClient.insert(any<String>(), any<InputStream>(), ClickHouseFormat.RowBinary)
         } returns CompletableFuture.completedFuture(mockk<InsertResponse>())

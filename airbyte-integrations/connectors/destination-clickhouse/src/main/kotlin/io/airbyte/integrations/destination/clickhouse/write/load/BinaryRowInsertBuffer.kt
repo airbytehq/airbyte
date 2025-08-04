@@ -48,21 +48,14 @@ class BinaryRowInsertBuffer(
     @VisibleForTesting internal var inner = InputOutputBuffer()
     @VisibleForTesting
     internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
-    @VisibleForTesting internal var numRecords: Int = 0
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         recordFields.forEach { writeAirbyteValue(it.key, it.value) }
 
         writer.commitRow()
-        numRecords++
     }
 
     suspend fun flush() {
-        if (numRecords == 0) {
-            log.info { "Skipping insert into ${tableName.name} as there are no records to insert." }
-            return
-        }
-
         log.info { "Beginning insert into ${tableName.name}" }
 
         val insertResult =
@@ -75,12 +68,6 @@ class BinaryRowInsertBuffer(
                 .await()
 
         log.info { "Finished insert of ${insertResult.writtenRows} rows into ${tableName.name}" }
-    }
-
-    fun reset() {
-        inner = InputOutputBuffer()
-        writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
-        numRecords = 0
     }
 
     private fun writeAirbyteValue(columnName: String, abValue: AirbyteValue) {

@@ -27,7 +27,6 @@ class ClickhouseAggregate(
 
     override suspend fun flush() {
         buffer.flush()
-        buffer.reset()
     }
 
     override fun getStateHistogram(): StateHistogram = stateHistogram
