@@ -14,6 +14,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.time.Duration
 import org.apache.commons.lang3.RandomStringUtils
 
@@ -30,11 +32,14 @@ class MsSqlServerSourceConfiguration(
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
-    //    override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
+    override val checkPrivileges: Boolean,
+    override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val incrementalReplicationConfiguration: IncrementalConfiguration,
-) : JdbcSourceConfiguration {
-    override val global = false
-    override val maxSnapshotReadDuration: Duration? = null
+    val databaseName: String,
+) : JdbcSourceConfiguration, CdcSourceConfiguration {
+    override val global = incrementalReplicationConfiguration is CdcIncrementalConfiguration
+    override val maxSnapshotReadDuration: Duration? =
+        (incrementalReplicationConfiguration as? CdcIncrementalConfiguration)?.initialLoadTimeout
 
     /** Required to inject [MsSqlServerSourceConfiguration] directly. */
     @Factory
@@ -52,19 +57,21 @@ class MsSqlServerSourceConfiguration(
 
 sealed interface IncrementalConfiguration
 
-data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+data class UserDefinedCursorIncrementalConfiguration(val excludeTodaysData: Boolean = false) :
+    IncrementalConfiguration
 
-// data class CdcIncrementalConfiguration(
-//    val initialWaitingSeconds: Duration,
-//    val queueSize: Int,
-//    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
-//    val initialLoadTimeout: Duration
-// ) : IncrementalConfiguration
-//
-// enum class InvalidCdcCursorPositionBehavior {
-//    FAIL_SYNC,
-//    RESET_SYNC,
-// }
+data class CdcIncrementalConfiguration(
+    val initialWaitingSeconds: Duration,
+    val queueSize: Int,
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
+    val initialLoadTimeout: Duration,
+    val pollIntervalMs: Int
+) : IncrementalConfiguration
+
+enum class InvalidCdcCursorPositionBehavior {
+    FAIL_SYNC,
+    RESET_SYNC,
+}
 
 @Singleton
 class MsSqlServerSourceConfigurationFactory
@@ -81,34 +88,43 @@ constructor(val featureFlags: Set<FeatureFlag>) :
         val incrementalSpec = pojo.getIncrementalValue()
         val incrementalReplicationConfiguration =
             when (incrementalSpec) {
-                UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
-                else ->
-                    throw ConfigErrorException(
-                        "Incremental configuration is not supported for MSSQL source"
+                is UserDefinedCursor -> {
+                    UserDefinedCursorIncrementalConfiguration(
+                        excludeTodaysData = incrementalSpec.excludeTodaysData ?: false
                     )
-            //                is Cdc -> {
-            //                    val initialWaitingSeconds: Duration =
-            //
-            // Duration.ofSeconds(incrementalSpec.initialWaitingSeconds!!.toLong())
-            //                    val initialLoadTimeout: Duration =
-            //
-            // Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())
-            //                    val queueSize = incrementalSpec.queueSize!!
-            //                    val invalidCdcCursorPositionBehavior:
-            // InvalidCdcCursorPositionBehavior =
-            //                        if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail
-            // sync") {
-            //                            InvalidCdcCursorPositionBehavior.FAIL_SYNC
-            //                        } else {
-            //                            InvalidCdcCursorPositionBehavior.RESET_SYNC
-            //                        }
-            //                    CdcIncrementalConfiguration(
-            //                        initialWaitingSeconds,
-            //                        queueSize,
-            //                        invalidCdcCursorPositionBehavior,
-            //                        initialLoadTimeout,
-            //                    )
-            //                }
+                }
+                is Cdc -> {
+                    val initialWaitingSeconds: Duration =
+                        Duration.ofSeconds(incrementalSpec.initialWaitingSeconds?.toLong() ?: 300L)
+                    val initialLoadTimeout: Duration =
+                        Duration.ofHours(incrementalSpec.initialLoadTimeoutHours?.toLong() ?: 8L)
+                    val queueSize = incrementalSpec.queueSize ?: 10000
+                    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
+                        if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail sync") {
+                            InvalidCdcCursorPositionBehavior.FAIL_SYNC
+                        } else {
+                            InvalidCdcCursorPositionBehavior.RESET_SYNC
+                        }
+
+                    // Validate poll interval vs heartbeat interval
+                    val pollIntervalMs = incrementalSpec.pollIntervalMs ?: 500
+                    val heartbeatIntervalMs =
+                        MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
+                    if (pollIntervalMs >= heartbeatIntervalMs) {
+                        throw ConfigErrorException(
+                            "Poll interval ($pollIntervalMs ms) must be smaller than heartbeat interval ($heartbeatIntervalMs ms). " +
+                                "Please reduce the poll interval to a value less than $heartbeatIntervalMs ms."
+                        )
+                    }
+
+                    CdcIncrementalConfiguration(
+                        initialWaitingSeconds,
+                        queueSize,
+                        invalidCdcCursorPositionBehavior,
+                        initialLoadTimeout,
+                        pollIntervalMs,
+                    )
+                }
             }
 
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
@@ -158,24 +174,58 @@ constructor(val featureFlags: Set<FeatureFlag>) :
                 }
             }
 
+        // Parse JDBC URL parameters
+        val jdbcProperties = mutableMapOf<String, String>()
+        jdbcProperties["user"] = pojo.username
+        jdbcProperties["password"] = pojo.password
+
+        // Parse URL parameters from jdbcUrlParams
+        val pattern = "^([^=]+)=(.*)$".toRegex()
+        for (pair in (pojo.jdbcUrlParams ?: "").trim().split("&".toRegex())) {
+            if (pair.isBlank()) {
+                continue
+            }
+            val result: MatchResult? = pattern.matchEntire(pair)
+            if (result == null) {
+                log.warn { "ignoring invalid JDBC URL param '$pair'" }
+            } else {
+                val key: String = result.groupValues[1].trim()
+                val urlEncodedValue: String = result.groupValues[2].trim()
+                jdbcProperties[key] = URLDecoder.decode(urlEncodedValue, StandardCharsets.UTF_8)
+            }
+        }
+        jdbcProperties.putAll(jdbcEncryption)
+
+        // Validate and process configuration values
+        val checkpointTargetInterval: Duration =
+            Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 300L)
+        if (!checkpointTargetInterval.isPositive) {
+            throw ConfigErrorException("Checkpoint Target Interval should be positive")
+        }
+
+        val maxConcurrency: Int = pojo.concurrency ?: 1
+        if (maxConcurrency <= 0) {
+            throw ConfigErrorException("Concurrency setting should be positive")
+        }
+
         return MsSqlServerSourceConfiguration(
             realHost = pojo.host,
             realPort = pojo.port,
             sshTunnel = sshTunnel,
             sshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
-            checkpointTargetInterval = Duration.ofHours(1),
+            checkpointTargetInterval = checkpointTargetInterval,
             jdbcUrlFmt = "jdbc:sqlserver://%s:%d;databaseName=${pojo.database}",
-            namespaces = pojo.schemas?.toSet() ?: setOf(),
-            jdbcProperties =
-                mapOf(
-                        "user" to pojo.username,
-                        "password" to pojo.password,
-                    )
-                    .plus(jdbcEncryption),
-            maxConcurrency = 10,
-            //            debeziumHeartbeatInterval = Duration.ofSeconds(15),
+            namespaces = pojo.schemas?.toSet() ?: setOf("dbo"),
+            jdbcProperties = jdbcProperties,
+            maxConcurrency = maxConcurrency,
+            checkPrivileges = pojo.checkPrivileges ?: true,
+            debeziumHeartbeatInterval =
+                Duration.ofMillis(
+                    MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
+                ),
             resourceAcquisitionHeartbeat = Duration.ofSeconds(15),
-            incrementalReplicationConfiguration = incrementalReplicationConfiguration
+            incrementalReplicationConfiguration = incrementalReplicationConfiguration,
+            databaseName = pojo.database
         )
     }
 }

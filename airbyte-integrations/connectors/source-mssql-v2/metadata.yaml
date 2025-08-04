@@ -9,9 +9,9 @@ data:
   connectorType: source
   definitionId: 62c4a0fd-aa73-443b-bd40-ad106ee375ee
   dockerImageTag: 0.0.1
-  dockerRepository: airbyte/source-msssql
-  documentationUrl: https://docs.airbyte.com/integrations/sources/msssql
-  githubIssueLabel: source-msssql-v2
+  dockerRepository: airbyte/source-mssql
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
+  githubIssueLabel: source-mssql-v2
   icon: icon.svg
   license: ELv2
   maxSecondsBetweenMessages: 7200

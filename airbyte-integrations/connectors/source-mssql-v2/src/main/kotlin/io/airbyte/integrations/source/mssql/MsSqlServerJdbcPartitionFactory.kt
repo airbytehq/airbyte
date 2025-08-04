@@ -91,34 +91,46 @@ class MsSqlServerJdbcPartitionFactory(
             }
 
             val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-            // Disable CDC for now - always use regular RFR partition
-            return MsSqlServerJdbcRfrSnapshotPartition(
+            return if (sharedState.configuration.global) {
+                MsSqlServerJdbcCdcRfrSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = null,
+                    upperBound = listOf(upperBound),
+                )
+            } else {
+                MsSqlServerJdbcRfrSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    pkChosenFromCatalog,
+                    lowerBound = null,
+                    upperBound = listOf(upperBound),
+                )
+            }
+        }
+
+        if (sharedState.configuration.global) {
+            return MsSqlServerJdbcCdcSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
                 pkChosenFromCatalog,
                 lowerBound = null,
-                upperBound = listOf(upperBound)
             )
         }
 
-        // Disable CDC for now
-        // if (sharedState.configuration.global) {
-        //     return MsSqlServerJdbcCdcSnapshotPartition(
-        //         selectQueryGenerator,
-        //         streamState,
-        //         pkChosenFromCatalog,
-        //         lowerBound = null,
-        //     )
-        // }
-
         val cursorChosenFromCatalog: Field =
             stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+
+        // Calculate cutoff time for cursor if exclude today's data is enabled
+        val cursorCutoffTime = getCursorCutoffTime(cursorChosenFromCatalog)
 
         if (pkChosenFromCatalog.isEmpty()) {
             return MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                cursorChosenFromCatalog
+                cursorChosenFromCatalog,
+                cursorCutoffTime = cursorCutoffTime,
             )
         }
         return MsSqlServerJdbcSnapshotWithCursorPartition(
@@ -128,6 +140,7 @@ class MsSqlServerJdbcPartitionFactory(
             lowerBound = null,
             cursorChosenFromCatalog,
             cursorUpperBound = null,
+            cursorCutoffTime = cursorCutoffTime,
         )
     }
 
@@ -150,11 +163,6 @@ class MsSqlServerJdbcPartitionFactory(
      * ```
      */
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MsSqlServerJdbcPartition? {
-        val retVal = createInternal(streamFeedBootstrap)
-        return retVal
-    }
-
-    fun createInternal(streamFeedBootstrap: StreamFeedBootstrap): MsSqlServerJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue =
@@ -214,30 +222,11 @@ class MsSqlServerJdbcPartitionFactory(
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
 
-                if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                    val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                    if (sv.pkVal == upperBound.asText()) {
-                        return null
-                    }
-                    // Disable CDC for now - use regular RFR partition
-                    return MsSqlServerJdbcRfrSnapshotPartition(
-                        selectQueryGenerator,
-                        streamState,
-                        pkChosenFromCatalog,
-                        lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                        upperBound = listOf(upperBound)
-                    )
-                }
-                // Disable CDC for now - use snapshot with cursor partition
-                val cursorChosenFromCatalog: Field =
-                    stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
-                return MsSqlServerJdbcSnapshotWithCursorPartition(
+                return MsSqlServerJdbcCdcSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
-                    lowerBound = listOf(pkLowerBound),
-                    cursorChosenFromCatalog,
-                    cursorUpperBound = null,
+                    listOf(pkLowerBound),
                 )
             }
         } else {
@@ -252,7 +241,6 @@ class MsSqlServerJdbcPartitionFactory(
                 val pkLowerBound: JsonNode =
                     stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue)
 
-                // Disable CDC for now - use regular RFR partition
                 return MsSqlServerJdbcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
@@ -262,7 +250,7 @@ class MsSqlServerJdbcPartitionFactory(
                 )
             }
 
-            if (sv.stateType != "cursor_based") {
+            if (sv.stateType != StateType.CURSOR_BASED.stateType) {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.
                 val pkField = pkChosenFromCatalog.first()
@@ -279,6 +267,7 @@ class MsSqlServerJdbcPartitionFactory(
                     lowerBound = listOf(pkLowerBound),
                     cursorChosenFromCatalog,
                     cursorUpperBound = null,
+                    cursorCutoffTime = getCursorCutoffTime(cursorChosenFromCatalog),
                 )
             }
             // resume back to cursor based increment.
@@ -298,6 +287,7 @@ class MsSqlServerJdbcPartitionFactory(
                 cursorLowerBound = cursorCheckpoint,
                 isLowerBoundIncluded = false,
                 cursorUpperBound = streamState.cursorUpperBound,
+                cursorCutoffTime = getCursorCutoffTime(cursor),
             )
         }
     }
@@ -352,6 +342,23 @@ class MsSqlServerJdbcPartitionFactory(
         }
     }
 
+    private fun getCursorCutoffTime(cursorField: Field): JsonNode? {
+        val incrementalConfig = config.incrementalReplicationConfiguration
+        return if (
+            incrementalConfig is UserDefinedCursorIncrementalConfiguration &&
+                incrementalConfig.excludeTodaysData &&
+                MsSqlServerCursorCutoffTimeProvider.isTemporalType(
+                    cursorField,
+                )
+        ) {
+            val cutoffTime = MsSqlServerCursorCutoffTimeProvider.getCutoffTime(cursorField)
+            log.info { "Using cursor cutoff time: $cutoffTime for field '${cursorField.id}'" }
+            cutoffTime
+        } else {
+            null
+        }
+    }
+
     override fun split(
         unsplitPartition: MsSqlServerJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
@@ -361,7 +368,7 @@ class MsSqlServerJdbcPartitionFactory(
     }
 
     companion object {
-        const val DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS"
+        const val DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
         val outputDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_PATTERN)
 
         val TIMESTAMP_WITHOUT_FRACT_SECOND_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
@@ -369,7 +376,7 @@ class MsSqlServerJdbcPartitionFactory(
             DateTimeFormatterBuilder()
                 .appendPattern(TIMESTAMP_WITHOUT_FRACT_SECOND_PATTERN)
                 .optionalStart()
-                .appendFraction(ChronoField.NANO_OF_SECOND, 1, 7, true)
+                .appendFraction(ChronoField.NANO_OF_SECOND, 1, 6, true)
                 .optionalEnd()
                 .toFormatter()
     }

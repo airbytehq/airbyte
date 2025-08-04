@@ -139,6 +139,107 @@ class MsSqlSourceMetadataQuerier(
     ): TableName? =
         memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
 
+    val memoizedClusteredIndexKeys: Map<TableName, List<List<String>>> by lazy {
+        val results = mutableListOf<AllClusteredIndexKeysRow>()
+        val schemas: List<String> = streamNamespaces()
+        val sql: String = CLUSTERED_INDEX_QUERY_FMTSTR.format(schemas.joinToString { "'$it'" })
+        log.info {
+            "Querying SQL Server system tables for all clustered index keys for catalog discovery."
+        }
+        try {
+            base.conn.createStatement().use { stmt: Statement ->
+                stmt.executeQuery(sql).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        results.add(
+                            AllClusteredIndexKeysRow(
+                                rs.getString("table_schema"),
+                                rs.getString("table_name"),
+                                rs.getString("index_name"),
+                                rs.getInt("key_ordinal").takeUnless { rs.wasNull() },
+                                rs.getString("column_name").takeUnless { rs.wasNull() },
+                            ),
+                        )
+                    }
+                }
+            }
+            log.info {
+                "Discovered all clustered index keys in ${schemas.size} SQL Server schema(s)."
+            }
+            return@lazy results
+                .groupBy {
+                    findTableName(
+                        StreamIdentifier.from(
+                            StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema),
+                        ),
+                    )
+                }
+                .mapNotNull { (table, rowsByTable) ->
+                    if (table == null) return@mapNotNull null
+                    val clusteredIndexRows: List<AllClusteredIndexKeysRow> =
+                        rowsByTable
+                            .groupBy { it.indexName }
+                            .filterValues { rowsByIndex: List<AllClusteredIndexKeysRow> ->
+                                rowsByIndex.all { it.keyOrdinal != null && it.columnName != null }
+                            }
+                            .values
+                            .firstOrNull()
+                            ?: return@mapNotNull null
+                    val clusteredIndexColumnNames: List<List<String>> =
+                        clusteredIndexRows
+                            .sortedBy { it.keyOrdinal }
+                            .mapNotNull { it.columnName }
+                            .map { listOf(it) }
+                    table to clusteredIndexColumnNames
+                }
+                .toMap()
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "SQL Server clustered index discovery query failed: ${e.message}",
+                e
+            )
+        }
+    }
+
+    /**
+     * The logic flow:
+     * 1. Check for clustered index
+     * 2. If single-column clustered index exists → Use it
+     * 3. If composite clustered index exists → Use primary key
+     * 4. If no clustered index exists → Use primary key
+     * 5. If no primary key exists → Return empty list
+     */
+    override fun primaryKey(
+        streamID: StreamIdentifier,
+    ): List<List<String>> {
+        val table: TableName = findTableName(streamID) ?: return listOf()
+
+        // First try to get clustered index keys
+        val clusteredIndexKeys = memoizedClusteredIndexKeys[table]
+
+        // Use clustered index if it exists and is a single column
+        // For composite clustered indexes, fall back to primary key
+        return when {
+            clusteredIndexKeys != null && clusteredIndexKeys.size == 1 -> {
+                log.info {
+                    "Using single-column clustered index for table ${table.schema}.${table.name}"
+                }
+                clusteredIndexKeys
+            }
+            clusteredIndexKeys != null && clusteredIndexKeys.size > 1 -> {
+                log.info {
+                    "Clustered index is composite for table ${table.schema}.${table.name}. Falling back to primary key."
+                }
+                memoizedPrimaryKeys[table] ?: listOf()
+            }
+            else -> {
+                log.info {
+                    "No clustered index found for table ${table.schema}.${table.name}. Using primary key."
+                }
+                memoizedPrimaryKeys[table] ?: listOf()
+            }
+        }
+    }
+
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()
         val schemas: List<String> = streamNamespaces()
@@ -194,12 +295,13 @@ class MsSqlSourceMetadataQuerier(
         }
     }
 
-    override fun primaryKey(
-        streamID: StreamIdentifier,
-    ): List<List<String>> {
-        val table: TableName = findTableName(streamID) ?: return listOf()
-        return memoizedPrimaryKeys[table] ?: listOf()
-    }
+    private data class AllClusteredIndexKeysRow(
+        val tableSchema: String,
+        val tableName: String,
+        val indexName: String,
+        val keyOrdinal: Int?,
+        val columnName: String?,
+    )
 
     private data class AllPrimaryKeysRow(
         val tableSchema: String,
@@ -211,9 +313,35 @@ class MsSqlSourceMetadataQuerier(
 
     companion object {
 
+        const val CLUSTERED_INDEX_QUERY_FMTSTR =
+            """
+        SELECT 
+            s.name as table_schema,
+            t.name as table_name,
+            i.name as index_name,
+            ic.key_ordinal,
+            c.name as column_name
+        FROM 
+            sys.tables t
+        INNER JOIN 
+            sys.schemas s ON t.schema_id = s.schema_id
+        INNER JOIN 
+            sys.indexes i ON t.object_id = i.object_id
+        INNER JOIN 
+            sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+        INNER JOIN 
+            sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+        WHERE 
+            s.name IN (%s)
+            AND i.type = 1  -- Clustered index
+            AND ic.is_included_column = 0  -- Only key columns, not included columns
+        ORDER BY 
+            s.name, t.name, ic.key_ordinal;
+            """
+
         const val PK_QUERY_FMTSTR =
             """
-   SELECT 
+        SELECT 
             kcu.TABLE_SCHEMA as table_schema,
             kcu.TABLE_NAME as table_name, 
             kcu.COLUMN_NAME as column_name, 
