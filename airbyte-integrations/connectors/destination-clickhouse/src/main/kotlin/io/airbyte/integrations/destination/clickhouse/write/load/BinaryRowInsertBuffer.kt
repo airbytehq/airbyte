@@ -48,8 +48,8 @@ class BinaryRowInsertBuffer(
     @VisibleForTesting internal var inner = InputOutputBuffer()
     @VisibleForTesting
     internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
-    var numRecords: Int = 0
-        private set
+    @VisibleForTesting
+    internal var numRecords: Int = 0
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         recordFields.forEach { writeAirbyteValue(it.key, it.value) }
