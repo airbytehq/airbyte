@@ -26,9 +26,7 @@ class RecordMunger(
     override fun transformForDest(msg: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
         val enriched =
-            msg.asEnrichedDestinationRecordAirbyteValue(
-                extractedAtAsTimestampWithTimezone = true
-            )
+            msg.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
 
         val munged = HashMap<String, AirbyteValue>()
         enriched.declaredFields.forEach { field ->
