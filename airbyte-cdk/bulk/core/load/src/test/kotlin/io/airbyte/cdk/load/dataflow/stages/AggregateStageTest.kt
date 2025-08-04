@@ -1,8 +1,8 @@
 package io.airbyte.cdk.load.dataflow.stages
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.dataflow.Aggregate
-import io.airbyte.cdk.load.dataflow.AggregateStore
+import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
+import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.state.Reserved

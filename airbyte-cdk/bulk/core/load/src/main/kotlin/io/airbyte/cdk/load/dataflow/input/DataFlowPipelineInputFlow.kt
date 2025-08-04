@@ -12,12 +12,11 @@ import kotlinx.coroutines.flow.filterIsInstance
 
 @Factory
 class DataFlowPipelineInputFlow {
-
     @Singleton
     fun ioFlow(
-        reservingFlow: Flow<DestinationMessage>,
+        inputFlow: Flow<DestinationMessage>,
     ): Flow<DataFlowStageIO> {
-        return reservingFlow
+        return inputFlow
             .filterIsInstance(DestinationRecord::class)
             .map {
                 DataFlowStageIO(

@@ -7,4 +7,5 @@ data class RecordDTO(
     val fields: Map<String, AirbyteValue>,
     val stateId: StateId,
     val sizeBytes: Long,
+    val emittedAtMs: Long,
 )
