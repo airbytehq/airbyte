@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.dataflow.aggregate
 
 import com.google.common.annotations.VisibleForTesting
