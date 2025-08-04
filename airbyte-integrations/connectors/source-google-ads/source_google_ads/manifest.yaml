@@ -111,7 +111,8 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client"
@@ -142,7 +143,8 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client"
@@ -179,7 +181,8 @@ definitions:
     retriever:
       $ref: "#/definitions/incremental_stream_base/retriever"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client_non_manager"
@@ -334,7 +337,8 @@ definitions:
           type: CustomRecordFilter
           class_name: "source_google_ads.components.CustomerClientFilter"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/accessible_accounts"
@@ -373,7 +377,8 @@ definitions:
           type: CustomRecordFilter
           class_name: "source_google_ads.components.CustomerClientFilter"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/accessible_accounts"
@@ -809,7 +814,8 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client"
