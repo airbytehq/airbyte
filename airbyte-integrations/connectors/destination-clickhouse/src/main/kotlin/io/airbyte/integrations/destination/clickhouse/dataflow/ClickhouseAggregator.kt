@@ -24,12 +24,11 @@ class ClickhouseAggregate(
     private val stateHistogram: StateHistogram = StateHistogram()
 
     private var recordCountWindow =
-        SizedWindow(150)
+        SizedWindow(ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_RECORDS)
     // the sum of serialized json bytes we'''ve accumulated
     private var bytesWindow = SizedWindow(ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_BYTES)
 
     override fun accept(fields: RecordDTO): Aggregate.Status {
-        log.info { "Accumulate" }
         buffer.accumulate(fields.fields)
 
         recordCountWindow.increment(1)
@@ -43,7 +42,6 @@ class ClickhouseAggregate(
     }
 
     override suspend fun flush() {
-        log.info { "Flush" }
         buffer.flush()
         buffer.reset()
     }
