@@ -11,7 +11,7 @@ import jakarta.inject.Singleton
 
 @Named("flush")
 @Singleton
-class FlushStage: DataFlowStage {
+class FlushStage : DataFlowStage {
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val agg = input.aggregate!!
         agg.flush()

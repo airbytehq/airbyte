@@ -20,9 +20,7 @@ class DestinationInputFlow(
 ) : Flow<DestinationMessage> {
     val log = KotlinLogging.logger {}
 
-    override suspend fun collect(
-        collector: FlowCollector<DestinationMessage>
-    ) {
+    override suspend fun collect(collector: FlowCollector<DestinationMessage>) {
         var msgCount = 0L
         var estBytes = 0L
         inputStream
@@ -38,7 +36,7 @@ class DestinationInputFlow(
                 if (++msgCount % 100_000 == 0L) {
                     log.info { "Processed $msgCount messages (${estBytes/1024/1024}Mb)" }
                 }
-        }
+            }
 
         log.info { "Finished processing input" }
     }

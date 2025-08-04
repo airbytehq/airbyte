@@ -6,12 +6,7 @@ package io.airbyte.integrations.destination.clickhouse.cdk
 
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.lifecycle.DestinationLifecycle
-import io.airbyte.cdk.load.write.WriteOperation
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Primary
-import io.micronaut.context.annotation.Replaces
-import io.micronaut.context.annotation.Requires
-import jakarta.inject.Singleton
 
 // @Primary
 // @Singleton

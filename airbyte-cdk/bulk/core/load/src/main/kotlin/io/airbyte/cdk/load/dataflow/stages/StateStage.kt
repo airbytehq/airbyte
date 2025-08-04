@@ -15,7 +15,7 @@ import jakarta.inject.Singleton
 @Singleton
 class StateStage(
     val stateStore: StateWatermarkStore,
-): DataFlowStage {
+) : DataFlowStage {
     private val log = KotlinLogging.logger {}
 
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {

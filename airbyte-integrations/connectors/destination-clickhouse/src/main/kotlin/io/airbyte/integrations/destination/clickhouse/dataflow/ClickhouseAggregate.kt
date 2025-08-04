@@ -34,13 +34,16 @@ class ClickhouseAggregate(
 }
 
 @Factory
-class ClickhouseAggregateFactory(private val clickhouseClient: Client,): AggregateFactory {
+class ClickhouseAggregateFactory(
+    private val clickhouseClient: Client,
+) : AggregateFactory {
     override fun create(key: StoreKey): Aggregate {
         val tableName = TableName(name = key.name, namespace = key.namespace ?: "default")
-        val binaryRowInsertBuffer = BinaryRowInsertBuffer(
-            tableName,
-            clickhouseClient,
-        )
+        val binaryRowInsertBuffer =
+            BinaryRowInsertBuffer(
+                tableName,
+                clickhouseClient,
+            )
 
         return ClickhouseAggregate(binaryRowInsertBuffer)
     }

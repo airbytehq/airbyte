@@ -25,13 +25,12 @@ class DestinationLifecycle(
         // Initialize the destination to make sure that it is ready for the data ingestion
         initializeDestination()
 
-        // Create prepare individual streams for the data ingestion. E.g create tables and propagate the schema updates
+        // Create prepare individual streams for the data ingestion. E.g create tables and propagate
+        // the schema updates
         initializeIndividualStream()
 
         // Move data
-        runBlocking {
-            pipeline.run()
-        }
+        runBlocking { pipeline.run() }
     }
 
     private fun initializeDestination() {
@@ -45,14 +44,20 @@ class DestinationLifecycle(
 
     private fun initializeIndividualStream() {
         runBlocking {
-            destinationCatalog.streams.map {
-                async {
-                    log.info { "Starting stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}" }
-                    val streamLoader = destinationInitializer.createStreamLoader(it)
-                    streamLoader.start()
-                    log.info { "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started" }
+            destinationCatalog.streams
+                .map {
+                    async {
+                        log.info {
+                            "Starting stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
+                        }
+                        val streamLoader = destinationInitializer.createStreamLoader(it)
+                        streamLoader.start()
+                        log.info {
+                            "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
+                        }
+                    }
                 }
-            }.awaitAll()
+                .awaitAll()
         }
     }
 }

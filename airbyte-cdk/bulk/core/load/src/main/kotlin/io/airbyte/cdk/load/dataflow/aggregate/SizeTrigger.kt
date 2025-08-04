@@ -17,4 +17,3 @@ class SizeTrigger(private val size: Long) {
 
     fun isComplete(): Boolean = accumulated >= size
 }
-

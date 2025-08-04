@@ -22,7 +22,7 @@ import jakarta.inject.Singleton
 class RecordMunger(
     private val catalogInfo: TableCatalog,
     private val coercer: ClickhouseCoercer,
-): DataMunger {
+) : DataMunger {
     override fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
         val enriched =

@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
-import jakarta.inject.Named
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
