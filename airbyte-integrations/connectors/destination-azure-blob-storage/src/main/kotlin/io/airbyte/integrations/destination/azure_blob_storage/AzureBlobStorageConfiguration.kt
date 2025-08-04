@@ -64,7 +64,7 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
             // which is (a) confusing, and (b) makes the file transfer tests more annoying.
             pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/",
             fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
-            resolveNamesMethod = { Transformations.toAzureSafePath(it) },
+            resolveNamesMethod = { Transformations.toAzureBlobSafePath(it) },
         )
 
     override val generationIdMetadataKey = GENERATION_ID_METADATA_KEY_OVERRIDE

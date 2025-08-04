@@ -11,7 +11,7 @@ class Transformations {
     companion object {
         private const val S3_SAFE_CHARACTERS = "\\p{Alnum}/!_.*')("
         private const val S3_SPECIAL_CHARACTERS = "&$@=;:+,?-"
-        private val TRAILING_DOTS = "\\.+$".toRegex()
+        private val TRAILING_DOTS = Regex("\\.+$")
 
         private val S3_CHARACTER_PATTERN =
             "[^${S3_SAFE_CHARACTERS}${Pattern.quote(S3_SPECIAL_CHARACTERS)}]"
@@ -26,25 +26,11 @@ class Transformations {
                 .replace(S3_CHARACTER_PATTERN.toRegex(), "_")
         }
 
-        fun toAzureSafePath(input: String): String {
+        fun toAzureBlobSafePath(input: String): String {
             val safe = toS3SafeCharacters(input)
-
-            val parts = safe.split('/').toMutableList()
-            val lastIndex = parts.lastIndex
-
-            for (i in parts.indices) {
-                if (parts[i].isEmpty()) continue
-
-                // Azure doesn't allow trailing dots
-                // (see
-                // https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
-                val isLast = (i == lastIndex)
-                if (!isLast) {
-                    parts[i] = parts[i].replace(TRAILING_DOTS, "_")
-                }
+            return safe.split('/').joinToString("/") { seg ->
+                if (seg.isEmpty()) seg else seg.replace(TRAILING_DOTS, "_")
             }
-
-            return parts.joinToString("/")
         }
 
         fun toAlphanumericAndUnderscore(s: String): String {
