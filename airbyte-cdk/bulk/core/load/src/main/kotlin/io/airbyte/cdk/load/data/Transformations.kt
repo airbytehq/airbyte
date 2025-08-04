@@ -27,6 +27,9 @@ class Transformations {
         }
 
         fun toAzureBlobSafePath(input: String): String {
+            // Azure doesn't allow trailing dots
+            // (see
+            // https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
             val safe = toS3SafeCharacters(input)
             return safe.split('/').joinToString("/") { seg ->
                 if (seg.isEmpty()) seg else seg.replace(TRAILING_DOTS, "_")
