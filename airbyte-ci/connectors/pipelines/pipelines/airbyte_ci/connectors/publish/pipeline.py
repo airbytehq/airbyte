@@ -518,13 +518,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         async with context:
             results = []
 
-            metadata_validation_results = await MetadataValidation(context).run()
-            results.append(metadata_validation_results)
-
-            # Exit early if the metadata file is invalid.
-            if metadata_validation_results.status is not StepStatus.SUCCESS:
-                return create_connector_report(results, context)
-
             # Check if the connector image is already published to the registry.
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
