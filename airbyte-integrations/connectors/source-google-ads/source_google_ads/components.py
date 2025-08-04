@@ -25,6 +25,7 @@ from airbyte_cdk.sources.declarative.incremental import (
 )
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
@@ -276,6 +277,42 @@ class GoogleAdsHttpRequester(HttpRequester):
     """
 
     schema_loader: InlineSchemaLoader = None
+    
+    def get_url_base(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return "https://googleads.googleapis.com/v19/"
+
+    def get_path(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        """
+        Construct the path for Google Ads API endpoint.
+        Handles both HybridCustomerPartitionRouter and SubstreamPartitionRouter scenarios.
+        """
+        # Try to get customer_id from different possible locations in stream_slice
+        customer_id = None
+        
+        # First try direct access (for HybridCustomerPartitionRouter)
+        if hasattr(stream_slice, 'partition') and stream_slice.partition:
+            customer_id = stream_slice.partition.get("customer_id")
+        
+        # Fallback to direct attribute access
+        if not customer_id:
+            customer_id = stream_slice.customer_id
+        
+        if not customer_id:
+            raise ValueError(f"customer_id not found in stream_slice. Available keys: {list(stream_slice.__dict__.keys()) if hasattr(stream_slice, '__dict__') else 'N/A'}")
+        
+        return f"customers/{customer_id}/googleAds:searchStream"
 
     def get_request_body_json(
         self,
@@ -654,3 +691,117 @@ class GoogleAdsCriterionParentStateMigration(StateMigration):
             return stream_state
 
         return {"parent_state": stream_state}
+
+
+@dataclass  
+class HybridCustomerPartitionRouter(PartitionRouter):
+    """
+    Hybrid partition router that:
+    - Uses customer_id directly from config when provided
+    - Falls back to customer_client stream partitioning when no customer_ids are provided
+    """
+    
+    config: Config = None
+    parameters: Mapping[str, Any] = None
+    parent_stream_configs: List[Mapping[str, Any]] = None
+    
+    def __post_init__(self, parameters: Mapping[str, Any] = None) -> None:
+        if parameters is None:
+            parameters = {}
+        # Initialize parent class properties
+        if hasattr(self, 'config') and hasattr(self, 'parameters'):
+            pass  # Already initialized by dataclass
+        # Store parent stream configs for fallback
+        self.parent_stream_configs = parameters.get("parent_stream_configs", [])
+        
+        # If parent_stream_configs weren't passed in parameters, check if they're a direct attribute
+        if not self.parent_stream_configs and hasattr(self, 'parent_stream_configs') and self.parent_stream_configs is None:
+            # Try to get from the manifest directly
+            self.parent_stream_configs = []
+            
+    
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        """
+        Generate stream slices directly from customer_ids in config when available,
+        otherwise fall back to existing customer_client stream partitioning behavior
+        """     
+        # customer_id is converted to customer_ids array
+        customer_ids = self.config.get("customer_ids", [])
+        if customer_ids:
+            # Direct approach: use customer_ids from config
+            # Assume non-manager accounts when customer_ids are provided
+            login_customer_id = self.config.get("login_customer_id")
+            if login_customer_id:
+                for customer_id in customer_ids:
+                    slice = StreamSlice(
+                        partition={
+                            "customer_id": customer_id,
+                            "parent_slice": {
+                                "customer_id": login_customer_id or customer_id,
+                                "parent_slice": {}
+                            }
+                        },
+                        cursor_slice={},
+                        extra_fields={"manager": False}
+                    )
+                    yield slice
+            else:
+                raise ValueError(f"login_customer_id not found in config.")
+        else:
+            # Fallback approach: use SubstreamPartitionRouter behavior
+            fallback_router = SubstreamPartitionRouter(
+                parent_stream_configs=self.parent_stream_configs,
+                config=self.config,
+                parameters=self.parameters
+            )
+            for slice in fallback_router.stream_slices():
+                yield slice
+
+    
+    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+        """Required abstract method - return None for stateless partition router"""
+        return None
+    
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        """Required abstract method - no-op for stateless partition router"""
+        pass
+    
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        """Return empty headers - headers are handled by the HTTP requester"""
+        return {}
+    
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        """Return empty params - params are handled by the HTTP requester"""
+        return {}
+    
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        """Return empty body data - body data is handled by the HTTP requester"""
+        return {}
+    
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        """Return empty body JSON - body JSON is handled by the HTTP requester"""
+        return {}
