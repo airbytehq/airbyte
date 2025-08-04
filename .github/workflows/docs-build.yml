@@ -126,11 +126,21 @@ jobs:
           vercel-args: --archive=tgz
           # working-directory: ./docusaurus
 
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2.0.6
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       # If successful, post a check status with the Preview URL as its "details" link
-      - name: Post Custom Check with Preview URL
+      - name: Post Custom Check with Preview URL (${{ steps.deploy-vercel.outputs.preview-url }})
         uses: LouisBrunner/checks-action@v2.0.0
         with:
           name: "Vercel Preview Deployed" # << Name of the check
+          status: completed
           conclusion: success
           details_url: ${{ steps.deploy-vercel.outputs.preview-url }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.get-app-token.outputs.token }}
