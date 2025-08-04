@@ -106,11 +106,12 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v41.1.4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
-          working-directory: ./docusaurus
+      # Alternative deployment method using a GitHub Action:
+      # - name: Deploy to Vercel
+      #   uses: amondnet/vercel-action@v41.1.4
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
+      #     vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+      #     vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
+      #     working-directory: ./docusaurus
