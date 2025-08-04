@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Tagging Connections
+# Tagging connections
 
 As time goes on, the number of connections in your workspace tends to increase. Use tags to organize connections based on any set of criteria you like, then filter your connections based on the tags you want to see.
 

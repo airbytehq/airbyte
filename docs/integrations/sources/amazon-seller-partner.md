@@ -249,9 +249,10 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.0      | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
-| 4.7.1      | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
-| 4.7.0      | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |
+| 4.8.0 | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
+| 4.7.2 | 2025-08-02 | [63032](https://github.com/airbytehq/airbyte/pull/63032) | Update dependencies |
+| 4.7.1 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.7.0 | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |
 | 4.7.0-rc.1 | 2025-06-30 | [62119](https://github.com/airbytehq/airbyte/pull/62119) | Migrate to manifest-only |
 | 4.6.4      | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
 | 4.6.3      | 2025-06-03 | [61351](https://github.com/airbytehq/airbyte/pull/61351) | Update dependencies |
