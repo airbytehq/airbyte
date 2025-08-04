@@ -1,0 +1,25 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "identity_center_group_to_role",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "GroupId": { "type": "string" },
+            "GroupName": { "type": ["string", "null"] },
+            "Description": { "type": ["string", "null"] },
+            "RoleArn": { "type": "string" },
+            "RoleName": { "type": "string" },
+            "AccountId": { "type": "string" },
+            "PermissionSetArn": { "type": "string" },
+            "PermissionSetName": { "type": ["string", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

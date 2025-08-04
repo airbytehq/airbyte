@@ -1,38 +1,47 @@
+# Standard library imports
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
+# AWS SDK imports
 import boto3
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
-from airbyte_cdk.sources import AbstractSource
+
+# Airbyte CDK imports
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
+from airbyte_cdk.logger import AirbyteLogFormatter
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
-from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import Level
-from airbyte_cdk.entrypoint import logger as entrypoint_logger
 
+# Local imports
+# Import streams (exclude deprecated SSOAdmin streams)
 from .streams import (
-    IAMGroupsStream,
-    IAMPoliciesStream,
     IAMSAMLProvidersStream,
-    IAMRolesStream,
-    IAMRoleInlinePoliciesStream,
-    IAMUserInlinePoliciesStream,
-    IAMUsersStream,
     IAMGroupInlinePoliciesStream,
-    IAMInlinePoliciesStream,
-    IAMUserPolicyBindingsStream,
-    IAMRolePolicyBindingsStream,
     IAMGroupPolicyBindingsStream,
     IAMGroupUserMembershipStream,
+    IAMGroupsStream,
+    IAMInlinePoliciesStream,
+    IAMPoliciesStream,
+    IAMRoleInlinePoliciesStream,
+    IAMRolePolicyBindingsStream,
+    IAMRolesStream,
+    IAMUserInlinePoliciesStream,
+    IAMUserPolicyBindingsStream,
+    IAMUsersStream,
+    IdentityCenterGroupMembershipStream,
+    IdentityCenterGroupStream,
+    IdentityCenterInstanceStream,
+    IdentityCenterUserStream,
+    IdentityCenterGroupToRoleStream,
+    IdentityCenterUserToRoleStream
 )
-
 
 _DEFAULT_CONCURRENCY = 5  # AWS IAM has reasonable rate limits
 _MAX_CONCURRENCY = 10
@@ -53,9 +62,11 @@ class SourceAwsIam(ConcurrentSourceAdapter):
         logger.info(f"Using concurrent AWS IAM source with concurrency level {concurrency_level}")
     
         # Create the concurrent source
+        # Ensure at least one thread for slice processing
+        slice_threads = max(concurrency_level // 2, 1)
         concurrent_source = ConcurrentSource.create(
-            concurrency_level, 
-            concurrency_level // 2,  # Thread pool size for slice processing 
+            concurrency_level,
+            slice_threads,  # Thread pool size for slice processing 
             logger, 
             DebugSliceLogger(),  # Use DebugSliceLogger for slice logging
             self.message_repository
@@ -63,7 +74,7 @@ class SourceAwsIam(ConcurrentSourceAdapter):
         
         super().__init__(concurrent_source)
         self.catalog = catalog
-        self.config = config 
+        self.config = config
         self.state = state
         
     def _get_iam_client(self, config: Mapping[str, Any]):
@@ -71,11 +82,11 @@ class SourceAwsIam(ConcurrentSourceAdapter):
         external_id = config.get("external_id")
         
         if role_arn:
-            return self._get_iam_client_with_assume_role(role_arn, external_id)
-            
+            return self._get_client_with_assume_role(aws_service="iam", role_arn=role_arn, external_id=external_id)
+
         return boto3.client("iam")
 
-    def _get_iam_client_with_assume_role(self, role_arn: str, external_id: str = None):
+    def _get_client_with_assume_role(self, aws_service: str, role_arn: str, external_id: str = None, region: Optional[str] = None):
         """
         Creates an IAM client using AWS Security Token Service (STS) with assumed role credentials. This method handles
         the authentication process by assuming an IAM role, optionally using an external ID for enhanced security.
@@ -123,7 +134,28 @@ class SourceAwsIam(ConcurrentSourceAdapter):
         session._credentials = session_credentials
         autorefresh_session = boto3.Session(botocore_session=session)
 
-        return autorefresh_session.client("iam")
+        return autorefresh_session.client(aws_service, region)
+
+    def _get_sso_admin_client(self, config: Mapping[str, Any]):
+        role_arn = config.get("role_arn")
+        external_id = config.get("external_id")
+        region = config.get("aws_region",'us-east-1')
+
+        if role_arn:
+            return self._get_client_with_assume_role(aws_service="sso-admin", role_arn=role_arn, external_id=external_id, region=region)
+
+        return boto3.client("sso-admin")
+    
+    def _get_identitystore_client(self, config: Mapping[str, Any]):
+        role_arn = config.get("role_arn")
+        external_id = config.get("external_id")
+        region = config.get("aws_region", 'us-east-1')
+
+        if role_arn:
+            return self._get_client_with_assume_role(aws_service="identitystore", role_arn=role_arn, external_id=external_id, region=region)
+
+        return boto3.client("identitystore")
+    
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
@@ -134,32 +166,37 @@ class SourceAwsIam(ConcurrentSourceAdapter):
             return False, str(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        client = self._get_iam_client(config)
+        iam_client = self._get_iam_client(config)
+        sso_admin_client = self._get_sso_admin_client(config)
+        identitystore_client = self._get_identitystore_client(config)
         
         # Create base streams
         base_streams = [
-            IAMPoliciesStream(client),
-            IAMRolesStream(client),
-            IAMUserInlinePoliciesStream(client),
-            IAMGroupsStream(client),
-            IAMSAMLProvidersStream(client),
-            IAMUsersStream(client),
-            IAMRoleInlinePoliciesStream(client),
-            IAMGroupInlinePoliciesStream(client),
-            IAMInlinePoliciesStream(client),
-            IAMUserPolicyBindingsStream(client),
-            IAMRolePolicyBindingsStream(client),
-            IAMGroupPolicyBindingsStream(client),
-            IAMGroupUserMembershipStream(client),
+            IAMPoliciesStream(iam_client),
+            IAMRolesStream(iam_client),
+            IAMUserInlinePoliciesStream(iam_client),
+            IAMGroupsStream(iam_client),
+            IAMSAMLProvidersStream(iam_client),
+            IAMUsersStream(iam_client),
+            IAMRoleInlinePoliciesStream(iam_client),
+            IAMGroupInlinePoliciesStream(iam_client),
+            IAMInlinePoliciesStream(iam_client),
+            IAMUserPolicyBindingsStream(iam_client),
+            IAMRolePolicyBindingsStream(iam_client),
+            IAMGroupPolicyBindingsStream(iam_client),
+            IAMGroupUserMembershipStream(iam_client),
         ]
-        
-        # Wrap streams for concurrent execution
-        concurrent_streams = []
-        for stream in base_streams:
-            concurrent_stream = self._wrap_stream_for_concurrency(stream)
-            concurrent_streams.append(concurrent_stream)
-            
-        return concurrent_streams
+        # Add Identity Center streams
+        base_streams += [
+            IdentityCenterInstanceStream(identitystore_client=identitystore_client, sso_admin_client=sso_admin_client),
+            IdentityCenterUserStream(identitystore_client=identitystore_client, sso_admin_client=sso_admin_client),
+            IdentityCenterGroupStream(identitystore_client=identitystore_client, sso_admin_client=sso_admin_client),
+            IdentityCenterGroupMembershipStream(identitystore_client=identitystore_client, sso_admin_client=sso_admin_client),
+            IdentityCenterUserToRoleStream(identitystore_client=identitystore_client, sso_admin_client=sso_admin_client),
+            IdentityCenterGroupToRoleStream(identitystore_client=identitystore_client, sso_admin_client=sso_admin_client),
+        ]
+        # Wrap all streams for concurrent execution
+        return [self._wrap_stream_for_concurrency(stream) for stream in base_streams]
     
     def _wrap_stream_for_concurrency(self, stream: Stream) -> Stream:
         """

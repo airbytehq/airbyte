@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "group_user_membership",
+        "name": "iam_group_user_membership",
         "json_schema": {
           "type": "object",
           "properties": {

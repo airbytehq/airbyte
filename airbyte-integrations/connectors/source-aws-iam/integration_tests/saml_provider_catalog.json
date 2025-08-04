@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "saml_provider",
+        "name": "iam_saml_provider",
         "json_schema": {
           "type": "object",
           "properties": {

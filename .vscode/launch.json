@@ -350,6 +350,119 @@
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
-        }
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Users Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_user_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Groups Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_group_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Group Memberships Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_group_membership_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Instances Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_instance_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        // ...existing code...
+        {
+            "name": "AWS IAM: Read Identity Center Instances Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_instance_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center User to Role Mapping",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_user_to_role_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Group to Role Mapping",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_group_to_role_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
     ]
 }

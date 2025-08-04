@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "role",
+        "name": "iam_role",
         "json_schema": {
           "type": "object",
           "properties": {
