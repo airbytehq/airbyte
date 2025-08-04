@@ -20,7 +20,7 @@ jobs:
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v2
         # We can't get app creds from forks, so we skip this step if the PR is from a fork.
-        if: github.event.pull_request.head.repo.fork == false
+        if: github.event.pull_request.head.repo.fork != true
         id: get-app-token
         with:
           owner: "airbytehq"
