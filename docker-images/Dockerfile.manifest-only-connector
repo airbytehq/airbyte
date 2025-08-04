@@ -10,7 +10,10 @@ ARG BASE_IMAGE=docker.io/airbyte/source-declarative-manifest:latest
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_SNAKE_NAME
 ARG CONNECTOR_NAME
-ARG CONNECTOR_VERSION
+ARG CONNECTOR_VERSION=""
+
+LABEL io.airbyte.name="airbyte/${CONNECTOR_NAME}" \
+      io.airbyte.version="${CONNECTOR_VERSION}"
 
 WORKDIR /airbyte/integration_code
 
