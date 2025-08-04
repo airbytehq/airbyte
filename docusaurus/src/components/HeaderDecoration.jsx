@@ -237,6 +237,7 @@ const ConnectorMetadataCallout = ({
   usageRate,
   lastUpdated,
   definitionId,
+  hasEnhancedSpeed,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
@@ -330,6 +331,11 @@ const ConnectorMetadataCallout = ({
           <code>{definitionId}</code>
         </MetadataStat>
       )}
+      {hasEnhancedSpeed === "TRUE" && (
+        <MetadataStat label="Enhanced Speed">
+          <a href="/integrations/speed-improvements">Yes</a>
+        </MetadataStat>
+      )}
     </dl>
   </Callout>
 );
@@ -365,11 +371,13 @@ export const HeaderDecoration = ({
   usageRate,
   lastUpdated,
   definitionId,
+  hasEnhancedSpeed: hasEnhancedSpeedString,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
   const isLatestCDK = boolStringToBool(isLatestCDKString);
+  const hasEnhancedSpeed = hasEnhancedSpeedString;
   const isArchived = supportLevel?.toUpperCase() === "ARCHIVED";
 
   return (
@@ -399,6 +407,7 @@ export const HeaderDecoration = ({
         usageRate={usageRate}
         lastUpdated={lastUpdated}
         definitionId={definitionId}
+        hasEnhancedSpeed={hasEnhancedSpeed}
       />
     </>
   );

@@ -52,6 +52,9 @@ const plugin = () => {
           latestPythonCdkVersion,
         );
 
+        const ENHANCED_SPEED_CONNECTORS = ["MySQL", "S3 Data Lake"];
+        const hasSocketSupport = ENHANCED_SPEED_CONNECTORS.includes(originalTitle);
+        
         const attrDict = {
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
@@ -68,6 +71,7 @@ const plugin = () => {
           usageRate,
           lastUpdated,
           definitionId: registryEntry.definitionId,
+          hasEnhancedSpeed: boolToBoolString(hasSocketSupport),
         };
 
         firstHeading = false;

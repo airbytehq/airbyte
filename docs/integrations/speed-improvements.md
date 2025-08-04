@@ -24,3 +24,13 @@ Improved speed isn't widely usable with most connectors yet. To benefit from fas
 Airbyte may enable additional connector combinations as the team works toward general availability. If you're using the latest connector versions, you might notice increases in sync speed for certain connections. This is Airbyte expanding the roll out.
 
 ## What connectors use improved speeds
+
+import EnhancedSpeedConnectors from '@site/src/components/EnhancedSpeedConnectors';
+
+### Sources
+
+<EnhancedSpeedConnectors type="source"/>
+
+### Destinations  
+
+<EnhancedSpeedConnectors type="destination"/>
