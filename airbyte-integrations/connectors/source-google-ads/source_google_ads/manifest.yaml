@@ -40,7 +40,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+    url_base: "https://googleads.googleapis.com/v19/"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -100,7 +100,8 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client"
@@ -131,7 +132,8 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client"
@@ -168,7 +170,8 @@ definitions:
     retriever:
       $ref: "#/definitions/incremental_stream_base/retriever"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client_non_manager"
@@ -190,7 +193,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+          url_base: "https://googleads.googleapis.com/v19/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -226,7 +229,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
+          url_base: "https://googleads.googleapis.com/v19/customers/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -281,7 +284,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers"
+        url_base: "https://googleads.googleapis.com/v19/customers:listAccessibleCustomers"
         http_method: GET
       paginator:
         type: NoPagination
@@ -297,7 +300,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v18/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v19/customers/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -320,7 +323,8 @@ definitions:
           type: CustomRecordFilter
           class_name: "source_google_ads.components.CustomerClientFilter"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/accessible_accounts"
@@ -334,7 +338,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v18/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v19/customers/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -359,7 +363,8 @@ definitions:
           type: CustomRecordFilter
           class_name: "source_google_ads.components.CustomerClientFilter"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/accessible_accounts"
@@ -586,7 +591,7 @@ definitions:
             $ref: "#/schemas/click_view"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v19/{{ stream_partition['customer_id'] }}/googleAds:search"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -783,7 +788,7 @@ definitions:
             $ref: "#/schemas"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v19/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -800,7 +805,8 @@ definitions:
           type: CustomSchemaNormalization
           class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_google_ads.components.HybridCustomerPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/customer_client"
@@ -1726,13 +1732,6 @@ schemas:
         type:
           - "null"
           - string
-      campaign.dynamic_search_ads_setting.feeds:
-        description: List of feeds utilized for dynamic search ads.
-        type:
-          - "null"
-          - array
-        items:
-          type: string
       campaign.dynamic_search_ads_setting.language_code:
         description: The language code associated with dynamic search ads.
         type:
