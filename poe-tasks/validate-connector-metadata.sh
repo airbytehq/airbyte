@@ -24,6 +24,6 @@ done < <(get_connectors)
 
 if test $exit_code -ne 0; then
   echo '------------'
-  echo 'One or more connectors failed to validate/upload metadata. See previous logs for more information.'
+  echo 'One or more connectors had invalid metadata.yaml. See previous logs for more information.'
   exit $exit_code
 fi
