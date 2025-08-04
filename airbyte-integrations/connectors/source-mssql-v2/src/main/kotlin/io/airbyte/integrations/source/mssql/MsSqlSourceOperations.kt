@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.microsoft.sqlserver.jdbc.Geography
 import com.microsoft.sqlserver.jdbc.Geometry
@@ -11,17 +12,24 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.TextCodec
-import io.airbyte.cdk.discover.*
+import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
+import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
+import io.airbyte.cdk.discover.CdcStringMetaFieldType
+import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.jdbc.*
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.*
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.JDBCType
@@ -87,6 +95,7 @@ class MsSqlSourceOperations :
                     JDBCType.TIME_WITH_TIMEZONE -> OffsetTimeFieldType
                     JDBCType.TIMESTAMP_WITH_TIMEZONE -> OffsetDateTimeFieldType
                     JDBCType.NULL -> NullFieldType
+                    JDBCType.SQLXML -> XmlFieldType
                     JDBCType.OTHER,
                     JDBCType.JAVA_OBJECT,
                     JDBCType.DISTINCT,
@@ -316,15 +325,15 @@ class MsSqlSourceOperations :
             is Limit, -> emptyList()
         }
 
-    override val globalCursor: MetaField? = null
-    override val globalMetaFields: Set<MetaField> = emptySet()
-    //        setOf(
-    //            CommonMetaField.CDC_UPDATED_AT,
-    //            CommonMetaField.CDC_DELETED_AT,
-    //            MsSqlServerCdcMetaFields.CDC_CURSOR,
-    //            MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO,
-    //            MsSqlServerCdcMetaFields.CDC_LSN,
-    //        )
+    override val globalCursor: MetaField = MsSqlServerCdcMetaFields.CDC_CURSOR
+    override val globalMetaFields: Set<MetaField> =
+        setOf(
+            CommonMetaField.CDC_UPDATED_AT,
+            CommonMetaField.CDC_DELETED_AT,
+            MsSqlServerCdcMetaFields.CDC_CURSOR,
+            MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO,
+            MsSqlServerCdcMetaFields.CDC_LSN,
+        )
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
@@ -332,13 +341,83 @@ class MsSqlSourceOperations :
         stream: Stream,
         recordData: ObjectNode,
     ) {
-        //        recordData.set<JsonNode>(
-        //            CommonMetaField.CDC_UPDATED_AT.id,
-        //            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
-        //        )
-        // CDC record decoration disabled
+        recordData.set<JsonNode>(
+            CommonMetaField.CDC_UPDATED_AT.id,
+            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
+        )
+        recordData.set<JsonNode>(
+            MsSqlServerCdcMetaFields.CDC_LSN.id,
+            CdcStringMetaFieldType.jsonEncoder.encode(""),
+        )
+        if (globalStateValue == null) {
+            return
+        }
+        // For MSSQL, we would need to deserialize the state to get the LSN
+        // This is a placeholder implementation - actual implementation would extract LSN from state
+        try {
+            val stateNode = globalStateValue["state"] as? ObjectNode
+            if (stateNode != null) {
+                val offsetNode = stateNode["mssql_cdc_offset"] as? ObjectNode
+                if (offsetNode != null && offsetNode.size() > 0) {
+                    // Extract LSN from the offset if available
+                    val offsetValue = offsetNode.fields().next().value
+                    val lsn = Jsons.readTree(offsetValue.textValue())["commit_lsn"]?.asText()
+                    if (lsn != null) {
+                        recordData.set<JsonNode>(
+                            MsSqlServerCdcMetaFields.CDC_LSN.id,
+                            CdcStringMetaFieldType.jsonEncoder.encode(lsn),
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Log error but don't fail the sync
+        }
     }
 
-    // CDC meta fields disabled - remove when CDC is not needed
-    // enum class MsSqlServerCdcMetaFields(override val type: FieldType) : MetaField { ... }
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        // Add CDC_UPDATED_AT field
+        recordData[CommonMetaField.CDC_UPDATED_AT.id] =
+            FieldValueEncoder(timestamp, CdcOffsetDateTimeMetaFieldType.jsonEncoder)
+
+        // Add CDC_LSN field with empty string as default
+        var lsnValue = ""
+
+        if (globalStateValue != null) {
+            // For MSSQL, extract the LSN from the state if available
+            try {
+                val stateNode = globalStateValue["state"] as? ObjectNode
+                if (stateNode != null) {
+                    val offsetNode = stateNode["mssql_cdc_offset"] as? ObjectNode
+                    if (offsetNode != null && offsetNode.size() > 0) {
+                        // Extract LSN from the offset if available
+                        val offsetValue = offsetNode.fields().next().value
+                        val lsn = Jsons.readTree(offsetValue.textValue())["commit_lsn"]?.asText()
+                        if (lsn != null) {
+                            lsnValue = lsn
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Log error but don't fail the sync - keep the empty string value
+            }
+        }
+
+        recordData[MsSqlServerCdcMetaFields.CDC_LSN.id] =
+            FieldValueEncoder(lsnValue, CdcStringMetaFieldType.jsonEncoder)
+    }
+
+    enum class MsSqlServerCdcMetaFields(override val type: FieldType) : MetaField {
+        CDC_CURSOR(CdcIntegerMetaFieldType),
+        CDC_LSN(CdcStringMetaFieldType),
+        CDC_EVENT_SERIAL_NO(CdcIntegerMetaFieldType);
+
+        override val id: String
+            get() = MetaField.META_PREFIX + name.lowercase()
+    }
 }
