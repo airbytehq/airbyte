@@ -101,20 +101,20 @@ jobs:
         working-directory: ./docusaurus
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build Project Artifacts
-        working-directory: ./docusaurus
-        run: vercel build --yes --debug --token=${{ secrets.VERCEL_TOKEN }}
+      # - name: Build Project Artifacts
+      #   working-directory: ./docusaurus
+      #   run: vercel build --yes --debug --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy Project Artifacts to Vercel
-        working-directory: ./docusaurus
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      # - name: Deploy Project Artifacts to Vercel
+      #   working-directory: ./docusaurus
+      #   run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
 
       # Alternative deployment method using a GitHub Action:
-      # - name: Deploy to Vercel
-      #   uses: amondnet/vercel-action@v41.1.4
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
-      #     vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-      #     vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
-      #     working-directory: ./docusaurus
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v41.1.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
+          working-directory: ./docusaurus
