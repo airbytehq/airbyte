@@ -13,26 +13,18 @@ data class StateKey(
 )
 
 class StateHistogram(
-    private val map: ConcurrentMap<StateKey, Long> = ConcurrentHashMap()
+    val map: ConcurrentMap<StateKey, Long> = ConcurrentHashMap()
 ) {
     fun increment(key: StateKey): StateHistogram {
-        map.merge(
-            key,
-            1,
-            Long::plus,
-        )
-
-        return this
+        return this.apply {
+            map.merge(key, 1, Long::plus)
+        }
     }
 
     fun merge(other: StateHistogram): StateHistogram {
         return this.apply {
             other.map.forEach {
-                map.merge(
-                    it.key,
-                    it.value,
-                    Long::plus,
-                )
+                map.merge(it.key, it.value, Long::plus)
             }
         }
     }
