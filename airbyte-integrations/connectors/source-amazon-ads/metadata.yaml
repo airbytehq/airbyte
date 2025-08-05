@@ -19,8 +19,6 @@ data:
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
   license: ELv2
-  # Based on https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#checking-report-status, report generation can take up to 3 hours
-  # We've added one minute on top of the three hours because of the waiting time before we poll the report status
   maxSecondsBetweenMessages: 10860
   name: Amazon Ads
   remoteRegistries:
@@ -39,47 +37,56 @@ data:
     breakingChanges:
       7.0.0:
         message:
-          "This version introduces new report streams, replacing SponsoredDisplayReportStream and SponsoredProductsReportStream with detailed breakdowns.
-          Primary keys have changed, and metrics are now correctly typed at the root level. We recommend using new detailed streams with the same dataset."
+          This version introduces new report streams, replacing SponsoredDisplayReportStream
+          and SponsoredProductsReportStream with detailed breakdowns. Primary keys
+          have changed, and metrics are now correctly typed at the root level. We
+          recommend using new detailed streams with the same dataset.
         upgradeDeadline: "2025-02-24"
-        deadlineAction: "auto_upgrade"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "sponsored_display_report_stream"
-              - "sponsored_brands_v3_report_stream"
-              - "sponsored_products_report_stream"
+              - sponsored_display_report_stream
+              - sponsored_brands_v3_report_stream
+              - sponsored_products_report_stream
       6.0.0:
         message:
-          "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
-          and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. We recommend using `SponsoredBrandsV3ReportStream` as an alternative stream with the same dataset."
+          The Report API V2 is being deprecated in favor of V3. Given this
+          change, fields available through the sponsoredDisplayReportStream stream
+          will change, and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream`
+          will become unavailable. We recommend using `SponsoredBrandsV3ReportStream`
+          as an alternative stream with the same dataset.
         upgradeDeadline: "2024-11-01"
-        deadlineAction: "auto_upgrade"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "sponsored_display_report_stream"
-              - "sponsored_brands_report_stream"
-              - "sponsored_brands_video_report_stream"
+              - sponsored_display_report_stream
+              - sponsored_brands_report_stream
+              - sponsored_brands_video_report_stream
       5.0.0:
-        message: "`SponsoredBrandCampaigns`, `SponsoredBrandsAdGroups`, `SponsoredProductCampaigns`, and `SponsoredProductAdGroupBidRecommendations` streams have updated schemas and must be reset."
+        message:
+          "`SponsoredBrandCampaigns`, `SponsoredBrandsAdGroups`, `SponsoredProductCampaigns`,
+          and `SponsoredProductAdGroupBidRecommendations` streams have updated schemas
+          and must be reset."
         upgradeDeadline: "2024-03-27"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              [
-                "sponsored_brands_campaigns",
-                "sponsored_brands_ad_groups",
-                "sponsored_product_campaigns",
-                "sponsored_product_ad_group_bid_recommendations",
-              ]
+              - sponsored_brands_campaigns
+              - sponsored_brands_ad_groups
+              - sponsored_product_campaigns
+              - sponsored_product_ad_group_bid_recommendations
       4.0.0:
-        message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
+        message:
+          Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now
+          have updated schemas.
         upgradeDeadline: "2024-01-17"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              ["sponsored_brands_ad_groups", "sponsored_brands_keywords"]
+              - sponsored_brands_ad_groups
+              - sponsored_brands_keywords
       3.0.0:
         message: Attribution report stream schemas fix.
         upgradeDeadline: "2023-07-24"
@@ -114,4 +121,30 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - attribution_report_performance_adgroup
+        - attribution_report_performance_campaign
+        - attribution_report_performance_creative
+        - attribution_report_products
+        - portfolios
+        - profiles_filtered
+        - sponsored_brands_ad_groups
+        - sponsored_brands_campaigns
+        - sponsored_brands_keywords
+        - sponsored_display_ad_groups
+        - sponsored_display_budget_rules
+        - sponsored_display_campaigns
+        - sponsored_display_creatives
+        - sponsored_display_product_ads
+        - sponsored_display_targetings
+        - sponsored_product_ad_group_bid_recommendations
+        - sponsored_product_ad_group_suggested_keywords
+        - sponsored_product_ad_groups
+        - sponsored_product_ads
+        - sponsored_product_campaign_negative_keywords
+        - sponsored_product_campaigns
+        - sponsored_product_keywords
+        - sponsored_product_negative_keywords
+        - sponsored_product_targetings
 metadataSpecVersion: "1.0"

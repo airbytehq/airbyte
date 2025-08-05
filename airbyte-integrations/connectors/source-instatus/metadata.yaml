@@ -32,15 +32,17 @@ data:
         - name: instatus_config_dev_null
           id: 6c2e5836-6ed5-400d-987e-4d6d37fad4b4
     - suite: unitTests
-      # Disabling acceptance tests for now
-      # No / Low airbyte cloud usage
-      # - suite: acceptanceTests
-      #   testSecrets:
-      #     - name: SECRET_SOURCE-INSTATUS_CREDS
-      #       fileName: config.json
-      #       secretStore:
-      #         type: GSM
-      #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  interleavedStreams:
+    relationships:
+      - - incidents
+        - maintenances
+        - metrics
+        - page_components
+        - public_data
+        - status_pages
+        - subscribers
+        - team
+        - templates
 metadataSpecVersion: "1.0"

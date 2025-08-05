@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.app.shortcut.com"
+      - api.app.shortcut.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,21 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - categories
+        - categories_milestones
+        - categories_objectives
+      - - epics
+        - epics_comments
+        - epics_stories
+        - stories_comments
+        - story_history
+      - - groups
+        - groups_stories
+      - - iterations
+        - iterations_stories
+      - - milestones
+        - milestones_epics
+      - - objectives
+        - objectives_epics

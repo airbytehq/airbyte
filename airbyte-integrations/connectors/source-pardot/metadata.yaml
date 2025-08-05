@@ -21,7 +21,10 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: Most streams have been migrated to use Pardot API V5 in this release. The authentication flow, which was previously broken, should now work for new connections using this version.
+        message:
+          Most streams have been migrated to use Pardot API V5 in this release.
+          The authentication flow, which was previously broken, should now work for
+          new connections using this version.
         upgradeDeadline: "2024-12-26"
   documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
   tags:
@@ -35,4 +38,11 @@ data:
     - suite: unitTests
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.60.5@sha256:79a69ff4f759e8b404c687eff62c72f53b05d567fa830b71d17b01b8deaf2189
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - dynamic_content_variations
+    relationships:
+      - - dynamic_content_variations
+        - dynamic_contents
 metadataSpecVersion: "1.0"

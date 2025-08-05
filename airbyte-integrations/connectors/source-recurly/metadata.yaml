@@ -49,4 +49,18 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - account_coupon_redemptions
+        - account_notes
+        - billing_infos
+    relationships:
+      - - account_coupon_redemptions
+        - account_notes
+        - accounts
+        - billing_infos
+        - shipping_addresses
+      - - unique_coupons
+        - unique_coupons_parent
 metadataSpecVersion: "1.0"

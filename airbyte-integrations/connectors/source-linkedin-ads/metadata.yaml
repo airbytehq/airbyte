@@ -39,60 +39,79 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "ad_campaign_analytics"
-              - "ad_creative_analytics"
-              - "ad_impression_device_analytics"
-              - "ad_member_company_size_analytics"
-              - "ad_member_country_analytics"
-              - "ad_member_job_function_analytics"
-              - "ad_member_job_title_analytics"
-              - "ad_member_industry_analytics"
-              - "ad_member_seniority_analytics"
-              - "ad_member_region_analytics"
-              - "ad_member_company_analytics"
+              - ad_campaign_analytics
+              - ad_creative_analytics
+              - ad_impression_device_analytics
+              - ad_member_company_size_analytics
+              - ad_member_country_analytics
+              - ad_member_job_function_analytics
+              - ad_member_job_title_analytics
+              - ad_member_industry_analytics
+              - ad_member_seniority_analytics
+              - ad_member_region_analytics
+              - ad_member_company_analytics
       2.0.0:
-        message: This upgrade changes primary key for *-analytics streams from pivotValues[array of strings] to string_of_pivot_values[string] so that it is compatible with more destination types.
+        message:
+          This upgrade changes primary key for *-analytics streams from pivotValues[array
+          of strings] to string_of_pivot_values[string] so that it is compatible with
+          more destination types.
         upgradeDeadline: "2024-05-14"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "ad_campaign_analytics"
-              - "ad_creative_analytics"
-              - "ad_impression_device_analytics"
-              - "ad_member_company_size_analytics"
-              - "ad_member_country_analytics"
-              - "ad_member_job_function_analytics"
-              - "ad_member_job_title_analytics"
-              - "ad_member_industry_analytics"
-              - "ad_member_seniority_analytics"
-              - "ad_member_region_analytics"
-              - "ad_member_company_analytics"
+              - ad_campaign_analytics
+              - ad_creative_analytics
+              - ad_impression_device_analytics
+              - ad_member_company_size_analytics
+              - ad_member_country_analytics
+              - ad_member_job_function_analytics
+              - ad_member_job_title_analytics
+              - ad_member_industry_analytics
+              - ad_member_seniority_analytics
+              - ad_member_region_analytics
+              - ad_member_company_analytics
       3.0.0:
-        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users will need to reset affected streams after upgrading. Please see migration guide for more details.
+        message:
+          This release introduces updated format of state for incremental streams
+          and changes primary key for AccountUsers streams from account to account.
+          Users will need to reset affected streams after upgrading. Please see migration
+          guide for more details.
         upgradeDeadline: "2024-08-20"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "account_users"
-              - "campaigns"
-              - "creatives"
-              - "campaign_groups"
-              - "conversions"
+              - account_users
+              - campaigns
+              - creatives
+              - campaign_groups
+              - conversions
       4.0.0:
-        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from composite key - [account, user] to key - account. Users using 3.X.X of the connector will need to reset affected streams after upgrading. Please see migration guide for more details.
+        message:
+          This release introduces updated format of state for incremental streams
+          and changes primary key for AccountUsers streams from composite key - [account,
+          user] to key - account. Users using 3.X.X of the connector will need to
+          reset affected streams after upgrading. Please see migration guide for more
+          details.
         upgradeDeadline: "2024-08-21"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "account_users"
-              - "campaigns"
-              - "creatives"
-              - "campaign_groups"
-              - "conversions"
+              - account_users
+              - campaigns
+              - creatives
+              - campaign_groups
+              - conversions
       5.0.0:
-        message: We would like to inform you that the Primary Key (PK) for ad_campaign_analytics and Custom Ad Analytics Reports streams has been changed from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and Primary Key (PK) for account_users stream has been changed from [account] to [account, user]. This update is intended to improve data integrity and ensure optimal performance. Upgrade LinkedIn Ads to apply these changes immediately. Otherwise, LinkedIn Ads will be upgraded automatically on 2024-12-10.
+        message:
+          We would like to inform you that the Primary Key (PK) for ad_campaign_analytics
+          and Custom Ad Analytics Reports streams has been changed from [string_of_pivot_values,
+          end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and Primary
+          Key (PK) for account_users stream has been changed from [account] to [account,
+          user]. This update is intended to improve data integrity and ensure optimal
+          performance. Upgrade LinkedIn Ads to apply these changes immediately. Otherwise,
+          LinkedIn Ads will be upgraded automatically on 2024-12-10.
         upgradeDeadline: "2024-12-10"
-        deadlineAction: "auto_upgrade"
+        deadlineAction: auto_upgrade
   suggestedStreams:
     streams:
       - accounts
@@ -140,4 +159,26 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - account_users
+        - accounts
+        - ad_campaign_analytics
+        - ad_creative_analytics
+        - ad_impression_device_analytics
+        - ad_member_company_analytics
+        - ad_member_company_size_analytics
+        - ad_member_country_analytics
+        - ad_member_industry_analytics
+        - ad_member_job_function_analytics
+        - ad_member_job_title_analytics
+        - ad_member_region_analytics
+        - ad_member_seniority_analytics
+        - campaign_groups
+        - campaigns
+        - conversions
+        - creatives
+        - custom_analytics_report
+        - lead_form_responses
+        - lead_forms
 metadataSpecVersion: "1.0"

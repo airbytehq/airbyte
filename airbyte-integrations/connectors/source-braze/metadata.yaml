@@ -41,4 +41,19 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - campaigns
+        - campaigns_analytics
+        - campaigns_details
+      - - canvases
+        - canvases_analytics
+        - canvases_details
+      - - events
+        - events_analytics
+      - - cards
+        - cards_analytics
+      - - segments
+        - segments_analytics
+        - segments_details
 metadataSpecVersion: "1.0"

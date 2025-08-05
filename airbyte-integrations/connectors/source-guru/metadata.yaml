@@ -33,3 +33,14 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - group_collection_access
+        - group_members
+        - groups
+      - - tag_categories
+        - team_analytics
+        - teams
+      - - folder_items
+        - folders
+        - folders_parent

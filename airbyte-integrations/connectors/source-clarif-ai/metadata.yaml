@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.clarifai.com"
+      - api.clarifai.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - app_concepts
+        - app_inputs
+        - app_inputs_jobs
+        - applications
+        - datasets
+        - model_versions
+        - models
+        - worklows

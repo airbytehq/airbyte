@@ -40,4 +40,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - workers
+        - workspaces
 metadataSpecVersion: "1.0"

@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "graph.microsoft.com"
+      - graph.microsoft.com
   registryOverrides:
     oss:
       enabled: true
@@ -27,7 +27,6 @@ data:
   releaseStage: alpha
   supportLevel: community
   connectorTestSuitesOptions:
-    # no-op for now but will get enabled when the capability is added to airbyte-ci
     - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-MICROSOFT-LISTS_CREDS
@@ -42,3 +41,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - columnvalues
+        - items
+        - listcontenttypes
+        - listitems
+        - lists

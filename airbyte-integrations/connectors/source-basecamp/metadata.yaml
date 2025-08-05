@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "3.basecampapi.com"
+      - 3.basecampapi.com
   registryOverrides:
     oss:
       enabled: true
@@ -30,7 +30,11 @@ data:
   tags:
     - language:manifest-only
     - cdk:low-code
-
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - projects
+        - schedule_entries
+        - schedules

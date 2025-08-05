@@ -52,4 +52,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - cash_drawers
+        - locations
+        - orders
 metadataSpecVersion: "1.0"

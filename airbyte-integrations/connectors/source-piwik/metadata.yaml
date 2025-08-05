@@ -33,3 +33,11 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - access-control_meta-site_permission_user
+        - meta-sites
+        - meta-sites_apps
+      - - apps
+        - apps_details
+        - container-settings_settings

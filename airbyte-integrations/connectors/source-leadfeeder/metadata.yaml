@@ -30,7 +30,11 @@ data:
   tags:
     - language:manifest-only
     - cdk:low-code
-
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - accounts
+        - leads
+        - visits

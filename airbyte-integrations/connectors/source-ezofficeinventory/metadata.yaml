@@ -33,3 +33,11 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - inventories
+        - inventory_histories
+      - - asset_histories
+        - assets
+      - - asset_stock_histories
+        - asset_stocks

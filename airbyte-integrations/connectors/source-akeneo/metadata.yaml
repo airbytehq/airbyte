@@ -1,7 +1,7 @@
 metadataSpecVersion: "1.0"
 data:
   allowedHosts:
-    hosts:
+    hosts: null
   registryOverrides:
     oss:
       enabled: true
@@ -32,3 +32,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - families
+        - family_variants

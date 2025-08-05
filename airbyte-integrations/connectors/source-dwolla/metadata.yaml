@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https://*.dwolla.com"
+      - https://*.dwolla.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - funding_sources
+    relationships:
+      - - customers
+        - funding_sources

@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.eu.svix.com"
+      - api.eu.svix.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,15 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - endpoints
+        - integrations
+        - ingest_source_endpoint
+    relationships:
+      - - applications
+        - endpoints
+        - integrations
+      - - ingest_source
+        - ingest_source_endpoint

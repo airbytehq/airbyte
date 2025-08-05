@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.ecommerceapi.uk"
+      - api.ecommerceapi.uk
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - products_images
+        - products_reviews
+        - product_options
+        - products_variations
+    relationships:
+      - - product_options
+        - products
+        - products_images
+        - products_reviews
+        - products_variations

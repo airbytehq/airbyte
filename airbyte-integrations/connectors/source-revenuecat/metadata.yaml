@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.revenuecat.com"
+      - api.revenuecat.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,20 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - apps
+        - customers
+        - customers_active_entitlements
+        - customers_aliases
+        - customers_invoices
+        - customers_purchases
+        - customers_subscriptions
+        - entitlements
+        - entitlements_products
+        - metrics_overview
+        - offerings
+        - offerings_packages
+        - offerings_packages_products
+        - products
+        - projects

@@ -28,35 +28,37 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: >-
-          The source Snapchat Marketing connector is being migrated from the Python CDK to our declarative low-code CDK.
-          Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally,
-          added incremental functionality to organizations. After updating, please reset your source before resuming syncs.
-          For more information, see our migration documentation for source Snapchat Marketing.
+        message:
+          The source Snapchat Marketing connector is being migrated from the
+          Python CDK to our declarative low-code CDK. Due to changes to the incremental
+          stream state, this migration constitutes a breaking change. Additionally,
+          added incremental functionality to organizations. After updating, please
+          reset your source before resuming syncs. For more information, see our migration
+          documentation for source Snapchat Marketing.
         upgradeDeadline: "2024-07-16"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "organizations"
-              - "adaccounts"
-              - "creatives"
-              - "ads"
-              - "adsquads"
-              - "segments"
-              - "media"
-              - "campaigns"
-              - "adaccounts_stats_hourly"
-              - "adaccounts_stats_daily"
-              - "adaccounts_stats_lifetime"
-              - "ads_stats_hourly"
-              - "ads_stats_daily"
-              - "ads_stats_lifetime"
-              - "adsquads_stats_hourly"
-              - "adsquads_stats_daily"
-              - "adsquads_stats_lifetime"
-              - "campaigns_stats_hourly"
-              - "campaigns_stats_daily"
-              - "campaigns_stats_lifetime"
+              - organizations
+              - adaccounts
+              - creatives
+              - ads
+              - adsquads
+              - segments
+              - media
+              - campaigns
+              - adaccounts_stats_hourly
+              - adaccounts_stats_daily
+              - adaccounts_stats_lifetime
+              - ads_stats_hourly
+              - ads_stats_daily
+              - ads_stats_lifetime
+              - adsquads_stats_hourly
+              - adsquads_stats_daily
+              - adsquads_stats_lifetime
+              - campaigns_stats_hourly
+              - campaigns_stats_daily
+              - campaigns_stats_lifetime
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   tags:
     - language:manifest-only
@@ -78,4 +80,26 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - adaccounts
+        - adaccounts_stats_daily
+        - adaccounts_stats_hourly
+        - adaccounts_stats_lifetime
+        - ads
+        - ads_stats_daily
+        - ads_stats_hourly
+        - ads_stats_lifetime
+        - adsquads
+        - adsquads_stats_daily
+        - adsquads_stats_hourly
+        - adsquads_stats_lifetime
+        - campaigns
+        - campaigns_stats_daily
+        - campaigns_stats_hourly
+        - campaigns_stats_lifetime
+        - creatives
+        - media
+        - organizations
+        - segments
 metadataSpecVersion: "1.0"

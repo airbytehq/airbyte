@@ -48,4 +48,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - canned_response_folders
+        - canned_responses
+      - - conversations
+        - tickets
+      - - discussion_categories
+        - discussion_comments
+        - discussion_forums
+        - discussion_topics
+      - - solution_articles
+        - solution_categories
+        - solution_folders
 metadataSpecVersion: "1.0"

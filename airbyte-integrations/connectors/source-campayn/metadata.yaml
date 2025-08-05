@@ -33,3 +33,8 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - contacts
+        - forms
+        - lists

@@ -33,3 +33,17 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - case_statuses
+        - cases
+        - configs
+        - datasets
+        - milestones
+        - plans
+        - projects
+        - runs
+        - runs_tests
+        - sections
+        - suites
+        - templates

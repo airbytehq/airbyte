@@ -48,9 +48,6 @@ data:
       testConnections:
         - name: intercom_config_dev_null
           id: 09ebd6bb-2756-4cd3-8ad5-7120088cc553
-    # We should enable unit tests once the connector has been updated to CDK version >= 6.10.0
-    # Until then, the test suites won't be able to run successfully in CI as the fixtures are not present in earlier versions
-    # - suite: unitTests
     - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-INTERCOM_APIKEY__CREDS
@@ -80,4 +77,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - conversation_parts
+        - company_segments
+    relationships:
+      - - conversation_parts
+        - conversations
+      - - companies
+        - company_segments
 metadataSpecVersion: "1.0"

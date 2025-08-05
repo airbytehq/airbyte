@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "payments.pabbly.com"
+      - payments.pabbly.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,14 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - addon_list_category
+        - addons
+        - coupons
+        - licenses
+        - products
+      - - customers
+        - payment_methods
+        - refunds
+        - transactions

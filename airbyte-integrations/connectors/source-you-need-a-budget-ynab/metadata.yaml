@@ -33,3 +33,11 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - Accounts
+        - Budgets
+        - Categories
+        - Category Groups
+        - Payees
+        - Transactions

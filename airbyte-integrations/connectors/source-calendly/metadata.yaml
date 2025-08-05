@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.calendly.com"
+      - api.calendly.com
   registryOverrides:
     oss:
       enabled: true
@@ -35,3 +35,14 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - event_invitees
+    relationships:
+      - - api_user
+        - event_invitees
+        - event_types
+        - groups
+        - organization_memberships
+        - scheduled_events

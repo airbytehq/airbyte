@@ -55,4 +55,26 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - applications_demographics_answers
+        - applications_interviews
+        - jobs_stages
+    relationships:
+      - - applications
+        - applications_demographics_answers
+        - applications_interviews
+      - - demographics_answers_answer_options
+        - demographics_questions
+      - - demographics_question_sets
+        - demographics_question_sets_questions
+      - - approvals
+        - jobs
+        - jobs_openings
+        - jobs_stages
+      - - activity_feed
+        - candidates
+      - - user_permissions
+        - users
 metadataSpecVersion: "1.0"

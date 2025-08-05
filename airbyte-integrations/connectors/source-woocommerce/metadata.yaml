@@ -47,4 +47,16 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.60.5@sha256:79a69ff4f759e8b404c687eff62c72f53b05d567fa830b71d17b01b8deaf2189
+  interleavedStreams:
+    relationships:
+      - - order_notes
+        - orders
+        - refunds
+      - - product_attribute_terms
+        - product_attributes
+      - - product_variations
+        - products
+      - - shipping_zone_locations
+        - shipping_zone_methods
+        - shipping_zones
 metadataSpecVersion: "1.0"

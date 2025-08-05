@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.fastly.com"
+      - api.fastly.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,24 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - service_details
+        - service_version
+        - service_dictionaries
+        - service_dictionaries
+        - service_backend
+        - service_backend
+        - service_domain
+        - service_domain
+        - service_acl
+        - service_acl
+    relationships:
+      - - service
+        - service_acl
+        - service_backend
+        - service_details
+        - service_dictionaries
+        - service_domain
+        - service_version

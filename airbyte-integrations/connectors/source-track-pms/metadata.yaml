@@ -28,16 +28,26 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "Streams were renamed and normalized, you need to update your schema and resync all data."
+        message:
+          Streams were renamed and normalized, you need to update your schema
+          and resync all data.
         upgradeDeadline: "2025-02-28"
       2.0.0:
-        message: "Streams were renamed and normalized, you need to update your schema and resync all data."
+        message:
+          Streams were renamed and normalized, you need to update your schema
+          and resync all data.
         upgradeDeadline: "2025-02-28"
       3.0.0:
-        message: "Removed redundant stream owners_statements_transactions_pii_redacted & folios_master_rules and the redundant _embedded from accounting_* streams. Updating schema and resycing data for these streams is needed."
+        message:
+          Removed redundant stream owners_statements_transactions_pii_redacted
+          & folios_master_rules and the redundant _embedded from accounting_* streams.
+          Updating schema and resycing data for these streams is needed.
         upgradeDeadline: "2025-03-28"
       4.0.0:
-        message: "Prune units schema, add guestBreakdown back to reservations stream, fix connector API stream links in the docs, lower retries, disable connector auto schema generation."
+        message:
+          Prune units schema, add guestBreakdown back to reservations stream,
+          fix connector API stream links in the docs, lower retries, disable connector
+          auto schema generation.
         upgradeDeadline: "2025-05-10"
   supportLevel: community
   connectorTestSuitesOptions:
@@ -49,3 +59,44 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    optimizationHints:
+      performanceCritical:
+        - units_taxes
+        - owners_units
+        - units_channel
+        - contacts_companies
+        - fractionals_owners
+        - fractionals_inventory
+        - crm_company_attachment
+        - units_daily_pricing_v2
+    relationships:
+      - - folios
+        - folios_logs
+      - - groups
+        - groups_blocks
+        - groups_breakdown
+        - groups_tags
+      - - units_taxes
+        - units_taxes_parent
+      - - owners
+        - owners_units
+      - - reservations
+        - reservations_scroll
+      - - units
+        - units_channel
+      - - reservations_v2
+        - reservations_v2_scroll
+      - - contacts
+        - contacts_companies
+      - - fractionals
+        - fractionals_inventory
+        - fractionals_owners
+      - - companies
+        - crm_company_attachment
+      - - units_daily_pricing_v2
+        - units_pricing_parent
+      - - units_type_daily_pricing_v2
+        - units_types_pricing_parent
+      - - owners_statements
+        - owners_statements_transactions

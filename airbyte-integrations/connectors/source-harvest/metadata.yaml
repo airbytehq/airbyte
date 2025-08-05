@@ -41,21 +41,19 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              [
-                "expenses_clients",
-                "expenses_categories",
-                "expenses_projects",
-                "expenses_team",
-                "time_clients",
-                "time_projects",
-                "time_tasks",
-                "time_team",
-                "uninvoiced",
-                "estimate_messages",
-                "invoice_payments",
-                "invoice_messages",
-                "project_assignments",
-              ]
+              - expenses_clients
+              - expenses_categories
+              - expenses_projects
+              - expenses_team
+              - time_clients
+              - time_projects
+              - time_tasks
+              - time_team
+              - uninvoiced
+              - estimate_messages
+              - invoice_payments
+              - invoice_messages
+              - project_assignments
   releaseStage: generally_available
   supportLevel: certified
   tags:
@@ -85,4 +83,15 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  interleavedStreams:
+    relationships:
+      - - estimate_messages
+        - estimates
+      - - invoice_messages
+        - invoice_payments
+        - invoices
+      - - billable_rates
+        - cost_rates
+        - project_assignments
+        - users
 metadataSpecVersion: "1.0"

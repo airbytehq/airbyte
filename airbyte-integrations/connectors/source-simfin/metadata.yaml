@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "backend.simfin.com"
+      - backend.simfin.com
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,12 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - "Company Info "
+        - Financial Statements
+        - Price Data
+      - - common_shares_outstanding
+        - companies
+        - filings_by_company
+        - weighted_shares_outstanding

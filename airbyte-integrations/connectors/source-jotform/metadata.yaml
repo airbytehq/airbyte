@@ -2,9 +2,9 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.jotform.com"
-      - "eu-api.jotform.com"
-      - "hipaa-api.jotform.com"
+      - api.jotform.com
+      - eu-api.jotform.com
+      - hipaa-api.jotform.com
       - "*/API"
   registryOverrides:
     oss:
@@ -36,3 +36,9 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - form_files
+        - form_properties
+        - forms
+        - questions

@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.paperform.co"
+      - api.paperform.co
   registryOverrides:
     oss:
       enabled: true
@@ -33,3 +33,11 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - coupons
+        - form_fields
+        - forms
+        - partial_submissions
+        - products
+        - submissions

@@ -4,7 +4,7 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-      - api.pipedrive.com # Please change to the hostname of the source.
+      - api.pipedrive.com
   remoteRegistries:
     pypi:
       enabled: false
@@ -29,8 +29,8 @@ data:
       2.0.0:
         upgradeDeadline: 2023-10-04
         message:
-          "This version removes the `pipeline_ids` field from the `deal_fields`
-          stream. Config has changed to only use API key. Please update your config."
+          This version removes the `pipeline_ids` field from the `deal_fields`
+          stream. Config has changed to only use API key. Please update your config.
   releaseDate: 2021-07-19
   releaseStage: alpha
   supportLevel: community
@@ -64,4 +64,10 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.33.1@sha256:06468f2b0acdb0126a29757f67025f8f837014f70e3f079e10e304b0e1a6be4b
+  interleavedStreams:
+    relationships:
+      - - mail
+        - mailThreads
+      - - deal_products
+        - deals
 metadataSpecVersion: "1.0"

@@ -33,3 +33,19 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  interleavedStreams:
+    relationships:
+      - - audit_trial
+        - study
+        - study_field_dependency
+        - study_field_validation
+        - study_fieldoption_groups
+        - study_fields
+        - study_form
+        - study_role
+        - study_site
+        - study_statistics
+        - study_survey
+        - study_survey_package
+        - study_user
+        - study_visit

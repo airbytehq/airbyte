@@ -36,4 +36,11 @@ data:
   supportLevel: community
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.59.2@sha256:89dcb86ee03b8d951b8a2a80a64d2c84a369dacef29346ec6a5f64c9fb7132f8
+  interleavedStreams:
+    relationships:
+      - - adgroups
+        - adgroups_report_daily
+        - campaigns
+        - keywords
+        - keywords_report_daily
 metadataSpecVersion: "1.0"
