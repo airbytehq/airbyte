@@ -10,6 +10,7 @@ This page guides you through the process of setting up the [HubSpot](https://www
 ## Prerequisites
 
 - HubSpot Account
+- A version of the Airbyte platform version to be at least 1.8 or cloud
 
 ## Setup guide
 
