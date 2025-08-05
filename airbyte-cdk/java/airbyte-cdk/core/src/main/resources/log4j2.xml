@@ -10,7 +10,7 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Root level="INFO" additivity="false">
+    <Root level="${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}" additivity="false">
       <AppenderRef ref="ConsoleJSONAppender"/>
     </Root>
   </Loggers>
