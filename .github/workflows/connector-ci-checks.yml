@@ -119,6 +119,7 @@ jobs:
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
       # The commit SHA of the current branch, used to report test results:
       commit-sha: ${{ steps.checkout.outputs.commit }}
+      creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -132,7 +133,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || '' }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -182,19 +183,19 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
@@ -221,7 +222,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || '' }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -280,19 +281,19 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        if: matrix.connector && env.GCP_PROJECT_ID != ''
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
