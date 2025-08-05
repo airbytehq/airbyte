@@ -5,11 +5,12 @@ dockerRepository: airbyte/destination-hubspot
 
 ## Overview
 
-This destination relies on the Data Activation flow which requires the platform version to be at least 1.8 or cloud. This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector.
+This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector.
 
 ## Prerequisites
 
 - HubSpot Account
+- A version of the Airbyte platform version to be at least 1.8 or cloud
 
 ## Setup guide
 
