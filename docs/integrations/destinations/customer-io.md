@@ -2,6 +2,10 @@
 
 This page contains the setup guide and reference information for the Customer IO destination connector.
 
+:::info
+Data activation is in early access. If you'd like to be an early adopter for this connector, [fill out this form](https://form.typeform.com/to/tupSnN3D) and we'll contact you soon.
+:::
+
 ## Overview
 
 The Customer IO destination connector allows you to sync data to Customer IO, a customer data management platform. This destination relies on the Data Activation flow which requires the platform version to be at least 1.8 or cloud.
