@@ -5,19 +5,18 @@
 import datetime
 import logging
 import os
-from typing import Any, Mapping
 import textwrap
+from typing import Any, Mapping
 
-from metadata_service.helpers.slack import send_slack_message
 import pandas as pd
-from github import Github
-from github import Auth
-from github.ContentFile import ContentFile
-from google.cloud import storage
-from metadata_service.helpers.gcs import get_gcs_storage_client
 import requests
 import yaml
+from github import Auth, Github
+from github.ContentFile import ContentFile
+from google.cloud import storage
 
+from metadata_service.helpers.gcs import get_gcs_storage_client
+from metadata_service.helpers.slack import send_slack_message
 
 from .constants import METADATA_FILE_NAME, METADATA_FOLDER, REPOSITORY_NAME
 
@@ -93,7 +92,9 @@ def _get_latest_metadata_entries_on_gcs(bucket_name: str) -> Mapping[str, Any]:
     return latest_metadata_entries_on_gcs
 
 
-def _generate_stale_metadata_report(latest_metadata_versions_on_github: Mapping[str, Any], latest_metadata_entries_on_gcs: Mapping[str, Any]) -> pd.DataFrame:
+def _generate_stale_metadata_report(
+    latest_metadata_versions_on_github: Mapping[str, Any], latest_metadata_entries_on_gcs: Mapping[str, Any]
+) -> pd.DataFrame:
     stale_connectors = []
     for docker_repository, github_docker_image_tag in latest_metadata_versions_on_github.items():
         gcs_docker_image_tag = latest_metadata_entries_on_gcs.get(docker_repository)
@@ -125,9 +126,7 @@ def generate_and_publish_stale_metadata_report(bucket_name: str) -> tuple[bool, 
     any_stale = len(stale_metadata_report) > 0
     if any_stale and stale_report_channel:
         stale_report_md = stale_metadata_report.to_markdown(index=False)
-        send_slack_message(
-            stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{EXTENSIBILITY_TEAM_SLACK_TEAM_ID}>)"
-        )
+        send_slack_message(stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{EXTENSIBILITY_TEAM_SLACK_TEAM_ID}>)")
         send_slack_message(stale_report_channel, stale_report_md, enable_code_block_wrapping=True)
 
     if not any_stale and publish_update_channel:

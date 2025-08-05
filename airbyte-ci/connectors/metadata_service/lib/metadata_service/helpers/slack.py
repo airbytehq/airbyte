@@ -2,12 +2,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import os
 from typing import Generator
 
 from slack_sdk import WebClient
-
-import logging
 
 logger = logging.getLogger(__name__)
 

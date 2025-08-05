@@ -5,7 +5,6 @@
 import pathlib
 
 import click
-from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
 from pydantic import ValidationError
 
 from metadata_service.constants import METADATA_FILE_NAME
@@ -16,6 +15,7 @@ from metadata_service.gcs_upload import (
     promote_release_candidate_in_gcs,
     upload_metadata_to_gcs,
 )
+from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 
 

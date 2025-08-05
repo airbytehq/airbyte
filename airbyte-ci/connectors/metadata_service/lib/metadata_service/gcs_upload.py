@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import List, NamedTuple, Optional, Tuple
 
 import git
-from metadata_service.helpers.gcs import get_gcs_storage_client
 import requests
 import yaml
 from google.cloud import storage
@@ -31,6 +30,7 @@ from metadata_service.constants import (
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
 from metadata_service.helpers.files import compute_gcs_md5, create_zip_and_get_sha256
+from metadata_service.helpers.gcs import get_gcs_storage_client
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
@@ -132,6 +132,7 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
 
 
 # 🛠️ HELPERS
+
 
 def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
     try:
