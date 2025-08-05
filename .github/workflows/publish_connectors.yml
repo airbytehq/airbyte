@@ -58,6 +58,29 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
+      - name: Set up Python
+        # v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        # v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
+        with:
+          version: 1.8.5
+
+      - name: Install metadata_service
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+
+      # If you modify this step, remember to also modify validate-connector-metadata-manual.
+      - name: Validate connector metadata [On merge to master]
+        id: validate-connector-metadata-master
+        if: github.event_name == 'push'
+        shell: bash
+        run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json | ./poe-tasks/validate-connector-metadata.sh
+
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
         if: github.event_name == 'push'
@@ -87,6 +110,13 @@ jobs:
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
+
+      # If you modify this step, remember to also modify validate-connector-metadata-master.
+      - name: Validate connector metadata [manual]
+        id: validate-connector-metadata-manual
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        shell: bash
+        run: ./poe-tasks/validate-connector-metadata.sh ${{ inputs.publish-options }} ${{ inputs.connectors-options }}
 
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
