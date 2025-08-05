@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 """Test for detecting undeclared interleaved streams in connectors."""
 import pytest
 import yaml
