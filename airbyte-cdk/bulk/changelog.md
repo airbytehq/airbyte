@@ -1,3 +1,9 @@
+## Version 0.1.6
+
+**Load CDK**
+
+* **Changed:** Add the dataflow pipeline. It is a more comprehensive way to write the ingestion pipeline steps. The new pipeline isn't ready to be use in this version.
+
 ## Version 0.1.3
 
 * **Changed:** Extract CDK fixes for CDC in socket mode - state, partitioning and full refresh streams.

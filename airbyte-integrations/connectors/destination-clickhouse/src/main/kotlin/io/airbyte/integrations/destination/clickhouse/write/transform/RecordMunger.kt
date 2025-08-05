@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.clickhouse.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.DataMunger
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import jakarta.inject.Singleton
@@ -21,18 +22,16 @@ import jakarta.inject.Singleton
 class RecordMunger(
     private val catalogInfo: TableCatalog,
     private val coercer: ClickhouseCoercer,
-) {
-    fun transformForDest(record: DestinationRecordRaw): Map<String, AirbyteValue> {
+) : DataMunger {
+    override fun transformForDest(msg: DestinationRecordRaw): Map<String, AirbyteValue> {
         // this actually munges and coerces data
         val enriched =
-            record.asEnrichedDestinationRecordAirbyteValue(
-                extractedAtAsTimestampWithTimezone = true
-            )
+            msg.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
 
         val munged = HashMap<String, AirbyteValue>()
         enriched.declaredFields.forEach { field ->
-            val mappedKey = catalogInfo.getMappedColumnName(record.stream, field.key)!!
-            val fieldType = record.schemaFields[field.key]!!
+            val mappedKey = catalogInfo.getMappedColumnName(msg.stream, field.key)!!
+            val fieldType = msg.schemaFields[field.key]!!
 
             var mappedValue =
                 field.value

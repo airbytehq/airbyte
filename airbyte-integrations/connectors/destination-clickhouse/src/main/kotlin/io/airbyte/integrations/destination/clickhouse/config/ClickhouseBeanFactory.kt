@@ -17,13 +17,10 @@ import io.airbyte.cdk.ssh.createTunnelSession
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.apache.sshd.common.util.net.SshdSocketAddress
-
-private val log = KotlinLogging.logger {}
 
 @Factory
 class ClickhouseBeanFactory {
