@@ -13,6 +13,7 @@ import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -727,6 +728,13 @@ data object NoOpMetaFieldDecorator : MetaFieldDecorator {
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
         recordData: ObjectNode
+    ) {}
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
     ) {}
 }
 
