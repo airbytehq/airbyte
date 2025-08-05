@@ -73,43 +73,43 @@ jobs:
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
 
-      # - name: Create docker buildx builder
-      #   id: create-buildx-builder
-      #   shell: bash
-      #   run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
+      - name: Create docker buildx builder
+        id: create-buildx-builder
+        shell: bash
+        run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
 
-      # - uses: actions/setup-java@v4
-      #   with:
-      #     distribution: zulu
-      #     java-version: 21
-      #     cache: gradle
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
 
-      # - name: Log in to Docker Hub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
-      #     password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      # - name: Set up Python
-      #   # v5
-      #   uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-      #   with:
-      #     python-version: "3.11"
-      #     check-latest: true
-      #     update-environment: true
-      # - name: Install and configure Poetry
-      #   # v1
-      #   uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
-      #   with:
-      #     version: 1.8.5
+      - name: Set up Python
+        # v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+      - name: Install and configure Poetry
+        # v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
+        with:
+          version: 1.8.5
 
-      # - name: Install metadata_service
-      #   run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+      - name: Install metadata_service
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
 
       - name: Validate connector metadata
         id: validate-connector-metadata
         shell: bash
-        run: echo WOULD RUN ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
+        run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
@@ -117,13 +117,31 @@ jobs:
           github.event_name == 'push' &&
           contains(fromJson(needs.list_connectors.outputs.connectors-to-publish-jvm).connector, matrix.connector)
         shell: bash
-        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
+        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
 
       - name: Publish connectors [On merge to master]
         # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
         id: publish-connectors-master
         if: github.event_name == 'push'
-        run: echo WOULD RUN airbyte-ci connectors --name ${{ matrix.connector }} --main-release
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "master"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: "connectors --name ${{ matrix.connector }} publish --main-release"
+          python_registry_token: ${{ secrets.PYPI_TOKEN }}
+          max_attempts: 2
+          retry_wait_seconds: 600 # 10 minutes
 
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
@@ -131,57 +149,75 @@ jobs:
           (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') &&
           contains(fromJson(needs.list_connectors.outputs.connectors-to-publish-jvm).connector, matrix.connector)
         shell: bash
-        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
+        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
 
       - name: Publish connectors [manual]
         id: publish-connectors-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        run: echo WOULD RUN airbyte-ci connectors --name ${{ matrix.connector }} publish ${{ inputs.publish-options }}
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: "connectors --name ${{ matrix.connector }} publish ${{ inputs.publish-options }}"
+          python_registry_token: ${{ secrets.PYPI_TOKEN }}
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
+          max_attempts: 2
 
-  # notify-failure-slack-channel:
-  #   name: "Notify Slack Channel on Publish Failures"
-  #   runs-on: ubuntu-24.04
-  #   needs:
-  #     - publish_connectors
-  #   if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
-  #   steps:
-  #     - name: Checkout Airbyte
-  #       uses: actions/checkout@v4
-  #     - name: Match GitHub User to Slack User
-  #       id: match-github-to-slack-user
-  #       uses: ./.github/actions/match-github-to-slack-user
-  #       env:
-  #         AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
-  #         GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     - name: Send publish failures to connector-publish-failures channel
-  #       id: slack
-  #       uses: slackapi/slack-github-action@v1.26.0
-  #       with:
-  #         # This data can be any valid JSON from a previous step in the GitHub Action
-  #         payload: |
-  #           {
-  #             "channel": "#connector-publish-failures",
-  #             "username": "Connectors CI/CD Bot",
-  #             "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
-  #           }
-  #       env:
-  #         SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+  notify-failure-slack-channel:
+    name: "Notify Slack Channel on Publish Failures"
+    runs-on: ubuntu-24.04
+    needs:
+      - publish_connectors
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Match GitHub User to Slack User
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Send publish failures to connector-publish-failures channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          # This data can be any valid JSON from a previous step in the GitHub Action
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
-  # notify-failure-pager-duty:
-  #   name: "Notify PagerDuty on Publish Failures"
-  #   runs-on: ubuntu-24.04
-  #   needs:
-  #     - publish_connectors
-  #   if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
-  #   steps:
-  #     - name: Checkout Airbyte
-  #       uses: actions/checkout@v4
-  #     - name: Notify PagerDuty
-  #       id: pager-duty
-  #       uses: ./.github/actions/send-pager-duty-event
-  #       with:
-  #         # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
-  #         integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
-  #         summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
-  #         severity: "critical"
-  #         source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+  notify-failure-pager-duty:
+    name: "Notify PagerDuty on Publish Failures"
+    runs-on: ubuntu-24.04
+    needs:
+      - publish_connectors
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Notify PagerDuty
+        id: pager-duty
+        uses: ./.github/actions/send-pager-duty-event
+        with:
+          # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
+          integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
+          summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
+          severity: "critical"
+          source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
