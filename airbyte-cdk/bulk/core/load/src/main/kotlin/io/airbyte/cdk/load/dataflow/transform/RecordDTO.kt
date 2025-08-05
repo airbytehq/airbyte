@@ -1,11 +1,11 @@
 package io.airbyte.cdk.load.dataflow.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.dataflow.state.StateId
+import io.airbyte.cdk.load.dataflow.state.StateKey
 
 data class RecordDTO(
     val fields: Map<String, AirbyteValue>,
-    val stateId: StateId,
+    val stateKey: StateKey,
     val sizeBytes: Long,
     val emittedAtMs: Long,
 )

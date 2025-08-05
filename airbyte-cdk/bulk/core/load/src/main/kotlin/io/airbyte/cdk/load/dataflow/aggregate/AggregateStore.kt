@@ -2,6 +2,7 @@ package io.airbyte.cdk.load.dataflow.aggregate
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -24,15 +25,16 @@ class AggregateStore(
     private val aggregates = ConcurrentHashMap<StoreKey, AggregateEntry>()
 
     fun acceptFor(key: StoreKey, record: RecordDTO) {
-        val (agg, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
+        val (agg, histogram, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
 
         agg.accept(record)
+        histogram.increment(record.stateKey)
         countTrigger.increment(1)
         bytesTrigger.increment(record.sizeBytes)
         timeTrigger.update(record.emittedAtMs)
     }
 
-    fun removeNextComplete(timestampMs: Long): Aggregate? {
+    fun removeNextComplete(timestampMs: Long): AggregateEntry? {
         for ((key, entry) in aggregates) {
             // remove complete
             if (entry.isComplete()) {
@@ -62,6 +64,7 @@ class AggregateStore(
         val entry = aggregates.computeIfAbsent(key, {
             AggregateEntry(
                 value = aggFactory.create(it),
+                stateHistogram = StateHistogram(),
                 stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
                 recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
                 estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
@@ -72,13 +75,14 @@ class AggregateStore(
     }
 
     @VisibleForTesting
-    internal fun remove(key: StoreKey): Aggregate {
-        return aggregates.remove(key)!!.value
+    internal fun remove(key: StoreKey): AggregateEntry {
+        return aggregates.remove(key)!!
     }
 }
 
 data class AggregateEntry(
     val value: Aggregate,
+    val stateHistogram: StateHistogram,
     val stalenessTrigger: TimeTrigger,
     val recordCountTrigger: SizeTrigger,
     val estimatedBytesTrigger: SizeTrigger,

@@ -505,6 +505,10 @@ sealed interface CheckpointMessage : DestinationMessage {
     }
 
     val checkpointKey: CheckpointKey?
+    val checkpointIdRaw: String?
+        get() = checkpointKey?.checkpointId?.value
+    val checkpointOrdinalRaw: Int?
+        get() = checkpointKey?.checkpointIndex?.value
 
     val sourceStats: Stats?
     val destinationStats: Stats?

@@ -18,8 +18,7 @@ class ParseStage(
         return input.apply {
             munged = RecordDTO(
                 fields = fields,
-//                stateId = raw.checkpointId!!.value,
-                stateId = "dummy",
+                stateKey = input.stateKey!!,
                 sizeBytes = raw.serializedSizeBytes,
                 emittedAtMs = raw.rawData.emittedAtMs,
             )

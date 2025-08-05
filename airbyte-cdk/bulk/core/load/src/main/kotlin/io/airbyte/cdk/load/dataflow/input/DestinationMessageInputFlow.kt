@@ -9,15 +9,18 @@ import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
+/**
+ * Takes bytes and emits DestinationMessages
+ */
 @Singleton
-class DestinationInputFlow(
+class DestinationMessageInputFlow(
     @Named("inputStream") private val inputStream: InputStream,
     private val deserializer: ProtocolMessageDeserializer,
 ) : Flow<DestinationMessage> {
     val log = KotlinLogging.logger {}
 
     override suspend fun collect(
-        collector: FlowCollector<DestinationMessage>
+        collector: FlowCollector<DestinationMessage>,
     ) {
         var msgCount = 0L
         var estBytes = 0L
