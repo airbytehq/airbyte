@@ -57,6 +57,7 @@ else
 fi
 '''
 
+# Identical to test-integration-tests except excludes tests marked with @Tag("requires-creds")
 test-integration-tests-no-creds.shell = '''
 set -eu # Ensure we return non-zero exit code upon failure
 
