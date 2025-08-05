@@ -57,6 +57,17 @@ else
 fi
 '''
 
+test-integration-tests-no-creds.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if [ -d src/test-integration ]; then
+  echo "Found 'src/test-integration' directory. Running integration tests (most Java connectors use Docker-based test harnesses that don't require external credentials)..."
+  gradle integrationTestJava
+else
+  echo "No integration tests defined; skipping integration tests."
+fi
+'''
+
 [tasks.gradle]
 help = "Run a gradle command on this connector. Usage: poe gradle <command> [args...]"
 shell = '''
