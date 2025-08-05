@@ -24,10 +24,10 @@ The connector uses the [Salesforce Bulk API v62.0](https://developer.salesforce.
 
 ## Prerequisites
 
-- [Salesforce Account](https://login.salesforce.com/) with Enterprise edition or Professional edition with API access purchased
+- [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
+- A version of the Airbyte platform to be at least 1.8 or cloud
 - Salesforce developer application with OAuth 2.0 credentials (Client ID and Client Secret)
 - (Recommended) Dedicated Salesforce user with appropriate object permissions
-- S3 bucket for rejected records storage (optional but recommended)
 
 :::tip
 
@@ -55,23 +55,7 @@ Before setting up the Airbyte connector, you need to create a Connected App in S
 6. Click **Save** and then **Continue**
 7. Note the **Consumer Key** (Client ID) and **Consumer Secret** (Client Secret) for later use
 
-### Step 2: (Recommended) Create a dedicated Salesforce user
-
-Create a dedicated user with specific permissions for data synchronization to follow security best practices.
-
-1. Navigate to **Setup** > **Users** > **Users**
-2. Click **New User** and fill in the required fields:
-   - Select **Salesforce Platform** for User License
-   - Select **Standard Platform User** for Profile
-3. Create a Permission Set for Airbyte:
-   - Go to **Setup** > **Users** > **Permission Sets**
-   - Click **New** and create a permission set named "Airbyte Data Sync"
-   - Under **Object Settings**, grant the following permissions for each Salesforce object you want to sync to:
-     - **Read**, **Create**, **Edit** permissions
-     - **View All** and **Modify All** (if needed for your use case)
-4. Assign the permission set to your dedicated user
-
-### Step 3: Set up the Salesforce connector in Airbyte
+### Step 2: Set up the Salesforce connector in Airbyte
 
 <!-- env:cloud -->
 
@@ -82,14 +66,11 @@ Create a dedicated user with specific permissions for data synchronization to fo
 3. Select **Salesforce** from the destination type dropdown
 4. Enter a name for the Salesforce connector
 5. Configure authentication:
+   - **Is Sandbox**: First, toggle this setting based on your Salesforce environment (sandbox or production)
    - **Client ID**: Enter the Consumer Key from your Connected App
    - **Client Secret**: Enter the Consumer Secret from your Connected App
    - **Refresh Token**: Click **Authenticate your account** to generate this automatically
-   - **Is Sandbox**: Toggle this if you're connecting to a Salesforce sandbox environment
-6. (Optional) Configure Rejected Records:
-   - **Object Storage Configuration**: Select **S3** to enable rejected records storage
-   - Configure your S3 bucket details for storing failed records
-7. Click **Set up destination** and wait for the connection test to complete
+6. Click **Set up destination** and wait for the connection test to complete
 
 <!-- /env:cloud -->
 
@@ -102,38 +83,17 @@ Create a dedicated user with specific permissions for data synchronization to fo
 3. Select **Salesforce** from the destination type dropdown
 4. Enter a name for the Salesforce connector
 5. Configure authentication:
+   - **Is Sandbox**: First, set to `true` if connecting to a Salesforce sandbox, `false` for production
    - **Client ID**: Enter the Consumer Key from your Connected App
    - **Client Secret**: Enter the Consumer Secret from your Connected App
    - **Refresh Token**: You'll need to obtain this through the OAuth flow using your callback URL
-   - **Is Sandbox**: Set to `true` if connecting to a Salesforce sandbox, `false` for production
-6. (Optional) Configure Rejected Records:
-   - **Object Storage Configuration**: Select **S3** to enable rejected records storage
-   - Configure your S3 bucket details for storing failed records
-7. Click **Set up destination** and wait for the connection test to complete
+6. Click **Set up destination** and wait for the connection test to complete
 
 <!-- /env:oss -->
 
 ## Configuration
 
-### Authentication
-
-The connector uses OAuth 2.0 with the following required fields:
-
-- **Client ID**: The Consumer Key from your Salesforce Connected App
-- **Client Secret**: The Consumer Secret from your Salesforce Connected App  
-- **Refresh Token**: Generated through the OAuth flow when you authenticate your account
-- **Is Sandbox**: Set to `true` if connecting to a Salesforce sandbox, `false` for production
-
-### Rejected Records
-
-The connector supports [rejected records](/platform/next/move-data/rejected-records) functionality to handle failed records:
-
-- **Storage Type**: Currently supports S3 storage
-- **Format**: Failed records are stored in CSV or JSONL format
-- **Bucket Configuration**: Requires S3 bucket name, region, and access credentials
-- **Path Format**: Configurable path structure for organizing failed records
-
-Failed records include the original data plus error information to help with troubleshooting and reprocessing.
+The connector uses OAuth 2.0 authentication with your Salesforce Connected App credentials. Make sure to set the **Is Sandbox** option correctly before authenticating, as this determines which Salesforce environment you connect to.
 
 ## Supported Sync Modes
 
@@ -150,15 +110,6 @@ While the underlying implementation supports additional operations (update, upse
 
 ## Limitations and Considerations
 
-### Technical Limitations
-
-- **Batch Size**: Maximum batch size is 100MB per upload to Salesforce Bulk API
-- **API Version**: Uses Salesforce Bulk API v62.0
-- **Format**: Data is processed in CSV format only
-- **Sync Mode**: Currently limited to append operations
-
-### Operational Considerations
-
 - **API Limits**: Respect Salesforce API limits based on your edition and purchased API calls
 - **Field Mapping**: Ensure source data types are compatible with target Salesforce field types
 - **Object Permissions**: The authenticated user must have appropriate permissions on target objects
@@ -166,10 +117,8 @@ While the underlying implementation supports additional operations (update, upse
 
 ### Error Handling
 
-- Failed records are captured and sent to the configured rejected records storage
-- Job status is monitored through polling with 5-second intervals
-- Terminal job states include: JobComplete, Failed, and Aborted
-- Detailed error information is available in rejected records for troubleshooting
+- Failed records are automatically captured for troubleshooting
+- Monitor sync status through the Airbyte UI for detailed error information
 
 ## Troubleshooting
 
@@ -187,14 +136,12 @@ While the underlying implementation supports additional operations (update, upse
 
 ### Data Issues
 
-- **Batch Size Exceeded**: Large datasets may need to be split into smaller batches
 - **Field Type Mismatches**: Ensure source data types are compatible with Salesforce field types
 - **Required Field Validation**: Check that all required Salesforce fields are populated
 
 ### Monitoring
 
 - Review sync logs in the Airbyte UI for detailed error messages
-- Check the rejected records in your S3 bucket for failed records
 - Monitor Salesforce Setup > System Overview for API usage and limits
 
 ## Reference
@@ -206,12 +153,7 @@ For programmatic configuration, use these parameter names:
   "client_id": "your_consumer_key",
   "client_secret": "your_consumer_secret", 
   "refresh_token": "your_refresh_token",
-  "is_sandbox": false,
-  "object_storage_config": {
-    "storage_type": "S3",
-    "s3_bucket_name": "your-rejected-records-bucket",
-    "s3_bucket_region": "us-east-1"
-  }
+  "is_sandbox": false
 }
 ```
 
