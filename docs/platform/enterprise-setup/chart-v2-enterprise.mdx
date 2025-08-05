@@ -15,12 +15,6 @@ Airbyte has upgraded its Helm chart to a new version called "V2." Upgrading to H
 Follow the [Self-Managed Community guide](../deploying-airbyte/chart-v2-community) instead.
 :::
 
-## Schedule time with Airbyte
-
-:::important It's dangerous to go alone! Take this.
-Engage your Airbyte Solution Architect for help with this migration. We strongly caution against doing it alone. Airbyte can provide guidance to help you manage uncommon customizations and verify the migration is successful.
-:::
-
 ## Why you should upgrade
 
 Upgrading to the new Helm chart now has the following benefits.
@@ -44,6 +38,12 @@ The following versions of Airbyte can't use Helm chart V2:
 - Airbyte versions before 1.6.0
 
 - Airbyte versions installed and managed with abctl
+
+## Schedule time with Airbyte
+
+:::important "It's dangerous to go alone! Take this."
+Engage your Airbyte Solution Architect for help with this migration. We caution against doing it alone. Airbyte can provide guidance to help you manage uncommon customizations and verify the migration is successful.
+:::
 
 ## How to upgrade
 
@@ -245,7 +245,6 @@ global:
 
     bucket:
       log: airbyte-bucket
-      auditLogging: airbyte-bucket # Version 1.7 or later, only if you're using audit logging
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
       activityPayload: airbyte-bucket
@@ -413,12 +412,6 @@ workloadLauncher:
 </details>
 
 ### Deploy Airbyte {#deploy-airbyte}
-
-Before you deploy, validate your values.yaml file.
-
-```bash
-helm template airbyte-enterprise airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
-```
 
 Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally, in V1, the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
 
