@@ -119,6 +119,7 @@ jobs:
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
       # The commit SHA of the current branch, used to report test results:
       commit-sha: ${{ steps.checkout.outputs.commit }}
+      creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -132,7 +133,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || '' }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( ! needs.generate-matrix.outputs.creds-available == 'true' && '[With Creds]' || '[No Creds]') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -294,7 +295,11 @@ jobs:
       - name: Run Unit Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
+        run: |
+          echo "DEBUG: ${{ env.GCP_PROJECT_ID }} </DEBUG>"
+          echo "DEBUG2:  ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}"
+          echo "DEBUG3:  ${{ (env.GCP_PROJECT_ID == '') && ' [Unprivileged, Executed from Fork]' || '' }}"
+          poe test-unit-tests
 
       - name: Run Integration Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
