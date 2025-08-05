@@ -27,7 +27,10 @@ class AggregateStage(
         var next = store.removeNextComplete(rec.emittedAtMs)
 
         while (next != null) {
-            outputFlow.emit(DataFlowStageIO(aggregate = next))
+            outputFlow.emit(DataFlowStageIO(
+                aggregate = next.value,
+                stateHistogram = next.stateHistogram,
+            ))
             next = store.removeNextComplete(rec.emittedAtMs)
         }
     }
