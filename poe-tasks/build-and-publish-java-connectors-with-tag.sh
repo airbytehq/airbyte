@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 # This script builds and optionally publishes Java connector Docker images.
 #
 # Flag descriptions:
@@ -34,67 +35,7 @@
 #   ./build-and-publish-java-connectors-with-tag.sh --publish foo-conn
 set -euo pipefail
 
-CONNECTORS_DIR="airbyte-integrations/connectors"
-
-# ------ Defaults & arg parsing -------
-publish_mode="pre-release"
-do_publish=false
-connectors=()
-
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -h|--help)
-      sed -n '1,34p' "$0"
-      exit 0
-      ;;
-    --main-release)
-      publish_mode="main-release"
-      shift
-      ;;
-    --pre-release)
-      publish_mode="pre-release"
-      shift
-      ;;
-    --publish)
-      do_publish=true
-      shift
-      ;;
-    --name=*)
-      connectors=("${1#*=}")
-      shift
-      ;;
-    --name)
-      connectors=("$2")
-      shift 2
-      ;;
-    --*)
-      echo "Error: Unknown flag $1" >&2
-      exit 1
-      ;;
-    *)
-      connectors+=("$1")
-      shift
-      ;;
-  esac
-done
-
-# ---------- helper: collect connector names ----------
-get_connectors() {
-  if [ "${#connectors[@]}" -gt 0 ]; then
-      # only look at non-empty strings
-      for c in "${connectors[@]}"; do
-          [[ -n "$c" ]] && printf "%s\n" "$c"
-      done
-  else
-    # read JSON from stdin
-    if [ -t 0 ]; then
-      echo "Error:  No --name given and nothing piped to stdin." >&2
-      exit 1
-    fi
-    # select only non-empty strings out of the JSON array
-    jq -r '.connector[] | select(. != "")'
-  fi
-}
+source "${BASH_SOURCE%/*}/lib/util.sh"
 
 dockerhub_tag_exists() {
   local image="$1"   # e.g. airbyte/destination-postgres
@@ -128,20 +69,20 @@ dockerhub_tag_exists() {
   exit 1
 }
 
-generate_dev_tag() {
-  local base="$1"
-  # force a 10-char short hash to match existing airbyte-ci behaviour.
-  local hash
-  hash=$(git rev-parse --short=10 HEAD)
-  echo "${base}-dev.${hash}"
-}
-
 # ---------- main loop ----------
+source "${BASH_SOURCE%/*}/lib/parse_args.sh"
+
 while read -r connector; do
   meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
   if [[ ! -f "$meta" ]]; then
     echo "Error: metadata.yaml not found for ${connector}" >&2
     exit 1
+  fi
+
+  # Check if this is a Java connector
+  if ! grep -qE 'language:\s*java' "$meta"; then
+    echo "ℹ️  Skipping ${connector} — this script only supports JVM connectors for now."
+    continue
   fi
 
   base_tag=$(yq -r '.data.dockerImageTag' "$meta")
