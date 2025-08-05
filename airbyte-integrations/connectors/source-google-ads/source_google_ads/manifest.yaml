@@ -6,6 +6,10 @@ check:
   type: CheckStream
   stream_names:
     - campaign
+  dynamic_streams_check_configs:
+    - type: DynamicStreamCheckConfig
+      dynamic_stream_name: dynamic_stream_0
+      stream_count: 1
 
 definitions:
   # Authenticator Definitions
@@ -401,7 +405,7 @@ definitions:
         class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:search"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -421,7 +425,7 @@ definitions:
             partition_field: "customer_id"
             stream: "#/definitions/customer_client"
       paginator:
-        type: NoPagination
+        $ref: "#/definitions/cursor_paginator"
     transformations:
       - type: CustomTransformation
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
