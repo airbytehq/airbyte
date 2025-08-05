@@ -1,16 +1,25 @@
 package io.airbyte.cdk.load.dataflow.state
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
 class StateWatermarkStore(
-    private val watermarks: StateHistogram = StateHistogram(ConcurrentHashMap()),
-    private val expected: StateHistogram = StateHistogram(ConcurrentHashMap()),
+    val watermarks: StateHistogram = StateHistogram(ConcurrentHashMap()),
+    val expected: StateHistogram = StateHistogram(ConcurrentHashMap()),
 ) {
-    fun accept(
+    private val log = KotlinLogging.logger {}
+
+    fun acceptAggregateCounts(
         value: StateHistogram
     ): StateHistogram {
         return watermarks.merge(value)
+    }
+
+    fun acceptExpectedCounts(
+        value: StateHistogram
+    ): StateHistogram {
+        return expected.merge(value)
     }
 }

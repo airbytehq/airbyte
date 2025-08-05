@@ -55,8 +55,8 @@ class AggregateStore(
         return null
     }
 
-    fun removeAll(): List<Aggregate> {
-        return aggregates.values.map { it.value }
+    fun getAll(): List<AggregateEntry> {
+        return aggregates.values.toList()
     }
 
     @VisibleForTesting

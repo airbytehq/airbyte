@@ -5,7 +5,6 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
-import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
@@ -14,8 +13,6 @@ import io.micronaut.context.annotation.Factory
 class ClickhouseAggregate(
     @VisibleForTesting val buffer: BinaryRowInsertBuffer,
 ) : Aggregate {
-
-    private val stateHistogram: StateHistogram = StateHistogram()
 
     override fun accept(record: RecordDTO) {
         buffer.accumulate(record.fields)
@@ -26,7 +23,6 @@ class ClickhouseAggregate(
         buffer.reset()
     }
 
-    override fun getStateHistogram(): StateHistogram = stateHistogram
 }
 
 @Factory

@@ -1,6 +1,7 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
+import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.state.StateWatermarkStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -25,17 +26,26 @@ class PipelineCompletionHandler(
 
         log.info { "Destination Pipeline Completed — Successfully" }
 
-        val toFlush = aggStore.removeAll()
+        val remainingAggregates = aggStore.getAll()
 
-        log.info { "Flushing ${toFlush.size} final aggregates..." }
-        toFlush
+        log.info { "Flushing ${remainingAggregates.size} final aggregates..." }
+        remainingAggregates
             .map {
                 async {
-                    it.flush()
-                    stateStore.accept(it.getStateHistogram())
+                    it.value.flush()
+                    stateStore.acceptAggregateCounts(it.stateHistogram)
                 }
             }
             .awaitAll()
+
+        log.info { "Expected:" }
+        stateStore.expected.map.forEach {
+            log.info { it.key.id + ": " + it.value }
+        }
+        log.info { "Received:" }
+        stateStore.watermarks.map.forEach {
+            log.info { it.key.id + ": " + it.value }
+        }
     }
 
 }

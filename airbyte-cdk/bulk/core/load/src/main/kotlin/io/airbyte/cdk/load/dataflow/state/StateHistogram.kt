@@ -8,7 +8,7 @@ data class StateKey(
 )
 
 class StateHistogram(
-    private val map: ConcurrentMap<StateKey, Long> = ConcurrentHashMap()
+    val map: ConcurrentMap<StateKey, Long> = ConcurrentHashMap()
 ) {
     fun increment(key: StateKey): StateHistogram {
         map.merge(

@@ -17,7 +17,7 @@ class StateStage(
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val stateUpdates = input.stateHistogram!!
 
-        stateStore.accept(stateUpdates)
+        stateStore.acceptAggregateCounts(stateUpdates)
 
         return input
     }
