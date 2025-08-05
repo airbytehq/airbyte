@@ -131,7 +131,10 @@ jobs:
           (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') &&
           contains(fromJson(needs.list_connectors.outputs.connectors-to-publish-jvm).connector, matrix.connector)
         shell: bash
-        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
+        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish && exit 1
+
+      - name: DEBUG SLEEP
+        run: sleep 10
 
       - name: Publish connectors [manual]
         id: publish-connectors-manual
