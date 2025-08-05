@@ -85,7 +85,7 @@ jobs:
     needs: detect-changes
     if: >
       github.event.pull_request.head.repo.full_name == github.repository
-    # && needs.detect-changes.outputs.changed == 'true'
+      && needs.detect-changes.outputs.changed == 'true'
     runs-on: ubuntu-latest
     # This workflow deploys preview builds to Vercel on pull requests.
     # Pull requests from forks are ignored.
