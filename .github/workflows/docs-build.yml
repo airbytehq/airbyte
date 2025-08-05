@@ -108,7 +108,6 @@ jobs:
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
           vercel-args: --archive=tgz
-          # working-directory: ./docusaurus
 
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v2.0.6
