@@ -63,14 +63,28 @@ set -eu # Ensure we return non-zero exit code upon failure
 if [ -d src/test-integration ]; then
   echo "Found 'src/test-integration' directory. Running integration tests without credential requirements..."
   
-  # Check if the connector has defined the integrationTestJavaNoCreds task
-  if gradle tasks --all | grep -q "integrationTestJavaNoCreds"; then
-    echo "Using dedicated integrationTestJavaNoCreds task (excludes @Tag('requires-creds') tests)"
-    gradle integrationTestJavaNoCreds
-  else
-    echo "No integrationTestJavaNoCreds task found. Running all integration tests (most Java connectors use Docker-based test harnesses that don't require external credentials)..."
+  # Create a temporary Gradle task that excludes @Tag("requires-creds") tests
+  cat > build-temp-no-creds.gradle << 'EOF'
+task integrationTestJavaNoCreds(type: Test) {
+    useJUnitPlatform {
+        excludeTags("requires-creds")
+    }
+    testClassesDirs = sourceSets.testIntegration.output.classesDirs
+    classpath = sourceSets.testIntegration.runtimeClasspath
+    group = 'verification'
+    description = 'Runs integration tests that do not require external credentials'
+}
+EOF
+  
+  # Apply the temporary build script and run the no-creds task
+  echo "Creating temporary integrationTestJavaNoCreds task (excludes @Tag('requires-creds') tests)"
+  gradle -b build-temp-no-creds.gradle integrationTestJavaNoCreds || {
+    echo "Failed to run with tag exclusion. Falling back to all integration tests (most Java connectors use Docker-based test harnesses)..."
     gradle integrationTestJava
-  fi
+  }
+  
+  # Clean up temporary file
+  rm -f build-temp-no-creds.gradle
 else
   echo "No integration tests defined; skipping integration tests."
 fi
