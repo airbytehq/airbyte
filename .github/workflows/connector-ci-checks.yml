@@ -133,7 +133,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( ! needs.generate-matrix.outputs.creds-available == 'true' && '[With Creds]' || '[No Creds]') }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -190,16 +190,12 @@ jobs:
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          echo "DEBUG: ${{ env.GCP_PROJECT_ID }} </DEBUG>"
-          echo "DEBUG2:  ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}"
-          echo "DEBUG3:  ${{ (env.GCP_PROJECT_ID == '') && ' [Unprivileged, Executed from Fork]' || '' }}"
-          poe test-unit-tests
+        run: poe test-unit-tests
 
-      - name: Run Integration Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
@@ -226,7 +222,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' ||  ( ! needs.generate-matrix.outputs.creds-available == 'true' && '[With Creds]' || '[No Creds]')  }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
