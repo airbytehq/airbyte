@@ -32,7 +32,26 @@ data class OutputRecord(
     data class Meta(
         val changes: List<Change> = listOf(),
         val syncId: Long? = null,
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Meta
+
+            if (syncId != other.syncId) return false
+            // Convert to set to avoid ordering when comparing changes
+            if (changes.toSet() != other.changes.toSet()) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = syncId?.hashCode() ?: 0
+            result = 31 * result + changes.toSet().hashCode()
+            return result
+        }
+    }
 
     /** Utility constructor with easier types to write by hand */
     constructor(
