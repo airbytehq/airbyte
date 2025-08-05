@@ -5,7 +5,7 @@ dockerRepository: airbyte/destination-salesforce
 
 ## Overview
 
-This page guides you through the process of setting up the [Salesforce](https://www.salesforce.com/) destination connector.
+This destination relies on the Data Activation flow which requires the platform version to be at least 1.8 or cloud. This page guides you through the process of setting up the [Salesforce](https://www.salesforce.com/) destination connector.
 
 ## Prerequisites
 
