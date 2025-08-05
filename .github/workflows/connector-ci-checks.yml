@@ -182,19 +182,19 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # This will be skipped if the repo or fork doesn't set the GCP_PROJECT_ID env var.
         # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        if: matrix.connector && env.GCP_PROJECT_ID != ''
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests
+      - name: Run Integration Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
