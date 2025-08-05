@@ -191,7 +191,15 @@ For programmatic configuration, use these parameter names:
   "client_id": "your_consumer_key",
   "client_secret": "your_consumer_secret", 
   "refresh_token": "your_refresh_token",
-  "is_sandbox": false
+  "is_sandbox": false,
+  "object_storage_config": {
+    "storage_type": "S3",
+    "access_key_id": "your_access_key_id",
+    "secret_access_key": "your_secret_access_key",
+    "s3_bucket_name": "your_bucket_name",
+    "s3_bucket_region": "us-east-1",
+    "bucket_path": "rejected_records/"
+  }
 }
 ```
 
