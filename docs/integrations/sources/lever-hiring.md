@@ -46,6 +46,14 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
+| 0.4.10 | 2025-08-02 | [64302](https://github.com/airbytehq/airbyte/pull/64302) | Update dependencies |
+| 0.4.9 | 2025-07-26 | [63847](https://github.com/airbytehq/airbyte/pull/63847) | Update dependencies |
+| 0.4.8 | 2025-07-19 | [63519](https://github.com/airbytehq/airbyte/pull/63519) | Update dependencies |
+| 0.4.7 | 2025-07-12 | [63111](https://github.com/airbytehq/airbyte/pull/63111) | Update dependencies |
+| 0.4.6 | 2025-07-05 | [62598](https://github.com/airbytehq/airbyte/pull/62598) | Update dependencies |
+| 0.4.5 | 2025-06-28 | [62189](https://github.com/airbytehq/airbyte/pull/62189) | Update dependencies |
+| 0.4.4 | 2025-06-21 | [61808](https://github.com/airbytehq/airbyte/pull/61808) | Update dependencies |
+| 0.4.3 | 2025-06-14 | [48264](https://github.com/airbytehq/airbyte/pull/48264) | Update dependencies |
 | 0.4.2 | 2024-10-28 | [43750](https://github.com/airbytehq/airbyte/pull/43750) | Update dependencies |
 | 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.4.0 | 2024-08-15 | [44133](https://github.com/airbytehq/airbyte/pull/44133) | Refactor connector to manifest-only format |

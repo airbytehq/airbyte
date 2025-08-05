@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.mock_integration_test
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.test.mock.MockDestinationBackend
@@ -14,6 +15,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DirectLoader
 import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.Instant
 import java.util.UUID
@@ -22,15 +24,25 @@ import kotlinx.coroutines.runBlocking
 
 @Singleton
 @Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
-class MockDestinationDirectLoaderFactory : DirectLoaderFactory<MockDestinationDirectLoader> {
+class MockDestinationDirectLoaderFactory(
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
+) : DirectLoaderFactory<MockDestinationDirectLoader> {
     override fun create(streamDescriptor: DestinationStream.Descriptor, part: Int) =
-        MockDestinationDirectLoader()
+        MockDestinationDirectLoader(dataChannelFormat)
 }
 
-class MockDestinationDirectLoader : DirectLoader {
+class MockDestinationDirectLoader(
+    private val dataChannelFormat: DataChannelFormat,
+) : DirectLoader {
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val recordAirbyteValue = record.asDestinationRecordAirbyteValue()
-        val filename = getFilename(record.stream.descriptor, staging = true)
+        val filename = getFilename(record.stream.mappedDescriptor, staging = true)
+        val dataChannelFormatInducedChanges =
+            if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                record.stream.unknownColumnChanges
+            } else {
+                emptyList()
+            }
         val outputRecord =
             OutputRecord(
                 UUID.randomUUID(),
@@ -39,7 +51,8 @@ class MockDestinationDirectLoader : DirectLoader {
                 record.stream.generationId,
                 recordAirbyteValue.data as ObjectValue,
                 OutputRecord.Meta(
-                    changes = recordAirbyteValue.meta?.changes ?: listOf(),
+                    changes = (recordAirbyteValue.meta?.changes
+                            ?: listOf()) + dataChannelFormatInducedChanges,
                     syncId = record.stream.syncId
                 ),
             )

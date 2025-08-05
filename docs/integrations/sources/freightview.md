@@ -22,6 +22,13 @@ An **Airbyte connector for Freightview** enables seamless data integration by ex
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.29 | 2025-07-26 | [63999](https://github.com/airbytehq/airbyte/pull/63999) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63561](https://github.com/airbytehq/airbyte/pull/63561) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [62960](https://github.com/airbytehq/airbyte/pull/62960) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62778](https://github.com/airbytehq/airbyte/pull/62778) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62302](https://github.com/airbytehq/airbyte/pull/62302) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61974](https://github.com/airbytehq/airbyte/pull/61974) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [61211](https://github.com/airbytehq/airbyte/pull/61211) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60377](https://github.com/airbytehq/airbyte/pull/60377) | Update dependencies |
 | 0.0.21 | 2025-05-10 | [59930](https://github.com/airbytehq/airbyte/pull/59930) | Update dependencies |
 | 0.0.20 | 2025-05-03 | [59377](https://github.com/airbytehq/airbyte/pull/59377) | Update dependencies |

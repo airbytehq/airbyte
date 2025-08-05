@@ -28,6 +28,14 @@ No documented strict rate limit.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.31 | 2025-08-02 | [64339](https://github.com/airbytehq/airbyte/pull/64339) | Update dependencies |
+| 0.2.30 | 2025-07-26 | [64001](https://github.com/airbytehq/airbyte/pull/64001) | Update dependencies |
+| 0.2.29 | 2025-07-19 | [63587](https://github.com/airbytehq/airbyte/pull/63587) | Update dependencies |
+| 0.2.28 | 2025-07-12 | [62970](https://github.com/airbytehq/airbyte/pull/62970) | Update dependencies |
+| 0.2.27 | 2025-07-05 | [62791](https://github.com/airbytehq/airbyte/pull/62791) | Update dependencies |
+| 0.2.26 | 2025-06-28 | [62394](https://github.com/airbytehq/airbyte/pull/62394) | Update dependencies |
+| 0.2.25 | 2025-06-21 | [61982](https://github.com/airbytehq/airbyte/pull/61982) | Update dependencies |
+| 0.2.24 | 2025-06-14 | [60383](https://github.com/airbytehq/airbyte/pull/60383) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59928](https://github.com/airbytehq/airbyte/pull/59928) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59413](https://github.com/airbytehq/airbyte/pull/59413) | Update dependencies |
 | 0.2.21 | 2025-04-26 | [58865](https://github.com/airbytehq/airbyte/pull/58865) | Update dependencies |

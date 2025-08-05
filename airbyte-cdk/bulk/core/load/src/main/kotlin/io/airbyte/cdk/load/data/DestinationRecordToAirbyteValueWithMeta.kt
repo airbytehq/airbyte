@@ -7,9 +7,7 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
+import io.airbyte.cdk.load.message.Meta.Companion.getEmittedAtMs
 import java.util.*
 
 /**
@@ -33,16 +31,7 @@ class DestinationRecordToAirbyteValueWithMeta(
             linkedMapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to StringValue(airbyteRawId.toString()),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
-                    if (extractedAtAsTimestampWithTimezone) {
-                        TimestampWithTimezoneValue(
-                            OffsetDateTime.ofInstant(
-                                Instant.ofEpochMilli(emittedAtMs),
-                                ZoneOffset.UTC
-                            )
-                        )
-                    } else {
-                        IntegerValue(emittedAtMs)
-                    },
+                    getEmittedAtMs(emittedAtMs, extractedAtAsTimestampWithTimezone),
                 Meta.COLUMN_NAME_AB_META to
                     ObjectValue(
                         linkedMapOf(

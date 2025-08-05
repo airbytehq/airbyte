@@ -26,6 +26,11 @@ Buy and sell tickets online for concerts, sports, theater, family and other even
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-08-02 | [64475](https://github.com/airbytehq/airbyte/pull/64475) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63615](https://github.com/airbytehq/airbyte/pull/63615) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63083](https://github.com/airbytehq/airbyte/pull/63083) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62288](https://github.com/airbytehq/airbyte/pull/62288) | Update dependencies |
+| 0.0.24 | 2025-06-14 | [60567](https://github.com/airbytehq/airbyte/pull/60567) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [60161](https://github.com/airbytehq/airbyte/pull/60161) | Update dependencies |
 | 0.0.22 | 2025-05-04 | [59629](https://github.com/airbytehq/airbyte/pull/59629) | Update dependencies |
 | 0.0.21 | 2025-04-27 | [58978](https://github.com/airbytehq/airbyte/pull/58978) | Update dependencies |

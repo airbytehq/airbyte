@@ -525,6 +525,67 @@ def test_stream_commits_incremental_read():
 
 
 @responses.activate
+def test_stream_commits_409_empty_repository(caplog):
+    """
+    Adding tests for the case when the repository is empty and the API returns a 409 status code.
+    We expect the specific error message in response 'Git Repository is empty.'
+    """
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-02T10:10:03Z",
+    }
+
+    branches_to_pull = ["organization/repository/branch"]
+
+    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull)
+    stream.page_size = 2
+
+    repo_api_url = "https://api.github.com/repos/organization/repository"
+    branches_api_url = "https://api.github.com/repos/organization/repository/branches"
+    commits_api_url = "https://api.github.com/repos/organization/repository/commits"
+
+    responses.add(
+        "GET",
+        repo_api_url,
+        json={"id": 1, "updated_at": "2022-02-02T10:10:02Z", "default_branch": "main", "full_name": "organization/repository"},
+    )
+    responses.add(
+        responses.GET,
+        branches_api_url,
+        json=[
+            {
+                "name": "branch",
+                "commit": {
+                    "sha": "74445338726f0f8e1c27c10dce90ca00c5ae2858",
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/74445338726f0f8e1c27c10dce90ca00c5ae2858",
+                },
+                "protected": False,
+            }
+        ],
+        status=200,
+    )
+    empty_repository_message = {
+        "message": "Git Repository is empty.",
+        "documentation_url": "https://docs.github.com/rest/commits/commits#list-commits",
+        "status": "409",
+    }
+    responses.add(
+        "GET",
+        commits_api_url,
+        json=empty_repository_message,
+        status=requests.codes.CONFLICT,
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:03Z", "sha": "branch", "per_page": "2"}, strict_match=False)],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert records == []
+    ignore_message = "Ignoring response for 'GET' request to 'https://api.github.com/repos/organization/repository/commits?per_page=2&since=2022-02-02T10%3A10%3A03Z&sha=branch' with response code '409' as the repository is empty."
+    assert ignore_message in caplog.messages
+
+
+@responses.activate
 def test_stream_pull_request_commits():
     repository_args = {
         "repositories": ["organization/repository"],
@@ -1425,6 +1486,34 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
     assert resp.call_count == 1
     assert records == []
     assert expected_message in caplog.messages
+
+
+@responses.activate
+def test_stream_contributor_activity_parse_empty_author(caplog):
+    repository_args = {
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = ContributorActivity(**repository_args)
+    contributions_without_author = [
+        {
+            "author": None,
+            "total": 0,
+            "weeks": [{"w": 1713052800, "a": 0, "d": 0, "c": 0}, {"w": 1713657600, "a": 0, "d": 0, "c": 0}],
+            "repository": "airbytehq/airbyte",
+        }
+    ]
+    response_body = json.dumps(contributions_without_author)
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
+        body=response_body,
+        status=200,
+    )
+    records = list(read_full_refresh(stream))
+    # expected record should not contain author field as it is None
+    del contributions_without_author[0]["author"]
+    assert records == contributions_without_author
 
 
 @responses.activate

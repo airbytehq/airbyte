@@ -289,7 +289,7 @@ class DataChannelBeanFactory {
         @Named("_pipelineInputQueue")
         pipelineInputQueue: PartitionedQueue<PipelineInputEvent>? = null,
         config: DestinationConfiguration,
-        checkpointManager: CheckpointManager<*>,
+        checkpointManager: CheckpointManager,
     ): HeartbeatTask {
         check(pipelineInputQueue != null) {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."
@@ -307,9 +307,13 @@ class DataChannelBeanFactory {
             DataChannelMedium.STDIO -> {
                 // Source is effectively "identity." In STDIO mode, we just take
                 // what we're given.
+                log.info {
+                    "Going to use the given source value: ${NamespaceDefinitionType.SOURCE} for namespace"
+                }
                 return NamespaceMapper(NamespaceDefinitionType.SOURCE)
             }
             DataChannelMedium.SOCKET -> {
+                log.info { "In a SOCKET scenario. Using alternate version of the NamespaceMapper" }
                 val config =
                     File(namespaceMappingConfigPath)
                         .readText(Charsets.UTF_8)

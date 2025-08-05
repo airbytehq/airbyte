@@ -370,12 +370,13 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             self._write_from_pa_table(temp_table_name, stream_name, pa_table)
 
         temp_table_name_dedup = self._drop_duplicates(temp_table_name, stream_name)
+        final_table_name = self.normalizer.normalize(stream_name)
 
         try:
             self._write_temp_table_to_target_table(
                 stream_name=stream_name,
                 temp_table_name=temp_table_name_dedup,
-                final_table_name=stream_name,
+                final_table_name=final_table_name,
                 sync_mode=sync_mode,
             )
         finally:

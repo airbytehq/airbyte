@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBY
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogFactory
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class TableCatalogFactoryTest {
@@ -91,6 +92,58 @@ class TableCatalogFactoryTest {
                     stream2TableInfo.tableNames.rawTableName!!.namespace
                 )
             }
+        )
+    }
+
+    /**
+     * Test two streams which don't collide in their final tables, and with no raw tables.
+     *
+     * We should leave both streams unchanged.
+     */
+    @Test
+    fun testTableNameNoCollisionWithNoRawTableGenerator() {
+        val stream1 = createTestStream("foo", "a")
+        val stream2 = createTestStream("bar", "a")
+
+        val finalTableNameGenerator = FinalTableNameGenerator { descriptor ->
+            TableName(descriptor.namespace!!, descriptor.name)
+        }
+
+        val columnNameGenerator = ColumnNameGenerator { input ->
+            ColumnNameGenerator.ColumnName(input, input)
+        }
+
+        val catalog = DestinationCatalog(listOf(stream1, stream2))
+
+        val tableCatalog =
+            TableCatalogFactory()
+                .getTableCatalog(
+                    catalog,
+                    rawTableNameGenerator = null,
+                    finalTableNameGenerator,
+                    columnNameGenerator
+                )
+
+        // Get the final table names for both streams
+        val stream1TableInfo = tableCatalog[stream1]!!
+        val stream2TableInfo = tableCatalog[stream2]!!
+
+        assertAll(
+            { assertEquals("foo", stream1TableInfo.tableNames.finalTableName!!.name) },
+            { assertEquals("a", stream1TableInfo.tableNames.finalTableName!!.namespace) },
+            { assertEquals("bar", stream2TableInfo.tableNames.finalTableName!!.name) },
+            {
+                assertEquals(
+                    "a",
+                    stream2TableInfo.tableNames.finalTableName!!.namespace,
+                )
+            }
+        )
+
+        // Now check raw table names are null
+        assertAll(
+            { assertNull(stream1TableInfo.tableNames.rawTableName) },
+            { assertNull(stream2TableInfo.tableNames.rawTableName) },
         )
     }
 

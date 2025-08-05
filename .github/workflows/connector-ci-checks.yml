@@ -28,6 +28,13 @@ on:
         type: string
         required: false
         description: "The pull request number, if applicable. Unused as of now."
+    outputs:
+      result:
+        description: "The result of the checks, e.g. 'success' if successful."
+        value: ${{ jobs.connector-ci-checks-summary.result }}
+      commit-sha:
+        description: "The commit SHA of the current branch, used to report test results."
+        value: ${{ jobs.generate-matrix.outputs.commit-sha }}
 
 permissions:
   # Allow the workflow to read contents
@@ -42,10 +49,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Current Branch
+        id: checkout
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           # Use fetch-depth: 0 to ensure we can access the full commit history
           fetch-depth: 0
 
@@ -55,10 +64,10 @@ jobs:
         # to the step of determining which connectors are modified.
         if: >
           (inputs.repo != '' &&
-           inputs.repo != 'airbytehq/airbyte'
+           ! startswith(inputs.repo, 'airbytehq/')
           ) ||
           (github.event.pull_request.head.repo.full_name != '' &&
-           github.event.pull_request.head.repo.full_name != 'airbytehq/airbyte'
+           ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
           )
         run: |
           # only add upstream if it doesn't already exist
@@ -68,12 +77,29 @@ jobs:
           # fetch the default branch from upstream
           git fetch --quiet upstream master
 
+      - id: cdk-changes
+        uses: dorny/paths-filter@v2
+        with:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            java-cdk:
+              - 'airbyte-cdk/java/**/*'
+              - 'airbyte-cdk/bulk/**/*'
+
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
           # Get the list of modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
-          echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+
+          # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
+          # Otherwise, get modified Java connectors
+          if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+          else
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+          fi
+
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
 
       - name: Set JVM Runner Type
@@ -81,7 +107,7 @@ jobs:
         run: |
           # Default to ubuntu-24.04 for all connectors
           echo "jvm-runner-type=ubuntu-24.04" >> $GITHUB_OUTPUT
-          if [[ "${{ github.repository }}" == "airbytehq/airbyte" ]]; then
+          if [[ "${{ github.repository }}" == "airbytehq/airbyte" || "${{ github.repository }}" == "airbytehq/airbyte-enterprise" ]]; then
             # Within our own repo, we can use the custom (larger) runner
             echo "jvm-runner-type=linux-24.04-large" | tee -a "$GITHUB_OUTPUT"
           fi
@@ -91,6 +117,9 @@ jobs:
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+      # The commit SHA of the current branch, used to report test results:
+      commit-sha: ${{ steps.checkout.outputs.commit }}
+      creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -104,7 +133,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || '' }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -113,6 +142,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Java deps
@@ -153,19 +183,19 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
@@ -192,7 +222,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || '' }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -201,6 +231,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Python deps
@@ -250,22 +281,28 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        # This will be skipped if the repo or fork doesn't set the GCP_GSM_CREDENTIALS secret.
+        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && env.GCP_GSM_CREDENTIALS != ''
+        if: matrix.connector && env.GCP_PROJECT_ID != ''
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
+
+      - name: Container Tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          airbyte-cdk image test
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -295,6 +332,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
       # Java deps
@@ -384,6 +422,7 @@ jobs:
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
       - name: Install uv
         if: matrix.connector
@@ -400,49 +439,54 @@ jobs:
           connectors-qa run --name ${connector_name%-strict-encrypt}
 
   connector-ci-checks-summary:
-    name: Connector CI Checks Summary
+    name: Aggregate Results
     if: always()
     needs:
+      - generate-matrix
       - jvm-connectors-test
       - non-jvm-connectors-test
       - pre-release-checks
       - connectors-lint
     runs-on: ubuntu-24.04
     steps:
+      - name: Evaluate Status
+        id: evaluate-status
+        run: |
+          if [[ "${{ needs.jvm-connectors-test.result }}" == "success" &&
+                "${{ needs.non-jvm-connectors-test.result }}" == "success" &&
+                "${{ needs.connectors-lint.result }}" == "success" ]]; then
+            echo "result=success" | tee -a $GITHUB_OUTPUT
+          else
+            echo "result=failure" | tee -a $GITHUB_OUTPUT
+          fi
+
+      # In slash commands and when not running within a fork, we want to upload
+      # a check status report to the PR.
+
+      # If we are not running from the airbytehq/airbyte repo, the secrets won't
+      # be available, so the following steps will be a no-op.
+
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v1
         id: get-app-token
-        if: github.event_name == 'workflow_call' && inputs.gitref != ''
+        if: always() && !cancelled()
+        continue-on-error: true
         with:
           owner: "airbytehq"
           repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Raise if Upstream Failure
-        if: >
-          needs.jvm-connectors-test.result != 'success' ||
-          needs.non-jvm-connectors-test.result != 'success' ||
-          needs.connectors-lint.result != 'success'
-        run: |
-          echo "❌ Some Checks failed. Marking summary as failed"
-          exit 1
-
-      - name: Report Success
-        run: |
-          # If we get here, all checks passed.
-          echo "✅ All checks passed successfully."
-
-      # Post completion status to the PR.
-      # This is required because otherwise slash commands won't automatically
-      # update the PR checks status.
       - name: Create Check Status
-        if: always() && github.event_name == 'workflow_call' && inputs.gitref != ''
+        if: >
+          always() && !cancelled() &&
+          steps.get-app-token.outcome == 'success'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          name: ${{ job.name }}
+          name: "Connector CI Checks Summary" # << Name of the 'Required' check
           repo: "airbytehq/airbyte" # Post to the main repo, not the fork
-          sha: ${{ inputs.gitref }}
+          sha: ${{ needs.generate-matrix.outputs.commit-sha }}
           status: completed
-          conclusion: ${{ job.status }}
+          conclusion: ${{ steps.evaluate-status.outputs.result }}
           token: ${{ steps.get-app-token.outputs.token }}
+          details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
