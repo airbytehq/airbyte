@@ -226,7 +226,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || '' }}
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' ||  ( ! needs.generate-matrix.outputs.creds-available == 'true' && '[With Creds]' || '[No Creds]')  }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
