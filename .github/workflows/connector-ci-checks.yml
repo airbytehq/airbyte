@@ -192,7 +192,11 @@ jobs:
       - name: Run Unit Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
+        run: |
+          echo "DEBUG: ${{ env.GCP_PROJECT_ID }} </DEBUG>"
+          echo "DEBUG2:  ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}"
+          echo "DEBUG3:  ${{ (env.GCP_PROJECT_ID == '') && ' [Unprivileged, Executed from Fork]' || '' }}"
+          poe test-unit-tests
 
       - name: Run Integration Tests ${{ env.GCP_PROJECT_ID == '' && ' [Unprivileged, Executed from Fork]' || '' }}
         if: matrix.connector
