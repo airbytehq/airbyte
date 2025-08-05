@@ -182,7 +182,7 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
-        # This will be skipped if the repo or fork doesn't set the GCP_PROJECT_ID env var.
+        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && env.GCP_PROJECT_ID != ''
         run: |
