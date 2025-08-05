@@ -39,7 +39,7 @@ The HubSpot destination connector supports the following streams:
 
 ## Data Activation Support
 
-This connector supports [data activation](/platform/move-data/elt-data-activation), enabling you to sync data from your data warehouse directly into HubSpot CRM objects. This is particularly useful for:
+This connector supports [data activation](../../platform/move-data/elt-data-activation), enabling you to sync data from your data warehouse directly into HubSpot CRM objects. This is particularly useful for:
 
 - Syncing enriched customer profiles from your data warehouse to HubSpot contacts
 - Updating company records with calculated metrics and scores
