@@ -30,18 +30,58 @@ This page guides you through the process of setting up the [HubSpot](https://www
 
 ## Supported Objects
 
-The HubSpot source connector supports the following streams:
+The HubSpot destination connector supports the following streams:
 
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies): Upsert on unique field
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts): Upsert on email
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals): Upsert on unique field
 - [Custom Objects](https://developers.hubspot.com/docs/guides/api/crm/objects/custom-objects): Upsert on unique field
 
+## Data Activation Support
+
+This connector supports [data activation](/platform/move-data/elt-data-activation), enabling you to sync data from your data warehouse directly into HubSpot CRM objects. This is particularly useful for:
+
+- Syncing enriched customer profiles from your data warehouse to HubSpot contacts
+- Updating company records with calculated metrics and scores
+- Creating or updating deals based on data warehouse insights
+- Maintaining custom objects with business-specific data
+
+The connector uses batch upsert operations to efficiently sync large datasets while maintaining data consistency through matching keys.
+
+## Required OAuth Scopes
+
+The connector requires specific OAuth scopes depending on which objects you plan to sync:
+
+- **Contacts**: `crm.objects.contacts.read` and `crm.objects.contacts.write`
+- **Companies**: `crm.objects.companies.read` and `crm.objects.companies.write`  
+- **Deals**: `crm.objects.deals.read` and `crm.objects.deals.write`
+- **Custom Objects**: `crm.schemas.custom.read` and appropriate `crm.objects.custom.read/write` scopes
+
+These scopes are automatically requested during the OAuth authentication process. For more information about HubSpot OAuth scopes, see the [HubSpot OAuth documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+
+## Technical Implementation
+
+The connector uses HubSpot's CRM API v3 with the following technical characteristics:
+
+- **Batch Operations**: Processes up to 100 records per batch using HubSpot's batch upsert endpoints
+- **API Endpoints**: Uses `/crm/v3/objects/{objectType}/batch/upsert` for all object types
+- **Matching Strategy**: Requires exactly one matching key field per stream for upsert operations
+- **Error Handling**: Failed records are sent to rejected records for review and reprocessing
+- **Rate Limiting**: Respects HubSpot's standard API rate limits automatically
+
+The connector dynamically discovers both standard objects (CONTACT, COMPANY, DEAL) and custom objects from your HubSpot instance.
+
 ## Limitations & Troubleshooting
 
 ### Destination Object Not Showing Up
 
-Except from the CONTACT object, the upsert method for this connector requires a unique value field to be present on the destination object. In order to create a unique value property, go in HubSpot and do the following:
+Except for the CONTACT object (which uses email as the matching key), the upsert method for this connector requires a unique value field to be present on the destination object. The connector uses batch upsert operations with up to 100 records per batch for optimal performance.
+
+**Matching Key Requirements:**
+- **CONTACT**: Uses email field automatically
+- **COMPANY, DEAL, Custom Objects**: Requires a property with unique values enabled
+
+To create a unique value property in HubSpot:
 * In the CRM menu in the left-hand side, select the object you want to sync
 * Under `Actions`, select `Edit Properties`
 * Click on `Create property`
