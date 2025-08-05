@@ -2,9 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
-import os
 import re
 import tempfile
 from dataclasses import dataclass
@@ -12,10 +10,10 @@ from pathlib import Path
 from typing import List, NamedTuple, Optional, Tuple
 
 import git
+from metadata_service.helpers.gcs import get_gcs_storage_client
 import requests
 import yaml
 from google.cloud import storage
-from google.oauth2 import service_account
 from pydash import set_
 from pydash.objects import get
 
@@ -134,18 +132,6 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
 
 
 # 🛠️ HELPERS
-
-
-def _get_storage_client() -> storage.Client:
-    """Get the GCS storage client using credentials form GCS_CREDENTIALS env variable."""
-    gcs_creds = os.environ.get("GCS_CREDENTIALS")
-    if not gcs_creds:
-        raise ValueError("Please set the GCS_CREDENTIALS env var.")
-
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    return storage.Client(credentials=credentials)
-
 
 def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
     try:
@@ -434,7 +420,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     should_upload_release_candidate = is_release_candidate and not is_pre_release
     should_upload_latest = not is_release_candidate and not is_pre_release
 
-    storage_client = _get_storage_client()
+    storage_client = get_gcs_storage_client()
     bucket = storage_client.bucket(bucket_name)
     docs_path = Path(validator_opts.docs_path)
     gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
@@ -582,7 +568,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
     Returns:
         MetadataDeleteInfo: Information about the files that were deleted.
     """
-    storage_client = _get_storage_client()
+    storage_client = get_gcs_storage_client()
     bucket = storage_client.bucket(bucket_name)
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"
@@ -641,7 +627,7 @@ def promote_release_candidate_in_gcs(
         Tuple[MetadataUploadInfo, MetadataDeleteInfo]: Information about the files that were uploaded (new latest version) and deleted (release candidate).
     """
 
-    storage_client = _get_storage_client()
+    storage_client = get_gcs_storage_client()
     bucket = storage_client.bucket(bucket_name)
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"

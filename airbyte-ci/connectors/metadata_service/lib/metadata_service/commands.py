@@ -5,6 +5,7 @@
 import pathlib
 
 import click
+from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
 from pydantic import ValidationError
 
 from metadata_service.constants import METADATA_FILE_NAME
@@ -84,6 +85,16 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
         exit(0)
     else:
         exit(5)
+
+
+@metadata_service.command(help="Generate and publish a stale metadata report to Slack.")
+@click.argument("bucket-name", type=click.STRING, required=True)
+def publish_stale_metadata_report(bucket_name: str):
+    try:
+        generate_and_publish_stale_metadata_report(bucket_name)
+    except Exception as e:
+        click.secho(f"The stale metadata report could not be published: {str(e)}", fg="red")
+        exit(1)
 
 
 @metadata_service.command(help="Rollback a release candidate by deleting its metadata files from a GCS bucket.")
