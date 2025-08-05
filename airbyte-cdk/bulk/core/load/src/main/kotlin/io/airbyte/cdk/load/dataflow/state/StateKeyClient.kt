@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.dataflow.state
 
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -17,7 +21,7 @@ interface StateKeyClient {
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
 class SelfDescribingStateKeyClient(
     private val stateWatermarkStore: StateWatermarkStore,
-): StateKeyClient {
+) : StateKeyClient {
     private val ordinalMap = ConcurrentHashMap<StateKey, Long>()
 
     override fun getKey(msg: DestinationRecordRaw): StateKey {
@@ -41,7 +45,7 @@ class SelfDescribingStateKeyClient(
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
 class InferredStateKeyClient(
     private val stateWatermarkStore: StateWatermarkStore,
-): StateKeyClient {
+) : StateKeyClient {
     private val internalCounter = AtomicLong(1)
 
     override fun getKey(msg: DestinationRecordRaw): StateKey {

@@ -20,12 +20,13 @@ class ParseStage(
         val raw = input.raw!!
         val fields = munger.transformForDest(raw)
         return input.apply {
-            munged = RecordDTO(
-                fields = fields,
-                stateKey = input.stateKey!!,
-                sizeBytes = raw.serializedSizeBytes,
-                emittedAtMs = raw.rawData.emittedAtMs,
-            )
+            munged =
+                RecordDTO(
+                    fields = fields,
+                    stateKey = input.stateKey!!,
+                    sizeBytes = raw.serializedSizeBytes,
+                    emittedAtMs = raw.rawData.emittedAtMs,
+                )
         }
     }
 }

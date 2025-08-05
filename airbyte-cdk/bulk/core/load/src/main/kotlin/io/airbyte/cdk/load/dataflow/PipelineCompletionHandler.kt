@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
-import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.state.StateWatermarkStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -43,12 +42,8 @@ class PipelineCompletionHandler(
             .awaitAll()
 
         log.info { "Expected:" }
-        stateStore.expected.map.forEach {
-            log.info { it.key.id + ": " + it.value }
-        }
+        stateStore.expected.map.forEach { log.info { it.key.id + ": " + it.value } }
         log.info { "Received:" }
-        stateStore.watermarks.map.forEach {
-            log.info { it.key.id + ": " + it.value }
-        }
+        stateStore.watermarks.map.forEach { log.info { it.key.id + ": " + it.value } }
     }
 }

@@ -16,14 +16,14 @@ import kotlinx.coroutines.flow.FlowCollector
 /**
  * Takes DestinationMessages and emits DataFlowStageIO.
  *
- * Adds state ids to the input, handling the serial case where we infer the
- * state id from a global counter.
+ * Adds state ids to the input, handling the serial case where we infer the state id from a global
+ * counter.
  */
 @Singleton
 class DataFlowPipelineInputFlow(
     val inputFlow: Flow<DestinationMessage>,
     val stateKeyClient: StateKeyClient,
-): Flow<DataFlowStageIO> {
+) : Flow<DataFlowStageIO> {
     override suspend fun collect(
         collector: FlowCollector<DataFlowStageIO>,
     ) {
@@ -32,10 +32,7 @@ class DataFlowPipelineInputFlow(
                 is CheckpointMessage -> stateKeyClient.acceptState(it)
                 is DestinationRecord -> {
                     val raw = it.asDestinationRecordRaw()
-                    val io = DataFlowStageIO(
-                        raw = raw,
-                        stateKey = stateKeyClient.getKey(raw)
-                    )
+                    val io = DataFlowStageIO(raw = raw, stateKey = stateKeyClient.getKey(raw))
                     collector.emit(io)
                 }
                 else -> Unit

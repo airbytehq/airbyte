@@ -25,7 +25,6 @@ class ClickhouseAggregate(
     override suspend fun flush() {
         buffer.flush()
     }
-
 }
 
 @Factory

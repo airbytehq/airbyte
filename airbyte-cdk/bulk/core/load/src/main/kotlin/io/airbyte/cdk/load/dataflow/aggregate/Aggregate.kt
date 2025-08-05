@@ -11,7 +11,6 @@ interface Aggregate {
     fun accept(record: RecordDTO)
 
     suspend fun flush()
-
 }
 
 interface AggregateFactory {

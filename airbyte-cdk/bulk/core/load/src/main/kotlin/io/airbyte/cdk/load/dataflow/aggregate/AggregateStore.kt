@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.dataflow.aggregate
 
 import com.google.common.annotations.VisibleForTesting
@@ -41,7 +45,7 @@ class AggregateStore(
                 log.info { "PUBLISH — Reason: Complete" }
                 return remove(key)
             }
-           if (entry.isStale(timestampMs)) {
+            if (entry.isStale(timestampMs)) {
                 log.info { "PUBLISH — Reason: Stale" }
                 return remove(key)
             }
@@ -61,15 +65,19 @@ class AggregateStore(
 
     @VisibleForTesting
     internal fun getOrCreate(key: StoreKey): AggregateEntry {
-        val entry = aggregates.computeIfAbsent(key, {
-            AggregateEntry(
-                value = aggFactory.create(it),
-                stateHistogram = StateHistogram(),
-                stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
-                recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
-                estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
+        val entry =
+            aggregates.computeIfAbsent(
+                key,
+                {
+                    AggregateEntry(
+                        value = aggFactory.create(it),
+                        stateHistogram = StateHistogram(),
+                        stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
+                        recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
+                        estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
+                    )
+                }
             )
-        })
 
         return entry
     }
@@ -88,8 +96,7 @@ data class AggregateEntry(
     val estimatedBytesTrigger: SizeTrigger,
 ) {
     fun isComplete(): Boolean {
-        return recordCountTrigger.isComplete()
-            || estimatedBytesTrigger.isComplete()
+        return recordCountTrigger.isComplete() || estimatedBytesTrigger.isComplete()
     }
 
     fun isStale(ts: Long): Boolean {

@@ -15,15 +15,11 @@ class StateWatermarkStore(
 ) {
     private val log = KotlinLogging.logger {}
 
-    fun acceptAggregateCounts(
-        value: StateHistogram
-    ): StateHistogram {
+    fun acceptAggregateCounts(value: StateHistogram): StateHistogram {
         return watermarks.merge(value)
     }
 
-    fun acceptExpectedCounts(
-        value: StateHistogram
-    ): StateHistogram {
+    fun acceptExpectedCounts(value: StateHistogram): StateHistogram {
         return expected.merge(value)
     }
 }

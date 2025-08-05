@@ -13,9 +13,7 @@ import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
-/**
- * Takes bytes and emits DestinationMessages
- */
+/** Takes bytes and emits DestinationMessages */
 @Singleton
 class DestinationMessageInputFlow(
     @Named("inputStream") private val inputStream: InputStream,
