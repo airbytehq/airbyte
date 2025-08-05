@@ -66,7 +66,7 @@ Before setting up the Airbyte connector, you need to create a Connected App in S
 3. Select **Salesforce** from the destination type dropdown
 4. Enter a name for the Salesforce connector
 5. Configure authentication:
-   - **Is Sandbox**: First, toggle this setting based on your Salesforce environment (sandbox or production)
+   - **Is Sandbox**: First, toggle this setting based on your Salesforce environment (sandbox or production). **Note**: Changing this setting requires redoing authentication.
    - **Client ID**: Enter the Consumer Key from your Connected App
    - **Client Secret**: Enter the Consumer Secret from your Connected App
    - **Refresh Token**: Click **Authenticate your account** to generate this automatically
@@ -83,7 +83,7 @@ Before setting up the Airbyte connector, you need to create a Connected App in S
 3. Select **Salesforce** from the destination type dropdown
 4. Enter a name for the Salesforce connector
 5. Configure authentication:
-   - **Is Sandbox**: First, set to `true` if connecting to a Salesforce sandbox, `false` for production
+   - **Is Sandbox**: First, set to `true` if connecting to a Salesforce sandbox, `false` for production. **Note**: Changing this setting requires redoing authentication.
    - **Client ID**: Enter the Consumer Key from your Connected App
    - **Client Secret**: Enter the Consumer Secret from your Connected App
    - **Refresh Token**: You'll need to obtain this through the OAuth flow using your callback URL
@@ -126,7 +126,7 @@ While the underlying implementation supports additional operations (update, upse
 
 - **Invalid Client Credentials**: Verify your Connected App's Consumer Key and Consumer Secret
 - **Refresh Token Expired**: Re-authenticate through the Airbyte UI to generate a new refresh token
-- **Sandbox vs Production**: Ensure the "Is Sandbox" setting matches your Salesforce environment
+- **Sandbox vs Production**: Ensure the "Is Sandbox" setting matches your Salesforce environment. Changing this setting requires redoing authentication.
 
 ### Permission Issues
 
