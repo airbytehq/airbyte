@@ -43,6 +43,25 @@ get_connectors() {
   fi
 }
 
+# Typically called immediately after sourcing parse_args.sh
+# Throws an error if zero or multiple `--name` flags were passed.
+# If exactly one `--name` flag was passed, return that connector.
+get_only_connector() {
+  # "${#connectors[@]}" is the length of the array
+  if test "${#connectors[@]}" -eq 0; then
+    echo 'Missing `--name <connector_name>` argument' >&2
+    exit 1
+  fi
+  if test "${#connectors[@]}" -gt 1; then
+    echo 'Expected to get exactly 1 connector. Got:' >&2
+    printf "%s\n" "${connectors[@]}" >&2
+    exit 1
+  fi
+  # we've validated that the array contains exactly one element,
+  # so get the first element.
+  echo "${connectors[@]:0:1}"
+}
+
 # Generate the prerelease image tag (e.g. `1.2.3-dev.abcde12345`).
 generate_dev_tag() {
   local base="$1"
