@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicLong
 interface StateKeyClient {
     fun getKey(msg: DestinationRecordRaw): StateKey
 
+    fun getOrdinal(key: StateKey): Long
+
     fun acceptState(msg: CheckpointMessage)
 }
 
@@ -21,6 +23,7 @@ interface StateKeyClient {
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
 class SelfDescribingStateKeyClient(
     private val stateWatermarkStore: StateWatermarkStore,
+    private val stateStore: StateStore,
 ) : StateKeyClient {
     private val ordinalMap = ConcurrentHashMap<StateKey, Long>()
 
@@ -28,16 +31,22 @@ class SelfDescribingStateKeyClient(
         return StateKey(msg.checkpointId!!.value)
     }
 
+    override fun getOrdinal(key: StateKey): Long {
+        return ordinalMap[key]!!
+    }
+
     override fun acceptState(msg: CheckpointMessage) {
         val key = StateKey(msg.checkpointIdRaw!!)
+        val ordinal = msg.checkpointOrdinalRaw!!.toLong()
 
-        ordinalMap[key] = msg.checkpointOrdinalRaw!!.toLong()
+        ordinalMap[key] = ordinal
 
         val inner = ConcurrentHashMap<StateKey, Long>()
         inner[key] = msg.sourceStats!!.recordCount
         val expectedCounts = StateHistogram(inner)
 
         stateWatermarkStore.acceptExpectedCounts(expectedCounts)
+        stateStore.accept(ordinal, msg)
     }
 }
 
@@ -45,6 +54,7 @@ class SelfDescribingStateKeyClient(
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
 class InferredStateKeyClient(
     private val stateWatermarkStore: StateWatermarkStore,
+    private val stateStore: StateStore,
 ) : StateKeyClient {
     private val internalCounter = AtomicLong(1)
 
@@ -52,14 +62,19 @@ class InferredStateKeyClient(
         return StateKey(internalCounter.get().toString())
     }
 
+    override fun getOrdinal(key: StateKey): Long {
+        return key.id.toLong()
+    }
+
     override fun acceptState(msg: CheckpointMessage) {
-        val ord = internalCounter.getAndIncrement()
-        val key = StateKey(ord.toString())
+        val ordinal = internalCounter.getAndIncrement()
+        val key = StateKey(ordinal.toString())
 
         val inner = ConcurrentHashMap<StateKey, Long>()
         inner[key] = msg.sourceStats!!.recordCount
         val expectedCounts = StateHistogram(inner)
 
         stateWatermarkStore.acceptExpectedCounts(expectedCounts)
+        stateStore.accept(ordinal, msg)
     }
 }

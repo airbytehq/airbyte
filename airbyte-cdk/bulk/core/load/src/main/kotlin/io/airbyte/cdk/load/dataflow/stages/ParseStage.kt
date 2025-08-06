@@ -19,6 +19,7 @@ class ParseStage(
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val raw = input.raw!!
         val fields = munger.transformForDest(raw)
+
         return input.apply {
             munged =
                 RecordDTO(

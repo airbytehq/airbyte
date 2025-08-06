@@ -5,6 +5,9 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
+import io.airbyte.cdk.load.dataflow.state.StatePublisher
+import io.airbyte.cdk.load.dataflow.state.StateReconciler
+import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.airbyte.cdk.load.dataflow.state.StateWatermarkStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -15,7 +18,10 @@ import kotlinx.coroutines.coroutineScope
 @Singleton
 class PipelineCompletionHandler(
     private val aggStore: AggregateStore,
-    private val stateStore: StateWatermarkStore,
+    private val stateWatermarkStore: StateWatermarkStore,
+    private val stateStore: StateStore,
+    private val statePublisher: StatePublisher,
+    private val reconciler: StateReconciler,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -36,14 +42,19 @@ class PipelineCompletionHandler(
             .map {
                 async {
                     it.value.flush()
-                    stateStore.acceptAggregateCounts(it.stateHistogram)
+                    stateWatermarkStore.acceptAggregateCounts(it.stateHistogram)
                 }
             }
             .awaitAll()
 
         log.info { "Expected:" }
-        stateStore.expected.map.forEach { log.info { it.key.id + ": " + it.value } }
+        stateWatermarkStore.expected.map.forEach { log.info { it.key.id + ": " + it.value } }
         log.info { "Received:" }
-        stateStore.watermarks.map.forEach { log.info { it.key.id + ": " + it.value } }
+        stateWatermarkStore.watermarks.map.forEach { log.info { it.key.id + ": " + it.value } }
+
+        reconciler.disable()
+        stateStore.getAll().forEach {
+            statePublisher.publish(it)
+        }
     }
 }

@@ -32,9 +32,13 @@ class DataFlowPipelineInputFlow(
                 is CheckpointMessage -> stateKeyClient.acceptState(it)
                 is DestinationRecord -> {
                     val raw = it.asDestinationRecordRaw()
-                    val io = DataFlowStageIO(raw = raw, stateKey = stateKeyClient.getKey(raw))
+                    val io = DataFlowStageIO(
+                        raw = raw,
+                        stateKey = stateKeyClient.getKey(raw),
+                    )
                     collector.emit(io)
                 }
+
                 else -> Unit
             }
         }
