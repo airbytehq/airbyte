@@ -6,8 +6,9 @@ import logging
 import os
 from typing import Generator, Optional
 
-from metadata_service.constants import SLACK_NOTIFICATIONS_ENABLED
 from slack_sdk import WebClient
+
+from metadata_service.constants import SLACK_NOTIFICATIONS_ENABLED
 
 logger = logging.getLogger(__name__)
 

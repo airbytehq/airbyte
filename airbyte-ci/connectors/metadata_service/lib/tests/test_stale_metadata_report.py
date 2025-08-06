@@ -3,16 +3,18 @@
 #
 
 import datetime
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+
+from metadata_service.constants import PUBLISH_GRACE_PERIOD
 from metadata_service.stale_metadata_report import (
-    _is_younger_than_grace_period,
     _generate_stale_metadata_report,
-    _get_latest_metadata_versions_on_github,
     _get_latest_metadata_entries_on_gcs,
+    _get_latest_metadata_versions_on_github,
+    _is_younger_than_grace_period,
     generate_and_publish_stale_metadata_report,
 )
-from metadata_service.constants import PUBLISH_GRACE_PERIOD
 
 pytest_plugins = ["tests.fixtures.stale_metadata_report_fixtures"]
 

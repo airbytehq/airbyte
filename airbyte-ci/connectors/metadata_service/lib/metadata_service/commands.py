@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pathlib
 import logging
+import pathlib
 import time
 
 import click

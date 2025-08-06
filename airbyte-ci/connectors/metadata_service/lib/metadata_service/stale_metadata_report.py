@@ -6,27 +6,27 @@ import datetime
 import logging
 import os
 import re
-from typing import Any, Mapping
 import textwrap
+from typing import Any, Mapping
 
-from metadata_service.helpers.slack import send_slack_message
-from metadata_service.validators.metadata_validator import STALE_METADATA_VALIDATORS, is_valid_metadata
 import pandas as pd
-from github import Github
-from github import Auth
-from google.cloud import storage
-from metadata_service.helpers.gcs import get_gcs_storage_client
 import requests
 import yaml
+from github import Auth, Github
+from google.cloud import storage
+
+from metadata_service.helpers.gcs import get_gcs_storage_client
+from metadata_service.helpers.slack import send_slack_message
+from metadata_service.validators.metadata_validator import STALE_METADATA_VALIDATORS, is_valid_metadata
 
 from .constants import (
+    EXTENSIBILITY_TEAM_SLACK_TEAM_ID,
     GITHUB_REPO_NAME,
     METADATA_FILE_NAME,
     METADATA_FOLDER,
     PUBLISH_GRACE_PERIOD,
     PUBLISH_UPDATE_CHANNEL,
     STALE_REPORT_CHANNEL,
-    EXTENSIBILITY_TEAM_SLACK_TEAM_ID,
 )
 
 logger = logging.getLogger(__name__)

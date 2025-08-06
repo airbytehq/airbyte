@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import pathlib
 from dataclasses import dataclass
 from typing import Any, Callable, List, Mapping, Optional, Tuple, Union
-import logging
+
 import semver
 import yaml
 from pydantic import ValidationError

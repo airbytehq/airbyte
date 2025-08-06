@@ -2,9 +2,9 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 from unittest.mock import Mock
 
+import pytest
 import yaml
 
 

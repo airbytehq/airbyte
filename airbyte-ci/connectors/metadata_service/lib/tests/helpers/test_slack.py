@@ -2,8 +2,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+
 from metadata_service.helpers.slack import send_slack_message
 
 
