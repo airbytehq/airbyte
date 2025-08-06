@@ -127,6 +127,7 @@ definitions:
       class_name: "source_slack.components.join_channels.ChannelsRetriever"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
         error_handler:
           type: DefaultErrorHandler
           max_retries: 10
@@ -200,6 +201,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
         request_parameters:
           inclusive: "True"
         error_handler:
