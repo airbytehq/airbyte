@@ -9,6 +9,9 @@ This release upgrades the Google Ads API from Version 18 to Version 20 which cau
 | campaign                 | campaign.dynamic_search_ads_setting.feeds                         | This field has been deleted                                                                                     |
 | user_interests           | user_interest.availabilities                                      | Updated advertisingChannelSubType enum for the Video channel: removed VIDEO_OUTSTREAM and added YOUTUBE_AUDIO.  |
 
+For custom queries, the stream may fail if a field was removed during the API update. Additionally, some field values may have changed, such as `user_interest.availabilities`.
+You can use the [Query Builder](https://developers.google.com/google-ads/api/fields/v20/query_validator) to validate your custom queries.
+
 Users should:
 
 - Refresh the source schema
