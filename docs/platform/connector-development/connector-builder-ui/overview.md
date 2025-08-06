@@ -1,8 +1,10 @@
 # Connector Builder
 
-Connector Builder is a no-code tool that’s part of the Airbyte UI.
-It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview), letting you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace. You can seamlessly switch between the visual UI and direct YAML editing as needed.
-Connector Builder offers the most straightforward method for building, contributing, and maintaining connectors.
+Connector Builder is a no-code tool that’s part of the Airbyte UI. It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview), letting you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace. You can seamlessly switch between the visual UI and direct YAML editing as needed. Connector Builder offers the most straightforward method for building, contributing to, and maintaining source connectors.
+
+## For creating source connectors only
+
+The Connector Builder is only for creating source connectors. You can't currently use the Connector Builder to create destination connectors.
 
 ## How it works
 
@@ -25,7 +27,7 @@ The high-level process for using Connector Builder is as follows:
 4. Configure a Source based on the released connector
 5. Use the Source in a connection to sync data
 
-The concept pages in this section of the docs share more details related to the following topics: [authentication](./authentication.md), [record processing](./record-processing.mdx), [pagination](./pagination.md), [incremental sync](./incremental-sync.md), [partitioning](./partitioning.md), and [error handling](./error-handling.md).
+The concept pages in this section of the docs share more details related to the following topics: [global configuration](./global-configuration.md), [authentication](./authentication.md), [record processing](./record-processing.mdx), [pagination](./pagination.md), [incremental sync](./incremental-sync.md), [partitioning](./partitioning.md), and [error handling](./error-handling.md).
 
 :::tip
 Do not hardcode things like API keys or passwords while configuring a connector in the builder. They will be used, but not saved, during development when you provide them as Testing Values. For use in production, these should be passed in as user inputs after publishing the connector to the workspace, when you configure a source using your connector.
