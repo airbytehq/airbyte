@@ -30,18 +30,20 @@ Here are the destination objects and their respective operations that are curren
 ### Restrictions
 
 * Each entry sent to the API needs to be 32kb or smaller
-* Customer IO allows to send unstructured attributes. Those attributes are subject to the following restrictions:
+* Customer IO allows you to send unstructured attributes. Those attributes are subject to the following restrictions:
     * Max number of attributes allowed per object is 300
     * Max size of all attributes is 100kb
     * The attributes name is 150 bytes or smaller
     * The value of attributes is 1000 bytes or smaller
-* Events name are 100 bytes or smaller
+* Event names are 100 bytes or smaller
 
 ## Getting started
 
 ### Setup guide
 
 In order to configure this connector, you need to generate your Track API Key and obtain your Site ID from Customer IO (Workspace Settings → API and webhook credentials → Create Track API Key). Once this is done, provide both the Site ID and API Key in the connector's configuration and you are good to go.
+
+**Object Storage for Rejected Records**: This connector supports data activation and can optionally store [rejected records](/platform/next/move-data/rejected-records) in object storage (such as S3). Configure object storage in the connector settings to capture records that couldn't be synced to Customer IO due to schema validation issues or other errors.
 
 ## Changelog
 
