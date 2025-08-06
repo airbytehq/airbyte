@@ -1,0 +1,62 @@
+name: Publish Stale Metadata Report
+
+on:
+  workflow_dispatch:
+    inputs:
+      bucket_name:
+        description: "The GCS bucket name to use for metadata analysis"
+        required: true
+        default: "airbyte-data-connectors-metadata-dev"
+        type: string
+      gitref:
+        description: "The git ref to check out from the repository"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish-stale-metadata-report:
+    name: Publish Stale Metadata Report
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.gitref || github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install metadata_service
+        run: pip install airbyte-ci/connectors/metadata_service/lib
+
+      - name: Run stale metadata report task
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          GCS_BUCKET_NAME: ${{ github.event.inputs.bucket_name }}
+        shell: bash
+        run: |
+          ./poe-tasks/publish-stale-metadata-report.sh prod-airbyte-cloud-connector-metadata-service
+
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Metadata Service
+          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: "Failed to publish stale metadata report"
+          SLACK_MESSAGE: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MSG_MINIMAL: True
