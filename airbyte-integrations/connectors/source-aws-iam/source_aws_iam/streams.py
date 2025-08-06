@@ -603,7 +603,13 @@ class IdentityCenterInstanceStream(BaseIdentityCenterStream):
     primary_key = "InstanceArn"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {"type": "object"}
+        return {
+            "type": "object",
+            "properties": {
+                "InstanceArn": {"type": "string"},
+                "IdentityStoreId": {"type": "string"}
+            }
+        }
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
@@ -630,7 +636,55 @@ class IdentityCenterUserStream(BaseIdentityCenterStream):
             return
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {"type": "object"}
+        return {
+            "type": "object",
+            "properties": {
+                "UserId": {"type": "string"},
+                "UserName": {"type": ["string", "null"]},
+                "DisplayName": {"type": ["string", "null"]},
+                "ExternalIds": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Issuer": {"type": "string"},
+                            "Id": {"type": "string"}
+                        }
+                    }
+                },
+                "Name": {
+                    "type": ["object", "null"],
+                    "properties": {
+                        "FamilyName": {"type": ["string", "null"]},
+                        "GivenName": {"type": ["string", "null"]}
+                    }
+                },
+                "Emails": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Value": {"type": ["string", "null"]},
+                            "Type": {"type": ["string", "null"]},
+                            "Primary": {"type": "boolean"}
+                        }
+                    }
+                },
+                "PhoneNumbers": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Value": {"type": ["string", "null"]},
+                            "Type": {"type": ["string", "null"]},
+                            "Primary": {"type": "boolean"}
+                        }
+                    }
+                },
+                "Locale": {"type": ["string", "null"]},
+                "IdentityStoreId": {"type": "string"}
+            }
+        }
 
     def read_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         identity_store_id = stream_slice.get("IdentityStoreId")
@@ -712,7 +766,13 @@ class IdentityCenterGroupMembershipStream(BaseIdentityCenterStream):
             return
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {"type": "object"}
+        return {
+            "type": "object",
+            "properties": {
+                "GroupId": {"type": "string"},
+                "UserId": {"type": "string"}
+            }
+        }
 
     def read_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         identity_store_id = stream_slice.get("IdentityStoreId")

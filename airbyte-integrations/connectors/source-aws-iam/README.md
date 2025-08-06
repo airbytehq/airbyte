@@ -264,7 +264,7 @@ After loading the Docker images, you can tag and push them to your ECR repositor
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 794038212761.dkr.ecr.us-east-1.amazonaws.com
 
 # Version tag to use
-VERSION="1.5.0"
+VERSION="1.7.1"
 
 # Tag and push ARM image with version and 'arm' tag
 docker tag airbyte/source-aws-iam:arm 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-aws-iam/docker:${VERSION}-arm
