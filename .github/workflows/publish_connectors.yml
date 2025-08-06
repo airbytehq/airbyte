@@ -117,7 +117,7 @@ jobs:
           github.event_name == 'push' &&
           contains(fromJson(needs.list_connectors.outputs.connectors-to-publish-jvm).connector, matrix.connector)
         shell: bash
-        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }} && exit 1
+        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
 
       - name: Publish connectors [On merge to master]
         # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
@@ -131,10 +131,7 @@ jobs:
           (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') &&
           contains(fromJson(needs.list_connectors.outputs.connectors-to-publish-jvm).connector, matrix.connector)
         shell: bash
-        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish && exit 1
-
-      - name: DEBUG SLEEP
-        run: sleep 10
+        run: echo WOULD RUN ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
 
       - name: Publish connectors [manual]
         id: publish-connectors-manual
