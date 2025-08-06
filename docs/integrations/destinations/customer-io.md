@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Customer IO
 
 ## Overview
 
-The Customer IO destination connector allows you to sync data to Customer IO, a customer data management platform. This connector supports [data activation](/platform/move-data/elt-data-activation) and requires Airbyte version 1.8 or later.
+The Customer IO destination connector allows you to sync data to Customer IO, a customer data management platform. This connector supports [data activation](/platform/next/move-data/elt-data-activation) and requires Airbyte version 1.8 or later.
 
 ## Prerequisites
 
