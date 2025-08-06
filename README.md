@@ -1,71 +1,97 @@
-<p align="center">
-  <a href="https://airbyte.com"><img src="https://assets.website-files.com/605e01bc25f7e19a82e74788/624d9c4a375a55100be6b257_Airbyte_logo_color_dark.svg" alt="Airbyte"></a>
-</p>
-<p align="center">
-    <em>Data integration platform for ELT pipelines from APIs, databases & files to databases, warehouses & lakes</em>
-</p>
-<p align="center">
-<a href="https://github.com/airbytehq/airbyte/stargazers/" target="_blank">
-    <img src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000" alt="Test">
-</a>
-<a href="https://github.com/airbytehq/airbyte/releases" target="_blank">
-    <img src="https://img.shields.io/github/v/release/airbytehq/airbyte?color=white" alt="Release">
-</a>
-<a href="https://airbytehq.slack.com/" target="_blank">
-    <img src="https://img.shields.io/badge/slack-join-white.svg?logo=slack" alt="Slack">
-</a>
-<a href="https://www.youtube.com/c/AirbyteHQ/?sub_confirmation=1" target="_blank">
-    <img alt="YouTube Channel Views" src="https://img.shields.io/youtube/channel/views/UCQ_JWEFzs1_INqdhIO3kmrw?style=social">
-</a>
-<a href="https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml" target="_blank">
-    <img src="https://img.shields.io/github/actions/workflow/status/airbytehq/airbyte/gradle.yml?branch=master" alt="Build">
-</a>
-<a href="https://github.com/airbytehq/airbyte/tree/master/docs/project-overview/licenses" target="_blank">
-    <img src="https://img.shields.io/static/v1?label=license&message=MIT&color=white" alt="License">
-</a>
-<a href="https://github.com/airbytehq/airbyte/tree/master/docs/project-overview/licenses" target="_blank">
-    <img src="https://img.shields.io/static/v1?label=license&message=ELv2&color=white" alt="License">
-</a>
-</p>
+# HashiCorp Vault Source
 
-We believe that only an **open-source solution to data movement** can cover the long tail of data sources while empowering data engineers to customize existing connectors. Our ultimate vision is to help you move data from any source to any destination. Airbyte already provides the largest [catalog](https://docs.airbyte.com/integrations/) of 300+ connectors for APIs, databases, data warehouses, and data lakes.
+This is the repository for the HashiCorp Vault source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/vault).
 
-![Airbyte Connections UI](https://github.com/airbytehq/airbyte/assets/38087517/35b01d0b-00bf-407b-87e6-a5cd5cd720b5)
-_Screenshot taken from [Airbyte Cloud](https://cloud.airbyte.com/signup)_.
+## Local development
 
-### Getting Started
+### Prerequisites
 
-- [Deploy Airbyte Open Source](https://docs.airbyte.com/quickstart/deploy-airbyte) or set up [Airbyte Cloud](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud) to start centralizing your data.
-- Create connectors in minutes with our [no-code Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview).
-- Explore popular use cases in our [tutorials](https://airbyte.com/tutorials).
-- Orchestrate Airbyte syncs with [Airflow](https://docs.airbyte.com/operator-guides/using-the-airflow-airbyte-operator), [Prefect](https://docs.airbyte.com/operator-guides/using-prefect-task), [Dagster](https://docs.airbyte.com/operator-guides/using-dagster-integration), [Kestra](https://docs.airbyte.com/operator-guides/using-kestra-plugin), or the [Airbyte API](https://reference.airbyte.com/reference/start).
+- Python (~=3.10)
+- Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-Try it out yourself with our [demo app](https://demo.airbyte.io/), visit our [full documentation](https://docs.airbyte.com/), and learn more about [recent announcements](https://airbyte.com/blog-categories/company-updates). See our [registry](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html) for a full list of connectors already available in Airbyte or Airbyte Cloud.
+### Installing the connector
 
-### Join the Airbyte Community
+From this connector directory, run:
 
-The Airbyte community can be found in the [Airbyte Community Slack](https://airbyte.com/community), where you can ask questions and voice ideas. You can also ask for help in our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions), or join our [Office Hours](https://airbyte.io/daily-office-hours/). Airbyte's roadmap is publicly viewable on [GitHub](https://github.com/orgs/airbytehq/projects/37/views/1?pane=issue&itemId=26937554).
+```bash
+poetry install --with dev
+```
 
-For videos and blogs on data engineering and building your data stack, check out Airbyte's [Content Hub](https://airbyte.com/content-hub), [YouTube](https://www.youtube.com/c/AirbyteHQ), and sign up for our [newsletter](https://airbyte.com/newsletter).
+### Create credentials
 
-### Contributing
+You'll need a HashiCorp Vault instance with AppRole authentication enabled. Create a `secrets/config.json` file with the following structure:
 
-If you've found a problem with Airbyte, please open a [GitHub issue](https://github.com/airbytehq/airbyte/issues/new/choose). To contribute to Airbyte and see our Code of Conduct, please see the [contributing guide](https://docs.airbyte.com/contributing-to-airbyte/). We have a list of [good first issues](https://github.com/airbytehq/airbyte/labels/contributor-program) that contain bugs that have a relatively limited scope. This is a great place to get started, gain experience, and get familiar with our contribution process.
+```json
+{
+  "vault_url": "https://your-vault-instance.com",
+  "role_id": "your-role-id",
+  "secret_id": "your-secret-id",
+  "namespace": "admin",
+  "verify_ssl": true
+}
+```
 
-### Security
+Note that the `namespace` parameter is optional:
+- For HCP Vault (HashiCorp Cloud Platform), use `"admin"`
+- For self-hosted Vault, use `"root"` or leave empty (`""`)
 
-Airbyte takes security issues very seriously. **Please do not file GitHub issues or post on our public forum for security vulnerabilities**. Email `security@airbyte.io` if you believe you have uncovered a vulnerability. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
+### Locally running the connector
 
-[Airbyte Enterprise](https://airbyte.com/airbyte-enterprise) also offers additional security features (among others) on top of Airbyte open-source.
+```bash
+poetry run source-vault spec
+poetry run source-vault check --config secrets/config.json
+poetry run source-vault discover --config secrets/config.json
+poetry run source-vault read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
 
-### License
+### Running unit tests
 
-See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic.
+To run unit tests locally, from the connector directory run:
 
-### Thank You
+```bash
+poetry run pytest unit_tests
+```
 
-Airbyte would not be possible without the support and assistance of other open-source tools and companies! Visit our [thank you page](THANK-YOU.md) to learn more about how we build Airbyte.
+### Building the docker image
 
-<a href="https://github.com/airbytehq/airbyte/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=airbytehq/airbyte"/>
-</a>
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
+
+```bash
+airbyte-ci connectors --name=source-vault build
+```
+
+An image will be available on your host with the tag `airbyte/source-vault:dev`.
+
+### Running as a docker container
+
+Then run any of the connector commands as follows:
+
+```bash
+docker run --rm airbyte/source-vault:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-vault:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-vault:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-vault:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+```
+
+## Streams
+
+This connector supports the following streams:
+
+1. **vault_info** - Information about the Vault instance
+2. **users** - User entities from Vault's identity system
+3. **roles** - Authentication roles from various auth methods
+4. **policies** - Access control policies
+5. **groups** - Group entities from Vault's identity system
+6. **namespaces** - Namespaces (Enterprise feature, recursive)
+7. **secrets** - Secret names without values (recursive)
+8. **identity_providers** - OIDC identity providers
+
+## Features
+
+- Supports AppRole authentication
+- Handles both HCP Vault and self-hosted Vault instances
+- Recursively discovers namespaces and secrets
+- Retrieves metadata without exposing secret values
+- Configurable SSL verification

@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "policy",
+        "name": "iam_policy",
         "json_schema": {
           "type": "object",
           "properties": {

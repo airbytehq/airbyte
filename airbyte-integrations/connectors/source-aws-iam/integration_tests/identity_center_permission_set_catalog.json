@@ -1,0 +1,13 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "identity_center_permission_set",
+        "json_schema": {"type": "object"},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

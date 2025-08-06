@@ -2,7 +2,23 @@
   "streams": [
     {
       "stream": {
-        "name": "policy",
+        "name": "iam_saml_provider",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "Arn": {"type": "string"},
+            "ValidUntil": {"type": ["string", "null"], "format": "date-time"},
+            "CreateDate": {"type": ["string", "null"], "format": "date-time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "iam_policy",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -26,7 +42,7 @@
     },
     {
       "stream": {
-        "name": "role",
+        "name": "iam_role",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -47,7 +63,7 @@
     },
     {
       "stream": {
-        "name": "user",
+        "name": "iam_user",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -66,7 +82,7 @@
     },
     {
       "stream": {
-        "name": "group",
+        "name": "iam_group",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -84,23 +100,7 @@
     },
     {
       "stream": {
-        "name": "saml_provider",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "Arn": {"type": "string"},
-            "ValidUntil": {"type": ["string", "null"], "format": "date-time"},
-            "CreateDate": {"type": ["string", "null"], "format": "date-time"}
-          }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "user_inline_policy",
+        "name": "iam_user_inline_policy",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -116,7 +116,7 @@
     },
     {
       "stream": {
-        "name": "role_inline_policy",
+        "name": "iam_role_inline_policy",
         "json_schema": {
           "type": "object",
           "properties": {

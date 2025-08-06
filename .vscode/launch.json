@@ -5,31 +5,47 @@
             "name": "AWS IAM: Spec",
             "type": "python",
             "request": "launch",
-            "module": "source_aws_iam.run",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
             "args": [
                 "spec"
             ],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
         {
             "name": "AWS IAM: Check",
             "type": "python",
             "request": "launch",
-            "module": "source_aws_iam.run",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
             "args": [
                 "check",
                 "--config",
                 "integration_tests/sample_config.json"
             ],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Discover",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "discover",
+                "--config",
+                "integration_tests/sample_config.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
         {
             "name": "AWS IAM: Read All Streams",
             "type": "python",
             "request": "launch",
-            "module": "source_aws_iam.run",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
             "args": [
                 "read",
                 "--config",
@@ -38,13 +54,14 @@
                 "integration_tests/configured_catalog.json"
             ],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
         {
             "name": "AWS IAM: Read Policies Only",
             "type": "python",
             "request": "launch",
-            "module": "source_aws_iam.run",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
             "args": [
                 "read",
                 "--config",
@@ -53,13 +70,14 @@
                 "integration_tests/policy_catalog.json"
             ],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
         {
             "name": "AWS IAM: Read Users Only",
             "type": "python",
             "request": "launch",
-            "module": "source_aws_iam.run",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
             "args": [
                 "read",
                 "--config",
@@ -68,13 +86,14 @@
                 "integration_tests/user_catalog.json"
             ],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
         {
             "name": "AWS IAM: Read Roles Only",
             "type": "python",
             "request": "launch",
-            "module": "source_aws_iam.run",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
             "args": [
                 "read",
                 "--config",
@@ -83,17 +102,367 @@
                 "integration_tests/role_catalog.json"
             ],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read SSO Identity Providers Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/sso_identity_providers_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read All SSO Streams",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/sso_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "OnePassword: Spec",
+            "type": "python",
+            "request": "launch",
+            "module": "source_onepassword.run",
+            "args": [
+                "spec"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-onepassword",
             "console": "integratedTerminal"
         },
         {
-            "name": "Active Directory: Read All Streams",
+            "name": "OnePassword: Check",
+            "type": "python",
+            "request": "launch",
+            "module": "source_onepassword.run",
+            "args": [
+                "check",
+                "--config",
+                "integration_tests/sample_config.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-onepassword",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "OnePassword: Discover",
+            "type": "python",
+            "request": "launch",
+            "module": "source_onepassword.run",
+            "args": [
+                "discover",
+                "--config",
+                "integration_tests/sample_config.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-onepassword",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "OnePassword: Read All Streams",
+            "type": "python",
+            "request": "launch",
+            "module": "source_onepassword.run",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/configured_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-onepassword",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Vault: Spec",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
-            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/configured_catalog.json"],
-            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["spec"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
-        }
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Check",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["check", "--config", "secrets/config.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Discover",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["discover", "--config", "secrets/config.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read All Streams",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/configured_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Vault Info Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/vault_info_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Users Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/users_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Service Accounts Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/service_accounts_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Policies Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/policies_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Groups Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/groups_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Namespaces Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/namespaces_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Secrets Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/secrets_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Identity Providers Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/identity_providers_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "Vault: Read Auth Methods Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/auth_methods_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-vault",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-vault/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read SAML Providers Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/saml_provider_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Group User Membership Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/group_user_membership_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Users Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_user_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Groups Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_group_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Group Memberships Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_group_membership_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Instances Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_instance_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        // ...existing code...
+        {
+            "name": "AWS IAM: Read Identity Center Instances Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_instance_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center User to Role Mapping",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_user_to_role_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Identity Center Group to Role Mapping",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/identity_center_group_to_role_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
     ]
 }

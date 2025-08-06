@@ -49,8 +49,8 @@
   // Mark the root directory as 'safe' for git.
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
 
-  // Setup airbyte-ci on the container:
-  "postCreateCommand": "make tools.airbyte-ci-dev.install",
+  // Setup airbyte-ci on the container and install 1Password CLI:
+  "postCreateCommand": "make tools.airbyte-ci-dev.install && curl -sSfLo /tmp/op.zip https://cache.agilebits.com/dist/1P/op2/pkg/v2.24.0/op_linux_amd64_v2.24.0.zip && sudo unzip -od /usr/local/bin/ /tmp/op.zip && sudo chmod +x /usr/local/bin/op && rm /tmp/op.zip",
 
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`

@@ -28,6 +28,13 @@
         "minimum": 1,
         "maximum": 10,
         "order": 2
+      },
+      "aws_region": {
+        "title": "AWS Region",
+        "type": "string",
+        "description": "The AWS region to connect to. Defaults to 'us-east-1'.",
+        "default": "us-east-1",
+        "order": 3
       }
     }
   }
