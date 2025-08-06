@@ -5,13 +5,13 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `api_key` | `string` | API Key optained from running the workflow [get access token](https://developer.ticktick.com/api#/openapi?id=get-access-token)  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Get User Project | id | No pagination | ✅ |  ❌  |
-| Get Tasks | id | No pagination | ✅ |  ❌  |
+| projects | id | No pagination | ✅ |  ❌  |
+| tasks | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
