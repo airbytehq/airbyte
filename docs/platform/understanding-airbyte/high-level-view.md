@@ -18,7 +18,6 @@ title: Architecture Overview
 ---
 %%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
 flowchart LR
-    W[fa:fa-display WebApp/UI]
     S[fa:fa-server Config API Server]
     D[(fa:fa-table Config & Jobs)]
     L[(fa:fa-server Launcher)]
@@ -28,7 +27,6 @@ flowchart LR
     W2[1..n Airbyte Workers]
     WL[fa:fa-server Workload API Server]
     
-    W -->|sends API requests| S
     S -->|store data| D
     S -->|create workflow| T
     T -->|launch task| W2
@@ -40,8 +38,7 @@ flowchart LR
     O -->|reports status to| WL
 ```
 
-- **Web App/UI** [`airbyte-webapp`]: An easy-to-use graphical interface for interacting with the Airbyte Server.
-- **Config API Server** [`airbyte-server`, `airbyte-server-api`]: Airbyte's main controller. All operations in Airbyte such as creating sources, destinations, connections, managing configurations, etc.. are configured and invoked from the API.
+- **Config API Server** [`airbyte-server`, `airbyte-server-api`]: Airbyte's main controller and graphical user interface. All operations in Airbyte such as creating sources, destinations, connections, managing configurations, etc. are configured and invoked from the API.
 - **Database Config & Jobs** [`airbyte-db`]: Stores all the configuration \(credentials, frequency...\) and job history.
 - **Temporal Service** [`airbyte-temporal`]: Manages the scheduling and sequencing task queues and workflows.
 - **Worker** [`airbyte-worker`]: Reads from the task queues and executes the connection scheduling and sequencing logic, making calls to the workload API.
