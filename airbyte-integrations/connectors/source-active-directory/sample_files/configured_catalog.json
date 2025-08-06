@@ -1,0 +1,247 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "User's unique objectGUID identifier"},
+            "name": {"type": ["string", "null"], "description": "User's display name"},
+            "username": {"type": ["string"], "description": "sAMAccountName"},
+            "email": {"type": ["string", "null"], "description": "User's email address"},
+            "first_name": {"type": ["string", "null"], "description": "Given name"},
+            "last_name": {"type": ["string", "null"], "description": "Surname"},
+            "user_principal_name": {"type": ["string", "null"], "description": "UPN"},
+            "created_at": {"type": ["string"], "description": "Account creation time"},
+            "modified_at": {"type": ["string"], "description": "Last modification time"},
+            "enabled": {"type": ["boolean"], "description": "Account enabled status"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "group_memberships",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Unique identifier for this membership relationship"},
+            "user_id": {"type": ["string"], "description": "User's objectGUID identifier"},
+            "group_id": {"type": ["string"], "description": "Group's objectGUID identifier"},
+            "user_name": {"type": ["string", "null"], "description": "User's display name"},
+            "user_username": {"type": ["string", "null"], "description": "User's sAMAccountName"},
+            "group_name": {"type": ["string", "null"], "description": "Group's display name"},
+            "group_description": {"type": ["string", "null"], "description": "Group's description"},
+            "group_type": {"type": ["string", "null"], "description": "Group type (security/distribution)"},
+            "group_scope": {"type": ["string", "null"], "description": "Group scope (global/domain local/universal)"},
+            "membership_added_at": {"type": ["string", "null"], "description": "When the membership was added"},
+            "is_primary_group": {"type": ["boolean"], "description": "Whether this is the user's primary group"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Group's unique objectGUID identifier"},
+            "name": {"type": ["string", "null"], "description": "Group's display name"},
+            "sam_account_name": {"type": ["string", "null"], "description": "sAMAccountName"},
+            "description": {"type": ["string", "null"], "description": "Group description"},
+            "group_type": {"type": ["string", "null"], "description": "Group type (Security/Distribution)"},
+            "group_scope": {"type": ["string", "null"], "description": "Group scope (Domain Local/Global/Universal)"},
+            "created_at": {"type": ["string", "null"], "description": "Group creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Last modification time"},
+            "members": {"type": ["array"], "items": {"type": "string"}, "description": "Member object IDs"},
+            "member_of": {"type": ["array"], "items": {"type": "string"}, "description": "Parent group object IDs"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "domains",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Domain's unique objectGUID identifier"},
+            "name": {"type": ["string"], "description": "Domain name (DNS name)"},
+            "netbios_name": {"type": ["string", "null"], "description": "NetBIOS domain name"},
+            "distinguished_name": {"type": ["string"], "description": "Domain distinguished name"},
+            "functional_level": {"type": ["string", "null"], "description": "Domain functional level"},
+            "forest_name": {"type": ["string", "null"], "description": "Forest DNS name"},
+            "created_at": {"type": ["string", "null"], "description": "Domain creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Last modification time"},
+            "domain_controllers": {"type": ["array"], "items": {"type": "string"}, "description": "Domain controller object IDs"},
+            "trust_relationships": {"type": ["array"], "items": {"type": "object"}, "description": "Trust relationships"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "forest",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Forest's unique identifier"},
+            "name": {"type": ["string"], "description": "Forest DNS name"},
+            "forest_mode": {"type": ["string", "null"], "description": "Forest functional level"},
+            "schema_version": {"type": ["string", "null"], "description": "Schema version"},
+            "root_domain": {"type": ["string", "null"], "description": "Forest root domain"},
+            "domains": {"type": ["array"], "items": {"type": "string"}, "description": "List of domain names in forest"},
+            "global_catalogs": {"type": ["array"], "items": {"type": "string"}, "description": "Global catalog servers"},
+            "sites": {"type": ["array"], "items": {"type": "string"}, "description": "AD sites in forest"},
+            "created_at": {"type": ["string", "null"], "description": "Forest creation time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "sites",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Site's unique objectGUID identifier"},
+            "name": {"type": ["string"], "description": "Site name"},
+            "description": {"type": ["string", "null"], "description": "Site description"},
+            "location": {"type": ["string", "null"], "description": "Site location"},
+            "subnets": {"type": ["array"], "items": {"type": "string"}, "description": "IP subnets in this site"},
+            "domain_controllers": {"type": ["array"], "items": {"type": "string"}, "description": "Domain controllers in this site"},
+            "site_links": {"type": ["array"], "items": {"type": "string"}, "description": "Site links connected to this site"},
+            "created_at": {"type": ["string", "null"], "description": "Site creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Last modification time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "forest_domains",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Unique relationship identifier"},
+            "forest_id": {"type": ["string"], "description": "Forest's unique objectGUID identifier"},
+            "forest_name": {"type": ["string"], "description": "Forest DNS name"},
+            "domain_id": {"type": ["string"], "description": "Domain's unique objectGUID identifier"},
+            "domain_name": {"type": ["string"], "description": "Domain DNS name"},
+            "domain_distinguished_name": {"type": ["string"], "description": "Domain distinguished name"},
+            "is_root_domain": {"type": ["boolean"], "description": "Whether this is the forest root domain"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "organizational_units",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "OU's unique objectGUID identifier"},
+            "name": {"type": ["string"], "description": "OU name"},
+            "distinguished_name": {"type": ["string"], "description": "OU distinguished name"},
+            "description": {"type": ["string", "null"], "description": "OU description"},
+            "canonical_name": {"type": ["string", "null"], "description": "OU canonical name"},
+            "parent_ou_id": {"type": ["string", "null"], "description": "Parent OU's objectGUID (if any)"},
+            "domain_id": {"type": ["string", "null"], "description": "Domain objectGUID this OU belongs to"},
+            "created_at": {"type": ["string", "null"], "description": "OU creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Last modification time"},
+            "gpo_links": {"type": ["array"], "items": {"type": "string"}, "description": "Group Policy Object links"},
+            "managed_by": {"type": ["string", "null"], "description": "Distinguished name of managing object"},
+            "street_address": {"type": ["string", "null"], "description": "Street address"},
+            "city": {"type": ["string", "null"], "description": "City/locality"},
+            "state": {"type": ["string", "null"], "description": "State/province"},
+            "postal_code": {"type": ["string", "null"], "description": "Postal code"},
+            "country": {"type": ["string", "null"], "description": "Country"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "domain_organizational_units",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Unique relationship identifier"},
+            "domain_id": {"type": ["string"], "description": "Domain's unique objectGUID identifier"},
+            "domain_name": {"type": ["string"], "description": "Domain DNS name"},
+            "domain_distinguished_name": {"type": ["string"], "description": "Domain distinguished name"},
+            "ou_id": {"type": ["string"], "description": "OU's unique objectGUID identifier"},
+            "ou_name": {"type": ["string"], "description": "OU name"},
+            "ou_distinguished_name": {"type": ["string"], "description": "OU distinguished name"},
+            "is_direct_child": {"type": ["boolean"], "description": "Whether the OU is a direct child of the domain"},
+            "ou_level": {"type": ["integer"], "description": "Depth level of OU within domain (0 = direct child)"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "organizational_unit_objects",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Unique relationship identifier"},
+            "ou_id": {"type": ["string"], "description": "OU's unique objectGUID identifier"},
+            "ou_name": {"type": ["string"], "description": "OU name"},
+            "ou_distinguished_name": {"type": ["string"], "description": "OU distinguished name"},
+            "object_id": {"type": ["string"], "description": "Object's unique objectGUID identifier"},
+            "object_type": {"type": ["string"], "description": "Type of object (user, group, computer, etc.)"},
+            "object_name": {"type": ["string"], "description": "Object name"},
+            "object_distinguished_name": {"type": ["string"], "description": "Object distinguished name"},
+            "object_sam_account_name": {"type": ["string", "null"], "description": "Object SAM account name"},
+            "is_direct_child": {"type": ["boolean"], "description": "Whether the object is directly under this OU"},
+            "created_at": {"type": ["string", "null"], "description": "Object creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Object last modification time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
