@@ -44,12 +44,11 @@ class AzureBlobClient(
     /** List all blobs that start with [prefix]. We emit them as a Flow. */
     override suspend fun list(prefix: String): Flow<AzureBlob> = flow {
         val containerClient = serviceClient.getBlobContainerClient(blobConfig.containerName)
+        val options = ListBlobsOptions().setPrefix(prefix)
 
-        containerClient
-            .listBlobs(ListBlobsOptions().setPrefix(prefix), null)
-            .map { it.name }
-            .filter { it.startsWith(prefix) }
-            .forEach { emit(AzureBlob(it, blobConfig)) }
+        for (item in containerClient.listBlobs(options, null)) {
+            emit(AzureBlob(item.name, blobConfig))
+        }
     }
 
     /** Move is not a single operation in Azure; we have to do a copy + delete. */

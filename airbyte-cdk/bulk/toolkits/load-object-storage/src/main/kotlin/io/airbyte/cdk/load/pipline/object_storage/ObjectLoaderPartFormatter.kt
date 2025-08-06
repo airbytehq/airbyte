@@ -56,6 +56,12 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val objectSizeBytes = loader.objectSizeBytes
     private val streamStateCache = ConcurrentHashMap<String, AtomicLong>()
 
+    init {
+        log.info { "clampedPartSizeBytes $clampedPartSizeBytes" }
+        log.info { "batchSizeOverride $batchSizeOverride" }
+        log.info { "objectSizeBytes $objectSizeBytes" }
+    }
+
     data class State<T : OutputStream>(
         val stream: DestinationStream,
         val writer: BufferedFormattingWriter<T>,
