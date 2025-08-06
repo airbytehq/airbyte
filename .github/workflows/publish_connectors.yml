@@ -3,7 +3,7 @@ name: Connector Ops CI - Publish Connectors
 on:
   push:
     branches:
-      - edgao/connector_publish_as_matrix
+      - master
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
