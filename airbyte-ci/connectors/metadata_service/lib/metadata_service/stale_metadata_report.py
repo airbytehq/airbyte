@@ -5,90 +5,119 @@
 import datetime
 import logging
 import os
-import textwrap
+import re
 from typing import Any, Mapping
+import textwrap
 
+from metadata_service.helpers.slack import send_slack_message
+from metadata_service.validators.metadata_validator import STALE_METADATA_VALIDATORS, is_valid_metadata
 import pandas as pd
+from github import Github
+from github import Auth
+from google.cloud import storage
+from metadata_service.helpers.gcs import get_gcs_storage_client
 import requests
 import yaml
-from github import Auth, Github
-from github.ContentFile import ContentFile
-from google.cloud import storage
 
-from metadata_service.helpers.gcs import get_gcs_storage_client
-from metadata_service.helpers.slack import send_slack_message
-
-from .constants import METADATA_FILE_NAME, METADATA_FOLDER, REPOSITORY_NAME
+from .constants import (
+    GITHUB_REPO_NAME,
+    METADATA_FILE_NAME,
+    METADATA_FOLDER,
+    PUBLISH_GRACE_PERIOD,
+    PUBLISH_UPDATE_CHANNEL,
+    STALE_REPORT_CHANNEL,
+    EXTENSIBILITY_TEAM_SLACK_TEAM_ID,
+)
 
 logger = logging.getLogger(__name__)
 
 
-EXTENSIBILITY_TEAM_SLACK_TEAM_ID = "S08SQDL2RS9"  # @oc-extensibility-critical-systems
-# We give 6 hours for the metadata to be updated
-# This is an empirical value that we can adjust if needed
-# When our auto-merge pipeline runs it can merge hundreds of up-to-date PRs following.
-# Given our current publish concurrency of 10 runners, it can take up to 6 hours to publish all the connectors.
-# A shorter grace period could lead to false positives in stale metadata detection.
-PUBLISH_GRACE_PERIOD = datetime.timedelta(hours=int(os.getenv("PUBLISH_GRACE_PERIOD_HOURS", 6)))
-
-
-def _is_younger_than_grace_period(file_content: ContentFile) -> bool:
+def _is_younger_than_grace_period(last_modified_at: datetime.datetime) -> bool:
     grace_period_marker = datetime.datetime.now(datetime.timezone.utc) - PUBLISH_GRACE_PERIOD
-    return file_content.last_modified_at > grace_period_marker
+    return last_modified_at > grace_period_marker
 
 
 def _entry_should_be_on_gcs(metadata_dict: Mapping[str, Any]) -> bool:
-    if metadata_dict["supportLevel"] == "archived":
+    if not is_valid_metadata(metadata_dict, STALE_METADATA_VALIDATORS):
+        logger.error(f"Invalid metadata: {metadata_dict['data']['dockerRepository']}")
         return False
-    if "-rc" in metadata_dict["dockerImageTag"]:
+    if metadata_dict["data"].get("supportLevel") == "archived":
+        return False
+    if "-rc" in metadata_dict["data"].get("dockerImageTag", ""):
         return False
     return True
 
 
 def _get_latest_metadata_versions_on_github() -> Mapping[str, Any]:
     github_token = os.getenv("GITHUB_TOKEN")
+    if not github_token:
+        raise ValueError("GITHUB_TOKEN is not set")
     auth = Auth.Token(github_token)
     github_client = Github(auth=auth)
-    repo = github_client.get_repo(REPOSITORY_NAME)
+    repo = github_client.get_repo(GITHUB_REPO_NAME)
 
-    # Gets all files in the connectors folder, then filters for metadata.yaml files that are older than the grace period and appends the download url to a list.
-    contents = repo.get_contents("/airbyte-integrations/connectors/")
+    logger.info(f"Getting latest metadata versions on GitHub for {GITHUB_REPO_NAME}")
+
+    # Gets all files that match the query, then filters for metadata based on path, then gets the latest commit datetime, then checks if it's older than the grace period.
+    query = f"repo:{repo.full_name} filename:{METADATA_FILE_NAME}"
+    file_contents = github_client.search_code(query)
+    logger.debug("Found files matching the query.")
+
+    logger.debug("Getting the download URL for each file.")
     metadata_download_urls = []
-    while contents:
-        file_content = contents.pop(0)
-        if file_content.type == "dir":
-            contents.extend(repo.get_contents(file_content.path))
-        elif file_content.name == "metadata.yaml" and not _is_younger_than_grace_period(file_content):
-            metadata_download_urls.append(file_content.download_url)
+    for file_content in file_contents[:5]:
+        logger.debug(f"File content path: {file_content.path}")
+        if re.match(r"airbyte-integrations/connectors/(source|destination)-.+/metadata\.yaml$", file_content.path):
+            logger.debug(f"Getting commits for file: {file_content.path}")
+            commits = repo.get_commits(path=file_content.path)
+            last_modified_at = commits[0].commit.author.date
+            if not _is_younger_than_grace_period(last_modified_at):
+                metadata_download_urls.append(file_content.download_url)
+    logger.debug(f"Found {len(metadata_download_urls)} download URLs")
 
+    # Download and parse the contents of the metadata files
+    logger.debug("Downloading and parsing the contents of the metadata files.")
     metadata_dicts = []
     for metadata_download_url in metadata_download_urls:
+        logger.debug(f"Downloading metadata from {metadata_download_url}")
         response = requests.get(metadata_download_url)
         response.raise_for_status()
         metadata_yaml = response.text
         metadata_dict = yaml.safe_load(metadata_yaml)
         metadata_dicts.append(metadata_dict)
+    logger.debug(f"Parsed {len(metadata_dicts)} metadata files")
 
     latest_metadata_versions_on_github = {
-        metadata_dict["dockerRepository"]: metadata_dict["dockerImageTag"]
+        metadata_dict["data"]["dockerRepository"]: metadata_dict["data"]["dockerImageTag"]
         for metadata_dict in metadata_dicts
         if _entry_should_be_on_gcs(metadata_dict)
     }
 
+    logger.info(f"Found {len(latest_metadata_versions_on_github)} connectors on GitHub")
     return latest_metadata_versions_on_github
 
 
 def _get_latest_metadata_entries_on_gcs(bucket_name: str) -> Mapping[str, Any]:
+    logger.info(f"Getting latest metadata entries on GCS for {bucket_name}")
+
     storage_client = get_gcs_storage_client()
     bucket = storage_client.bucket(bucket_name)
 
-    blobs: list[storage.Blob] = bucket.list_blobs(match_glob=f"{METADATA_FOLDER}/**/latest/{METADATA_FILE_NAME}")
+    try:
+        logger.debug(f"Listing blobs in {bucket_name} with prefix {METADATA_FOLDER}/**/latest/{METADATA_FILE_NAME}")
+        blobs = bucket.list_blobs(match_glob=f"{METADATA_FOLDER}/**/latest/{METADATA_FILE_NAME}")
+        logger.debug("Found blobs.")
+    except Exception as e:
+        logger.error(f"Error getting blobs from GCS: {e}")
+        raise e
 
     latest_metadata_entries_on_gcs = {}
     for blob in blobs:
-        metadata_dict = yaml.safe_load(blob.download_as_string().decode("utf-8"))
-        latest_metadata_entries_on_gcs[metadata_dict["dockerRepository"]] = metadata_dict["dockerImageTag"]
+        assert isinstance(blob, storage.Blob)
+        metadata_dict = yaml.safe_load(blob.download_as_bytes().decode("utf-8"))
+        latest_metadata_entries_on_gcs[metadata_dict["data"]["dockerRepository"]] = metadata_dict["data"]["dockerImageTag"]
 
+    logger.info(f"Found {len(latest_metadata_entries_on_gcs)} connectors on GCS")
     return latest_metadata_entries_on_gcs
 
 
@@ -103,6 +132,7 @@ def _generate_stale_metadata_report(
                 {"connector": docker_repository, "master_version": github_docker_image_tag, "gcs_version": gcs_docker_image_tag}
             )
 
+    stale_connectors.sort(key=lambda x: x.get("connector"))
     return pd.DataFrame(stale_connectors)
 
 
@@ -112,24 +142,20 @@ def generate_and_publish_stale_metadata_report(bucket_name: str) -> tuple[bool, 
 
     Args:
         bucket_name (str): The name of the GCS bucket to check for stale metadata.
-
-    Returns:
-        bool: True if any stale metadata was detected, False otherwise.
     """
-
     latest_metadata_versions_on_github = _get_latest_metadata_versions_on_github()
     latest_metadata_entries_on_gcs = _get_latest_metadata_entries_on_gcs(bucket_name)
     stale_metadata_report = _generate_stale_metadata_report(latest_metadata_versions_on_github, latest_metadata_entries_on_gcs)
 
-    stale_report_channel = os.getenv("STALE_REPORT_CHANNEL")
-    publish_update_channel = os.getenv("PUBLISH_UPDATE_CHANNEL")
     any_stale = len(stale_metadata_report) > 0
-    if any_stale and stale_report_channel:
+    if any_stale:
         stale_report_md = stale_metadata_report.to_markdown(index=False)
-        send_slack_message(stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{EXTENSIBILITY_TEAM_SLACK_TEAM_ID}>)")
-        send_slack_message(stale_report_channel, stale_report_md, enable_code_block_wrapping=True)
-
-    if not any_stale and publish_update_channel:
+        send_slack_message(STALE_REPORT_CHANNEL, f"🚨 Stale metadata detected! (cc. <!subteam^{EXTENSIBILITY_TEAM_SLACK_TEAM_ID}>)")
+        sent, error_message = send_slack_message(STALE_REPORT_CHANNEL, stale_report_md, enable_code_block_wrapping=True)
+        if not sent:
+            logger.error(f"Failed to send stale metadata report: {error_message}")
+            return sent, error_message
+    if not any_stale:
         message = textwrap.dedent(
             f"""
         Analyzed {len(latest_metadata_versions_on_github)} metadata files on our master branch and {len(latest_metadata_entries_on_gcs)} latest metadata files hosted in GCS.
@@ -137,4 +163,8 @@ def generate_and_publish_stale_metadata_report(bucket_name: str) -> tuple[bool, 
         No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
         """
         )
-        send_slack_message(publish_update_channel, message)
+        sent, error_message = send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+        if not sent:
+            logger.error(f"Failed to send success message: {error_message}")
+            return sent, error_message
+    return True, None

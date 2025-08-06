@@ -4,8 +4,8 @@
 
 import pathlib
 from dataclasses import dataclass
-from typing import Callable, List, Optional, Tuple, Union
-
+from typing import Any, Callable, List, Mapping, Optional, Tuple, Union
+import logging
 import semver
 import yaml
 from pydantic import ValidationError
@@ -13,6 +13,8 @@ from pydash.objects import get
 
 from metadata_service.docker_hub import get_latest_version_on_dockerhub, is_image_on_docker_hub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -280,6 +282,18 @@ def validate_rc_suffix_and_rollout_configuration(
     return True, None
 
 
+def validate_is_stable_version(metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions) -> ValidationResult:
+    """Ensure that the connector is not a pre-release version."""
+    docker_image_tag = get(metadata_definition, "data.dockerImageTag")
+    if not docker_image_tag:
+        return False, "The dockerImageTag field is not set."
+    if check_is_release_candidate_version(docker_image_tag):
+        return False, "The dockerImageTag field has an -rc.<RC #> suffix. Release candidates are not allowed."
+    if check_is_dev_version(docker_image_tag):
+        return False, "The dockerImageTag field has a -dev suffix. Dev versions are not allowed."
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
@@ -289,6 +303,15 @@ PRE_UPLOAD_VALIDATORS = [
     validate_pypi_only_for_python,
     validate_docker_image_tag_is_not_decremented,
     validate_rc_suffix_and_rollout_configuration,
+]
+
+# These validators are less strict than the pre-upload validators
+STALE_METADATA_VALIDATORS = [
+    validate_is_stable_version,
+    validate_all_tags_are_keyvalue_pairs,
+    validate_at_least_one_language_tag,
+    validate_major_version_bump_has_breaking_change_entry,
+    validate_pypi_only_for_python,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
@@ -321,3 +344,30 @@ def validate_and_load(
             return None, f"Validation error: {error}"
 
     return metadata_model, None
+
+
+def is_valid_metadata(metadata_dict: Mapping[str, Any], validators_to_run: List[Validator]) -> bool:
+    """
+    Validate the metadata using the provided validators. This function is used to validate metadata from Github before it is used to generate the stale metadata report.
+    """
+
+    try:
+        metadata_model = ConnectorMetadataDefinitionV0.parse_obj(metadata_dict)
+    except ValidationError:
+        logger.debug(f"Metadat validation failed for {metadata_dict['data']['dockerRepository']}")
+        return False
+
+    docker_image_tag = metadata_dict.get("data", {}).get("dockerImageTag", "")
+
+    prerelease_tag = docker_image_tag if ("-rc" in docker_image_tag or "-dev" in docker_image_tag) else None
+
+    validator_opts = ValidatorOptions(docs_path="", prerelease_tag=prerelease_tag, disable_dockerhub_checks=True)
+
+    for validator in validators_to_run:
+        logger.debug(f"Running validator {validator.__name__} for {metadata_dict['data']['dockerRepository']}")
+        is_valid, _ = validator(metadata_model, validator_opts)
+        if not is_valid:
+            logger.debug(f"Validator {validator.__name__} failed for {metadata_dict['data']['dockerRepository']}")
+            return False
+
+    return True
