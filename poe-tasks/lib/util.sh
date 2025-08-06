@@ -22,9 +22,10 @@ connector_docs_path() {
   echo $DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
 }
 
-# Typically called immediately after sourcing parse_args.sh
-# Throws an error if zero or multiple `--name` flags were passed.
-# If exactly one `--name` flag was passed, return that connector.
+# Expects that you have populated a $connectors variable as an array.
+# If you sourced the parse_args.sh script, this is already handled for you.
+# If $connectors has exactly one element, return that element.
+# Otherwise, prints an error and crashes the script.
 get_only_connector() {
   # "${#connectors[@]}" is the length of the array
   if test "${#connectors[@]}" -eq 0; then
