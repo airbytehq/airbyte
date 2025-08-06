@@ -32,41 +32,9 @@ on:
         description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
         default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
 jobs:
-  list_connectors:
-    name: List connectors to publish
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
-      - name: List connectors [manual]
-        id: list-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        shell: bash
-        # We need to run an actual script to parse the `--name` args and filter for JVM connectors.
-        run: ./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors-options }} | tee -a $GITHUB_OUTPUT
-      - name: List connectors [On merge to master]
-        id: list-connectors-master
-        if: github.event_name == 'push'
-        shell: bash
-        # get-modified-connectors.sh already prints things in the right format, so just use that output directly
-        run: |
-          echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
-          echo connectors-to-publish-jvm=$(./poe-tasks/get-modified-connectors.sh --prev-commit --java --json) | tee -a $GITHUB_OUTPUT
-    outputs:
-      # Exactly one of the manual/master steps will run, so just OR them together.
-      connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
-      connectors-to-publish-jvm: ${{ steps.list-connectors-manual.outputs.connectors-to-publish-jvm || steps.list-connectors-master.outputs.connectors-to-publish-jvm }}
   publish_connectors:
     name: Publish connectors
-    needs: [list_connectors]
     runs-on: ubuntu-24.04
-    strategy:
-      matrix: ${{ fromJson(needs.list_connectors.outputs.connectors-to-publish) }}
-      max-parallel: 5
-      # Allow all jobs to run, even if one fails
-      fail-fast: false
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -106,22 +74,22 @@ jobs:
       - name: Install metadata_service
         run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
 
-      - name: Validate connector metadata
-        id: validate-connector-metadata
+      # If you modify this step, remember to also modify validate-connector-metadata-manual.
+      - name: Validate connector metadata [On merge to master]
+        id: validate-connector-metadata-master
+        if: github.event_name == 'push'
         shell: bash
-        run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
+        run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json | ./poe-tasks/validate-connector-metadata.sh
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
-        if: >
-          github.event_name == 'push' &&
-          contains(fromJson(needs.list_connectors.outputs.connectors-to-publish-jvm).connector, matrix.connector)
+        if: github.event_name == 'push'
         shell: bash
-        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
+        run: ./poe-tasks/get-modified-connectors.sh --prev-commit --json  --java | ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish
 
-      - name: Publish connectors [On merge to master]
+      - name: Publish modified connectors [On merge to master]
         # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
-        id: publish-connectors-master
+        id: publish-modified-connectors
         if: github.event_name == 'push'
         uses: ./.github/actions/run-airbyte-ci
         with:
@@ -138,21 +106,26 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --name ${{ matrix.connector }} publish --main-release"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
 
+      # If you modify this step, remember to also modify validate-connector-metadata-master.
+      - name: Validate connector metadata [manual]
+        id: validate-connector-metadata-manual
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        shell: bash
+        run: ./poe-tasks/validate-connector-metadata.sh ${{ inputs.publish-options }} ${{ inputs.connectors-options }}
+
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
-        if: >
-          (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') &&
-          contains(fromJson(needs.list_connectors.outputs.connectors-to-publish-jvm).connector, matrix.connector)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
-        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
+        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} ${{ inputs.connectors-options }} --publish
 
       - name: Publish connectors [manual]
-        id: publish-connectors-manual
+        id: publish-connectors
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: ./.github/actions/run-airbyte-ci
         with:
@@ -169,7 +142,7 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --name ${{ matrix.connector }} publish ${{ inputs.publish-options }}"
+          subcommand: "connectors ${{ inputs.connectors-options }} publish ${{ inputs.publish-options }}"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
           max_attempts: 2
