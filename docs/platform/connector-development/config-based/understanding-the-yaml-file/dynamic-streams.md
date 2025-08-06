@@ -47,7 +47,7 @@ dynamic_streams:
           request_body_json:
             startDate: "{{ stream_interval.get('start_time') }}"
             endDate: "{{ stream_interval.get('end_time') }}"
-            dimensions: ["date", "country"]  # Will be replaced dynamically
+            dimensions: "{{ dimensions }}"  # Will be replaced dynamically
             type: "{{ stream_partition.get('search_type') }}"
         partition_router:
           - type: ListPartitionRouter
@@ -62,7 +62,7 @@ dynamic_streams:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: "https://api.example.com"
+          url_base: "https://www.googleapis.com/webmasters/v3"
           path: "/custom-reports"
         record_selector:
           type: RecordSelector

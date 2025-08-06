@@ -66,12 +66,12 @@ dynamic_streams:
           report_type: "AgeGenderAudienceReportRequest"
           report_name: "Age Gender Audience Report Hourly"
           report_columns: ["TimePeriod", "AccountId", "Age", "Gender"]
-          primary_key: "TimePeriod"
+          primary_key: ["TimePeriod"]
         - stream_name: "age_gender_audience_report_daily"
           report_type: "AgeGenderAudienceReportRequest" 
           report_name: "Age Gender Audience Report Daily"
           report_columns: ["TimePeriod", "AccountId", "Age", "Gender"]
-          primary_key: "TimePeriod"
+          primary_key: ["TimePeriod"]
 ```
 
 This configuration generates two separate streams (`age_gender_audience_report_hourly` and `age_gender_audience_report_daily`) from a single template, each with different parameter values.
