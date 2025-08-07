@@ -81,8 +81,10 @@ jobs:
             exit 1
           fi
 
-          # Validate connector language (only Python and manifest-only supported for now)
+          # Change to connector directory for poe commands
           cd "$CONNECTOR_DIR"
+
+          # Validate connector language (only Python and manifest-only supported for now)
           CONNECTOR_LANGUAGE=$(poe -qq get-language)
           if [[ "$CONNECTOR_LANGUAGE" != "python" && "$CONNECTOR_LANGUAGE" != "manifest-only" ]]; then
             echo "❌ Unsupported connector language: $CONNECTOR_LANGUAGE"
@@ -122,7 +124,8 @@ jobs:
               ;;
             "ghcr.io/airbytehq")
               # Unsupported for now
-              echo "ℹ️ GitHub Container Registry is not supported yet, using Docker Hub instead"
+              echo "ℹ️ GitHub Container Registry is not supported yet, please use 'docker.io/airbyte' instead"
+              exit 1
               ;;
             *)
               echo "❌ Unsupported registry: ${{ inputs.registry }}"
@@ -130,75 +133,105 @@ jobs:
               ;;
           esac
 
-
           FULL_IMAGE_NAME="${{ inputs.registry }}/${CONNECTOR_NAME}:${DOCKER_TAG}"
-
 
           echo "📋 Build Details:"
           echo "  Connector: $CONNECTOR_NAME"
           echo "  Language: $CONNECTOR_LANGUAGE"
           echo "  Base Image: $BASE_IMAGE"
           echo "  Docker Tag: $DOCKER_TAG"
+          echo "  Registry: ${{ inputs.registry }}"
           echo "  Full Image: $FULL_IMAGE_NAME"
+          echo "  Dry Run: ${{ inputs.dry-run }}"
+          echo "  Force Publish: ${{ inputs.force-publish }}" 
 
-          echo "connector-name=$CONNECTOR_NAME" >> $GITHUB_OUTPUT
-          echo "connector-type=$CONNECTOR_LANGUAGE" >> $GITHUB_OUTPUT
-          echo "connector-dir=$CONNECTOR_DIR" >> $GITHUB_OUTPUT
-          echo "docker-tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
-          echo "base-image=$BASE_IMAGE" >> $GITHUB_OUTPUT
-          echo "image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
+          {
+            echo "connector-name=$CONNECTOR_NAME"
+            echo "connector-type=$CONNECTOR_LANGUAGE"
+            echo "connector-dir=$CONNECTOR_DIR"
+            echo "docker-tag=$DOCKER_TAG"
+            echo "base-image=$BASE_IMAGE"
+            echo "registry=$REGISTRY"
+            echo "image-name=$FULL_IMAGE_NAME"
+          } >> $GITHUB_OUTPUT
 
       - name: Check if image already exists
         id: check-exists
         run: |
           set -euo pipefail
 
-          IMAGE_NAME="${{ steps.vars.outputs.image-name }}"
-          echo "🔍 Checking if image exists: $IMAGE_NAME"
+          # Initialize decision variables
+          DO_BUILD="false"
+          DO_PUBLISH="false"
+          IMAGE_EXISTS="unknown"
 
-          if [[ ${{ inputs.registry }} == "docker.io/airbyte" ]]; then
-            # Use Docker Hub API with retry and exponential backoff
-            URL="https://registry.hub.docker.com/v2/repositories/airbyte/${{ steps.vars.outputs.connector-name }}/tags/${{ steps.vars.outputs.docker-tag }}/"
-            STATUS=""
-            for i in {1..5}; do
-              STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL") || true
-              if [[ "$STATUS" == "200" || "$STATUS" == "404" ]]; then
-              break
-              fi
-              delay=$((2 ** (i - 1)))
-              echo "⚠️  Docker Hub check failed (status $STATUS), retrying in $delay seconds... ($i/5)" >&2
-              sleep $delay
-            done
+          # Use Docker Hub API with retry and exponential backoff
+          URL="https://registry.hub.docker.com/v2/repositories/airbyte/${{ steps.vars.outputs.connector-name }}/tags/${{ steps.vars.outputs.docker-tag }}/"
+          STATUS=""
+          echo "🔍 Checking if image exists on Docker Hub: ${{ steps.vars.outputs.image-name }}"
+
+          max_attempts=5
+          for attempt in {1..$max_attempts}; do
+            echo "  Attempt $attempt/$max_attempts..."
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            case "$STATUS" in
+              "200"|"404")
+                break
+                ;;
+              *)
+                if [[ $attempt -lt $max_attempts ]]; then
+                  delay=$((2 ** (attempt - 1)))
+                  echo "⚠️  Unexpected status $STATUS, retrying in $delay seconds..."
+                  sleep $delay
+                else
+                  echo "❌ Failed to check image after $max_attempts attempts. Last status: $STATUS"
+                  exit 1
+                fi
+            esac
+          done
+
+          # Evaluate results
+          case "$STATUS" in
+            "200")
+              echo "ℹ️ Image exists on Docker Hub: $IMAGE_NAME"
+              IMAGE_EXISTS="true"
+              DO_BUILD="false"
+              DO_PUBLISH="false"
+              ;;
+            "404")
+              echo "✅ Image does not exist on Docker Hub: $IMAGE_NAME"
+              IMAGE_EXISTS="false"
+              DO_BUILD="true"
+              DO_PUBLISH="${{ inputs.dry-run != 'true' }}"
+              ;;
+            *)
+              echo "⚠️ Unable to determine if image exists (HTTP $STATUS)... Aborting to be safe"
+              exit 1
+              ;;
+          esac
+
+          # If force-publish is enabled, override decisions
+          if [[ "${{ inputs.force-publish }}" == "true" ]]; then
+            echo "🔄 Force publish enabled - will build and push regardless of existing image"
+            DO_BUILD="true"
+            DO_PUBLISH="true"
           fi
 
-          local do_build = false
-          local do_publish = false
+          # Output decision summary
+          echo ""
+          echo "📊 Build Decision Summary:"
+          echo "  Image exists: $IMAGE_EXISTS"
+          echo "  Will build: $DO_BUILD"
+          echo "  Will publish: $DO_PUBLISH"
+          echo "  Dry run mode: ${{ inputs.dry-run }}"
+          echo "  Force publish: ${{ inputs.force-publish }}"
 
-          if [[ "$STATUS" == "200" ]]; then
-            echo "ℹ️  Image already exists: $IMAGE_NAME"
-            if [[ "${{ inputs.force-publish }}" == "true" ]]; then
-              echo "⚠️ Force-push enabled, proceeding with build and publish"
-              do_build=true
-              do_publish=true
-            else
-              echo "❌ Image already exists, skipping build and push"
-            fi
-          elif [[ "$STATUS" == "404" ]]; then
-            echo "✅ Image does not exist: $IMAGE_NAME"
-            do_build=true
-            if [[ "${{ inputs.dry-run }}" == "false" ]]; then
-              do_publish=true
-              echo "✅ Proceeding with build and publish"
-            else
-              echo "ℹ️ Dry run mode enabled, build will be performed but not published"
-            fi
-          else
-            echo "⚠️  Unexpected status $STATUS, exiting to be safe"
-            exit 1
-          fi
-
-          echo "do-build=$do_build" >> $GITHUB_OUTPUT
-          echo "do-publish=$do_publish" >> $GITHUB_OUTPUT
+          # Set outputs for subsequent steps
+          {
+            echo "image-exists=$IMAGE_EXISTS"
+            echo "do-build=$DO_BUILD"
+            echo "do-publish=$DO_PUBLISH"
+          } >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
         if: ${{ steps.check-exists.outputs.do-publish== 'true' }}
