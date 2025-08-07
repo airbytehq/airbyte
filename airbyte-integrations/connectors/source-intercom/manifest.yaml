@@ -776,32 +776,32 @@ definitions:
             - download_url
         decoder:
           type: JsonDecoder
-            creation_requester:
-      type: HttpRequester
-      url_base: https://api.intercom.io/export/reporting_data/enqueue
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config[\"access_token\"] }}"
+        creation_requester:
+          type: HttpRequester
+          url_base: https://api.intercom.io/export/reporting_data/enqueue
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"access_token\"] }}"
           http_method: POST
           request_body_json:
             end_time: "{{ config.end_time }}"
             report_dataset_id: "{{ config.report_dataset_id }}"
             start_time: "{{ config.start_time }}"
             attribute_ids: "{{ config.attribute_ids }}"
-            polling_requester:
-      type: HttpRequester
-      url_base: >-
-        https://api.intercom.io/export/reporting_data/{{ creation_response['job_identifier'] }}
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config[\"access_token\"] }}"
+        polling_requester:
+          type: HttpRequester
+          url_base: >-
+            https://api.intercom.io/export/reporting_data/{{ creation_response['job_identifier'] }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"access_token\"] }}"
           http_method: GET
-            download_requester:
-      type: HttpRequester
-      url_base: "{{ download_target }}"
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config[\"access_token\"] }}"
+        download_requester:
+          type: HttpRequester
+          url_base: "{{ download_target }}"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config[\"access_token\"] }}"
           http_method: GET
           request_headers:
             Accept: application/octet-stream
@@ -898,7 +898,6 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2020-11-16T00:00:00Z"
-
       report_dataset_id:
         type: string
         description: "Example: \"conversation\""
