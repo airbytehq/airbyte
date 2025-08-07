@@ -63,15 +63,15 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v18/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v18/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
         shopping_performance_view_response,
     )
 
