@@ -9,7 +9,7 @@ jobs:
     name: "Call Connector Images Build Push"
     uses: ./.github/workflows/connector-image-build-push.yml
     with:
-      connector-name: "source-faker"
+      connector-name: "source-pokeapi"
       registry: "ghcr.io/airbytehq"
-      tag-override: "david-test"
+      tag-override: "david-test-${{ github.sha }}"
     secrets: inherit
