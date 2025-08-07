@@ -133,6 +133,7 @@ With root level flattening, the output JSONL is:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.4 | 2025-08-07 | [64556](https://github.com/airbytehq/airbyte/pull/64556) | Promoting release candidate 1.0.4-rc.1 to a main version. |
 | 1.0.4-rc.1 | 2025-08-05 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | Release Azure blob destination on latest CDK                                                                                                                    |
 | 1.0.3    | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                                                         |
 | 1.0.2    | 2025-04-14 | [57563](https://github.com/airbytehq/airbyte/pull/57563)   | Fix signature spec example                                                                                                                                      |
