@@ -335,8 +335,6 @@ definitions:
               type: RequestOption
               field_name: "ts"
               inject_into: "request_parameter"
-              extra_fields:
-                - [ "channel_id" ]
     incremental_sync:
       type: DatetimeBasedCursor
       lookback_window: "P{{ config.get('lookback_window', 0) }}D"
