@@ -192,13 +192,13 @@ jobs:
           # Evaluate results
           case "$STATUS" in
             "200")
-              echo "ℹ️ Image exists on Docker Hub: $IMAGE_NAME"
+              echo "ℹ️ Image exists on Docker Hub"
               IMAGE_EXISTS="true"
               DO_BUILD="false"
               DO_PUBLISH="false"
               ;;
             "404")
-              echo "✅ Image does not exist on Docker Hub: $IMAGE_NAME"
+              echo "✅ Image does not exist on Docker Hub"
               IMAGE_EXISTS="false"
               DO_BUILD="true"
               DO_PUBLISH="${{ inputs.dry-run != 'true' }}"
