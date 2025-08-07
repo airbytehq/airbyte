@@ -5,10 +5,8 @@
 package io.airbyte.cdk.load.lifecycle
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.DataFlowPipeline
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -75,8 +73,7 @@ class DestinationLifecycle(
                         log.info {
                             "Finalizing stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
                         }
-                        syncManager
-                            .getOrAwaitStreamLoader(it.mappedDescriptor).close(true)
+                        syncManager.getOrAwaitStreamLoader(it.mappedDescriptor).close(true)
                         log.info {
                             "Finalized stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
                         }
