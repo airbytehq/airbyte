@@ -116,10 +116,16 @@ jobs:
           fi
 
           # Validate registry input
-          if [[ "${{ inputs.registry }}" !="ghcr.io/airbytehq" && "${{ inputs.registry }}" != "docker.io/airbyte" ]]; then
-            echo "❌ Unsupported registry: ${{ inputs.registry }}"
-            exit 1
-          fi
+          case "${{ inputs.registry }}" in
+            "ghcr.io/airbytehq"|"docker.io/airbyte")
+              # Supported registries
+              ;;
+            *)
+              echo "❌ Unsupported registry: ${{ inputs.registry }}"
+              exit 1
+              ;;
+          esac
+
 
           FULL_IMAGE_NAME="${{ inputs.registry }}/${CONNECTOR_NAME}:${DOCKER_TAG}"
 
