@@ -450,8 +450,7 @@ class CheckpointManager(
 @Singleton
 class FreeingAnnotatingCheckpointConsumer(
     private val consumer: OutputConsumer,
-) :
-    suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit {
+) : suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit {
     override suspend fun invoke(
         message: Reserved<CheckpointMessage>,
         totalRecords: Long,

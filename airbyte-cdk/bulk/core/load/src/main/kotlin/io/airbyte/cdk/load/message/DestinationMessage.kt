@@ -509,6 +509,8 @@ sealed interface CheckpointMessage : DestinationMessage {
         get() = checkpointKey?.checkpointId?.value
     val checkpointOrdinalRaw: Int?
         get() = checkpointKey?.checkpointIndex?.value
+    val checkpointPartitionIds: List<String>
+        get() = checkpointIdRaw?.let { listOf(it) } ?: listOf()
 
     val sourceStats: Stats?
     val destinationStats: Stats?
@@ -692,6 +694,9 @@ data class GlobalSnapshotCheckpoint(
     override var totalRejectedRecords: Long? = null,
     val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>
 ) : CheckpointMessage {
+
+    override val checkpointPartitionIds: List<String>
+        get() = streamCheckpoints.entries.map { it.value.checkpointId.toString() }
 
     override fun updateStats(
         destinationStats: Stats?,

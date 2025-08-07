@@ -11,10 +11,8 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
-interface StateKeyClient {
-    fun getKey(msg: DestinationRecordRaw): StateKey
-
-    fun getOrdinal(key: StateKey): Long
+interface StateClient {
+    fun getPartitionKey(msg: DestinationRecordRaw): PartitionKey
 
     fun acceptState(msg: CheckpointMessage)
 }
@@ -24,29 +22,21 @@ interface StateKeyClient {
 class SelfDescribingStateKeyClient(
     private val stateWatermarkStore: StateWatermarkStore,
     private val stateStore: StateStore,
-) : StateKeyClient {
-    private val ordinalMap = ConcurrentHashMap<StateKey, Long>()
-
-    override fun getKey(msg: DestinationRecordRaw): StateKey {
-        return StateKey(msg.checkpointId!!.value)
-    }
-
-    override fun getOrdinal(key: StateKey): Long {
-        return ordinalMap[key]!!
+) : StateClient {
+    override fun getPartitionKey(msg: DestinationRecordRaw): PartitionKey {
+        return PartitionKey(msg.checkpointId!!.value)
     }
 
     override fun acceptState(msg: CheckpointMessage) {
-        val key = StateKey(msg.checkpointIdRaw!!)
         val ordinal = msg.checkpointOrdinalRaw!!.toLong()
-
-        ordinalMap[key] = ordinal
+        val key = StateKey(ordinal, msg.checkpointPartitionIds)
 
         val inner = ConcurrentHashMap<StateKey, Long>()
         inner[key] = msg.sourceStats!!.recordCount
         val expectedCounts = StateHistogram(inner)
 
         stateWatermarkStore.acceptExpectedCounts(expectedCounts)
-        stateStore.accept(ordinal, msg)
+        stateStore.accept(key, msg)
     }
 }
 
@@ -55,26 +45,22 @@ class SelfDescribingStateKeyClient(
 class InferredStateKeyClient(
     private val stateWatermarkStore: StateWatermarkStore,
     private val stateStore: StateStore,
-) : StateKeyClient {
+) : StateClient {
     private val internalCounter = AtomicLong(1)
 
-    override fun getKey(msg: DestinationRecordRaw): StateKey {
-        return StateKey(internalCounter.get().toString())
-    }
-
-    override fun getOrdinal(key: StateKey): Long {
-        return key.id.toLong()
+    override fun getPartitionKey(msg: DestinationRecordRaw): PartitionKey {
+        return PartitionKey(internalCounter.get().toString())
     }
 
     override fun acceptState(msg: CheckpointMessage) {
         val ordinal = internalCounter.getAndIncrement()
-        val key = StateKey(ordinal.toString())
+        val key = StateKey(ordinal, listOf(ordinal.toString()))
 
         val inner = ConcurrentHashMap<StateKey, Long>()
         inner[key] = msg.sourceStats!!.recordCount
         val expectedCounts = StateHistogram(inner)
 
         stateWatermarkStore.acceptExpectedCounts(expectedCounts)
-        stateStore.accept(ordinal, msg)
+        stateStore.accept(key, msg)
     }
 }

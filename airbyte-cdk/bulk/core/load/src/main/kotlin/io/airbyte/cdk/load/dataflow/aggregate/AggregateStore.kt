@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.dataflow.aggregate
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.dataflow.state.StateHistogram
+import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -32,7 +32,7 @@ class AggregateStore(
         val (agg, histogram, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
 
         agg.accept(record)
-        histogram.increment(record.stateKey)
+        histogram.increment(record.partitionKey)
         countTrigger.increment(1)
         bytesTrigger.increment(record.sizeBytes)
         timeTrigger.update(record.emittedAtMs)
@@ -66,18 +66,15 @@ class AggregateStore(
     @VisibleForTesting
     internal fun getOrCreate(key: StoreKey): AggregateEntry {
         val entry =
-            aggregates.computeIfAbsent(
-                key,
-                {
-                    AggregateEntry(
-                        value = aggFactory.create(it),
-                        stateHistogram = StateHistogram(),
-                        stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
-                        recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
-                        estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
-                    )
-                }
-            )
+            aggregates.computeIfAbsent(key) {
+                AggregateEntry(
+                    value = aggFactory.create(it),
+                    partitionHistogram = PartitionHistogram(),
+                    stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
+                    recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
+                    estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
+                )
+            }
 
         return entry
     }
@@ -90,7 +87,7 @@ class AggregateStore(
 
 data class AggregateEntry(
     val value: Aggregate,
-    val stateHistogram: StateHistogram,
+    val partitionHistogram: PartitionHistogram,
     val stalenessTrigger: TimeTrigger,
     val recordCountTrigger: SizeTrigger,
     val estimatedBytesTrigger: SizeTrigger,

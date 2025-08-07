@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.dataflow.state
 
 import jakarta.inject.Singleton
@@ -12,34 +16,33 @@ import kotlinx.coroutines.runBlocking
 @Singleton
 class StateReconciler(
     private val stateWatermarkStore: StateWatermarkStore,
-    private val stateKeyClient: StateKeyClient,
     private val stateStore: StateStore,
     private val statePublisher: StatePublisher,
 ) {
     private val iterationDuration: Duration = 30.seconds
     private lateinit var job: Job
 
-    fun run() = runBlocking{
+    fun run() = runBlocking {
         job = launch {
             while (true) {
                 delay(iterationDuration)
 
-                val completeKeys = stateWatermarkStore.getCompleteStateKeys()
+                flushStates()
+            }
+        }
+    }
 
-                while (true) {
-                    val entry = stateStore.states.firstEntry()
-
-                    val keys = listOf<StateKey>() // partitions
-                    if (keys.all { completeKeys.contains(it) }) {
-                        val polled = stateStore.states.pollFirstEntry()
-                        statePublisher.publish(polled.value)
-                    }
-
-                }
+    fun flushStates() {
+        while (true) {
+            val key = stateStore.states.firstKey()
+            val complete = stateWatermarkStore.isComplete(key)
+            if (complete) {
+                statePublisher.publish(stateStore.remove(key))
+            } else {
+                break
             }
         }
     }
 
     suspend fun disable() = job.cancelAndJoin()
-
 }

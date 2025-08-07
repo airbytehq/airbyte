@@ -19,7 +19,7 @@ class StateStage(
     private val log = KotlinLogging.logger {}
 
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
-        val stateUpdates = input.stateHistogram!!
+        val stateUpdates = input.partitionHistogram!!
 
         stateStore.acceptAggregateCounts(stateUpdates)
 

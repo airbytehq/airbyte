@@ -24,7 +24,7 @@ class ParseStage(
             munged =
                 RecordDTO(
                     fields = fields,
-                    stateKey = input.stateKey!!,
+                    partitionKey = input.partitionKey!!,
                     sizeBytes = raw.serializedSizeBytes,
                     emittedAtMs = raw.rawData.emittedAtMs,
                 )

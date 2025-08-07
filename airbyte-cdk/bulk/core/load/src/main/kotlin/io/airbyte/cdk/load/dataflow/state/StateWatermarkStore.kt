@@ -9,19 +9,22 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
 class StateWatermarkStore(
-    val watermarks: StateHistogram = StateHistogram(ConcurrentHashMap()),
+    val flushed: PartitionHistogram = PartitionHistogram(ConcurrentHashMap()),
     val expected: StateHistogram = StateHistogram(ConcurrentHashMap()),
 ) {
 
-    fun acceptAggregateCounts(value: StateHistogram): StateHistogram {
-        return watermarks.merge(value)
+    fun acceptAggregateCounts(value: PartitionHistogram): PartitionHistogram {
+        return flushed.merge(value)
     }
 
     fun acceptExpectedCounts(value: StateHistogram): StateHistogram {
         return expected.merge(value)
     }
 
-    fun getCompleteStateKeys(): List<StateKey> = expected.map
-        .filter { it.value == watermarks.map[it.key] }
-        .map { it.key }
+    fun isComplete(key: StateKey): Boolean {
+        val expectedCount = expected.map[key]
+        val flushedCount = key.partitionIds.sumOf { flushed.map[PartitionKey(it)] ?: 0 }
+
+        return expectedCount == flushedCount
+    }
 }

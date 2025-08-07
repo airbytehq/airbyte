@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.dataflow.input
 
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
-import io.airbyte.cdk.load.dataflow.state.StateKeyClient
+import io.airbyte.cdk.load.dataflow.state.StateClient
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -22,23 +22,23 @@ import kotlinx.coroutines.flow.FlowCollector
 @Singleton
 class DataFlowPipelineInputFlow(
     val inputFlow: Flow<DestinationMessage>,
-    val stateKeyClient: StateKeyClient,
+    val stateClient: StateClient,
 ) : Flow<DataFlowStageIO> {
     override suspend fun collect(
         collector: FlowCollector<DataFlowStageIO>,
     ) {
         inputFlow.collect {
             when (it) {
-                is CheckpointMessage -> stateKeyClient.acceptState(it)
+                is CheckpointMessage -> stateClient.acceptState(it)
                 is DestinationRecord -> {
                     val raw = it.asDestinationRecordRaw()
-                    val io = DataFlowStageIO(
-                        raw = raw,
-                        stateKey = stateKeyClient.getKey(raw),
-                    )
+                    val io =
+                        DataFlowStageIO(
+                            raw = raw,
+                            partitionKey = stateClient.getPartitionKey(raw),
+                        )
                     collector.emit(io)
                 }
-
                 else -> Unit
             }
         }
