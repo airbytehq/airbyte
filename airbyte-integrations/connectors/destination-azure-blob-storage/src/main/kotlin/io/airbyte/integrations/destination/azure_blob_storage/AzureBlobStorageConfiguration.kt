@@ -81,6 +81,8 @@ class AzureBlobStorageConfigurationFactory(private val destinationCatalog: Desti
         azureBlobStorageClientConfiguration.endpointDomainName =
             pojo.azureBlobStorageEndpointDomainName
         azureBlobStorageClientConfiguration.spillSize = pojo.azureBlobStorageSpillSize
+        azureBlobStorageClientConfiguration.partSize = pojo.azureBlobStoragePartSize
+        azureBlobStorageClientConfiguration.numUploaders = pojo.azureBlobStorageUploaders
         return AzureBlobStorageConfiguration(
             azureBlobStorageClientConfiguration = azureBlobStorageClientConfiguration,
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),

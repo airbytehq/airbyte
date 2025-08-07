@@ -87,6 +87,9 @@ interface ObjectLoader : LoadStrategy {
     fun socketPartSizeBytes(numberOfSockets: Int): Long {
         return min((numberOfSockets * 4), 32) * 1024L * 1024
     }
+    fun socketUploadParallelism(numberOfSockets: Int): Int {
+        return numberOfSockets * 4
+    }
     val objectSizeBytes: Long
         get() = 200L * 1024 * 1024
 
