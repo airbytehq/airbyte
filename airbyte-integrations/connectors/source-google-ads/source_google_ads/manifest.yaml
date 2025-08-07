@@ -300,7 +300,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v19/customers/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v19/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -338,7 +338,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v19/customers/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v19/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
