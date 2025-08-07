@@ -48,18 +48,6 @@ class AzureBlobStorageSpecification :
     @JsonSchemaInject(json = """{"default": 500}""")
     val azureBlobStorageSpillSize: Int? = 500
 
-    @get:JsonSchemaTitle("Azure Blob Storage part size (Megabytes)")
-    @get:JsonPropertyDescription("Part Size")
-    @get:JsonProperty("azure_blob_storage_part_size")
-    @JsonSchemaInject(json = """{"default": 32}""")
-    val azureBlobStoragePartSize: Int? = 32
-
-    @get:JsonSchemaTitle("Azure Blob Storage Client Semaphore size")
-    @get:JsonPropertyDescription("Part Size")
-    @get:JsonProperty("azure_blob_storage_client_uploaders")
-    @JsonSchemaInject(json = """{"default": 16}""")
-    val azureBlobStorageUploaders: Int? = 16
-
     override val format: ObjectStorageFormatSpecification = JsonFormatSpecification()
 }
 
