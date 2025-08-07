@@ -4,9 +4,6 @@ name: Connector Image Build and Push (Python and Manifest-Only)
 # to publish connector images on merge to master.
 
 on:
-  push:
-    branches:
-      - dbgold17/build-and-publish-python-connectors-on-ci
   workflow_call:
     inputs:
       connector-name:
