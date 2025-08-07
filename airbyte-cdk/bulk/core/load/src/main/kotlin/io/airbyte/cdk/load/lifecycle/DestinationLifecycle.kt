@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.DataFlowPipeline
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.write.DestinationWriter
+import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.async
@@ -29,12 +30,12 @@ class DestinationLifecycle(
 
         // Create prepare individual streams for the data ingestion. E.g create tables and propagate
         // the schema updates
-        initializeIndividualStream()
+        val streamLoaders = initializeIndividualStream()
 
         // Move data
         runBlocking { pipeline.run() }
 
-        finalizeIndividualStreams()
+        finalizeIndividualStreams(streamLoaders)
     }
 
     private fun initializeDestination() {
@@ -46,8 +47,9 @@ class DestinationLifecycle(
         }
     }
 
-    private fun initializeIndividualStream() {
-        runBlocking {
+    private fun initializeIndividualStream(): List<StreamLoader> {
+        return runBlocking {
+            val result = mutableListOf<StreamLoader>()
             destinationCatalog.streams
                 .map {
                     async {
@@ -56,26 +58,29 @@ class DestinationLifecycle(
                         }
                         val streamLoader = destinationInitializer.createStreamLoader(it)
                         streamLoader.start()
+                        result.add(streamLoader)
                         log.info {
                             "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
                         }
                     }
                 }
                 .awaitAll()
+
+            return@runBlocking result
         }
     }
 
-    private fun finalizeIndividualStreams() {
+    private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
         runBlocking {
-            destinationCatalog.streams
+            streamLoaders
                 .map {
                     async {
                         log.info {
-                            "Finalizing stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
+                            "Finalizing stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
-                        syncManager.getOrAwaitStreamLoader(it.mappedDescriptor).close(true)
+                        it.close(true)
                         log.info {
-                            "Finalized stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
+                            "Finalized stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
                     }
                 }

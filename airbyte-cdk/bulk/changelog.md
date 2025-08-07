@@ -1,3 +1,9 @@
+## Version 0.1.8
+
+**Load CDK**
+
+* **Changed:** Add finalization to the dataflow pipeline.
+
 ## Version 0.1.7
 
 Update the log4j to allow us to dynamically set the log level via an env variable
