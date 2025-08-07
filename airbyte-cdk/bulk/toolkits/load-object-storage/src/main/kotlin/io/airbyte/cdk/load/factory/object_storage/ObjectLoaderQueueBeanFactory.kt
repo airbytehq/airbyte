@@ -59,7 +59,7 @@ class ObjectLoaderQueueBeanFactory(
     ): Long {
         if (dataChannelMedium == DataChannelMedium.SOCKET) {
             return max(
-                (dataChannelSocketPaths.size * 4L * 1024 * 1024),
+                loader.socketPartSizeBytes(dataChannelSocketPaths.size),
                 max(queue.clampedMessageSize, loader.partSizeBytes),
             )
         }

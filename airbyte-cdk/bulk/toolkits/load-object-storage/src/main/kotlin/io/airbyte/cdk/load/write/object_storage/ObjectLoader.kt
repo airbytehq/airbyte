@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.write.LoadStrategy
+import kotlin.math.min
 
 /**
  * [ObjectLoader] is for the use case where a destination writes records into some number of files
@@ -82,6 +83,13 @@ interface ObjectLoader : LoadStrategy {
         get() = 0.2
     val partSizeBytes: Long
         get() = 10L * 1024 * 1024
+
+    fun socketPartSizeBytes(numberOfSockets: Int): Long {
+        return min((numberOfSockets * 4), 32) * 1024L * 1024
+    }
+    fun socketUploadParallelism(numberOfSockets: Int): Int {
+        return numberOfSockets * 4
+    }
     val objectSizeBytes: Long
         get() = 200L * 1024 * 1024
 
