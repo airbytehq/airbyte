@@ -19,7 +19,7 @@ data:
   dockerRepository: airbyte/destination-astra
   githubIssueLabel: destination-astra
   icon: astra.svg
-  license: MIT
+  license: ELv2
   name: Astra DB
   releaseDate: 2024-01-10
   releaseStage: alpha

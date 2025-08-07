@@ -6,10 +6,15 @@ package io.airbyte.integrations.destination.mssql.v2.config
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource
 import com.zaxxer.hikari.HikariDataSource
+import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
+import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
+import io.airbyte.cdk.ssh.createTunnelSession
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import javax.sql.DataSource
+import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
 class DataSourceFactory {
@@ -30,10 +35,35 @@ class DataSourceFactory {
 }
 
 fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
+    data class HostAndPort(
+        val host: String,
+        val port: Int,
+    )
+
+    val hostAndPort: HostAndPort =
+        if (ssh != null) {
+            when (ssh) {
+                is SshKeyAuthTunnelMethod,
+                is SshPasswordAuthTunnelMethod -> {
+                    val remote = SshdSocketAddress(host.trim(), port)
+                    val sshConnectionOptions: SshConnectionOptions =
+                        SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                    val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
+                    HostAndPort(tunnel.address.hostName, tunnel.address.port)
+                }
+                else -> {
+                    HostAndPort(host.trim(), port)
+                }
+            }
+        } else {
+            HostAndPort(host.trim(), port)
+        }
     val connectionString =
         StringBuilder()
             .apply {
-                append("jdbc:sqlserver://${host}:${port};databaseName=${database}")
+                append(
+                    "jdbc:sqlserver://${hostAndPort.host}:${hostAndPort.port};databaseName=${database}"
+                )
 
                 when (sslMethod) {
                     is EncryptedVerify -> {

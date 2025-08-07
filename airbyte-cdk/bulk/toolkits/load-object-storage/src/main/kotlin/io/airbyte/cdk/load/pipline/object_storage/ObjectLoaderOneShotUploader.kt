@@ -71,7 +71,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     }
 
     override suspend fun start(key: StreamKey, part: Int): State<O, T> {
-        val fmt = partFormatter.start(key, part)
+        val fmt = partFormatter.startLockFree(key)
         val objKey = ObjectKey(stream = key.stream, objectKey = fmt.partFactory.key)
         return State(
             formatterState = fmt,

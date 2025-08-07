@@ -1,5 +1,16 @@
 # Slack Migration Guide
 
+## Upgrading to 2.0.0
+
+As part of recent changes to the Slack API's [Terms of Service](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq), we are migrating to a new Marketplace OAuth application. Users will need to re-authenticate their source with the new application to refresh their access token that is used to retrieve data. This does not apply if you use an API token, are on OSS, or supply your own Slack OAuth application credentials.
+
+## Migration Steps
+
+On the Airbyte application, navigate to your Slack source.
+
+1. Under Authentication mechanism, click `Authenticate your Slack account`.
+2. Follow the instructions in the pop-up window and click `Allow` to grant permissions to access your workspace.
+
 ## Upgrading to 1.0.0
 
 We're continuously striving to enhance the quality and reliability of our connectors at Airbyte. As part of our commitment to delivering exceptional service, we are transitioning source Slack from the Python Connector Development Kit (CDK) to our innovative low-code framework. This is part of a strategic move to streamline many processes across connectors, bolstering maintainability and freeing us to focus more of our efforts on improving the performance and features of our evolving platform and growing catalog. However, due to differences between the Python and low-code CDKs, this migration constitutes a breaking change.

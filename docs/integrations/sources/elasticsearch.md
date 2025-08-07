@@ -87,6 +87,7 @@ all values in the array must be of the same data type. Hence, every field can be
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.5 | 2025-07-10 | [62918](https://github.com/airbytehq/airbyte/pull/62918) | Convert to new gradle build flow |
 | 0.1.4 | 2025-01-10 | [51509](https://github.com/airbytehq/airbyte/pull/51509) | Use a non root base image |
 | 0.1.3 | 2024-12-18 | [49863](https://github.com/airbytehq/airbyte/pull/49863) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.1.2 | 2024-02-13 | [35230](https://github.com/airbytehq/airbyte/pull/35230) | Adopt CDK 0.20.4 |
