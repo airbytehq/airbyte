@@ -1,11 +1,14 @@
 ---
 dockerRepository: airbyte/destination-hubspot
 ---
+
 # HubSpot Destination
 
-## Overview
-
 This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/next/move-data/elt-data-activation) for operational workflows.
+
+:::info
+Data activation is in early access. If you'd like to be an early adopter for this connector, [fill out this form](https://form.typeform.com/to/tupSnN3D) and we'll contact you soon.
+:::
 
 ## Prerequisites
 
