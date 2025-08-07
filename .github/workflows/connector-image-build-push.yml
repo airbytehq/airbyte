@@ -7,13 +7,12 @@ on:
   push:
     branches:
       - dbgold17/build-and-publish-python-connectors-on-ci
-  workflow_dispatch:
+  workflow_call:
     inputs:
       connector-name:
         description: "Connector name (e.g., source-faker, destination-postgres)"
         required: true
         type: string
-        default: "source-pokeapi" # TODO - remove default value
       # release-type:
       #   description: "Release type"
       #   required: true
@@ -25,11 +24,8 @@ on:
       registry:
         description: "Docker registry"
         required: true
-        type: choice
+        type: string
         default: "ghcr.io/airbytehq"
-        options:
-          - "docker.io/airbyte"
-          - "ghcr.io/airbytehq"
       tag-override:
         description: "Override the image tag (optional). If not provided, the tag will be derived from the connector's metadata.yaml."
         required: false

@@ -1,0 +1,15 @@
+name: David Dummy Workflow (for testing purposes)
+# This is a dummy workflow to trigger another workflow for testing purposes.
+on:
+  push:
+    branches:
+      - dbgold17/build-and-publish-python-connectors-on-ci
+jobs:
+  trigger-workflow:
+    name: "Call Connector Images Build Push"
+    uses: ./.github/workflows/connector-image-build-push.yml
+    with:
+      connector-name: "source-faker"
+      registry: "ghcr.io/airbytehq"
+      tag-override: "david-test"
+    secrets: inherit
