@@ -22,14 +22,19 @@ private const val BLOB_ID_PREFIX = "block"
 class AzureBlobStreamingUpload(
     private val blockBlobClient: BlockBlobClient,
     private val config: AzureBlobStorageClientConfiguration,
-    private val metadata: Map<String, String>
+    private val metadata: Map<String, String>,
+    private val clientSemaphore: Int = 16
 ) : StreamingUpload<AzureBlob> {
 
     private val log = KotlinLogging.logger {}
     private val isComplete = AtomicBoolean(false)
     private val blockIds = ConcurrentSkipListMap<Int, String>()
     // tune: 4–16 is usually safe
-    private val inflight = Semaphore(16)
+    private val inflight = Semaphore(clientSemaphore)
+
+    init {
+        log.info { "clientSemaphore $clientSemaphore" }
+    }
 
     /**
      * Each part that arrives is treated as a new block. We must generate unique block IDs for each

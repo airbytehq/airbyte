@@ -23,8 +23,18 @@ class AzureBlobStorageObjectLoader(
         }
     override val numUploadWorkers: Int = config.numUploadWorkers
     override val maxMemoryRatioReservedForParts: Double = config.maxMemoryRatioReservedForParts
-    override val objectSizeBytes: Long = config.objectSizeBytes
-    override val partSizeBytes: Long = config.partSizeBytes
+    override val objectSizeBytes: Long =
+        if (config.azureBlobStorageClientConfiguration.spillSize != null) {
+            config.azureBlobStorageClientConfiguration.spillSize!!.toLong() * 1024 * 1024
+        } else {
+            config.objectSizeBytes
+        }
+    override val partSizeBytes: Long =
+        if (config.azureBlobStorageClientConfiguration.partSize != null) {
+            config.azureBlobStorageClientConfiguration.partSize!!.toLong() * 1024 * 1024
+        } else {
+            config.partSizeBytes
+        }
 }
 
 @Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")

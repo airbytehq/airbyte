@@ -175,6 +175,11 @@ class AzureBlobClient(
                 .getBlobClient(key)
                 .getBlockBlobClient()
 
-        return AzureBlobStreamingUpload(blobClient, blobConfig, metadata)
+        return AzureBlobStreamingUpload(
+            blobClient,
+            blobConfig,
+            metadata,
+            blobConfig.clientSemaphore ?: 16
+        )
     }
 }

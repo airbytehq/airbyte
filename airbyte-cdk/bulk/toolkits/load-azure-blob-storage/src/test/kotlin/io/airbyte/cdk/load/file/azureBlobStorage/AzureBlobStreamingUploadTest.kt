@@ -45,7 +45,8 @@ class AzureBlobStreamingUploadTest {
         // By default, let's assume blobName returns something
         every { blockBlobClient.blobName } returns "testBlob"
 
-        streamingUpload = AzureBlobStreamingUpload(blockBlobClient, config, metadata)
+        streamingUpload =
+            AzureBlobStreamingUpload(blockBlobClient, config, metadata)
     }
 
     @Test
@@ -207,7 +208,8 @@ class AzureBlobStreamingUploadTest {
         val mockClient = mockk<BlockBlobClient>(relaxed = true)
         val config = AzureBlobStorageClientConfiguration("acc", "key", "container", "")
         val metadata = emptyMap<String, String>()
-        val streamingUpload = AzureBlobStreamingUpload(mockClient, config, metadata)
+        val streamingUpload =
+            AzureBlobStreamingUpload(mockClient, config, metadata)
 
         // Call the private method with a test index, e.g., 42
         val blockIdEncoded = streamingUpload.generateBlockId(42)

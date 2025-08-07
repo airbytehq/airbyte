@@ -73,6 +73,8 @@ data class AzureBlobStorageClientConfiguration(
     // The following is only used by the azure blob storage destination
     var endpointDomainName: String? = null,
     var spillSize: Int? = null,
+    var partSize: Int? = null,
+    var clientSemaphore: Int? = null,
 ) {
     init {
         check(!accountKey.isNullOrBlank() xor !sharedAccessSignature.isNullOrBlank()) {

@@ -45,6 +45,18 @@
         "title" : "Azure Blob Storage target blob size (Megabytes)",
         "default" : 500
       },
+      "azure_blob_storage_part_size" : {
+        "type" : "integer",
+        "description" : "Part Size",
+        "title" : "Azure Blob Storage part size (Megabytes)",
+        "default" : 32
+      },
+      "azure_blob_storage_client_semaphore" : {
+        "type" : "integer",
+        "description" : "Part Size",
+        "title" : "Azure Blob Storage Client Semaphore size",
+        "default" : 16
+      },
       "format" : {
         "oneOf" : [ {
           "title" : "CSV: Comma-Separated Values",

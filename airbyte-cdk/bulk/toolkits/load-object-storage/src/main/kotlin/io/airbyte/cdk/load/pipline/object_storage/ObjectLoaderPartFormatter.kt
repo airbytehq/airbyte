@@ -54,10 +54,12 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val log = KotlinLogging.logger {}
 
     private val objectSizeBytes = loader.objectSizeBytes
+    private val partSize = loader.partSizeBytes
     private val streamStateCache = ConcurrentHashMap<String, AtomicLong>()
 
     init {
         log.info { "clampedPartSizeBytes $clampedPartSizeBytes" }
+        log.info { "partSize $partSize" }
         log.info { "batchSizeOverride $batchSizeOverride" }
         log.info { "objectSizeBytes $objectSizeBytes" }
     }
@@ -143,8 +145,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         state: State<T>
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
         state.writer.accept(input)
-        val dataSufficient =
-            state.writer.bufferSize >= clampedPartSizeBytes || batchSizeOverride != null
+        val dataSufficient = state.writer.bufferSize >= partSize || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)
             if (part.part.isFinal) {
