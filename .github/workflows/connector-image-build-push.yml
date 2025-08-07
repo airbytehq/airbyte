@@ -20,9 +20,9 @@ on:
       #     - "main-release"
       registry:
         description: "Docker registry"
-        required: true
+        required: false
         type: string
-        default: "ghcr.io/airbytehq"
+        default: "docker.io/airbyte"
       tag-override:
         description: "Override the image tag (optional). If not provided, the tag will be derived from the connector's metadata.yaml."
         required: false
@@ -33,8 +33,8 @@ on:
         required: false
         type: boolean
         default: true
-      force-push:
-        description: "(CAUTION!) Enable to force push the image even if it already exists on the remote registry"
+      force-publish:
+        description: "(CAUTION!) Enable to force publish (override) the image even if it already exists on the remote registry"
         required: false
         type: boolean
         default: false
@@ -109,9 +109,9 @@ jobs:
             echo "🏷 Using tag from metadata.yaml: $DOCKER_TAG"
           fi
 
-          # Can't dry-run and force-push at the same time
-          if [[ "${{ inputs.dry-run }}" == "true" && "${{ inputs.force-push }}" == "true" ]]; then
-            echo "❌ Cannot use dry-run and force-push together"
+          # Can't dry-run and force-publish at the same time
+          if [[ "${{ inputs.dry-run }}" == "true" && "${{ inputs.force-publish }}" == "true" ]]; then
+            echo "❌ Cannot use dry-run and force-publish together"
             exit 1
           fi
 
@@ -150,7 +150,6 @@ jobs:
 
       - name: Check if image already exists
         id: check-exists
-        if: ${{ ! inputs.force-push }} && ${{ ! inputs.dry-run }}
         run: |
           set -euo pipefail
 
@@ -172,23 +171,41 @@ jobs:
             done
           fi
 
+          do_build = false
+          do_publish = false
+
           if [[ "$STATUS" == "200" ]]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
             echo "ℹ️  Image already exists: $IMAGE_NAME"
+            if [[ "${{ inputs.force-publish }}" == "true" ]]; then
+              echo "⚠️ Force-push enabled, proceeding with build and publish"
+              do_build=true
+              do_publish=true
+            else
+              echo "❌ Image already exists, skipping build and push"
+            fi
           elif [[ "$STATUS" == "404" ]]; then
-            echo "exists=false" >> $GITHUB_OUTPUT
             echo "✅ Image does not exist: $IMAGE_NAME"
+            do_build=true
+            if [[ "${{ inputs.dry-run }}" == "false" ]]; then
+              do_publish=true
+              echo "✅ Proceeding with build and publish"
+            else
+              echo "ℹ️ Dry run mode enabled, build will be performed but not published"
+            fi
           else
             echo "⚠️  Unexpected status $STATUS, exiting to be safe"
             exit 1
           fi
 
-      # - name: Login to Docker Hub
-      #   if: ${{ inputs.registry == 'docker.io/airbyte' && !inputs.dry-run && steps.check-exists.outputs.exists != 'true' }}
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
-      #     password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          echo "do-build=$do_build" >> $GITHUB_OUTPUT
+          echo "do-publish=$do_publish" >> $GITHUB_OUTPUT
+
+      - name: Login to Docker Hub
+        if: ${{ steps.check-exists.outputs.do-publish== 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       # - name: Login to GitHub Container Registry
       #   if: ${{ inputs.registry == 'ghcr.io/airbytehq' && !inputs.dry-run && steps.check-exists.outputs.exists != 'true' }}
@@ -198,9 +215,9 @@ jobs:
       #     username: ${{ github.repository_owner }}
       #     password: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Set up Docker Buildx
-      #   if: ${{ steps.check-exists.outputs.exists != 'true' }}
-      #   uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        if: ${{ steps.check-exists.outputs.exists != 'true' }}
+        uses: docker/setup-buildx-action@v3
 
       # - name: Build and push connector image
       #   if: ${{ steps.check-exists.outputs.exists != 'true' }}
