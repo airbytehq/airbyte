@@ -3,15 +3,13 @@ name: Publish Stale Metadata Report
 on:
   workflow_dispatch:
     inputs:
-      bucket_name:
-        description: "The GCS bucket name to use for metadata analysis"
-        required: true
-        default: "airbyte-data-connectors-metadata-dev"
-        type: string
       gitref:
         description: "The git ref to check out from the repository"
         required: false
         type: string
+# TODO: uncomment once ready to implement schedule
+#   schedule:
+#     - cron: '0 */2 * * *'  # Run every 2 hours
 
 permissions:
   contents: read
@@ -59,4 +57,4 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: "Failed to publish stale metadata report"
           SLACK_MESSAGE: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          MSG_MINIMAL: True
+          MSG_MINIMAL: true
