@@ -31,6 +31,13 @@ definitions:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
 
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: [ "credentials", "option_title" ]
+    authenticators:
+      Default OAuth2.0 authorization: "#/definitions/access_token_auth"
+      API Token Credentials: "#/definitions/api_token_auth"
+  
   requester:
     type: HttpRequester
     url_base: https://slack.com/api/
@@ -200,15 +207,26 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        $ref: "#/definitions/requester"
-        use_cache: true
+        type: CustomRequester
+        class_name: "source_slack.components.slack_api_budget.MessagesAndThreadsHttpRequester"
+        url_match: "https://slack.com/api/conversations.history?.+"
+        url_base: https://slack.com/api/
+        path: "{{ parameters['path'] }}"
+        http_method: GET
         request_parameters:
           inclusive: "True"
+        request_headers: { }
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: { }
         error_handler:
           type: DefaultErrorHandler
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+        use_cache: true
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -275,9 +293,18 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        $ref: "#/definitions/requester"
+        type: CustomRequester
+        class_name: "source_slack.components.slack_api_budget.MessagesAndThreadsHttpRequester"
+        url_match: "https://slack.com/api/conversations.replies?.+"
+        url_base: https://slack.com/api/
+        path: "{{ parameters['path'] }}"
+        http_method: GET
         request_parameters:
           channel: "{{ stream_partition['parent_slice']['channel'] }}"
+        request_headers: { }
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: { }
         error_handler:
           type: DefaultErrorHandler
           max_retries: 20
@@ -308,6 +335,8 @@ definitions:
               type: RequestOption
               field_name: "ts"
               inject_into: "request_parameter"
+              extra_fields:
+                - [ "channel_id" ]
     incremental_sync:
       type: DatetimeBasedCursor
       lookback_window: "P{{ config.get('lookback_window', 0) }}D"
