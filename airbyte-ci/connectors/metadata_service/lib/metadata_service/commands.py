@@ -4,7 +4,6 @@
 
 import logging
 import pathlib
-import time
 
 import click
 from pydantic import ValidationError
@@ -30,6 +29,7 @@ def setup_logging(debug: bool = False):
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[logging.StreamHandler()],
     )
+    # Suppress logging from urllib3 and slack_sdk
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("slack_sdk.web.base_client").setLevel(logging.WARNING)
 
@@ -113,12 +113,11 @@ def publish_stale_metadata_report(bucket_name: str):
     click.echo(f"Starting stale metadata report for bucket: {bucket_name}")
     logger.debug("Starting stale metadata report generation and publishing process")
     try:
-        sent, error_message = generate_and_publish_stale_metadata_report(bucket_name)
-        if not sent:
-            logger.warning(
-                f"Failed to publish the report to Slack: '{error_message}'. This failure is non-blocking and the operation completed successfully."
-            )
+        report_published, error_message = generate_and_publish_stale_metadata_report(bucket_name)
+        if not report_published:
+            logger.warning(f"Failed to publish the report to Slack: '{error_message}'.")
             click.secho(f"WARNING: The stale metadata report could not be published: '{error_message}'", fg="red")
+            exit(1)
         else:
             click.secho(f"Stale metadata report for bucket: {bucket_name} completed successfully", fg="green")
         logger.debug("Stale metadata report generation and publishing process completed.")
