@@ -18,9 +18,6 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AdGroupCriterion,
-    AdListingGroupCriterion,
-    CampaignCriterion,
     CustomerClient,
 )
 from .utils import GAQL, logger, traced_exception
@@ -46,7 +43,7 @@ class SourceGoogleAds(YamlDeclarativeSource):
             except ValueError:
                 message = (
                     f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
-                    "https://developers.google.com/google-ads/api/fields/v18/query_validator"
+                    "https://developers.google.com/google-ads/api/fields/v20/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
@@ -217,11 +214,7 @@ class SourceGoogleAds(YamlDeclarativeSource):
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
 
         streams = super().streams(config=config)
-        streams += [
-            AdGroupCriterion(**default_config),
-            AdListingGroupCriterion(**default_config),
-            CampaignCriterion(**default_config),
-        ]
+
         for single_query_config in config.get("custom_queries_array", []):
             query_stream = self.create_custom_query_stream(
                 google_api, single_query_config, customers, non_manager_accounts, incremental_config, non_manager_incremental_config

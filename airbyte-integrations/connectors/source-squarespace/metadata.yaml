@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-squarespace
   githubIssueLabel: source-squarespace
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Squarespace
   releaseDate: 2024-10-10
   releaseStage: alpha

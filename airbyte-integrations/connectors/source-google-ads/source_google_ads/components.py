@@ -2,11 +2,13 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import json
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from itertools import groupby
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import anyascii
 import requests
@@ -15,11 +17,19 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    GlobalSubstreamCursor,
+    PerPartitionWithGlobalCursor,
+)
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -200,11 +210,12 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
 
     config: Config
     customer_client_stream: DeclarativeStream
+    cursor_field: str = "segments.date"
 
-    def __init__(self, config: Config, customer_client_stream: DeclarativeStream):
+    def __init__(self, config: Config, customer_client_stream: DeclarativeStream, cursor_field: str = "segments.date"):
         self._config = config
         self._parent_stream = customer_client_stream
-        self._cursor_field = "segments.date"
+        self._cursor_field = cursor_field
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state and "state" not in stream_state
@@ -387,3 +398,259 @@ class KeysToSnakeCaseGoogleAdsTransformation(RecordTransformation):
 
     def tokens_to_snake_case(self, tokens: List[str]) -> str:
         return "_".join(token.lower() for token in tokens)
+
+
+@dataclass
+class ChangeStatusRetriever(SimpleRetriever):
+    """
+    Retrieves change status records from the Google Ads API.
+    ChangeStatus stream requires custom retriever because Google Ads API requires limit for this stream to be set to 10,000.
+    When the number of records exceeds this limit, we need to adjust the start date to the last record's cursor.
+    """
+
+    partition_router: SubstreamPartitionRouter = None
+    transformations: List[RecordTransformation] = None
+    QUERY_LIMIT = 10000
+    cursor_field: str = "change_status.last_change_date_time"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        original_cursor: DatetimeBasedCursor = self.stream_slicer
+
+        cursor_for_factory = copy.deepcopy(original_cursor)
+        cursor_for_stream = copy.deepcopy(original_cursor)
+
+        self.stream_slicer = PerPartitionWithGlobalCursor(
+            cursor_factory=CursorFactory(lambda: copy.deepcopy(cursor_for_factory)),
+            partition_router=self.partition_router,
+            stream_cursor=cursor_for_stream,
+        )
+
+        self.cursor = self.stream_slicer
+
+        self.record_selector.transformations = self.transformations
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
+        stream_state: StreamState,
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        """
+        Since this stream doesn’t support “real” pagination, we treat each HTTP
+        call as a slice defined by a start_date / end_date. If we hit the
+        QUERY_LIMIT exactly, we assume there may be more data at the end of that
+        slice, so we bump start_date forward to the last-record cursor and retry.
+        """
+        while True:
+            record_count = 0
+            last_record = None
+            response = self._fetch_next_page(stream_state, stream_slice)
+
+            # Yield everything we got
+            for rec in records_generator_fn(response):
+                record_count += 1
+                last_record = rec
+                yield rec
+
+            if record_count < self.QUERY_LIMIT:
+                break
+
+            # Update the stream slice start time to the last record's cursor
+            last_cursor = last_record[self.cursor_field]
+            cursor_slice = stream_slice.cursor_slice
+            cursor_slice["start_time"] = last_cursor
+            stream_slice = StreamSlice(
+                partition=stream_slice.partition,
+                cursor_slice=cursor_slice,
+                extra_fields=stream_slice.extra_fields,
+            )
+
+
+@dataclass
+class ChangeStatusRequester(GoogleAdsHttpRequester):
+    CURSOR_FIELD: str = "change_status.last_change_date_time"
+    LIMIT: int = 10000
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._resource_type = (parameters or {}).get("resource_type")
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        schema = self.schema_loader.get_json_schema()[self.name]["properties"]
+        fields = list(schema.keys())
+
+        query = (
+            f"SELECT {', '.join(fields)} FROM {self.name} "
+            f"WHERE {self.CURSOR_FIELD} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' "
+            f"AND change_status.resource_type = {self._resource_type} "
+            f"ORDER BY {self.CURSOR_FIELD} ASC "
+            f"LIMIT {self.LIMIT}"
+        )
+        return {"query": query}
+
+
+@dataclass
+class CriterionRetriever(SimpleRetriever):
+    """
+    Retrieves Criterion records based on ChangeStatus updates.
+
+    For each parent_slice:
+      1) Emits a “deleted” record for any REMOVED status.
+      2) Batches the remaining IDs into a single fetch.
+      3) Attaches the original ChangeStatus timestamp to each returned record.
+    """
+
+    partition_router: SubstreamPartitionRouter = None
+    transformations: List[RecordTransformation] = None
+    cursor_field: str = "change_status.last_change_date_time"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+
+        original_cursor: DatetimeBasedCursor = self.stream_slicer
+
+        cursor_for_stream = copy.deepcopy(original_cursor)
+
+        self.stream_slicer = GlobalSubstreamCursor(
+            partition_router=self.partition_router,
+            stream_cursor=cursor_for_stream,
+        )
+
+        self.cursor = self.stream_slicer
+
+        self.record_selector.transformations = self.transformations
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
+        stream_state: StreamState,
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        """
+        Emit deletions and then fetch updates grouped by parent_slice:
+        - GROUP records by parent (zip ids, parents, statuses, times).
+        - For each group, yield REMOVED records immediately, then perform one fetch for non-removed.
+        - Attach the original ChangeStatus timestamp to each updated record.
+        """
+        ids = stream_slice.partition[self.primary_key[0]]
+        parents = stream_slice.partition["parent_slice"]
+        statuses = stream_slice.extra_fields["change_status.resource_status"]
+        times = stream_slice.extra_fields["change_status.last_change_date_time"]
+
+        # Iterate grouped by parent
+        for parent, group in groupby(
+            zip(ids, parents, statuses, times),
+            key=lambda x: x[1],
+        ):
+            group_list = list(group)
+            # Emit deletions first
+            updated_ids = []
+            updated_times = []
+            for _id, _, status, ts in group_list:
+                if status == "REMOVED":
+                    yield Record(
+                        data={
+                            self.primary_key[0]: _id,
+                            "deleted_at": ts,
+                        },
+                        stream_name=self.name,
+                    )
+                else:
+                    updated_ids.append(_id)
+                    updated_times.append(ts)
+
+            # Single fetch for non-removed
+            if not updated_ids:
+                continue
+            # build time map for updated records
+            time_map = dict(zip(updated_ids, updated_times))
+            new_slice = StreamSlice(
+                partition={
+                    self.primary_key[0]: updated_ids,
+                    "parent_slice": parent,
+                },
+                cursor_slice=stream_slice.cursor_slice,
+                extra_fields={"change_status.last_change_date_time": updated_times},
+            )
+            response = self._fetch_next_page(stream_state, new_slice)
+            for rec in records_generator_fn(response):
+                # attach timestamp from ChangeStatus
+                rec.data[self.cursor_field] = time_map.get(rec.data.get(self.primary_key[0]))
+                yield rec
+
+
+@dataclass
+class CriterionIncrementalRequester(GoogleAdsHttpRequester):
+    CURSOR_FIELD: str = "change_status.last_change_date_time"
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        props = self.schema_loader.get_json_schema()[self.name]["properties"]
+        select_fields = [f for f in props.keys() if f not in (self.CURSOR_FIELD, "deleted_at")]
+
+        ids = stream_slice.partition.get(self._parameters["primary_key"][0], [])
+        in_list = ", ".join(f"'{i}'" for i in ids)
+
+        query = (
+            f"SELECT {', '.join(select_fields)}\n"
+            f"  FROM {self._parameters['resource_name']}\n"
+            f" WHERE {self._parameters['primary_key'][0]} IN ({in_list})\n"
+        )
+
+        return {"query": query}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, any]] = None,
+    ) -> Mapping[str, any]:
+        return {
+            "developer-token": self.config["credentials"]["developer_token"],
+            "login-customer-id": stream_slice["parent_slice"]["parent_slice"]["customer_id"],
+        }
+
+
+@dataclass
+class CriterionFullRefreshRequester(GoogleAdsHttpRequester):
+    CURSOR_FIELD: str = "change_status.last_change_date_time"
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        props = self.schema_loader.get_json_schema()[self.name]["properties"]
+        fields = [f for f in props.keys() if f not in (self.CURSOR_FIELD, "deleted_at")]
+
+        return {"query": f"SELECT {', '.join(fields)} FROM {self._parameters['resource_name']}"}
+
+
+class GoogleAdsCriterionParentStateMigration(StateMigration):
+    """
+    Migrates parent state from legacy format to the new format
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return stream_state and "parent_state" not in stream_state
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if not self.should_migrate(stream_state):
+            return stream_state
+
+        return {"parent_state": stream_state}
