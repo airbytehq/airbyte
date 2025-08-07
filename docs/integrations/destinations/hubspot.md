@@ -49,7 +49,7 @@ Except for the CONTACT object (which uses email as the matching key), the upsert
 
 **Matching Key Requirements:**
 - **CONTACT**: Uses email field automatically
-- **COMPANY, DEAL, Custom Objects**: Requires a property with unique values enabled
+- **All other objects**: Require a property with unique values enabled
 
 To create a unique value property in HubSpot:
 * In the CRM menu in the left-hand side, select the object you want to sync
