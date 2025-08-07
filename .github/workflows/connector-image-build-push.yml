@@ -151,7 +151,6 @@ jobs:
             echo "connector-dir=$CONNECTOR_DIR"
             echo "docker-tag=$DOCKER_TAG"
             echo "base-image=$BASE_IMAGE"
-            echo "registry=${ inputs.registry }"
             echo "image-name=$FULL_IMAGE_NAME"
           } >> $GITHUB_OUTPUT
 
