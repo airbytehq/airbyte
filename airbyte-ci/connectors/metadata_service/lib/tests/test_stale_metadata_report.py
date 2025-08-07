@@ -97,7 +97,6 @@ def test_get_latest_metadata_versions_on_github_success(mock_github_files, mock_
         patch("metadata_service.stale_metadata_report.Github") as mock_github,
         patch("metadata_service.stale_metadata_report.requests") as mock_requests,
         patch("metadata_service.stale_metadata_report.yaml") as mock_yaml,
-        patch("metadata_service.stale_metadata_report.is_valid_metadata", return_value=True),
     ):
         mock_getenv.return_value = "test-github-token"
         mock_auth.Token.return_value = Mock()

@@ -18,7 +18,6 @@ from google.cloud import storage
 from metadata_service.helpers.gcs import get_gcs_storage_client
 from metadata_service.helpers.slack import send_slack_message
 from metadata_service.models.generated import ConnectorMetadataDefinitionV0
-from metadata_service.validators.metadata_validator import STALE_METADATA_VALIDATORS, is_valid_metadata
 
 from .constants import (
     EXTENSIBILITY_TEAM_SLACK_TEAM_ID,
@@ -55,7 +54,7 @@ def _entry_should_be_on_gcs(metadata_model: ConnectorMetadataDefinitionV0) -> bo
     Returns:
         bool: True if the metadata entry should be on GCS, False otherwise.
     """
-    if metadata_model.data.supportLevel == "archived":
+    if metadata_model.data.supportLevel and metadata_model.data.supportLevel.__root__ == "archived":
         return False
     if "-rc" in metadata_model.data.dockerImageTag:
         return False
@@ -137,7 +136,7 @@ def _get_latest_metadata_versions_on_github() -> Mapping[str, Any]:
     latest_metadata_versions_on_github = {
         connector_metadata.data.dockerRepository: connector_metadata.data.dockerImageTag
         for connector_metadata in github_connector_metadata
-        if _entry_should_be_on_gcs(connector_metadata.dict())
+        if _entry_should_be_on_gcs(connector_metadata)
     }
 
     logger.info(f"Found {len(latest_metadata_versions_on_github)} connectors on GitHub")

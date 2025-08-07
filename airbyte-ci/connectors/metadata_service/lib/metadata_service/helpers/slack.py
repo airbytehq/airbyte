@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def _chunk_messages(message: str) -> Generator[str, None, None]:
-    """Split message into messages with no more than 3500 chars each. Slack will automatically split any messages that are 4000 chars or more."""
+    """Split message into messages with no more than 3992 chars each. Slack will automatically split any messages that are 4000 chars or more."""
     slack_message_char_limit = 3992
     msg = ""
     for line in message.splitlines():
         if len(msg + line + "\n") > slack_message_char_limit:
-            yield msg + "\n"
-            msg += line + "\n"
+            yield msg
+        msg += line + "\n"
     yield msg
 
 

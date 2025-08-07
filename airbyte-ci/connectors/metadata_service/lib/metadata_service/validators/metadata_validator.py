@@ -5,7 +5,7 @@
 import logging
 import pathlib
 from dataclasses import dataclass
-from typing import Any, Callable, List, Mapping, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 import semver
 import yaml
