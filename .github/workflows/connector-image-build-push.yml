@@ -171,8 +171,8 @@ jobs:
             done
           fi
 
-          do_build = false
-          do_publish = false
+          local do_build = false
+          local do_publish = false
 
           if [[ "$STATUS" == "200" ]]; then
             echo "ℹ️  Image already exists: $IMAGE_NAME"
