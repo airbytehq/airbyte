@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 # This script builds and optionally publishes Java connector Docker images.
 #
 # Flag descriptions:
@@ -34,113 +35,7 @@
 #   ./build-and-publish-java-connectors-with-tag.sh --publish foo-conn
 set -euo pipefail
 
-CONNECTORS_DIR="airbyte-integrations/connectors"
-
-# ── Rollout whitelist: only connectors listed here will be built/published
-# Function to check if a connector is in the whitelist
-is_in_whitelist() {
-  local connector="$1"
-  case "$connector" in
-    destination-azure-blob-storage|\
-    destination-bigquery|\
-    destination-csv|\
-    destination-clickhouse|\
-    destination-clickhouse-strict-encrypt|\
-    destination-databricks|\
-    destination-dev-null|\
-    destination-dynamodb|\
-    destination-elasticsearch-strict-encrypt|\
-    destination-elasticsearch|\
-    destination-gcs|\
-    destination-kafka|\
-    destination-local-json|\
-    destination-mongodb-strict-encrypt|\
-    destination-mongodb|\
-    destination-mysql-strict-encrypt|\
-    destination-mysql|\
-    destination-oracle-strict-encrypt|\
-    destination-oracle|\
-    destination-postgres-strict-encrypt|\
-    destination-postgres|\
-    destination-redis|\
-    destination-redshift|\
-    destination-s3-data-lake|\
-    destination-s3|\
-    destination-singlestore|\
-    destination-snowflake|\
-    destination-starburst-galaxy|\
-    destination-teradata|\
-    destination-yellowbrick|\
-    source-e2e-test|\
-    source-postgres|\
-    source-mysql)
-      return 0
-      ;;
-    *)
-      return 1
-      ;;
-  esac
-}
-
-# ------ Defaults & arg parsing -------
-publish_mode="pre-release"
-do_publish=false
-connectors=()
-
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -h|--help)
-      sed -n '1,34p' "$0"
-      exit 0
-      ;;
-    --main-release)
-      publish_mode="main-release"
-      shift
-      ;;
-    --pre-release)
-      publish_mode="pre-release"
-      shift
-      ;;
-    --publish)
-      do_publish=true
-      shift
-      ;;
-    --name=*)
-      connectors=("${1#*=}")
-      shift
-      ;;
-    --name)
-      connectors=("$2")
-      shift 2
-      ;;
-    --*)
-      echo "Error: Unknown flag $1" >&2
-      exit 1
-      ;;
-    *)
-      connectors+=("$1")
-      shift
-      ;;
-  esac
-done
-
-# ---------- helper: collect connector names ----------
-get_connectors() {
-  if [ "${#connectors[@]}" -gt 0 ]; then
-      # only look at non-empty strings
-      for c in "${connectors[@]}"; do
-          [[ -n "$c" ]] && printf "%s\n" "$c"
-      done
-  else
-    # read JSON from stdin
-    if [ -t 0 ]; then
-      echo "Error:  No --name given and nothing piped to stdin." >&2
-      exit 1
-    fi
-    # select only non-empty strings out of the JSON array
-    jq -r '.connector[] | select(. != "")'
-  fi
-}
+source "${BASH_SOURCE%/*}/lib/util.sh"
 
 dockerhub_tag_exists() {
   local image="$1"   # e.g. airbyte/destination-postgres
@@ -174,26 +69,20 @@ dockerhub_tag_exists() {
   exit 1
 }
 
-generate_dev_tag() {
-  local base="$1"
-  # force a 10-char short hash to match existing airbyte-ci behaviour.
-  local hash
-  hash=$(git rev-parse --short=10 HEAD)
-  echo "${base}-dev.${hash}"
-}
-
 # ---------- main loop ----------
-while read -r connector; do
-  # only publish if connector is in whitelist
-  if ! is_in_whitelist "$connector"; then
-    echo "ℹ️  Skipping '$connector'; not in rollout whitelist"
-    continue
-  fi
+source "${BASH_SOURCE%/*}/lib/parse_args.sh"
 
+while read -r connector; do
   meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
   if [[ ! -f "$meta" ]]; then
     echo "Error: metadata.yaml not found for ${connector}" >&2
     exit 1
+  fi
+
+  # Check if this is a Java connector
+  if ! grep -qE 'language:\s*java' "$meta"; then
+    echo "ℹ️  Skipping ${connector} — this script only supports JVM connectors for now."
+    continue
   fi
 
   base_tag=$(yq -r '.data.dockerImageTag' "$meta")

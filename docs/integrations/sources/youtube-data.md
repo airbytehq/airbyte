@@ -27,6 +27,13 @@ the [Youtube Analytics Connector](https://docs.airbyte.com/integrations/sources/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2025-08-02 | [64386](https://github.com/airbytehq/airbyte/pull/64386) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [64056](https://github.com/airbytehq/airbyte/pull/64056) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63640](https://github.com/airbytehq/airbyte/pull/63640) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63216](https://github.com/airbytehq/airbyte/pull/63216) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62701](https://github.com/airbytehq/airbyte/pull/62701) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62233](https://github.com/airbytehq/airbyte/pull/62233) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61759](https://github.com/airbytehq/airbyte/pull/61759) | Update dependencies |
 | 0.0.23 | 2025-06-15 | [61171](https://github.com/airbytehq/airbyte/pull/61171) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60786](https://github.com/airbytehq/airbyte/pull/60786) | Update dependencies |
 | 0.0.21 | 2025-05-10 | [59968](https://github.com/airbytehq/airbyte/pull/59968) | Update dependencies |

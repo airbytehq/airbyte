@@ -140,7 +140,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
                 "field1",
                 airbyteMetaField = null
             )
-        field1.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, StringValue("val"))
+        field1.truncate(StringValue("val"), Reason.DESTINATION_RECORD_SIZE_LIMITATION)
 
         val field2 =
             EnrichedAirbyteValue(

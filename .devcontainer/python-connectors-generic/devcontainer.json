@@ -10,14 +10,14 @@
       "version": "3.10",
       "installTools": true
     },
-    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+    "ghcr.io/devcontainers-extra/features/poetry:2": {}
   },
 
   // Deterministic order reduces cache busting
   "overrideFeatureInstallOrder": [
     "ghcr.io/devcontainers/features/docker-in-docker",
     "ghcr.io/devcontainers/features/python",
-    "ghcr.io/devcontainers-contrib/features/poetry"
+    "ghcr.io/devcontainers-extra/features/poetry"
   ],
 
   // Configure tool-specific properties.

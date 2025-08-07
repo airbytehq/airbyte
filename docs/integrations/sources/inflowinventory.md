@@ -40,6 +40,12 @@ Docs : https://cloudapi.inflowinventory.com/docs/index.html#section/Overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2025-08-02 | [64181](https://github.com/airbytehq/airbyte/pull/64181) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63818](https://github.com/airbytehq/airbyte/pull/63818) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63506](https://github.com/airbytehq/airbyte/pull/63506) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63117](https://github.com/airbytehq/airbyte/pull/63117) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62656](https://github.com/airbytehq/airbyte/pull/62656) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61845](https://github.com/airbytehq/airbyte/pull/61845) | Update dependencies |
 | 0.0.24 | 2025-06-14 | [61133](https://github.com/airbytehq/airbyte/pull/61133) | Update dependencies |
 | 0.0.23 | 2025-05-24 | [60698](https://github.com/airbytehq/airbyte/pull/60698) | Update dependencies |
 | 0.0.22 | 2025-05-10 | [59790](https://github.com/airbytehq/airbyte/pull/59790) | Update dependencies |

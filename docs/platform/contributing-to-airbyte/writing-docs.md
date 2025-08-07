@@ -32,6 +32,16 @@ Even if you've never used it before, most developers and technical writers find 
 
 Follow the [Google developer documentation style guide](https://developers.google.com/style/highlights). It's a widely adopted style guide with good examples and easy-to-follow rules. You can [lint your content with Vale](#linting) to ensure style compliance.
 
+These articles in particular are helpful to know.
+
+- [Be conversational and friendly without being frivolous](https://developers.google.com/style/tone)
+- [Use second person](https://developers.google.com/style/person)
+- [Use active voice](https://developers.google.com/style/voice)
+- [Put conditional clauses before instructions](https://developers.google.com/style/clause-order)
+- [Put UI elements in bold](https://developers.google.com/style/ui-elements)
+- [Write inclusive documentation](https://developers.google.com/style/inclusive-documentation)
+- [Don't pre-announce anything in documentation](https://developers.google.com/style/future)
+
 ### Find a good first issue
 
 The Docs team maintains a list of [good first issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors. If you'd like to start a complex documentation project, you can create or comment on a [GitHub issue](https://github.com/airbytehq/airbyte/issues) and tag [@ian-at-airbyte](https://github.com/ian-at-airbyte) to decide on an approach together.
@@ -208,11 +218,12 @@ Some platform features are reserved for certain Airbyte products. To avoid confu
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams or Embedded)
+- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams, Cloud Enterprise, or Embedded)
 - `oss-community`: Self-Managed Community only
 - `oss-enterprise`: Self-Managed Enterprise only
 - `cloud`: Cloud only
 - `cloud-teams`: Cloud Teams only
+- `cloud-enterprise`: Cloud Enterprise only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
 In this example, the Self-Managed Community badge is highlighted, and Cloud and Self-Managed Enterprise badges are grayed out.
