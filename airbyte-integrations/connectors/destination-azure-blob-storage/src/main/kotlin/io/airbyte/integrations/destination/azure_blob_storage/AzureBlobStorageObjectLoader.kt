@@ -14,7 +14,7 @@ import kotlin.math.min
 @Singleton
 class AzureBlobStorageObjectLoader(
     @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
-    private val config: AzureBlobStorageConfiguration<*>
+    config: AzureBlobStorageConfiguration<*>
 ) : ObjectLoader {
     override val numPartWorkers: Int =
         if (isLegacyFileTransfer) {
