@@ -125,7 +125,6 @@ jobs:
           echo "  Connector: $CONNECTOR_NAME"
           echo "  Language: $CONNECTOR_LANGUAGE"
           echo "  Base Image: $BASE_IMAGE"
-          echo "  Base Version: $BASE_VERSION"
           echo "  Docker Tag: $DOCKER_TAG"
           echo "  Full Image: $FULL_IMAGE_NAME"
 
