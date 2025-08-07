@@ -50,7 +50,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Need full history for git hash generation
+          fetch-depth: 1
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
@@ -117,8 +117,12 @@ jobs:
 
           # Validate registry input
           case "${{ inputs.registry }}" in
-            "ghcr.io/airbytehq"|"docker.io/airbyte")
+            "docker.io/airbyte")
               # Supported registries
+              ;;
+            "ghcr.io/airbytehq")
+              # Unsupported for now
+              echo "ℹ️ GitHub Container Registry is not supported yet, using Docker Hub instead"
               ;;
             *)
               echo "❌ Unsupported registry: ${{ inputs.registry }}"
@@ -153,18 +157,19 @@ jobs:
           IMAGE_NAME="${{ steps.vars.outputs.image-name }}"
           echo "🔍 Checking if image exists: $IMAGE_NAME"
 
-          if [[ ${{ inputs.registry }} == "ghcr.io/airbytehq" ]]; then
-            # Use GitHub Container Registry API
-            URL="https://ghcr.io/v2/airbytehq/${{ steps.vars.outputs.connector-name }}/manifests/${{ steps.vars.outputs.docker-tag }}"
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-              "$URL")
-
-          elif [[ ${{ inputs.registry }} == "docker.io/airbyte" ]]; then
-            # Use Docker Hub API
+          if [[ ${{ inputs.registry }} == "docker.io/airbyte" ]]; then
+            # Use Docker Hub API with retry and exponential backoff
             URL="https://registry.hub.docker.com/v2/repositories/airbyte/${{ steps.vars.outputs.connector-name }}/tags/${{ steps.vars.outputs.docker-tag }}/"
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            STATUS=""
+            for i in {1..5}; do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL") || true
+              if [[ "$STATUS" == "200" || "$STATUS" == "404" ]]; then
+              break
+              fi
+              delay=$((2 ** (i - 1)))
+              echo "⚠️  Docker Hub check failed (status $STATUS), retrying in $delay seconds... ($i/5)" >&2
+              sleep $delay
+            done
           fi
 
           if [[ "$STATUS" == "200" ]]; then
