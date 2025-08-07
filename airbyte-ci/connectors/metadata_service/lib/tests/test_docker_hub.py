@@ -28,6 +28,6 @@ def test_get_docker_hub_tags_and_digests(image_name):
 @pytest.mark.slow
 def test_get_latest_version_on_dockerhub(image_name):
     warnings.warn(f"This test can be flaky as its results depends on the current state of {image_name} dockerhub image.", UserWarning)
-    assert docker_hub.get_latest_version_on_dockerhub(image_name) is not None, (
-        f"No latest version found for {image_name}. We expect one to exist."
-    )
+    assert (
+        docker_hub.get_latest_version_on_dockerhub(image_name) is not None
+    ), f"No latest version found for {image_name}. We expect one to exist."
