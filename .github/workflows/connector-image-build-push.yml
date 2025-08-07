@@ -1,0 +1,257 @@
+name: Connector Image Build and Push (Python and Manifest-Only)
+# This workflow builds and pushes connector images for Python and manifest-only connectors.
+# It is intended to replace Airbyte-CI connector image builds and can be triggered manually or called from other workflows
+# to publish connector images on merge to master.
+
+on:
+  push:
+    branches:
+      - dbgold17/build-and-publish-python-connectors-on-ci
+  workflow_dispatch:
+    inputs:
+      connector-name:
+        description: "Connector name (e.g., source-faker, destination-postgres)"
+        required: true
+        type: string
+      # release-type:
+      #   description: "Release type"
+      #   required: true
+      #   type: choice
+      #   default: "pre-release"
+      #   options:
+      #     - "pre-release"
+      #     - "main-release"
+      registry:
+        description: "Docker registry"
+        required: true
+        type: choice
+        default: "ghcr.io/airbytehq"
+        options:
+          - "docker.io/airbyte"
+          - "ghcr.io/airbytehq"
+      tag-override:
+        description: "Override the image tag (optional). If not provided, the tag will be derived from the connector's metadata.yaml."
+        required: false
+        type: string
+        default: ""
+      dry-run:
+        description: "Dry run mode (build but don't push)"
+        required: false
+        type: boolean
+        default: true
+      force-push:
+        description: "(CAUTION!) Enable to force push the image even if it already exists on the remote registry"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push-connector:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for git hash generation
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe and yq
+        run: |
+          uv tool install poethepoet
+          sudo snap install yq
+
+      - name: Validate inputs and resolve variables
+        id: vars
+        run: |
+          set -euo pipefail
+
+          CONNECTOR_NAME="${{ inputs.connector-name }}"
+          CONNECTOR_DIR="airbyte-integrations/connectors/${CONNECTOR_NAME}"
+          METADATA_FILE="${CONNECTOR_DIR}/metadata.yaml"
+
+          # Check if connector directory exists
+          if [[ ! -d "$CONNECTOR_DIR" ]]; then
+            echo "❌ Connector directory not found: $CONNECTOR_DIR"
+            exit 1
+          fi
+
+          # Check if metadata.yaml exists
+          if [[ ! -f "$METADATA_FILE" ]]; then
+            echo "❌ metadata.yaml not found: $METADATA_FILE"
+            exit 1
+          fi
+
+          # Validate connector language (only Python and manifest-only supported for now)
+          cd "$CONNECTOR_DIR"
+          CONNECTOR_LANGUAGE=$(poe -qq get-language)
+          if [[ "$CONNECTOR_LANGUAGE" != "python" && "$CONNECTOR_LANGUAGE" != "manifest-only" ]]; then
+            echo "❌ Unsupported connector language: $CONNECTOR_LANGUAGE"
+            exit 1
+          fi
+
+          # Get base image from metadata.yaml
+          BASE_IMAGE=$(poe -qq get-base-image)
+          if [[ -z "$BASE_IMAGE" ]]; then
+            echo "❌ Base image not found in metadata.yaml"
+            exit 1
+          fi
+
+          # Resolve connector version to use for image tagging
+          if [[ "${{ inputs.tag-override }}" ]]; then
+            DOCKER_TAG="${{ inputs.tag-override }}"
+            echo "Using provided tag: $DOCKER_TAG"
+          else
+            DOCKER_TAG=$(poe -qq get-version)
+            if [[ -z "$DOCKER_TAG" ]]; then
+              echo "❌ Docker tag not found in metadata.yaml"
+              exit 1
+            fi
+            echo "Using tag from metadata.yaml: $DOCKER_TAG"
+          fi
+
+          # Can't dry-run and force-push at the same time
+          if [[ "${{ inputs.dry-run }}" == "true" && "${{ inputs.force-push }}" == "true" ]]; then
+            echo "❌ Cannot use dry-run and force-push together"
+            exit 1
+          fi
+
+          FULL_IMAGE_NAME="${{ inputs.registry }}/${CONNECTOR_NAME}:${DOCKER_TAG}"
+
+
+          echo "📋 Build Details:"
+          echo "  Connector: $CONNECTOR_NAME"
+          echo "  Language: $CONNECTOR_LANGUAGE"
+          echo "  Base Image: $BASE_IMAGE"
+          echo "  Base Version: $BASE_VERSION"
+          echo "  Docker Tag: $DOCKER_TAG"
+          echo "  Full Image: $FULL_IMAGE_NAME"
+
+          echo "connector-type=$CONNECTOR_LANGUAGE" >> $GITHUB_OUTPUT
+          echo "connector-dir=$CONNECTOR_DIR" >> $GITHUB_OUTPUT
+          echo "base-image=$BASE_IMAGE" >> $GITHUB_OUTPUT
+          echo "image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
+
+      # - name: Check if image already exists
+      #   id: check-exists
+      #   if: ${{ ! inputs.force-push }} && ${{ ! inputs.dry-run }}
+      #   run: |
+      #     set -euo pipefail
+
+      #     IMAGE_NAME="${{ steps.vars.outputs.image-name }}"
+      #     TAG="${{ steps.version.outputs.docker-tag }}"
+
+      #     # Function to check if Docker Hub tag exists (from original shell script)
+      #     dockerhub_tag_exists() {
+      #       local image="$1"
+      #       local tag="$2"
+      #       local max_attempts=5
+      #       local delay=1
+
+      #       local namespace repo status url
+      #       namespace=$(cut -d/ -f1 <<<"$image")
+      #       repo=$(cut -d/ -f2 <<<"$image")
+      #       url="https://registry.hub.docker.com/v2/repositories/${namespace}/${repo}/tags/${tag}/"
+
+      #       for ((attempt=1; attempt<=max_attempts; attempt++)); do
+      #         status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+
+      #         if [[ "$status" == "200" ]]; then
+      #           return 0  # tag exists
+      #         elif [[ "$status" == "404" ]]; then
+      #           return 1  # tag does not exist
+      #         else
+      #           echo "⚠️  Docker Hub check failed (status $status), retrying in $delay seconds... ($attempt/$max_attempts)" >&2
+      #           sleep "$delay"
+      #           delay=$((delay * 2))
+      #         fi
+      #       done
+
+      #       echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Exiting to be safe." >&2
+      #       exit 1
+      #     }
+
+      #     if dockerhub_tag_exists "airbyte/${IMAGE_NAME}" "$TAG"; then
+      #       echo "exists=true" >> $GITHUB_OUTPUT
+      #       echo "ℹ️  Image airbyte/${IMAGE_NAME}:${TAG} already exists on Docker Hub"
+      #     else
+      #       echo "exists=false" >> $GITHUB_OUTPUT
+      #       echo "✅ Image airbyte/${IMAGE_NAME}:${TAG} does not exist on Docker Hub"
+      #     fi
+
+      # - name: Login to Docker Hub
+      #   if: ${{ inputs.registry == 'docker.io/airbyte' && !inputs.dry-run && steps.check-exists.outputs.exists != 'true' }}
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      # - name: Login to GitHub Container Registry
+      #   if: ${{ inputs.registry == 'ghcr.io/airbytehq' && !inputs.dry-run && steps.check-exists.outputs.exists != 'true' }}
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Set up Docker Buildx
+      #   if: ${{ steps.check-exists.outputs.exists != 'true' }}
+      #   uses: docker/setup-buildx-action@v3
+
+      # - name: Build and push connector image
+      #   if: ${{ steps.check-exists.outputs.exists != 'true' }}
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ${{ steps.validate.outputs.connector-dir }}
+      #     file: docker-images/Dockerfile.${{ steps.validate.outputs.connector-type }}-connector
+      #     platforms: linux/amd64,linux/arm64
+      #     tags: ${{ steps.version.outputs.full-image-name }}
+      #     build-args: |
+      #       BASE_IMAGE=${{ steps.version.outputs.base-image }}
+      #       CONNECTOR_NAME=${{ inputs.connector }}
+      #       CONNECTOR_SNAKE_NAME=${{ inputs.connector }}
+      #       CONNECTOR_VERSION=${{ steps.version.outputs.base-version }}
+      #     push: ${{ !inputs.dry-run }}
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
+
+      # - name: Test connector image
+      #   if: ${{ steps.check-exists.outputs.exists != 'true' && !inputs.dry-run }}
+      #   run: |
+      #     echo "🧪 Testing connector image: ${{ steps.version.outputs.full-image-name }}"
+      #     docker run --rm ${{ steps.version.outputs.full-image-name }} spec
+
+      # - name: Run vulnerability scan
+      #   if: ${{ steps.check-exists.outputs.exists != 'true' }}
+      #   uses: anchore/scan-action@v6
+      #   with:
+      #     image: ${{ steps.version.outputs.full-image-name }}
+      #     output-format: table
+      #     severity-cutoff: high
+      #     fail-build: false
+
+      # - name: Summary
+      #   run: |
+      #     echo "## 🚀 Build Summary" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+      #     echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Connector | \`${{ inputs.connector }}\` |" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Type | ${{ steps.validate.outputs.connector-type }} |" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Release Type | ${{ inputs.release-type }} |" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Registry | ${{ inputs.registry }} |" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Image | \`${{ steps.version.outputs.full-image-name }}\` |" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Dry Run | ${{ inputs.dry-run }} |" >> $GITHUB_STEP_SUMMARY
+      #     echo "| Already Exists | ${{ steps.check-exists.outputs.exists || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+
+      #     if [[ "${{ steps.check-exists.outputs.exists }}" == "true" ]]; then
+      #       echo "ℹ️  Image already exists - skipped build and push"
+      #     elif [[ "${{ inputs.dry-run }}" == "true" ]]; then
+      #       echo "🏃 Dry run completed - image built but not pushed"
+      #     else
+      #       echo "✅ Image built and pushed successfully"
+      #     fi
