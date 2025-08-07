@@ -44,6 +44,8 @@ Docs : https://twelvedata.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2025-08-02 | [64397](https://github.com/airbytehq/airbyte/pull/64397) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [64085](https://github.com/airbytehq/airbyte/pull/64085) | Update dependencies |
 | 0.0.28 | 2025-07-20 | [63686](https://github.com/airbytehq/airbyte/pull/63686) | Update dependencies |
 | 0.0.27 | 2025-07-12 | [63197](https://github.com/airbytehq/airbyte/pull/63197) | Update dependencies |
 | 0.0.26 | 2025-07-05 | [62711](https://github.com/airbytehq/airbyte/pull/62711) | Update dependencies |

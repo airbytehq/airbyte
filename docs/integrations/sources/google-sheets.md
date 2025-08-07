@@ -309,7 +309,9 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.12.2 | 2025-07-22 | [63334](https://github.com/airbytehq/airbyte/pull/63334) | Feature: Deduplicate Headers|
+| 0.12.4 | 2025-08-02 | [64179](https://github.com/airbytehq/airbyte/pull/64179) | Update dependencies |
+| 0.12.3 | 2025-07-26 | [63822](https://github.com/airbytehq/airbyte/pull/63822) | Update dependencies |
+| 0.12.2 | 2025-07-22 | [63334](https://github.com/airbytehq/airbyte/pull/63334) | Feature: Deduplicate Headers |
 | 0.12.1 | 2025-07-19 | [55490](https://github.com/airbytehq/airbyte/pull/55490) | Update dependencies |
 | 0.12.0 | 2025-07-15 | [63305](https://github.com/airbytehq/airbyte/pull/63305) | Promoting release candidate 0.12.0-rc.2 to a main version. |
 | 0.12.0-rc.2| 2025-07-11 | [62931](https://github.com/airbytehq/airbyte/pull/62931) | Fix: handle empty `propeties_to_match` in SchmemaMatchingExtractor |

@@ -32,6 +32,8 @@ You can find more information about the API here https://docs.onfleet.com/refere
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2025-08-02 | [64242](https://github.com/airbytehq/airbyte/pull/64242) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63811](https://github.com/airbytehq/airbyte/pull/63811) | Update dependencies |
 | 0.0.28 | 2025-07-19 | [63384](https://github.com/airbytehq/airbyte/pull/63384) | Update dependencies |
 | 0.0.27 | 2025-07-12 | [63168](https://github.com/airbytehq/airbyte/pull/63168) | Update dependencies |
 | 0.0.26 | 2025-07-05 | [62659](https://github.com/airbytehq/airbyte/pull/62659) | Update dependencies |
