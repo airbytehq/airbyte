@@ -99,14 +99,14 @@ jobs:
           # Resolve connector version to use for image tagging
           if [[ "${{ inputs.tag-override }}" ]]; then
             DOCKER_TAG="${{ inputs.tag-override }}"
-            echo "Using provided tag: $DOCKER_TAG"
+            echo "🏷 Using provided tag: $DOCKER_TAG"
           else
             DOCKER_TAG=$(poe -qq get-version)
             if [[ -z "$DOCKER_TAG" ]]; then
               echo "❌ Docker tag not found in metadata.yaml"
               exit 1
             fi
-            echo "Using tag from metadata.yaml: $DOCKER_TAG"
+            echo "🏷 Using tag from metadata.yaml: $DOCKER_TAG"
           fi
 
           # Can't dry-run and force-push at the same time
@@ -130,52 +130,64 @@ jobs:
           echo "base-image=$BASE_IMAGE" >> $GITHUB_OUTPUT
           echo "image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
 
-      # - name: Check if image already exists
-      #   id: check-exists
-      #   if: ${{ ! inputs.force-push }} && ${{ ! inputs.dry-run }}
-      #   run: |
-      #     set -euo pipefail
+      - name: Check if image already exists
+        id: check-exists
+        if: ${{ ! inputs.force-push }} && ${{ ! inputs.dry-run }}
+        run: |
+          set -euo pipefail
 
-      #     IMAGE_NAME="${{ steps.vars.outputs.image-name }}"
-      #     TAG="${{ steps.version.outputs.docker-tag }}"
+          IMAGE_NAME="${{ steps.vars.outputs.image-name }}"
+          TAG="${{ steps.version.outputs.docker-tag }}"
 
-      #     # Function to check if Docker Hub tag exists (from original shell script)
-      #     dockerhub_tag_exists() {
-      #       local image="$1"
-      #       local tag="$2"
-      #       local max_attempts=5
-      #       local delay=1
+          echo "🔍 Checking if image exists: $IMAGE_NAME"
 
-      #       local namespace repo status url
-      #       namespace=$(cut -d/ -f1 <<<"$image")
-      #       repo=$(cut -d/ -f2 <<<"$image")
-      #       url="https://registry.hub.docker.com/v2/repositories/${namespace}/${repo}/tags/${tag}/"
+          docker manifest inspect "$IMAGE_NAME"
 
-      #       for ((attempt=1; attempt<=max_attempts; attempt++)); do
-      #         status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+          # Use docker manifest inspect for universal registry support
+          if docker manifest inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "ℹ️  Image already exists: $IMAGE_NAME"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Image does not exist: $IMAGE_NAME"
 
-      #         if [[ "$status" == "200" ]]; then
-      #           return 0  # tag exists
-      #         elif [[ "$status" == "404" ]]; then
-      #           return 1  # tag does not exist
-      #         else
-      #           echo "⚠️  Docker Hub check failed (status $status), retrying in $delay seconds... ($attempt/$max_attempts)" >&2
-      #           sleep "$delay"
-      #           delay=$((delay * 2))
-      #         fi
-      #       done
+          # # Function to check if Docker Hub tag exists (from original shell script)
+          # dockerhub_tag_exists() {
+          #   local image="$1"
+          #   local tag="$2"
+          #   local max_attempts=5
+          #   local delay=1
 
-      #       echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Exiting to be safe." >&2
-      #       exit 1
-      #     }
+          #   local namespace repo status url
+          #   namespace=$(cut -d/ -f1 <<<"$image")
+          #   repo=$(cut -d/ -f2 <<<"$image")
+          #   url="https://registry.hub.docker.com/v2/repositories/${namespace}/${repo}/tags/${tag}/"
 
-      #     if dockerhub_tag_exists "airbyte/${IMAGE_NAME}" "$TAG"; then
-      #       echo "exists=true" >> $GITHUB_OUTPUT
-      #       echo "ℹ️  Image airbyte/${IMAGE_NAME}:${TAG} already exists on Docker Hub"
-      #     else
-      #       echo "exists=false" >> $GITHUB_OUTPUT
-      #       echo "✅ Image airbyte/${IMAGE_NAME}:${TAG} does not exist on Docker Hub"
-      #     fi
+          #   for ((attempt=1; attempt<=max_attempts; attempt++)); do
+          #     status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+
+          #     if [[ "$status" == "200" ]]; then
+          #       return 0  # tag exists
+          #     elif [[ "$status" == "404" ]]; then
+          #       return 1  # tag does not exist
+          #     else
+          #       echo "⚠️  Docker Hub check failed (status $status), retrying in $delay seconds... ($attempt/$max_attempts)" >&2
+          #       sleep "$delay"
+          #       delay=$((delay * 2))
+          #     fi
+          #   done
+
+          #   echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Exiting to be safe." >&2
+          #   exit 1
+          # }
+
+          # if dockerhub_tag_exists "airbyte/${IMAGE_NAME}" "$TAG"; then
+          #   echo "exists=true" >> $GITHUB_OUTPUT
+          #   echo "ℹ️  Image airbyte/${IMAGE_NAME}:${TAG} already exists on Docker Hub"
+          # else
+          #   echo "exists=false" >> $GITHUB_OUTPUT
+          #   echo "✅ Image airbyte/${IMAGE_NAME}:${TAG} does not exist on Docker Hub"
+          # fi
 
       # - name: Login to Docker Hub
       #   if: ${{ inputs.registry == 'docker.io/airbyte' && !inputs.dry-run && steps.check-exists.outputs.exists != 'true' }}
