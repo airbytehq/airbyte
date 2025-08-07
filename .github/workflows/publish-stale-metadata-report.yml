@@ -21,40 +21,34 @@ jobs:
 
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
         with:
           python-version: "3.11"
           check-latest: true
           update-environment: true
 
+      - name: Install Poetry
+        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
       - name: Install metadata_service
-        run: pip install airbyte-ci/connectors/metadata_service/lib
+        working-directory: airbyte-ci/connectors/metadata_service/lib
+        run: poetry install
 
       - name: Run stale metadata report task
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          GCS_BUCKET_NAME: ${{ github.event.inputs.bucket_name }}
+        working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
-          ./poe-tasks/publish-stale-metadata-report.sh prod-airbyte-cloud-connector-metadata-service
-
-      - name: Slack Notification - Failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Metadata Service
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: "Failed to publish stale metadata report"
-          SLACK_MESSAGE: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          MSG_MINIMAL: true
+          poetry run metadata_service publish-stale-metadata-report prod-airbyte-cloud-connector-metadata-service
