@@ -43,14 +43,6 @@ class PipelineCompletionHandler(
             }
             .awaitAll()
 
-        //        log.info { "Expected:" }
-        //        stateWatermarkStore.expected.map.forEach { log.info { it.key.id + ": " + it.value
-        // } }
-        //        log.info { "Received:" }
-        //        stateWatermarkStore.watermarks.map.forEach { log.info { it.key.id + ": " +
-        // it.value } }
-
-        reconciler.disable()
         reconciler.flushStates()
     }
 }
