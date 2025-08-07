@@ -65,7 +65,7 @@ def _get_latest_metadata_versions_on_github() -> Mapping[str, Any]:
 
     logger.debug("Getting the download URL for each file.")
     metadata_download_urls = []
-    for file_content in file_contents[:5]:
+    for file_content in file_contents:
         logger.debug(f"File content path: {file_content.path}")
         if re.match(r"airbyte-integrations/connectors/(source|destination)-.+/metadata\.yaml$", file_content.path):
             logger.debug(f"Getting commits for file: {file_content.path}")

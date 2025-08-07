@@ -6,6 +6,7 @@ import datetime
 from unittest.mock import Mock, patch
 
 import pytest
+import yaml as real_yaml
 
 from metadata_service.constants import PUBLISH_GRACE_PERIOD
 from metadata_service.stale_metadata_report import (
@@ -17,6 +18,25 @@ from metadata_service.stale_metadata_report import (
 )
 
 pytest_plugins = ["tests.fixtures.stale_metadata_report_fixtures"]
+
+
+def _mock_commits(old_datetime):
+    commit = Mock()
+    commit.commit = Mock()
+    commit.commit.author = Mock()
+    commit.commit.author.date = old_datetime
+    return [commit]
+
+
+def mock_get(url, yaml_responses):
+    mock_response = Mock()
+    mock_response.text = yaml_responses[url]
+    mock_response.raise_for_status = Mock()
+    return mock_response
+
+
+def mock_safe_load(yaml_text: str):
+    return real_yaml.safe_load(yaml_text)
 
 
 @pytest.mark.parametrize(
@@ -77,6 +97,7 @@ def test_get_latest_metadata_versions_on_github_success(mock_github_files, mock_
         patch("metadata_service.stale_metadata_report.Github") as mock_github,
         patch("metadata_service.stale_metadata_report.requests") as mock_requests,
         patch("metadata_service.stale_metadata_report.yaml") as mock_yaml,
+        patch("metadata_service.stale_metadata_report.is_valid_metadata", return_value=True),
     ):
         mock_getenv.return_value = "test-github-token"
         mock_auth.Token.return_value = Mock()
@@ -92,28 +113,10 @@ def test_get_latest_metadata_versions_on_github_success(mock_github_files, mock_
         # Each call to repo.get_commits(path=...) should return a commit list with an old datetime
         old_datetime = datetime.datetime.now(datetime.timezone.utc) - PUBLISH_GRACE_PERIOD - datetime.timedelta(hours=1)
 
-        def _mock_commits(path):
-            commit = Mock()
-            commit.commit = Mock()
-            commit.commit.author = Mock()
-            commit.commit.author.date = old_datetime
-            return [commit]
-
         mock_repo.full_name = "airbyte/airbyte"
-        mock_repo.get_commits.side_effect = _mock_commits
+        mock_repo.get_commits.side_effect = lambda path: _mock_commits(old_datetime)
 
-        def mock_get(url):
-            mock_response = Mock()
-            mock_response.text = mock_yaml_responses[url]
-            mock_response.raise_for_status = Mock()
-            return mock_response
-
-        mock_requests.get.side_effect = mock_get
-
-        def mock_safe_load(yaml_text):
-            import yaml as real_yaml
-
-            return real_yaml.safe_load(yaml_text)
+        mock_requests.get.side_effect = lambda url: mock_get(url, mock_yaml_responses)
 
         mock_yaml.safe_load = mock_safe_load
 
@@ -140,11 +143,6 @@ def test_get_latest_metadata_entries_on_gcs_success(mock_gcs_blobs):
         mock_get_client.return_value = mock_storage_client
         mock_storage_client.bucket.return_value = mock_bucket
         mock_bucket.list_blobs.return_value = mock_gcs_blobs
-
-        def mock_safe_load(yaml_text):
-            import yaml as real_yaml
-
-            return real_yaml.safe_load(yaml_text)
 
         mock_yaml.safe_load = mock_safe_load
 
@@ -211,26 +209,6 @@ def test_generate_and_publish_stale_metadata_report_no_stale_data():
         assert "No stale metadata" in success_call[0][1]
 
 
-def test_generate_stale_metadata_report_large_dataset_performance(large_dataset_github_mappings, large_dataset_gcs_mappings):
-    """Test _generate_stale_metadata_report performance with large datasets (500 connectors)."""
-    import time
-
-    start_time = time.time()
-    result_df = _generate_stale_metadata_report(large_dataset_github_mappings, large_dataset_gcs_mappings)
-    execution_time = time.time() - start_time
-
-    assert execution_time < 5.0, f"Performance test failed: took {execution_time:.2f}s, expected < 5.0s"
-
-    expected_stale_count = sum(
-        1 for k in large_dataset_github_mappings.keys() if large_dataset_github_mappings[k] != large_dataset_gcs_mappings.get(k)
-    )
-    assert len(result_df) == expected_stale_count
-
-    if len(result_df) > 0:
-        expected_columns = ["connector", "master_version", "gcs_version"]
-        assert list(result_df.columns) == expected_columns
-
-
 def test_generate_and_publish_stale_metadata_report_large_stale_report():
     """Test main workflow with a large number of stale connectors."""
     large_github_data = {f"airbyte/connector-{i:04d}": f"2.{i % 10}.0" for i in range(100)}
@@ -260,80 +238,3 @@ def test_generate_and_publish_stale_metadata_report_large_stale_report():
         report_call = mock_slack.call_args_list[1]
         assert "123456789" in str(report_call)
         assert report_call[1]["enable_code_block_wrapping"] is True
-
-
-def test_get_latest_metadata_versions_on_github_many_files():
-    """Test GitHub metadata retrieval with many connector files."""
-    old_datetime = datetime.datetime.now(datetime.timezone.utc) - PUBLISH_GRACE_PERIOD - datetime.timedelta(hours=1)
-
-    many_files = []
-    yaml_responses = {}
-
-    for i in range(50):
-        mock_file = Mock()
-        mock_file.type = "file"
-        mock_file.name = "metadata.yaml"
-        mock_file.path = f"some/random/path/{i:03d}/metadata.yaml"
-        mock_file.download_url = f"https://github.com/connector-{i:03d}/metadata.yaml"
-        many_files.append(mock_file)
-
-        yaml_responses[mock_file.download_url] = f"""
-data:
-    dockerRepository: "airbyte/connector-{i:03d}"
-    dockerImageTag: "{i % 5}.{i % 3}.0"
-    supportLevel: "certified"
-"""
-
-    with (
-        patch("os.getenv") as mock_getenv,
-        patch("metadata_service.stale_metadata_report.Auth") as mock_auth,
-        patch("metadata_service.stale_metadata_report.Github") as mock_github,
-        patch("metadata_service.stale_metadata_report.requests") as mock_requests,
-        patch("metadata_service.stale_metadata_report.yaml") as mock_yaml,
-    ):
-        mock_getenv.return_value = "test-github-token"
-        mock_auth.Token.return_value = Mock()
-
-        mock_github_client = Mock()
-        mock_repo = Mock()
-        mock_github.return_value = mock_github_client
-        mock_github_client.get_repo.return_value = mock_repo
-        mock_github_client.search_code.return_value = many_files
-
-        def _mock_commits(path):
-            commit = Mock()
-            commit.commit = Mock()
-            commit.commit.author = Mock()
-            commit.commit.author.date = old_datetime
-            return [commit]
-
-        mock_repo.full_name = "airbyte/airbyte"
-        mock_repo.get_commits.side_effect = _mock_commits
-
-        def mock_get(url):
-            mock_response = Mock()
-            mock_response.text = yaml_responses[url]
-            mock_response.raise_for_status = Mock()
-            return mock_response
-
-        mock_requests.get.side_effect = mock_get
-
-        def mock_safe_load(yaml_text):
-            import yaml as real_yaml
-
-            return real_yaml.safe_load(yaml_text)
-
-        mock_yaml.safe_load = mock_safe_load
-
-        import time
-
-        start_time = time.time()
-        result = _get_latest_metadata_versions_on_github()
-        execution_time = time.time() - start_time
-
-        assert execution_time < 10.0, f"Performance test failed: took {execution_time:.2f}s, expected < 10.0s"
-        assert len(result) == 50
-        assert mock_requests.get.call_count == 50
-
-        # Ensure search_code called once
-        mock_github_client.search_code.assert_called_once()

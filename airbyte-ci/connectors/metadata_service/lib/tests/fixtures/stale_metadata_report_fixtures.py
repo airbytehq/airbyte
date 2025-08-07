@@ -14,19 +14,19 @@ def mock_github_files():
     mock_file_1 = Mock()
     mock_file_1.type = "file"
     mock_file_1.name = "metadata.yaml"
-    mock_file_1.path = "some/random/path/metadata.yaml"
+    mock_file_1.path = "airbyte-integrations/connectors/source-test-1/metadata.yaml"
     mock_file_1.download_url = "https://github.com/connector-1/metadata.yaml"
 
     mock_file_2 = Mock()
     mock_file_2.type = "file"
     mock_file_2.name = "metadata.yaml"
-    mock_file_2.path = "some/random/path2/metadata.yaml"
+    mock_file_2.path = "airbyte-integrations/connectors/source-test-2/metadata.yaml"
     mock_file_2.download_url = "https://github.com/connector-2/metadata.yaml"
 
     mock_file_3 = Mock()
     mock_file_3.type = "file"
     mock_file_3.name = "metadata.yaml"
-    mock_file_3.path = "some/random/path3/metadata.yaml"
+    mock_file_3.path = "airbyte-integrations/connectors/source-test-3/metadata.yaml"
     mock_file_3.download_url = "https://github.com/connector-3/metadata.yaml"
 
     return [mock_file_1, mock_file_2, mock_file_3]
