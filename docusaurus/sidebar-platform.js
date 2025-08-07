@@ -27,6 +27,7 @@ const buildAConnector = {
           type: "category",
           label: "Concepts",
           items: [
+            "connector-development/connector-builder-ui/global-configuration",
             "connector-development/connector-builder-ui/authentication",
             "connector-development/connector-builder-ui/record-processing",
             "connector-development/connector-builder-ui/pagination",
