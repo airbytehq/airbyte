@@ -29,6 +29,11 @@ data:
   icon: azureblobstorage.svg
   license: ELv2
   name: Azure Blob Storage
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.1"
+      supportedSerialization: [ "JSONL", "PROTOBUF" ]
+      supportedTransport: [ "SOCKET", "STDIO" ]
   registryOverrides:
     cloud:
       enabled: true
