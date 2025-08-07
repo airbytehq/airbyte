@@ -25,7 +25,6 @@ from airbyte_cdk.sources.declarative.incremental import (
 )
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
@@ -306,11 +305,19 @@ class GoogleAdsHttpRequester(HttpRequester):
             customer_id = stream_slice.partition.get("customer_id")
         
         # Fallback to direct attribute access
-        if not customer_id:
+        if not customer_id and hasattr(stream_slice, 'customer_id'):
             customer_id = stream_slice.customer_id
+        
+        # Another fallback to dict-style access
+        if not customer_id:
+            customer_id = stream_slice.get("customer_id")
         
         if not customer_id:
             raise ValueError(f"customer_id not found in stream_slice. Available keys: {list(stream_slice.__dict__.keys()) if hasattr(stream_slice, '__dict__') else 'N/A'}")
+        
+        # Extract just the customer ID if it's in resource name format (e.g., "customers/1234567890")
+        if isinstance(customer_id, str) and "/" in customer_id:
+            customer_id = customer_id.split("/")[-1]
         
         return f"customers/{customer_id}/googleAds:searchStream"
 
@@ -693,31 +700,20 @@ class GoogleAdsCriterionParentStateMigration(StateMigration):
         return {"parent_state": stream_state}
 
 
-@dataclass  
-class HybridCustomerPartitionRouter(PartitionRouter):
+@dataclass
+class HybridCustomerPartitionRouter(SubstreamPartitionRouter):
     """
     Hybrid partition router that:
     - Uses customer_id directly from config when provided
     - Falls back to customer_client stream partitioning when no customer_ids are provided
     """
     
-    config: Config = None
-    parameters: Mapping[str, Any] = None
-    parent_stream_configs: List[Mapping[str, Any]] = None
-    
+    config: Config
+    parameters: Mapping[str, Any]
+    parent_stream_configs: List[Mapping[str, Any]]
+
     def __post_init__(self, parameters: Mapping[str, Any] = None) -> None:
-        if parameters is None:
-            parameters = {}
-        # Initialize parent class properties
-        if hasattr(self, 'config') and hasattr(self, 'parameters'):
-            pass  # Already initialized by dataclass
-        # Store parent stream configs for fallback
-        self.parent_stream_configs = parameters.get("parent_stream_configs", [])
-        
-        # If parent_stream_configs weren't passed in parameters, check if they're a direct attribute
-        if not self.parent_stream_configs and hasattr(self, 'parent_stream_configs') and self.parent_stream_configs is None:
-            # Try to get from the manifest directly
-            self.parent_stream_configs = []
+        super().__post_init__(parameters)
             
     
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -729,7 +725,6 @@ class HybridCustomerPartitionRouter(PartitionRouter):
         customer_ids = self.config.get("customer_ids", [])
         if customer_ids:
             # Direct approach: use customer_ids from config
-            # Assume non-manager accounts when customer_ids are provided
             login_customer_id = self.config.get("login_customer_id")
             if login_customer_id:
                 for customer_id in customer_ids:
@@ -748,16 +743,21 @@ class HybridCustomerPartitionRouter(PartitionRouter):
             else:
                 raise ValueError(f"login_customer_id not found in config.")
         else:
-            # Fallback approach: use SubstreamPartitionRouter behavior
-            fallback_router = SubstreamPartitionRouter(
-                parent_stream_configs=self.parent_stream_configs,
-                config=self.config,
-                parameters=self.parameters
-            )
-            for slice in fallback_router.stream_slices():
-                yield slice
+            logger.info("No customer_ids provided in config — falling back to parent stream logic.")
+            # Ensure that the parent stream configurations are properly utilized
+            if not self.parent_stream_configs:
+                logger.error("Parent stream configs not provided.")
+                raise ValueError("Parent stream configs must be provided for fallback partitioning.")
 
-    
+            # Fallback to parent stream partitioning logic
+            try:
+                # This leverages the `stream_slices` method from the `SubstreamPartitionRouter` base class
+                yield from super().stream_slices()  # Will use the parent stream's partitioning
+            except Exception as e:
+                logger.error(f"Error during fallback partitioning: {e}")
+                raise
+
+
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         """Required abstract method - return None for stateless partition router"""
         return None
