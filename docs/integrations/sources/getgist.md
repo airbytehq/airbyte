@@ -27,6 +27,8 @@ An Airbyte connector for [Gist](https://getgist.com/) would enable data syncing 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2025-08-02 | [64277](https://github.com/airbytehq/airbyte/pull/64277) | Update dependencies |
+| 0.0.29 | 2025-07-19 | [63467](https://github.com/airbytehq/airbyte/pull/63467) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [63110](https://github.com/airbytehq/airbyte/pull/63110) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62783](https://github.com/airbytehq/airbyte/pull/62783) | Update dependencies |
 | 0.0.26 | 2025-06-28 | [62418](https://github.com/airbytehq/airbyte/pull/62418) | Update dependencies |

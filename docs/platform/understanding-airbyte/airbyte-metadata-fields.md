@@ -54,4 +54,3 @@ Destinations that predate [Destinations V2](https://docs.airbyte.com/release_not
 | `_airbyte_ab_id`      | `_airbyte_raw_id`          |
 | `_airbyte_emitted_at` | `_airbyte_extracted_at`    |
 | `_airbyte_loaded_at`  | `_airbyte_loaded_at`       |
-|                       |                            |

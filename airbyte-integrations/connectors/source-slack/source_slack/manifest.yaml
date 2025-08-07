@@ -127,6 +127,15 @@ definitions:
       class_name: "source_slack.components.join_channels.ChannelsRetriever"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 10
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
         request_parameters:
           types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
       record_selector:
@@ -192,6 +201,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
         request_parameters:
           inclusive: "True"
         error_handler:
@@ -253,11 +263,82 @@ definitions:
               - channel_id
             value: "{{ stream_partition.get('channel') }}"
 
+  threads_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: threads
+      path: conversations.replies
+      extractor_field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          channel: "{{ stream_partition['parent_slice']['channel'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 20
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: CustomPartitionRouter
+        class_name: source_slack.components.threads_partition_router.ThreadsPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channel_messages_stream"
+            # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
+            # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
+            # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
+            # incremental_dependency set to true to read parent state incrementally with custom substream partition router
+            incremental_dependency: true
+            parent_key: ts
+            partition_field: float_ts
+            request_option:
+              type: RequestOption
+              field_name: "ts"
+              inject_into: "request_parameter"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      cursor_field: "float_ts"
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if not config.get('end_date') else format_datetime(config.get('end_date'), '%Y-%m-%dT%H:%M:%SZ')}}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: "{{ record['ts']|float }}"
+          - path:
+              - channel_id
+            value: "{{ stream_partition['parent_slice']['channel'] }}"
+
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
+  - "#/definitions/threads_stream"
 
 check:
   type: CheckStream
