@@ -11,5 +11,5 @@ jobs:
     with:
       connector-name: "source-pokeapi"
       registry: "ghcr.io/airbytehq"
-      tag-override: "david-test-${{ github.sha }}"
+      tag-override: "draft-pr-63272-build126"
     secrets: inherit

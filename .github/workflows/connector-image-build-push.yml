@@ -115,6 +115,12 @@ jobs:
             exit 1
           fi
 
+          # Validate registry input
+          if [[ "${{ inputs.registry }}" !="ghcr.io/airbytehq" && "${{ inputs.registry }}" != "docker.io/airbyte" ]]; then
+            echo "❌ Unsupported registry: ${{ inputs.registry }}"
+            exit 1
+          fi
+
           FULL_IMAGE_NAME="${{ inputs.registry }}/${CONNECTOR_NAME}:${DOCKER_TAG}"
 
 
@@ -125,8 +131,10 @@ jobs:
           echo "  Docker Tag: $DOCKER_TAG"
           echo "  Full Image: $FULL_IMAGE_NAME"
 
+          echo "connector-name=$CONNECTOR_NAME" >> $GITHUB_OUTPUT
           echo "connector-type=$CONNECTOR_LANGUAGE" >> $GITHUB_OUTPUT
           echo "connector-dir=$CONNECTOR_DIR" >> $GITHUB_OUTPUT
+          echo "docker-tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
           echo "base-image=$BASE_IMAGE" >> $GITHUB_OUTPUT
           echo "image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
 
@@ -137,57 +145,32 @@ jobs:
           set -euo pipefail
 
           IMAGE_NAME="${{ steps.vars.outputs.image-name }}"
-          TAG="${{ steps.version.outputs.docker-tag }}"
-
           echo "🔍 Checking if image exists: $IMAGE_NAME"
 
-          docker manifest inspect "$IMAGE_NAME"
+          if [[ ${{ inputs.registry }} == "ghcr.io/airbytehq" ]]; then
+            # Use GitHub Container Registry API
+            URL="https://ghcr.io/v2/airbytehq/${{ steps.vars.outputs.connector-name }}/manifests/${{ steps.vars.outputs.docker-tag }}"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+              "$URL")
 
-          # Use docker manifest inspect for universal registry support
-          if docker manifest inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+          elif [[ ${{ inputs.registry }} == "docker.io/airbyte" ]]; then
+            # Use Docker Hub API
+            URL="https://registry.hub.docker.com/v2/repositories/airbyte/${{ steps.vars.outputs.connector-name }}/tags/${{ steps.vars.outputs.docker-tag }}/"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          fi
+
+          if [[ "$STATUS" == "200" ]]; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "ℹ️  Image already exists: $IMAGE_NAME"
-          else
+          elif [[ "$STATUS" == "404" ]]; then
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "✅ Image does not exist: $IMAGE_NAME"
-
-          # # Function to check if Docker Hub tag exists (from original shell script)
-          # dockerhub_tag_exists() {
-          #   local image="$1"
-          #   local tag="$2"
-          #   local max_attempts=5
-          #   local delay=1
-
-          #   local namespace repo status url
-          #   namespace=$(cut -d/ -f1 <<<"$image")
-          #   repo=$(cut -d/ -f2 <<<"$image")
-          #   url="https://registry.hub.docker.com/v2/repositories/${namespace}/${repo}/tags/${tag}/"
-
-          #   for ((attempt=1; attempt<=max_attempts; attempt++)); do
-          #     status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-
-          #     if [[ "$status" == "200" ]]; then
-          #       return 0  # tag exists
-          #     elif [[ "$status" == "404" ]]; then
-          #       return 1  # tag does not exist
-          #     else
-          #       echo "⚠️  Docker Hub check failed (status $status), retrying in $delay seconds... ($attempt/$max_attempts)" >&2
-          #       sleep "$delay"
-          #       delay=$((delay * 2))
-          #     fi
-          #   done
-
-          #   echo "❌ Failed to contact Docker Hub after $max_attempts attempts. Exiting to be safe." >&2
-          #   exit 1
-          # }
-
-          # if dockerhub_tag_exists "airbyte/${IMAGE_NAME}" "$TAG"; then
-          #   echo "exists=true" >> $GITHUB_OUTPUT
-          #   echo "ℹ️  Image airbyte/${IMAGE_NAME}:${TAG} already exists on Docker Hub"
-          # else
-          #   echo "exists=false" >> $GITHUB_OUTPUT
-          #   echo "✅ Image airbyte/${IMAGE_NAME}:${TAG} does not exist on Docker Hub"
-          # fi
+          else
+            echo "⚠️  Unexpected status $STATUS, exiting to be safe"
+            exit 1
+          fi
 
       # - name: Login to Docker Hub
       #   if: ${{ inputs.registry == 'docker.io/airbyte' && !inputs.dry-run && steps.check-exists.outputs.exists != 'true' }}
