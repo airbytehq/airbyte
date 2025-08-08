@@ -284,7 +284,7 @@ class GoogleAdsHttpRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        return "https://googleads.googleapis.com/v19/"
+        return "https://googleads.googleapis.com/v20/"
 
     def get_path(
         self,
