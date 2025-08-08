@@ -232,76 +232,40 @@ jobs:
             echo "do-publish=$DO_PUBLISH"
           } >> $GITHUB_OUTPUT
 
-      - name: Login to Docker Hub
-        if: ${{ steps.check-exists.outputs.do-publish == 'true' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      # - name: Login to Docker Hub
+      #   if: ${{ steps.check-exists.outputs.do-publish == 'true' }}
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Set up Docker Buildx
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-        uses: docker/setup-buildx-action@v3
+      # - name: Set up Docker Buildx
+      #   if: ${{ steps.check-exists.outputs.do-build == 'true' }}
+      #   uses: docker/setup-buildx-action@v3
 
-      - name: Build and push connector image
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ steps.vars.outputs.connector-dir }}
-          file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-type }}-connector
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.vars.outputs.docker-tag }}
-          build-args: |
-            BASE_IMAGE=${{ steps.vars.outputs.base-image }}
-            CONNECTOR_NAME=${{ steps.vars.outputs.connector-name }}
-          push: ${{ !inputs.dry-run }}
+      # - name: Build and push connector image
+      #   if: ${{ steps.check-exists.outputs.do-build == 'true' }}
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ${{ steps.vars.outputs.connector-dir }}
+      #     file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-type }}-connector
+      #     platforms: linux/amd64,linux/arm64
+      #     tags: ${{ steps.vars.outputs.docker-tag }}
+      #     build-args: |
+      #       BASE_IMAGE=${{ steps.vars.outputs.base-image }}
+      #       CONNECTOR_NAME=${{ steps.vars.outputs.connector-name }}
+      #     push: ${{ !inputs.dry-run }}
 
-      - name: Run `spec` Image Test
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-        run: |
-          docker run --rm ${{ steps.vars.outputs.image-tag}} spec
-
-      - name: Run Image Vulnerability Scan
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-        uses: anchore/scan-action@v6
-        with:
-          image: "${{ steps.vars.outputs.image-build-num-tag }}"
-          output-format: "table"
-          severity-cutoff: high
-          fail-build: false
-
-      # - name: Test connector image
-      #   if: ${{ steps.check-exists.outputs.exists != 'true' && !inputs.dry-run }}
+      # - name: Run `spec` Image Test
+      #   if: ${{ steps.check-exists.outputs.do-build == 'true' }}
       #   run: |
-      #     echo "🧪 Testing connector image: ${{ steps.version.outputs.full-image-name }}"
-      #     docker run --rm ${{ steps.version.outputs.full-image-name }} spec
+      #     docker run --rm ${{ steps.vars.outputs.image-tag}} spec
 
-      # - name: Run vulnerability scan
-      #   if: ${{ steps.check-exists.outputs.exists != 'true' }}
+      # - name: Run Image Vulnerability Scan
+      #   if: ${{ steps.check-exists.outputs.do-build == 'true' }}
       #   uses: anchore/scan-action@v6
       #   with:
-      #     image: ${{ steps.version.outputs.full-image-name }}
-      #     output-format: table
+      #     image: "${{ steps.vars.outputs.image-build-num-tag }}"
+      #     output-format: "table"
       #     severity-cutoff: high
       #     fail-build: false
-
-      # - name: Summary
-      #   run: |
-      #     echo "## 🚀 Build Summary" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
-      #     echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Connector | \`${{ inputs.connector }}\` |" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Type | ${{ steps.validate.outputs.connector-type }} |" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Release Type | ${{ inputs.release-type }} |" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Registry | ${{ inputs.registry }} |" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Image | \`${{ steps.version.outputs.full-image-name }}\` |" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Dry Run | ${{ inputs.dry-run }} |" >> $GITHUB_STEP_SUMMARY
-      #     echo "| Already Exists | ${{ steps.check-exists.outputs.exists || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
-
-      #     if [[ "${{ steps.check-exists.outputs.exists }}" == "true" ]]; then
-      #       echo "ℹ️  Image already exists - skipped build and push"
-      #     elif [[ "${{ inputs.dry-run }}" == "true" ]]; then
-      #       echo "🏃 Dry run completed - image built but not pushed"
-      #     else
-      #       echo "✅ Image built and pushed successfully"
-      #     fi
