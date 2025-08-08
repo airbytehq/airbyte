@@ -1,5 +1,10 @@
+import org.w3c.dom.Document
+
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+
 allprojects {
-    version = "0.1.10"
+    version = "0.1.9"
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
@@ -76,9 +81,13 @@ tasks.register('checkBuildNumber') {
             if (responseCode != 200) {
                 throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
             }
-            String responseContent = connection.inputStream.text
-            def xml = new XmlParser().parseText(responseContent)
-            String latestVersion = xml."versioning"."latest".text()
+            String responseContent = connection.inputStream
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(responseContent); // Replace with your XML file path
+
+            String latestVersion = doc.getElementsByTagName("versioning").getAt("latest").toString()
+
             if (version.toString() == latestVersion) {
                 throw new GradleException("Version already exist")
             }
