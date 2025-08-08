@@ -179,10 +179,6 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         column_definition_str: str,
         primary_keys: list[str] | None = None,
     ) -> None:
-        if primary_keys:
-            pk_str = ", ".join(map(self._quote_identifier, primary_keys))
-            column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
-
         cmd = f"""
         CREATE TABLE IF NOT EXISTS {self._fully_qualified(table_name)} (
             {column_definition_str}
