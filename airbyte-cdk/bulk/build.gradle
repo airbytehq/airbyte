@@ -1,5 +1,5 @@
 allprojects {
-    version = "0.1.4"
+    version = "0.1.9"
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
