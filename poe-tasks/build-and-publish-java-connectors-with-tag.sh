@@ -96,7 +96,7 @@ if $do_publish; then
 
   if dockerhub_tag_exists "airbyte/${connector}" "$docker_tag"; then
     echo "ℹ️  Skipping publish — tag airbyte/${connector}:${docker_tag} already exists."
-    continue
+    exit
   fi
 
   echo "airbyte/${connector}:${docker_tag} image does not exists on Docker. Publishing..."
