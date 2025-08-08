@@ -27,8 +27,8 @@ if ! test "$GCS_CREDENTIALS"; then
   exit 1
 fi
 
-spec_cache_bucket="dev-airbyte-cloud-connector-metadata-service"
-metadata_bucket="dev-airbyte-cloud-connector-metadata-service"
+spec_cache_bucket="io-airbyte-cloud-spec-cache"
+metadata_bucket="prod-airbyte-cloud-connector-metadata-service"
 
 syft_docker_image="anchore/syft:v1.6.0"
 sbom_extension="spdx.json"
