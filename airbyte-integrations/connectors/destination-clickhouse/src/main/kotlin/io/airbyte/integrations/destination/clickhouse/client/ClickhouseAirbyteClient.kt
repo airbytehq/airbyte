@@ -169,7 +169,7 @@ class ClickhouseAirbyteClient(
 
         if (columnChanges.hasDedupChange) {
             log.info {
-                "Detected deduplication change for table $properTableName, applying deduplication changes"
+                "Detected deduplication change for table $properTableName, applying deduplication changes test"
             }
             applyDeduplicationChanges(
                 stream,
