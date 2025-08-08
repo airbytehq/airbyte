@@ -33,11 +33,11 @@ definitions:
 
   authenticator:
     type: SelectiveAuthenticator
-    authenticator_selection_path: [ "credentials", "option_title" ]
+    authenticator_selection_path: ["credentials", "option_title"]
     authenticators:
       Default OAuth2.0 authorization: "#/definitions/access_token_auth"
       API Token Credentials: "#/definitions/api_token_auth"
-  
+
   requester:
     type: HttpRequester
     url_base: https://slack.com/api/
@@ -215,10 +215,10 @@ definitions:
         http_method: GET
         request_parameters:
           inclusive: "True"
-        request_headers: { }
+        request_headers: {}
         authenticator:
           $ref: "#/definitions/authenticator"
-        request_body_json: { }
+        request_body_json: {}
         error_handler:
           type: DefaultErrorHandler
           backoff_strategies:
@@ -301,10 +301,10 @@ definitions:
         http_method: GET
         request_parameters:
           channel: "{{ stream_partition['parent_slice']['channel'] }}"
-        request_headers: { }
+        request_headers: {}
         authenticator:
           $ref: "#/definitions/authenticator"
-        request_body_json: { }
+        request_body_json: {}
         error_handler:
           type: DefaultErrorHandler
           max_retries: 20
