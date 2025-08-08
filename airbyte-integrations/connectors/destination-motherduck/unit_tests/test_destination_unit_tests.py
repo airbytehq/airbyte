@@ -32,13 +32,17 @@ def test_validated_sql_name() -> None:
 @patch("os.makedirs")
 @patch("sqlalchemy.create_engine")
 def test_check(mock_makedirs, mock_create_engine, monkeypatch) -> None:
-    mock_connection = Mock()
+    # Mocked return from fetchall():
     mock_result = Mock()
     mock_result.fetchall.return_value = [(1,)]
+
+    # Mocked connection context manager:
+    mock_connection = Mock()
     mock_connection.execute.return_value = mock_result
     mock_connection.__enter__ = Mock(return_value=mock_connection)
     mock_connection.__exit__ = Mock(return_value=None)
 
+    # Mocked engine, to return the mocked connection:
     mock_engine = Mock()
     mock_engine.begin.return_value = mock_connection
     mock_create_engine.return_value = mock_engine
@@ -84,10 +88,15 @@ def test_write(mock_makedirs, mock_create_engine, monkeypatch) -> None:
     temp_dir = tempfile.mkdtemp()
     config = {"destination_path": f"{temp_dir}/testdb.db", "schema": CONFIG_DEFAULT_SCHEMA}
     catalog = ConfiguredAirbyteCatalog(streams=[])
-    messages = [AirbyteMessage(type=Type.STATE, record=None)]
+    messages = [
+        AirbyteMessage(
+            type=Type.STATE, record=None, state=AirbyteStateMessage(data={"state": "1"})
+        )
+    ]
     destination = DestinationMotherDuck()
     result = list(destination.write(config, catalog, messages))
-    assert len(result) == 0
+    assert len(result) == 1
+    assert result[0].type == Type.STATE
 
 
 def test_null_primary_key_handling(monkeypatch) -> None:
