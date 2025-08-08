@@ -13,5 +13,4 @@ jobs:
       registry: "docker.io/airbyte"
       # tag-override: "0.3.34-dev.dc3cebbb36"
       dry-run: true
-      force-publish: true
     secrets: inherit
