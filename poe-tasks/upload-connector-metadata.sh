@@ -58,8 +58,8 @@ full_docker_image="$docker_repository:$docker_tag"
 
 # Upload the specs to the spec cache
 run_connector_spec() {
-  deployment_mode=$1
-  output_file=$2
+  local deployment_mode=$1
+  local output_file=$2
 
   # Run the spec command, filter for SPEC messages, and write those messages to the output file.
   # The jq command has a lot going on:
@@ -72,7 +72,7 @@ run_connector_spec() {
   # Verify that we had exactly one spec message.
   # Depending on the platform, `wc -l` may return a right-padded string like "   1".
   # `tr -d ' '` deletes those spaces.
-  specMessageCount=$(cat $output_file | wc -l | tr -d ' ')
+  local specMessageCount=$(cat $output_file | wc -l | tr -d ' ')
   if test $specMessageCount -ne 1; then
     echo "Expected to get exactly one spec message from the connector when running with deployment mode '$deployment_mode'; got $specMessageCount" >&2
     exit 1
