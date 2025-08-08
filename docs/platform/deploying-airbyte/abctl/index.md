@@ -6,6 +6,9 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindows } from "@fortawesome/free-brands-svg-icons";
+import EnvironmentVarConversion from '@site/static/_extraenv_to_helm_chart_v2.md';
+import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
+
 
 # abctl
 
@@ -275,6 +278,273 @@ To stop running containers and delete all data:
     ```shell
     rm -rf ~/.airbyte/abctl
     ```
+
+## Helm chart V2 (abctl versions 0.30 and later)
+
+Airbyte has upgraded its Helm chart to a new version called "V2." abctl versions 0.30 and later use Helm chart V2 by default. abctl versions 0.29 and earlier only use Helm chart V1.
+
+:::note
+Many abctl users don't use external integrations. For example, you might run a local deployment on `localhost` without a `values.yaml` file. If this is the case for you, you can safely ignore this section. Continue upgrading Airbyte in the usual way.
+:::
+
+### Which chart you should use
+
+You should use the latest version of the Helm chart. Doing so automatically installs the latest compatible version of Airbyte, unless you have a reason not to use it. 
+
+Typically, the only reason not to use Helm chart V2 is that you have complex configurations in your `values.yaml` file and you aren't ready to upgrade them. Although using Helm chart V2 is currently optional, at a point in the future, it will be mandatory. Airbyte recommends switching as soon as you're able to.
+
+Because Helm chart V2 is currently optional, the version of the Helm chart and the version of the Airbyte platform aren't necessarily the same. For example, your Helm chart version can be `2.03`, which is compatible with Airbyte's platform version `1.7.0`.
+
+### How to control the Helm chart version
+
+You can use the `--chart-version` and `--set` flags to override the Helm chart and Airbyte platform versions. Helm chart V2 is usable with Airbyte versions 1.6.0 and later. Earlier versions of Airbyte only support Helm chart V1.
+
+- To install the latest version of the Helm chart with the latest version of the Airbyte platform:
+
+    ```bash
+    abctl local install
+    ```
+
+- To install a specific chart version:
+
+    ```bash
+    abctl local install --chart-version 2.0.3
+    ```
+
+- To install a specific platform version:
+
+    ```bash
+    abctl local install --set global.image.tag=1.7.0
+    ```
+
+### How to update your values.yaml file
+
+In most cases, the adjustments to `values.yaml` are small and involve changing keys and moving sections. This section walks you through the main updates you need to make. If you already know what to do, see [Values.yaml reference](../deploying-airbyte/values) for the full V1 and V2 interfaces.
+
+Airbyte recommends approaching this project in this way:
+
+1. Note the customizations in your V1 `values.yaml` file to ensure you don't forget anything.
+
+2. Start with a basic V2 `values.yaml` to verify that it works. Map your V1 settings to V2, transferring one set of configurations at a time.
+
+3. Don't test in production.
+
+Follow the steps below to start generating `values.yaml`.
+
+<details>
+<summary>
+Create a `values.yaml` file and a `global` configuration
+</summary>
+
+Create a new `values.yaml` file on your machine. In that file, create your basic global configuration.
+
+```yaml title="values.yaml"
+global:
+  edition: community
+
+  airbyteUrl: "" # The URL where Airbyte will be reached; This should match your Ingress host
+```
+
+</details>
+
+<details>
+<summary>
+Add your database (if applicable)
+</summary>
+
+Disable Airbyte's default Postgres database and add your own. The main difference in Helm chart V2 is the `global.database.database` key has changed to `global.database.name`.
+
+```yaml title="values.yaml"
+global: 
+  database:
+    # -- Secret name where database credentials are stored
+    secretName: "" # e.g. "airbyte-config-secrets"
+    # -- The database host
+    host: ""
+    # -- The database port
+    port:
+    # -- The database name - this key used to be "database" in Helm chart 1.0
+    name: ""
+
+    # Use EITHER user or userSecretKey, but not both
+    # -- The database user
+    user: ""
+    # -- The key within `secretName` where the user is stored
+    userSecretKey: "" # e.g. "database-user"
+
+    # Use EITHER password or passwordSecretKey, but not both
+    # -- The database password
+    password: ""
+    # -- The key within `secretName` where the password is stored
+    passwordSecretKey: "" # e.g."database-password"
+
+postgresql:
+  enabled: false
+```
+
+</details>
+
+<details>
+<summary>
+Add external logging (if applicable)
+</summary>
+
+```yaml
+global:
+  storage:
+    secretName: ""
+    type: minio # default storage is minio. Set to s3, gcs, or azure, according to what you use.
+
+    bucket:
+      log: airbyte-bucket
+      auditLogging: airbyte-bucket # Version 1.7 or later, only if you're using audit logging
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+      activityPayload: airbyte-bucket
+
+    # Set ONE OF the following storage types, according to your specification above
+
+    # S3
+    s3:
+      region: "" ## e.g. us-east-1
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      accessKeyId: ""
+      secretAccessKey: ""
+
+    # GCS
+    gcs:
+      projectId: <project-id>
+      credentialsJson:  <base64-encoded>
+      credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+
+    # Azure
+    azure:
+      # one of the following: connectionString, connectionStringSecretKey
+      connectionString: <azure storage connection string>
+      connectionStringSecretKey: <secret coordinate containing an existing connection-string secret>
+```
+
+</details>
+
+<details>
+<summary>
+Add external connector secret management (if applicable)
+</summary>
+
+```yaml
+global:
+  secretsManager:
+    enabled: false
+    type: "" # one of: VAULT, GOOGLE_SECRET_MANAGER, AWS_SECRET_MANAGER, AZURE_KEY_VAULT, TESTING_CONFIG_DB_TABLE
+    secretName: "airbyte-config-secrets"
+
+    # Set ONE OF the following groups of configurations, based on your configuration in global.secretsManager.type.
+
+    awsSecretManager:
+      region: <aws-region>
+      authenticationType: credentials ## Use "credentials" or "instanceProfile"
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+      - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+      kms: ## Optional - ARN for KMS Decryption.
+
+    # OR
+
+    googleSecretManager:
+      projectId: <project-id>
+      credentialsSecretKey: gcp.json
+
+    # OR
+
+    azureKeyVault:
+      tenantId: ""
+      vaultUrl: ""
+      clientId: ""
+      clientIdSecretKey: ""
+      clientSecret: ""
+      clientSecretSecretKey: ""
+      tags: ""
+
+    # OR
+
+    vault:
+      address: ""
+      prefix: ""
+      authToken: ""
+      authTokenSecretKey: ""
+```
+
+</details>
+
+<details>
+<summary>
+Update syntax for other customizatons
+</summary>
+
+If you have further customizations in your V1 values.yaml file, move those over to your new values.yaml file, and update key names where appropriate.
+
+- Change hyphenated V1 keys keys to camel case in V2. For example, when copying over `workload-launcher`, change it to `workloadLauncher`.
+
+- Some keys have different names. For example, `orchestrator` is `containerOrchestrator` in V2.
+
+Here is the full list of changes.
+
+<HelmSyntaxConversion/>
+
+</details>
+
+<details>
+<summary>
+Convert `extraEnv` variables
+</summary>
+
+In previous versions of your values.yaml file, you might have specified a number of environment variables through `extraEnv`. Many (but not all) of these variables have a dedicated interface in Helm chart V2. For example, look at the following configuration, which tells `workload-launcher` to run pods in the `jobs` node group.
+
+```yaml title="values.yaml using Helm chart V1"
+workload-launcher:
+  nodeSelector:
+    type: static
+  ## Pods spun up by the workload launcher will run in the 'jobs' node group.
+  extraEnv:
+    - name: JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+    - name: SPEC_JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+    - name: CHECK_JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+    - name: DISCOVER_JOB_KUBE_NODE_SELECTORS
+      value: type=jobs
+```
+
+You can specify these values directly without using environment variables, achieving the same effect.
+
+```yaml title="values.yaml using Helm chart V2"
+global:
+  jobs:
+    kube:
+      nodeSelector:
+        type: jobs
+      scheduling:
+        check:
+          nodeSelectors:
+            type: jobs
+        discover:
+          nodeSelectors:
+            type: jobs
+        spec:
+          nodeSelectors:
+            type: jobs
+
+workloadLauncher:
+  nodeSelector:
+    type: static
+```
+
+<EnvironmentVarConversion/>
+
+</details>
 
 ## Manage Docker images
 
