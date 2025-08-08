@@ -94,12 +94,9 @@ fi
 
 # Upload the SBOM
 echo '--- UPLOADING SBOM ---'
-# TODO verify the docker sock thing - the command runs fine on my laptop without this flag, and I'm not sure this flag is correct to begin with
-# Syft requires access to the docker daemon. We share the host's docker socket with the Syft container.
 docker run \
   --volume $HOME/.docker/config.json:/config/config.json \
   --env DOCKER_CONFIG=/config \
-  --volume /var/run/docker.sock:/var/run/docker.sock \
   "$syft_docker_image" \
   -o spdx-json \
   "$full_docker_image" > "$sbom_extension"
