@@ -43,6 +43,7 @@ class PipelineCompletionHandler(
             }
             .awaitAll()
 
-        reconciler.flushStates()
+        reconciler.disable()
+        reconciler.flushCompleteStates()
     }
 }
