@@ -1,3 +1,7 @@
+## Version 0.1.9
+
+Add db version logging for all jdbc extract databases during Check operation 
+
 ## Version 0.1.7
 
 Update the log4j to allow us to dynamically set the log level via an env variable
