@@ -15,22 +15,15 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.time.Instant
 import java.util.UUID
 
-class AirbyteValueWithMetaToOutputRecord {
+class AirbyteValueWithMetaToOutputRecord(val extractedAtType: ExtractedAtType) {
     fun convert(value: ObjectValue): OutputRecord {
         val meta = value.values[Meta.COLUMN_NAME_AB_META] as ObjectValue
         return OutputRecord(
             rawId =
                 UUID.fromString((value.values[Meta.COLUMN_NAME_AB_RAW_ID] as StringValue).value),
             extractedAt =
-                Instant.ofEpochMilli(
-                    value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT].let { v ->
-                        when (v) {
-                            is IntegerValue -> v.value.toLong()
-                            is TimestampWithTimezoneValue -> v.value.toEpochSecond()
-                            else -> throw IllegalArgumentException("Invalid extractedAt value: $v")
-                        }
-                    }
-                ),
+                // extracted at should always be nonnull.
+                extractedAtType.parseValue(value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT]!!),
             loadedAt = null,
             data = value.values[Meta.COLUMN_NAME_DATA] as ObjectValue,
             generationId =
@@ -73,6 +66,29 @@ fun AirbyteValue.maybeUnflatten(wasFlattened: Boolean): ObjectValue {
     return ObjectValue(properties)
 }
 
-fun AirbyteValue.toOutputRecord(): OutputRecord {
-    return AirbyteValueWithMetaToOutputRecord().convert(this as ObjectValue)
+enum class ExtractedAtType {
+    TIMESTAMP_WITH_TIMEZONE {
+        override fun parseValue(value: AirbyteValue): Instant {
+            if (value is TimestampWithTimezoneValue) {
+                return value.value.toInstant()
+            } else {
+                throw IllegalArgumentException("Invalid extractedAt value: $value")
+            }
+        }
+    },
+    INTEGER {
+        override fun parseValue(value: AirbyteValue): Instant {
+            if (value is IntegerValue) {
+                return Instant.ofEpochMilli(value.value.toLong())
+            } else {
+                throw IllegalArgumentException("Invalid extractedAt value: $value")
+            }
+        }
+    };
+
+    abstract fun parseValue(value: AirbyteValue): Instant
+}
+
+fun AirbyteValue.toOutputRecord(extractedAtType: ExtractedAtType): OutputRecord {
+    return AirbyteValueWithMetaToOutputRecord(extractedAtType).convert(this as ObjectValue)
 }
