@@ -4,7 +4,17 @@
 from dagster import Definitions, EnvVar, ScheduleDefinition, load_assets_from_modules
 from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
-from orchestrator.assets import connector_test_report, connector_metrics, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask, slack
+from orchestrator.assets import (
+    connector_test_report,
+    connector_metrics,
+    github,
+    metadata,
+    registry,
+    registry_entry,
+    registry_report,
+    specs_secrets_mask,
+    slack,
+)
 from orchestrator.config import (
     ANALYTICS_BUCKET,
     ANALYTICS_FOLDER,
@@ -94,20 +104,26 @@ METADATA_RESOURCE_TREE = {
     ),
     "latest_metadata_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
-    )
+    ),
 }
 
 DATA_WAREHOUSE_RESOURCE_TREE = {
     **GCS_RESOURCE_TREE,
     "latest_metrics_gcs_blob": gcs_directory_blobs.configured(
-        {"gcs_bucket": ANALYTICS_BUCKET, "prefix": ANALYTICS_FOLDER, "match_regex": f".*.jsonl$", "only_one": True, "sort_key": "name", "reverse_sort": True}
+        {
+            "gcs_bucket": ANALYTICS_BUCKET,
+            "prefix": ANALYTICS_FOLDER,
+            "match_regex": f".*.jsonl$",
+            "only_one": True,
+            "sort_key": "name",
+            "reverse_sort": True,
+        }
     ),
 }
 
 REGISTRY_RESOURCE_TREE = {
     **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
-
     "latest_oss_registry_gcs_blob": gcs_file_blob.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}
     ),
@@ -209,11 +225,6 @@ SCHEDULES = [
         job=remove_stale_metadata_partitions,
     ),
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
-    ScheduleDefinition(
-        cron_schedule="0 * * * *",  # Every hour
-        execution_timezone="US/Pacific",
-        job=generate_stale_gcs_latest_metadata_file,
-    ),
 ]
 
 JOBS = [
