@@ -1,0 +1,71 @@
+---
+id: embedded-config-templates-connections-list-connection-config-templates
+title: "List Connection Config Templates"
+description: "List Connection Config Templates"
+sidebar_label: "List Connection Config Templates"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1z2zYQ/SuYvfQCS7bbXniTZSX1TBt7aqUXjYYDEUsJMQkwAOiJquF/zyxASdRHFFeT9KSTZWL3Lfbtw5KLFXgxd5BMIDNaY+aV0WlmdK7mqceyKoRHmHIwFVpBiw8SEsByhlKivNqzdFdbFHdVKOfTb8M64OAwq63yS0gmK/hjPH66Q2HRQjKZNlMOlbCiRI/WBQMtSoQEjJ0Lrf4N20mVBA5KQwKfa7RL4GDxc60sSkhyUTjk4LIFlgKSFfhlRQDOW6XnwCE3thQeEqjrgCPRZVZVBAwJjBfIurHYwz3zhlFabJMEy43tsXvMRV14R+t+gax2aH9x+9494OCVL2gPjztLEpr/ITpRatFVRjt0xMft9TX92Q38XGcZOpfXBfu7NQZO8vCoPZmLqipUFmD7nxz5rDocV5a04lWMIIUPT5XH0h0u75fyDTU6TaBXOoJFrRzCrd3vt7bsA9nu+YvMG5tKzJVWZ+yuCz8gKCpSC3Vkt/FodAKY2SfM/DcAh9G64ZBZo1P8Ull0TsVKCL18zMNx2d1rwzdPdF0UQQxr8KE1mo22MA0HbXQ6syhelJ6n2ULoObq0spijRZ2dpPaD0eyudWXD6Mqetq6UehAsJKDm2thAvlvqLCUqLFLP2eLPjClQ6E6A56XO2KNmw2jawfO2xobDf6tVLEeMK1PhT/pK4fHKqxKhS19wZQNPQHUlzwX6GF0DUMMPtLDtbJMjTfBA/d8X9FERBvp2+NjJqSOb9+iHm/YeRTluO9NjHbhoMxDWimVXzNQVvpdhaB2daH8qdzpcQ4i/HWtpd0Iygkbnz29lJTon5njuGfurdW84oLXGuhNtMVdYyHMDvQvODf/RG04zI88GGxECGxLCsbqvzQaVCpYntDOK5HUO/WT6FsjNu2ytk18PdfLO2JmSEvVFJReVBJXc3h6q5B9RKBnfxHEbF7FcxNJw+P3Yq+dBe7RaFOwZ7Svai2Iuilkr5mDkoy8ctv3Eab/z2bgzMJfoF4ZG8DkSfiX8AhLoi0r1X2/667m8vz9q9ztzeRi7SYtxqK5tAQksvK9c0iegnlB2tvTYE+pgJB7EJTZqA7HB00OgeD3IP5Nuo3664/ymJhQH2pE8fNxHA+JC6dwEyzVnx2K9aUMcKLtocN277t1QJSvjfCnC4WrvEd5A906wTRIev/h+VQgVJqVA4KotxQRERbS93gDfXJPE475/99EtyZTDwjiSEaxWM+Hwoy2ahh7HWw0qlFROzIrOvcbe5jYd5SddXBzL/QWXRy9kXkVRk3XQxquwinYeDgmHBQoZrnhWrfsgy7DyHa+DhkgoG+W/H42Bg6iJ7u2QGHXE1z86jUHoZQd7tYoWY/OCumlgnYOn/6GZNk3zFQK3mXw=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"List Connection Config Templates"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/config_templates/connections"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+List Connection Config Templates
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organization_id","in":"query","required":false,"schema":{"type":"string","format":"uuid","description":"The organization ID to list templates for. Defaults to the user's organization ID.","title":"Organization Id"},"description":"The organization ID to list templates for. Defaults to the user's organization ID."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"data":{"items":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"destination_name":{"type":"string","title":"Destination Name"},"destination_actor_definition_id":{"type":"string","format":"uuid","title":"Destination Actor Definition Id"},"destination_config":{"type":"object","title":"Destination Config"},"cron_expression":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Cron Expression"},"non_breaking_changes_preference":{"type":"string","title":"Non Breaking Changes Preference","default":"ignore"},"sync_on_create":{"type":"boolean","title":"Sync On Create","default":true},"id":{"type":"string","format":"uuid","title":"Id"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"updated_at":{"type":"string","format":"date-time","title":"Updated At"}},"type":"object","required":["organization_id","destination_name","destination_actor_definition_id","destination_config","id","created_at","updated_at"],"title":"GetConnectionConfigTemplateOut"},"type":"array","title":"Data"}},"type":"object","required":["data"],"title":"ListConnectionConfigTemplateOut"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
