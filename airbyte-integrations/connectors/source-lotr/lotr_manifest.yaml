@@ -1,0 +1,385 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - books
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: "https://lotrapi.co/api/v1"
+
+streams:
+  - type: DeclarativeStream
+    name: books
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://lotrapi.co/api/v1/books"
+        http_method: GET
+        request_headers: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ response.links.next is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          title:
+            type: string
+          author:
+            type: string
+          publication_date:
+            type: string
+          characters:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+
+  - type: DeclarativeStream
+    name: films
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://lotrapi.co/api/v1/films"
+        http_method: GET
+        request_headers: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ response.links.next is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          title:
+            type: string
+          release_date:
+            type: string
+          director:
+            type: array
+            items:
+              type: string
+          producer:
+            type: array
+            items:
+              type: string
+          characters:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+
+  - type: DeclarativeStream
+    name: characters
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://lotrapi.co/api/v1/characters"
+        http_method: GET
+        request_headers: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ response.links.next is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          realm:
+            type: string
+          height:
+            type: string
+          hair_color:
+            type: string
+          eye_color:
+            type: string
+          date_of_birth:
+            type: string
+          date_of_death:
+            type: string
+          gender:
+            type: string
+          species:
+            type: string
+          race:
+            type: string
+          group:
+            type: string
+          weapons:
+            type: array
+            items:
+              type: string
+          languages:
+            type: array
+            items:
+              type: string
+          films:
+            type: array
+            items:
+              type: string
+          books:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+
+  - type: DeclarativeStream
+    name: species
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://lotrapi.co/api/v1/species"
+        http_method: GET
+        request_headers: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ response.links.next is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          characters:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+
+  - type: DeclarativeStream
+    name: races
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://lotrapi.co/api/v1/races"
+        http_method: GET
+        request_headers: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ response.links.next is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          characters:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+
+  - type: DeclarativeStream
+    name: realms
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://lotrapi.co/api/v1/realms"
+        http_method: GET
+        request_headers: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ response.links.next is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          capital:
+            type: string
+          founded_date:
+            type: string
+          type:
+            type: string
+          location:
+            type: string
+          inhabitants:
+            type: array
+            items:
+              type: string
+          characters:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+
+  - type: DeclarativeStream
+    name: groups
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: "https://lotrapi.co/api/v1/groups"
+        http_method: GET
+        request_headers: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ response.links.next is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          characters:
+            type: array
+            items:
+              type: string
+          url:
+            type: string
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    books: false
+    films: false
+    characters: false
+    species: false
+    races: false
+    realms: false
+    groups: false
