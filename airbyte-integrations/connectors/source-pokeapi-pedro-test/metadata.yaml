@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "pokeapi.co"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-pokeapi-pedro-test
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: edfce80f-bdb7-45af-a0c4-21f8881221ec
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-pokeapi-pedro-test
+  githubIssueLabel: source-pokeapi-pedro-test
+  icon: icon.svg
+  license: ELv2
+  name: PokeAPI
+  releaseDate: 2025-08-08
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi-pedro-test
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
