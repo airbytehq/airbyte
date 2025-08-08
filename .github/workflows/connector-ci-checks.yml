@@ -158,7 +158,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         if: matrix.connector
         with:
-          gradle-version: wrapper
+          gradle-version: '8.14'
 
       # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
       - name: Set up Python (For Airbyte-CI)
