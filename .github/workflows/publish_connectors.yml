@@ -123,29 +123,29 @@ jobs:
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
 
-      - name: Publish connectors [On merge to master]
-        # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
-        id: publish-connectors-master
-        if: github.event_name == 'push'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --name ${{ matrix.connector }} publish --main-release"
-          python_registry_token: ${{ secrets.PYPI_TOKEN }}
-          max_attempts: 2
-          retry_wait_seconds: 600 # 10 minutes
+      # - name: Publish connectors [On merge to master]
+      #   # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
+      #   id: publish-connectors-master
+      #   if: github.event_name == 'push'
+      #   uses: ./.github/actions/run-airbyte-ci
+      #   with:
+      #     context: "master"
+      #     dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
+      #     docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      #     docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      #     gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      #     sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+      #     slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+      #     spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+      #     s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+      #     s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+      #     subcommand: "connectors --name ${{ matrix.connector }} publish --main-release"
+      #     python_registry_token: ${{ secrets.PYPI_TOKEN }}
+      #     max_attempts: 2
+      #     retry_wait_seconds: 600 # 10 minutes
 
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
@@ -155,28 +155,28 @@ jobs:
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
 
-      - name: Publish connectors [manual]
-        id: publish-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --name ${{ matrix.connector }} publish ${{ inputs.publish-options }}"
-          python_registry_token: ${{ secrets.PYPI_TOKEN }}
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
-          max_attempts: 2
+      # - name: Publish connectors [manual]
+      #   id: publish-connectors-manual
+      #   if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+      #   uses: ./.github/actions/run-airbyte-ci
+      #   with:
+      #     context: "manual"
+      #     dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
+      #     docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      #     docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      #     gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      #     sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+      #     slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+      #     spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+      #     s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+      #     s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+      #     subcommand: "connectors --name ${{ matrix.connector }} publish ${{ inputs.publish-options }}"
+      #     python_registry_token: ${{ secrets.PYPI_TOKEN }}
+      #     airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
+      #     max_attempts: 2
 
       - name: Upload connector metadata
         id: publish-connector-metadata
