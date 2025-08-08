@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.state
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
+/** A state generally refers to a single partition but can refer to many (namely, in CDC) */
 data class StateKey(
     val id: Long,
     val partitionIds: List<String>,
@@ -16,6 +17,7 @@ data class StateKey(
     }
 }
 
+/** A record is always associated with a single partition. */
 data class PartitionKey(
     val id: String,
 )

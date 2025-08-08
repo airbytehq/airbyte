@@ -8,10 +8,13 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.lifecycle.DestinationLifecycle
 import io.github.oshai.kotlinlogging.KotlinLogging
 
+// import io.micronaut.context.annotation.Primary
+// import io.micronaut.context.annotation.Requires
+// import jakarta.inject.Singleton
+
 // @Primary
 // @Singleton
 // @Requires(property = Operation.PROPERTY, value = "write")
-// @Replaces(WriteOperation::class)
 class WriteOperationV2(
     private val d: DestinationLifecycle,
 ) : Operation {
