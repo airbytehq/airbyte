@@ -32,6 +32,7 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: acceptanceTests
     - suite: unitTests
     - suite: integrationTests
 metadataSpecVersion: "1.0"
