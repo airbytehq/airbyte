@@ -104,6 +104,7 @@ gcloud_activate_service_account "$METADATA_SERVICE_GCS_CREDENTIALS"
 gsutil cp "$sbom_extension" "gs://$metadata_bucket/sbom/$docker_repository/$docker_tag.$sbom_extension"
 
 # Upload the metadata
+# `metadata_service upload` skips the upload if the metadata already exists in GCS.
 echo '--- UPLOADING METADATA ---'
 if test "$publish_mode" = "main-release"; then
   metadata_upload_prerelease_flag=''

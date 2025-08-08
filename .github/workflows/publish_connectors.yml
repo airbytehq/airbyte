@@ -103,6 +103,11 @@ jobs:
         with:
           version: 1.8.5
 
+      # We're intentionally not using the `google-github-actions/auth` action.
+      # The upload-connector-metadata step runs a script which handles auth manually.
+      # This is because we're writing files to multiple buckets, using different credentials
+      # for each bucket.
+      # (it's unclear whether that's actually necessary)
       - name: Install gcloud
         # v2.1.5
         uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
@@ -179,7 +184,7 @@ jobs:
       #     max_attempts: 2
 
       - name: Upload connector metadata
-        id: publish-connector-metadata
+        id: upload-connector-metadata
         shell: bash
         run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }}
         env:
