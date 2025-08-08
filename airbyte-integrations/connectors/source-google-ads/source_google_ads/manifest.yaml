@@ -40,7 +40,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+    url_base: "https://googleads.googleapis.com/v20/"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -204,7 +204,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+          url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -242,6 +242,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
+          url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -796,6 +797,7 @@ definitions:
             $ref: "#/schemas"
         authenticator:
           $ref: "#/definitions/authenticator"
+        url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
