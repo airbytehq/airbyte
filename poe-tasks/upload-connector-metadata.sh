@@ -67,7 +67,7 @@ run_connector_spec() {
   # * then we use `fromjson?` to filter for valid JSON messages
   # * and then we select any spec message (i.e. {"type": "SPEC", "spec": {...}})
   # * and then we extract just the `spec` field.
-  docker run --env $deployment_mode "$full_docker_image" spec | jq --raw-input --compact-output 'fromjson? | select(.type == "SPEC").spec' > $output_file
+  docker run --env DEPLOYMENT_MODE=$deployment_mode "$full_docker_image" spec | jq --raw-input --compact-output 'fromjson? | select(.type == "SPEC").spec' > $output_file
 
   # Verify that we had exactly one spec message.
   # Depending on the platform, `wc -l` may return a right-padded string like "   1".
