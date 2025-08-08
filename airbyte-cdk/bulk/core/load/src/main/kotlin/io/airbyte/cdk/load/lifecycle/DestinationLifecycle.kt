@@ -28,7 +28,7 @@ class DestinationLifecycle(
 
         // Create prepare individual streams for the data ingestion. E.g create tables and propagate
         // the schema updates
-        val streamLoaders = initializeIndividualStream()
+        val streamLoaders = initializeIndividualStreams()
 
         // Move data
         runBlocking { pipeline.run() }
@@ -45,7 +45,7 @@ class DestinationLifecycle(
         }
     }
 
-    private fun initializeIndividualStream(): List<StreamLoader> {
+    private fun initializeIndividualStreams(): List<StreamLoader> {
         return runBlocking {
             val result = mutableListOf<StreamLoader>()
             destinationCatalog.streams
