@@ -8,7 +8,7 @@ on:
         required: false
         type: string
   schedule:
-    - cron: '0 */2 * * *'  # Run every 2 hours
+    - cron: '0 * * * *'  # Run every hour
 
 permissions:
   contents: read
