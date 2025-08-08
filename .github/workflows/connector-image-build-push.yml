@@ -201,13 +201,20 @@ jobs:
               echo "✅ Image does not exist on Docker Hub"
               IMAGE_EXISTS="false"
               DO_BUILD="true"
-              DO_PUBLISH="${{ inputs.dry-run != 'true' }}"
+              DO_PUBLISH="true"
               ;;
             *)
               echo "⚠️ Unable to determine if image exists (HTTP $STATUS)... Aborting to be safe"
               exit 1
               ;;
           esac
+
+          # If dry-run is enabled, set build and publish decisions accordingly
+          if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+            echo "🔄 Dry run mode enabled - will build but not push"
+            DO_BUILD="true"
+            DO_PUBLISH="false"
+          fi
 
           # If force-publish is enabled, override decisions
           if [[ "${{ inputs.force-publish }}" == "true" ]]; then

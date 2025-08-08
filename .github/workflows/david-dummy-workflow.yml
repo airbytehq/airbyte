@@ -10,7 +10,7 @@ jobs:
     uses: ./.github/workflows/connector-image-build-push.yml
     with:
       connector-name: "source-pokeapi"
-      registry: "docker.io/airbyte"
+      registry: "ghcr.io/airbytehq"
       # tag-override: "0.3.34-dev.dc3cebbb36"
       dry-run: true
     secrets: inherit
