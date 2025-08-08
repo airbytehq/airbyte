@@ -19,12 +19,12 @@ class ParseStage(
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val raw = input.raw!!
         val fields = munger.transformForDest(raw)
+
         return input.apply {
             munged =
                 RecordDTO(
                     fields = fields,
-                    //                stateId = raw.checkpointId!!.value,
-                    stateId = "dummy",
+                    partitionKey = input.partitionKey!!,
                     sizeBytes = raw.serializedSizeBytes,
                     emittedAtMs = raw.rawData.emittedAtMs,
                 )

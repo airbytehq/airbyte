@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 
 @Singleton
@@ -20,10 +21,12 @@ class DataFlowPipeline(
     @Named("aggregate") private val aggregate: AggregateStage,
     @Named("flush") private val flush: DataFlowStage,
     @Named("state") private val state: DataFlowStage,
+    private val startHandler: PipelineStartHandler,
     private val completionHandler: PipelineCompletionHandler,
 ) {
     suspend fun run() {
         input
+            .onStart { startHandler.run() }
             .map(parse::apply)
             .transform { aggregate.apply(it, this) }
             .buffer(capacity = 5)
