@@ -27,6 +27,7 @@ RUN groupadd --gid 1000 airbyte && \
     chown -R airbyte:airbyte /tmp
 
 # Set environment variables that the Java connector bootstrap script will expect
+# dummy change (revert me)
 ENV AIRBYTE_SPEC_CMD="/airbyte/javabase.sh --spec"
 ENV AIRBYTE_CHECK_CMD="/airbyte/javabase.sh --check"
 ENV AIRBYTE_DISCOVER_CMD="/airbyte/javabase.sh --discover"
