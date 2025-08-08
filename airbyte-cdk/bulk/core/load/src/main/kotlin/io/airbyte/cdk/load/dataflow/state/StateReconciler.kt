@@ -24,12 +24,13 @@ class StateReconciler(
     private lateinit var job: Job
 
     fun run() {
-        job = CoroutineScope(Dispatchers.IO).launch {
-            while (true) {
-                delay(iterationDuration)
-                flushCompleteStates()
+        job =
+            CoroutineScope(Dispatchers.IO).launch {
+                while (true) {
+                    delay(iterationDuration)
+                    flushCompleteStates()
+                }
             }
-        }
     }
 
     fun flushCompleteStates() {
