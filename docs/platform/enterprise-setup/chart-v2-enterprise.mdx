@@ -1,6 +1,5 @@
 ---
 products: oss-enterprise
-draft: true
 ---
 
 import Tabs from '@theme/Tabs';
@@ -40,6 +39,12 @@ The following versions of Airbyte can't use Helm chart V2:
 
 - Airbyte versions installed and managed with abctl
 
+## Schedule time with Airbyte
+
+:::important "It's dangerous to go alone! Take this."
+Engage your Airbyte Solution Architect for help with this migration. We caution against doing it alone. Airbyte can provide guidance to help you manage uncommon customizations and verify the migration is successful.
+:::
+
 ## How to upgrade
 
 In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you complete the following steps.
@@ -56,9 +61,13 @@ In most cases, upgrading is straightforward. To upgrade to Helm chart V2, you co
 
 Airbyte's solutions team guides Enterprise customers to configure your own external database and external storage, as explained in the [implementation guide](implementation-guide). Verify that you've set these up, but you almost certainly have.
 
-### Prepare for a fresh deployment of Airbyte
+### Prepare a new namespace for Airbyte
 
-When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different customers have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
+When moving to Helm chart V2, deploy Airbyte with a new namespace and use a fresh values and secrets file. It is possible to do a straight upgrade, but different Airbyte users have different and sometimes complex configurations that could produce unique and unexpected situations during the upgrade. By doing a fresh install, you create a separate environment that's easier to troubleshoot if something in your values or secrets files acts unexpectedly.
+
+```bash
+kubectl create namespace airbyte-v2
+```
 
 ### Add and index the repo
 
@@ -225,7 +234,7 @@ postgresql:
 
 <details>
 <summary>
-Add external logging
+Add external log storage
 </summary>
 
 ```yaml title="values.yaml"
@@ -236,7 +245,6 @@ global:
 
     bucket:
       log: airbyte-bucket
-      auditLogging: airbyte-bucket # Version 1.7 or later, only if you're using audit logging
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
       activityPayload: airbyte-bucket
@@ -405,16 +413,10 @@ workloadLauncher:
 
 ### Deploy Airbyte {#deploy-airbyte}
 
-Before you deploy, validate your values.yaml file.
-
-```bash
-helm template airbyte-enterprise airbyte-v2/airbyte --values ./values.yaml --version 2.0.3 > /dev/null
-```
-
 Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally, in V1, the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
 
 ```bash
-helm upgrade airbyte-enterprise airbyte-v2/airbyte \
+helm install airbyte-enterprise airbyte-v2/airbyte \
   --namespace airbyte-v2 \       # Target Kubernetes namespace
   --values ./values.yaml \       # Custom configuration values
   --version 2.0.3 \              # Helm chart version to use
