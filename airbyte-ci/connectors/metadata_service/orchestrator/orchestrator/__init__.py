@@ -31,7 +31,6 @@ from orchestrator.config import (
     REPORT_FOLDER,
 )
 from orchestrator.jobs.connector_test_report import generate_connector_test_summary_reports, generate_nightly_reports
-from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
@@ -236,7 +235,6 @@ JOBS = [
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
     remove_latest_metadata_partitions,
-    generate_stale_gcs_latest_metadata_file,
 ]
 
 """
