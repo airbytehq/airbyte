@@ -88,11 +88,7 @@ def test_write(mock_makedirs, mock_create_engine, monkeypatch) -> None:
     temp_dir = tempfile.mkdtemp()
     config = {"destination_path": f"{temp_dir}/testdb.db", "schema": CONFIG_DEFAULT_SCHEMA}
     catalog = ConfiguredAirbyteCatalog(streams=[])
-    messages = [
-        AirbyteMessage(
-            type=Type.STATE, record=None, state=AirbyteStateMessage(data={"state": "1"})
-        )
-    ]
+    messages = [AirbyteMessage(type=Type.STATE, record=None, state=AirbyteStateMessage(data={"state": "1"}))]
     destination = DestinationMotherDuck()
     result = list(destination.write(config, catalog, messages))
     assert len(result) == 1
