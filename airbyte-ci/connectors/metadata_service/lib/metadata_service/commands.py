@@ -8,7 +8,7 @@ import pathlib
 import click
 from pydantic import ValidationError
 
-from metadata_service.constants import METADATA_FILE_NAME
+from metadata_service.constants import METADATA_FILE_NAME, VALID_REGISTRIES
 from metadata_service.gcs_upload import (
     MetadataDeleteInfo,
     MetadataUploadInfo,
@@ -16,6 +16,7 @@ from metadata_service.gcs_upload import (
     promote_release_candidate_in_gcs,
     upload_metadata_to_gcs,
 )
+from metadata_service.registry import generate_and_persist_registry
 from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 
@@ -32,6 +33,7 @@ def setup_logging(debug: bool = False):
     # Suppress logging from urllib3 and slack_sdk
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("slack_sdk.web.base_client").setLevel(logging.WARNING)
+    logging.getLogger("google.resumable_media").setLevel(logging.WARNING)
 
 
 logger = logging.getLogger(__name__)
@@ -152,3 +154,30 @@ def promote_release_candidate(connector_docker_repository: str, connector_versio
     except (FileNotFoundError, ValueError) as e:
         click.secho(f"The release candidate could not be promoted: {str(e)}", fg="red")
         exit(1)
+
+
+@metadata_service.command(help="Generate the cloud registry and persist it to GCS.")
+@click.argument("bucket-name", type=click.STRING, required=True)
+@click.argument("registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
+def generate_registry(bucket_name: str, registry_type: str):
+    click.secho("Generating cloud registry and persisting to GCS...", fg="green")
+    logger.info(f"Starting {registry_type} registry generation and upload process.")
+    try:
+        persisted, error_message = generate_and_persist_registry(bucket_name, registry_type)
+        if persisted:
+            click.secho(f"Successfully generated and persisted {registry_type} registry to GCS.", fg="green")
+            logger.info(f"Successfully generated and persisted {registry_type} registry to GCS.")
+        else:
+            click.secho(f"Error generating {registry_type} registry: {error_message}", fg="red")
+            logger.error(f"Error generating {registry_type} registry: {error_message}")
+            exit(1)
+    except Exception as e:
+        click.secho(f"FATAL ERROR: An error occurred when generating and persisting the {registry_type} registry: {str(e)}", fg="red")
+        logger.error(f"FATAL ERROR: An error occurred when generating and persisting the {registry_type} registry: {str(e)}")
+        exit(1)
+
+
+@metadata_service.command(help="Generate the specs secrets mask and persist it to GCS.")
+@click.argument("bucket-name", type=click.STRING)
+def generate_specs_secrets_mask(bucket_name: str):
+    pass
