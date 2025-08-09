@@ -44,6 +44,8 @@ else
 fi
 '''
 test-integration-tests = "airbyte-cdk connector test ${POE_PWD}"
+# Identical to test-integration-tests except excludes tests marked with @pytest.mark.requires_creds
+test-integration-tests-no-creds = "airbyte-cdk connector test ${POE_PWD} --pytest-arg='-m' --pytest-arg='not requires_creds'"
 format-check = "echo 'No format check step for this connector.'"
 lint-check = "echo 'No lint check step for this connector."
 
