@@ -1,0 +1,11 @@
+connector_image: airbyte/destination-deepset:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "destination_deepset/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "sample_files/invalid_config.json"
+        status: "failed"

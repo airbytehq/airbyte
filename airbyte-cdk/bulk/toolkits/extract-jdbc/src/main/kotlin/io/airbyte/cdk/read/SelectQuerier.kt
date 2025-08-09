@@ -1,11 +1,14 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.NullCodec
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
@@ -22,12 +25,24 @@ interface SelectQuerier {
 
     data class Parameters(
         /** When set, the [ObjectNode] in the [Result] is reused; take care with this! */
-        val reuseResultObject: Boolean = false,
-        /** JDBC fetchSize value. */
-        val fetchSize: Int? = null,
-    )
+        val reuseResultObject: Boolean,
+        /** JDBC [PreparedStatement] fetchSize value. */
+        val statementFetchSize: Int?,
+        /** JDBC [ResultSet] fetchSize value. */
+        val resultSetFetchSize: Int?,
+    ) {
+        constructor(
+            reuseResultObject: Boolean = false,
+            fetchSize: Int? = null
+        ) : this(reuseResultObject, fetchSize, fetchSize)
+    }
 
-    interface Result : Iterator<ObjectNode>, AutoCloseable
+    interface Result : Iterator<ResultRow>, AutoCloseable
+
+    interface ResultRow {
+        val data: NativeRecordPayload
+        val changes: Map<Field, FieldValueChange>
+    }
 }
 
 /** Default implementation of [SelectQuerier]. */
@@ -38,35 +53,29 @@ class JdbcSelectQuerier(
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): SelectQuerier.Result = Result(q, parameters)
+    ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters)
 
-    private inner class Result(
+    data class ResultRow(
+        override val data: NativeRecordPayload = mutableMapOf(),
+        override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
+    ) : SelectQuerier.ResultRow
+
+    class Result(
+        val jdbcConnectionFactory: JdbcConnectionFactory,
         val q: SelectQuery,
-        parameters: SelectQuerier.Parameters,
+        val parameters: SelectQuerier.Parameters,
     ) : SelectQuerier.Result {
         private val log = KotlinLogging.logger {}
 
         var conn: Connection? = null
         var stmt: PreparedStatement? = null
         var rs: ResultSet? = null
-        val reusable: ObjectNode? = Jsons.objectNode().takeIf { parameters.reuseResultObject }
+        val reusable: ResultRow? = ResultRow().takeIf { parameters.reuseResultObject }
 
         init {
             log.info { "Querying ${q.sql}" }
             try {
-                conn = jdbcConnectionFactory.get()
-                stmt = conn!!.prepareStatement(q.sql)
-                parameters.fetchSize?.let { fetchSize: Int ->
-                    log.info { "Setting fetchSize to $fetchSize." }
-                    stmt!!.fetchSize = fetchSize
-                }
-                var paramIdx = 1
-                for (binding in q.bindings) {
-                    log.info { "Setting parameter #$paramIdx to $binding." }
-                    binding.type.set(stmt!!, paramIdx, binding.value)
-                    paramIdx++
-                }
-                rs = stmt!!.executeQuery()
+                initQueryExecution()
             } catch (e: Throwable) {
                 close()
                 throw e
@@ -76,6 +85,28 @@ class JdbcSelectQuerier(
         var isReady = false
         var hasNext = false
         var hasLoggedResultsReceived = false
+        var hasLoggedException = false
+
+        /** Initializes a connection and readies the resultset. */
+        fun initQueryExecution() {
+            conn = jdbcConnectionFactory.get()
+            stmt = conn!!.prepareStatement(q.sql)
+            parameters.statementFetchSize?.let { fetchSize: Int ->
+                log.info { "Setting Statement fetchSize to $fetchSize." }
+                stmt!!.fetchSize = fetchSize
+            }
+            var paramIdx = 1
+            for (binding in q.bindings) {
+                log.info { "Setting parameter #$paramIdx to $binding." }
+                binding.type.set(stmt!!, paramIdx, binding.value)
+                paramIdx++
+            }
+            rs = stmt!!.executeQuery()
+            parameters.resultSetFetchSize?.let { fetchSize: Int ->
+                log.info { "Setting ResultSet fetchSize to $fetchSize." }
+                rs!!.fetchSize = fetchSize
+            }
+        }
 
         override fun hasNext(): Boolean {
             // hasNext() is idempotent
@@ -93,22 +124,44 @@ class JdbcSelectQuerier(
             return hasNext
         }
 
-        override fun next(): ObjectNode {
+        override fun next(): SelectQuerier.ResultRow {
             // Ensure that the current row in the ResultSet hasn't been read yet; advance if
             // necessary.
             if (!hasNext()) throw NoSuchElementException()
             // Read the current row in the ResultSet
-            val record: ObjectNode = reusable ?: Jsons.objectNode()
+            val resultRow: ResultRow = reusable ?: ResultRow()
+            resultRow.changes.clear()
             var colIdx = 1
+
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
-                record.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+                try {
+                    @Suppress("UNCHECKED_CAST")
+                    resultRow.data[column.id] =
+                        FieldValueEncoder(
+                            jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                            jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
+                        )
+                } catch (e: Exception) {
+                    resultRow.data[column.id] =
+                        FieldValueEncoder(
+                            null,
+                            NullCodec // Use NullCodec for null values
+                        ) // Use NullCodec for null values
+                    if (!hasLoggedException) {
+                        log.warn(e) { "Error deserializing value in column $column." }
+                        hasLoggedException = true
+                    } else {
+                        log.debug(e) { "Error deserializing value in column $column." }
+                    }
+                    resultRow.changes.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                }
                 colIdx++
             }
             // Flag that the current row has been read before returning.
             isReady = false
-            return record
+            return resultRow
         }
 
         override fun close() {

@@ -19,6 +19,7 @@ const plugin = () => {
     if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
+
     const latestPythonCdkVersion = await getLatestPythonCDKVersion();
 
     if (!registryEntry) return;
@@ -28,28 +29,27 @@ const plugin = () => {
     visit(ast, "heading", (node) => {
       if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
-        const originalId = node.data.hProperties.id;
 
         const rawCDKVersion = getFromPaths(
           registryEntry,
-          "packageInfo_[oss|cloud].cdk_version"
+          "packageInfo_[oss|cloud].cdk_version",
         );
         const syncSuccessRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate"
+          "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate",
         );
         const usageRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].usage"
+          "generated_[oss|cloud].metrics.[all|cloud|oss].usage",
         );
         const lastUpdated = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].source_file_info.metadata_last_modified"
+          "generated_[oss|cloud].source_file_info.metadata_last_modified",
         );
 
         const { version, isLatest, url } = parseCDKVersion(
           rawCDKVersion,
-          latestPythonCdkVersion
+          latestPythonCdkVersion,
         );
 
         const attrDict = {
@@ -61,13 +61,13 @@ const plugin = () => {
           github_url: registryEntry.github_url,
           issue_url: registryEntry.issue_url,
           originalTitle,
-          originalId,
           cdkVersion: version,
           isLatestCDKString: boolToBoolString(isLatest),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,
           lastUpdated,
+          definitionId: registryEntry.definitionId,
         };
 
         firstHeading = false;

@@ -8,6 +8,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -111,7 +112,6 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 # Source
 class SourceSurveycto(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
-
         form_ids = config["form_id"]
 
         try:

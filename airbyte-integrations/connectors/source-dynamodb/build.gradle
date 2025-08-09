@@ -1,5 +1,7 @@
 plugins {
     id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {
@@ -17,6 +19,7 @@ dependencies {
     implementation platform('software.amazon.awssdk:bom:2.18.1')
     // https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb
     implementation 'software.amazon.awssdk:dynamodb'
+    implementation 'software.amazon.awssdk:sts'
 
     testImplementation 'org.skyscreamer:jsonassert:1.5.1'
     testImplementation "org.assertj:assertj-core:3.23.1"

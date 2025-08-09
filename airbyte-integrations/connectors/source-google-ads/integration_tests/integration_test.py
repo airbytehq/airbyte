@@ -6,9 +6,10 @@ import json
 from pathlib import Path
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow
 from source_google_ads.source import SourceGoogleAds
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture(scope="module")
@@ -55,23 +56,6 @@ def create_google_ads_row_from_dict(data: dict) -> GoogleAdsRow:
 @pytest.mark.parametrize(
     "stream_fixture_name, expected_records",
     [
-        (
-            "customer_label",
-            [
-                {
-                    "customer_label.resource_name": "123",
-                    "customer_label.customer": "customer",
-                    "customer.id": 123,
-                    "customer_label.label": "customer_label",
-                },
-                {
-                    "customer_label.resource_name": "1234",
-                    "customer_label.customer": "customer",
-                    "customer.id": 123,
-                    "customer_label.label": "customer_label1",
-                },
-            ],
-        ),
         (
             "topic_view",
             [

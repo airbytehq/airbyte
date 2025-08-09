@@ -1,325 +1,300 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.state
 
-import com.google.common.collect.Range
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.SimpleBatch
-import java.util.stream.Stream
+import io.airbyte.cdk.load.message.BatchState
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
-import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 class StreamManagerTest {
-    @Test
-    fun testCountRecordsAndCheckpoint() {
-        val manager1 = DefaultStreamManager(stream1)
-        val manager2 = DefaultStreamManager(stream2)
 
-        // Incrementing once yields (n, n)
-        repeat(10) { manager1.countRecordIn() }
-        val (index, count) = manager1.markCheckpoint()
-
-        Assertions.assertEquals(10, index)
-        Assertions.assertEquals(10, count)
-
-        // Incrementing a second time yields (n + m, m)
-        repeat(5) { manager1.countRecordIn() }
-        val (index2, count2) = manager1.markCheckpoint()
-
-        Assertions.assertEquals(15, index2)
-        Assertions.assertEquals(5, count2)
-
-        // Never incrementing yields (0, 0)
-        val (index3, count3) = manager2.markCheckpoint()
-
-        Assertions.assertEquals(0, index3)
-        Assertions.assertEquals(0, count3)
-
-        // Incrementing twice in a row yields (n + m + 0, 0)
-        val (index4, count4) = manager1.markCheckpoint()
-
-        Assertions.assertEquals(15, index4)
-        Assertions.assertEquals(0, count4)
-    }
+    private fun checkpoint(id: String) = CheckpointId(id)
 
     @Test
-    fun testMarkSucceeded() = runTest {
-        val manager = DefaultStreamManager(stream1)
+    fun `markProcessingSucceeded requires end-of-stream`() = runTest {
+        val manager = StreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
+        val ck = checkpoint("c1")
 
-        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
+        // Start waiting
+        launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
 
-        delay(500)
-        Assertions.assertTrue(channel.tryReceive().isFailure)
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.markSucceeded() }
-        manager.markEndOfStream()
+        repeat(5) { manager.incrementReadCount(ck) }
 
-        manager.markSucceeded()
+        // Cannot mark success before end-of-stream
+        assertThrows<IllegalStateException> { manager.markProcessingSucceeded() }
+
+        // Mark end-of-stream and then success
+        manager.markEndOfStream(true)
+        manager.markProcessingSucceeded()
+
         Assertions.assertTrue(channel.receive())
-
-        Assertions.assertEquals(StreamSucceeded, manager.awaitStreamResult())
+        Assertions.assertEquals(StreamProcessingSucceeded, manager.awaitStreamResult())
     }
 
     @Test
-    fun testMarkFailure() = runTest {
-        val manager = DefaultStreamManager(stream1)
+    fun `markProcessingFailed can happen before end-of-stream`() = runTest {
+        val manager = StreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
+        launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
 
-        delay(500)
-        Assertions.assertTrue(channel.tryReceive().isFailure)
-        manager.markFailed(Exception("test"))
+        manager.markProcessingFailed(Exception("test"))
         Assertions.assertFalse(channel.receive())
-
-        Assertions.assertTrue(manager.awaitStreamResult() is StreamFailed)
+        Assertions.assertTrue(manager.awaitStreamResult() is StreamProcessingFailed)
     }
 
     @Test
-    fun testMarkKilled() = runTest {
-        val manager = DefaultStreamManager(stream1)
-        val channel = Channel<Boolean>(Channel.UNLIMITED)
+    fun `cannot increment after end-of-stream`() {
+        val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
 
-        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
+        manager.incrementReadCount(ck)
+        manager.markEndOfStream(true)
 
-        delay(500)
-        Assertions.assertTrue(channel.tryReceive().isFailure)
-        manager.markKilled(Exception("test"))
-        Assertions.assertFalse(channel.receive())
+        assertThrows<IllegalStateException> { manager.incrementReadCount(ck) }
+        assertThrows<IllegalStateException> { manager.markEndOfStream(true) }
 
-        Assertions.assertTrue(manager.awaitStreamResult() is StreamKilled)
+        // Now success is allowed
+        assertDoesNotThrow { manager.markProcessingSucceeded() }
     }
 
-    class TestUpdateBatchStateProvider : ArgumentsProvider {
-        override fun provideArguments(context: ExtensionContext): Stream<out Arguments> {
-            return listOf(
-                    TestCase(
-                        "Single stream, single batch",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddPersisted(0, 9)),
-                            Pair(stream1, ExpectPersistedUntil(9)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, ExpectPersistedUntil(11, false)),
-                            Pair(stream2, ExpectPersistedUntil(10, false)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddPersisted(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(4)),
-                            Pair(stream1, AddPersisted(5, 9)),
-                            Pair(stream1, ExpectPersistedUntil(9)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 9)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream1, ExpectPersistedUntil(11, false)),
-                            Pair(stream2, ExpectPersistedUntil(10, false)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches, out of order",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddPersisted(5, 9)),
-                            Pair(stream1, ExpectPersistedUntil(10, false)),
-                            Pair(stream1, AddPersisted(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches, complete also persists",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(5, true)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream1, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "Single stream, multiple batches, persist/complete out of order",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(
-                                stream1,
-                                AddComplete(5, 9)
-                            ), // complete a rangeset before the preceding rangeset is persisted
-                            Pair(stream1, AddPersisted(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(10, true)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "multiple streams",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream2, SetRecordCount(20)),
-                            Pair(stream2, AddPersisted(0, 9)),
-                            Pair(stream2, ExpectPersistedUntil(10, true)),
-                            Pair(stream1, ExpectPersistedUntil(10, false)),
-                            Pair(stream2, SetEndOfStream),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, AddPersisted(0, 9)),
-                            Pair(stream1, ExpectPersistedUntil(10)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream2, AddComplete(10, 20)),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream1, AddComplete(0, 9)),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream2, AddComplete(0, 9)),
-                            Pair(stream2, ExpectPersistedUntil(20, true)),
-                            Pair(stream2, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "mingle streams, multiple batches, complete also persists",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream1, ExpectPersistedUntil(5, true)),
-                            Pair(stream2, AddComplete(0, 4)),
-                            Pair(stream2, ExpectPersistedUntil(5, true)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream2, AddComplete(5, 9)),
-                            Pair(stream2, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream2, ExpectComplete(true)),
-                        )
-                    ),
-                    TestCase(
-                        "mingle streams, multiple batches, persist/complete out of order",
-                        listOf(
-                            Pair(stream1, SetRecordCount(10)),
-                            Pair(stream1, AddComplete(5, 9)),
-                            Pair(stream1, ExpectPersistedUntil(10, false)),
-                            Pair(stream2, AddComplete(5, 9)),
-                            Pair(stream2, ExpectPersistedUntil(10, false)),
-                            Pair(stream1, ExpectComplete(false)),
-                            Pair(stream2, ExpectComplete(false)),
-                            Pair(stream1, SetEndOfStream),
-                            Pair(stream1, AddComplete(0, 4)),
-                            Pair(stream2, AddComplete(0, 4)),
-                            Pair(stream2, SetEndOfStream),
-                            Pair(stream1, ExpectComplete(true)),
-                            Pair(stream2, ExpectComplete(true)),
-                        )
-                    ),
-                )
-                .map { Arguments.of(it) }
-                .stream()
-        }
+    @Test
+    fun `persisted counts without rejected records`() {
+        val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
+
+        repeat(10) { manager.incrementReadCount(ck) }
+
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck to CheckpointValue(records = 5, serializedBytes = 5)),
+        )
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck to CheckpointValue(records = 5, serializedBytes = 5)),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
     }
 
-    // TODO: break these out into non-parameterized tests, factor out mixing streams.
-    //  (It's irrelevant if testing at the single manager level.)
-    sealed class TestEvent
-    data class SetRecordCount(val count: Long) : TestEvent()
-    data object SetEndOfStream : TestEvent()
-    data class AddPersisted(val firstIndex: Long, val lastIndex: Long) : TestEvent()
-    data class AddComplete(val firstIndex: Long, val lastIndex: Long) : TestEvent()
-    data class ExpectPersistedUntil(val end: Long, val expectation: Boolean = true) : TestEvent()
-    data class ExpectComplete(val expectation: Boolean = true) : TestEvent()
+    @Test
+    fun `persisted counts with rejected records`() {
+        val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
 
-    data class TestCase(
-        val name: String,
-        val events: List<Pair<DestinationStream, TestEvent>>,
-    )
-    @ParameterizedTest
-    @ArgumentsSource(TestUpdateBatchStateProvider::class)
-    fun testUpdateBatchState(testCase: TestCase) {
-        val managers =
+        repeat(10) { manager.incrementReadCount(ck) }
+
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
             mapOf(
-                stream1.descriptor to DefaultStreamManager(stream1),
-                stream2.descriptor to DefaultStreamManager(stream2)
+                ck to
+                    CheckpointValue(
+                        records = 3,
+                        serializedBytes = 5,
+                        rejectedRecords = 2,
+                    )
+            ),
+        )
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(
+                ck to
+                    CheckpointValue(
+                        records = 4,
+                        serializedBytes = 5,
+                        rejectedRecords = 1,
+                    )
+            ),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
+    }
+
+    @Test
+    fun `persisted counts for multiple checkpoints`() {
+        val manager = StreamManager(stream1)
+        val ck1 = checkpoint("c1")
+        val ck2 = checkpoint("c2")
+
+        repeat(10) { manager.incrementReadCount(ck1) }
+        repeat(15) { manager.incrementReadCount(ck2) }
+
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck2))
+
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck1 to CheckpointValue(10, 10)),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck2))
+
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck2 to CheckpointValue(15, 15)),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck2))
+    }
+
+    @Test
+    fun `persisted counts for multiple checkpoints out of order`() {
+        val manager = StreamManager(stream1)
+        val ck1 = checkpoint("c1")
+        val ck2 = checkpoint("c2")
+
+        repeat(10) { manager.incrementReadCount(ck1) }
+        repeat(15) { manager.incrementReadCount(ck2) }
+
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck2))
+
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck2 to CheckpointValue(15, 15)),
+        )
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck2))
+
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck1 to CheckpointValue(10, 10)),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck2))
+    }
+
+    @Test
+    fun `completion implies persistence`() {
+        val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
+
+        repeat(10) { manager.incrementReadCount(ck) }
+
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
+        manager.incrementCheckpointCounts(
+            BatchState.COMPLETE,
+            mapOf(ck to CheckpointValue(4, 4)),
+        )
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
+        manager.incrementCheckpointCounts(
+            BatchState.COMPLETE,
+            mapOf(ck to CheckpointValue(6, 6)),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
+
+        // Additional persisted counts do not break anything
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck to CheckpointValue(10, 10)),
+        )
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
+    }
+
+    @Test
+    fun `batch processing completion requires end-of-stream and complete counts`() {
+        val cases =
+            listOf(
+                listOf("1", "2", "end"),
+                listOf("1", "end", "2"),
+                listOf("end", "1", "2"),
+                listOf("end", "2", "1"),
+                listOf("2", "1", "end"),
+                listOf("2", "end", "1"),
             )
-        testCase.events.forEach { (stream, event) ->
-            val manager = managers[stream.descriptor]!!
-            when (event) {
-                is SetRecordCount -> repeat(event.count.toInt()) { manager.countRecordIn() }
-                is SetEndOfStream -> manager.markEndOfStream()
-                is AddPersisted ->
-                    manager.updateBatchState(
-                        BatchEnvelope(
-                            SimpleBatch(Batch.State.PERSISTED),
-                            Range.closed(event.firstIndex, event.lastIndex)
+
+        cases.forEach { steps ->
+            val manager = StreamManager(stream1)
+            val ck1 = checkpoint("c1")
+            val ck2 = checkpoint("c2")
+
+            repeat(10) { manager.incrementReadCount(ck1) }
+            repeat(20) { manager.incrementReadCount(ck2) }
+
+            steps.forEachIndexed { index, step ->
+                when (step) {
+                    "1" ->
+                        manager.incrementCheckpointCounts(
+                            BatchState.COMPLETE,
+                            mapOf(
+                                ck1 to
+                                    CheckpointValue(
+                                        records = 9,
+                                        serializedBytes = 10,
+                                        rejectedRecords = 1,
+                                    )
+                            ),
                         )
-                    )
-                is AddComplete ->
-                    manager.updateBatchState(
-                        BatchEnvelope(
-                            SimpleBatch(Batch.State.COMPLETE),
-                            Range.closed(event.firstIndex, event.lastIndex)
+                    "2" ->
+                        manager.incrementCheckpointCounts(
+                            BatchState.COMPLETE,
+                            mapOf(ck2 to CheckpointValue(20, 20)),
                         )
+                    "end" -> manager.markEndOfStream(true)
+                }
+                if (index < 2) {
+                    Assertions.assertFalse(
+                        manager.isBatchProcessingCompleteForCheckpoints(),
+                        "steps: $steps; step: $index"
                     )
-                is ExpectPersistedUntil ->
-                    Assertions.assertEquals(
-                        event.expectation,
-                        manager.areRecordsPersistedUntil(event.end),
-                        "$stream: ${testCase.name}: ${event.end}"
+                } else {
+                    Assertions.assertTrue(
+                        manager.isBatchProcessingCompleteForCheckpoints(),
+                        "steps: $steps; final step"
                     )
-                is ExpectComplete ->
-                    Assertions.assertEquals(
-                        event.expectation,
-                        manager.isBatchProcessingComplete(),
-                        "$stream: ${testCase.name}"
-                    )
+                }
             }
         }
     }
 
     @Test
-    fun testCannotUpdateOrCloseReadClosedStream() {
-        val manager = DefaultStreamManager(stream1)
+    fun `committedCount returns max across states`() {
+        val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
 
-        // Can't mark success before end-of-stream
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.markSucceeded() }
+        repeat(10) { manager.incrementReadCount(ck) }
 
-        manager.countRecordIn()
-        manager.markEndOfStream()
+        manager.incrementCheckpointCounts(
+            BatchState.PERSISTED,
+            mapOf(ck to CheckpointValue(records = 4, serializedBytes = 100, rejectedRecords = 1)),
+        )
+        manager.incrementCheckpointCounts(
+            BatchState.COMPLETE,
+            mapOf(ck to CheckpointValue(records = 5, serializedBytes = 90, rejectedRecords = 2)),
+        )
 
-        // Can't update after end-of-stream
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.countRecordIn() }
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.markEndOfStream() }
+        val committed = manager.committedCount(ck)
+        Assertions.assertEquals(5, committed.records)
+        Assertions.assertEquals(100, committed.serializedBytes)
+        Assertions.assertEquals(2, committed.rejectedRecords)
+    }
 
-        // Can close now
-        Assertions.assertDoesNotThrow(manager::markSucceeded)
+    @Test
+    fun `hadNonzeroRecords reflects read state`() {
+        val m1 = StreamManager(stream1)
+        val ck1 = checkpoint("c1")
+        Assertions.assertFalse(m1.hadNonzeroRecords())
+        m1.incrementReadCount(ck1)
+        Assertions.assertTrue(m1.hadNonzeroRecords())
+    }
+
+    @Test
+    fun `areRecordsPersistedForCheckpoint does not throw`() {
+        val manager = StreamManager(stream2)
+        val ck = checkpoint("c-socket")
+        // No read counts set, but should not throw
+        Assertions.assertDoesNotThrow { manager.areRecordsPersistedForCheckpoint(ck) }
     }
 }

@@ -4,16 +4,38 @@
 
 package io.airbyte.cdk.load.data.icerberg.parquet
 
-import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.Meta
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.NestedField
-import org.junit.jupiter.api.Assertions.*
+import org.apache.iceberg.types.Types.StructType
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -69,21 +91,15 @@ class AirbyteValueToIcebergRecordTest {
 
     @Test
     fun `convert throws exception for DateValue`() {
-        assertThrows<IllegalArgumentException> {
-            converter.convert(DateValue("2024-11-18"), Types.DateType.get())
-        }
+        val result =
+            converter.convert(DateValue(LocalDate.parse("2024-11-18")), Types.DateType.get())
+        assertEquals(LocalDate.parse("2024-11-18"), result)
     }
 
     @Test
     fun `convert handles IntegerValue`() {
         val result = converter.convert(IntegerValue(123L), Types.LongType.get())
         assertEquals(123L, result)
-    }
-
-    @Test
-    fun `convert handles IntValue`() {
-        val result = converter.convert(IntValue(42), Types.IntegerType.get())
-        assertEquals(42, result)
     }
 
     @Test
@@ -106,27 +122,44 @@ class AirbyteValueToIcebergRecordTest {
     }
 
     @Test
-    fun `convert throws exception for TimeValue`() {
-        assertThrows<IllegalArgumentException> {
-            converter.convert(TimeValue("12:34:56"), Types.TimeType.get())
-        }
+    fun `convert handles TimeNtzValue`() {
+        val result =
+            converter.convert(
+                TimeWithoutTimezoneValue(LocalTime.parse("12:34:56")),
+                Types.TimeType.get()
+            )
+        assertEquals(LocalTime.parse("12:34:56"), result)
     }
 
     @Test
-    fun `convert throws exception for TimestampValue`() {
-        assertThrows<IllegalArgumentException> {
+    fun `convert handles TimeTzValue`() {
+        val result =
             converter.convert(
-                TimestampValue("2024-11-18T12:34:56Z"),
+                TimeWithTimezoneValue(OffsetTime.parse("12:34:56Z")),
+                Types.TimeType.get()
+            )
+        // Note LocalTime here. Iceberg+Parquet doesn't have a dedicated timetz type.
+        assertEquals(LocalTime.parse("12:34:56"), result)
+    }
+
+    @Test
+    fun `convert handles TimestampNtzValue`() {
+        val result =
+            converter.convert(
+                TimestampWithoutTimezoneValue(LocalDateTime.parse("2024-11-18T12:34:56")),
+                Types.TimestampType.withoutZone()
+            )
+        assertEquals(LocalDateTime.parse("2024-11-18T12:34:56"), result)
+    }
+
+    @Test
+    fun `convert handles TimestampTzValue`() {
+        val result =
+            converter.convert(
+                TimestampWithTimezoneValue(OffsetDateTime.parse("2024-11-18T12:34:56Z")),
                 Types.TimestampType.withZone()
             )
-        }
-    }
-
-    @Test
-    fun `convert throws exception for UnknownValue`() {
-        assertThrows<IllegalArgumentException> {
-            converter.convert(UnknownValue(Jsons.emptyObject()), Types.StringType.get())
-        }
+        assertEquals(OffsetDateTime.parse("2024-11-18T12:34:56Z"), result)
     }
 
     @Test
@@ -134,22 +167,98 @@ class AirbyteValueToIcebergRecordTest {
         val schema =
             Schema(
                 NestedField.required(1, "id", Types.LongType.get()),
-                NestedField.optional(2, "name", Types.StringType.get())
+                NestedField.optional(2, "name", Types.StringType.get()),
+                NestedField.required(
+                    3,
+                    "meta",
+                    StructType.of(
+                        NestedField.required(4, "sync_id", Types.IntegerType.get()),
+                        NestedField.required(
+                            5,
+                            "changes",
+                            StructType.of(
+                                NestedField.required(6, "change", Types.StringType.get()),
+                                NestedField.required(7, "reason", Types.StringType.get()),
+                            )
+                        )
+                    )
+                )
             )
         val objectValue =
-            ObjectValue(linkedMapOf("id" to IntegerValue(123L), "name" to StringValue("John Doe")))
+            mapOf(
+                "id" to
+                    EnrichedAirbyteValue(
+                        IntegerValue(123L),
+                        IntegerType,
+                        "id",
+                        airbyteMetaField = null,
+                    ),
+                "name" to
+                    EnrichedAirbyteValue(
+                        StringValue("John Doe"),
+                        StringType,
+                        "name",
+                        airbyteMetaField = null,
+                    ),
+                "meta" to
+                    EnrichedAirbyteValue(
+                        ObjectValue(
+                            linkedMapOf(
+                                "sync_id" to IntegerValue(123L),
+                                "changes" to
+                                    ObjectValue(
+                                        linkedMapOf(
+                                            "change" to StringValue("insert"),
+                                            "reason" to StringValue("reason"),
+                                        )
+                                    )
+                            )
+                        ),
+                        Meta.AirbyteMetaFields.META.type,
+                        "meta",
+                        airbyteMetaField = Meta.AirbyteMetaFields.META,
+                    )
+            )
 
         val result = objectValue.toIcebergRecord(schema)
         assertEquals(123L, result.getField("id"))
         assertEquals("John Doe", result.getField("name"))
+        assertEquals(123L, (result.getField("meta") as GenericRecord).getField("sync_id") as Long)
+        assertEquals(
+            "insert",
+            ((result.getField("meta") as GenericRecord).getField("changes") as GenericRecord)
+                .getField("change")
+        )
+        assertEquals(
+            "reason",
+            ((result.getField("meta") as GenericRecord).getField("changes") as GenericRecord)
+                .getField("reason")
+        )
     }
 
+    /**
+     * This should never really happen (since callers should be calling [toIcebergRecord] on
+     * [EnrichedDestinationRecordAirbyteValue.allTypedFields]), but let's verify it anyway.
+     */
     @Test
     fun `toIcebergRecord ignores fields not in schema`() {
         val schema = Schema(NestedField.required(1, "id", Types.LongType.get()))
         val objectValue =
-            ObjectValue(
-                linkedMapOf("id" to IntegerValue(123L), "name" to StringValue("Should be ignored"))
+            mapOf(
+                "id" to
+                    EnrichedAirbyteValue(
+                        IntegerValue(123L),
+                        IntegerType,
+                        "id",
+                        airbyteMetaField = null,
+                    ),
+                "name" to
+                    EnrichedAirbyteValue(
+                        StringValue("Should be ignored"),
+                        StringType,
+                        "name",
+                        airbyteMetaField = null
+                    ),
             )
 
         val result = objectValue.toIcebergRecord(schema)

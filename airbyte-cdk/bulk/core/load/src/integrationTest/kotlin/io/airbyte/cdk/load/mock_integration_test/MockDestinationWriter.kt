@@ -4,53 +4,54 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.state.StreamIncompleteResult
-import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend
+import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT
+import io.airbyte.cdk.load.test.mock.MockDestinationConfiguration
+import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import java.time.Instant
-import java.util.UUID
-import javax.inject.Singleton
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
-class MockDestinationWriter : DestinationWriter {
+@Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
+class MockDestinationWriter(
+    private val config: MockDestinationConfiguration,
+) : DestinationWriter {
+    override suspend fun setup() {
+        if (config.foo != 0) {
+            throw IllegalArgumentException("Foo should be 0")
+        }
+    }
+
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return MockStreamLoader(stream)
     }
 }
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
-    data class LocalBatch(val records: List<DestinationRecord>) : Batch {
-        override val state = Batch.State.LOCAL
-    }
-    data class LocalFileBatch(val file: DestinationFile) : Batch {
-        override val state = Batch.State.LOCAL
-    }
-    data class PersistedBatch(val records: List<DestinationRecord>) : Batch {
-        override val state = Batch.State.PERSISTED
-    }
-
-    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             when (val importType = stream.importType) {
                 is Append -> {
                     MockDestinationBackend.commitFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor)
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor)
                     )
                 }
                 is Dedupe -> {
                     MockDestinationBackend.commitAndDedupeFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor),
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor),
                         importType.primaryKey,
                         importType.cursor,
                     )
@@ -58,58 +59,13 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 else -> throw IllegalArgumentException("Unsupported import type $importType")
             }
             MockDestinationBackend.deleteOldRecords(
-                getFilename(stream.descriptor),
+                getFilename(stream.mappedDescriptor),
                 stream.minimumGenerationId
             )
-        }
-    }
-
-    override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
-    ): Batch {
-        return LocalBatch(records.asSequence().toList())
-    }
-
-    override suspend fun processFile(file: DestinationFile): Batch {
-        return LocalFileBatch(file)
-    }
-
-    override suspend fun processBatch(batch: Batch): Batch {
-        return when (batch) {
-            is LocalBatch -> {
-                batch.records.forEach {
-                    val filename = getFilename(it.stream, staging = true)
-                    val record =
-                        OutputRecord(
-                            UUID.randomUUID(),
-                            Instant.ofEpochMilli(it.emittedAtMs),
-                            Instant.ofEpochMilli(System.currentTimeMillis()),
-                            stream.generationId,
-                            it.data as ObjectValue,
-                            OutputRecord.Meta(
-                                changes = it.meta?.changes ?: listOf(),
-                                syncId = stream.syncId
-                            ),
-                        )
-                    // blind insert into the staging area. We'll dedupe on commit.
-                    MockDestinationBackend.insert(filename, record)
-                }
-                PersistedBatch(batch.records)
+        } else {
+            logger.info {
+                "Skipping commit because stream ${stream.mappedDescriptor.toPrettyString()} was not successful"
             }
-            is PersistedBatch -> SimpleBatch(state = Batch.State.COMPLETE)
-            else -> throw IllegalStateException("Unexpected batch type: $batch")
         }
-    }
-
-    companion object {
-        fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
-            getFilename(stream.namespace, stream.name, staging)
-        fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
-            if (staging) {
-                "(${namespace},${name},staging)"
-            } else {
-                "(${namespace},${name})"
-            }
     }
 }

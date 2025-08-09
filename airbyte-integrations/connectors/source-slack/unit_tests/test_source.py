@@ -17,9 +17,10 @@ def get_stream_by_name(stream_name, config):
             return stream
     raise ValueError(f"Stream {stream_name} not found")
 
+
 @parametrized_configs
 def test_streams(conversations_list, config, is_valid):
-    source = SourceSlack()
+    source = SourceSlack(catalog=None, config=config, state=None)
     if is_valid:
         streams = source.streams(config)
         assert len(streams) == 5
@@ -50,23 +51,8 @@ def test_streams(conversations_list, config, is_valid):
 )
 def test_check_connection(token_config, requests_mock, status_code, response, is_connection_successful, error_msg):
     requests_mock.register_uri("GET", "https://slack.com/api/users.list?limit=1000", status_code=status_code, json=response)
-    source = SourceSlack()
+    source = SourceSlack(config=token_config, catalog=None, state=None)
     success, error = source.check_connection(logger=logging.getLogger("airbyte"), config=token_config)
     assert success is is_connection_successful
     if not success:
         assert error_msg in error
-
-
-def test_threads_auth(token_config, oauth_config):
-    source = SourceSlack()
-    auth = source._threads_authenticator(token_config)
-    assert auth.token == "Bearer api-token"
-    source = SourceSlack()
-    auth = source._threads_authenticator(oauth_config)
-    assert auth.token == "Bearer access-token"
-
-
-def test_get_threads_stream(token_config):
-    source = SourceSlack()
-    threads_stream = source.get_threads_stream(token_config)
-    assert threads_stream

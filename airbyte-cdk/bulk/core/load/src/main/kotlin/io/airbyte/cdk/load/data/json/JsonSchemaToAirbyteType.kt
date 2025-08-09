@@ -8,8 +8,32 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Property
+import javax.inject.Singleton
 
-class JsonSchemaToAirbyteType {
+@Singleton
+class JsonSchemaToAirbyteType(
+    @Property(name = "airbyte.destination.core.types.unions")
+    private val unionBehavior: UnionBehavior,
+) {
+    enum class UnionBehavior {
+        /**
+         * Treat `{"type": [...]}` and `{"oneOf": [...]}` differently. In particular, the `type`
+         * schema will be parsed into a [LegacyUnionType], whereas the `oneOf` schema will parse
+         * into a [UnionType].
+         */
+        LEGACY,
+
+        /**
+         * Treat `{"type": [...]}` and `{"oneOf": [...]}` identically. Both will parse into
+         * [UnionType].
+         */
+        DEFAULT,
+    }
+
+    private val log = KotlinLogging.logger {}
+
     fun convert(schema: JsonNode): AirbyteType = convertInner(schema)!!
 
     private fun convertInner(schema: JsonNode): AirbyteType? {
@@ -22,17 +46,13 @@ class JsonSchemaToAirbyteType {
                 when (schema.get("type").asText()) {
                     "string" -> fromString(schema)
                     "boolean" -> BooleanType
+                    "int",
                     "integer" -> IntegerType
                     "number" -> fromNumber(schema)
                     "array" -> fromArray(schema)
                     "object" -> fromObject(schema)
                     "null" -> null
-                    else ->
-                        throw IllegalArgumentException(
-                            "Unknown type: ${
-                                schema.get("type").asText()
-                            }"
-                        )
+                    else -> UnknownType(schema)
                 }
             } else if (schemaType.isArray) {
                 // {"type": [...], ...}
@@ -40,11 +60,38 @@ class JsonSchemaToAirbyteType {
             } else {
                 UnknownType(schema)
             }
+        } else if (schema.isObject && schema.has("\$ref")) {
+            // TODO: Determine whether we even still need to support this
+            return when (schema.get("\$ref").asText()) {
+                "WellKnownTypes.json#/definitions/Integer" -> IntegerType
+                "WellKnownTypes.json#/definitions/Number" -> NumberType
+                "WellKnownTypes.json#/definitions/String" -> StringType
+                "WellKnownTypes.json#/definitions/Boolean" -> BooleanType
+                "WellKnownTypes.json#/definitions/Date" -> DateType
+                "WellKnownTypes.json#/definitions/TimestampWithTimezone" ->
+                    TimestampTypeWithTimezone
+                "WellKnownTypes.json#/definitions/TimestampWithoutTimezone" ->
+                    TimestampTypeWithoutTimezone
+                "WellKnownTypes.json#/definitions/BinaryData" -> StringType
+                "WellKnownTypes.json#/definitions/TimeWithTimezone" -> TimeTypeWithTimezone
+                "WellKnownTypes.json#/definitions/TimeWithoutTimezone" -> TimeTypeWithoutTimezone
+                else -> UnknownType(schema)
+            }
         } else if (schema.isObject) {
             // {"oneOf": [...], ...} or {"anyOf": [...], ...} or {"allOf": [...], ...}
             val options = schema.get("oneOf") ?: schema.get("anyOf") ?: schema.get("allOf")
             return if (options != null) {
-                UnionType.of(options.mapNotNull { convertInner(it as ObjectNode) })
+                if (options.isArray) {
+                    // intentionally don't use the `unionOf()` utility method.
+                    // We know this is a non-legacy union.
+                    UnionType.of(
+                        options.mapNotNull { convertInner(it) },
+                        isLegacyUnion = false,
+                    )
+                } else {
+                    // options is supposed to be a list, but fallback to sane behavior if it's not.
+                    convertInner(options)
+                }
             } else {
                 // Default to object if no type and not a union type
                 convertInner((schema as ObjectNode).put("type", "object"))
@@ -74,12 +121,10 @@ class JsonSchemaToAirbyteType {
                     TimestampTypeWithTimezone
                 }
             null -> StringType
-            else ->
-                throw IllegalArgumentException(
-                    "Unknown string format: ${
-                        schema.get("format").asText()
-                    }"
-                )
+            else -> {
+                log.warn { "Ignoring unrecognized string format: ${schema.get("format").asText()}" }
+                StringType
+            }
         }
 
     private fun fromNumber(schema: ObjectNode): AirbyteType =
@@ -95,10 +140,10 @@ class JsonSchemaToAirbyteType {
             if (items.isEmpty) {
                 return ArrayTypeWithoutSchema
             }
-            val itemType = UnionType.of(items.mapNotNull { convertInner(it) })
+            val itemType = unionOf(items.mapNotNull { convertInner(it) })
             return ArrayType(FieldType(itemType, true))
         }
-        return ArrayType(fieldFromSchema(items as ObjectNode))
+        return ArrayType(nodeToFieldType(items))
     }
 
     private fun fromObject(schema: ObjectNode): AirbyteType {
@@ -110,9 +155,13 @@ class JsonSchemaToAirbyteType {
             properties
                 .fields()
                 .asSequence()
-                .map { (name, node) -> name to fieldFromSchema(node as ObjectNode) }
+                .map { (name, node) -> name to nodeToFieldType(node) }
                 .toMap(LinkedHashMap())
-        return ObjectType(propertiesMapped)
+        val additionalProperties = schema.get("additionalProperties")?.asBoolean() ?: false
+        val required: List<String> =
+            schema.get("required")?.asSequence()?.map { it.asText() }?.toList()
+                ?: emptyList<String>()
+        return ObjectType(propertiesMapped, additionalProperties, required)
     }
 
     private fun fieldFromSchema(
@@ -138,6 +187,21 @@ class JsonSchemaToAirbyteType {
                     convertInner(it)
                 }
             }
-        return UnionType.of(unionOptions)
+        if (unionOptions.isEmpty()) {
+            return UnknownType(parentSchema)
+        }
+        return unionOf(unionOptions)
     }
+
+    private fun unionOf(options: List<AirbyteType>) =
+        when (unionBehavior) {
+            UnionBehavior.LEGACY -> UnionType.of(options, isLegacyUnion = true)
+            UnionBehavior.DEFAULT -> UnionType.of(options, isLegacyUnion = false)
+        }
+
+    private fun nodeToFieldType(node: JsonNode): FieldType =
+        when (node) {
+            is ObjectNode -> fieldFromSchema(node)
+            else -> FieldType(UnknownType(node), nullable = true)
+        }
 }

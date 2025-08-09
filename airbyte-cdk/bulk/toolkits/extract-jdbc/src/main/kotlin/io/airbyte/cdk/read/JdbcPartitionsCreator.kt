@@ -5,13 +5,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 /** Base class for JDBC implementations of [PartitionsCreator]. */
-sealed class JdbcPartitionsCreator<
+abstract class JdbcPartitionsCreator<
     A : JdbcSharedState,
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
@@ -67,13 +68,14 @@ sealed class JdbcPartitionsCreator<
         log.info { "Querying maximum cursor column value." }
         val record: ObjectNode? =
             selectQuerier.executeQuery(cursorUpperBoundQuery).use {
-                if (it.hasNext()) it.next() else null
+                if (it.hasNext()) it.next().data.toJson() else null
             }
         if (record == null) {
             streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
-        val cursorUpperBound: JsonNode? = record.fields().asSequence().firstOrNull()?.value
+        val cursorUpperBound: JsonNode? =
+            Jsons.valueToTree(record.fields().asSequence().firstOrNull()?.value)
         if (cursorUpperBound == null) {
             log.warn { "No cursor column value found in '${stream.label}'." }
             return
@@ -102,8 +104,8 @@ sealed class JdbcPartitionsCreator<
             values.clear()
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
             selectQuerier.executeQuery(samplingQuery).use {
-                for (record in it) {
-                    values.add(recordMapper(record))
+                for (row in it) {
+                    values.add(recordMapper(row.data.toJson()))
                 }
             }
             if (values.size < sharedState.maxSampleSize) {
@@ -140,7 +142,9 @@ class JdbcSequentialPartitionsCreator<
         // Ensure that the cursor upper bound is known, if required.
         if (partition is JdbcCursorPartition<*>) {
             ensureCursorUpperBound()
-            if (streamState.cursorUpperBound?.isNull == true) {
+            if (
+                streamState.cursorUpperBound == null || streamState.cursorUpperBound?.isNull == true
+            ) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
                 return listOf(CheckpointOnlyPartitionReader())
             }
@@ -192,7 +196,9 @@ class JdbcConcurrentPartitionsCreator<
         // Ensure that the cursor upper bound is known, if required.
         if (partition is JdbcCursorPartition<*>) {
             ensureCursorUpperBound()
-            if (streamState.cursorUpperBound?.isNull == true) {
+            if (
+                streamState.cursorUpperBound == null || streamState.cursorUpperBound?.isNull == true
+            ) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
                 return listOf(CheckpointOnlyPartitionReader())
             }

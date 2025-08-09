@@ -1,0 +1,50 @@
+name: On-Demand Poe Task
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo."
+        type: choice
+        required: false
+        default: airbytehq/airbyte
+        options:
+          - airbytehq/airbyte
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+      comment-id:
+        description: "Optional comment-id of the slash command. Ignore if not applicable."
+        required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
+
+      # The rest of these are not used, but they must be declared or the workflow will not run.
+      dry-run:
+        description: "Dry run option. [Not used.]"
+        required: false
+        type: boolean
+      force:
+        description: "Force option. [Not used.]"
+        required: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  run-poe-command:
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Poe Slash Command Processor
+        uses: aaronsteers/poe-command-processor@v1
+        with:
+          pr: ${{ github.event.inputs.pr }}
+          comment-id: ${{ github.event.inputs.comment-id }}
+          github-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

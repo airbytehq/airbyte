@@ -7,6 +7,8 @@ from typing import Optional
 
 import pytest
 import yaml
+from pydash.objects import get
+
 from metadata_service import gcs_upload
 from metadata_service.constants import (
     COMPONENTS_PY_FILE_NAME,
@@ -19,7 +21,6 @@ from metadata_service.constants import (
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
-from pydash.objects import get
 
 MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["99.99.99", "0.0.0"]
 MISSING_SHA = "MISSINGSHA"
@@ -111,10 +112,7 @@ def setup_upload_mocks(
     # Mock dockerhub
     mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
 
-    # Mock GCS
-    service_account_json = '{"type": "service_account"}'
-    mocker.patch.dict("os.environ", {"GCS_CREDENTIALS": service_account_json})
-    mock_credentials = mocker.Mock()
+    # Mock GCS - now using the abstracted get_gcs_storage_client
     mock_storage_client = mocker.Mock()
 
     latest_blob_exists = latest_blob_md5_hash is not None
@@ -146,8 +144,8 @@ def setup_upload_mocks(
     mock_other_file_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="other_hash")
     mock_bucket = mock_storage_client.bucket.return_value
 
-    mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_info", mocker.Mock(return_value=mock_credentials))
-    mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
+    # Mock the get_gcs_storage_client function directly
+    mocker.patch("metadata_service.gcs_upload.get_gcs_storage_client", return_value=mock_storage_client)
 
     # Mock bucket blob
 
@@ -212,7 +210,6 @@ def setup_upload_mocks(
     mocker.patch.object(gcs_upload, "compute_gcs_md5", side_effect=side_effect_compute_gcs_md5)
 
     return {
-        "mock_credentials": mock_credentials,
         "mock_storage_client": mock_storage_client,
         "mock_bucket": mock_bucket,
         "mock_version_blob": mock_version_blob,
@@ -229,7 +226,6 @@ def setup_upload_mocks(
         "mock_zip_latest_blob": mock_zip_latest_blob,
         "mock_zip_version_blob": mock_zip_version_blob,
         "mock_other_file_blob": mock_other_file_blob,
-        "service_account_json": service_account_json,
     }
 
 

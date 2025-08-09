@@ -12,6 +12,7 @@ from typing import Any, Dict, Generic, List, Mapping, Optional, Set, TypeVar
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
 
+
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
 spec_path: str = Field(

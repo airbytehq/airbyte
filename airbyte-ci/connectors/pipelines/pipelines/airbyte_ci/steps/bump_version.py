@@ -3,16 +3,24 @@
 #
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Mapping
 
 import dagger
 import semver
 import yaml  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, PYPROJECT_FILE_NAME  # type: ignore
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
 from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
+
+BUMP_VERSION_METHOD_MAPPING: Mapping[str, Any] = {
+    "patch": semver.Version.bump_patch,
+    "minor": semver.Version.bump_minor,
+    "major": semver.Version.bump_major,
+    "rc": semver.Version.bump_prerelease,
+}
 
 if TYPE_CHECKING:
     pass
@@ -110,14 +118,9 @@ class SetConnectorVersion(StepModifyingFiles):
 
 
 class BumpConnectorVersion(SetConnectorVersion):
-    def __init__(
-        self,
-        context: ConnectorContext,
-        connector_directory: dagger.Directory,
-        bump_type: str,
-    ) -> None:
+    def __init__(self, context: ConnectorContext, connector_directory: dagger.Directory, bump_type: str, rc: bool = False) -> None:
         self.bump_type = bump_type
-        new_version = self.get_bumped_version(context.connector.version, bump_type)
+        new_version = self.get_bumped_version(context.connector.version, bump_type, rc)
         super().__init__(
             context,
             connector_directory,
@@ -129,18 +132,14 @@ class BumpConnectorVersion(SetConnectorVersion):
         return f"{self.bump_type.upper()} bump {self.context.connector.technical_name} version to {self.new_version}"
 
     @staticmethod
-    def get_bumped_version(version: str | None, bump_type: str) -> str:
+    def get_bumped_version(version: str | None, bump_type: str, rc: bool) -> str:
         if version is None:
             raise ValueError("Version is not set")
         current_version = semver.VersionInfo.parse(version)
-        if bump_type == "patch":
-            new_version = current_version.bump_patch()
-        elif bump_type == "minor":
-            new_version = current_version.bump_minor()
-        elif bump_type == "major":
-            new_version = current_version.bump_major()
-        elif bump_type == "rc":
-            new_version = current_version.bump_prerelease()
+        if bump_type in BUMP_VERSION_METHOD_MAPPING:
+            new_version = BUMP_VERSION_METHOD_MAPPING[bump_type](current_version)
+            if rc:
+                new_version = new_version.bump_prerelease()
         elif bump_type.startswith("version:"):
             version_str = bump_type.split("version:", 1)[1]
             if semver.VersionInfo.is_valid(version_str):

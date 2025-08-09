@@ -6,6 +6,7 @@
 import warnings
 
 import pytest
+
 from metadata_service import docker_hub
 
 
@@ -14,6 +15,7 @@ def image_name():
     return "airbyte/source-faker"
 
 
+@pytest.mark.slow
 def test_get_docker_hub_tags_and_digests(image_name):
     warnings.warn(f"This test can be flaky as its results depends on the current state of {image_name} dockerhub image.", UserWarning)
     tags_and_digests = docker_hub.get_docker_hub_tags_and_digests(image_name)
@@ -23,6 +25,7 @@ def test_get_docker_hub_tags_and_digests(image_name):
     assert len(tags_and_digests) > 10, f"Pagination is likely not working as we expect more than 10 version of {image_name} to be released"
 
 
+@pytest.mark.slow
 def test_get_latest_version_on_dockerhub(image_name):
     warnings.warn(f"This test can be flaky as its results depends on the current state of {image_name} dockerhub image.", UserWarning)
     assert (

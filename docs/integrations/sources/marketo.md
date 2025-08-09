@@ -121,6 +121,30 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.31 | 2025-08-09 | [64729](https://github.com/airbytehq/airbyte/pull/64729) | Update dependencies |
+| 1.4.30 | 2025-08-02 | [64262](https://github.com/airbytehq/airbyte/pull/64262) | Update dependencies |
+| 1.4.29 | 2025-07-26 | [63912](https://github.com/airbytehq/airbyte/pull/63912) | Update dependencies |
+| 1.4.28 | 2025-07-12 | [63152](https://github.com/airbytehq/airbyte/pull/63152) | Update dependencies |
+| 1.4.27 | 2025-07-05 | [61142](https://github.com/airbytehq/airbyte/pull/61142) | Update dependencies |
+| 1.4.26 | 2025-05-28 | [60823](https://github.com/airbytehq/airbyte/pull/60823) | Fix Attribute Errors on `Leads` stream |
+| 1.4.25 | 2025-05-24 | [60693](https://github.com/airbytehq/airbyte/pull/60693) | Update dependencies |
+| 1.4.24 | 2025-05-10 | [59770](https://github.com/airbytehq/airbyte/pull/59770) | Update dependencies |
+| 1.4.23 | 2025-05-03 | [58788](https://github.com/airbytehq/airbyte/pull/58788) | Update dependencies |
+| 1.4.22 | 2025-04-12 | [57702](https://github.com/airbytehq/airbyte/pull/57702) | Update dependencies |
+| 1.4.21 | 2025-04-05 | [57071](https://github.com/airbytehq/airbyte/pull/57071) | Update dependencies |
+| 1.4.20 | 2025-03-29 | [56674](https://github.com/airbytehq/airbyte/pull/56674) | Update dependencies |
+| 1.4.19 | 2025-03-22 | [56016](https://github.com/airbytehq/airbyte/pull/56016) | Update dependencies |
+| 1.4.18 | 2025-03-08 | [55426](https://github.com/airbytehq/airbyte/pull/55426) | Update dependencies |
+| 1.4.17 | 2025-03-01 | [54761](https://github.com/airbytehq/airbyte/pull/54761) | Update dependencies |
+| 1.4.16 | 2025-02-22 | [54321](https://github.com/airbytehq/airbyte/pull/54321) | Update dependencies |
+| 1.4.15 | 2025-02-15 | [53790](https://github.com/airbytehq/airbyte/pull/53790) | Update dependencies |
+| 1.4.14 | 2025-02-01 | [52711](https://github.com/airbytehq/airbyte/pull/52711) | Update dependencies |
+| 1.4.13 | 2025-01-25 | [52278](https://github.com/airbytehq/airbyte/pull/52278) | Update dependencies |
+| 1.4.12 | 2025-01-11 | [51165](https://github.com/airbytehq/airbyte/pull/51165) | Update dependencies |
+| 1.4.11 | 2025-01-04 | [50890](https://github.com/airbytehq/airbyte/pull/50890) | Update dependencies |
+| 1.4.10 | 2024-12-28 | [50655](https://github.com/airbytehq/airbyte/pull/50655) | Update dependencies |
+| 1.4.9 | 2024-12-21 | [43736](https://github.com/airbytehq/airbyte/pull/43736) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.4.8 | 2024-12-20 | [49972](https://github.com/airbytehq/airbyte/pull/49972) | Pin CDK due to breaking changes in newer versions. |
 | 1.4.7 | 2024-07-06 | [40629](https://github.com/airbytehq/airbyte/pull/40629) | Update dependencies |
 | 1.4.6 | 2024-06-26 | [40530](https://github.com/airbytehq/airbyte/pull/40530) | Update dependencies |
 | 1.4.5 | 2024-06-25 | [40318](https://github.com/airbytehq/airbyte/pull/40318) | Update dependencies |

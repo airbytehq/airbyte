@@ -18,7 +18,9 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: me/organizations
+          path: >-
+            {{ 'me/organizations' if stream_partition['organization_id'] == 'me'
+            else 'organizations/' ~ stream_partition['organization_id'] }}
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -51,12 +53,18 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"paging\", {}).get(\"next_link\", {}) }}"
             stop_condition: "{{ not response.get(\"paging\", {}).get(\"next_link\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: >-
+            {{ config['organization_ids'] if config['organization_ids'] else
+            ['me'] }}
+          cursor_field: organization_id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -80,7 +88,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: organizations/{{ stream_slice["organization_id"] }}/adaccounts
+          path: >-
+            {{ 'organizations/' ~ stream_slice["organization_id"] ~
+            '/adaccounts' if stream_partition['ad_account_id'] == 'orgs' else
+            'adaccounts/' ~ stream_partition['ad_account_id'] }}
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -114,19 +125,24 @@ definitions:
             cursor_value: "{{ response.get(\"paging\", {}).get(\"next_link\", {}) }}"
             stop_condition: "{{ not response.get(\"paging\", {}).get(\"next_link\", {}) }}"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: organization_id
-              stream:
-                $ref: "#/definitions/streams/organizations"
+          - type: ListPartitionRouter
+            values: >-
+              {{ config['ad_account_ids'] if config['ad_account_ids'] else
+              ['orgs'] }}
+            cursor_field: ad_account_id
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: organization_id
+                stream:
+                  $ref: "#/definitions/streams/organizations"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -195,7 +211,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -264,7 +280,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -333,7 +349,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -402,7 +418,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -471,7 +487,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -540,7 +556,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -620,7 +636,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -733,7 +749,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -917,7 +933,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1354,7 +1370,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -2245,7 +2261,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -2682,7 +2698,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -3573,7 +3589,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -4010,7 +4026,7 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -4950,6 +4966,16 @@ spec:
         order: 7
         title: View Attribution Window
         default: 1_DAY
+      organization_ids:
+        type: array
+        description: The IDs of the organizations to retrieve
+        order: 8
+        title: Organization IDs
+      ad_account_ids:
+        type: array
+        description: Ad Account IDs of the ad accounts to retrieve
+        order: 9
+        title: Ad Account IDs
     additionalProperties: true
   advanced_auth:
     auth_flow_type: "oauth2.0"

@@ -4,8 +4,11 @@
 
 
 import pytest
+
 from airbyte_cdk.models import SyncMode
-from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
+
+from .conftest import BASE_CONFIG, GROUPS_LIST_URL, get_source, get_stream_by_name
+
 
 CONFIG = BASE_CONFIG | {"projects_list": ["p_1"]}
 
@@ -25,7 +28,9 @@ CONFIG = BASE_CONFIG | {"projects_list": ["p_1"]}
 )
 def test_should_retry(requests_mock, stream_name, extra_mocks):
     requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
-    stream = get_stream_by_name(stream_name, CONFIG)
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name=stream_name, config=migrated_config)
     for extra_mock in extra_mocks:
         requests_mock.get(**extra_mock)
 
@@ -123,7 +128,7 @@ test_cases = (
             "user_full_name": "John",
             "environment_name": "dev",
             "project_id": "p_1",
-        }
+        },
     ),
     (
         "merge_request_commits",
@@ -139,7 +144,9 @@ test_cases = (
 @pytest.mark.parametrize(("stream_name", "response_mocks", "expected_record"), test_cases)
 def test_transform(requests_mock, stream_name, response_mocks, expected_record):
     requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
-    stream = get_stream_by_name(stream_name, CONFIG)
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name=stream_name, config=migrated_config)
     requests_mock.get("/api/v4/projects/p_1", json=[{"id": "p_1"}])
 
     for url, json in response_mocks:
@@ -151,17 +158,22 @@ def test_transform(requests_mock, stream_name, response_mocks, expected_record):
 
 
 def test_stream_slices_child_stream(requests_mock):
-    commits = get_stream_by_name("commits", CONFIG)
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    commits = get_stream_by_name(source=source, stream_name="commits", config=migrated_config)
     requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
     requests_mock.get(
         url="https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
         json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
     )
-    stream_state = {"13082000": {""'created_at': "2021-03-10T23:58:1213"}}
+    stream_state = {"13082000": {"" "created_at": "2021-03-10T23:58:1213"}}
 
     slices = list(commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state))
     assert slices
 
+
 def test_request_params():
-    commits = get_stream_by_name("commits", CONFIG)
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    commits = get_stream_by_name(source=source, stream_name="commits", config=migrated_config)
     assert commits.retriever.requester.get_request_params() == {"with_stats": "true"}

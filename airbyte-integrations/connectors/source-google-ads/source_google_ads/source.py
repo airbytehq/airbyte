@@ -1,54 +1,32 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 
 import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from pendulum import duration, parse, today
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pendulum import duration, parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
-    AccountPerformanceReport,
-    AdGroup,
-    AdGroupAd,
-    AdGroupAdLabel,
-    AdGroupAdLegacy,
-    AdGroupBiddingStrategy,
-    AdGroupCriterion,
-    AdGroupCriterionLabel,
-    AdGroupLabel,
-    AdListingGroupCriterion,
-    Audience,
-    Campaign,
-    CampaignBiddingStrategy,
-    CampaignBudget,
-    CampaignCriterion,
-    CampaignLabel,
-    ClickView,
-    Customer,
     CustomerClient,
-    CustomerLabel,
-    DisplayKeywordView,
-    GeographicView,
-    KeywordView,
-    Label,
-    ShoppingPerformanceView,
-    TopicView,
-    UserInterest,
-    UserLocationView,
 )
 from .utils import GAQL, logger, traced_exception
 
 
-class SourceGoogleAds(AbstractSource):
+class SourceGoogleAds(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
     # Raise exceptions on missing streams
     raise_exception_on_missing_stream = True
 
@@ -57,12 +35,15 @@ class SourceGoogleAds(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
         for query in config.get("custom_queries_array", []):
+            # In concurrent source this method can be executed multiple times
+            if isinstance(query["query"], GAQL):
+                break
             try:
                 query["query"] = GAQL.parse(query["query"])
             except ValueError:
                 message = (
                     f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
-                    "https://developers.google.com/google-ads/api/fields/v17/query_validator"
+                    "https://developers.google.com/google-ads/api/fields/v20/query_validator"
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
@@ -180,10 +161,10 @@ class SourceGoogleAds(AbstractSource):
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
 
         # Check custom query request validity by sending metric request with non-existent time window
-        for query in config.get("custom_queries_array", []):
+        for config_query_dict in config.get("custom_queries_array", []):
             for customer in customers:
-                table_name = query["table_name"]
-                query = query["query"]
+                table_name = config_query_dict["table_name"]
+                query = config_query_dict["query"]
                 if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                     logger.warning(
                         f"Metrics are not available for manager account {customer.id}. "
@@ -231,41 +212,8 @@ class SourceGoogleAds(AbstractSource):
         default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
-        streams = [
-            AdGroup(**incremental_config),
-            AdGroupAd(**incremental_config),
-            AdGroupAdLabel(**default_config),
-            AdGroupBiddingStrategy(**incremental_config),
-            AdGroupCriterion(**default_config),
-            AdGroupCriterionLabel(**default_config),
-            AdGroupLabel(**default_config),
-            AdListingGroupCriterion(**default_config),
-            Audience(**default_config),
-            CampaignBiddingStrategy(**incremental_config),
-            CampaignCriterion(**default_config),
-            CampaignLabel(google_api, customers=customers),
-            ClickView(**incremental_config),
-            Customer(**incremental_config),
-            CustomerLabel(**default_config),
-            Label(**default_config),
-            UserInterest(**default_config),
-        ]
-        # Metrics streams cannot be requested for a manager account.
-        if non_manager_accounts:
-            streams.extend(
-                [
-                    Campaign(**non_manager_incremental_config),
-                    CampaignBudget(**non_manager_incremental_config),
-                    UserLocationView(**non_manager_incremental_config),
-                    AccountPerformanceReport(**non_manager_incremental_config),
-                    TopicView(**non_manager_incremental_config),
-                    DisplayKeywordView(**non_manager_incremental_config),
-                    ShoppingPerformanceView(**non_manager_incremental_config),
-                    AdGroupAdLegacy(**non_manager_incremental_config),
-                    GeographicView(**non_manager_incremental_config),
-                    KeywordView(**non_manager_incremental_config),
-                ]
-            )
+
+        streams = super().streams(config=config)
 
         for single_query_config in config.get("custom_queries_array", []):
             query_stream = self.create_custom_query_stream(

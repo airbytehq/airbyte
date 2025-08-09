@@ -7,24 +7,26 @@ from enum import Enum
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
 import backoff
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
-from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
+from google.ads.googleads.v20.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests
 from google.auth import exceptions
 from google.protobuf import json_format
 from google.protobuf.message import Message
 from proto.marshal.collections import Repeated, RepeatedComposite
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
+
 from .utils import logger
 
-API_VERSION = "v17"
+
+API_VERSION = "v20"
 
 
 def on_give_up(details):
     error = details["exception"]
-    if isinstance(error, InternalServerError):
+    if isinstance(error, (InternalServerError, ServiceUnavailable)):
         raise AirbyteTracedException(
             failure_type=FailureType.transient_error,
             message=f"{error.message} {error.details}",
@@ -70,9 +72,24 @@ class GoogleAds:
             message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
 
-    def get_accessible_accounts(self):
+    @backoff.on_exception(
+        backoff.expo,
+        (InternalServerError, ServerError, ServiceUnavailable, TooManyRequests),
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        on_giveup=on_give_up,
+        max_tries=5,
+    )
+    def _get_accessible_customers(self):
+        """Internal method to get accessible customers with retry logic"""
         customer_resource_names = self.customer_service.list_accessible_customers().resource_names
         logger.info(f"Found {len(customer_resource_names)} accessible accounts: {customer_resource_names}")
+        return customer_resource_names
+
+    def get_accessible_accounts(self):
+        """Get accessible customer accounts with retry logic"""
+        customer_resource_names = self._get_accessible_customers()
 
         for customer_resource_name in customer_resource_names:
             customer_id = self.ga_service().parse_customer_path(customer_resource_name)["customer_id"]
@@ -80,7 +97,7 @@ class GoogleAds:
 
     @backoff.on_exception(
         backoff.expo,
-        (InternalServerError, ServerError, TooManyRequests),
+        (InternalServerError, ServerError, ServiceUnavailable, TooManyRequests),
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),

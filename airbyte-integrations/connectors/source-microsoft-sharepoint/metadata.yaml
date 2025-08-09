@@ -16,19 +16,23 @@ data:
     cloud:
       enabled: true
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: file
   connectorType: source
   definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
-  dockerImageTag: 0.5.2
+  dockerImageTag: 0.10.3
   dockerRepository: airbyte/source-microsoft-sharepoint
   githubIssueLabel: source-microsoft-sharepoint
   icon: microsoft-sharepoint.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 5400
   name: Microsoft SharePoint
   supportLevel: certified
+  supportsFileTransfer: true
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   releaseDate: 2024-02-02
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
   tags:

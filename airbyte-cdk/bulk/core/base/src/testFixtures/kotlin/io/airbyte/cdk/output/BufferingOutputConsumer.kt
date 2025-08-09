@@ -10,12 +10,12 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
+import io.airbyte.protocol.models.v0.DestinationCatalog
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.time.Clock
-import java.time.Instant
 
 /** [OutputConsumer] implementation for unit tests. Collects everything into thread-safe buffers. */
 @Singleton
@@ -23,8 +23,7 @@ import java.time.Instant
 @Replaces(OutputConsumer::class)
 class BufferingOutputConsumer(
     clock: Clock,
-) : OutputConsumer {
-    override val emittedAt: Instant = Instant.now(clock)
+) : StandardOutputConsumer(clock) {
 
     private val records = mutableListOf<AirbyteRecordMessage>()
     private val states = mutableListOf<AirbyteStateMessage>()
@@ -32,6 +31,7 @@ class BufferingOutputConsumer(
     private val specs = mutableListOf<ConnectorSpecification>()
     private val statuses = mutableListOf<AirbyteConnectionStatus>()
     private val catalogs = mutableListOf<AirbyteCatalog>()
+    private val destinationCatalogs = mutableListOf<DestinationCatalog>()
     private val traces = mutableListOf<AirbyteTraceMessage>()
     private val messages = mutableListOf<AirbyteMessage>()
     private var messagesIndex: Int = 0
@@ -41,10 +41,10 @@ class BufferingOutputConsumer(
             synchronized(this) { field = value }
         }
 
-    override fun accept(input: AirbyteMessage) {
+    override fun accept(airbyteMessage: AirbyteMessage) {
         // Deep copy the input, which may be reused and mutated later on.
         val m: AirbyteMessage =
-            Jsons.readValue(Jsons.writeValueAsBytes(input), AirbyteMessage::class.java)
+            Jsons.readValue(Jsons.writeValueAsBytes(airbyteMessage), AirbyteMessage::class.java)
         synchronized(this) {
             messages.add(m)
             when (m.type) {
@@ -54,6 +54,8 @@ class BufferingOutputConsumer(
                 AirbyteMessage.Type.SPEC -> specs.add(m.spec)
                 AirbyteMessage.Type.CONNECTION_STATUS -> statuses.add(m.connectionStatus)
                 AirbyteMessage.Type.CATALOG -> catalogs.add(m.catalog)
+                AirbyteMessage.Type.DESTINATION_CATALOG ->
+                    destinationCatalogs.add(m.destinationCatalog)
                 AirbyteMessage.Type.TRACE -> traces.add(m.trace)
                 else -> TODO("${m.type} not supported")
             }
@@ -61,7 +63,9 @@ class BufferingOutputConsumer(
         }
     }
 
-    override fun close() {}
+    override fun close() = Unit
+
+    override fun withLockFlush() = Unit
 
     fun records(): List<AirbyteRecordMessage> =
         synchronized(this) { listOf(*records.toTypedArray()) }
@@ -76,6 +80,9 @@ class BufferingOutputConsumer(
         synchronized(this) { listOf(*statuses.toTypedArray()) }
 
     fun catalogs(): List<AirbyteCatalog> = synchronized(this) { listOf(*catalogs.toTypedArray()) }
+
+    fun destinationCatalogs(): List<DestinationCatalog> =
+        synchronized(this) { listOf(*destinationCatalogs.toTypedArray()) }
 
     fun traces(): List<AirbyteTraceMessage> = synchronized(this) { listOf(*traces.toTypedArray()) }
 

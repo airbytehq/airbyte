@@ -1,6 +1,5 @@
 # MotherDuck
 
-
 ## Overview
 
 [DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on. This destination writes data to the [MotherDuck](https://motherduck.com) service, or to a file on the _local_ filesystem on the host running Airbyte.
@@ -11,7 +10,7 @@ For file-based DBs, data is written to `/tmp/airbyte_local` by default. To chang
 
 This destination implements [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides improved final table structures. It's a new version of the existing DuckDB destination and works both with DuckDB and MotherDuck.
 
-Learn more about what's new in Destinations V2 [here](/using-airbyte/core-concepts/typing-deduping).
+Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).
 
 ## Use with MotherDuck
 
@@ -47,17 +46,16 @@ Each table will contain at least the following columns:
 
 In addition, columns specified in the [JSON schema](https://docs.airbyte.com/connector-development/schema-reference) will also be created.
 
-
 #### Features
 
-| Feature                        | Supported |     |
-| :----------------------------- | :-------- | :-- |
-| Full Refresh Sync              | Yes       |     |
-| Incremental - Append Sync      | Yes       |     |
-| Incremental - Append + Deduped | Yes       |     |
-| [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) | Yes        |     |
-| [Namespaces](/using-airbyte/core-concepts/namespaces) | No        |     |
-| [Data Generations](/operator-guides/refreshes#data-generations) | No        |     |
+| Feature                                                                  | Supported |     |
+| :----------------------------------------------------------------------- | :-------- | :-- |
+| Full Refresh Sync                                                        | Yes       |     |
+| Incremental - Append Sync                                                | Yes       |     |
+| Incremental - Append + Deduped                                           | Yes       |     |
+| [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) | Yes       |     |
+| [Namespaces](/platform/using-airbyte/core-concepts/namespaces)                    | No        |     |
+| [Data Generations](/platform/operator-guides/refreshes#data-generations)          | No        |     |
 
 #### Performance consideration
 
@@ -72,10 +70,19 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
-|:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                          |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.23 | 2025-08-01 | [64161](https://github.com/airbytehq/airbyte/pull/64161) | feat: allow null values in primary key fields. Primary keys are no longer declared as table constraints. |
+| 0.1.22 | 2025-07-22 | [63714](https://github.com/airbytehq/airbyte/pull/63714) | fix(destination-motherduck): handle special characters in stream name when creating tables |
+| 0.1.21 | 2025-07-22 | [63709](https://github.com/airbytehq/airbyte/pull/63709) | fix: resolve error "Can't find the home directory at '/nonexistent'" [#63710](https://github.com/airbytehq/airbyte/issues/63710) |
+| 0.1.20 | 2025-07-06 | [62133](https://github.com/airbytehq/airbyte/pull/62133) | fix: when `primary_key` is not defined in the catalog, use `source_defined_primary_key` if available |
+| n/a    | 2025-06-27 | [48673](https://github.com/airbytehq/airbyte/pull/48673) | Update dependencies |
+| 0.1.19 | 2025-05-25 | [60905](https://github.com/airbytehq/airbyte/pull/60905) | Allow unicode characters in database/table names |
+| 0.1.18 | 2025-03-01 | [54737](https://github.com/airbytehq/airbyte/pull/54737) | Update airbyte-cdk to ^6.0.0 in destination-motherduck |
+| 0.1.17 | 2024-12-26 | [50425](https://github.com/airbytehq/airbyte/pull/50425) | Fix bug overwrite write method not saving all batches |
+| 0.1.16 | 2024-12-06 | [48562](https://github.com/airbytehq/airbyte/pull/48562) | Improved handling of config parameters during SQL engine creation. |
 | 0.1.15 | 2024-11-07 | [48405](https://github.com/airbytehq/airbyte/pull/48405) | Updated docs and hovertext for schema, api key, and database name. |
-| 0.1.14 | 2024-10-30 | [48006](https://github.com/airbytehq/airbyte/pull/48006) | Fix bug in _flush_buffer, explicitly register dataframe before inserting |
+| 0.1.14 | 2024-10-30 | [48006](https://github.com/airbytehq/airbyte/pull/48006) | Fix bug in \_flush_buffer, explicitly register dataframe before inserting |
 | 0.1.13 | 2024-10-30 | [47969](https://github.com/airbytehq/airbyte/pull/47969) | Preserve Platform-generated id in state messages. |
 | 0.1.12 | 2024-10-30 | [47987](https://github.com/airbytehq/airbyte/pull/47987) | Disable PyPi publish. |
 | 0.1.11 | 2024-10-30 | [47979](https://github.com/airbytehq/airbyte/pull/47979) | Rename package. |

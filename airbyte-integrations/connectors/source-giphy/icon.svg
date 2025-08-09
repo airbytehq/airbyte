@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 72 72" id="giphy">
+  <g id="providers-list" fill="none" fill-rule="evenodd" stroke="none" stroke-width="1">
+    <g id="giphy">
+      <rect id="Path" width="72" height="72" x="0" y="0" fill="#000" rx="4"></rect>
+      <g transform="translate(17 12)">
+        <path id="Rectangle-1" fill="#2AFC9C" d="M0 4h5v40H0z"></path>
+        <path id="Rectangle-3" fill="#9740FA" d="M33 13h5v31h-5z"></path>
+        <path id="Rectangle-6" fill="#4A1F7C" d="M33 15h5v5h-5z"></path>
+        <path id="Rectangle-2" fill="#22CDFB" d="M0 43h38v5H0z"></path>
+        <path id="Rectangle-2" fill="#FFF39F" d="M0 0h25v5H0z"></path>
+        <path id="Rectangle-5" fill="#FB6769" d="M23 0h5v5h5v5h5v5H23z"></path>
+      </g>
+    </g>
+  </g>
+</svg>

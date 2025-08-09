@@ -4,15 +4,17 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from time import sleep, time
 from typing import Any, Final, Iterable, List, Mapping, Optional
 
 import pendulum as pdm
 import requests
-from airbyte_cdk.sources.streams.http import HttpClient
 from requests.exceptions import JSONDecodeError
 from source_shopify.utils import LOGGER, ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
+
+from airbyte_cdk.sources.streams.http import HttpClient
 
 from .exceptions import AirbyteTracedException, ShopifyBulkExceptions
 from .query import ShopifyBulkQuery, ShopifyBulkTemplates
@@ -20,6 +22,16 @@ from .record import ShopifyBulkRecord
 from .retry import bulk_retry_on_exception
 from .status import ShopifyBulkJobStatus
 from .tools import END_OF_FILE, BulkTools
+
+
+class BulkOperationUserErrorCode(Enum):
+    """
+    Possible error codes that can be returned by BulkOperationUserError.
+    https://shopify.dev/docs/api/admin-graphql/latest/enums/BulkOperationUserErrorCode
+    """
+
+    INVALID = "INVALID"
+    OPERATION_IN_PROGRESS = "OPERATION_IN_PROGRESS"
 
 
 @dataclass
@@ -53,7 +65,7 @@ class ShopifyBulkManager:
 
     # currents: _job_id, _job_state, _job_created_at, _job_self_canceled
     _job_id: Optional[str] = field(init=False, default=None)
-    _job_state: str = field(init=False, default=None)  # this string is based on ShopifyBulkJobStatus
+    _job_state: str | None = field(init=False, default=None)  # this string is based on ShopifyBulkJobStatus
     # completed and saved Bulk Job result filename
     _job_result_filename: Optional[str] = field(init=False, default=None)
     # date-time when the Bulk Job was created on the server
@@ -70,6 +82,8 @@ class ShopifyBulkManager:
     _job_last_rec_count: int = field(init=False, default=0)
     # the flag to adjust the next slice from the checkpointed cursor vaue
     _job_adjust_slice_from_checkpoint: bool = field(init=False, default=False)
+    # keeps the last checkpointed cursor value for supported streams
+    _job_last_checkpoint_cursor_value: str | None = field(init=False, default=None)
 
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
@@ -209,6 +223,27 @@ class ShopifyBulkManager:
         # reseting the checkpoint flag, if bulk job has completed normally
         self._job_adjust_slice_from_checkpoint = False
 
+    def _set_last_checkpoint_cursor_value(self, checkpointed_cursor: str) -> None:
+        """
+        Sets the last checkpoint cursor value.
+
+        Args:
+            checkpointed_cursor (str): The cursor value to set as the last checkpoint. Defaults to None.
+        """
+        self._job_last_checkpoint_cursor_value = checkpointed_cursor
+
+    def _checkpoint_cursor_has_collision(self, checkpointed_cursor: str) -> bool:
+        """
+        Checks if the provided checkpointed cursor collides with the last checkpointed cursor value.
+
+        Args:
+            checkpointed_cursor (str): The cursor value to check for collision. Defaults to None.
+
+        Returns:
+            bool: True if the provided cursor collides with the last checkpointed cursor value, False otherwise.
+        """
+        return self._job_last_checkpoint_cursor_value == checkpointed_cursor
+
     def _job_completed(self) -> bool:
         return self._job_state == ShopifyBulkJobStatus.COMPLETED.value
 
@@ -222,8 +257,7 @@ class ShopifyBulkManager:
         _, canceled_response = self.http_client.send_request(
             http_method="POST",
             url=self.base_url,
-            data=ShopifyBulkTemplates.cancel(self._job_id),
-            headers={"Content-Type": "application/graphql"},
+            json={"query": ShopifyBulkTemplates.cancel(self._job_id)},
             request_kwargs={},
         )
         # mark the job was self-canceled
@@ -329,7 +363,7 @@ class ShopifyBulkManager:
     def _on_completed_job(self, response: Optional[requests.Response] = None) -> None:
         self._job_result_filename = self._job_get_result(response)
 
-    def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException:
+    def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException | None:
         if not self._supports_checkpointing:
             raise ShopifyBulkExceptions.BulkJobFailed(
                 f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
@@ -381,8 +415,7 @@ class ShopifyBulkManager:
         _, response = self.http_client.send_request(
             http_method="POST",
             url=self.base_url,
-            data=ShopifyBulkTemplates.status(self._job_id),
-            headers={"Content-Type": "application/graphql"},
+            json={"query": ShopifyBulkTemplates.status(self._job_id)},
             request_kwargs={},
         )
         self._job_healthcheck(response)
@@ -395,18 +428,17 @@ class ShopifyBulkManager:
         Error example:
         [
             {
+                'code': 'OPERATION_IN_PROGRESS',
                 'field': None,
                 'message': 'A bulk query operation for this app and shop is already in progress: gid://shopify/BulkOperation/4039184154813.',
             }
         ]
         """
-
-        concurrent_job_pattern = "A bulk query operation for this app and shop is already in progress"
         # the errors are handled in `job_job_check_for_errors`
         if errors:
             for error in errors:
-                message = error.get("message", "") if isinstance(error, dict) else ""
-                if concurrent_job_pattern in message:
+                error_code = error.get("code", "") if isinstance(error, dict) else ""
+                if error_code == BulkOperationUserErrorCode.OPERATION_IN_PROGRESS.value:
                     return True
         return False
 
@@ -485,7 +517,7 @@ class ShopifyBulkManager:
             self._job_state = ShopifyBulkJobStatus.CREATED.value
             LOGGER.info(f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` is {ShopifyBulkJobStatus.CREATED.value}")
 
-    def job_size_normalize(self, start: datetime, end: datetime) -> datetime:
+    def job_size_normalize(self, start: datetime, end: datetime) -> None:
         # adjust slice size when it's bigger than the loop point when it should end,
         # to preserve correct job size adjustments when this is the only job we need to run, based on STATE provided
         requested_slice_size = (end - start).total_days()
@@ -498,8 +530,20 @@ class ShopifyBulkManager:
     def _adjust_slice_end(self, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
         """
         Choose between the existing `slice_end` value or `checkpointed_cursor` value, if provided.
+
+        Optionally: raises the `transient` error if the checkpoint collision occurs.
         """
-        return pdm.parse(checkpointed_cursor) if checkpointed_cursor else slice_end
+
+        if checkpointed_cursor:
+            if self._checkpoint_cursor_has_collision(checkpointed_cursor):
+                raise ShopifyBulkExceptions.BulkJobCheckpointCollisionError(
+                    f"The stream: `{self.http_client.name}` checkpoint collision is detected. Try to increase the `BULK Job checkpoint (rows collected)` to the bigger value. The stream will be synced again during the next sync attempt."
+                )
+            # set the checkpointed cursor value
+            self._set_last_checkpoint_cursor_value(checkpointed_cursor)
+            return pdm.parse(checkpointed_cursor)
+
+        return slice_end
 
     def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
         if self._job_adjust_slice_from_checkpoint:

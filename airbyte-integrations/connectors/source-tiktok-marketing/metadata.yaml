@@ -7,16 +7,16 @@ data:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.55.0@sha256:4e59622dff16dfd9ca7b614ed76e1a6ff6d7d8e68c373bbc07a044192e05b0ab
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 4.3.6
+  dockerImageTag: 4.8.0
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 86400
   name: TikTok Marketing
   registryOverrides:
@@ -25,6 +25,8 @@ data:
     oss:
       enabled: true
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message:
@@ -55,6 +57,8 @@ data:
               - "ads_audience_reports_daily"
               - "ads_reports_daily"
               - "ads_reports_hourly"
+              - "ads_reports_by_country_daily"
+              - "ads_reports_by_country_hourly"
               - "advertisers_audience_reports_by_country_daily"
               - "advertisers_audience_reports_by_platform_daily"
               - "advertisers_audience_reports_daily"
@@ -71,7 +75,7 @@ data:
   releaseStage: generally_available
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-tiktok-marketing
   suggestedStreams:
     streams:
@@ -84,8 +88,8 @@ data:
       - advertisers_reports_daily
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

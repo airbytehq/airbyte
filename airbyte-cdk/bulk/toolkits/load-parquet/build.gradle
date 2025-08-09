@@ -13,7 +13,7 @@ dependencies {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
     }
-    api 'org.apache.parquet:parquet-avro:1.14.2'
+    api 'org.apache.parquet:parquet-avro:1.15.1'
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
 }

@@ -2,7 +2,6 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.h2source.H2SourceConfiguration
@@ -11,6 +10,8 @@ import io.airbyte.cdk.h2source.H2SourceConfigurationSpecification
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -89,18 +90,20 @@ class JdbcSelectQuerierTest {
         val querier: SelectQuerier = JdbcSelectQuerier(JdbcConnectionFactory(config))
         // Vanilla query
         val expected: List<JsonNode> = expectedJson.map(Jsons::readTree)
-        val actual: List<ObjectNode> = querier.executeQuery(q).use { it.asSequence().toList() }
-        Assertions.assertIterableEquals(expected, actual)
+        val actual: List<NativeRecordPayload> =
+            querier.executeQuery(q).use { it.asSequence().toList().map { it.data } }
+        val actualJson = actual.map { it.toJson() }.toList()
+        Assertions.assertIterableEquals(expected, actualJson)
         // Query with reuseResultObject = true
         querier.executeQuery(q, SelectQuerier.Parameters(reuseResultObject = true)).use {
             var i = 0
-            var previous: ObjectNode? = null
-            for (record in it) {
+            var previous: NativeRecordPayload? = null
+            for (row in it) {
                 if (i > 0) {
-                    Assertions.assertTrue(previous === record)
+                    Assertions.assertTrue(previous === row.data)
                 }
-                Assertions.assertEquals(expected[i++], record)
-                previous = record
+                Assertions.assertEquals(actual[i++].toJson(), row.data.toJson())
+                previous = row.data
             }
         }
     }

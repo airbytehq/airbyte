@@ -21,8 +21,6 @@ import java.util.function.Supplier
  * ability to set values via the nested properties. This current design caters to both use cases.
  * Furthermore, by deferring the parsing and validation of the configuration, we don't need to worry
  * about exception handling edge cases when implementing the CHECK operation.
- *
- * The object is also validated against its [jsonSchema] JSON schema, derived from [javaClass].
  */
 @Singleton
 class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
@@ -43,7 +41,7 @@ class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
             }
         }
         val json: String = jsonPropertyValue ?: jsonMicronautFallback
-        return ValidatedJsonUtils.parseOne(javaClass, json)
+        return ValidatedJsonUtils.parseUnvalidated(json, javaClass)
     }
 }
 

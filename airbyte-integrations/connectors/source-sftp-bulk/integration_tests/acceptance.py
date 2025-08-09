@@ -11,6 +11,7 @@ import uuid
 import docker
 import pytest
 
+
 pytest_plugins = ("connector_acceptance_test.plugin",)
 
 TMP_FOLDER = "/tmp/test_sftp_source"

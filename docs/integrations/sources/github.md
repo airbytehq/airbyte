@@ -225,6 +225,28 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.38 | 2025-08-09 | [64580](https://github.com/airbytehq/airbyte/pull/64580) | Update dependencies |
+| 1.8.37 | 2025-08-02 | [64231](https://github.com/airbytehq/airbyte/pull/64231) | Update dependencies |
+| 1.8.36 | 2025-07-26 | [63810](https://github.com/airbytehq/airbyte/pull/63810) | Update dependencies |
+| 1.8.35 | 2025-07-19 | [63520](https://github.com/airbytehq/airbyte/pull/63520) | Update dependencies |
+| 1.8.34 | 2025-07-12 | [63158](https://github.com/airbytehq/airbyte/pull/63158) | Update dependencies |
+| 1.8.33 | 2025-07-05 | [62666](https://github.com/airbytehq/airbyte/pull/62666) | Update dependencies |
+| 1.8.32 | 2025-06-28 | [62166](https://github.com/airbytehq/airbyte/pull/62166) | Update dependencies |
+| 1.8.31 | 2025-06-25 | [62054](https://github.com/airbytehq/airbyte/pull/62054) | Fix problem with `contributor_activity` stream when author is not present/none |
+| 1.8.30 | 2025-06-23 | [61742](https://github.com/airbytehq/airbyte/pull/61742) | Handle conflict when empty repositories, we will ignore |
+| 1.8.29 | 2025-06-21 | [61857](https://github.com/airbytehq/airbyte/pull/61857) | Update dependencies |
+| 1.8.28 | 2025-06-15 | [61603](https://github.com/airbytehq/airbyte/pull/61603) | Update dependencies |
+| 1.8.27 | 2025-06-07 | [54931](https://github.com/airbytehq/airbyte/pull/54931) | Update dependencies |
+| 1.8.26 | 2025-02-22 | [54404](https://github.com/airbytehq/airbyte/pull/54404) | Update dependencies |
+| 1.8.25 | 2025-02-15 | [53703](https://github.com/airbytehq/airbyte/pull/53703) | Update dependencies |
+| 1.8.24 | 2025-02-01 | [52875](https://github.com/airbytehq/airbyte/pull/52875) | Update dependencies |
+| 1.8.23 | 2025-01-25 | [52364](https://github.com/airbytehq/airbyte/pull/52364) | Update dependencies |
+| 1.8.22 | 2025-01-18 | [51666](https://github.com/airbytehq/airbyte/pull/51666) | Update dependencies |
+| 1.8.21 | 2025-01-11 | [51130](https://github.com/airbytehq/airbyte/pull/51130) | Update dependencies |
+| 1.8.20 | 2025-01-04 | [50517](https://github.com/airbytehq/airbyte/pull/50517) | Update dependencies |
+| 1.8.19 | 2024-12-21 | [50055](https://github.com/airbytehq/airbyte/pull/50055) | Update dependencies |
+| 1.8.18 | 2024-12-14 | [49178](https://github.com/airbytehq/airbyte/pull/49178) | Update dependencies |
+| 1.8.17 | 2024-11-25 | [48631](https://github.com/airbytehq/airbyte/pull/48631) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.8.16 | 2024-11-05 | [48318](https://github.com/airbytehq/airbyte/pull/48318) | Update dependencies |
 | 1.8.15 | 2024-10-28 | [47051](https://github.com/airbytehq/airbyte/pull/47051) | Update dependencies |
 | 1.8.14 | 2024-10-12 | [46766](https://github.com/airbytehq/airbyte/pull/46766) | Update dependencies |

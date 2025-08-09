@@ -140,5 +140,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: integration_tests/spec.json
+        # changed from "Document File Type Format (Experimental)" to "Unstructured Document Format".
+        backward_compatibility_tests_config:
+          disable_for_version: "0.6.0"
 connector_image: airbyte/source-azure-blob-storage:dev
 test_strictness_level: low

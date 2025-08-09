@@ -12,10 +12,12 @@ from typing import Dict
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+
 
 HERE = Path(__file__).parent
 
@@ -51,7 +53,11 @@ def stream_name():
 
 @pytest.fixture(scope="module")
 def stream(input_sandbox_config, stream_name, sf):
-    return SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE).generate_streams(input_sandbox_config, {stream_name: None}, sf)[0]._legacy_stream
+    return (
+        SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+        .generate_streams(input_sandbox_config, {stream_name: None}, sf)[0]
+        ._legacy_stream
+    )
 
 
 def _encode_content(text):

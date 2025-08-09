@@ -4,6 +4,7 @@ from pathlib import Path
 
 from airbyte_protocol.models import ConnectorSpecification
 
+
 MANIFEST_FILE_NAMES = [
     "manifest.yaml",
     "manifest.yml",

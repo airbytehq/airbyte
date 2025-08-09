@@ -8,13 +8,16 @@ from datetime import date
 
 import pendulum
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
-from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow
+from google.ads.googleads.v20.services.types.google_ads_service import GoogleAdsRow
 from google.auth import exceptions
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import chunk_date_range
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
+
 from .common import MockGoogleAdsClient, MockGoogleAdsService
+
 
 SAMPLE_SCHEMA = {
     "properties": {
@@ -66,6 +69,62 @@ def test_google_ads_wrong_permissions(mocker):
         GoogleAds(**SAMPLE_CONFIG)
     expected_message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
     assert e.value.message == expected_message
+
+
+def test_get_accessible_accounts_retry_on_service_unavailable(mocker):
+    """Test that get_accessible_accounts retries on ServiceUnavailable errors"""
+    from google.api_core.exceptions import ServiceUnavailable
+
+    mocker.patch("time.sleep")  # Mock sleep to speed up test
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(SAMPLE_CONFIG))
+
+    google_ads_client = GoogleAds(**SAMPLE_CONFIG)
+
+    # Mock the _get_accessible_customers method to fail first, then succeed
+    mock_customer_service = mocker.Mock()
+    mock_customer_service.list_accessible_customers.side_effect = [
+        ServiceUnavailable("Service is currently unavailable"),  # First call fails
+        mocker.Mock(resource_names=["customers/123", "customers/456"]),  # Second call succeeds
+    ]
+    google_ads_client.customer_service = mock_customer_service
+
+    # Mock the ga_service to return a mock that can parse customer paths
+    mock_ga_service = mocker.Mock()
+    mock_ga_service.parse_customer_path.side_effect = [{"customer_id": "123"}, {"customer_id": "456"}]
+    google_ads_client.ga_services["default"] = mock_ga_service
+
+    # This should retry and eventually succeed
+    customer_ids = list(google_ads_client.get_accessible_accounts())
+
+    # Verify it was called twice (once failed, once succeeded)
+    assert mock_customer_service.list_accessible_customers.call_count == 2
+    assert customer_ids == ["123", "456"]
+
+
+def test_get_accessible_accounts_gives_up_after_max_retries(mocker):
+    """Test that get_accessible_accounts gives up after max retries on ServiceUnavailable"""
+    from google.api_core.exceptions import ServiceUnavailable
+
+    from airbyte_cdk.utils import AirbyteTracedException
+
+    mocker.patch("time.sleep")  # Mock sleep to speed up test
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(SAMPLE_CONFIG))
+
+    google_ads_client = GoogleAds(**SAMPLE_CONFIG)
+
+    # Mock the customer service to always fail with ServiceUnavailable
+    mock_customer_service = mocker.Mock()
+    mock_customer_service.list_accessible_customers.side_effect = ServiceUnavailable("Service is currently unavailable")
+    google_ads_client.customer_service = mock_customer_service
+
+    # This should retry 5 times then give up
+    with pytest.raises(AirbyteTracedException) as e:
+        list(google_ads_client.get_accessible_accounts())
+
+    # Verify it was called 5 times (max retries)
+    assert mock_customer_service.list_accessible_customers.call_count == 5
+    assert "Service is currently unavailable" in e.value.message
+    assert e.value.failure_type == FailureType.transient_error
 
 
 def test_send_request(mocker, customers):
@@ -148,11 +207,12 @@ def test_get_field_value():
     response = GoogleAds.get_field_value(MockedDateSegment(date), field, {})
     assert response == date
 
+
 def test_get_field_value_object():
     expected_response = [
-            { "text": "An exciting headline", "policySummaryInfo": { "reviewStatus": "REVIEWED","approvalStatus":"APPROVED" } },
-            { "text": "second" },
-        ]
+        {"text": "An exciting headline", "policySummaryInfo": {"reviewStatus": "REVIEWED", "approvalStatus": "APPROVED"}},
+        {"text": "second"},
+    ]
     field = "ad_group_ad.ad.responsive_search_ad.headlines"
     ads_row = GoogleAdsRow(
         ad_group_ad={
@@ -161,14 +221,9 @@ def test_get_field_value_object():
                     "headlines": [
                         {
                             "text": "An exciting headline",
-                            "policy_summary_info": {
-                                "review_status": "REVIEWED",
-                                "approval_status": "APPROVED"
-                            }
+                            "policy_summary_info": {"review_status": "REVIEWED", "approval_status": "APPROVED"},
                         },
-                        {
-                            "text": "second"
-                        }
+                        {"text": "second"},
                     ]
                 }
             }
@@ -176,13 +231,14 @@ def test_get_field_value_object():
     )
 
     response = GoogleAds.get_field_value(ads_row, field, {})
-    assert [json.loads(i) for i in response]  == expected_response
+    assert [json.loads(i) for i in response] == expected_response
+
 
 def test_get_field_value_strings():
     expected_response = [
-            "http://url_one.com",
-            "https://url_two.com",
-        ]
+        "http://url_one.com",
+        "https://url_two.com",
+    ]
     ads_row = GoogleAdsRow(
         ad_group_ad={
             "ad": {
@@ -196,6 +252,7 @@ def test_get_field_value_strings():
     field = "ad_group_ad.ad.final_urls"
     response = GoogleAds.get_field_value(ads_row, field, {})
     assert response == expected_response
+
 
 def test_parse_single_result():
     date = "2001-01-01"

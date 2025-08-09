@@ -10,6 +10,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config

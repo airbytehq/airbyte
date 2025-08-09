@@ -16,7 +16,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
  * interface.
  */
 interface AWSAccessKeySpecification {
-    @get:JsonSchemaTitle("S3 Key ID")
+    @get:JsonSchemaTitle("Access Key ID")
     @get:JsonPropertyDescription(
         "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>."
     )
@@ -27,7 +27,7 @@ interface AWSAccessKeySpecification {
     )
     val accessKeyId: String?
 
-    @get:JsonSchemaTitle("S3 Access Key")
+    @get:JsonSchemaTitle("Secret Access Key")
     @get:JsonPropertyDescription(
         "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>"
     )

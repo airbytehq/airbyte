@@ -7,11 +7,11 @@ data:
       - accounts.google.com
       - googleads.googleapis.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 3.7.9
+  dockerImageTag: 4.0.1
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   githubIssueLabel: source-google-ads
@@ -30,6 +30,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: This release introduces fixes to custom query schema creation. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
@@ -40,6 +42,9 @@ data:
       3.0.0:
         message: Google is deprecating v13 of the Google Ads API in January. This release upgrades the Google Ads API to the latest version (v15), which causes changes in several schemas. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2024-01-12"
+      4.0.0:
+        message: Google is deprecating v18 of the Google Ads API August 20. This release upgrades the Google Ads API to the latest version (v20), which causes changes in several schemas. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
+        upgradeDeadline: "2025-08-19"
   suggestedStreams:
     streams:
       - campaigns
@@ -61,7 +66,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests

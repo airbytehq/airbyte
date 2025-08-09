@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
-from source_google_sheets.utils import exception_description_by_status_code, name_conversion, safe_name_conversion
+from components import exception_description_by_status_code, name_conversion, safe_name_conversion
 
 
 def test_name_conversion():
@@ -31,16 +31,16 @@ def test_safe_name_conversion():
     [
         (
             404,
-            "The requested Google Sheets spreadsheet with id spreadsheet_id does not exist. Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support",
+            "The requested Google Sheets spreadsheet with id spreadsheet_id does not exist. Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support.",
         ),
         (429, "Rate limit has been reached. Please try later or request a higher quota for your account."),
         (
             500,
-            "There was an issue with the Google Sheets API. This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support",
+            "There was an issue with the Google Sheets API. This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support.",
         ),
         (
             403,
-            "The authenticated Google Sheets user does not have permissions to view the spreadsheet with id spreadsheet_id. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support",
+            "The authenticated Google Sheets user does not have permissions to view the spreadsheet with id spreadsheet_id. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support.",
         ),
     ],
 )

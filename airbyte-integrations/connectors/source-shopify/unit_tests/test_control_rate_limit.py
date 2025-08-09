@@ -6,6 +6,7 @@
 import requests
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
+
 TEST_DATA_FIELD = "some_data_field"
 TEST_RATE_LIMIT_HEADER = "X-Shopify-Shop-Api-Call-Limit"
 TEST_THRESHOLD = 0.9

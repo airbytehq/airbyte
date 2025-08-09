@@ -13,15 +13,17 @@ from datetime import datetime
 from typing import Any, Callable, Generator, Iterable, MutableMapping, Optional, Tuple, Type, Union
 
 import pendulum
+from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v20.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v20.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v20.errors.types.query_error import QueryErrorEnum
+from google.ads.googleads.v20.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v20.errors.types.request_error import RequestErrorEnum
+from google.api_core.exceptions import Unauthenticated
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v17.errors.types.authentication_error import AuthenticationErrorEnum
-from google.ads.googleads.v17.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v17.errors.types.query_error import QueryErrorEnum
-from google.ads.googleads.v17.errors.types.quota_error import QuotaErrorEnum
-from google.ads.googleads.v17.errors.types.request_error import RequestErrorEnum
-from google.api_core.exceptions import Unauthenticated
+
 
 logger = logging.getLogger("airbyte")
 
@@ -33,8 +35,6 @@ def get_resource_name(stream_name: str) -> str:
 
 # maps stream name to name of resource in Google Ads
 REPORT_MAPPING = {
-    "account_performance_report": "customer",
-    "ad_group_ad_legacy": "ad_group_ad",
     "ad_group_bidding_strategy": "ad_group",
     "ad_listing_group_criterion": "ad_group_criterion",
     "campaign_real_time_bidding_settings": "campaign",
@@ -118,7 +118,9 @@ def traced_exception(
         elif query_error:
             message = f"Incorrect custom query. {error.message}"
 
-        elif is_error_type(quota_error, QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED):
+        elif is_error_type(quota_error, QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED) or is_error_type(
+            quota_error, QuotaErrorEnum.QuotaError.EXCESSIVE_LONG_TERM_QUERY_RESOURCE_CONSUMPTION
+        ):
             message = (
                 f"The operation limits for your Google Ads account '{customer_id}' have been exceeded for the last 24 hours. "
                 f"To avoid these limitations, consider applying for Standard access which offers unlimited operations per day. "

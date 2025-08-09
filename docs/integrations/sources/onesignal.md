@@ -78,6 +78,37 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 1.2.32 | 2025-08-09 | [64719](https://github.com/airbytehq/airbyte/pull/64719) | Update dependencies |
+| 1.2.31 | 2025-08-02 | [64257](https://github.com/airbytehq/airbyte/pull/64257) | Update dependencies |
+| 1.2.30 | 2025-07-26 | [63870](https://github.com/airbytehq/airbyte/pull/63870) | Update dependencies |
+| 1.2.29 | 2025-07-19 | [63415](https://github.com/airbytehq/airbyte/pull/63415) | Update dependencies |
+| 1.2.28 | 2025-07-12 | [63263](https://github.com/airbytehq/airbyte/pull/63263) | Update dependencies |
+| 1.2.27 | 2025-07-05 | [62555](https://github.com/airbytehq/airbyte/pull/62555) | Update dependencies |
+| 1.2.26 | 2025-06-28 | [62359](https://github.com/airbytehq/airbyte/pull/62359) | Update dependencies |
+| 1.2.25 | 2025-06-21 | [61877](https://github.com/airbytehq/airbyte/pull/61877) | Update dependencies |
+| 1.2.24 | 2025-06-14 | [61032](https://github.com/airbytehq/airbyte/pull/61032) | Update dependencies |
+| 1.2.23 | 2025-05-24 | [60514](https://github.com/airbytehq/airbyte/pull/60514) | Update dependencies |
+| 1.2.22 | 2025-05-10 | [60092](https://github.com/airbytehq/airbyte/pull/60092) | Update dependencies |
+| 1.2.21 | 2025-05-04 | [59504](https://github.com/airbytehq/airbyte/pull/59504) | Update dependencies |
+| 1.2.20 | 2025-04-27 | [59054](https://github.com/airbytehq/airbyte/pull/59054) | Update dependencies |
+| 1.2.19 | 2025-04-19 | [58518](https://github.com/airbytehq/airbyte/pull/58518) | Update dependencies |
+| 1.2.18 | 2025-04-12 | [57904](https://github.com/airbytehq/airbyte/pull/57904) | Update dependencies |
+| 1.2.17 | 2025-04-05 | [56773](https://github.com/airbytehq/airbyte/pull/56773) | Update dependencies |
+| 1.2.16 | 2025-03-22 | [56237](https://github.com/airbytehq/airbyte/pull/56237) | Update dependencies |
+| 1.2.15 | 2025-03-08 | [55545](https://github.com/airbytehq/airbyte/pull/55545) | Update dependencies |
+| 1.2.14 | 2025-03-01 | [55040](https://github.com/airbytehq/airbyte/pull/55040) | Update dependencies |
+| 1.2.13 | 2025-02-23 | [54587](https://github.com/airbytehq/airbyte/pull/54587) | Update dependencies |
+| 1.2.12 | 2025-02-15 | [53964](https://github.com/airbytehq/airbyte/pull/53964) | Update dependencies |
+| 1.2.11 | 2025-02-08 | [53461](https://github.com/airbytehq/airbyte/pull/53461) | Update dependencies |
+| 1.2.10 | 2025-02-01 | [53007](https://github.com/airbytehq/airbyte/pull/53007) | Update dependencies |
+| 1.2.9 | 2025-01-25 | [52539](https://github.com/airbytehq/airbyte/pull/52539) | Update dependencies |
+| 1.2.8 | 2025-01-18 | [51868](https://github.com/airbytehq/airbyte/pull/51868) | Update dependencies |
+| 1.2.7 | 2025-01-11 | [51321](https://github.com/airbytehq/airbyte/pull/51321) | Update dependencies |
+| 1.2.6 | 2024-12-28 | [50719](https://github.com/airbytehq/airbyte/pull/50719) | Update dependencies |
+| 1.2.5 | 2024-12-21 | [50243](https://github.com/airbytehq/airbyte/pull/50243) | Update dependencies |
+| 1.2.4 | 2024-12-14 | [49706](https://github.com/airbytehq/airbyte/pull/49706) | Update dependencies |
+| 1.2.3 | 2024-12-12 | [49349](https://github.com/airbytehq/airbyte/pull/49349) | Update dependencies |
+| 1.2.2 | 2024-12-11 | [49106](https://github.com/airbytehq/airbyte/pull/49106) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.2.1 | 2024-10-29 | [47667](https://github.com/airbytehq/airbyte/pull/47667) | Update dependencies |
 | 1.2.0 | 2024-10-05 | [46372](https://github.com/airbytehq/airbyte/pull/46372) | Converting to manifest-only format |
 | 1.1.14 | 2024-09-28 | [46184](https://github.com/airbytehq/airbyte/pull/46184) | Update dependencies |

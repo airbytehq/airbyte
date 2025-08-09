@@ -6,11 +6,12 @@ from typing import Dict, Iterable, List
 import asyncclick as click
 import asyncer
 from connector_ops.utils import Connector  # type: ignore
+from jinja2 import Environment, PackageLoader, select_autoescape
+
 from connectors_qa.checks import ENABLED_CHECKS
 from connectors_qa.consts import CONNECTORS_QA_DOC_TEMPLATE_NAME
 from connectors_qa.models import Check, CheckCategory, CheckResult, CheckStatus, Report
 from connectors_qa.utils import get_all_connectors_in_directory, remove_strict_encrypt_suffix
-from jinja2 import Environment, PackageLoader, select_autoescape
 
 
 # HELPERS

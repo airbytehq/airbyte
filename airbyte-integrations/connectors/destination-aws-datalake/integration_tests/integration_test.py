@@ -9,6 +9,10 @@ from typing import Any, Dict, Mapping
 
 import awswrangler as wr
 import pytest
+from destination_aws_datalake import DestinationAwsDatalake
+from destination_aws_datalake.aws import AwsHandler
+from destination_aws_datalake.config_reader import ConnectorConfig
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -24,9 +28,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_aws_datalake import DestinationAwsDatalake
-from destination_aws_datalake.aws import AwsHandler
-from destination_aws_datalake.config_reader import ConnectorConfig
+
 
 logger = logging.getLogger("airbyte")
 
@@ -95,13 +97,13 @@ def test_check_invalid_aws_account_config(invalid_account_config: Mapping):
 
 
 def _state(stream: str, data: Dict[str, Any]) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(
-        type=AirbyteStateType.STREAM,
-        stream=AirbyteStreamState(
-            stream_state=data,
-            stream_descriptor=StreamDescriptor(name=stream, namespace=None)
-        )
-    ))
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(stream_state=data, stream_descriptor=StreamDescriptor(name=stream, namespace=None)),
+        ),
+    )
 
 
 def _record(stream: str, str_value: str, int_value: int, date_value: datetime) -> AirbyteMessage:

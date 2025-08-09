@@ -11,6 +11,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -366,7 +367,19 @@ class Leads(MarketoExportBase):
     def stream_fields(self):
         standard_properties = set(self.get_json_schema()["properties"])
         resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self._session.auth.get_auth_header())
-        available_fields = set(x.get("rest").get("name") for x in resp.json().get("result"))
+
+        available_fields = set()
+        result = resp.json().get("result", [])
+        for describe_record in result:
+            rest = describe_record.get("rest")
+            if rest and "name" in rest:
+                available_fields.add(rest["name"])
+            else:
+                continue  # skipping soap only fields
+
+        if not available_fields:
+            self.logger.warning("No valid fields found in leads/describe response")
+
         return list(standard_properties & available_fields)
 
     def get_json_schema(self) -> Mapping[str, Any]:

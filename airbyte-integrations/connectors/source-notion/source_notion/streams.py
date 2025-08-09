@@ -4,21 +4,67 @@
 
 import logging as Logger
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import pendulum
-import pydantic
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-from requests import HTTPError
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+
+
+class NotionBackoffStrategy(BackoffStrategy):
+    """
+    Custom backoff strategy that implements the same logic as the legacy backoff_time method.
+
+    Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
+    For a 429 response, we can use the retry-header to determine how long to wait before retrying.
+    For 500-level errors, we use exponential backoff with a retry_factor of 5.
+    Docs: https://developers.notion.com/reference/errors#rate-limiting
+    """
+
+    def __init__(self, retry_factor: int = 5):
+        self.retry_factor = retry_factor
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if not isinstance(response_or_exception, requests.Response):
+            return None
+
+        response = response_or_exception
+
+        # For 429 rate limit errors, use the retry-after header
+        if response.status_code == 429:
+            retry_after = response.headers.get("retry-after", "5")
+            return float(retry_after)
+
+        # For 400 errors with invalid start cursor, return 10 seconds
+        if response.status_code == 400:
+            message = response.json().get("message", "")
+            if message.startswith("The start_cursor provided is invalid: "):
+                return 10
+
+        # For 500+ errors, use exponential backoff.
+        if response.status_code >= 500:
+            backoff_time = self.retry_factor * (2 ** (attempt_count - 1))
+            return backoff_time
+
+        # For all other cases, return None to let CDK handle with default behavior
+        # This includes 400 errors that don't match our specific case
+        return None
 
 
 class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
@@ -26,8 +72,9 @@ class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
     Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
     """
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
-
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: Logger, source: Source, error: requests.HTTPError
+    ) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
             "Please make sure your integration has read access for the resources you are trying to sync"
@@ -36,7 +83,6 @@ class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
 
 
 class NotionStream(HttpStream, ABC):
-
     url_base = "https://api.notion.com/v1/"
 
     primary_key = "id"
@@ -45,14 +91,33 @@ class NotionStream(HttpStream, ABC):
 
     raise_on_http_errors = True
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
+    def __init__(self, config: MutableMapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
         # If start_date is not found in config, set it to 2 years ago and update value in config for use in next stream
         if not self.start_date:
-            self.start_date = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+            two_years_ago = datetime.now(timezone.utc) - timedelta(days=730)  # 2 years = 730 days
+            self.start_date = self._format_datetime_for_notion(two_years_ago)
             config["start_date"] = self.start_date
+
+    def _format_datetime_for_notion(self, dt) -> str:
+        """
+        Format datetime for Notion API compatibility.
+        Notion expects UTC datetimes in format 'YYYY-MM-DDTHH:MM:SS.000Z' (with 'Z' suffix).
+        This maintains backward compatibility with existing state that uses 'Z' format.
+        """
+        if hasattr(dt, "isoformat"):
+            # Convert to UTC if needed and format consistently
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            elif dt.tzinfo != timezone.utc:
+                dt = dt.astimezone(timezone.utc)
+            # Format with 'Z' suffix for UTC and exactly 3 decimal places for milliseconds
+            return dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        else:
+            # Fallback to standard formatting
+            return ab_datetime_format(dt)
 
     @property
     def availability_strategy(self) -> HttpAvailabilityStrategy:
@@ -70,6 +135,13 @@ class NotionStream(HttpStream, ABC):
     def max_time(self) -> int:
         return 60 * 11
 
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        """
+        Return custom backoff strategy for Notion API.
+        This replaces the deprecated backoff_time method with the modern CDK approach.
+        """
+        return NotionBackoffStrategy(retry_factor=self.retry_factor)
+
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
         if response.status_code == 400:
@@ -85,20 +157,6 @@ class NotionStream(HttpStream, ABC):
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
-        For a 429 response, we can use the retry-header to determine how long to wait before retrying.
-        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
-        Docs: https://developers.notion.com/reference/errors#rate-limiting
-        """
-        retry_after = response.headers.get("retry-after", "5")
-        if response.status_code == 429:
-            return float(retry_after)
-        if self.check_invalid_start_cursor(response):
-            return 10
-        return super().backoff_time(response)
-
     def should_retry(self, response: requests.Response) -> bool:
         # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
         if response.status_code == 504:
@@ -111,7 +169,8 @@ class NotionStream(HttpStream, ABC):
             self.page_size = 100
             self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to {self.page_size}.")
 
-        return response.status_code == 400 or super().should_retry(response)
+        # Temporary workaround to replace the deprecated calls to super().should_retry(response)
+        return response.status_code == 400 or response.status_code == 429 or response.status_code >= 500
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
@@ -135,6 +194,7 @@ class NotionStream(HttpStream, ABC):
         next_cursor = response.json().get("next_cursor")
         if next_cursor:
             return {"next_cursor": next_cursor}
+        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # sometimes notion api returns response without results object
@@ -142,31 +202,7 @@ class NotionStream(HttpStream, ABC):
         yield from data
 
 
-T = TypeVar("T")
-
-
-class StateValueWrapper(pydantic.BaseModel):
-
-    stream: T
-    state_value: str
-    max_cursor_time: Any = ""
-
-    def __repr__(self):
-        """Overrides print view"""
-        return self.value
-
-    @property
-    def value(self) -> str:
-        """Return max cursor time after stream sync is finished."""
-        return self.max_cursor_time if self.stream.is_finished else self.state_value
-
-    def dict(self, **kwargs):
-        """Overrides default logic to return current value only."""
-        return {pydantic.utils.ROOT_KEY: self.value}
-
-
 class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
-
     cursor_field = "last_edited_time"
 
     http_method = "POST"
@@ -179,6 +215,8 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
 
         # object type for search filtering, either "page" or "database" if not None
         self.obj_type = obj_type
+        # Track max cursor time across all calls to _get_updated_state
+        self._max_cursor_time = ""
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -193,7 +231,7 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
 
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
         if not self.obj_type:
-            return
+            return None
 
         # search request body
         # Docs: https://developers.notion.com/reference/post-search
@@ -212,6 +250,8 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
             stream_state = None
 
         self.state = stream_state or {}
+        # Initialize max cursor time from current state
+        self._max_cursor_time = self.state.get(self.cursor_field, "")
 
         try:
             for record in super().read_records(sync_mode, stream_state=stream_state, **kwargs):
@@ -229,8 +269,6 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         for record in records:
             record_lmd = record.get(self.cursor_field, "")
             state_lmd = stream_state.get(self.cursor_field, "")
-            if isinstance(state_lmd, StateValueWrapper):
-                state_lmd = state_lmd.value
             if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
                 yield record
 
@@ -239,14 +277,22 @@ class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        state_value = (current_stream_state or {}).get(self.cursor_field, "")
-        if not isinstance(state_value, StateValueWrapper):
-            state_value = StateValueWrapper(stream=self, state_value=state_value)
+        # Get the current state value as a string
+        current_state_value = (current_stream_state or {}).get(self.cursor_field, "")
+        record_time = latest_record.get(self.cursor_field, "")
 
-        record_time = latest_record.get(self.cursor_field, self.start_date)
-        state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
+        # Always track the maximum cursor time we've seen
+        if record_time:
+            if not self._max_cursor_time or record_time > self._max_cursor_time:
+                self._max_cursor_time = record_time
 
-        return {self.cursor_field: state_value}
+        # Only update state when stream sync is finished
+        if self.is_finished:
+            # When finished, return the maximum cursor time we've tracked
+            return {self.cursor_field: self._max_cursor_time}
+        else:
+            # Keep the current state unchanged when stream is not finished
+            return {self.cursor_field: current_state_value}
 
 
 class Pages(IncrementalNotionStream):
@@ -294,7 +340,9 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             self.block_id_stack.append(page_id)
 
             # stream sync is finished when it is on the last slice
-            self.is_finished = page_id == slices[-1]["parent"]["id"]
+            last_slice = slices[-1]
+            if last_slice is not None:
+                self.is_finished = page_id == last_slice["parent"]["id"]
 
             yield {"page_id": page_id}
 
@@ -328,7 +376,9 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             return
 
         records = super().read_records(**kwargs)
-        for record in records:
+        for sequence_number, record in enumerate(records):
+            if "parent" in record:
+                record["parent"]["sequence_number"] = sequence_number
             if record.get("has_children", False):
                 # do the depth first traversal recursive call, get children blocks
                 self.block_id_stack.append(record["id"])
@@ -357,5 +407,6 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
                 )
                 return False
             else:
-                return super().should_retry(response)
-        return super().should_retry(response)
+                # Temporary workaround to replace the deprecated calls to super().should_retry(response)
+                return response.status_code == 429 or response.status_code >= 500
+        return response.status_code == 429 or response.status_code >= 500

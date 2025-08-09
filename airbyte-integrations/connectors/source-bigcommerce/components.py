@@ -7,6 +7,7 @@ from typing import Optional
 
 import dpath.util
 import pendulum
+
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
@@ -20,7 +21,6 @@ class DateTimeTransformer(AddFields):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
-
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:
             date_time = parsed_field.value.eval(config, **kwargs)

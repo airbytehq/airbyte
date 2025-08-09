@@ -82,9 +82,9 @@ class Content:
             start_index = i
             end_index = starts[start_index + 1] - 1 if start_index + 1 < len(headers) else None
             if header not in header_line_map.keys():
-                header_line_map[header] = [SectionLines(start=starts[start_index], end=end_index)]
+                header_line_map[header] = [SectionLines(start=starts[start_index], end=end_index)]  # type: ignore
             else:
-                header_line_map[header] = header_line_map[header] + [SectionLines(start=starts[start_index], end=end_index)]
+                header_line_map[header] = header_line_map[header] + [SectionLines(start=starts[start_index], end=end_index)]  # type: ignore
             i += 1
 
         return header_line_map

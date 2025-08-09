@@ -1,9 +1,13 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
+from unit_tests.conftest import get_source
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -20,16 +24,13 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
-from source_stripe import SourceStripe
+
 
 _STREAM_NAME = "accounts"
 _ACCOUNT_ID = "acct_1G9HZLIEn49ers"
 _CLIENT_SECRET = "ConfigBuilder default client secret"
 _NOW = datetime.now(timezone.utc)
-_CONFIG = {
-    "client_secret": _CLIENT_SECRET,
-    "account_id": _ACCOUNT_ID,
-}
+_CONFIG = {"client_secret": _CLIENT_SECRET, "account_id": _ACCOUNT_ID}
 _NO_STATE = StateBuilder().build()
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
 
@@ -71,7 +72,7 @@ class AccountsTest(TestCase):
             _create_response().with_record(record=_create_record()).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1
@@ -87,7 +88,7 @@ class AccountsTest(TestCase):
             _create_response().with_record(record=_create_record()).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2

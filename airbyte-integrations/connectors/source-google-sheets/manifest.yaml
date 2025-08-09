@@ -1,0 +1,631 @@
+version: 6.7.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckDynamicStream
+  stream_count: 1
+  use_check_availability: false
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    use_parent_parameters: false
+    stream_template:
+      type: DeclarativeStream
+      name: ""
+      $parameters:
+        i: 123
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        $parameters:
+          row_count: 0
+          sheet_id: ""
+          batch_size: 0
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.RangePartitionRouter
+        paginator:
+          type: NoPagination
+        record_selector:
+          decoder:
+            type: JsonDecoder
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.DpathSchemaMatchingExtractor
+            description: Extract record list of values (rows) and matches such values to correct schema property to generate individual records.
+            field_path:
+              - valueRanges
+              - "*"
+            $parameters:
+              schema_type_identifier:
+                $ref: "#/definitions/schema_type_identifier"
+              values_to_match_key: "values"
+              properties_to_match: ""
+          type: RecordSelector
+          $parameters:
+            name: ""
+        requester:
+          $ref: "#/definitions/base_requester"
+          $parameters:
+            sheet_id: ""
+            name: ""
+          http_method: GET
+          path: >-
+            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+            response_filters:
+              $ref: "#/definitions/response_filters/response_error_filters"
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          paginator:
+            type: NoPagination
+          record_selector:
+            extractor:
+              type: CustomRecordExtractor
+              class_name: source_declarative_manifest.components.DpathSchemaExtractor
+              parameters:
+                schema_type_identifier:
+                  $ref: "#/definitions/schema_type_identifier"
+              field_path:
+                - sheets
+                - "*"
+                - data
+                - "*"
+                - rowData
+                - "*"
+            type: RecordSelector
+          requester:
+            $ref: "#/definitions/base_requester"
+            $parameters:
+              sheet_id: ""
+            http_method: GET
+            path: >-
+              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
+            error_handler:
+              type: CompositeErrorHandler
+              error_handlers:
+                - type: DefaultErrorHandler
+                  backoff_strategies:
+                    - type: ExponentialBackoffStrategy
+                  response_filters:
+                    $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+        schema_type_identifier:
+          $ref: "#/definitions/schema_type_identifier"
+    components_resolver:
+      type: HttpComponentsResolver
+      description: We use first row of sheet to obtain data.
+      retriever:
+        $ref: "#/definitions/retrievers/components_resolver_retriever"
+      components_mapping:
+        - field_path:
+            - name
+          type: ComponentMappingDefinition
+          # Expression is structured as: <value_if_true> if <condition> else <value_if_false>
+          # This sets the stream name to the custom name from stream_name_overrides if a match is found,
+          # otherwise uses the original sheet/tab name.
+          value: >-
+            {%- set overrides = config.get('stream_name_overrides', [])
+                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
+                | list -%}
+            {{ overrides[0]['custom_stream_name'] if overrides else components_values['properties']['title'] }}
+          value_type: string
+          description: name for dynamic stream (with optional override).
+        - field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: sheet_id for dynamic schema loader requester.
+        - field_path:
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: sheet_id for dynamic stream retriever requester.
+        - field_path:
+            - retriever
+            - record_selector
+            - extractor
+            - $parameters
+            - properties_to_match
+          type: ComponentMappingDefinition
+          value: "{{components_values['data'][0].get('rowData', [{}])[0]}}"
+          description: indexed_schema to match with row values.
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - row_count
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['gridProperties']['rowCount']}}"
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: sheet_id for retriever.
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - batch_size
+          type: ComponentMappingDefinition
+          value: "{{config.get('batch_size', 1000000)}}"
+          description: batch size count for dynamic stream partition router (slicer).
+
+definitions:
+  streams:
+    get_spreadsheet_info_and_sheets:
+      type: DeclarativeStream
+      name: get_spreadsheet_info_and_sheets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=false&alt=json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  $ref: "#/definitions/response_filters/response_error_filters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sheets
+              - "*"
+              - properties
+          record_filter:
+            type: RecordFilter
+            condition: '{{ record["sheetType"] == "GRID" and record["gridProperties"]["rowCount"] > 0}}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sheets"
+  base_requester:
+    type: HttpRequester
+    url_base: https://sheets.googleapis.com/v4/spreadsheets/
+    use_cache: true
+    authenticator: "#/definitions/authenticator"
+  retrievers:
+    components_resolver_retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - sheets
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: title
+            partition_field: sheet_id
+            stream:
+              $ref: "#/definitions/streams/get_spreadsheet_info_and_sheets"
+      requester:
+        $ref: "#/definitions/base_requester"
+        description: spreadsheet_id can be either the full url to spreadsheet or the spreadsheet id.
+        http_method: GET
+        path: >-
+          {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id | urlencode}}!1:1&alt=json
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+          response_filters:
+            $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+  response_filters:
+    expected_one_sheet:
+      type: HttpResponseFilter
+      action: FAIL
+      predicate: >-
+        {{ 'sheets' in response and response["sheets"] | length != 1  }}
+      # error lacks of information as error_message can't interpolate stream_slice["potato"]
+      error_message: >-
+        Unable to read the schema of sheet. Error: Unexpected return
+        result: Sheet was
+        expected to contain data on exactly 1 sheet.
+    deduplicate_headers:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {{ response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        map(attribute="formattedValue") | list | length !=
+        response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        map(attribute="formattedValue") | list | unique | list | length }}
+      error_message: >-
+        {%- set headers_found = response["sheets"][0]["data"][0]["rowData"][0]["values"] | map(attribute="formattedValue") | list -%}
+        {%- set headers_count = {} -%}
+        {%- set duplicate_fields = [] -%}
+        {%- for headerFound in headers_found -%}
+            {%- if headerFound is not none -%}
+                {%- set headers_count = headers_count.update({headerFound: headers_count.get(headerFound, 0) + 1}) or headers_count -%}
+                {%- if headers_count.get(headerFound) > 1 and headerFound not in duplicate_fields -%}
+                    {%- set duplicate_fields = duplicate_fields.append(headerFound) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        Duplicate headers found in sheet {{ response["sheets"][0]["properties"]["title"] }}.
+        Deduplicating them by appending cell position: {{ duplicate_fields }}
+    fail_duplicate_headers:
+      $ref: "#/definitions/response_filters/deduplicate_headers"
+      action: FAIL
+      error_message: >-
+        {%- set headers_found = response["sheets"][0]["data"][0]["rowData"][0]["values"] | map(attribute="formattedValue") | list -%}
+        {%- set headers_count = {} -%}
+        {%- set duplicate_fields = [] -%}
+        {%- for headerFound in headers_found -%}
+            {%- if headerFound is not none -%}
+                {%- set headers_count = headers_count.update({headerFound: headers_count.get(headerFound, 0) + 1}) or headers_count -%}
+                {%- if headers_count.get(headerFound) > 1 and headerFound not in duplicate_fields -%}
+                    {%- set duplicate_fields = duplicate_fields.append(headerFound) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        The following duplicate headers were found in the sheet.
+        Please fix them to continue: {{ duplicate_fields }}
+    server_error:
+      type: HttpResponseFilter
+      action: RETRY
+      http_codes:
+        - 500
+        - 502
+        - 503
+      error_message: >-
+        There was an issue
+        with the Google Sheets API. This is usually a temporary issue from
+        Google's side. Please try again. If this issue persists, contact
+        support
+    forbidden:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 403
+      error_message: >-
+        The authenticated Google Sheets user does not have permissions to view the
+        spreadsheet with id {{config["spreadsheet_id"]}}. Please ensure the authenticated user has access
+        to the Spreadsheet and reauthenticate. If the issue persists, contact support.
+        The caller does not have right permissions.
+    not_found:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 404
+      error_message: >-
+        The requested Google Sheets spreadsheet with id {{config["spreadsheet_id"]}} does not exist.
+        Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support
+    rate_limit:
+      type: HttpResponseFilter
+      action: RATE_LIMITED
+      http_codes:
+        - 429
+      error_message: >-
+        Rate limit has been
+        reached. Please try later or request a higher quota for your account.
+    single_sheet_response_error_filters:
+      - $ref: "#/definitions/response_filters/expected_one_sheet"
+      - $ref: "#/definitions/response_filters/deduplicate_headers"
+      - $ref: "#/definitions/response_filters/rate_limit"
+    check_operation_single_sheet_response_error_filters:
+      - $ref: "#/definitions/response_filters/expected_one_sheet"
+      - $ref: "#/definitions/response_filters/fail_duplicate_headers"
+      - $ref: "#/definitions/response_filters/rate_limit"
+    response_error_filters:
+      - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+      - $ref: "#/definitions/response_filters/rate_limit"
+  schema_type_identifier:
+    key_pointer:
+      - formattedValue
+    schema_pointer:
+      - values
+  jwt_authenticator:
+    type: JwtAuthenticator
+    secret_key: "{{ json_loads(config['credentials']['service_account_info'])['private_key'] }}"
+    algorithm: "RS256"
+    token_duration: 3600
+    jwt_payload:
+      aud: "{{ json_loads(config['credentials']['service_account_info'])['token_uri'] }}"
+      iss: "{{ json_loads(config['credentials']['service_account_info'])['client_email'] }}"
+    additional_jwt_payload:
+      scope: "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://www.googleapis.com/oauth2/v4/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      $ref: "#/definitions/jwt_authenticator"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
+
+schemas:
+  sheets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      gridProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          columnCount:
+            type:
+              - number
+              - "null"
+          rowCount:
+            type:
+              - number
+              - "null"
+      index:
+        type:
+          - number
+          - "null"
+      sheetId:
+        type:
+          - number
+          - "null"
+      sheetType:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Google Sheets Source Spec
+    type: object
+    required:
+      - spreadsheet_id
+      - credentials
+    additionalProperties: true
+    properties:
+      batch_size:
+        type: integer
+        title: Row Batch Size
+        description: >-
+          Default value is 1000000.
+          An integer representing row batch size for each sent request to Google Sheets API.
+          Row batch size means how many rows are processed from the google sheet, for example default value 1000000
+          would process rows 2-1000002, then 1000003-2000003 and so on.
+          Based on <a href='https://developers.google.com/sheets/api/limits'>Google Sheets API limits documentation</a>,
+          it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
+          otherwise the request returns a timeout error. In regards to this information, consider network speed and
+          number of columns of the google sheet when deciding a batch_size value.
+        default: 1000000
+        order: 1
+      spreadsheet_id:
+        type: string
+        title: Spreadsheet Link
+        description: >-
+          Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
+        examples:
+          - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+        order: 0
+      names_conversion:
+        type: boolean
+        title: Convert Column Names to SQL-Compliant Format
+        description: >-
+          Converts column names to a SQL-compliant format (snake_case, lowercase, etc).
+          If enabled, you can further customize the sanitization using the options below.
+        default: false
+        order: 2
+      remove_leading_trailing_underscores:
+        type: boolean
+        title: Remove Leading and Trailing Underscores
+        description: >-
+          Removes leading and trailing underscores from column names. Does not remove leading underscores from column names that start with a number.
+          Example: "50th Percentile? "→ "_50_th_percentile"
+          This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+        default: false
+        order: 3
+      combine_number_word_pairs:
+        type: boolean
+        title: Combine Number-Word Pairs
+        description: >-
+          Combines adjacent numbers and words.
+          Example: "50th Percentile?" → "_50th_percentile_"
+          This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+        default: false
+        order: 4
+      remove_special_characters:
+        type: boolean
+        title: Remove All Special Characters
+        description: >-
+          Removes all special characters from column names.
+          Example: "Example ID*" → "example_id"
+          This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+        default: false
+        order: 5
+      combine_letter_number_pairs:
+        type: boolean
+        title: Combine Letter-Number Pairs
+        description: >-
+          Combines adjacent letters and numbers.
+          Example: "Q3 2023" → "q3_2023"
+          This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+        default: false
+        order: 6
+      allow_leading_numbers:
+        type: boolean
+        title: Allow Leading Numbers
+        description: >-
+          Allows column names to start with numbers.
+          Example: "50th Percentile" → "50_th_percentile"
+          This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
+        default: false
+        order: 7
+      credentials:
+        type: object
+        title: Authentication
+        description: >-
+          Credentials for connecting to the Google Sheets API
+        oneOf:
+          - title: Authenticate via Google (OAuth)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+              client_id:
+                title: Client ID
+                type: string
+                description: "Enter your Google application's Client ID. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: "Enter your Google application's Client Secret. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: "Enter your Google application's refresh token. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+          - title: Service Account Key Authentication
+            type: object
+            required:
+              - auth_type
+              - service_account_info
+            properties:
+              auth_type:
+                type: string
+                const: Service
+              service_account_info:
+                type: string
+                title: Service Account Information.
+                description: 'The JSON key of the service account to use for authorization. Read more <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">here</a>.'
+                airbyte_secret: true
+                examples:
+                  - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
+      stream_name_overrides:
+        type: array
+        title: Stream Name Overrides
+        description: >-
+          **Overridden streams will default to Sync Mode: Full Refresh (Append), which does not support primary keys. If you want to use primary keys and deduplication, update the sync mode to "Full Refresh | Overwrite + Deduped" in your connection settings.**
+
+          Allows you to rename streams (Google Sheet tab names) as they appear in Airbyte. 
+
+          Each item should be an object with a `source_stream_name` (the exact name of the sheet/tab in your spreadsheet) 
+          and a `custom_stream_name` (the name you want it to appear as in Airbyte and the destination).
+
+          If a `source_stream_name` is not found in your spreadsheet, it will be ignored and the default name will be used.
+          This feature only affects stream (sheet/tab) names, not field/column names.
+
+          If you want to rename fields or column names, you can do so using the Airbyte Mappings feature after your connection is created. See the Airbyte documentation for more details on how to use Mappings.
+
+          Examples:
+            - To rename a sheet called "Sheet1" to "sales_data", and "2024 Q1" to "q1_2024":
+              [
+                { "source_stream_name": "Sheet1", "custom_stream_name": "sales_data" },
+                { "source_stream_name": "2024 Q1", "custom_stream_name": "q1_2024" }
+              ]
+            - If you do not wish to rename any streams, leave this blank.
+        items:
+          type: object
+          required:
+            - source_stream_name
+            - custom_stream_name
+          properties:
+            source_stream_name:
+              type: string
+              title: Source Stream Name
+              description: The exact name of the sheet/tab in your Google Spreadsheet.
+              order: 0
+            custom_stream_name:
+              type: string
+              title: Custom Stream Name
+              description: The name you want this stream to appear as in Airbyte and your destination.
+              order: 1
+          order: 8
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
+  max_concurrency: 1

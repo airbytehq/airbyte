@@ -7,6 +7,8 @@ import logging
 from logging import getLogger
 from typing import Any, Iterable, Mapping
 
+from timeplus import Environment, Stream
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -17,7 +19,7 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-from timeplus import Environment, Stream
+
 
 logger = getLogger("airbyte")
 

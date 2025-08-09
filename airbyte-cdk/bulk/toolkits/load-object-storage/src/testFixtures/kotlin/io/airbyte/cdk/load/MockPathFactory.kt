@@ -9,44 +9,49 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.PathMatcher
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.nio.file.Path
 
 @Singleton
 @Requires(env = ["MockPathFactory"])
 open class MockPathFactory : PathFactory {
-    open var doSupportStaging = false
-
-    override val supportsStaging: Boolean
-        get() = doSupportStaging
-    override val prefix: String
+    override val finalPrefix: String
         get() = "prefix"
 
     private fun fromStream(stream: DestinationStream): String {
-        return "/${stream.descriptor.namespace}/${stream.descriptor.name}"
+        return "${stream.mappedDescriptor.namespace}/${stream.mappedDescriptor.name}"
     }
 
-    override fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
-        return Path.of("$prefix/staging/${fromStream(stream)}")
-    }
-
-    override fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
-        return Path.of("$prefix/${fromStream(stream)}")
+    override fun getFinalDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean
+    ): String {
+        return "$finalPrefix/${fromStream(stream)}"
     }
 
     override fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        isStaging: Boolean,
         extension: String?
-    ): Path {
-        val prefix = if (isStaging) getStagingDirectory(stream) else getFinalDirectory(stream)
-        return prefix.resolve("file")
+    ): String {
+        val prefix = getFinalDirectory(stream)
+        return "${prefix}file"
     }
 
-    override fun getPathMatcher(stream: DestinationStream): PathMatcher {
+    override fun getLongestStreamConstantPrefix(
+        stream: DestinationStream,
+    ): String {
+        return getFinalDirectory(stream)
+    }
+
+    override fun getPathMatcher(
+        stream: DestinationStream,
+        suffixPattern: String? // ignored
+    ): PathMatcher {
         return PathMatcher(
-            regex = Regex("$prefix/(.*)-(.*)$"),
-            variableToIndex = mapOf("part_number" to 2)
+            regex =
+                Regex(
+                    "$finalPrefix/(${stream.mappedDescriptor.namespace})/(${stream.mappedDescriptor.name})/(.*)-(.*)$"
+                ),
+            variableToIndex = mapOf("part_number" to 4)
         )
     }
 }

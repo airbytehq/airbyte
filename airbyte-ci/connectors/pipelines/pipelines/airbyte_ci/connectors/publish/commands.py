@@ -4,6 +4,7 @@
 from typing import Callable, Dict, Iterable, List
 
 import asyncclick as click
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode

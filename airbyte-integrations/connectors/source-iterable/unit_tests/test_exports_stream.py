@@ -8,9 +8,10 @@ from unittest import mock
 import pendulum
 import pytest
 import responses
+from source_iterable.source import SourceIterable
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from source_iterable.source import SourceIterable
 
 
 @pytest.fixture

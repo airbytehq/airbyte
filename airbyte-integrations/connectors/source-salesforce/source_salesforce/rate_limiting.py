@@ -9,10 +9,12 @@ from typing import Any, Mapping, Optional, Union
 
 import backoff
 import requests
+from requests import codes, exceptions  # type: ignore[import]
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from requests import codes, exceptions  # type: ignore[import]
+
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
     # We've had a couple of customers with ProtocolErrors, namely:

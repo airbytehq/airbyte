@@ -10,7 +10,6 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class SingleUseOauth2Authenticator(DeclarativeSingleUseRefreshTokenOauth2Authenticator):
-
     config: Config
 
     def __post_init__(self):

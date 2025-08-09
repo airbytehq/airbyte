@@ -4,80 +4,78 @@
 
 import copy
 import logging
+from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
-from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
-from source_mixpanel.streams import Export
+from source_mixpanel.source import SourceMixpanel
 
-from .utils import command_check, get_url_to_mock, setup_response
+from airbyte_cdk.utils import AirbyteTracedException
+
+from .utils import command_check, get_url_to_mock, init_stream, setup_response
+
 
 logger = logging.getLogger("airbyte")
 
 
 @pytest.fixture
-def check_connection_url(config):
-    auth = TokenAuthenticatorBase64(token=config["credentials"]["api_secret"])
-    export_stream = Export(authenticator=auth, **config)
+def check_connection_url(config_raw):
+    export_stream = init_stream("export", config_raw)
     return get_url_to_mock(export_stream)
 
 
-@pytest.mark.parametrize(
-    "response_code,expect_success,response_json",
-    [
-        (400, False, {"error": "Request error"})
-    ]
-)
+@pytest.mark.parametrize("response_code,expect_success,response_json", [(400, False, {"error": "Request error"})])
 def test_check_connection(requests_mock, check_connection_url, config_raw, response_code, expect_success, response_json):
     # requests_mock.register_uri("GET", check_connection_url, setup_response(response_code, response_json))
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=response_code, json=response_json)
-    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=response_code, json=response_json)
-    ok, error = SourceMixpanel().check_connection(logger, config_raw)
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=response_code, json=response_json)
+    requests_mock.get("https://eu.mixpanel.com/api/query/cohorts/list", status_code=response_code, json=response_json)
+    ok, error = SourceMixpanel(MagicMock(), config_raw, MagicMock()).check_connection(logger, config_raw)
     assert ok == expect_success
 
 
 def test_check_connection_bad_config():
     config = {}
-    source = SourceMixpanel()
+    source = SourceMixpanel(MagicMock(), config, MagicMock())
     with pytest.raises(AirbyteTracedException):
         command_check(source, config)
 
 
 def test_check_connection_incomplete(config_raw):
     config_raw.pop("credentials")
-    source = SourceMixpanel()
+    source = SourceMixpanel(MagicMock(), config_raw, MagicMock())
     with pytest.raises(AirbyteTracedException):
         command_check(source, config_raw)
 
 
 def test_streams(requests_mock, config_raw):
-    requests_mock.register_uri("POST", "https://mixpanel.com/api/2.0/engage?page_size=1000", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(200, {"id": 123}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"}))
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage?page_size=1000", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
+    requests_mock.register_uri(
+        "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
+    )
     requests_mock.register_uri(
         "GET",
         "https://data.mixpanel.com/api/2.0/export",
         setup_response(200, {"event": "some event", "properties": {"event": 124, "time": 124124}}),
     )
 
-    streams = SourceMixpanel().streams(config_raw)
+    streams = SourceMixpanel(MagicMock(), config_raw, MagicMock()).streams(config_raw)
     assert len(streams) == 7
 
 
 def test_streams_string_date(requests_mock, config_raw):
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(200, {"id": 123}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
-    requests_mock.register_uri("POST", "https://mixpanel.com/api/2.0/engage", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(402, {"error": "Payment required"}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels/list", setup_response(402, {"error": "Payment required"}))
     requests_mock.register_uri(
         "GET",
         "https://data.mixpanel.com/api/2.0/export",
@@ -86,12 +84,12 @@ def test_streams_string_date(requests_mock, config_raw):
     config = copy.deepcopy(config_raw)
     config["start_date"] = "2020-01-01"
     config["end_date"] = "2020-01-02"
-    streams = SourceMixpanel().streams(config)
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
     assert len(streams) == 7
 
 
 @pytest.mark.parametrize(
-    "config, success, expected_error_message",
+    "config, expected_is_success, expected_error_message",
     (
         (
             {"credentials": {"api_secret": "secret"}, "project_timezone": "Miami"},
@@ -109,17 +107,6 @@ def test_streams_string_date(requests_mock, config_raw):
             "Could not parse end date: 20 Jan 2021. Please enter a valid end date.",
         ),
         (
-            {"credentials": {"api_secret": "secret"}, "attribution_window": "20 days"},
-            False,
-            "Please provide a valid integer for the `Attribution window` parameter.",
-        ),
-        (
-            {"credentials": {"api_secret": "secret"}, "select_properties_by_default": "Yes"},
-            False,
-            "Please provide a valid True/False value for the `Select properties by default` parameter.",
-        ),
-        ({"credentials": {"api_secret": "secret"}, "region": "UK"}, False, "Region must be either EU or US."),
-        (
             {"credentials": {"username": "user", "secret": "secret"}},
             False,
             "Required parameter 'project_id' missing or malformed. Please provide a valid project ID.",
@@ -135,23 +122,23 @@ def test_streams_string_date(requests_mock, config_raw):
                 "select_properties_by_default": True,
                 "region": "EU",
                 "date_window_size": 10,
-                "page_size": 1000
+                "page_size": 1000,
             },
             True,
             None,
         ),
     ),
 )
-def test_config_validation(config, success, expected_error_message, requests_mock):
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
-    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
+def test_config_validation(config, expected_is_success, expected_error_message, requests_mock):
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+    requests_mock.get("https://eu.mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+
     try:
-        is_success, message = SourceMixpanel().check_connection(None, config)
+        is_success, message = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(MagicMock(), config)
     except AirbyteTracedException as e:
         is_success = False
         message = e.message
 
-    # assert is_success is success
+    assert is_success is expected_is_success, f"Actual connection status doesn't match with expected value. Actual error message {message}"
     if not is_success:
-        assert message == expected_error_message
+        assert expected_error_message in message

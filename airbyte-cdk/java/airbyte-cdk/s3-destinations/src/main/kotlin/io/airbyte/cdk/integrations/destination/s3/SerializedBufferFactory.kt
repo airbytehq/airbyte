@@ -28,7 +28,7 @@ class SerializedBufferFactory {
          * When running a
          * [io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy], it
          * would usually need to instantiate new buffers when flushing data or when it receives data
-         * for a brand-new stream. This factory fills this need and @return the function to be
+         * for a brand-new stream. This factory fills this need and @return's the function to be
          * called on such events.
          *
          * The factory is responsible for choosing the correct constructor function for a new

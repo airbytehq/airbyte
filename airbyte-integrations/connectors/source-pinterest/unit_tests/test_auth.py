@@ -7,15 +7,18 @@ import logging
 import pendulum
 import pytest
 import requests
+from requests import Response
+from source_pinterest.python_stream_auth import PinterestOauthAuthenticator
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests import Response
-from source_pinterest.python_stream_auth import PinterestOauthAuthenticator
+
 
 LOGGER = logging.getLogger(__name__)
 
 resp = Response()
+
 
 class TestPinterestOauthAuthenticator:
     """
@@ -69,7 +72,9 @@ class TestPinterestOauthAuthenticator:
         mocker.patch.object(resp, "status_code", 400)
         mocker.patch.object(oauth, "_wrap_refresh_token_exception", return_value=True)
 
-        with pytest.raises(AirbyteTracedException, match="Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."):
+        with pytest.raises(
+            AirbyteTracedException, match="Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+        ):
             oauth.refresh_access_token()
 
 

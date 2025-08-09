@@ -1,1 +1,2 @@
 from .cursor_based_pagination_strategy import CursorBasedPaginationStrategy
+from .end_of_stream_pagination_strategy import EndOfStreamPaginationStrategy

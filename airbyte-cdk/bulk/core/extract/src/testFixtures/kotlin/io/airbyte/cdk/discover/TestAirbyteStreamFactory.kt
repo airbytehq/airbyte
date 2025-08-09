@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Requires
@@ -17,27 +18,19 @@ class TestAirbyteStreamFactory(
     val metaFieldDecorator: TestMetaFieldDecorator,
 ) : AirbyteStreamFactory {
 
-    override fun createGlobal(discoveredStream: DiscoveredStream): AirbyteStream =
+    override fun create(
+        config: SourceConfiguration,
+        discoveredStream: DiscoveredStream
+    ): AirbyteStream =
         AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
+            val hasPK = discoveredStream.primaryKeyColumnIDs.isNotEmpty()
             supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-            metaFieldDecorator.decorateAirbyteStream(this)
-            if (discoveredStream.primaryKeyColumnIDs.isNotEmpty()) {
-                sourceDefinedPrimaryKey = discoveredStream.primaryKeyColumnIDs
-                isResumable = true
-            } else {
-                isResumable = false
+            if (config.isCdc()) {
+                metaFieldDecorator.decorateAirbyteStream(this)
             }
-        }
-
-    override fun createNonGlobal(discoveredStream: DiscoveredStream): AirbyteStream =
-        AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
-            supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-            sourceDefinedCursor = false
-            if (discoveredStream.primaryKeyColumnIDs.isNotEmpty()) {
-                sourceDefinedPrimaryKey = discoveredStream.primaryKeyColumnIDs
-                isResumable = true
-            } else {
-                isResumable = false
-            }
+            sourceDefinedPrimaryKey =
+                if (hasPK) discoveredStream.primaryKeyColumnIDs else emptyList()
+            sourceDefinedCursor = config.isCdc() && hasPK
+            isResumable = hasPK
         }
 }

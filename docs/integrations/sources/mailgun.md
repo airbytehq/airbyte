@@ -68,7 +68,37 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.31 | 2025-08-09 | [64607](https://github.com/airbytehq/airbyte/pull/64607) | Update dependencies |
+| 0.3.30 | 2025-08-02 | [64265](https://github.com/airbytehq/airbyte/pull/64265) | Update dependencies |
+| 0.3.29 | 2025-07-26 | [63915](https://github.com/airbytehq/airbyte/pull/63915) | Update dependencies |
+| 0.3.28 | 2025-07-19 | [63508](https://github.com/airbytehq/airbyte/pull/63508) | Update dependencies |
+| 0.3.27 | 2025-07-12 | [63109](https://github.com/airbytehq/airbyte/pull/63109) | Update dependencies |
+| 0.3.26 | 2025-07-05 | [62570](https://github.com/airbytehq/airbyte/pull/62570) | Update dependencies |
+| 0.3.25 | 2025-06-28 | [62198](https://github.com/airbytehq/airbyte/pull/62198) | Update dependencies |
+| 0.3.24 | 2025-06-21 | [61848](https://github.com/airbytehq/airbyte/pull/61848) | Update dependencies |
+| 0.3.23 | 2025-06-14 | [60725](https://github.com/airbytehq/airbyte/pull/60725) | Update dependencies |
+| 0.3.22 | 2025-05-10 | [59896](https://github.com/airbytehq/airbyte/pull/59896) | Update dependencies |
+| 0.3.21 | 2025-05-03 | [59251](https://github.com/airbytehq/airbyte/pull/59251) | Update dependencies |
+| 0.3.20 | 2025-04-26 | [58768](https://github.com/airbytehq/airbyte/pull/58768) | Update dependencies |
+| 0.3.19 | 2025-04-19 | [58183](https://github.com/airbytehq/airbyte/pull/58183) | Update dependencies |
+| 0.3.18 | 2025-04-12 | [57752](https://github.com/airbytehq/airbyte/pull/57752) | Update dependencies |
+| 0.3.17 | 2025-04-05 | [57029](https://github.com/airbytehq/airbyte/pull/57029) | Update dependencies |
+| 0.3.16 | 2025-03-29 | [56670](https://github.com/airbytehq/airbyte/pull/56670) | Update dependencies |
+| 0.3.15 | 2025-03-22 | [56078](https://github.com/airbytehq/airbyte/pull/56078) | Update dependencies |
+| 0.3.14 | 2025-03-08 | [55465](https://github.com/airbytehq/airbyte/pull/55465) | Update dependencies |
+| 0.3.13 | 2025-03-01 | [54810](https://github.com/airbytehq/airbyte/pull/54810) | Update dependencies |
+| 0.3.12 | 2025-02-22 | [54297](https://github.com/airbytehq/airbyte/pull/54297) | Update dependencies |
+| 0.3.11 | 2025-02-15 | [53823](https://github.com/airbytehq/airbyte/pull/53823) | Update dependencies |
+| 0.3.10 | 2025-02-08 | [53258](https://github.com/airbytehq/airbyte/pull/53258) | Update dependencies |
+| 0.3.9 | 2025-02-01 | [52786](https://github.com/airbytehq/airbyte/pull/52786) | Update dependencies |
+| 0.3.8 | 2025-01-25 | [52284](https://github.com/airbytehq/airbyte/pull/52284) | Update dependencies |
+| 0.3.7 | 2025-01-18 | [51815](https://github.com/airbytehq/airbyte/pull/51815) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51144](https://github.com/airbytehq/airbyte/pull/51144) | Update dependencies |
+| 0.3.5 | 2024-12-28 | [50592](https://github.com/airbytehq/airbyte/pull/50592) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [50128](https://github.com/airbytehq/airbyte/pull/50128) | Update dependencies |
+| 0.3.3 | 2024-12-14 | [49613](https://github.com/airbytehq/airbyte/pull/49613) | Update dependencies |
+| 0.3.2 | 2024-12-12 | [47680](https://github.com/airbytehq/airbyte/pull/47680) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44130](https://github.com/airbytehq/airbyte/pull/44130) | Refactor connector to manifest-only format |
 | 0.2.18 | 2024-08-12 | [43923](https://github.com/airbytehq/airbyte/pull/43923) | Update dependencies |
 | 0.2.17 | 2024-08-10 | [43501](https://github.com/airbytehq/airbyte/pull/43501) | Update dependencies |

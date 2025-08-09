@@ -54,8 +54,38 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
-| 0.4.0   | 2024-09-08 | [44601](https://github.com/airbytehq/airbyte/pull/44601) | Update macro for end_date   |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.4.30 | 2025-08-09 | [64697](https://github.com/airbytehq/airbyte/pull/64697) | Update dependencies |
+| 0.4.29 | 2025-08-02 | [64313](https://github.com/airbytehq/airbyte/pull/64313) | Update dependencies |
+| 0.4.28 | 2025-07-26 | [64043](https://github.com/airbytehq/airbyte/pull/64043) | Update dependencies |
+| 0.4.27 | 2025-07-19 | [63573](https://github.com/airbytehq/airbyte/pull/63573) | Update dependencies |
+| 0.4.26 | 2025-07-12 | [62990](https://github.com/airbytehq/airbyte/pull/62990) | Update dependencies |
+| 0.4.25 | 2025-07-05 | [62824](https://github.com/airbytehq/airbyte/pull/62824) | Update dependencies |
+| 0.4.24 | 2025-06-28 | [62330](https://github.com/airbytehq/airbyte/pull/62330) | Update dependencies |
+| 0.4.23 | 2025-06-22 | [62002](https://github.com/airbytehq/airbyte/pull/62002) | Update dependencies |
+| 0.4.22 | 2025-06-14 | [61285](https://github.com/airbytehq/airbyte/pull/61285) | Update dependencies |
+| 0.4.21 | 2025-05-24 | [60389](https://github.com/airbytehq/airbyte/pull/60389) | Update dependencies |
+| 0.4.20 | 2025-05-10 | [59935](https://github.com/airbytehq/airbyte/pull/59935) | Update dependencies |
+| 0.4.19 | 2025-05-03 | [59421](https://github.com/airbytehq/airbyte/pull/59421) | Update dependencies |
+| 0.4.18 | 2025-04-26 | [58911](https://github.com/airbytehq/airbyte/pull/58911) | Update dependencies |
+| 0.4.17 | 2025-04-19 | [57829](https://github.com/airbytehq/airbyte/pull/57829) | Update dependencies |
+| 0.4.16 | 2025-04-05 | [57257](https://github.com/airbytehq/airbyte/pull/57257) | Update dependencies |
+| 0.4.15 | 2025-03-29 | [56542](https://github.com/airbytehq/airbyte/pull/56542) | Update dependencies |
+| 0.4.14 | 2025-03-22 | [55937](https://github.com/airbytehq/airbyte/pull/55937) | Update dependencies |
+| 0.4.13 | 2025-03-08 | [55346](https://github.com/airbytehq/airbyte/pull/55346) | Update dependencies |
+| 0.4.12 | 2025-03-01 | [54969](https://github.com/airbytehq/airbyte/pull/54969) | Update dependencies |
+| 0.4.11 | 2025-02-22 | [54430](https://github.com/airbytehq/airbyte/pull/54430) | Update dependencies |
+| 0.4.10 | 2025-02-15 | [53711](https://github.com/airbytehq/airbyte/pull/53711) | Update dependencies |
+| 0.4.9 | 2025-02-08 | [53315](https://github.com/airbytehq/airbyte/pull/53315) | Update dependencies |
+| 0.4.8 | 2025-02-01 | [52832](https://github.com/airbytehq/airbyte/pull/52832) | Update dependencies |
+| 0.4.7 | 2025-01-25 | [52322](https://github.com/airbytehq/airbyte/pull/52322) | Update dependencies |
+| 0.4.6 | 2025-01-18 | [51685](https://github.com/airbytehq/airbyte/pull/51685) | Update dependencies |
+| 0.4.5 | 2025-01-11 | [51092](https://github.com/airbytehq/airbyte/pull/51092) | Update dependencies |
+| 0.4.4 | 2024-12-28 | [50562](https://github.com/airbytehq/airbyte/pull/50562) | Update dependencies |
+| 0.4.3 | 2024-12-21 | [50015](https://github.com/airbytehq/airbyte/pull/50015) | Update dependencies |
+| 0.4.2 | 2024-12-14 | [49493](https://github.com/airbytehq/airbyte/pull/49493) | Update dependencies |
+| 0.4.1 | 2024-12-12 | [47844](https://github.com/airbytehq/airbyte/pull/47844) | Update dependencies |
+| 0.4.0 | 2024-09-08 | [44601](https://github.com/airbytehq/airbyte/pull/44601) | Update macro for end_date |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44156](https://github.com/airbytehq/airbyte/pull/44156) | Refactor connector to manifest-only format |
 | 0.2.19 | 2024-08-10 | [43583](https://github.com/airbytehq/airbyte/pull/43583) | Update dependencies |
 | 0.2.18 | 2024-08-03 | [43169](https://github.com/airbytehq/airbyte/pull/43169) | Update dependencies |

@@ -41,7 +41,8 @@ class ObjectStoragePathFactoryTest {
                 )
             val epochMilli =
                 dateTime.toInstant(ZoneId.of("UTC").rules.getOffset(dateTime)).toEpochMilli()
-            setCurrentTime(epochMilli)
+            setSyncTime(epochMilli)
+            setCurrentTime(epochMilli + 1)
         }
     }
 
@@ -53,12 +54,25 @@ class ObjectStoragePathFactoryTest {
         override val objectStoragePathConfiguration: ObjectStoragePathConfiguration =
             ObjectStoragePathConfiguration(
                 prefix = "prefix",
-                stagingPrefix = "staging/prefix",
-                pathSuffixPattern =
-                    "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}/",
-                fileNamePattern = "{date}-{timestamp}-{part_number}-{sync_id}{format_extension}",
-                usesStagingDirectory = true
+                pathPattern =
+                    "\${SYNC_ID}/\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}/",
+                fileNamePattern =
+                    "{date}-{date:yyyy_MM}-{timestamp}-{part_number}-{sync_id}{format_extension}",
             )
+    }
+
+    @Singleton
+    @Primary
+    @Requires(env = ["ObjectStoragePathFactoryTest"])
+    @Requires(property = "object-storage-path-factory-test.path-without-slash", value = "true")
+    class MockPathConfigProviderWithoutSlash : ObjectStoragePathConfigurationProvider {
+        override val objectStoragePathConfiguration: ObjectStoragePathConfiguration =
+            MockPathConfigProvider()
+                .objectStoragePathConfiguration
+                .copy(
+                    pathPattern =
+                        "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}_"
+                )
     }
 
     @Singleton
@@ -67,9 +81,7 @@ class ObjectStoragePathFactoryTest {
     @Requires(property = "object-storage-path-factory-test.use-staging", value = "false")
     class MockPathConfigProviderWithoutStaging : ObjectStoragePathConfigurationProvider {
         override val objectStoragePathConfiguration: ObjectStoragePathConfiguration =
-            MockPathConfigProvider()
-                .objectStoragePathConfiguration
-                .copy(usesStagingDirectory = false)
+            MockPathConfigProvider().objectStoragePathConfiguration
     }
 
     @Singleton
@@ -98,46 +110,25 @@ class ObjectStoragePathFactoryTest {
                 "MockDestinationCatalog",
             ],
     )
-    @Property(name = "object-storage-path-factory-test.use-staging", value = "true")
-    inner class ObjectStoragePathFactoryTestWithStaging {
+    @Property(name = "object-storage-path-factory-test.use-staging", value = "false")
+    inner class ObjectStoragePathFactoryTestWithoutStaging {
         @Test
         fun testBasicBehavior(pathFactory: ObjectStoragePathFactory, timeProvider: TimeProvider) {
-            val epochMilli = timeProvider.currentTimeMillis()
+            val syncTime = timeProvider.syncTimeMillis()
+            val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
-            val (namespace, name) = stream1.descriptor
-            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$epochMilli"
-            val fileName = "2020_01_02-1577934245678-173-42.jsonl.gz"
-            Assertions.assertEquals(
-                "staging/$prefixOnly",
-                pathFactory.getStagingDirectory(stream1).toString(),
-            )
+            val (namespace, name) = stream1.mappedDescriptor
+            val syncId = stream1.syncId
+            val prefixOnly = "prefix/$syncId/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
+            val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 prefixOnly,
-                pathFactory.getFinalDirectory(stream1).toString(),
+                pathFactory.getFinalDirectory(stream1),
             )
             Assertions.assertEquals(
-                "staging/$prefixOnly/$fileName",
-                pathFactory.getPathToFile(stream1, 173, true).toString(),
+                "$prefixOnly$fileName",
+                pathFactory.getPathToFile(stream1, 173),
             )
-            Assertions.assertEquals(
-                "$prefixOnly/$fileName",
-                pathFactory.getPathToFile(stream1, 173, false).toString(),
-            )
-        }
-
-        @Test
-        fun testPathMatchingPattern(
-            pathFactory: ObjectStoragePathFactory,
-            timeProvider: TimeProvider
-        ) {
-            val epochMilli = timeProvider.currentTimeMillis()
-            val stream1 = MockDestinationCatalogFactory.stream1
-            val (namespace, name) = stream1.descriptor
-            val expectedToMatch =
-                "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$epochMilli/2020_01_02-1577934245678-173-42.jsonl.gz"
-            val match = pathFactory.getPathMatcher(stream1).match(expectedToMatch)
-            Assertions.assertTrue(match != null)
-            Assertions.assertTrue(match?.partNumber == 173L)
         }
     }
 
@@ -149,30 +140,27 @@ class ObjectStoragePathFactoryTest {
                 "MockDestinationCatalog",
             ],
     )
-    @Property(name = "object-storage-path-factory-test.use-staging", value = "false")
-    inner class ObjectStoragePathFactoryTestWithoutStaging {
+    @Property(name = "object-storage-path-factory-test.path-without-slash", value = "true")
+    inner class ObjectStoragePathFactoryTestNoTrailingPathSlash {
         @Test
-        fun testBasicBehavior(pathFactory: ObjectStoragePathFactory, timeProvider: TimeProvider) {
-            val epochMilli = timeProvider.currentTimeMillis()
+        fun testPathDoesNotHaveTrailingSlash(
+            pathFactory: ObjectStoragePathFactory,
+            timeProvider: TimeProvider
+        ) {
+            val syncTime = timeProvider.syncTimeMillis()
+            val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
-            val (namespace, name) = stream1.descriptor
-            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$epochMilli"
-            val fileName = "2020_01_02-1577934245678-173-42.jsonl.gz"
+            val (namespace, name) = stream1.mappedDescriptor
+            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/${syncTime}_"
+            val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 prefixOnly,
-                pathFactory.getFinalDirectory(stream1).toString(),
+                pathFactory.getFinalDirectory(stream1),
             )
             Assertions.assertEquals(
-                "$prefixOnly/$fileName",
-                pathFactory.getPathToFile(stream1, 173, false).toString(),
+                "$prefixOnly$fileName",
+                pathFactory.getPathToFile(stream1, 173),
             )
-
-            Assertions.assertThrows(UnsupportedOperationException::class.java) {
-                pathFactory.getStagingDirectory(stream1)
-            }
-            Assertions.assertThrows(UnsupportedOperationException::class.java) {
-                pathFactory.getPathToFile(stream1, 173, true)
-            }
         }
     }
 }

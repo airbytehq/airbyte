@@ -5,16 +5,16 @@ data:
   allowedHosts:
     hosts: []
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 084124ab-22db-4019-b36d-630418541bf7
-  dockerImageTag: 0.0.17
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-hardcoded-records
   documentationUrl: https://docs.airbyte.com/integrations/sources/hardcoded-records
   githubIssueLabel: source-hardcoded-records
   icon: faker.svg
-  license: MIT
+  license: ELv2
   name: Hardcoded Records
   registryOverrides:
     cloud:
@@ -35,7 +35,7 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
-    - suite: acceptanceTests
+    - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-HARDCODED-RECORDS_CREDS
           fileName: config.json

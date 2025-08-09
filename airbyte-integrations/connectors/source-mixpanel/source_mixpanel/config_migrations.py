@@ -10,6 +10,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 
+
 logger = logging.getLogger("airbyte_logger")
 
 
@@ -66,7 +67,7 @@ class MigrateProjectId:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+            print(message)
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:

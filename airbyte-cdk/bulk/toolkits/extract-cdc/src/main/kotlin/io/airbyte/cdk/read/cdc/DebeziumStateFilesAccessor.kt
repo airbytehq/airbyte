@@ -53,22 +53,8 @@ class DebeziumStateFilesAccessor : AutoCloseable {
         fileOffsetBackingStore.configure(StandaloneConfig(fileOffsetConfig))
     }
 
-    private val fileSchemaHistory = FileSchemaHistory()
-
-    init {
-        fileSchemaHistory.configure(
-            Configuration.create()
-                .with(FileSchemaHistory.FILE_PATH, schemaFilePath.toString())
-                .build(),
-            HistoryRecordComparator.INSTANCE,
-            SchemaHistoryListener.NOOP,
-            false
-        )
-    }
-
     override fun close() {
         fileOffsetBackingStore.stop()
-        fileSchemaHistory.stop()
         FileUtils.deleteDirectory(workingDir.toFile())
     }
 
@@ -90,21 +76,20 @@ class DebeziumStateFilesAccessor : AutoCloseable {
     }
 
     fun readSchema(): DebeziumSchemaHistory {
-        fileSchemaHistory.start()
-        val schema: List<HistoryRecord> = buildList {
-            recoverRecords(fileSchemaHistory, Consumer(this::add))
+        var schema: List<HistoryRecord> = listOf()
+        doWithFileSchemaHistory(schemaFilePath) { fileSchemaHistory ->
+            schema = buildList { recoverRecords(fileSchemaHistory, Consumer(this::add)) }
         }
-        fileSchemaHistory.stop()
+
         return DebeziumSchemaHistory(schema)
     }
 
     fun writeSchema(schema: DebeziumSchemaHistory) {
-        fileSchemaHistory.initializeStorage()
-        fileSchemaHistory.start()
-        for (r in schema.wrapped) {
-            storeRecord(fileSchemaHistory, r)
+        doWithFileSchemaHistory(schemaFilePath) { fileSchemaHistory ->
+            for (r in schema.wrapped) {
+                storeRecord(fileSchemaHistory, r)
+            }
         }
-        fileSchemaHistory.stop()
     }
 
     private fun toJson(byteBuffer: ByteBuffer): JsonNode {
@@ -137,5 +122,23 @@ class DebeziumStateFilesAccessor : AutoCloseable {
                 .java
                 .getDeclaredMethod("recoverRecords", Consumer::class.java)
                 .apply { isAccessible = true }
+
+        private fun doWithFileSchemaHistory(
+            schemaFilePath: Path,
+            block: (FileSchemaHistory) -> Unit
+        ) {
+            val fileSchemaHistory = FileSchemaHistory()
+            fileSchemaHistory.configure(
+                Configuration.create()
+                    .with(FileSchemaHistory.FILE_PATH, schemaFilePath.toString())
+                    .build(),
+                HistoryRecordComparator.INSTANCE,
+                SchemaHistoryListener.NOOP,
+                false
+            )
+            fileSchemaHistory.start()
+            block(fileSchemaHistory)
+            fileSchemaHistory.stop()
+        }
     }
 }

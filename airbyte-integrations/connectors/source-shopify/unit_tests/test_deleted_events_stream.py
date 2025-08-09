@@ -108,7 +108,9 @@ def test_read_deleted_records(stream, requests_mock, deleted_records_json, expec
     stream = stream(config)
     deleted_records_url = stream.url_base + stream.deleted_events.path()
     requests_mock.get(deleted_records_url, json=deleted_records_json)
-    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records", return_value=deleted_records_json)
+    mocker.patch(
+        "source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records", return_value=deleted_records_json
+    )
     assert list(stream.read_records(sync_mode=None)) == expected
 
 

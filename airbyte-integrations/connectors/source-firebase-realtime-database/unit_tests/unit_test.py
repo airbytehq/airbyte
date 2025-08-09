@@ -35,7 +35,6 @@ from source_firebase_realtime_database.source import SourceFirebaseRealtimeDatab
     ],
 )
 def test_stream_name_from(config, stream_name):
-
     actual = SourceFirebaseRealtimeDatabase.stream_name_from(config)
     expected = stream_name
 

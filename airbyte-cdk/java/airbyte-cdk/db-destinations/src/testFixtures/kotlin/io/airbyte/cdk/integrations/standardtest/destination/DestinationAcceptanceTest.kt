@@ -1944,10 +1944,11 @@ abstract class DestinationAcceptanceTest(
         catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean,
         imageName: String,
+        additionalEnvs: Map<String, String>,
     ): List<AirbyteMessage> {
         val destinationConfig = getDestinationConfig(config, catalog)
         val destinationOutput =
-            super.runSync(messages, runNormalization, imageName, destinationConfig)
+            super.runSync(messages, runNormalization, imageName, destinationConfig, additionalEnvs)
 
         if (!runNormalization || (supportsInDestinationNormalization())) {
             return destinationOutput

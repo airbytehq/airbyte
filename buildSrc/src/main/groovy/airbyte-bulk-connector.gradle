@@ -52,7 +52,11 @@ class AirbyteBulkConnectorExtension {
                     project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core"),
             ]
             for (toolkit in toolkits) {
-                fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
+                if (toolkit.contains(':')) {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit"
+                } else {
+                    fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
+                }
             }
         } else {
             fromJar = [
@@ -60,7 +64,11 @@ class AirbyteBulkConnectorExtension {
                     "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk",
             ]
             for (toolkit in toolkits) {
-                fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
+                if (toolkit.contains(':')) {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit"
+                } else {
+                    fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
+                }
             }
         }
 
@@ -179,6 +187,15 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                    showStandardStreams = true
+                }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
@@ -200,12 +217,22 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                    showStandardStreams = true
+                }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             project.dependencies {
                 // integration tests depend on the runtime code
                 integrationTestImplementation project
                 integrationTestLegacyImplementation project
+                integrationTestLegacyImplementation project.sourceSets.integrationTest.output
             }
 
             project.tasks.named('build').configure {
@@ -225,9 +252,23 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
         }
 
+        boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
+        project.tasks.matching {
+                it.name == 'test' ||
+                it.name == 'integrationTestNonDocker' ||
+                it.name == 'integrationTestJava'
+            }.configureEach {
+            onlyIf { withSlowTests }
+        }
+
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
+        }
+
+        project.tasks.named('test').configure {
+            // enable the "don't be evil" option, which for some reason is disabled by default
+            systemProperties(["mockk.junit.extension.requireParallelTesting": "true"])
         }
 
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)

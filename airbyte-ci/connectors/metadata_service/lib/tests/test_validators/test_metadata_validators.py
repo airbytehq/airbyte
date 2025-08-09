@@ -4,6 +4,8 @@ import pytest
 import requests
 import semver
 import yaml
+
+from metadata_service.docker_hub import get_latest_version_on_dockerhub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.validators import metadata_validator
 
@@ -71,6 +73,7 @@ def metadata_definition():
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "latest_version, current_version,should_pass_validation",
     [("1.0.0", "0.1.0", False), ("1.0.0", "1.0.0", True), ("1.0.0", "1.1.0", True)],
@@ -115,6 +118,7 @@ def incremented_version(current_version):
     return str(patched_version_info)
 
 
+@pytest.mark.slow
 def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, decremented_version):
     current_version = metadata_definition.data.dockerImageTag
 
@@ -125,6 +129,7 @@ def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, decr
     assert error_message.startswith(expected_prefix), error_message
 
 
+@pytest.mark.slow
 def test_validation_pass_on_docker_image_tag_increment(metadata_definition, incremented_version):
     metadata_definition.data.dockerImageTag = incremented_version
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
@@ -132,12 +137,15 @@ def test_validation_pass_on_docker_image_tag_increment(metadata_definition, incr
     assert error_message is None
 
 
-def test_validation_pass_on_same_docker_image_tag(metadata_definition):
+@pytest.mark.slow
+def test_validation_pass_on_same_docker_image_tag(mocker, metadata_definition):
+    mocker.patch.object(metadata_validator, "get_latest_version_on_dockerhub", return_value=metadata_definition.data.dockerImageTag)
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert success
     assert error_message is None
 
 
+@pytest.mark.slow
 def test_validation_pass_on_docker_image_no_latest(capsys, metadata_definition):
     metadata_definition.data.dockerRepository = "airbyte/unreleased"
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "file_path": { "type": "string" },
+    "allowed_identity_remote_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "publicly_accessible": { "type": "boolean" }
+  }
+}

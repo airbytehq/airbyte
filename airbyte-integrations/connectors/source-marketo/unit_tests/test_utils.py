@@ -8,6 +8,7 @@ from datetime import datetime
 import pytest
 from source_marketo.utils import clean_string, format_value, to_datetime_str
 
+
 test_data = [
     (1, {"type": "integer"}, int),
     ("string", {"type": "string"}, str),

@@ -46,7 +46,32 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
-| 0.4.0  | 2024-10-31 | [47017](https://github.com/airbytehq/airbyte/pull/47017) | Migrate to manifest only format |
+| 0.4.25 | 2025-08-02 | [64426](https://github.com/airbytehq/airbyte/pull/64426) | Update dependencies |
+| 0.4.24 | 2025-07-19 | [63396](https://github.com/airbytehq/airbyte/pull/63396) | Update dependencies |
+| 0.4.23 | 2025-07-12 | [63174](https://github.com/airbytehq/airbyte/pull/63174) | Update dependencies |
+| 0.4.22 | 2025-07-05 | [62588](https://github.com/airbytehq/airbyte/pull/62588) | Update dependencies |
+| 0.4.21 | 2025-06-28 | [62372](https://github.com/airbytehq/airbyte/pull/62372) | Update dependencies |
+| 0.4.20 | 2025-06-21 | [60436](https://github.com/airbytehq/airbyte/pull/60436) | Update dependencies |
+| 0.4.19 | 2025-05-10 | [60166](https://github.com/airbytehq/airbyte/pull/60166) | Update dependencies |
+| 0.4.18 | 2025-05-03 | [59097](https://github.com/airbytehq/airbyte/pull/59097) | Update dependencies |
+| 0.4.17 | 2025-04-19 | [58516](https://github.com/airbytehq/airbyte/pull/58516) | Update dependencies |
+| 0.4.16 | 2025-04-12 | [57889](https://github.com/airbytehq/airbyte/pull/57889) | Update dependencies |
+| 0.4.15 | 2025-04-05 | [56750](https://github.com/airbytehq/airbyte/pull/56750) | Update dependencies |
+| 0.4.14 | 2025-03-22 | [56225](https://github.com/airbytehq/airbyte/pull/56225) | Update dependencies |
+| 0.4.13 | 2025-03-08 | [55530](https://github.com/airbytehq/airbyte/pull/55530) | Update dependencies |
+| 0.4.12 | 2025-03-01 | [55014](https://github.com/airbytehq/airbyte/pull/55014) | Update dependencies |
+| 0.4.11 | 2025-02-23 | [54548](https://github.com/airbytehq/airbyte/pull/54548) | Update dependencies |
+| 0.4.10 | 2025-02-15 | [54006](https://github.com/airbytehq/airbyte/pull/54006) | Update dependencies |
+| 0.4.9 | 2025-02-08 | [53447](https://github.com/airbytehq/airbyte/pull/53447) | Update dependencies |
+| 0.4.8 | 2025-02-01 | [52992](https://github.com/airbytehq/airbyte/pull/52992) | Update dependencies |
+| 0.4.7 | 2025-01-25 | [52497](https://github.com/airbytehq/airbyte/pull/52497) | Update dependencies |
+| 0.4.6 | 2025-01-18 | [51371](https://github.com/airbytehq/airbyte/pull/51371) | Update dependencies |
+| 0.4.5 | 2024-12-28 | [50701](https://github.com/airbytehq/airbyte/pull/50701) | Update dependencies |
+| 0.4.4 | 2024-12-21 | [50224](https://github.com/airbytehq/airbyte/pull/50224) | Update dependencies |
+| 0.4.3 | 2024-12-14 | [49680](https://github.com/airbytehq/airbyte/pull/49680) | Update dependencies |
+| 0.4.2 | 2024-12-12 | [49344](https://github.com/airbytehq/airbyte/pull/49344) | Update dependencies |
+| 0.4.1 | 2024-12-11 | [49098](https://github.com/airbytehq/airbyte/pull/49098) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.4.0 | 2024-10-31 | [47017](https://github.com/airbytehq/airbyte/pull/47017) | Migrate to manifest only format |
 | 0.3.24 | 2024-10-28 | [47111](https://github.com/airbytehq/airbyte/pull/47111) | Update dependencies |
 | 0.3.23 | 2024-10-12 | [46767](https://github.com/airbytehq/airbyte/pull/46767) | Update dependencies |
 | 0.3.22 | 2024-10-05 | [46439](https://github.com/airbytehq/airbyte/pull/46439) | Update dependencies |

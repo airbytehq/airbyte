@@ -122,7 +122,7 @@ Maintaining business logic in smaller projects also increases velocity, as intro
 #### Good examples of this principle
 
 - `connectors-qa`: We want to run specific static checks on all our connectors: we introduced a specific python package ([`connectors-qa`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/README.md#L1))which declares and run the checks on connectors. We orchestrate the run of this package inside the [QaChecks](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/connectors/test/steps/common.py#L122) step. This class is just aware of the tool location, its entry point, and what has to be mounted to the container for the command to run.
-- Internal package testing: We expose an `airbyte-ci test` command which can run a CI pipeline on an internal poetry package. The pipeline logic is declared at the package level with `poe` tasks in the package `pyproject.toml`. `airbyte-ci` is made aware about what is has to run by parsing the content of the `[tool.airbyte_ci]` section of the `pyproject.toml`file. [Example](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/pyproject.toml#L39)
+- Internal package testing: We expose an `airbyte-ci test` command which can run a CI pipeline on an internal poetry package. The pipeline logic is declared at the package level with `poe` tasks in the package `pyproject.toml`. `airbyte-ci` is made aware about what is has to run by parsing the content of the `[tool.airbyte_ci]` section of the `pyproject.toml`file. [Example](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/pyproject.toml#L35)
 
 ### No command or pipeline should be language specific
 
@@ -301,7 +301,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
+                id=CONNECTOR_TEST_STEP_ID.PYTHON_CLI_VALIDATION,
                 step=PyAirbyteValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],

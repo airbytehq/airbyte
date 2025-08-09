@@ -14,11 +14,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.21
   dockerRepository: airbyte/source-dixa
   githubIssueLabel: source-dixa
   icon: dixa.svg
-  license: MIT
+  license: ELv2
   name: Dixa
   releaseDate: 2021-07-07
   releaseStage: alpha
@@ -39,5 +39,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
 metadataSpecVersion: "1.0"

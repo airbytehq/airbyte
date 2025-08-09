@@ -21,7 +21,7 @@ This Source is capable of syncing the following core Streams:
 | Feature                   | Supported?\(Yes/No\) | Notes |
 | :------------------------ | :------------------- | :---- |
 | Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | No                   |       |
+| Incremental - Append Sync | Yes                  |       |
 | Namespaces                | No                   |       |
 
 ### Performance considerations
@@ -32,6 +32,8 @@ By default Gong limits your company's access to the service to 3 API calls per s
 ## Requirements
 
 - **Gong API keys**. See the [Gong docs](https://us-14321.app.gong.io/settings/api/documentation#overview) for information on how to obtain the API keys.
+- **Start Date**. To fetch data from. This just applies to Incremental syncs. Default value is 90 days from today.
+
 
 ## Changelog
 
@@ -40,6 +42,35 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.13 | 2025-08-09 | [64594](https://github.com/airbytehq/airbyte/pull/64594) | Update dependencies |
+| 0.4.12 | 2025-08-02 | [64200](https://github.com/airbytehq/airbyte/pull/64200) | Update dependencies |
+| 0.4.11 | 2025-07-19 | [63504](https://github.com/airbytehq/airbyte/pull/63504) | Update dependencies |
+| 0.4.10 | 2025-07-12 | [63139](https://github.com/airbytehq/airbyte/pull/63139) | Update dependencies |
+| 0.4.9 | 2025-07-05 | [62641](https://github.com/airbytehq/airbyte/pull/62641) | Update dependencies |
+| 0.4.8 | 2025-06-21 | [61866](https://github.com/airbytehq/airbyte/pull/61866) | Update dependencies |
+| 0.4.7 | 2025-06-14 | [61085](https://github.com/airbytehq/airbyte/pull/61085) | Update dependencies |
+| 0.4.6 | 2025-05-24 | [60651](https://github.com/airbytehq/airbyte/pull/60651) | Update dependencies |
+| 0.4.5 | 2025-05-10 | [59892](https://github.com/airbytehq/airbyte/pull/59892) | Update dependencies |
+| 0.4.4 | 2025-05-03 | [59272](https://github.com/airbytehq/airbyte/pull/59272) | Update dependencies |
+| 0.4.3 | 2025-04-26 | [57696](https://github.com/airbytehq/airbyte/pull/57696) | Update dependencies |
+| 0.4.2 | 2025-04-05 | [57039](https://github.com/airbytehq/airbyte/pull/57039) | Update dependencies |
+| 0.4.1 | 2025-03-29 | [56494](https://github.com/airbytehq/airbyte/pull/56494) | Update dependencies |
+| 0.4.0 | 2025-03-25 | [55803](https://github.com/airbytehq/airbyte/pull/55803) | add incremental extensiveCalls |
+| 0.3.16 | 2025-03-22 | [55969](https://github.com/airbytehq/airbyte/pull/55969) | Update dependencies |
+| 0.3.15 | 2025-03-08 | [55269](https://github.com/airbytehq/airbyte/pull/55269) | Update dependencies |
+| 0.3.14 | 2025-03-01 | [54962](https://github.com/airbytehq/airbyte/pull/54962) | Update dependencies |
+| 0.3.13 | 2025-02-22 | [54394](https://github.com/airbytehq/airbyte/pull/54394) | Update dependencies |
+| 0.3.12 | 2025-02-15 | [53718](https://github.com/airbytehq/airbyte/pull/53718) | Update dependencies |
+| 0.3.11 | 2025-02-08 | [53334](https://github.com/airbytehq/airbyte/pull/53334) | Update dependencies |
+| 0.3.10 | 2025-02-01 | [52824](https://github.com/airbytehq/airbyte/pull/52824) | Update dependencies |
+| 0.3.9 | 2025-01-25 | [52342](https://github.com/airbytehq/airbyte/pull/52342) | Update dependencies |
+| 0.3.8 | 2025-01-18 | [51704](https://github.com/airbytehq/airbyte/pull/51704) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51059](https://github.com/airbytehq/airbyte/pull/51059) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50521](https://github.com/airbytehq/airbyte/pull/50521) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50017](https://github.com/airbytehq/airbyte/pull/50017) | Update dependencies |
+| 0.3.4 | 2024-12-14 | [49538](https://github.com/airbytehq/airbyte/pull/49538) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [49155](https://github.com/airbytehq/airbyte/pull/49155) | Update dependencies |
+| 0.3.2 | 2024-11-14 | [36604](https://github.com/airbytehq/airbyte/pull/36604) | Add incremental Feature |
 | 0.3.1 | 2024-10-29 | [47824](https://github.com/airbytehq/airbyte/pull/47824) | Update dependencies |
 | 0.3.0 | 2024-09-04 | [45117](https://github.com/airbytehq/airbyte/pull/45117) | Add new stream `extensive calls` |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

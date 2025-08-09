@@ -112,6 +112,18 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.6 | 2025-08-09 | [64579](https://github.com/airbytehq/airbyte/pull/64579) | Update dependencies |
+| 4.4.5 | 2025-08-02 | [64222](https://github.com/airbytehq/airbyte/pull/64222) | Update dependencies |
+| 4.4.4 | 2025-07-26 | [63913](https://github.com/airbytehq/airbyte/pull/63913) | Update dependencies |
+| 4.4.3 | 2025-07-19 | [63489](https://github.com/airbytehq/airbyte/pull/63489) | Update dependencies |
+| 4.4.2 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.4.1 | 2025-07-12 | [61471](https://github.com/airbytehq/airbyte/pull/61471) | Update dependencies |
+| 4.4.0 | 2025-07-07 | [62831](https://github.com/airbytehq/airbyte/pull/62831) | Promoting release candidate 4.4.0-rc.1 to a main version. |
+| 4.4.0-rc.1 | 2025-07-02 | [62480](https://github.com/airbytehq/airbyte/pull/62480) | Migrate to manifest-only |
+| 4.3.7 | 2025-05-31 | [57264](https://github.com/airbytehq/airbyte/pull/57264) | Update dependencies |
+| 4.3.6 | 2025-03-29 | [54945](https://github.com/airbytehq/airbyte/pull/54945) | Update dependencies |
+| 4.3.5 | 2025-02-22 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |
+| 4.3.4 | 2025-01-11 | [44671](https://github.com/airbytehq/airbyte/pull/44671) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 4.3.3 | 2024-08-17 | [44207](https://github.com/airbytehq/airbyte/pull/44207) | Update dependencies |
 | 4.3.2 | 2024-08-12 | [43856](https://github.com/airbytehq/airbyte/pull/43856) | Update dependencies |
 | 4.3.1 | 2024-08-03 | [43058](https://github.com/airbytehq/airbyte/pull/43058) | Update dependencies |

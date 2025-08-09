@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
+# Java connector Dockerfile for Airbyte
+
+# Build arguments
+ARG BASE_IMAGE
+
+# Base image - using Amazon Corretto (Amazon's distribution of OpenJDK)
+FROM ${BASE_IMAGE}
+ARG CONNECTOR_NAME
+
+# Set permissions for downloaded files
+RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
+    chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh /airbyte/dd-java-agent.jar
+
+ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
+ENV APPLICATION="${CONNECTOR_NAME}"
+
+# Add the connector TAR file and extract it
+COPY airbyte-app.tar /tmp/${CONNECTOR_NAME}.tar
+RUN tar xf /tmp/${CONNECTOR_NAME}.tar --strip-components=1 -C /airbyte && \
+    rm -rf /tmp/${CONNECTOR_NAME}.tar && \
+    chown -R airbyte:airbyte /airbyte
+
+# Set the non-root user
+USER airbyte
+
+# Set entrypoint
+ENTRYPOINT ["/airbyte/base.sh"]

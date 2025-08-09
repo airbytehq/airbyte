@@ -7,6 +7,9 @@ from typing import Any, Mapping
 from source_slack import SourceSlack
 from source_slack.config_migrations import MigrateLegacyConfig
 
+from airbyte_cdk.test.state_builder import StateBuilder
+
+
 CMD = "check"
 TEST_CONFIG_LEGACY_PATH = f"{os.path.dirname(__file__)}/configs/legacy_config.json"
 TEST_CONFIG_ACTUAL_PATH = f"{os.path.dirname(__file__)}/configs/actual_config.json"
@@ -32,7 +35,8 @@ def load_config(config_path: str = TEST_CONFIG_LEGACY_PATH) -> Mapping[str, Any]
 
 def test_config_migration():
     migration = MigrateLegacyConfig()
-    migration.migrate(SOURCE_INPUT_ARGS_LEGACY, SourceSlack())
+    state = StateBuilder().build()
+    migration.migrate(SOURCE_INPUT_ARGS_LEGACY, SourceSlack(catalog=None, config={}, state=state))
     test_migrated_config = load_config()
     assert test_migrated_config["credentials"]["api_token"] == "api-token"
     assert test_migrated_config["credentials"]["option_title"] == "API Token Credentials"
@@ -42,6 +46,7 @@ def test_config_migration():
 def test_config_not_migrated():
     config_before_migration = load_config(TEST_CONFIG_ACTUAL_PATH)
     migration = MigrateLegacyConfig()
-    migration.migrate(SOURCE_INPUT_ARGS_ACTUAL, SourceSlack())
+    state = StateBuilder().build()
+    migration.migrate(SOURCE_INPUT_ARGS_ACTUAL, SourceSlack(catalog=None, config={}, state=state))
     test_migrated_config = load_config(TEST_CONFIG_ACTUAL_PATH)
     assert config_before_migration == test_migrated_config

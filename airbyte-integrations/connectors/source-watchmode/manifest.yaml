@@ -1,0 +1,702 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://watchmode.com/
+  API Reference: https://api.watchmode.com/docs
+
+check:
+  type: CheckStream
+  stream_names:
+    - sources
+
+definitions:
+  streams:
+    sources:
+      type: DeclarativeStream
+      name: sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/sources/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sources"
+    regions:
+      type: DeclarativeStream
+      name: regions
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/regions/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/regions"
+    networks:
+      type: DeclarativeStream
+      name: networks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/networks/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/networks"
+    genres:
+      type: DeclarativeStream
+      name: genres
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/genres/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/genres"
+    search:
+      type: DeclarativeStream
+      name: search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/search/
+          http_method: GET
+          request_parameters:
+            search_field: name
+            search_value: "{{ config['search_val'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - title_results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search"
+    autocomplete_search:
+      type: DeclarativeStream
+      name: autocomplete_search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/autocomplete-search/
+          http_method: GET
+          request_parameters:
+            search_value: "{{ config['search_val'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/autocomplete_search"
+    titles:
+      type: DeclarativeStream
+      name: titles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/list-titles/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - titles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/titles"
+    releases:
+      type: DeclarativeStream
+      name: releases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/releases/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - releases
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: source_release_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/releases"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.watchmode.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apiKey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/sources"
+  - $ref: "#/definitions/streams/regions"
+  - $ref: "#/definitions/streams/networks"
+  - $ref: "#/definitions/streams/genres"
+  - $ref: "#/definitions/streams/search"
+  - $ref: "#/definitions/streams/autocomplete_search"
+  - $ref: "#/definitions/streams/titles"
+  - $ref: "#/definitions/streams/releases"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - search_val
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API key for authenticating with the Watchmode API. You can
+          request a free API key at https://api.watchmode.com/requestApiKey/.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      search_val:
+        type: string
+        description: The name value for search stream
+        title: Search Value
+        default: Terminator
+        order: 1
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    sources: true
+    regions: true
+    networks: true
+    genres: true
+    search: true
+    autocomplete_search: true
+    titles: true
+    releases: true
+  testedStreams:
+    sources:
+      streamHash: 34b67583ecbe00c31eeca5b69117f11dfe385306
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    regions:
+      streamHash: 4c8e4806bb64b9548252ec1e80f9724976a885f4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    networks:
+      streamHash: b7e116909c4669c09bcee4b2c33c5b06f95df9d0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    genres:
+      streamHash: 7cbfc4ca3e2dcb149021344d2de77efee0fccbac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    search:
+      streamHash: 3e3593aab23915e963e0ad29532f6c1d50e2ad7c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    autocomplete_search:
+      streamHash: 56abd5bad68ae70ba99968d40d1cb90227b317b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    titles:
+      streamHash: 3cf9c4ebeacfeafff66a9c12e033d7c8efc04ab7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    releases:
+      streamHash: 8e7f873a873779fe2206a087b18917e621800fe2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://api.watchmode.com/docs/
+
+schemas:
+  sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      android_playstore_url:
+        type:
+          - string
+          - "null"
+      android_scheme:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      ios_appstore_url:
+        type:
+          - string
+          - "null"
+      ios_scheme:
+        type:
+          - string
+          - "null"
+      logo_100px:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      regions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+  regions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - string
+          - "null"
+      data_tier:
+        type:
+          - number
+          - "null"
+      flag:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      plan_enabled:
+        type:
+          - boolean
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  networks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      origin_country:
+        type:
+          - string
+          - "null"
+      tmdb_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  genres:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      tmdb_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      imdb_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      resultType:
+        type:
+          - string
+          - "null"
+      tmdb_id:
+        type:
+          - number
+          - "null"
+      tmdb_type:
+        type:
+          - string
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  autocomplete_search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      image_url:
+        type:
+          - string
+          - "null"
+      imdb_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      relevance:
+        type:
+          - number
+          - "null"
+      result_type:
+        type:
+          - string
+          - "null"
+      tmdb_id:
+        type:
+          - number
+          - "null"
+      tmdb_type:
+        type:
+          - string
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  titles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      imdb_id:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      tmdb_id:
+        type:
+          - number
+          - "null"
+      tmdb_type:
+        type:
+          - string
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  releases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      imdb_id:
+        type:
+          - string
+          - "null"
+      is_original:
+        type:
+          - number
+          - "null"
+      poster_url:
+        type:
+          - string
+          - "null"
+      season_number:
+        type:
+          - number
+          - "null"
+      source_id:
+        type:
+          - number
+          - "null"
+      source_name:
+        type:
+          - string
+          - "null"
+      source_release_date:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+      tmdb_id:
+        type:
+          - number
+          - "null"
+      tmdb_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - source_release_date

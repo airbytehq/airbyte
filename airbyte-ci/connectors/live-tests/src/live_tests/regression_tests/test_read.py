@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Optional
 import pytest
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
+
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, get_and_write_diff, get_test_logger, write_string_to_test_artifact
 
@@ -37,8 +38,6 @@ class TestDataIntegrity:
         self,
         request: SubRequest,
         record_property: Callable,
-        configured_streams: Iterable[str],
-        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_with_state_control_execution_result: ExecutionResult,
         read_with_state_target_execution_result: ExecutionResult,
     ) -> None:
@@ -52,13 +51,13 @@ class TestDataIntegrity:
             read_with_state_control_execution_result (ExecutionResult): The control version execution result.
             read_with_state_target_execution_result (ExecutionResult): The target version execution result.
         """
-        if not primary_keys_per_stream:
+        if not read_with_state_control_execution_result.primary_keys_per_stream:
             pytest.skip("No primary keys provided on any stream. Skipping the test.")
 
         logger = get_test_logger(request)
         streams_with_missing_records = set()
-        for stream_name in configured_streams:
-            _primary_key = primary_keys_per_stream[stream_name]
+        for stream_name in read_with_state_control_execution_result.configured_streams:
+            _primary_key = read_with_state_control_execution_result.primary_keys_per_stream[stream_name]
             if not _primary_key:
                 # TODO: report skipped PK test per individual stream
                 logger.warning(f"No primary keys provided on stream {stream_name}.")
@@ -101,12 +100,11 @@ class TestDataIntegrity:
     async def _check_record_counts(
         self,
         record_property: Callable,
-        configured_streams: Iterable[str],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
         record_count_difference_per_stream: dict[str, dict[str, int]] = {}
-        for stream_name in configured_streams:
+        for stream_name in read_control_execution_result.configured_streams:
             control_records_count = sum(1 for _ in read_control_execution_result.get_records_per_stream(stream_name))
             target_records_count = sum(1 for _ in read_target_execution_result.get_records_per_stream(stream_name))
 
@@ -136,8 +134,6 @@ class TestDataIntegrity:
         self,
         request: SubRequest,
         record_property: Callable,
-        configured_streams: Iterable[str],
-        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
@@ -151,14 +147,14 @@ class TestDataIntegrity:
             read_target_execution_result (ExecutionResult): The target version execution result.
         """
         streams_with_diff = set()
-        for stream in configured_streams:
+        for stream in read_control_execution_result.configured_streams:
             control_records = list(read_control_execution_result.get_records_per_stream(stream))
             target_records = list(read_target_execution_result.get_records_per_stream(stream))
 
             if control_records and not target_records:
                 pytest.fail(f"Stream {stream} is missing in the target version.")
 
-            if primary_key := primary_keys_per_stream.get(stream):
+            if primary_key := read_control_execution_result.primary_keys_per_stream.get(stream):
                 diffs = self._get_diff_on_stream_with_pk(
                     request,
                     record_property,
@@ -241,7 +237,6 @@ class TestDataIntegrity:
     async def test_record_count_with_state(
         self,
         record_property: Callable,
-        configured_streams: Iterable[str],
         read_with_state_control_execution_result: ExecutionResult,
         read_with_state_target_execution_result: ExecutionResult,
     ) -> None:
@@ -263,7 +258,6 @@ class TestDataIntegrity:
         )
         await self._check_record_counts(
             record_property,
-            configured_streams,
             read_with_state_control_execution_result,
             read_with_state_target_execution_result,
         )
@@ -272,7 +266,6 @@ class TestDataIntegrity:
     async def test_record_count_without_state(
         self,
         record_property: Callable,
-        configured_streams: Iterable[str],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
@@ -294,7 +287,6 @@ class TestDataIntegrity:
         )
         await self._check_record_counts(
             record_property,
-            configured_streams,
             read_control_execution_result,
             read_target_execution_result,
         )
@@ -304,8 +296,6 @@ class TestDataIntegrity:
         self,
         request: SubRequest,
         record_property: Callable,
-        configured_streams: Iterable[str],
-        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_with_state_control_execution_result: ExecutionResult,
         read_with_state_target_execution_result: ExecutionResult,
     ) -> None:
@@ -323,8 +313,6 @@ class TestDataIntegrity:
         await self._check_all_pks_are_produced_in_target_version(
             request,
             record_property,
-            configured_streams,
-            primary_keys_per_stream,
             read_with_state_control_execution_result,
             read_with_state_target_execution_result,
         )
@@ -334,8 +322,6 @@ class TestDataIntegrity:
         self,
         request: SubRequest,
         record_property: Callable,
-        configured_streams: Iterable[str],
-        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
@@ -353,8 +339,6 @@ class TestDataIntegrity:
         await self._check_all_pks_are_produced_in_target_version(
             request,
             record_property,
-            configured_streams,
-            primary_keys_per_stream,
             read_control_execution_result,
             read_target_execution_result,
         )
@@ -405,8 +389,6 @@ class TestDataIntegrity:
         self,
         request: SubRequest,
         record_property: Callable,
-        configured_streams: Iterable[str],
-        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_with_state_control_execution_result: ExecutionResult,
         read_with_state_target_execution_result: ExecutionResult,
     ) -> None:
@@ -425,8 +407,6 @@ class TestDataIntegrity:
         await self._check_all_records_are_the_same(
             request,
             record_property,
-            configured_streams,
-            primary_keys_per_stream,
             read_with_state_control_execution_result,
             read_with_state_target_execution_result,
         )
@@ -437,8 +417,6 @@ class TestDataIntegrity:
         self,
         request: SubRequest,
         record_property: Callable,
-        configured_streams: Iterable[str],
-        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
@@ -457,8 +435,6 @@ class TestDataIntegrity:
         await self._check_all_records_are_the_same(
             request,
             record_property,
-            configured_streams,
-            primary_keys_per_stream,
             read_control_execution_result,
             read_target_execution_result,
         )

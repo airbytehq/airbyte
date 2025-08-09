@@ -20,6 +20,7 @@ from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLif
 from orchestrator.utils.object_helpers import default_none_to_dict
 from pydash.objects import set_with
 
+
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 
 GROUP_NAME = "registry"
@@ -79,6 +80,7 @@ def persist_registry_to_json(
     """
     registry_file_name = f"{registry_name}_registry"
     registry_json = registry.json(exclude_none=True)
+    registry_json = json.dumps(json.loads(registry_json), sort_keys=True)
 
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle

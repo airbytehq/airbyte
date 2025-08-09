@@ -39,7 +39,36 @@ The connector has a rate limit of 5 API requests per second per IP-address.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.30 | 2025-08-02 | [64425](https://github.com/airbytehq/airbyte/pull/64425) | Update dependencies |
+| 0.2.29 | 2025-07-26 | [64006](https://github.com/airbytehq/airbyte/pull/64006) | Update dependencies |
+| 0.2.28 | 2025-07-19 | [63624](https://github.com/airbytehq/airbyte/pull/63624) | Update dependencies |
+| 0.2.27 | 2025-07-12 | [63078](https://github.com/airbytehq/airbyte/pull/63078) | Update dependencies |
+| 0.2.26 | 2025-07-05 | [62732](https://github.com/airbytehq/airbyte/pull/62732) | Update dependencies |
+| 0.2.25 | 2025-06-28 | [62265](https://github.com/airbytehq/airbyte/pull/62265) | Update dependencies |
+| 0.2.24 | 2025-06-21 | [61299](https://github.com/airbytehq/airbyte/pull/61299) | Update dependencies |
+| 0.2.23 | 2025-05-24 | [60503](https://github.com/airbytehq/airbyte/pull/60503) | Update dependencies |
+| 0.2.22 | 2025-05-10 | [60196](https://github.com/airbytehq/airbyte/pull/60196) | Update dependencies |
+| 0.2.21 | 2025-05-04 | [59621](https://github.com/airbytehq/airbyte/pull/59621) | Update dependencies |
+| 0.2.20 | 2025-04-27 | [58973](https://github.com/airbytehq/airbyte/pull/58973) | Update dependencies |
+| 0.2.19 | 2025-04-19 | [58442](https://github.com/airbytehq/airbyte/pull/58442) | Update dependencies |
+| 0.2.18 | 2025-04-12 | [57978](https://github.com/airbytehq/airbyte/pull/57978) | Update dependencies |
+| 0.2.17 | 2025-04-05 | [57452](https://github.com/airbytehq/airbyte/pull/57452) | Update dependencies |
+| 0.2.16 | 2025-03-29 | [56826](https://github.com/airbytehq/airbyte/pull/56826) | Update dependencies |
+| 0.2.15 | 2025-03-22 | [56259](https://github.com/airbytehq/airbyte/pull/56259) | Update dependencies |
+| 0.2.14 | 2025-03-08 | [55148](https://github.com/airbytehq/airbyte/pull/55148) | Update dependencies |
+| 0.2.13 | 2025-02-22 | [54506](https://github.com/airbytehq/airbyte/pull/54506) | Update dependencies |
+| 0.2.12 | 2025-02-15 | [54039](https://github.com/airbytehq/airbyte/pull/54039) | Update dependencies |
+| 0.2.11 | 2025-02-08 | [53547](https://github.com/airbytehq/airbyte/pull/53547) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [53078](https://github.com/airbytehq/airbyte/pull/53078) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52388](https://github.com/airbytehq/airbyte/pull/52388) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51944](https://github.com/airbytehq/airbyte/pull/51944) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51443](https://github.com/airbytehq/airbyte/pull/51443) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50774](https://github.com/airbytehq/airbyte/pull/50774) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50330](https://github.com/airbytehq/airbyte/pull/50330) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49791](https://github.com/airbytehq/airbyte/pull/49791) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [49394](https://github.com/airbytehq/airbyte/pull/49394) | Update dependencies |
+| 0.2.2 | 2024-12-11 | [47809](https://github.com/airbytehq/airbyte/pull/47809) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44065](https://github.com/airbytehq/airbyte/pull/44065) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43872](https://github.com/airbytehq/airbyte/pull/43872) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43664](https://github.com/airbytehq/airbyte/pull/43664) | Update dependencies |

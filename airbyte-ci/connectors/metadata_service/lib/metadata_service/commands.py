@@ -2,9 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import pathlib
 
 import click
+from pydantic import ValidationError
+
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.gcs_upload import (
     MetadataDeleteInfo,
@@ -13,8 +16,25 @@ from metadata_service.gcs_upload import (
     promote_release_candidate_in_gcs,
     upload_metadata_to_gcs,
 )
+from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
-from pydantic import ValidationError
+
+
+def setup_logging(debug: bool = False):
+    """Configure logging for the CLI."""
+    level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[logging.StreamHandler()],
+    )
+    # Suppress logging from urllib3 and slack_sdk
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("slack_sdk.web.base_client").setLevel(logging.WARNING)
+
+
+logger = logging.getLogger(__name__)
 
 
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
@@ -42,8 +62,10 @@ def log_metadata_deletion_info(metadata_deletion_info: MetadataDeleteInfo):
 
 
 @click.group(help="Airbyte Metadata Service top-level command group.")
-def metadata_service():
-    pass
+@click.option("--debug", is_flag=True, help="Enable debug logging", default=False)
+def metadata_service(debug: bool):
+    """Top-level command group with logging configuration."""
+    setup_logging(debug)
 
 
 @metadata_service.command(help="Validate a given metadata YAML file.")
@@ -83,6 +105,26 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
         exit(0)
     else:
         exit(5)
+
+
+@metadata_service.command(help="Generate and publish a stale metadata report to Slack.")
+@click.argument("bucket-name", type=click.STRING, required=True)
+def publish_stale_metadata_report(bucket_name: str):
+    click.echo(f"Starting stale metadata report for bucket: {bucket_name}")
+    logger.debug("Starting stale metadata report generation and publishing process")
+    try:
+        report_published, error_message = generate_and_publish_stale_metadata_report(bucket_name)
+        if not report_published:
+            logger.warning(f"Failed to publish the report to Slack: '{error_message}'.")
+            click.secho(f"WARNING: The stale metadata report could not be published: '{error_message}'", fg="red")
+            exit(1)
+        else:
+            click.secho(f"Stale metadata report for bucket: {bucket_name} completed successfully", fg="green")
+        logger.debug("Stale metadata report generation and publishing process completed.")
+    except Exception as e:
+        logger.error(f"A fatal error occurred when generating and publishing the stale metadata report: '{e}'")
+        click.secho(f"FATAL ERROR: The stale metadata report could not be published: '{e}'", fg="red")
+        exit(1)
 
 
 @metadata_service.command(help="Rollback a release candidate by deleting its metadata files from a GCS bucket.")

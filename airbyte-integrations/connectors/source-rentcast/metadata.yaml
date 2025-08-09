@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-rentcast
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.5@sha256:79a69ff4f759e8b404c687eff62c72f53b05d567fa830b71d17b01b8deaf2189
   connectorSubtype: api
   connectorType: source
   definitionId: f1d3c80a-b443-49b9-ad32-560ce3d61edb
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.30
   dockerRepository: airbyte/source-rentcast
   githubIssueLabel: source-rentcast
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: RentCast
   releaseDate: 2024-10-18
   releaseStage: alpha

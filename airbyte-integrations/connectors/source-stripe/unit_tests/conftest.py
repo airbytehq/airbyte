@@ -1,60 +1,58 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import os
+import sys
+from pathlib import Path
 
-import pytest
-from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from pytest import fixture
+
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
-os.environ["CACHE_DISABLED"] = "true"
-os.environ["DEPLOYMENT_MODE"] = "testing"
+
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
+ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
+os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
 
 
-def pytest_collection_modifyitems(items):
-    for item in items:
-        item.add_marker(pytest.mark.timeout(20))
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
 
 
-@pytest.fixture(name="config")
-def config_fixture():
-    config = {"client_secret": "sk_test(live)_<secret>", "account_id": "<account_id>", "start_date": "2020-05-01T00:00:00Z"}
-    return config
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-@pytest.fixture(name="stream_args")
-def stream_args_fixture():
-    authenticator = TokenAuthenticator("sk_test(live)_<secret>")
-    args = {
-        "authenticator": authenticator,
-        "account_id": "<account_id>",
-        "start_date": 1588315041,
-        "slice_range": 365,
-    }
-    return args
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
-@pytest.fixture(name="incremental_stream_args")
-def incremental_args_fixture(stream_args):
-    return {"lookback_window_days": 14, **stream_args}
+def find_stream(stream_name, config):
+    for stream in YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)).streams(config=config):
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
 
 
-@pytest.fixture()
-def stream_by_name(config):
-    # use local import in favour of global because we need to make imports after setting the env variables
-    from source_stripe.source import SourceStripe
+def delete_cache_files(cache_directory):
+    directory_path = Path(cache_directory)
+    if directory_path.exists() and directory_path.is_dir():
+        for file_path in directory_path.glob("*.sqlite"):
+            file_path.unlink()
 
-    def mocker(stream_name, source_config=config):
-        source = SourceStripe(None, source_config, StateBuilder().build())
-        streams = source.streams(source_config)
-        for stream in streams:
-            if stream.name == stream_name:
-                if isinstance(stream, StreamFacade):
-                    # to avoid breaking changes for tests, we will return the legacy test. Tests that would be affected by not having this
-                    # would probably need to be moved to integration tests or unit tests
-                    return stream._legacy_stream
-                return stream
 
-    return mocker
+@fixture(autouse=True)
+def clear_cache_before_each_test():
+    # The problem: Once the first request is cached, we will keep getting the cached result no matter what setup we prepared for a particular test.
+    # Solution: We must delete the cache before each test because for the same URL, we want to define multiple responses and status codes.
+    delete_cache_files(os.getenv(ENV_REQUEST_CACHE_PATH))
+    yield

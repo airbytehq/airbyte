@@ -60,7 +60,35 @@ your employees to the right projects.
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
-| 1.1.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.1.29 | 2025-08-09 | [64754](https://github.com/airbytehq/airbyte/pull/64754) | Update dependencies |
+| 1.1.28 | 2025-08-02 | [64173](https://github.com/airbytehq/airbyte/pull/64173) | Update dependencies |
+| 1.1.27 | 2025-07-26 | [63848](https://github.com/airbytehq/airbyte/pull/63848) | Update dependencies |
+| 1.1.26 | 2025-07-19 | [63421](https://github.com/airbytehq/airbyte/pull/63421) | Update dependencies |
+| 1.1.25 | 2025-07-12 | [63261](https://github.com/airbytehq/airbyte/pull/63261) | Update dependencies |
+| 1.1.24 | 2025-07-05 | [62595](https://github.com/airbytehq/airbyte/pull/62595) | Update dependencies |
+| 1.1.23 | 2025-06-28 | [62342](https://github.com/airbytehq/airbyte/pull/62342) | Update dependencies |
+| 1.1.22 | 2025-06-21 | [61879](https://github.com/airbytehq/airbyte/pull/61879) | Update dependencies |
+| 1.1.21 | 2025-06-14 | [61042](https://github.com/airbytehq/airbyte/pull/61042) | Update dependencies |
+| 1.1.20 | 2025-05-24 | [60564](https://github.com/airbytehq/airbyte/pull/60564) | Update dependencies |
+| 1.1.19 | 2025-05-10 | [60195](https://github.com/airbytehq/airbyte/pull/60195) | Update dependencies |
+| 1.1.18 | 2025-05-03 | [59459](https://github.com/airbytehq/airbyte/pull/59459) | Update dependencies |
+| 1.1.17 | 2025-04-27 | [59068](https://github.com/airbytehq/airbyte/pull/59068) | Update dependencies |
+| 1.1.16 | 2025-04-19 | [57912](https://github.com/airbytehq/airbyte/pull/57912) | Update dependencies |
+| 1.1.15 | 2025-04-05 | [57357](https://github.com/airbytehq/airbyte/pull/57357) | Update dependencies |
+| 1.1.14 | 2025-03-29 | [56744](https://github.com/airbytehq/airbyte/pull/56744) | Update dependencies |
+| 1.1.13 | 2025-03-22 | [56194](https://github.com/airbytehq/airbyte/pull/56194) | Update dependencies |
+| 1.1.12 | 2025-03-08 | [55553](https://github.com/airbytehq/airbyte/pull/55553) | Update dependencies |
+| 1.1.11 | 2025-03-01 | [55045](https://github.com/airbytehq/airbyte/pull/55045) | Update dependencies |
+| 1.1.10 | 2025-02-23 | [54592](https://github.com/airbytehq/airbyte/pull/54592) | Update dependencies |
+| 1.1.9 | 2025-02-15 | [53975](https://github.com/airbytehq/airbyte/pull/53975) | Update dependencies |
+| 1.1.8 | 2025-02-08 | [52958](https://github.com/airbytehq/airbyte/pull/52958) | Update dependencies |
+| 1.1.7 | 2025-01-25 | [52523](https://github.com/airbytehq/airbyte/pull/52523) | Update dependencies |
+| 1.1.6 | 2025-01-18 | [51891](https://github.com/airbytehq/airbyte/pull/51891) | Update dependencies |
+| 1.1.5 | 2025-01-11 | [51339](https://github.com/airbytehq/airbyte/pull/51339) | Update dependencies |
+| 1.1.4 | 2025-01-04 | [50287](https://github.com/airbytehq/airbyte/pull/50287) | Update dependencies |
+| 1.1.3 | 2024-12-14 | [49670](https://github.com/airbytehq/airbyte/pull/49670) | Update dependencies |
+| 1.1.2 | 2024-12-12 | [43808](https://github.com/airbytehq/airbyte/pull/43808) | Update dependencies |
+| 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.1.0 | 2024-08-14 | [44083](https://github.com/airbytehq/airbyte/pull/44083) | Refactor connector to manifest-only format |
 | 1.0.1 | 2024-06-04 | [38956](https://github.com/airbytehq/airbyte/pull/38956) | [autopull] Upgrade base image to v1.2.1 |
 | 1.0.0 | 2024-04-01 | [36508](https://github.com/airbytehq/airbyte/pull/36508) | Migrate to low code cdk |

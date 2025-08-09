@@ -9,23 +9,23 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 6.2.0
+  dockerImageTag: 7.3.2
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
-  license: MIT
+  license: ELv2
   # Based on https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#checking-report-status, report generation can take up to 3 hours
   # We've added one minute on top of the three hours because of the waiting time before we poll the report status
   maxSecondsBetweenMessages: 10860
   name: Amazon Ads
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-amazon-ads
   registryOverrides:
     cloud:
@@ -34,7 +34,21 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
+      7.0.0:
+        message:
+          "This version introduces new report streams, replacing SponsoredDisplayReportStream and SponsoredProductsReportStream with detailed breakdowns.
+          Primary keys have changed, and metrics are now correctly typed at the root level. We recommend using new detailed streams with the same dataset."
+        upgradeDeadline: "2025-02-24"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_display_report_stream"
+              - "sponsored_brands_v3_report_stream"
+              - "sponsored_products_report_stream"
       6.0.0:
         message:
           "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
@@ -78,8 +92,8 @@ data:
       - sponsored_products_report_stream
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

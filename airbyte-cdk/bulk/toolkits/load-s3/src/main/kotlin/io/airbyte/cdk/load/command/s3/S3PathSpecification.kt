@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
+import io.airbyte.cdk.load.data.Transformations
 
 /**
  * Mix-in to provide S3 path configuration fields as properties.
@@ -50,27 +51,30 @@ interface S3PathSpecification {
     @get:JsonSchemaInject(json = """{"examples":["data_sync/test"]}""")
     val s3BucketPath: String
 
-    @get:JsonSchemaTitle("Use a Staging Directory")
-    @get:JsonPropertyDescription(
-        "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If this is not set, airbyte will maintain sync integrity by adding metadata to each object."
-    )
-    @get:JsonProperty("use_staging_directory", defaultValue = "false")
-    val useStagingDirectory: Boolean?
+    //    Uncomment to re-enable staging
 
-    @get:JsonSchemaTitle("S3 Staging Prefix")
-    @get:JsonPropertyDescription(
-        "Path to use when staging data in the bucket directory. Airbyte will stage data here during sync and/or write small manifest/recovery files."
-    )
-    @get:JsonProperty("s3_staging_prefix")
-    @get:JsonSchemaInject(json = """{"examples":["__staging/data_sync/test"]}""")
-    val s3StagingPrefix: String?
+    //    @get:JsonSchemaTitle("Use a Staging Directory")
+    //    @get:JsonPropertyDescription(
+    //        "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If
+    // this is not set, airbyte will maintain sync integrity by adding metadata to each object."
+    //    )
+    //    @get:JsonProperty("use_staging_directory", defaultValue = "false")
+    //    val useStagingDirectory: Boolean?
+    //
+    //    @get:JsonSchemaTitle("S3 Staging Prefix")
+    //    @get:JsonPropertyDescription(
+    //        "Path to use when staging data in the bucket directory. Airbyte will stage data here
+    // during sync and/or write small manifest/recovery files."
+    //    )
+    //    @get:JsonProperty("s3_staging_prefix")
+    //    @get:JsonSchemaInject(json = """{"examples":["__staging/data_sync/test"]}""")
+    //    val s3StagingPrefix: String?
 
     fun toObjectStoragePathConfiguration(): ObjectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = s3BucketPath,
-            stagingPrefix = s3StagingPrefix,
-            pathSuffixPattern = s3PathFormat,
+            pathPattern = s3PathFormat,
             fileNamePattern = fileNamePattern,
-            usesStagingDirectory = useStagingDirectory ?: false
+            resolveNamesMethod = { Transformations.toS3SafeCharacters(it) },
         )
 }

@@ -10,10 +10,11 @@ from unittest.mock import MagicMock, patch
 import freezegun
 import pytest
 import requests
+from pytest import fixture, mark
+from source_notion.streams import Blocks, IncrementalNotionStream, NotionBackoffStrategy, NotionStream, Pages
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from pytest import fixture, mark
-from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
 
 
 @pytest.fixture
@@ -79,11 +80,7 @@ def test_http_method(patch_base_class):
 
 @pytest.mark.parametrize(
     "response_json, expected_output",
-    [
-        ({"next_cursor": "some_cursor", "has_more": True}, {"next_cursor": "some_cursor"}),
-        ({"has_more": False}, None), 
-        ({}, None)
-    ],
+    [({"next_cursor": "some_cursor", "has_more": True}, {"next_cursor": "some_cursor"}), ({"has_more": False}, None), ({}, None)],
     ids=["Next_page_token exists with cursor", "No next_page_token", "No next_page_token"],
 )
 def test_next_page_token(patch_base_class, response_json, expected_output):
@@ -174,7 +171,7 @@ def test_end_of_stream_state(blocks, requests_mock):
     for idx, app_slice in enumerate(stream.stream_slices(sync_mode, **MagicMock())):
         for record in stream.read_records(sync_mode=sync_mode, stream_slice=app_slice):
             state = stream.get_updated_state(state, record)
-            state_value = state["last_edited_time"].value
+            state_value = state["last_edited_time"]
             if idx == 2:  # the last slice
                 assert state_value == "2021-10-30T00:00:00.000Z"
             else:
@@ -190,18 +187,18 @@ def test_get_updated_state(stream):
     }
     expected_state = "2021-10-10T00:00:00.000Z"
     state = stream._get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+    assert state["last_edited_time"] == expected_state
 
     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-30T00:00:00.000Z"}}
     state = stream._get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+    assert state["last_edited_time"] == expected_state
 
     # after stream sync is finished, state should output the max cursor time
     stream.is_finished = True
     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-10T00:00:00.000Z"}}
     expected_state = "2021-10-30T00:00:00.000Z"
     state = stream._get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+    assert state["last_edited_time"] == expected_state
 
 
 def test_record_filter(blocks, requests_mock):
@@ -271,7 +268,7 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
     )
 
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    with patch.object(stream, "backoff_time", return_value=0.1):
+    with patch.object(NotionBackoffStrategy, "backoff_time", return_value=0.1):
         list(stream.read_records(**inputs))
         assert search_endpoint.call_count == 8
         assert f"Skipping stream pages, error message: {error_message}" in caplog.messages
@@ -399,24 +396,6 @@ def test_empty_blocks_results(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "status_code,retry_after_header,expected_backoff",
-    [
-        (429, "10", 10.0),  # Case for 429 error with retry-after header
-        (429, None, 5.0),  # Case for 429 error without retry-after header, should default to 5.0
-        (504, None, None),  # Case for 500-level error, should default to None and use CDK exponential backoff
-        (400, None, 10.0),  # Case for specific 400-level error handled by check_invalid_start_cursor
-    ],
-)
-def test_backoff_time(status_code, retry_after_header, expected_backoff, patch_base_class):
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.status_code = status_code
-    response_mock.headers = {"retry-after": retry_after_header} if retry_after_header else {}
-    stream = NotionStream(config=MagicMock())
-
-    assert stream.backoff_time(response_mock) == expected_backoff
-
-
-@pytest.mark.parametrize(
     "initial_page_size, expected_page_size, mock_response",
     [
         (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
@@ -454,21 +433,149 @@ def test_request_throttle(initial_page_size, expected_page_size, mock_response, 
 def test_block_record_transformation():
     stream = Blocks(parent=None, config=MagicMock())
     response_record = {
-        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "mention", "mention": {"type": "page", "page": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"},
-                                     "plain_text": "test", "href": "https://www.notion.so/id"}], "color": "default"}
+        "object": "block",
+        "id": "id",
+        "parent": {"type": "page_id", "page_id": "id"},
+        "created_time": "2021-10-19T13:33:00.000Z",
+        "last_edited_time": "2021-10-19T13:33:00.000Z",
+        "created_by": {"object": "user", "id": "id"},
+        "last_edited_by": {"object": "user", "id": "id"},
+        "has_children": False,
+        "archived": False,
+        "type": "paragraph",
+        "paragraph": {
+            "rich_text": [
+                {
+                    "type": "text",
+                    "text": {"content": "test", "link": None},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": False,
+                        "color": "default",
+                    },
+                    "plain_text": "test",
+                    "href": None,
+                },
+                {
+                    "type": "text",
+                    "text": {"content": "@", "link": None},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": True,
+                        "color": "default",
+                    },
+                    "plain_text": "@",
+                    "href": None,
+                },
+                {
+                    "type": "text",
+                    "text": {"content": "test", "link": None},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": False,
+                        "color": "default",
+                    },
+                    "plain_text": "test",
+                    "href": None,
+                },
+                {
+                    "type": "mention",
+                    "mention": {"type": "page", "page": {"id": "id"}},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": False,
+                        "color": "default",
+                    },
+                    "plain_text": "test",
+                    "href": "https://www.notion.so/id",
+                },
+            ],
+            "color": "default",
+        },
     }
     expected_record = {
-        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations":{"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text":"test", "href": None},
-                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "mention", "mention": {"type": "page", "info": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": "https://www.notion.so/id"}],
-                      "color": "default"}
+        "object": "block",
+        "id": "id",
+        "parent": {"type": "page_id", "page_id": "id"},
+        "created_time": "2021-10-19T13:33:00.000Z",
+        "last_edited_time": "2021-10-19T13:33:00.000Z",
+        "created_by": {"object": "user", "id": "id"},
+        "last_edited_by": {"object": "user", "id": "id"},
+        "has_children": False,
+        "archived": False,
+        "type": "paragraph",
+        "paragraph": {
+            "rich_text": [
+                {
+                    "type": "text",
+                    "text": {"content": "test", "link": None},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": False,
+                        "color": "default",
+                    },
+                    "plain_text": "test",
+                    "href": None,
+                },
+                {
+                    "type": "text",
+                    "text": {"content": "@", "link": None},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": True,
+                        "color": "default",
+                    },
+                    "plain_text": "@",
+                    "href": None,
+                },
+                {
+                    "type": "text",
+                    "text": {"content": "test", "link": None},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": False,
+                        "color": "default",
+                    },
+                    "plain_text": "test",
+                    "href": None,
+                },
+                {
+                    "type": "mention",
+                    "mention": {"type": "page", "info": {"id": "id"}},
+                    "annotations": {
+                        "bold": False,
+                        "italic": False,
+                        "strikethrough": False,
+                        "underline": False,
+                        "code": False,
+                        "color": "default",
+                    },
+                    "plain_text": "test",
+                    "href": "https://www.notion.so/id",
+                },
+            ],
+            "color": "default",
+        },
     }
     assert stream.transform(response_record) == expected_record

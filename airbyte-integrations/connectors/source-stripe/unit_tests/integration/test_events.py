@@ -1,4 +1,6 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
@@ -6,6 +8,8 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
+from unit_tests.conftest import get_source
+
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
@@ -26,7 +30,7 @@ from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
-from source_stripe import SourceStripe
+
 
 _STREAM_NAME = "events"
 _NOW = datetime.now(timezone.utc)
@@ -35,8 +39,6 @@ _ACCOUNT_ID = "account_id"
 _CLIENT_SECRET = "client_secret"
 _NO_STATE = {}
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
-_SECOND_REQUEST = timedelta(seconds=1)
-_THIRD_REQUEST = timedelta(seconds=2)
 
 
 def _a_request() -> StripeRequestBuilder:
@@ -49,10 +51,6 @@ def _config() -> ConfigBuilder:
 
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
-
-
-def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[TState]) -> SourceStripe:
-    return SourceStripe(catalog, config, state)
 
 
 def _a_record() -> RecordBuilder:
@@ -73,7 +71,7 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(catalog, config, state), config, catalog, state, expecting_exception)
+    return read(get_source(config, state), config, catalog, state, expecting_exception)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -118,19 +116,23 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=30)
         slice_datetime = start_date + slice_range
         http_mocker.get(  # this first request has both gte and lte before 30 days even though we know there should not be records returned
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
-            _a_response().build(),
-        )
-        http_mocker.get(
             _a_request()
-            .with_created_gte(slice_datetime + _SECOND_REQUEST)
-            .with_created_lte(slice_datetime + slice_range + _SECOND_REQUEST)
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
             .with_limit(100)
             .build(),
             _a_response().build(),
         )
         http_mocker.get(
-            _a_request().with_created_gte(slice_datetime + slice_range + _THIRD_REQUEST).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request()
+            .with_created_gte(slice_datetime)
+            .with_created_lte(slice_datetime + slice_range - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
+            _a_response().build(),
+        )
+        http_mocker.get(
+            _a_request().with_created_gte(slice_datetime + slice_range).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().build(),
         )
 
@@ -143,7 +145,7 @@ class FullRefreshTest(TestCase):
         start_date = _NOW - timedelta(days=30)
         lookback_window = timedelta(days=10)
         http_mocker.get(
-            _a_request().with_created_gte(start_date - lookback_window).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().build(),
         )
 
@@ -157,11 +159,15 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
         http_mocker.get(
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
+            _a_request()
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
             _a_response().build(),
         )
         http_mocker.get(
-            _a_request().with_created_gte(slice_datetime + _SECOND_REQUEST).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().build(),
         )
 
@@ -242,13 +248,13 @@ class IncrementalTest(TestCase):
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(_NOW.timestamp()))
+        assert most_recent_state.stream_state.created == str(cursor_value)
 
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
         state_value = _A_START_DATE + timedelta(seconds=1)
         http_mocker.get(
-            _a_request().with_created_gte(state_value + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request().with_created_gte(state_value).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().with_record(_a_record()).build(),
         )
 
@@ -274,7 +280,7 @@ class IncrementalTest(TestCase):
 
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(created=very_recent_cursor_state)
+        assert most_recent_state.stream_state.created == str(very_recent_cursor_state)
 
     def _read(self, config: ConfigBuilder, state: Optional[Dict[str, Any]], expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.incremental, state, expecting_exception)

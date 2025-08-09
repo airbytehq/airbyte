@@ -1,0 +1,97 @@
+name: On-Demand CAT Tests (Legacy)
+# This workflow is used to run the legacy CAT tests for modified connectors.
+# It can be triggered manually via slash command or workflow dispatch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "The repository name"
+        required: false
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+
+run-name: "Run connector CAT tests in PR: #${{ github.event.inputs.pr }}"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
+  # Cancel any previous runs on the same branch if they are still in progress
+  cancel-in-progress: true
+
+jobs:
+  run-cat-tests:
+    name: "On-Demand CAT Tests"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get job variables
+        id: job-vars
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
+          echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
+          echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Append comment with job run link
+        # If comment-id is not provided, this will create a new
+        # comment with the job run link.
+        id: first-comment-action
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          issue-number: ${{ github.event.inputs.pr }}
+          body: |
+            > Connector CAT tests started... [Check job output.](${{ steps.job-vars.outputs.run-url }})
+            >
+            > If the connector supports live tests or regression tests, you may want to run those now also:
+            > - [Run Live Tests](https://github.com/airbytehq/airbyte/actions/workflows/live_tests.yml)
+            > - [Run Regression Tests](https://github.com/airbytehq/airbyte/actions/workflows/regression_tests.yml)
+            >
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.job-vars.outputs.repo }}
+          ref: ${{ steps.job-vars.outputs.branch }}
+          fetch-depth: 0
+
+      - name: Run CAT tests with `airbyte-ci`
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          git_branch: ${{ steps.job-vars.outputs.branch }}
+          git_revision: ${{ steps.job-vars.outputs.commit_id }}
+          subcommand: "connectors --modified test --only-step=acceptance"
+
+      - name: Append completion comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: always()
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > CAT Tests completed.
+            > _**Important: Please check the job output to verify the results.**_

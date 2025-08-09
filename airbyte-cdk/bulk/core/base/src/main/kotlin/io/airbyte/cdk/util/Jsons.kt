@@ -2,9 +2,10 @@
 package io.airbyte.cdk.util
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.cfg.JsonNodeFeature
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.BinaryNode
 import com.fasterxml.jackson.databind.node.BooleanNode
@@ -25,7 +26,9 @@ object Jsons : ObjectMapper() {
         registerModule(AfterburnerModule())
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
+        configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
+        configure(WRITE_BIGDECIMAL_AS_PLAIN, true)
+        configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
     }
 
     fun objectNode(): ObjectNode = createObjectNode()

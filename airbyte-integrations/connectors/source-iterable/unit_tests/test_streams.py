@@ -6,12 +6,13 @@ import json
 import pytest
 import requests
 import responses
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_iterable.source import SourceIterable
 from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
 from source_iterable.utils import dateutil_parse
+
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 def test_campaigns_metrics_csv():
@@ -190,7 +191,6 @@ def test_path(config, stream, date, slice, expected_path):
 
 
 def test_campaigns_metrics_parse_response():
-
     stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
     with responses.RequestsMock() as rsps:
         rsps.add(
