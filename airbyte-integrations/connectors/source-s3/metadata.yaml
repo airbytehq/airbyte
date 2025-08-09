@@ -45,6 +45,12 @@ data:
   tags:
     - language:python
     - cdk:python-file-based
+  resourceRequirements:
+    jobSpecific:
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 4096mi
+          memory_request: 4096mi
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: liveTests
