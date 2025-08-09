@@ -17,7 +17,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 
 @dataclass
 class CreationRequester(HttpRequester):
-
     # CreationRequester checks if the job exists first before attempting to create the job
     # This is because If the job exists, creating the job returns an error
     # CreationRequester achieves this by first pulling a list of all jobs. It then checks if the job is in the list.
@@ -53,7 +52,6 @@ class CreationRequester(HttpRequester):
 
 @dataclass
 class PollingRequester(HttpRequester):
-
     # PollingRequester gets the job id first before pulling the job's reports
     # It achieves this by first pulling a list of all jobs, extracting the job and getting its id
     # PollingRequester then uses the id to pull the job's reports
@@ -78,7 +76,6 @@ class PollingRequester(HttpRequester):
 
 @dataclass
 class StatusExtractor(RecordExtractor):
-
     # The API doesn't explicitly state the status of the job's reports creation.
     # Hence, StatusExtractor improvises by returning "running" if the reports are not available i.e the reports list is empty
     # It then returns "completed" if the reports list contains items.
@@ -93,7 +90,6 @@ class StatusExtractor(RecordExtractor):
 
 @dataclass
 class DownloadTargetExtractor(RecordExtractor):
-
     # There are usually more than one report url for a job returned as items in a json
     # DownloadTargetExtractor extracts these urls as a list
 
