@@ -157,6 +157,8 @@ jobs:
       # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
       - uses: gradle/actions/setup-gradle@v4
         if: matrix.connector
+        with:
+          gradle-version: "8.14"
 
       # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
       - name: Set up Python (For Airbyte-CI)
@@ -348,6 +350,7 @@ jobs:
         with:
           cache-read-only: false
           cache-write-only: false
+          gradle-version: "8.14"
 
       # Python deps
       - name: Set up Python
