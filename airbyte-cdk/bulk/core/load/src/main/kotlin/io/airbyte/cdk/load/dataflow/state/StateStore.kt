@@ -50,7 +50,7 @@ class StateStore(
 
     fun isComplete(key: StateKey): Boolean {
         val expectedCount = expected.map[key]
-        val flushedCount = key.partitionIds.sumOf { flushed.map[PartitionKey(it)] ?: 0 }
+        val flushedCount = key.partitionKeys.sumOf { flushed.map[it] ?: 0 }
 
         return expectedCount == flushedCount
     }
