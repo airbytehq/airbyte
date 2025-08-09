@@ -1,4 +1,4 @@
-version: 5.13.0
+version: 6.38.3
 
 type: DeclarativeSource
 
@@ -7,6 +7,7 @@ check:
   stream_names:
     - bounces
 
+max_concurrent_async_job_count: 2
 definitions:
   streams:
     bounces:
@@ -604,7 +605,7 @@ definitions:
             - timeout
           completed:
             - ready
-        urls_extractor:
+        download_target_extractor:
           type: DpathExtractor
           field_path:
             - urls
@@ -620,7 +621,7 @@ definitions:
         polling_requester:
           type: HttpRequester
           path: >-
-            /v3/marketing/contacts/exports/{{stream_slice['create_job_response'].json()['id']
+            /v3/marketing/contacts/exports/{{creation_response['id']
             }}
           url_base: https://api.sendgrid.com
           http_method: GET
@@ -637,11 +638,12 @@ definitions:
             api_token: "{{ config['api_key'] }}"
         download_requester:
           type: HttpRequester
-          path: "{{stream_slice.extra_fields['url']}}"
-          url_base: ""
+          url_base: "{{download_target}}"
           http_method: GET
-        download_extractor:
-          type: ResponseToFileExtractor
+        download_decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1066,6 +1068,7 @@ schemas:
         type:
           - 'null'
           - array
+          - string
       city:
         type:
           - string

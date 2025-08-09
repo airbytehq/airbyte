@@ -39,6 +39,18 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.3.11 | 2025-05-24 | [60453](https://github.com/airbytehq/airbyte/pull/60453) | Update dependencies |
+| 0.3.10 | 2025-05-10 | [60087](https://github.com/airbytehq/airbyte/pull/60087) | Update dependencies |
+| 0.3.9 | 2025-05-03 | [59453](https://github.com/airbytehq/airbyte/pull/59453) | Update dependencies |
+| 0.3.8 | 2025-04-27 | [59089](https://github.com/airbytehq/airbyte/pull/59089) | Update dependencies |
+| 0.3.7 | 2025-04-19 | [58489](https://github.com/airbytehq/airbyte/pull/58489) | Update dependencies |
+| 0.3.6 | 2025-04-12 | [57922](https://github.com/airbytehq/airbyte/pull/57922) | Update dependencies |
+| 0.3.5 | 2025-04-05 | [57330](https://github.com/airbytehq/airbyte/pull/57330) | Update dependencies |
+| 0.3.4 | 2025-03-29 | [56787](https://github.com/airbytehq/airbyte/pull/56787) | Update dependencies |
+| 0.3.3 | 2025-03-22 | [56171](https://github.com/airbytehq/airbyte/pull/56171) | Update dependencies |
+| 0.3.2 | 2025-03-08 | [55537](https://github.com/airbytehq/airbyte/pull/55537) | Update dependencies |
+| 0.3.1 | 2025-03-01 | [53962](https://github.com/airbytehq/airbyte/pull/53962) | Update dependencies |
+| 0.3.0 | 2025-02-26 | [47280](https://github.com/airbytehq/airbyte/pull/47280) | Migrate to Manifest-only |
 | 0.2.8 | 2025-02-01 | [52541](https://github.com/airbytehq/airbyte/pull/52541) | Update dependencies |
 | 0.2.7 | 2025-01-18 | [51913](https://github.com/airbytehq/airbyte/pull/51913) | Update dependencies |
 | 0.2.6 | 2025-01-11 | [51344](https://github.com/airbytehq/airbyte/pull/51344) | Update dependencies |

@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.UnknownValue
-import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import kotlin.reflect.jvm.jvmName
 
 class RecordDiffer(
@@ -224,7 +222,7 @@ class RecordDiffer(
                     "generationId: Expected ${expectedRecord.generationId}, got ${actualRecord.generationId}\n"
                 )
             }
-            if (expectedRecord.airbyteMeta != actualRecord.airbyteMeta) {
+            if (!compareMetaObjects(expectedRecord.airbyteMeta, actualRecord.airbyteMeta)) {
                 diff.append(
                     "airbyteMeta: Expected ${expectedRecord.airbyteMeta}, got ${actualRecord.airbyteMeta}\n"
                 )
@@ -270,6 +268,17 @@ class RecordDiffer(
         }
     }
 
+    fun compareMetaObjects(meta1: OutputRecord.Meta?, meta2: OutputRecord.Meta?): Boolean {
+        if (meta1 == null && meta2 == null) return true
+        if (meta1 == null || meta2 == null) return false
+
+        if (meta1.syncId != meta2.syncId) {
+            return false
+        }
+
+        return meta1.changes.toSet() == meta2.changes.toSet()
+    }
+
     companion object {
         fun getValueComparator(nullEqualsUnset: Boolean): Comparator<AirbyteValue> =
             Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!, nullEqualsUnset) }
@@ -292,21 +301,6 @@ class RecordDiffer(
         }
 
         private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {
-            if (v1 is UnknownValue) {
-                return compare(
-                    JsonToAirbyteValue().convert(v1.value),
-                    v2,
-                    nullEqualsUnset,
-                )
-            }
-            if (v2 is UnknownValue) {
-                return compare(
-                    v1,
-                    JsonToAirbyteValue().convert(v2.value),
-                    nullEqualsUnset,
-                )
-            }
-
             // when comparing values of different types, just sort by their class name.
             // in theory, we could check for numeric types and handle them smartly...
             // that's a lot of work though

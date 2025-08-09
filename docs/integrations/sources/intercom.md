@@ -94,8 +94,23 @@ The Intercom connector should not run into Intercom API limitations under normal
 <details>
   <summary>Expand to review</summary>
 
+
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.4 | 2025-08-09 | [63523](https://github.com/airbytehq/airbyte/pull/63523) | Update dependencies |
+| 0.13.3 | 2025-07-12 | [63155](https://github.com/airbytehq/airbyte/pull/63155) | Update dependencies |
+| 0.13.2 | 2025-07-05 | [62592](https://github.com/airbytehq/airbyte/pull/62592) | Update dependencies |
+| 0.13.1 | 2025-06-28 | [54308](https://github.com/airbytehq/airbyte/pull/54308) | Update dependencies |
+| 0.13.0 | 2025-06-25 | [62069](https://github.com/airbytehq/airbyte/pull/62069) | Promoting release candidate 0.13.0-rc.5 to a main version. |
+| 0.13.0-rc.5 | 2025-06-11| [61506](https://github.com/airbytehq/airbyte/pull/61506) |  Add better error handling for companies stream, update SDM, & add advanced_auth |
+| 0.13.0-rc.4 | 2025-05-15| [60235](https://github.com/airbytehq/airbyte/pull/60235) |  Add required custom paginator for 'companies' stream & Fix 500s on `Tickets` stream. |
+| 0.13.0-rc.3 | 2025-05-09| [55829](https://github.com/airbytehq/airbyte/pull/55829) |  Fix pagination for `conversations`, `tickets`, `companies` & `contacts` and cleanup manifest|
+| 0.13.0-rc.2 | 2025-04-08 | [57524](https://github.com/airbytehq/airbyte/pull/57524) | Use global state and pass state to parent streams for conversation_parts and company_segments                                    |
+| 0.13.0-rc.1 | 2025-02-22 | [53187](https://github.com/airbytehq/airbyte/pull/53187) | Update with latest CDK features, remove custom incremental sync components, update schema for conversation_parts  |
+| 0.12.2 | 2025-02-15 | [53835](https://github.com/airbytehq/airbyte/pull/53835) | Update dependencies |
+| 0.12.1 | 2025-02-08 | [53257](https://github.com/airbytehq/airbyte/pull/53257) | Update dependencies |
+| 0.12.0 | 2025-02-03 | [52687](https://github.com/airbytehq/airbyte/pull/52687) | New stream Tickets |
+| 0.11.0 | 2025-02-03 | [51619](https://github.com/airbytehq/airbyte/pull/51619) | Upgrade API version to 2.11, add ai_agent_participated and ai_agent fields conversations stream schema |
 | 0.10.1 | 2025-02-01 | [49212](https://github.com/airbytehq/airbyte/pull/49212) | Update dependencies |
 | 0.10.0 | 2025-01-24 | [52132](https://github.com/airbytehq/airbyte/pull/52132) | Fix incremental sync |
 | 0.9.0 | 2025-01-15 | [51570](https://github.com/airbytehq/airbyte/pull/51570) | Promoting release candidate 0.9.0-rc.2 to a main version. |
@@ -175,5 +190,4 @@ The Intercom connector should not run into Intercom API limitations under normal
 | 0.1.2      | 2021-08-19 | [5531](https://github.com/airbytehq/airbyte/pull/5531)   | Corrected pagination                                                                                                             |
 | 0.1.1      | 2021-07-31 | [5123](https://github.com/airbytehq/airbyte/pull/5123)   | Corrected rate limit                                                                                                             |
 | 0.1.0      | 2021-07-19 | [4676](https://github.com/airbytehq/airbyte/pull/4676)   | Release Intercom CDK Connector                                                                                                   |
-
 </details>

@@ -38,6 +38,28 @@ The WordPress connector enables seamless data synchronization between your WordP
 
 | Version | Date       | Pull Request | Subject                                                                               |
 | ------- | ---------- | ------------ | ------------------------------------------------------------------------------------- |
+| 0.0.31 | 2025-08-02 | [64324](https://github.com/airbytehq/airbyte/pull/64324) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [64091](https://github.com/airbytehq/airbyte/pull/64091) | Update dependencies |
+| 0.0.29 | 2025-07-19 | [63637](https://github.com/airbytehq/airbyte/pull/63637) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63192](https://github.com/airbytehq/airbyte/pull/63192) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62750](https://github.com/airbytehq/airbyte/pull/62750) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62239](https://github.com/airbytehq/airbyte/pull/62239) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61780](https://github.com/airbytehq/airbyte/pull/61780) | Update dependencies |
+| 0.0.24 | 2025-06-15 | [61196](https://github.com/airbytehq/airbyte/pull/61196) | Update dependencies |
+| 0.0.23 | 2025-05-24 | [60745](https://github.com/airbytehq/airbyte/pull/60745) | Update dependencies |
+| 0.0.22 | 2025-05-10 | [60006](https://github.com/airbytehq/airbyte/pull/60006) | Update dependencies |
+| 0.0.21 | 2025-05-04 | [59556](https://github.com/airbytehq/airbyte/pull/59556) | Update dependencies |
+| 0.0.20 | 2025-04-26 | [58946](https://github.com/airbytehq/airbyte/pull/58946) | Update dependencies |
+| 0.0.19 | 2025-04-19 | [58568](https://github.com/airbytehq/airbyte/pull/58568) | Update dependencies |
+| 0.0.18 | 2025-04-13 | [58050](https://github.com/airbytehq/airbyte/pull/58050) | Update dependencies |
+| 0.0.17 | 2025-04-05 | [57402](https://github.com/airbytehq/airbyte/pull/57402) | Update dependencies |
+| 0.0.16 | 2025-03-29 | [56901](https://github.com/airbytehq/airbyte/pull/56901) | Update dependencies |
+| 0.0.15 | 2025-03-22 | [56297](https://github.com/airbytehq/airbyte/pull/56297) | Update dependencies |
+| 0.0.14 | 2025-03-08 | [55593](https://github.com/airbytehq/airbyte/pull/55593) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [55140](https://github.com/airbytehq/airbyte/pull/55140) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54494](https://github.com/airbytehq/airbyte/pull/54494) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [54027](https://github.com/airbytehq/airbyte/pull/54027) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53564](https://github.com/airbytehq/airbyte/pull/53564) | Update dependencies |
 | 0.0.9 | 2025-02-01 | [53044](https://github.com/airbytehq/airbyte/pull/53044) | Update dependencies |
 | 0.0.8 | 2025-01-25 | [52424](https://github.com/airbytehq/airbyte/pull/52424) | Update dependencies |
 | 0.0.7 | 2025-01-18 | [52008](https://github.com/airbytehq/airbyte/pull/52008) | Update dependencies |

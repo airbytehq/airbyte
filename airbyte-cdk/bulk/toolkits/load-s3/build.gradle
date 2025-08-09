@@ -4,6 +4,10 @@ dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
 
+    // For legacy AWS Java SDK Support
+    api 'com.amazonaws:aws-java-sdk-s3:1.12.772'
+    api 'com.amazonaws:aws-java-sdk-sts:1.12.772'
+
     testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage")))
     implementation("aws.sdk.kotlin:s3:1.3.98")
     implementation("aws.smithy.kotlin:http-client-engine-crt:1.3.31")

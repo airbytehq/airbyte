@@ -30,6 +30,22 @@ The [Agile CRM](https://agilecrm.com/) Airbyte Connector allows you to sync and 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.26 | 2025-07-26 | [63809](https://github.com/airbytehq/airbyte/pull/63809) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62538](https://github.com/airbytehq/airbyte/pull/62538) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61109](https://github.com/airbytehq/airbyte/pull/61109) | Update dependencies |
+| 0.0.23 | 2025-05-24 | [60661](https://github.com/airbytehq/airbyte/pull/60661) | Update dependencies |
+| 0.0.22 | 2025-05-10 | [59338](https://github.com/airbytehq/airbyte/pull/59338) | Update dependencies |
+| 0.0.21 | 2025-04-26 | [58694](https://github.com/airbytehq/airbyte/pull/58694) | Update dependencies |
+| 0.0.20 | 2025-04-19 | [58248](https://github.com/airbytehq/airbyte/pull/58248) | Update dependencies |
+| 0.0.19 | 2025-04-12 | [57630](https://github.com/airbytehq/airbyte/pull/57630) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57141](https://github.com/airbytehq/airbyte/pull/57141) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56558](https://github.com/airbytehq/airbyte/pull/56558) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [56096](https://github.com/airbytehq/airbyte/pull/56096) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55419](https://github.com/airbytehq/airbyte/pull/55419) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54908](https://github.com/airbytehq/airbyte/pull/54908) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54256](https://github.com/airbytehq/airbyte/pull/54256) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [53924](https://github.com/airbytehq/airbyte/pull/53924) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53425](https://github.com/airbytehq/airbyte/pull/53425) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [52913](https://github.com/airbytehq/airbyte/pull/52913) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52214](https://github.com/airbytehq/airbyte/pull/52214) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51764](https://github.com/airbytehq/airbyte/pull/51764) | Update dependencies |

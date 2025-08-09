@@ -2,11 +2,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c332628c-f55c-4017-8222-378cfafda9b2
-  dockerImageTag: 0.4.28
+  dockerImageTag: 0.4.48
   dockerRepository: airbyte/source-convex
   githubIssueLabel: source-convex
   icon: convex.svg
-  license: MIT
+  license: ELv2
   name: Convex
   remoteRegistries:
     pypi:
@@ -40,5 +40,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
 metadataSpecVersion: "1.0"

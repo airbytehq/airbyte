@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
+import io.airbyte.cdk.load.data.Transformations
 
 /**
  * Mix-in to provide S3 path configuration fields as properties.
@@ -72,9 +73,8 @@ interface S3PathSpecification {
     fun toObjectStoragePathConfiguration(): ObjectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = s3BucketPath,
-            stagingPrefix = null,
-            pathSuffixPattern = s3PathFormat,
+            pathPattern = s3PathFormat,
             fileNamePattern = fileNamePattern,
-            usesStagingDirectory = false
+            resolveNamesMethod = { Transformations.toS3SafeCharacters(it) },
         )
 }

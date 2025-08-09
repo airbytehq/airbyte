@@ -48,6 +48,17 @@ To use the RabbitMQ destination, you'll need:
 
 | Version | Date             | Pull Request                                              | Subject                                         |
 |:--------| :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.43 | 2025-05-24 | [60586](https://github.com/airbytehq/airbyte/pull/60586) | Update dependencies |
+| 0.1.42 | 2025-05-10 | [59812](https://github.com/airbytehq/airbyte/pull/59812) | Update dependencies |
+| 0.1.41 | 2025-05-03 | [58696](https://github.com/airbytehq/airbyte/pull/58696) | Update dependencies |
+| 0.1.40 | 2025-04-19 | [58287](https://github.com/airbytehq/airbyte/pull/58287) | Update dependencies |
+| 0.1.39 | 2025-04-12 | [57602](https://github.com/airbytehq/airbyte/pull/57602) | Update dependencies |
+| 0.1.38 | 2025-04-05 | [56629](https://github.com/airbytehq/airbyte/pull/56629) | Update dependencies |
+| 0.1.37 | 2025-03-22 | [56125](https://github.com/airbytehq/airbyte/pull/56125) | Update dependencies |
+| 0.1.36 | 2025-03-08 | [55350](https://github.com/airbytehq/airbyte/pull/55350) | Update dependencies |
+| 0.1.35 | 2025-03-01 | [54857](https://github.com/airbytehq/airbyte/pull/54857) | Update dependencies |
+| 0.1.34 | 2025-02-22 | [54261](https://github.com/airbytehq/airbyte/pull/54261) | Update dependencies |
+| 0.1.33 | 2025-02-15 | [53921](https://github.com/airbytehq/airbyte/pull/53921) | Update dependencies |
 | 0.1.32 | 2025-02-01 | [52952](https://github.com/airbytehq/airbyte/pull/52952) | Update dependencies |
 | 0.1.31 | 2025-01-25 | [52176](https://github.com/airbytehq/airbyte/pull/52176) | Update dependencies |
 | 0.1.30 | 2025-01-18 | [51287](https://github.com/airbytehq/airbyte/pull/51287) | Update dependencies |

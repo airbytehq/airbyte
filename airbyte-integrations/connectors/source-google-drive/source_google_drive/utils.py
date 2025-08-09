@@ -15,6 +15,8 @@ def get_folder_id(url_string: str) -> str:
         if parsed_url.scheme != "https" or parsed_url.netloc != "drive.google.com":
             raise ValueError("Folder URL has to be of the form https://drive.google.com/drive/folders/<folder_id>")
         path_segments = list(filter(None, parsed_url.path.split("/")))
+        if path_segments[-1] in ["my-drive", "home"]:
+            return "root"
         if path_segments[-2] != "folders" or len(path_segments) < 3:
             raise ValueError("Folder URL has to be of the form https://drive.google.com/drive/folders/<folder_id>")
         return path_segments[-1]

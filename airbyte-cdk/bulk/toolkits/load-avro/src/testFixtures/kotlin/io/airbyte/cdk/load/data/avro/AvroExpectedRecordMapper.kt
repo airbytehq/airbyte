@@ -34,7 +34,10 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
     ): DestinationStream.Descriptor {
         // Map the special character but not the '+', because only the former is replaced in file
         // paths.
-        return descriptor.copy(name = descriptor.name.replace("é", "e"))
+        return descriptor.copy(
+            namespace = descriptor.namespace?.replace("ø", "o"),
+            name = descriptor.name.replace("é", "e")
+        )
     }
 
     private fun fieldNameMangler(value: AirbyteValue): AirbyteValue =
@@ -44,9 +47,18 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
                     LinkedHashMap(
                         value.values
                             .map { (k, v) ->
-                                k.replace("é", "e").replace("+", "_").replace(Regex("(^\\d+)")) {
-                                    "_${it.groupValues[0]}"
-                                } to fieldNameMangler(v)
+                                // hardcoded handling for various special characters in the tests.
+                                // we expect the connector to do the same transformations, but
+                                // in a more generic way.
+                                k.replace("é", "e")
+                                    .replace("+", "_")
+                                    .replace(".", "_")
+                                    // avro+parquet require field names to start with a letter or
+                                    // an underscore.
+                                    // we have tests with field names starting with a number,
+                                    // so do that translation hewe.
+                                    .replace(Regex("(^\\d+)")) { "_${it.groupValues[0]}" } to
+                                    fieldNameMangler(v)
                             }
                             .toMap()
                     )

@@ -56,6 +56,9 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.3.7
+Update Python version requirement from 3.10 to 3.11.
+
 ### 0.3.5
 Fix permissions issue when installing `pylint` in connector container.
 

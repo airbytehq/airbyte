@@ -5,11 +5,17 @@
 import urllib.parse
 from typing import Any, List, MutableMapping
 from unittest import mock
+from unittest.mock import MagicMock
+
+from source_mixpanel import SourceMixpanel
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
 
@@ -18,6 +24,8 @@ def setup_response(status, body):
 
 
 def get_url_to_mock(stream):
+    if isinstance(stream, DeclarativeStream):
+        return urllib.parse.urljoin(stream.retriever.requester._url_base.eval(config=stream.config), stream.retriever.requester.path)
     return urllib.parse.urljoin(stream.url_base, stream.path())
 
 
@@ -42,3 +50,10 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
             stream_state = stream_instance.get_updated_state(stream_state, record)
             res.append(record)
     return res
+
+
+def init_stream(name="", config=None):
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
+    for stream in streams:
+        if stream.name == name:
+            return stream

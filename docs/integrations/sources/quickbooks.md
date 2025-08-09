@@ -108,8 +108,22 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
-| 4.0.0       | 2025-01-18 | [51615](https://github.com/airbytehq/airbyte/pull/51615) | Remove nested credentials object from config to enable overwriting of new refresh token in config |
-| 3.0.26      | 2024-11-01 | [48089](https://github.com/airbytehq/airbyte/pull/48089) | Promoting release candidate 3.0.26-rc.1 to a main version. |
+| 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
+| 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
+| 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
+| 4.1.5 | 2025-04-27 | [58481](https://github.com/airbytehq/airbyte/pull/58481) | Update dependencies |
+| 4.1.4 | 2025-04-12 | [57880](https://github.com/airbytehq/airbyte/pull/57880) | Update dependencies |
+| 4.1.3 | 2025-04-05 | [57355](https://github.com/airbytehq/airbyte/pull/57355) | Update dependencies |
+| 4.1.2 | 2025-03-29 | [56800](https://github.com/airbytehq/airbyte/pull/56800) | Update dependencies |
+| 4.1.1 | 2025-03-22 | [56202](https://github.com/airbytehq/airbyte/pull/56202) | Update dependencies |
+| 4.1.0 | 2025-03-14 | [55776](https://github.com/airbytehq/airbyte/pull/55776) | Promoting release candidate 4.1.0-rc.1 to a main version. |
+| 4.1.0-rc.1 | 2025-03-10 | [55263](https://github.com/airbytehq/airbyte/pull/55263) | Migrate to manifest-only |
+| 4.0.4 | 2025-03-08 | [55527](https://github.com/airbytehq/airbyte/pull/55527) | Update dependencies |
+| 4.0.3 | 2025-03-01 | [55075](https://github.com/airbytehq/airbyte/pull/55075) | Update dependencies |
+| 4.0.2 | 2025-02-23 | [54573](https://github.com/airbytehq/airbyte/pull/54573) | Update dependencies |
+| 4.0.1 | 2025-02-15 | [46789](https://github.com/airbytehq/airbyte/pull/46789) | Update dependencies |
+| 4.0.0 | 2025-01-18 | [51615](https://github.com/airbytehq/airbyte/pull/51615) | Remove nested credentials object from config to enable overwriting of new refresh token in config |
+| 3.0.26 | 2024-11-01 | [48089](https://github.com/airbytehq/airbyte/pull/48089) | Promoting release candidate 3.0.26-rc.1 to a main version. |
 | 3.0.26-rc.1 | 2024-09-10 | [44560](https://github.com/airbytehq/airbyte/pull/44560) | Replace Custom Components with Airbyte CDK features                |
 | 3.0.25      | 2024-10-05 | [46424](https://github.com/airbytehq/airbyte/pull/46424) | Update dependencies                                                |
 | 3.0.24      | 2024-09-28 | [46142](https://github.com/airbytehq/airbyte/pull/46142) | Update dependencies                                                |

@@ -10,27 +10,25 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class DevNullBasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
-        DevNullTestUtils.loggingConfigContents,
+        DevNullTestUtils.configContents(DevNullTestUtils.loggingConfigPath),
         DevNullSpecificationOss::class.java,
         DevNullDestinationDataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
         verifyDataWriting = false,
         isStreamSchemaRetroactive = false,
-        supportsDedup = false,
+        dedupBehavior = null,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
-        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -41,6 +39,4 @@ class DevNullBasicFunctionalityIntegrationTest :
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
-
-    @Test @Disabled("File transfer is not supported") override fun testBasicWriteFile() {}
 }

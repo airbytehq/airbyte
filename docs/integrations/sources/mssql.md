@@ -69,7 +69,7 @@ CDC-enabled tables.
 Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync
 from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
-Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte
+Please read the [CDC docs](../../platform/understanding-airbyte/cdc) for an overview of how Airbyte
 approaches CDC.
 
 ### Should I use CDC for MSSQL?
@@ -86,7 +86,7 @@ approaches CDC.
 
 #### CDC Limitations
 
-- Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that
+- Make sure to read our [CDC docs](../../platform/understanding-airbyte/cdc) to see limitations that
   impact all databases using CDC replication.
 - `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by
   Debezium). For more details please check
@@ -235,6 +235,27 @@ For further detail, see the
   EXEC sys.sp_cdc_start_job @job_type = 'cleanup';
 ```
 
+- If you were are using Transaction Replication then the retention has to be changed using below scripts :
+```text
+
+EXEC sp_changedistributiondb
+  @database = 'distribution',
+  @property = 'max_distretention',
+  @value = 14400 -- 14400 minutes (10 days)
+
+EXEC sp_changedistributiondb
+  @database = 'distribution',
+  @property = 'history_retention',
+  @value = 14400 -- 14400 minutes (10 days)
+
+USE [msdb]
+GO
+EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
+		@command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 14400'
+GO
+
+```
+
 #### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent
@@ -334,7 +355,7 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the
 test values examples
-[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java).
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceDatatypeTest.java).
 If you can't find the data type you are looking for or have any problems feel free to add a new
 test!
 
@@ -423,10 +444,24 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
-|:--------|:-----------| :---------------------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.20  | 2025-01-26 | [52556](https://github.com/airbytehq/airbyte/pull/52556)                                                              | Improve tables discovery during read.                                                                                                           |
-| 4.1.19  | 2025-01-16 | [51596](https://github.com/airbytehq/airbyte/pull/51596)                                                              | Bump driver versions to latest (jdbc, debezium, cdk)                                                                                            |
-| 4.1.18  | 2025-01-06 | [50943](https://github.com/airbytehq/airbyte/pull/50943)                                                              | Use airbyte/java-connector-base:2.0.0. This makes the image rootless. The connector will be incompatible with Airbyte < 0.64.                   |
+|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.4   | 2025-07-03 | [62491](https://github.com/airbytehq/airbyte/pull/62491)                                                          | Improve Debezium performance by configuring the poll interval parameter.                                                                                |
+| 4.2.3   | 2025-07-01 | [62052](https://github.com/airbytehq/airbyte/pull/62052)                                                          | Revert change to CDK interface signature.                                                                                                       |
+| 4.2.2   | 2025-06-25 | [61729](https://github.com/airbytehq/airbyte/pull/61729) | Support the use of logical primary keys for CDC.                                                                                                |
+| 4.2.1   | 2025-06-23 | [62015](https://github.com/airbytehq/airbyte/pull/62015)                                                          | Fix previous merge. Improve cutoff date handling                                                                                                |
+| 4.2.0   | 2025-06-19 | [62015](https://github.com/airbytehq/airbyte/pull/61685)                                                          | Add an option to exclude today's data from cursor based incremental syncs when using temporal cursor (datetime).                                |
+| 4.1.29  | 2025-06-03 | [61320](https://github.com/airbytehq/airbyte/pull/61320)                                                          | Add error handling for connection issues and adopt the latest CDK version.                                                                      |
+| 4.1.28  | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311)                                                          | Migrate to new gradle flow.                                                                                                                     |
+| 4.1.27  | 2025-04-28 | [59124](https://github.com/airbytehq/airbyte/pull/59124)                                                          | Fix _ab_cdc_event_serial_no datatype in addMetaDataToRowsFetchedOutsideDebezium method                                                          |
+| 4.1.26  | 2025-03-27 | [56401](https://github.com/airbytehq/airbyte/pull/56401)                                                          | Fix non-unique value clustered index issue                                                                                                      |
+| 4.1.25  | 2025-03-20 | [55878](https://github.com/airbytehq/airbyte/pull/55878)                                                          | Integrate with the latest mssql jdbc driver to solve a pre-gregorian date offset bug                                                            |
+| 4.1.24  | 2025-03-11 | [55709](https://github.com/airbytehq/airbyte/pull/55709)                                                          | Filter unwanted tables in discover to prevent null table issues                                                                                 |
+| 4.1.23  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234)                                                          | Update base image version for certified DB source connectors                                                                                    |
+| 4.1.22  | 2025-02-10 | [53217](https://github.com/airbytehq/airbyte/pull/53217)                                                          | Default to PK when the clustered index is composite.                                                                                            |
+| 4.1.21  | 2025-02-21 | [54189](https://github.com/airbytehq/airbyte/pull/54189)                                                          | Print state data only in the debugging log.                                                                                                     |
+| 4.1.20  | 2025-01-26 | [52556](https://github.com/airbytehq/airbyte/pull/52556)                                                          | Improve tables discovery during read.                                                                                                           |
+| 4.1.19  | 2025-01-16 | [51596](https://github.com/airbytehq/airbyte/pull/51596)                                                          | Bump driver versions to latest (jdbc, debezium, cdk)                                                                                            |
+| 4.1.18  | 2025-01-06 | [50943](https://github.com/airbytehq/airbyte/pull/50943)                                                          | Use airbyte/java-connector-base:2.0.0. This makes the image rootless. The connector will be incompatible with Airbyte < 0.64.                   |
 | 4.1.17  | 2024-12-17 | [49840](https://github.com/airbytehq/airbyte/pull/49840)                                                          | Use a base image: airbyte/java-connector-base:1.0.0                                                                                             |
 | 4.1.16  | 2024-11-13 | [48484](https://github.com/airbytehq/airbyte/pull/48484)                                                          | Enhanced error handling for MSSQL to improve system error detection and response.                                                               |
 | 4.1.15  | 2024-10-05 | [46515](https://github.com/airbytehq/airbyte/pull/46515)                                                          | Improving discovery of large SQL server database.                                                                                               |

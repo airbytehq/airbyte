@@ -44,6 +44,14 @@ The Copper source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.14 | 2025-05-24 | [60387](https://github.com/airbytehq/airbyte/pull/60387) | Update dependencies |
+| 0.4.13 | 2025-05-10 | [59997](https://github.com/airbytehq/airbyte/pull/59997) | Update dependencies |
+| 0.4.12 | 2025-05-03 | [57238](https://github.com/airbytehq/airbyte/pull/57238) | Update dependencies |
+| 0.4.11 | 2025-03-29 | [56479](https://github.com/airbytehq/airbyte/pull/56479) | Update dependencies |
+| 0.4.10 | 2025-03-22 | [55936](https://github.com/airbytehq/airbyte/pull/55936) | Update dependencies |
+| 0.4.9 | 2025-03-08 | [55301](https://github.com/airbytehq/airbyte/pull/55301) | Update dependencies |
+| 0.4.8 | 2025-03-01 | [54411](https://github.com/airbytehq/airbyte/pull/54411) | Update dependencies |
+| 0.4.7 | 2025-02-15 | [52851](https://github.com/airbytehq/airbyte/pull/52851) | Update dependencies |
 | 0.4.6 | 2025-01-25 | [52349](https://github.com/airbytehq/airbyte/pull/52349) | Update dependencies |
 | 0.4.5 | 2025-01-18 | [51672](https://github.com/airbytehq/airbyte/pull/51672) | Update dependencies |
 | 0.4.4 | 2025-01-11 | [48940](https://github.com/airbytehq/airbyte/pull/48940) | Update dependencies |

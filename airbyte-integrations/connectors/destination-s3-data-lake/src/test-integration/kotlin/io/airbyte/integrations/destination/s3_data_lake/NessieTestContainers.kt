@@ -6,8 +6,10 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.util.setOnce
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import org.testcontainers.containers.ComposeContainer
+import org.testcontainers.containers.wait.strategy.Wait
 
 /**
  * Shared test containers for all nessie tests, so that we don't launch redundant docker containers
@@ -15,31 +17,30 @@ import org.testcontainers.containers.ComposeContainer
 object NessieTestContainers {
     val testcontainers: ComposeContainer =
         ComposeContainer(File("src/test-integration/resources/nessie/docker-compose.yml"))
-            .withExposedService("nessie", 19120)
-            .withExposedService("minio", 9000)
-            .withExposedService("keycloak", 8080)
-    private val startRunOnce = AtomicBoolean(false)
+            .withExposedService(
+                "nessie",
+                19120,
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+            )
+            .withExposedService(
+                "minio",
+                9000,
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+            )
+            .withExposedService(
+                "keycloak",
+                8080,
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+            )
+    private val startNessieContainerRunOnce = AtomicBoolean(false)
 
     /**
      * Start the test containers, or if another thread already called this method, wait for them to
      * finish starting
      */
     fun start() {
-        if (startRunOnce.setOnce()) {
+        if (startNessieContainerRunOnce.setOnce()) {
             testcontainers.start()
-        } else {
-            // afaict there's no method to wait for the containers to start
-            // so just poll until these methods stop throwing exceptions
-            while (true) {
-                try {
-                    testcontainers.getServicePort("nessie", 19120)
-                    testcontainers.getServicePort("minio", 9000)
-                    testcontainers.getServicePort("keycloak", 8080)
-                } catch (e: IllegalStateException) {
-                    // do nothing
-                }
-                break
-            }
         }
     }
 

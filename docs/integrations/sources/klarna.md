@@ -62,6 +62,19 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.23 | 2025-05-24 | [60684](https://github.com/airbytehq/airbyte/pull/60684) | Update dependencies |
+| 0.3.22 | 2025-05-10 | [59777](https://github.com/airbytehq/airbyte/pull/59777) | Update dependencies |
+| 0.3.21 | 2025-05-03 | [59239](https://github.com/airbytehq/airbyte/pull/59239) | Update dependencies |
+| 0.3.20 | 2025-04-26 | [58783](https://github.com/airbytehq/airbyte/pull/58783) | Update dependencies |
+| 0.3.19 | 2025-04-19 | [58220](https://github.com/airbytehq/airbyte/pull/58220) | Update dependencies |
+| 0.3.18 | 2025-04-12 | [57692](https://github.com/airbytehq/airbyte/pull/57692) | Update dependencies |
+| 0.3.17 | 2025-04-05 | [57049](https://github.com/airbytehq/airbyte/pull/57049) | Update dependencies |
+| 0.3.16 | 2025-03-29 | [56685](https://github.com/airbytehq/airbyte/pull/56685) | Update dependencies |
+| 0.3.15 | 2025-03-22 | [56040](https://github.com/airbytehq/airbyte/pull/56040) | Update dependencies |
+| 0.3.14 | 2025-03-08 | [55440](https://github.com/airbytehq/airbyte/pull/55440) | Update dependencies |
+| 0.3.13 | 2025-03-01 | [54743](https://github.com/airbytehq/airbyte/pull/54743) | Update dependencies |
+| 0.3.12 | 2025-02-22 | [54333](https://github.com/airbytehq/airbyte/pull/54333) | Update dependencies |
+| 0.3.11 | 2025-02-15 | [52751](https://github.com/airbytehq/airbyte/pull/52751) | Update dependencies |
 | 0.3.10 | 2025-01-25 | [52268](https://github.com/airbytehq/airbyte/pull/52268) | Update dependencies |
 | 0.3.9 | 2025-01-18 | [51800](https://github.com/airbytehq/airbyte/pull/51800) | Update dependencies |
 | 0.3.8 | 2025-01-11 | [51169](https://github.com/airbytehq/airbyte/pull/51169) | Update dependencies |

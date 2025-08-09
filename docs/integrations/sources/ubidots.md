@@ -24,6 +24,27 @@ The Ubidots Connector facilitates easy integration with the Ubidots IoT platform
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2025-08-02 | [64334](https://github.com/airbytehq/airbyte/pull/64334) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [64054](https://github.com/airbytehq/airbyte/pull/64054) | Update dependencies |
+| 0.0.29 | 2025-07-20 | [63656](https://github.com/airbytehq/airbyte/pull/63656) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63175](https://github.com/airbytehq/airbyte/pull/63175) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62749](https://github.com/airbytehq/airbyte/pull/62749) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62234](https://github.com/airbytehq/airbyte/pull/62234) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61757](https://github.com/airbytehq/airbyte/pull/61757) | Update dependencies |
+| 0.0.24 | 2025-06-15 | [61232](https://github.com/airbytehq/airbyte/pull/61232) | Update dependencies |
+| 0.0.23 | 2025-05-24 | [60774](https://github.com/airbytehq/airbyte/pull/60774) | Update dependencies |
+| 0.0.22 | 2025-05-10 | [59929](https://github.com/airbytehq/airbyte/pull/59929) | Update dependencies |
+| 0.0.21 | 2025-05-04 | [59032](https://github.com/airbytehq/airbyte/pull/59032) | Update dependencies |
+| 0.0.20 | 2025-04-19 | [58543](https://github.com/airbytehq/airbyte/pull/58543) | Update dependencies |
+| 0.0.19 | 2025-04-13 | [58058](https://github.com/airbytehq/airbyte/pull/58058) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57464](https://github.com/airbytehq/airbyte/pull/57464) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56855](https://github.com/airbytehq/airbyte/pull/56855) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [56282](https://github.com/airbytehq/airbyte/pull/56282) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55584](https://github.com/airbytehq/airbyte/pull/55584) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [55097](https://github.com/airbytehq/airbyte/pull/55097) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54488](https://github.com/airbytehq/airbyte/pull/54488) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [54081](https://github.com/airbytehq/airbyte/pull/54081) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53541](https://github.com/airbytehq/airbyte/pull/53541) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [53064](https://github.com/airbytehq/airbyte/pull/53064) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52454](https://github.com/airbytehq/airbyte/pull/52454) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51979](https://github.com/airbytehq/airbyte/pull/51979) | Update dependencies |

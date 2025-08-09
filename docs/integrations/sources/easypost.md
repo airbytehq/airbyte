@@ -34,6 +34,25 @@ This directory contains the manifest-only connector for [`source-easypost`](http
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.29 | 2025-08-09 | [64685](https://github.com/airbytehq/airbyte/pull/64685) | Update dependencies |
+| 0.0.28 | 2025-07-26 | [63998](https://github.com/airbytehq/airbyte/pull/63998) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63549](https://github.com/airbytehq/airbyte/pull/63549) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [62995](https://github.com/airbytehq/airbyte/pull/62995) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62793](https://github.com/airbytehq/airbyte/pull/62793) | Update dependencies |
+| 0.0.24 | 2025-06-28 | [62341](https://github.com/airbytehq/airbyte/pull/62341) | Update dependencies |
+| 0.0.23 | 2025-06-22 | [61993](https://github.com/airbytehq/airbyte/pull/61993) | Update dependencies |
+| 0.0.22 | 2025-06-14 | [60400](https://github.com/airbytehq/airbyte/pull/60400) | Update dependencies |
+| 0.0.21 | 2025-05-10 | [59933](https://github.com/airbytehq/airbyte/pull/59933) | Update dependencies |
+| 0.0.20 | 2025-05-03 | [59436](https://github.com/airbytehq/airbyte/pull/59436) | Update dependencies |
+| 0.0.19 | 2025-04-26 | [57814](https://github.com/airbytehq/airbyte/pull/57814) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57280](https://github.com/airbytehq/airbyte/pull/57280) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56498](https://github.com/airbytehq/airbyte/pull/56498) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [55928](https://github.com/airbytehq/airbyte/pull/55928) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55321](https://github.com/airbytehq/airbyte/pull/55321) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54949](https://github.com/airbytehq/airbyte/pull/54949) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54373](https://github.com/airbytehq/airbyte/pull/54373) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [53776](https://github.com/airbytehq/airbyte/pull/53776) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53358](https://github.com/airbytehq/airbyte/pull/53358) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [52825](https://github.com/airbytehq/airbyte/pull/52825) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52363](https://github.com/airbytehq/airbyte/pull/52363) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51661](https://github.com/airbytehq/airbyte/pull/51661) | Update dependencies |

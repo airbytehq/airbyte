@@ -1,114 +1,121 @@
 # ClickHouse
 
+A fresh implementation of ClickHouse leveraging our new CDK. 
+
+## Improvements over v1
+* All sync modes supported
+* Data will be typed and written to columns matching the defined schema (Direct Load)
+* Performance improvements
+* Actively maintained and developed by Airbyte
+
 ## Features
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-| Namespaces                     | Yes                  |       |
+All sync modes are supported.
 
-#### Output Schema
+| Feature                        | Supported?\(Yes/No\) | Notes                          |
+| :----------------------------- |:---------------------|:-------------------------------|
+| Full Refresh Sync              | Yes                  |                                |
+| Incremental - Append Sync      | Yes                  |                                |
+| Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
+| Namespaces                     | Yes                  |                                |
 
-Each stream will be output into its own table in ClickHouse. Each table will contain 3 columns:
+### Output Schema
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in ClickHouse is `String`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in ClickHouse is `DateTime64`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in ClickHouse is `String`.
+Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
-## Getting Started \(Airbyte Cloud\)
+Airbyte types will be converted to ClickHouse types as follows:
 
-Airbyte Cloud only supports connecting to your ClickHouse instance with SSL or TLS encryption, which is supported by [ClickHouse JDBC driver](https://github.com/ClickHouse/clickhouse-jdbc).
+- Decimal types are NUMBER128(9) — 9 digit precision
+- Timestamp are DateTime64(3) — millisecond precision
+- Object types are JSON **if JSON is enabled in the actor config**; otherwise they are converted to String
+- Integers are Int64
+- Booleans are Bool
+- Strings are String
+- Unions will be converted to String
+- Arrays will be converted to String
 
-## Getting Started \(Airbyte Open Source\)
-
-#### Requirements
+### Requirements
 
 To use the ClickHouse destination, you'll need:
 
+- A cloud ClickHouse instance
 - A ClickHouse server version 21.8.10.19 or above
 
-#### Configure Network Access
+### Configure Network Access
 
 Make sure your ClickHouse database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
 
-#### **Permissions**
+### **Permissions**
 
 You need a ClickHouse user with the following permissions:
 
 - can create tables and write rows.
-- can create databases e.g:
+- can create databases
+- can alter, drop and exchange tables
 
-You can create such a user by running:
+You can create such a user by running the following:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
-GRANT CREATE ON default * TO airbyte_user;
 GRANT DROP ON * TO airbyte_user;
-GRANT TRUNCATE ON * TO airbyte_user;
-GRANT INSERT ON * TO airbyte_user;
-GRANT SELECT ON * TO airbyte_user;
-GRANT CREATE DATABASE ON airbyte_internal.* TO airbyte_user;
-GRANT CREATE TABLE ON airbyte_internal.* TO airbyte_user;
-GRANT DROP ON airbyte_internal.* TO airbyte_user;
-GRANT TRUNCATE ON airbyte_internal.* TO airbyte_user;
-GRANT INSERT ON airbyte_internal.* TO airbyte_user;
-GRANT SELECT ON airbyte_internal.* TO airbyte_user;
+GRANT CREATE ON {database}.* TO airbyte_user;
+GRANT DROP ON {database}.* TO airbyte_user;
+GRANT ALTER ON {database}.* TO airbyte_user;
+GRANT TRUNCATE ON {database}.* TO airbyte_user;
+GRANT INSERT ON {database}.* TO airbyte_user;
+GRANT SELECT ON {database}.* TO airbyte_user;
+GRANT CREATE DATABASE ON {database}.* TO airbyte_user;
+GRANT CREATE TABLE ON {database}.* TO airbyte_user;
 ```
 
+Where `{database}` is the database configured on your connector.
+
+Then for each connection using this connector with a custom namespace, run:
+
+```
+GRANT CREATE ON {namespace}.* TO airbyte_user;
+GRANT DROP ON {namespace}.* TO airbyte_user;
+GRANT ALTER ON {namespace}.* TO airbyte_user;
+GRANT TRUNCATE ON {namespace}.* TO airbyte_user;
+GRANT INSERT ON {namespace}.* TO airbyte_user;
+GRANT SELECT ON {namespace}.* TO airbyte_user;
+GRANT CREATE DATABASE ON {namespace}.* TO airbyte_user;
+GRANT CREATE TABLE ON {namespace}.* TO airbyte_user;
+```
+
+Where `{namespace}` is the custom namespace configured for that connection.
+
+
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
-
-#### Target Database
-
-You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
-
-### Setup the ClickHouse Destination in Airbyte
-
-You should now have all the requirements needed to configure ClickHouse as a destination in the UI. You'll need the following information to configure the ClickHouse destination:
-
-- **Host**
-- **Port**
-- **Username**
-- **Password**
-- **Database**
-- **Jdbc_url_params**
-
-## Naming Conventions
-
-From [ClickHouse SQL Identifiers syntax](https://clickhouse.com/docs/en/sql-reference/syntax/):
-
-- SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical marks and non-Latin letters\) or an underscore \(\_\).
-- Subsequent characters in an identifier or key word can be letters, underscores, digits \(0-9\).
-- Identifiers can be quoted or non-quoted. The latter is preferred.
-- If you want to use identifiers the same as keywords or you want to use other symbols in identifiers, quote it using double quotes or backticks, for example, "id", `id`.
-- If you want to write portable applications you are advised to always quote a particular name or never quote it.
-
-Therefore, Airbyte ClickHouse destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                               | Subject                                                                                       |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2024-02-07 | [\#34637](https://github.com/airbytehq/airbyte/pull/34637) | Update the raw table schema                                                                   |
-| 0.2.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                             |
-| 0.2.4   | 2023-06-05 | [\#27036](https://github.com/airbytehq/airbyte/pull/27036) | Internal code change for future development (install normalization packages inside connector) |
-| 0.2.3   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                         |
-| 0.2.2   | 2023-02-21 | [\#21509](https://github.com/airbytehq/airbyte/pull/21509) | Compatibility update with security patch for strict encrypt version                           |
-| 0.2.1   | 2022-12-06 | [\#19573](https://github.com/airbytehq/airbyte/pull/19573) | Update dbt version to 1.3.1                                                                   |
-| 0.2.0   | 2022-09-27 | [\#16970](https://github.com/airbytehq/airbyte/pull/16970) | Remove TCP port from spec parameters                                                          |
-| 0.1.12  | 2022-09-08 | [\#16444](https://github.com/airbytehq/airbyte/pull/16444) | Added custom jdbc params field                                                                |
-| 0.1.10  | 2022-07-05 | [\#13639](https://github.com/airbytehq/airbyte/pull/13639) | Change JDBC ClickHouse version into 0.3.2-patch9                                              |
-| 0.1.8   | 2022-07-05 | [\#13516](https://github.com/airbytehq/airbyte/pull/13516) | Added JDBC default parameter socket timeout                                                   |
-| 0.1.7   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                        |
-| 0.1.6   | 2022-05-17 | [\#12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                        |
-| 0.1.5   | 2022-04-06 | [\#11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0                                                            |
-| 0.1.4   | 2022-02-25 | [\#10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                             |
-| 0.1.3   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                  |
-| 0.1.1   | 2021-12-21 | [\#8982](https://github.com/airbytehq/airbyte/pull/8982)   | Set isSchemaRequired to false                                                                 |
-| 0.1.0   | 2021-11-04 | [\#7620](https://github.com/airbytehq/airbyte/pull/7620)   | Add ClickHouse destination                                                                    |
-
+| Version | Date       | Pull Request                                               | Subject                                                                        |
+|:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.0.10  | 2025-07-23 | [\#64104](https://github.com/airbytehq/airbyte/pull/64104) | Add an option to configure the batch size (both bytes and number of records).  |
+| 2.0.9   | 2025-07-23 | [\#63738](https://github.com/airbytehq/airbyte/pull/63738) | Set clickhouse as an airbyte connector.                                        |
+| 2.0.8   | 2025-07-23 | [\#63760](https://github.com/airbytehq/airbyte/pull/63760) | Throw an error if an invalid target table exist before the first sync.         |
+| 2.0.7   | 2025-07-23 | [\#63751](https://github.com/airbytehq/airbyte/pull/63751) | Only copy intersection columns when there is a dedup change.                   |
+| 2.0.6   | 2025-07-22 | [\#63724](https://github.com/airbytehq/airbyte/pull/63724) | Apply clickhouse column name transformation for columns.                       |
+| 2.0.5   | 2025-07-22 | [\#63721](https://github.com/airbytehq/airbyte/pull/63721) | Fix schema change with PKs.                                                    |
+| 2.0.4   | 2025-07-21 | [\#62948](https://github.com/airbytehq/airbyte/pull/62948) | SSH support BETA.                                                              |
+| 2.0.3   | 2025-07-11 | [\#62946](https://github.com/airbytehq/airbyte/pull/62946) | Publish metadata changes.                                                      |
+| 2.0.2   | 2025-07-10 | [\#62928](https://github.com/airbytehq/airbyte/pull/62928) | Makes json optional in spec to work around UI issue.                           |
+| 2.0.1   | 2025-07-10 | [\#62906](https://github.com/airbytehq/airbyte/pull/62906) | Adds bespoke validation for legacy hostnames that contain a protocol.          |
+| 2.0.0   | 2025-07-10 | [\#62887](https://github.com/airbytehq/airbyte/pull/62887) | Cut 2.0.0 release. Replace existing connector.                                 |
+| 0.1.11  | 2025-07-09 | [\#62883](https://github.com/airbytehq/airbyte/pull/62883) | Only set JSON properties on client if enabled to support older CH deployments. |
+| 0.1.10  | 2025-07-08 | [\#62861](https://github.com/airbytehq/airbyte/pull/62861) | Set user agent header for internal CH telemetry.                               |
+| 0.1.9   | 2025-07-03 | [\#62509](https://github.com/airbytehq/airbyte/pull/62509) | Simplify union stringification behavior.                                       |
+| 0.1.8   | 2025-06-30 | [\#62100](https://github.com/airbytehq/airbyte/pull/62100) | Add JSON support.                                                              |
+| 0.1.7   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047) | Remove the use of the internal namespace.                                      |
+| 0.1.6   | 2025-06-24 | [\#62047](https://github.com/airbytehq/airbyte/pull/62047) | Hide protocol option when running on cloud.                                    |
+| 0.1.5   | 2025-06-24 | [\#62043](https://github.com/airbytehq/airbyte/pull/62043) | Expose database protocol config option.                                        |
+| 0.1.4   | 2025-06-24 | [\#62040](https://github.com/airbytehq/airbyte/pull/62040) | Checker inserts into configured DB.                                            |
+| 0.1.3   | 2025-06-24 | [\#62038](https://github.com/airbytehq/airbyte/pull/62038) | Allow the client to connect to the resolved DB.                                |
+| 0.1.2   | 2025-06-23 | [\#62028](https://github.com/airbytehq/airbyte/pull/62028) | Enable the registry in OSS and cloud.                                          |
+| 0.1.1   | 2025-06-23 | [\#62022](https://github.com/airbytehq/airbyte/pull/62022) | Publish first beta version and pin the CDK version.                            |
+| 0.1.0   | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024) | Release first beta version.                                                    |
 </details>

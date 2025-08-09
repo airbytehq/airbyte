@@ -73,7 +73,20 @@ This guide will walk through how to create the credentials you need to run this 
 
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
-| 0.5.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.5.14 | 2025-05-10 | [60070](https://github.com/airbytehq/airbyte/pull/60070) | Update dependencies |
+| 0.5.13 | 2025-05-03 | [59498](https://github.com/airbytehq/airbyte/pull/59498) | Update dependencies |
+| 0.5.12 | 2025-04-27 | [59039](https://github.com/airbytehq/airbyte/pull/59039) | Update dependencies |
+| 0.5.11 | 2025-04-19 | [58455](https://github.com/airbytehq/airbyte/pull/58455) | Update dependencies |
+| 0.5.10 | 2025-04-12 | [57876](https://github.com/airbytehq/airbyte/pull/57876) | Update dependencies |
+| 0.5.9 | 2025-04-05 | [57333](https://github.com/airbytehq/airbyte/pull/57333) | Update dependencies |
+| 0.5.8 | 2025-03-29 | [56804](https://github.com/airbytehq/airbyte/pull/56804) | Update dependencies |
+| 0.5.7 | 2025-03-22 | [56173](https://github.com/airbytehq/airbyte/pull/56173) | Update dependencies |
+| 0.5.6 | 2025-03-08 | [55535](https://github.com/airbytehq/airbyte/pull/55535) | Update dependencies |
+| 0.5.5 | 2025-03-01 | [55004](https://github.com/airbytehq/airbyte/pull/55004) | Update dependencies |
+| 0.5.4 | 2025-02-23 | [54575](https://github.com/airbytehq/airbyte/pull/54575) | Update dependencies |
+| 0.5.3 | 2025-02-15 | [53973](https://github.com/airbytehq/airbyte/pull/53973) | Update dependencies |
+| 0.5.2 | 2025-02-08 | [47502](https://github.com/airbytehq/airbyte/pull/47502) | Update dependencies |
+| 0.5.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.5.0 | 2024-08-14 | [44086](https://github.com/airbytehq/airbyte/pull/44086) | Refactor connector to manifest-only format |
 | 0.4.13 | 2024-08-12 | [43861](https://github.com/airbytehq/airbyte/pull/43861) | Update dependencies |
 | 0.4.12 | 2024-08-10 | [43663](https://github.com/airbytehq/airbyte/pull/43663) | Update dependencies |

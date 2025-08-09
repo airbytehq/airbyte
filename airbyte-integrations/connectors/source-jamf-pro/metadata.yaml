@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "https:"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-jamf-pro
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b3342a5d-2c62-4ac7-8145-d0403dd3b7ec
+  dockerImageTag: 0.0.15
+  dockerRepository: airbyte/source-jamf-pro
+  githubIssueLabel: source-jamf-pro
+  icon: icon.svg
+  license: ELv2
+  name: Jamf Pro
+  releaseDate: 2025-04-08
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/jamf-pro
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

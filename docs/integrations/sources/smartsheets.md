@@ -93,7 +93,7 @@ Additionallly specific metadata fields related to the sheet or row can be includ
 
 The Smartsheet Source is written to pull data from a single Smartsheet spreadsheet. Unlike Google Sheets, Smartsheets only allows one sheet per Smartsheet - so a given Airbyte connector instance can sync only one sheet at a time. To replicate multiple spreadsheets, you can create multiple instances of the Smartsheet Source in Airbyte, reusing the API token for all your sheets that you need to sync.
 
-**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../understanding-airbyte/airbyte-protocol.md).
+**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../platform/understanding-airbyte/airbyte-protocol).
 
 ## Data type map
 
@@ -117,6 +117,19 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 1.1.46 | 2025-05-25 | [60558](https://github.com/airbytehq/airbyte/pull/60558) | Update dependencies |
+| 1.1.45 | 2025-05-11 | [60205](https://github.com/airbytehq/airbyte/pull/60205) | Update dependencies |
+| 1.1.44 | 2025-05-04 | [59584](https://github.com/airbytehq/airbyte/pull/59584) | Update dependencies |
+| 1.1.43 | 2025-04-27 | [59014](https://github.com/airbytehq/airbyte/pull/59014) | Update dependencies |
+| 1.1.42 | 2025-04-19 | [58374](https://github.com/airbytehq/airbyte/pull/58374) | Update dependencies |
+| 1.1.41 | 2025-04-12 | [57999](https://github.com/airbytehq/airbyte/pull/57999) | Update dependencies |
+| 1.1.40 | 2025-04-05 | [57490](https://github.com/airbytehq/airbyte/pull/57490) | Update dependencies |
+| 1.1.39 | 2025-03-29 | [56830](https://github.com/airbytehq/airbyte/pull/56830) | Update dependencies |
+| 1.1.38 | 2025-03-22 | [55651](https://github.com/airbytehq/airbyte/pull/55651) | Update dependencies |
+| 1.1.37 | 2025-03-01 | [55076](https://github.com/airbytehq/airbyte/pull/55076) | Update dependencies |
+| 1.1.36 | 2025-02-22 | [54529](https://github.com/airbytehq/airbyte/pull/54529) | Update dependencies |
+| 1.1.35 | 2025-02-15 | [54107](https://github.com/airbytehq/airbyte/pull/54107) | Update dependencies |
+| 1.1.34 | 2024-11-14 | [46379](https://github.com/airbytehq/airbyte/pull/46379) | Add support for Smartsheet Reports (full refresh only) |
 | 1.1.33 | 2025-02-01 | [53108](https://github.com/airbytehq/airbyte/pull/53108) | Update dependencies |
 | 1.1.32 | 2025-01-25 | [52426](https://github.com/airbytehq/airbyte/pull/52426) | Update dependencies |
 | 1.1.31 | 2025-01-18 | [52017](https://github.com/airbytehq/airbyte/pull/52017) | Update dependencies |

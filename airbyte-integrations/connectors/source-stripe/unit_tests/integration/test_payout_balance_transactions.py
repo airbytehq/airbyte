@@ -1,10 +1,12 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
-from source_stripe import SourceStripe
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -134,7 +136,7 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
             _balance_transactions_response().with_record(_balance_transaction_record()).with_record(_balance_transaction_record()).build(),
         )
 
-        source = SourceStripe(config=config, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=config, state=_NO_STATE)
         output = read(source, config=config, catalog=_create_catalog())
 
         assert len(output.records) == 3
@@ -151,7 +153,7 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
             _balance_transactions_response().with_record(_balance_transaction_record()).build(),
         )
 
-        source = SourceStripe(config=config, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=config, state=_NO_STATE)
         output = read(source, config=config, catalog=_create_catalog())
 
         assert output.records[0].record.data["payout"]
@@ -165,12 +167,7 @@ class PayoutBalanceTransactionsIncrementalTest(TestCase):
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(_STATE_DATE.timestamp())}).build()
         catalog = _create_catalog(SyncMode.incremental)
         http_mocker.get(
-            _events_request()
-            .with_created_gte(_STATE_DATE + _AVOIDING_INCLUSIVE_BOUNDARIES)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(_STATE_DATE).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response()
             .with_record(_event_record().with_field(_DATA_FIELD, _create_payout_record().with_id(_A_PAYOUT_ID).build()))
             .build(),
@@ -180,7 +177,7 @@ class PayoutBalanceTransactionsIncrementalTest(TestCase):
             _balance_transactions_response().with_record(_balance_transaction_record()).build(),
         )
 
-        source = SourceStripe(config=config, catalog=catalog, state=state)
+        source = get_source(config=config, state=state)
         output = read(source, config=config, catalog=catalog, state=state)
 
         assert len(output.records) == 1

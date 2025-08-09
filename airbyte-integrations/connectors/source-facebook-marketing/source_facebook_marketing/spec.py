@@ -120,6 +120,7 @@ class InsightConfig(BaseModel):
             "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
         ),
         default="mixed",
+        airbyte_hidden=True,
         enum=["conversion", "impression", "mixed"],
     )
 

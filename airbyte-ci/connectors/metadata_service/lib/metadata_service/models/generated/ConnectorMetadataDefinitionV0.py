@@ -159,6 +159,20 @@ class AirbyteInternal(BaseModel):
     sl: Optional[Literal[0, 100, 200, 300]] = None
     ql: Optional[Literal[0, 100, 200, 300, 400, 500, 600]] = None
     isEnterprise: Optional[bool] = False
+    requireVersionIncrementsInPullRequests: Optional[bool] = Field(
+        True,
+        description="When false, version increment checks will be skipped for this connector",
+    )
+
+
+class ConnectorIPCDataChannel(BaseModel):
+    version: str = Field(..., description="Version of the data channel specification")
+    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
+    supportedTransport: List[Literal["STDIO", "SOCKET"]]
+
+
+class ConnectorIPCOptions(BaseModel):
+    dataChannel: ConnectorIPCDataChannel
 
 
 class PyPi(BaseModel):
@@ -415,6 +429,11 @@ class Data(BaseModel):
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     supportsFileTransfer: Optional[bool] = False
+    supportsDataActivation: Optional[bool] = False
+    connectorIPCOptions: Optional[ConnectorIPCOptions] = Field(
+            None,
+            description="Advanced options related to connector's inter-process communication"
+        )
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

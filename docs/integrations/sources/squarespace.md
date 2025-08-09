@@ -25,6 +25,21 @@ The Squarespace connector enables seamless integration with your Squarespace sto
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.26 | 2025-07-12 | [63089](https://github.com/airbytehq/airbyte/pull/63089) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62708](https://github.com/airbytehq/airbyte/pull/62708) | Update dependencies |
+| 0.0.24 | 2025-06-28 | [62241](https://github.com/airbytehq/airbyte/pull/62241) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [61291](https://github.com/airbytehq/airbyte/pull/61291) | Update dependencies |
+| 0.0.22 | 2025-05-24 | [60062](https://github.com/airbytehq/airbyte/pull/60062) | Update dependencies |
+| 0.0.21 | 2025-05-04 | [59010](https://github.com/airbytehq/airbyte/pull/59010) | Update dependencies |
+| 0.0.20 | 2025-04-19 | [58441](https://github.com/airbytehq/airbyte/pull/58441) | Update dependencies |
+| 0.0.19 | 2025-04-12 | [57991](https://github.com/airbytehq/airbyte/pull/57991) | Update dependencies |
+| 0.0.18 | 2025-04-05 | [57407](https://github.com/airbytehq/airbyte/pull/57407) | Update dependencies |
+| 0.0.17 | 2025-03-29 | [56843](https://github.com/airbytehq/airbyte/pull/56843) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [56279](https://github.com/airbytehq/airbyte/pull/56279) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55642](https://github.com/airbytehq/airbyte/pull/55642) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54543](https://github.com/airbytehq/airbyte/pull/54543) | Update dependencies |
+| 0.0.13 | 2025-02-15 | [54035](https://github.com/airbytehq/airbyte/pull/54035) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53545](https://github.com/airbytehq/airbyte/pull/53545) | Update dependencies |
 | 0.0.11 | 2025-02-01 | [53095](https://github.com/airbytehq/airbyte/pull/53095) | Update dependencies |
 | 0.0.10 | 2025-01-25 | [52425](https://github.com/airbytehq/airbyte/pull/52425) | Update dependencies |
 | 0.0.9 | 2025-01-18 | [51969](https://github.com/airbytehq/airbyte/pull/51969) | Update dependencies |

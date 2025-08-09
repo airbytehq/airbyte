@@ -6,7 +6,9 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
   connection:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: secrets/config.json
+        timeout_seconds: 7200
   discovery:
     bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
   basic_read:

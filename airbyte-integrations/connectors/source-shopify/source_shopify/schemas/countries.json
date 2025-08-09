@@ -36,31 +36,19 @@
             "description": "Name of the province.",
             "type": ["null", "string"]
           },
-          "tax": {
-            "description": "Tax information for the province.",
-            "type": ["null", "number"]
-          },
-          "tax_name": {
-            "description": "Name of the tax applicable for the province.",
+          "translated_name": {
+            "description": "Translated name of the province.",
             "type": ["null", "string"]
-          },
-          "tax_type": {
-            "description": "Type of tax (e.g., sales tax, VAT) applicable in the province.",
-            "type": ["null", "string"]
-          },
-          "tax_percentage": {
-            "description": "Percentage value of tax applicable in the province.",
-            "type": ["null", "number"]
           }
         }
       }
     },
-    "tax": {
-      "description": "Overall tax information for the country.",
-      "type": ["null", "number"]
+    "rest_of_world": {
+      "description": "Whether the country in a catch-all group of countries that are not individually listed or assigned to any specific zone or market.",
+      "type": ["null", "boolean"]
     },
-    "tax_name": {
-      "description": "Name of the tax applicable for the country.",
+    "translated_name": {
+      "description": "Translated name of the country",
       "type": ["null", "string"]
     },
     "shop_url": {

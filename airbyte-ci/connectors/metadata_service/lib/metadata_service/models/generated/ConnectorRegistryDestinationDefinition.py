@@ -131,6 +131,20 @@ class AirbyteInternal(BaseModel):
     sl: Optional[Literal[0, 100, 200, 300]] = None
     ql: Optional[Literal[0, 100, 200, 300, 400, 500, 600]] = None
     isEnterprise: Optional[bool] = False
+    requireVersionIncrementsInPullRequests: Optional[bool] = Field(
+        True,
+        description="When false, version increment checks will be skipped for this connector",
+    )
+
+
+class ConnectorIPCDataChannel(BaseModel):
+    version: str = Field(..., description="Version of the data channel specification")
+    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
+    supportedTransport: List[Literal["STDIO", "SOCKET"]]
+
+
+class ConnectorIPCOptions(BaseModel):
+    dataChannel: ConnectorIPCDataChannel
 
 
 class GitInfo(BaseModel):
@@ -298,6 +312,11 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     ab_internal: Optional[AirbyteInternal] = None
     supportsRefreshes: Optional[bool] = False
     supportsFileTransfer: Optional[bool] = False
+    supportsDataActivation: Optional[bool] = False
+    connectorIPCOptions: Optional[ConnectorIPCOptions] = Field(
+            None,
+            description="Advanced options related to connector's inter-process communication"
+        )
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
     language: Optional[str] = Field(
@@ -393,6 +412,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         None, description="The language the connector is written in"
     )
     supportsFileTransfer: Optional[bool] = False
+    supportsDataActivation: Optional[bool] = False
 
 
 ConnectorRegistryDestinationDefinition.update_forward_refs()

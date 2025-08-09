@@ -1,3 +1,0 @@
-[run]
-omit = 
-    source_zendesk_chat/run.py

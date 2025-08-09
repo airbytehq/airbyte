@@ -220,7 +220,7 @@ Expand to see details about Shopify connector limitations and troubleshooting
 
 #### Rate limiting
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
+Shopify has some [rate limit restrictions](https://shopify.dev/docs/api/usage/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries.
@@ -229,11 +229,13 @@ Waiting <some_number> seconds then retrying..."
 
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
-For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
+For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions. Please note that different requests have different limitations.
 
 ### Troubleshooting
 
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
+- If you recieve a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
+- If you need to cancel a `Shopify GraphQL BULK`job, please follow [these steps](https://shopify.dev/docs/api/usage/bulk-operations/queries#canceling-an-operation).  You will need the current in-progress job ID to cancel.
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -246,7 +248,20 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| N/A | 2025-01-31 | [52659](https://github.com/airbytehq/airbyte/pull/52659) | Add Pendulum as an explicit dependency |
+| 3.0.7 | 2025-06-02 | [59015](https://github.com/airbytehq/airbyte/pull/59015) | 🐙 source-shopify: Update dependencies [2025-05-17] |
+| 3.0.6 | 2025-05-28 | [60797](https://github.com/airbytehq/airbyte/pull/60797) | Fix 500s on `orders` & `order_refunds` streams by adding dynamic page limit. |
+| 3.0.5 | 2025-04-23 | [58598](https://github.com/airbytehq/airbyte/pull/58598) | Fix AttributeError with Null `measurement_weight` fields for `product_variants` streams |
+| 3.0.4 | 2025-04-19 | [58431](https://github.com/airbytehq/airbyte/pull/58431) | Update dependencies |
+| 3.0.3 | 2025-04-12 | [57984](https://github.com/airbytehq/airbyte/pull/57984) | Update dependencies |
+| 3.0.2 | 2025-04-05 | [57449](https://github.com/airbytehq/airbyte/pull/57449) | Update dependencies |
+| 3.0.1 | 2025-03-29 | [56861](https://github.com/airbytehq/airbyte/pull/56861) | Update dependencies |
+| 3.0.0 | 2025-03-27 | [55823](https://github.com/airbytehq/airbyte/pull/55823) | Update API version |
+| 2.6.7 | 2025-03-22 | [56316](https://github.com/airbytehq/airbyte/pull/56316) | Update dependencies |
+| 2.6.6 | 2025-03-08 | [55621](https://github.com/airbytehq/airbyte/pull/55621) | Update dependencies |
+| 2.6.5 | 2025-03-01 | [55126](https://github.com/airbytehq/airbyte/pull/55126) | Update dependencies |
+| 2.6.4 | 2025-02-22 | [54477](https://github.com/airbytehq/airbyte/pull/54477) | Update dependencies |
+| 2.6.3 | 2025-02-15 | [51983](https://github.com/airbytehq/airbyte/pull/51983) | Update dependencies |
+| 2.6.2 | 2025-01-14 | [50976](https://github.com/airbytehq/airbyte/pull/50976) | Retry requests that return HTTP 500 |
 | 2.6.1 | 2025-02-16 | [51602](https://github.com/airbytehq/airbyte/pull/51602) | Updated the `UpgradeDeadline` for the deprecation notice about [this change](https://github.com/airbytehq/airbyte/pull/51037) |
 | 2.6.0 | 2025-01-15 | [51037](https://github.com/airbytehq/airbyte/pull/51037) | Deprecated the `ProductsGraphQL` and `CustomerSavedSearch` stream from the stream catalog |
 | 2.5.18 | 2025-01-11 | [51326](https://github.com/airbytehq/airbyte/pull/51326) | Update dependencies |

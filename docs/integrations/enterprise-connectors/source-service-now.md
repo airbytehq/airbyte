@@ -1,8 +1,7 @@
+---
+dockerRepository: airbyte/source-service-now
+---
 # Source ServiceNow
-
-:::info
-Airbyte Enterprise Connectors are a selection of premium connectors available exclusively for Airbyte Self-Managed Enterprise and Airbyte Teams customers. These connectors, built and maintained by the Airbyte team, provide enhanced capabilities and support for critical enterprise systems. To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
-:::
 
 Airbyte’s incubating ServiceNow enterprise source connector currently offers Full Refresh syncs for streams that are part of Software Asset Management and Configuration Management Database applications.
 
@@ -18,7 +17,7 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 1. Enter your ServiceNow environment as the Base URL.
 2. Enter the username and password for a ServiceNow user account that has access to all tables that you want to include in the connection.
 
-![ServiceNow Connector setup with credentials](https://raw.githubusercontent.com/airbytehq/airbyte/refs/heads/master/docs/enterprise-setup/assets/enterprise-connectors/service-now-setup.png)
+![ServiceNow Connector setup with credentials](/assets/docs/enterprise-connectors/service-now-setup.png)
 
 ## Supported streams
 

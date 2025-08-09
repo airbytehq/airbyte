@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 import dagger
 import pytest
-from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
+from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, get_current_docker_image_tag  # type: ignore
 from rich.prompt import Confirm, Prompt
@@ -642,5 +642,5 @@ def pytest_generate_tests(metafunc):
         requested_fixtures,
         [[c] * len(requested_fixtures) for c in all_connection_objects],
         indirect=requested_fixtures,
-        ids=[f"CONNECTION {hashlib.sha256(c.connection_id.encode()).hexdigest()[:7]}" for c in all_connection_objects],
+        ids=[f"CONNECTION {c.connection_id[:8]}" for c in all_connection_objects],
     )

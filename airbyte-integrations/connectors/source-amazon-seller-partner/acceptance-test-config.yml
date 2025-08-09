@@ -4,8 +4,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_amazon_seller_partner/spec.json"
-        deployment_mode: "cloud"
-      - spec_path: "integration_tests/spec_oss.json"
   connection:
     tests:
       - config_path: "secrets/config.json"

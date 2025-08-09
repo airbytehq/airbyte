@@ -12,7 +12,7 @@ from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines import consts
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers import utils
-from pipelines.helpers.connectors.modifed import get_connector_modified_files, get_modified_connectors
+from pipelines.helpers.connectors.modifed import _is_ignored_file, get_connector_modified_files, get_modified_connectors
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from tests.utils import pick_a_random_connector
 
@@ -267,3 +267,21 @@ async def test_get_repo_dir(dagger_client):
     assert "secrets" not in filtered_entries
     unfiltered_entries = await dagger_client.host().directory("airbyte-integrations/connectors/source-mysql/").entries()
     assert "secrets" in unfiltered_entries
+
+
+@pytest.mark.parametrize(
+    "file_path,expected_result",
+    [
+        ("connector/file.md", True),
+        ("connector/file.py", False),
+        ("connector/file.yaml", False),
+        ("connector/README.md", True),
+    ],
+)
+def test_is_ignored_file(file_path, expected_result):
+    """Test that files with ignored extensions are correctly identified."""
+
+    suff = Path(file_path).suffix
+    print(suff)
+
+    assert _is_ignored_file(Path(file_path)) == expected_result

@@ -89,7 +89,7 @@ streams:
       extractor:
         type: DpathExtractor
         field_path:
-        - data
+        - cohorts
     paginator:
       type: NoPagination
     requester:
@@ -280,7 +280,6 @@ streams:
             type: string
   type: DeclarativeStream
   name: "cohorts"
-  data_field: "data"
   primary_key: "id"
 - retriever:
     type: SimpleRetriever
@@ -634,10 +633,10 @@ streams:
       path: /2/export
     decoder:
       type: ZipfileDecoder
-      parser:
-        type: GzipParser
-        inner_parser:
-          type: JsonLineParser
+      decoder:
+        type: GzipDecoder
+        decoder:
+          type: JsonlDecoder
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: server_upload_time

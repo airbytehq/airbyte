@@ -1,0 +1,7 @@
+apply plugin: 'base'
+
+tasks.named("check") {
+    description = "Run check on *all* CDK modules"
+    // for each subproject under :airbyte-cdk, wire up its :<path>:check
+    dependsOn subprojects.collect { "${it.path}:check" }
+}

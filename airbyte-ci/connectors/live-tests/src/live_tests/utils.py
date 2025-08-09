@@ -7,12 +7,9 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
-import docker  # type: ignore
 import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, ConnectorSpecification, Status, Type  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
-from mitmproxy import http, io  # type: ignore
-from mitmproxy.addons.savehar import SaveHar  # type: ignore
 
 from live_tests import stash_keys
 from live_tests.commons.models import ExecutionResult

@@ -200,8 +200,7 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             testLogging() {
                 events 'skipped', 'started', 'passed', 'failed'
                 exceptionFormat 'full'
-                // Swallow the logs when running in airbyte-ci, rely on test reports instead.
-                showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+                showStandardStreams = true
             }
 
             jvmArgs = project.test.jvmArgs

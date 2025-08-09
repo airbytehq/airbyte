@@ -35,6 +35,17 @@ Intruder.io APIs are under rate limits for the number of API calls allowed per A
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.23 | 2025-05-24 | [60700](https://github.com/airbytehq/airbyte/pull/60700) | Update dependencies |
+| 0.2.22 | 2025-05-10 | [59277](https://github.com/airbytehq/airbyte/pull/59277) | Update dependencies |
+| 0.2.21 | 2025-04-26 | [58190](https://github.com/airbytehq/airbyte/pull/58190) | Update dependencies |
+| 0.2.20 | 2025-04-12 | [57744](https://github.com/airbytehq/airbyte/pull/57744) | Update dependencies |
+| 0.2.19 | 2025-04-05 | [57051](https://github.com/airbytehq/airbyte/pull/57051) | Update dependencies |
+| 0.2.18 | 2025-03-29 | [56640](https://github.com/airbytehq/airbyte/pull/56640) | Update dependencies |
+| 0.2.17 | 2025-03-22 | [56048](https://github.com/airbytehq/airbyte/pull/56048) | Update dependencies |
+| 0.2.16 | 2025-03-08 | [55466](https://github.com/airbytehq/airbyte/pull/55466) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [54816](https://github.com/airbytehq/airbyte/pull/54816) | Update dependencies |
+| 0.2.14 | 2025-02-22 | [54340](https://github.com/airbytehq/airbyte/pull/54340) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [53280](https://github.com/airbytehq/airbyte/pull/53280) | Update dependencies |
 | 0.2.12 | 2025-02-01 | [52719](https://github.com/airbytehq/airbyte/pull/52719) | Update dependencies |
 | 0.2.11 | 2025-01-25 | [52232](https://github.com/airbytehq/airbyte/pull/52232) | Update dependencies |
 | 0.2.10 | 2025-01-18 | [51829](https://github.com/airbytehq/airbyte/pull/51829) | Update dependencies |

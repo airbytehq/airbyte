@@ -1,9 +1,0 @@
-<configuration>
-    <!-- disable FileSystem cache, otherwise integration test will get a cached wrong S3 FileSystem -->
-    <!-- In integration tests, every test method start a new Minio container, and their mapping port is different. -->
-    <!-- If FileSystem cache is enabled, it will get an old S3 FileSystem with old Minio service port. -->
-    <property>
-        <name>fs.s3a.impl.disable.cache</name>
-        <value>true</value>
-    </property>
-</configuration>

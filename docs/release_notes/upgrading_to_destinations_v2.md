@@ -13,7 +13,7 @@ Airbyte Destinations V2 provides you with:
 - Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your destination schema with raw data tables.
 - Incremental delivery for large syncs: Data will be incrementally delivered to your final tables. No more waiting hours to see the first rows in your destination table.
 
-To see more details and examples on the contents of the Destinations V2 release, see this [guide](../using-airbyte/core-concepts/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
+To see more details and examples on the contents of the Destinations V2 release, see this [guide](/platform/using-airbyte/core-concepts/typing-deduping). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
 
 Destinations V2 were in preview for Snowflake and BigQuery during August 2023, and launched on August 29th, 2023. Other destinations will be transitioned to Destinations V2 in early 2024.
 

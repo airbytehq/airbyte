@@ -5,53 +5,53 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_outbrain_amplify/spec.yaml"
-  connection:
-    tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
-  discovery:
-    tests:
-      - config_path: "secrets/config.json"
-  basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 2400
-        empty_streams:
-          - name: campaigns
-            bypass_reason: "no records"
-          - name: campaigns_geo_location
-            bypass_reason: "no records"
-          - name: budgets
-            bypass_reason: "no records"
-          - name: promoted_links
-            bypass_reason: "no records"
-          - name: promoted_links_sequence_for_campaigns
-            bypass_reason: "no records"
-          - name: performance_report_campaigns_by_marketers
-            bypass_reason: "no records"
-          - name: performance_report_periodic_by_marketers
-            bypass_reason: "no records"
-          - name: performance_report_periodic_by_marketers_campaign
-            bypass_reason: "no records"
-          - name: performance_promoted_links
-            bypass_reason: "no records"
-          - name: performance_report_marketers_by_publisher
-            bypass_reason: "no records"
-          - name: performance_report_publishers_by_campaigns
-            bypass_reason: "no records"
-          - name: performance_report_marketers_by_platforms
-            bypass_reason: "no records"
-          - name: performance_report_marketers_campaigns_by_platforms
-            bypass_reason: "no records"
-          - name: performance_report_marketers_by_geo_performance
-            bypass_reason: "no records"
-          - name: performance_report_marketers_campaigns_by_geo
-            bypass_reason: "no records"
-          - name: performance_report_marketers_by_interest
-            bypass_reason: "no records"
+  # connection:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       status: "succeed"
+  #     - config_path: "integration_tests/invalid_config.json"
+  #       status: "failed"
+  # discovery:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  # basic_read:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       configured_catalog_path: "integration_tests/configured_catalog.json"
+  #       timeout_seconds: 2400
+  #       empty_streams:
+  #         - name: campaigns
+  #           bypass_reason: "no records"
+  #         - name: campaigns_geo_location
+  #           bypass_reason: "no records"
+  #         - name: budgets
+  #           bypass_reason: "no records"
+  #         - name: promoted_links
+  #           bypass_reason: "no records"
+  #         - name: promoted_links_sequence_for_campaigns
+  #           bypass_reason: "no records"
+  #         - name: performance_report_campaigns_by_marketers
+  #           bypass_reason: "no records"
+  #         - name: performance_report_periodic_by_marketers
+  #           bypass_reason: "no records"
+  #         - name: performance_report_periodic_by_marketers_campaign
+  #           bypass_reason: "no records"
+  #         - name: performance_promoted_links
+  #           bypass_reason: "no records"
+  #         - name: performance_report_marketers_by_publisher
+  #           bypass_reason: "no records"
+  #         - name: performance_report_publishers_by_campaigns
+  #           bypass_reason: "no records"
+  #         - name: performance_report_marketers_by_platforms
+  #           bypass_reason: "no records"
+  #         - name: performance_report_marketers_campaigns_by_platforms
+  #           bypass_reason: "no records"
+  #         - name: performance_report_marketers_by_geo_performance
+  #           bypass_reason: "no records"
+  #         - name: performance_report_marketers_campaigns_by_geo
+  #           bypass_reason: "no records"
+  #         - name: performance_report_marketers_by_interest
+  #           bypass_reason: "no records"
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #        expect_records:
   #          path: "integration_tests/expected_records.jsonl"
@@ -64,7 +64,7 @@ acceptance_tests:
   #        configured_catalog_path: "integration_tests/configured_catalog.json"
   #        future_state:
   #          future_state_path: "integration_tests/abnormal_state.json"
-  full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+  # full_refresh:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -8,7 +8,7 @@ from typing import Any, Dict, Literal, Optional, Union
 import dpath.util
 from pydantic.v1 import BaseModel, Field
 
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 
 
 class OAuthCredentials(BaseModel):
@@ -87,6 +87,16 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
         order=0,
     )
 
+    delivery_method: DeliverRecords | DeliverRawFiles = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=1,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
+    )
+
     search_scope: str = Field(
         title="Search Scope",
         description="Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both.",
@@ -100,6 +110,12 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
         description="Path to a specific folder within the drives to search for files. Leave empty to search all folders of the drives. This does not apply to shared items.",
         order=4,
         default=".",
+    )
+    site_url: str = Field(
+        title="Site URL",
+        description="Url of SharePoint site to search for files. Leave empty to search in the main site. Use 'https://<tenant_name>.sharepoint.com/sites/' to iterate over all sites.",
+        order=5,
+        default="",
     )
 
     @classmethod

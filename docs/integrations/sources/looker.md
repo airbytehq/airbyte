@@ -85,6 +85,18 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 1.0.34 | 2025-05-24 | [60694](https://github.com/airbytehq/airbyte/pull/60694) | Update dependencies |
+| 1.0.33 | 2025-05-10 | [59851](https://github.com/airbytehq/airbyte/pull/59851) | Update dependencies |
+| 1.0.32 | 2025-05-03 | [59280](https://github.com/airbytehq/airbyte/pull/59280) | Update dependencies |
+| 1.0.31 | 2025-04-26 | [58807](https://github.com/airbytehq/airbyte/pull/58807) | Update dependencies |
+| 1.0.30 | 2025-04-12 | [57745](https://github.com/airbytehq/airbyte/pull/57745) | Update dependencies |
+| 1.0.29 | 2025-04-05 | [57026](https://github.com/airbytehq/airbyte/pull/57026) | Update dependencies |
+| 1.0.28 | 2025-03-29 | [56720](https://github.com/airbytehq/airbyte/pull/56720) | Update dependencies |
+| 1.0.27 | 2025-03-22 | [55999](https://github.com/airbytehq/airbyte/pull/55999) | Update dependencies |
+| 1.0.26 | 2025-03-08 | [55472](https://github.com/airbytehq/airbyte/pull/55472) | Update dependencies |
+| 1.0.25 | 2025-03-01 | [54787](https://github.com/airbytehq/airbyte/pull/54787) | Update dependencies |
+| 1.0.24 | 2025-02-22 | [54318](https://github.com/airbytehq/airbyte/pull/54318) | Update dependencies |
+| 1.0.23 | 2025-02-15 | [53788](https://github.com/airbytehq/airbyte/pull/53788) | Update dependencies |
 | 1.0.22 | 2025-02-01 | [52739](https://github.com/airbytehq/airbyte/pull/52739) | Update dependencies |
 | 1.0.21 | 2025-01-25 | [52245](https://github.com/airbytehq/airbyte/pull/52245) | Update dependencies |
 | 1.0.20 | 2025-01-11 | [51196](https://github.com/airbytehq/airbyte/pull/51196) | Update dependencies |

@@ -37,14 +37,14 @@ class MySqlSourceCdcIntegrationTest {
     fun testCheck() {
         val run1: BufferingOutputConsumer = CliRunner.source("check", config(), null).run()
 
-        assertEquals(run1.messages().size, 1)
+        assertEquals(1, run1.messages().size)
         assertEquals(
-            run1.messages().first().connectionStatus.status,
-            AirbyteConnectionStatus.Status.SUCCEEDED
+            AirbyteConnectionStatus.Status.SUCCEEDED,
+            run1.messages().first().connectionStatus.status
         )
 
         MySqlContainerFactory.exclusive(
-                imageName = "mysql:8.0",
+                imageName = "mysql:9.2.0",
                 MySqlContainerFactory.WithCdcOff,
             )
             .use { nonCdcDbContainer ->
@@ -115,7 +115,7 @@ class MySqlSourceCdcIntegrationTest {
             JdbcConnectionFactory(MySqlSourceConfigurationFactory().make(config()))
         }
 
-        val configuredCatalog: ConfiguredAirbyteCatalog = run {
+        val configuredCatalog: ConfiguredAirbyteCatalog by lazy {
             val desc = StreamDescriptor().withName("tbl").withNamespace("test")
             val discoveredStream =
                 DiscoveredStream(
@@ -123,7 +123,12 @@ class MySqlSourceCdcIntegrationTest {
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = MySqlSourceOperations().createGlobal(discoveredStream)
+            val stream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(config()),
+                        discoveredStream,
+                    )
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
@@ -138,7 +143,7 @@ class MySqlSourceCdcIntegrationTest {
         fun startAndProvisionTestContainer() {
             dbContainer =
                 MySqlContainerFactory.exclusive(
-                    imageName = "mysql:8.0",
+                    imageName = "mysql:9.2.0",
                     MySqlContainerFactory.WithNetwork,
                 )
             provisionTestContainer(dbContainer, connectionFactory)

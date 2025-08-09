@@ -7,43 +7,28 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessage
-import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationFileStreamComplete
-import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
-import io.airbyte.cdk.load.message.DestinationStreamEvent
-import io.airbyte.cdk.load.message.GlobalCheckpoint
-import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
-import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.MessageQueueSupplier
-import io.airbyte.cdk.load.message.QueueWriter
-import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamEndEvent
-import io.airbyte.cdk.load.message.StreamRecordEvent
+import io.airbyte.cdk.load.message.Ignored
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEndOfStream
+import io.airbyte.cdk.load.message.PipelineEvent
+import io.airbyte.cdk.load.message.PipelineMessage
+import io.airbyte.cdk.load.message.ProbeMessage
+import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.Undefined
+import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.Reserved
-import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.OnSyncFailureOnly
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
-import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Named
-import jakarta.inject.Singleton
+import kotlinx.coroutines.flow.fold
 
-interface InputConsumerTask : Task
+private val log = KotlinLogging.logger {}
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
@@ -55,117 +40,38 @@ interface InputConsumerTask : Task
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
-@Singleton
-@Secondary
-class DefaultInputConsumerTask(
+class InputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
-    private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-    private val syncManager: SyncManager,
-    private val destinationTaskLauncher: DestinationTaskLauncher,
-    @Named("fileMessageQueue")
-    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-) : InputConsumerTask {
-    private val log = KotlinLogging.logger {}
+    private val pipelineInputQueue:
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    private val partitioner: InputPartitioner,
+    private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
+) : Task {
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 
-    private suspend fun handleRecord(
+    private suspend fun handleRecordForPipeline(
         reserved: Reserved<DestinationStreamAffinedMessage>,
-        sizeBytes: Long
+        unopenedStreams: MutableSet<DestinationStream.Descriptor>,
     ) {
-        val stream = reserved.value.stream
-        val manager = syncManager.getStreamManager(stream)
-        val recordQueue = recordQueueSupplier.get(stream)
-        when (val message = reserved.value) {
-            is DestinationRecord -> {
-                val wrapped =
-                    StreamRecordEvent(
-                        index = manager.countRecordIn(),
-                        sizeBytes = sizeBytes,
-                        payload = message.asRecordSerialized()
-                    )
-                recordQueue.publish(reserved.replace(wrapped))
+        val pipelineEvent =
+            pipelineEventBookkeepingRouter.handleStreamMessage(
+                reserved.value,
+                postProcessingCallback = { reserved.release() },
+                unopenedStreams
+            )
+        when (pipelineEvent) {
+            is PipelineMessage -> {
+                val partition =
+                    partitioner.getPartition(pipelineEvent.value, pipelineInputQueue.partitions)
+                pipelineInputQueue.publish(pipelineEvent, partition)
             }
-            is DestinationRecordStreamComplete -> {
-                reserved.release() // safe because multiple calls conflate
-                val wrapped = StreamEndEvent(index = manager.markEndOfStream(true))
-                log.info { "Read COMPLETE for stream $stream" }
-                recordQueue.publish(reserved.replace(wrapped))
-                recordQueue.close()
+            is PipelineEndOfStream -> {
+                reserved.release()
+                pipelineInputQueue.broadcast(pipelineEvent)
             }
-            is DestinationRecordStreamIncomplete -> {
-                reserved.release() // safe because multiple calls conflate
-                val wrapped = StreamEndEvent(index = manager.markEndOfStream(false))
-                log.info { "Read INCOMPLETE for stream $stream" }
-                recordQueue.publish(reserved.replace(wrapped))
-                recordQueue.close()
-            }
-            is DestinationFile -> {
-                val index = manager.countRecordIn()
-                // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
-            }
-            is DestinationFileStreamComplete -> {
-                reserved.release() // safe because multiple calls conflate
-                manager.markEndOfStream(true)
-                val envelope =
-                    BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream,
-                    )
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
-            }
-            is DestinationFileStreamIncomplete ->
-                throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
-        }
-    }
-
-    private suspend fun handleCheckpoint(
-        reservation: Reserved<CheckpointMessage>,
-        sizeBytes: Long
-    ) {
-        when (val checkpoint = reservation.value) {
-            /**
-             * For a stream state message, mark the checkpoint and add the message with index and
-             * count to the state manager. Also, add the count to the destination stats.
-             */
-            is StreamCheckpoint -> {
-                val stream = checkpoint.checkpoint.stream
-                val manager = syncManager.getStreamManager(stream)
-                val (currentIndex, countSinceLast) = manager.markCheckpoint()
-                val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(countSinceLast))
-                checkpointQueue.publish(
-                    reservation.replace(
-                        StreamCheckpointWrapped(sizeBytes, stream, currentIndex, messageWithCount)
-                    )
-                )
-            }
-
-            /**
-             * For a global state message, collect the index per stream, but add the total count to
-             * the destination stats.
-             */
-            is GlobalCheckpoint -> {
-                val streamWithIndexAndCount =
-                    catalog.streams.map { stream ->
-                        val manager = syncManager.getStreamManager(stream.descriptor)
-                        val (currentIndex, countSinceLast) = manager.markCheckpoint()
-                        Triple(stream, currentIndex, countSinceLast)
-                    }
-                val totalCount = streamWithIndexAndCount.sumOf { it.third }
-                val messageWithCount =
-                    checkpoint.withDestinationStats(CheckpointMessage.Stats(totalCount))
-                val streamIndexes = streamWithIndexAndCount.map { it.first.descriptor to it.second }
-                checkpointQueue.publish(
-                    reservation.replace(
-                        GlobalCheckpointWrapped(sizeBytes, streamIndexes, messageWithCount)
-                    )
-                )
-            }
+            else -> reserved.release()
         }
     }
 
@@ -176,63 +82,26 @@ class DefaultInputConsumerTask(
      */
     override suspend fun execute() {
         log.info { "Starting consuming messages from the input flow" }
-        try {
-            checkpointQueue.use {
-                inputFlow.collect { (sizeBytes, reserved) ->
+        val unopenedStreams = catalog.streams.map { it.mappedDescriptor }.toMutableSet()
+        pipelineInputQueue.use {
+            pipelineEventBookkeepingRouter.use {
+                inputFlow.fold(unopenedStreams) { unopenedStreams, (_, reserved) ->
                     when (val message = reserved.value) {
-                        /* If the input message represents a record. */
                         is DestinationStreamAffinedMessage ->
-                            handleRecord(reserved.replace(message), sizeBytes)
+                            handleRecordForPipeline(reserved.replace(message), unopenedStreams)
                         is CheckpointMessage ->
-                            handleCheckpoint(reserved.replace(message), sizeBytes)
-                        is Undefined -> {
-                            log.warn { "Unhandled message: $message" }
+                            pipelineEventBookkeepingRouter.handleCheckpoint(
+                                reserved.replace(message)
+                            )
+                        Undefined -> log.warn { "Unhandled message: $message" }
+                        ProbeMessage,
+                        Ignored -> {
+                            /* do nothing */
                         }
                     }
+                    unopenedStreams
                 }
             }
-            syncManager.markInputConsumed()
-        } finally {
-            log.info { "Closing record queues" }
-            catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
-            fileTransferQueue.close()
         }
-    }
-}
-
-interface InputConsumerTaskFactory {
-    fun make(
-        catalog: DestinationCatalog,
-        inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-        destinationTaskLauncher: DestinationTaskLauncher,
-        fileTransferQueue: MessageQueue<FileTransferQueueMessage>
-    ): InputConsumerTask
-}
-
-@Singleton
-@Secondary
-class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
-    InputConsumerTaskFactory {
-    override fun make(
-        catalog: DestinationCatalog,
-        inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-        destinationTaskLauncher: DestinationTaskLauncher,
-        fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
-    ): InputConsumerTask {
-        return DefaultInputConsumerTask(
-            catalog,
-            inputFlow,
-            recordQueueSupplier,
-            checkpointQueue,
-            syncManager,
-            destinationTaskLauncher,
-            fileTransferQueue,
-        )
     }
 }

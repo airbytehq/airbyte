@@ -36,7 +36,7 @@ tools.pre-commit.install.Linux:
 
 tools.pre-commit.install.Darwin:
 	@echo "Installing pre-commit with brew..."
-	@brew install pre-commit
+	@brew install pre-commit maven
 	@echo "Pre-commit installation complete"
 
 tools.git-hooks.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS) tools.git-hooks.clean ## Setup pre-commit hooks
@@ -45,5 +45,8 @@ tools.git-hooks.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS)
 	@echo "Pre-push hooks installed."
 
 tools.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS)
+
+version.bulk.cdk:
+	@echo "Latest version of the Bulk CDK is $(shell curl -k --silent "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/bulk-cdk-core-load/maven-metadata.xml" | sed -ne 's:.*<latest>\(.*\)</latest>:\1:p')"
 
 .PHONY: tools.install tools.pre-commit.install tools.git-hooks.install tools.git-hooks.clean tools.airbyte-ci.install tools.airbyte-ci-dev.install tools.airbyte-ci.check tools.airbyte-ci.clean

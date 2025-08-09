@@ -236,6 +236,29 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.8.27 | 2025-08-09 | [64627](https://github.com/airbytehq/airbyte/pull/64627) | Update dependencies |
+| 0.8.26 | 2025-08-02 | [64367](https://github.com/airbytehq/airbyte/pull/64367) | Update dependencies |
+| 0.8.25 | 2025-07-26 | [63951](https://github.com/airbytehq/airbyte/pull/63951) | Update dependencies |
+| 0.8.24 | 2025-07-19 | [63564](https://github.com/airbytehq/airbyte/pull/63564) | Update dependencies |
+| 0.8.23 | 2025-07-12 | [62985](https://github.com/airbytehq/airbyte/pull/62985) | Update dependencies |
+| 0.8.22 | 2025-07-05 | [62822](https://github.com/airbytehq/airbyte/pull/62822) | Update dependencies |
+| 0.8.21 | 2025-06-28 | [61274](https://github.com/airbytehq/airbyte/pull/61274) | Update dependencies |
+| 0.8.20 | 2025-05-27 | [60868](https://github.com/airbytehq/airbyte/pull/60868) | Update dependencies |
+| 0.8.19 | 2025-05-24 | [60392](https://github.com/airbytehq/airbyte/pull/60392) | Update dependencies |
+| 0.8.18 | 2025-05-10 | [60012](https://github.com/airbytehq/airbyte/pull/60012) | Update dependencies |
+| 0.8.17 | 2025-05-03 | [59443](https://github.com/airbytehq/airbyte/pull/59443) | Update dependencies |
+| 0.8.16 | 2025-04-26 | [58915](https://github.com/airbytehq/airbyte/pull/58915) | Update dependencies |
+| 0.8.15 | 2025-04-19 | [58312](https://github.com/airbytehq/airbyte/pull/58312) | Update dependencies |
+| 0.8.14 | 2025-04-12 | [57772](https://github.com/airbytehq/airbyte/pull/57772) | Update dependencies |
+| 0.8.13 | 2025-04-05 | [57213](https://github.com/airbytehq/airbyte/pull/57213) | Update dependencies |
+| 0.8.12 | 2025-03-29 | [56520](https://github.com/airbytehq/airbyte/pull/56520) | Update dependencies |
+| 0.8.11 | 2025-03-22 | [55956](https://github.com/airbytehq/airbyte/pull/55956) | Update dependencies |
+| 0.8.10 | 2025-03-08 | [55314](https://github.com/airbytehq/airbyte/pull/55314) | Update dependencies |
+| 0.8.9 | 2025-03-01 | [54973](https://github.com/airbytehq/airbyte/pull/54973) | Update dependencies |
+| 0.8.8 | 2025-02-25 | [54677](https://github.com/airbytehq/airbyte/pull/54677) | Fix io.UnsupportedOperation: underlying stream is not seekable |
+| 0.8.7 | 2025-02-22 | [54458](https://github.com/airbytehq/airbyte/pull/54458) | Update dependencies |
+| 0.8.6 | 2025-02-15 | [53712](https://github.com/airbytehq/airbyte/pull/53712) | Update dependencies |
+| 0.8.5 | 2025-02-08 | [53365](https://github.com/airbytehq/airbyte/pull/53365) | Update dependencies |
 | 0.8.4 | 2025-02-01 | [52379](https://github.com/airbytehq/airbyte/pull/52379) | Update dependencies |
 | 0.8.3 | 2025-01-18 | [49174](https://github.com/airbytehq/airbyte/pull/49174) | Update dependencies |
 | 0.8.2 | 2024-11-25 | [48647](https://github.com/airbytehq/airbyte/pull/48647) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

@@ -2,240 +2,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
+from dataclasses import dataclass
 from functools import wraps
 from time import sleep
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Dict, Iterable, Mapping, Optional, Union
 
 import requests
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
+from airbyte_cdk.sources.types import Record, StreamSlice
 
 
 RequestInput = Union[str, Mapping[str, str]]
-
-
-@dataclass
-class IncrementalSingleSliceCursor(DeclarativeCursor):
-    cursor_field: Union[InterpolatedString, str]
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._state = {}
-        self._cursor = None
-        self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
-
-    def get_request_params(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # Current implementation does not provide any options to update request params.
-        # Returns empty dict
-        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
-
-    def get_request_headers(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # Current implementation does not provide any options to update request headers.
-        # Returns empty dict
-        return self._get_request_option(RequestOptionType.header, stream_slice)
-
-    def get_request_body_data(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        # Current implementation does not provide any options to update body data.
-        # Returns empty dict
-        return self._get_request_option(RequestOptionType.body_data, stream_slice)
-
-    def get_request_body_json(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
-        # Current implementation does not provide any options to update body json.
-        # Returns empty dict
-        return self._get_request_option(RequestOptionType.body_json, stream_slice)
-
-    def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
-        return {}
-
-    def get_stream_state(self) -> StreamState:
-        return self._state.copy()
-
-    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
-        return self.get_stream_state()
-
-    def set_initial_state(self, stream_state: StreamState):
-        cursor_field = self.cursor_field.eval(self.config)
-        cursor_value = stream_state.get(cursor_field)
-        if cursor_value:
-            self._state[cursor_field] = cursor_value
-            self._state["prior_state"] = self._state.copy()
-            self._cursor = cursor_value
-
-    def observe(self, stream_slice: StreamSlice, record: Record) -> None:
-        """
-        Register a record with the cursor; the cursor instance can then use it to manage the state of the in-progress stream read.
-
-        :param stream_slice: The current slice, which may or may not contain the most recently observed record
-        :param record: the most recently-read record, which the cursor can use to update the stream state. Outwardly-visible changes to the
-          stream state may need to be deferred depending on whether the source reliably orders records by the cursor field.
-        """
-        record_cursor_value = record.get(self.cursor_field.eval(self.config))
-        if not record_cursor_value:
-            return
-
-        if self.is_greater_than_or_equal(record, self._state):
-            self._cursor = record_cursor_value
-
-    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
-        cursor_field = self.cursor_field.eval(self.config)
-        self._state[cursor_field] = self._cursor
-
-    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        yield StreamSlice(partition={}, cursor_slice={})
-
-    def should_be_synced(self, record: Record) -> bool:
-        """
-        Evaluating if a record should be synced allows for filtering and stop condition on pagination
-        """
-        record_cursor_value = record.get(self.cursor_field.eval(self.config))
-        return bool(record_cursor_value)
-
-    def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """
-        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
-        cursor_field = self.cursor_field.eval(self.config)
-        first_cursor_value = first.get(cursor_field) if first else None
-        second_cursor_value = second.get(cursor_field) if second else None
-        if first_cursor_value and second_cursor_value:
-            return first_cursor_value > second_cursor_value
-        elif first_cursor_value:
-            return True
-        else:
-            return False
-
-
-@dataclass
-class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
-    parent_stream_configs: List[ParentStreamConfig]
-    parent_complete_fetch: bool = field(default=False)
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        super().__post_init__(parameters)
-
-        if not self.parent_stream_configs:
-            raise ValueError("IncrementalSubstreamSlicer needs at least 1 parent stream")
-
-        # parent stream parts
-        self.parent_config: ParentStreamConfig = self.parent_stream_configs[0]
-        self.parent_stream: Stream = self.parent_config.stream
-        self.parent_stream_name: str = self.parent_stream.name
-        self.parent_cursor_field: str = self.parent_stream.cursor_field
-        self.parent_sync_mode: SyncMode = SyncMode.incremental if self.parent_stream.supports_incremental is True else SyncMode.full_refresh
-        self.substream_slice_field: str = self.parent_stream_configs[0].partition_field.eval(self.config)
-        self.parent_field: str = self.parent_stream_configs[0].parent_key.eval(self.config)
-        self._parent_cursor: Optional[str] = None
-
-    def set_initial_state(self, stream_state: StreamState):
-        super().set_initial_state(stream_state=stream_state)
-        if self.parent_stream_name in stream_state and stream_state.get(self.parent_stream_name, {}).get(self.parent_cursor_field):
-            parent_stream_state = {
-                self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field],
-            }
-            self._state[self.parent_stream_name] = parent_stream_state
-            if "prior_state" in self._state:
-                self._state["prior_state"][self.parent_stream_name] = parent_stream_state
-
-    def observe(self, stream_slice: StreamSlice, record: Record) -> None:
-        """
-        Extended the default method to be able to track the parent STATE.
-        """
-
-        # save parent cursor value (STATE) from slice
-        parent_cursor = stream_slice.get(self.parent_stream_name)
-        if parent_cursor:
-            self._parent_cursor = parent_cursor.get(self.parent_cursor_field)
-
-        # observe the substream
-        super().observe(stream_slice, record)
-
-    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
-        super().close_slice(stream_slice, *args)
-
-    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        parent_state = (self._state or {}).get(self.parent_stream_name, {})
-        slices_generator: Iterable[StreamSlice] = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
-        yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
-
-    def track_parent_cursor(self, parent_record: dict) -> None:
-        """
-        Tracks the Parent Stream Cursor, using `parent_cursor_field`.
-        """
-        self._parent_cursor = parent_record.get(self.parent_cursor_field)
-        if self._parent_cursor:
-            self._state[self.parent_stream_name] = {self.parent_cursor_field: self._parent_cursor}
-
-    def read_parent_stream(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[str],
-        stream_state: Mapping[str, Any],
-    ) -> Iterable[Mapping[str, Any]]:
-        self.parent_stream.state = stream_state
-
-        parent_stream_slices_gen = self.parent_stream.stream_slices(
-            sync_mode=sync_mode,
-            cursor_field=cursor_field,
-            stream_state=stream_state,
-        )
-
-        for parent_slice in parent_stream_slices_gen:
-            parent_records_gen = self.parent_stream.read_records(
-                sync_mode=sync_mode,
-                cursor_field=cursor_field,
-                stream_slice=parent_slice,
-                stream_state=stream_state,
-            )
-
-            for parent_record in parent_records_gen:
-                # update parent cursor
-                self.track_parent_cursor(parent_record)
-                substream_slice_value = parent_record.get(self.parent_field)
-                if substream_slice_value:
-                    cursor_field = self.cursor_field.eval(self.config)
-                    substream_cursor_value = self._state.get(cursor_field)
-                    parent_cursor_value = self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-                    yield StreamSlice(
-                        partition={
-                            self.substream_slice_field: substream_slice_value,
-                        },
-                        cursor_slice={
-                            cursor_field: substream_cursor_value,
-                            self.parent_stream_name: {
-                                self.parent_cursor_field: parent_cursor_value,
-                            },
-                        },
-                    )
 
 
 @dataclass
@@ -374,3 +156,229 @@ class ErrorHandlerWithRateLimiter(DefaultErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         # Check for response.headers to define the backoff time before the next api call
         return super().interpret_response(response_or_exception)
+
+
+class SubstreamStateMigration(StateMigration):
+    """
+    We require a custom state migration to move from the custom substream state that was generated via the legacy
+    cursor custom components. State was not written back to the platform in a way that is compatible with concurrent cursors.
+
+    The old state roughly had the following shape:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+    }
+
+    However, this was incompatible when we removed the custom cursors with the concurrent substream partition cursor
+    components that were configured with use global_substream_cursor and incremental_dependency. They rely on passing the value
+    of parent_state when getting parent records for the conversations/companies parent stream. The migration results in state:
+    {
+        "updated_at": 1744153060,
+        "prior_state": {
+            "updated_at": 1744066660
+            # There are a lot of nested elements here, but are not used or relevant to syncs
+        }
+        "conversations": {
+            "updated_at": 1744153060
+        }
+        "parent_state": {
+            "conversations": {
+                "updated_at": 1744153060
+            }
+        }
+    }
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return "parent_state" not in stream_state and ("conversations" in stream_state or "companies" in stream_state)
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_parent_state = {}
+        if stream_state.get("conversations"):
+            migrated_parent_state["conversations"] = stream_state.get("conversations")
+        if stream_state.get("companies"):
+            migrated_parent_state["companies"] = stream_state.get("companies")
+        return {**stream_state, "parent_state": migrated_parent_state}
+
+
+class ResetCursorSignal:
+    """
+    Singleton class that manages a reset signal for Intercom's companies stream.
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.reset_signal = False
+        return cls._instance
+
+    def is_reset_triggered(self) -> bool:
+        return self.reset_signal
+
+    def trigger_reset(self) -> None:
+        self.reset_signal = True
+
+    def clear_reset(self) -> None:
+        self.reset_signal = False
+
+
+class IntercomErrorHandler(DefaultErrorHandler):
+    """
+    Custom error handler that triggers a reset on HTTP 500 errors.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == 500:
+            reset_signal = ResetCursorSignal()
+            reset_signal.trigger_reset()
+            return ErrorResolution(
+                response_action=ResponseAction.RETRY,
+                failure_type=FailureType.transient_error,
+                error_message="HTTP 500 encountered. Triggering reset to retry from the beginning...",
+            )
+        return super().interpret_response(response_or_exception)
+
+
+class IntercomScrollRetriever(SimpleRetriever):
+    """
+    Custom retriever for Intercom's companies stream with reset handling. Only compatible with streams that sync using
+    a single date time window instead of multiple windows when the step is defined. This is okay for the companies stream
+    since it only allows for single-threaded processing.
+
+    For the companies stream, we need to implement a custom retriever since we cannot simply retry on HTTP 500 errors.
+    Instead, the stream must restart from the beginning to ensure data integrity. See Docs:
+    https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
+    We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, which is tracked here:
+    https://github.com/airbytehq/airbyte-internal-issues/issues/12107. However, the team does not have the bandwidth
+    to implement this at the moment, so this custom component provides a workaround by resetting the cursor on errors.
+    """
+
+    RESET_TOKEN = {"_ab_reset": True}
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self.reset_signal = ResetCursorSignal()
+
+    def _next_page_token(
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any],
+    ) -> Optional[Mapping[str, Any]]:
+        """
+        Determines the next page token or signals a reset.
+        """
+        if self.reset_signal.is_reset_triggered():
+            self.reset_signal.clear_reset()
+            return self.RESET_TOKEN
+
+        next_token = self._paginator.next_page_token(
+            response=response,
+            last_page_size=last_page_size,
+            last_record=last_record,
+            last_page_token_value=last_page_token_value,
+        )
+
+        return next_token
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[requests.Response]], Iterable[Record]],
+        stream_state: Mapping[str, Any],
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        """
+        Reads pages with pagination and reset handling using _next_page_token.
+        """
+        pagination_complete = False
+        initial_token = self._paginator.get_initial_token()
+        next_page_token = {"next_page_token": initial_token} if initial_token is not None else None
+
+        while not pagination_complete:
+            # Needed for _next_page_token
+            response = self.requester.send_request(
+                path=self._paginator_path(next_page_token=next_page_token),
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                request_headers=self._request_headers(next_page_token=next_page_token),
+                request_params=self._request_params(next_page_token=next_page_token),
+                request_body_data=self._request_body_data(next_page_token=next_page_token),
+                request_body_json=self._request_body_json(next_page_token=next_page_token),
+            )
+
+            for record in records_generator_fn(response):
+                yield record
+
+            if not response:
+                pagination_complete = True
+            else:
+                next_page_token = self._next_page_token(
+                    response=response,
+                    last_page_size=0,  # Simplified, not tracking size here
+                    last_record=None,  # Not needed for reset logic
+                    last_page_token_value=(next_page_token.get("next_page_token") if next_page_token else None),
+                )
+                if next_page_token == self.RESET_TOKEN:
+                    next_page_token = {"next_page_token": initial_token} if initial_token is not None else None
+                elif not next_page_token:
+                    pagination_complete = True
+
+        yield from []
+
+
+class IntercomScrollPagination(CursorPaginationStrategy):
+    """
+    Custom pagination strategy for Intercom's companies stream. Only compatible with streams that sync using
+    a single date time window instead of multiple windows when the step is defined. This is okay for the companies stream
+    since it only allows for single-threaded processing.
+
+    The only change is the stop condtion logic, which is done by comparing the
+    token value with the last page token value. If they are equal, we stop the pagination. This is needed since the Intercom API does not
+    have any clear stop condition for pagination, and we need to rely on the token value to determine when to stop.
+
+    As of 5/12/25 - they have some fields used for pagination stop conditons but they always result in null values, so we cannot rely on them.
+    Ex:
+    {
+        "type": "list",
+        "data": [
+            {...}
+        ],
+        "pages": null,
+        "total_count": null,
+        "scroll_param": "6287df44-6323-4dfa-8d19-eae43fdc4ab2" <- The scroll param also remains even if there are no more pages; leading to infinite pagination.
+    }
+    """
+
+    def next_page_token(
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any] = None,
+    ) -> Optional[Any]:
+        decoded_response = next(self.decoder.decode(response))
+        # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
+        # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
+        headers: Dict[str, Any] = dict(response.headers)
+        headers["link"] = response.links
+        token = self._cursor_value.eval(
+            config=self.config,
+            response=decoded_response,
+            headers=headers,
+            last_record=last_record,
+            last_page_size=last_page_size,
+        )
+
+        if token == last_page_token_value:
+            return None  # stop pagination
+
+        return token if token else None

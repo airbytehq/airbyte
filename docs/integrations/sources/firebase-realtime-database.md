@@ -79,6 +79,19 @@ Once you've configured Firebase Realtime Database as a source, delete the Servic
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.48 | 2025-05-24 | [60381](https://github.com/airbytehq/airbyte/pull/60381) | Update dependencies |
+| 0.1.47 | 2025-05-10 | [59978](https://github.com/airbytehq/airbyte/pull/59978) | Update dependencies |
+| 0.1.46 | 2025-05-03 | [59371](https://github.com/airbytehq/airbyte/pull/59371) | Update dependencies |
+| 0.1.45 | 2025-04-26 | [58854](https://github.com/airbytehq/airbyte/pull/58854) | Update dependencies |
+| 0.1.44 | 2025-04-19 | [58347](https://github.com/airbytehq/airbyte/pull/58347) | Update dependencies |
+| 0.1.43 | 2025-04-12 | [57755](https://github.com/airbytehq/airbyte/pull/57755) | Update dependencies |
+| 0.1.42 | 2025-04-05 | [57229](https://github.com/airbytehq/airbyte/pull/57229) | Update dependencies |
+| 0.1.41 | 2025-03-29 | [56477](https://github.com/airbytehq/airbyte/pull/56477) | Update dependencies |
+| 0.1.40 | 2025-03-22 | [55992](https://github.com/airbytehq/airbyte/pull/55992) | Update dependencies |
+| 0.1.39 | 2025-03-08 | [55297](https://github.com/airbytehq/airbyte/pull/55297) | Update dependencies |
+| 0.1.38 | 2025-03-01 | [54911](https://github.com/airbytehq/airbyte/pull/54911) | Update dependencies |
+| 0.1.37 | 2025-02-22 | [54371](https://github.com/airbytehq/airbyte/pull/54371) | Update dependencies |
+| 0.1.36 | 2025-02-15 | [53755](https://github.com/airbytehq/airbyte/pull/53755) | Update dependencies |
 | 0.1.35 | 2025-02-01 | [52844](https://github.com/airbytehq/airbyte/pull/52844) | Update dependencies |
 | 0.1.34 | 2025-01-25 | [52328](https://github.com/airbytehq/airbyte/pull/52328) | Update dependencies |
 | 0.1.33 | 2025-01-18 | [51639](https://github.com/airbytehq/airbyte/pull/51639) | Update dependencies |

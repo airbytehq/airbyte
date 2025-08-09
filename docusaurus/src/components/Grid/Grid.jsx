@@ -1,7 +1,5 @@
-
-
-import React from 'react';
-import styles from './Grid.module.css';
+import React from "react";
+import styles from "./Grid.module.css";
 
 export const Grid = ({ children, columns = "1" }) => {
   return (

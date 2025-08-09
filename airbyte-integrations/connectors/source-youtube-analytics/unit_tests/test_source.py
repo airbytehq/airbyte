@@ -8,8 +8,6 @@ from unittest.mock import MagicMock
 
 from source_youtube_analytics.source import SourceYoutubeAnalytics
 
-from airbyte_cdk.sources.streams.http.auth.core import NoAuth
-
 
 def test_check_connection(requests_mock):
     access_token = "token"
@@ -27,12 +25,14 @@ def test_check_connection(requests_mock):
 
 def test_streams(requests_mock):
     requests_mock.get("https://youtubereporting.googleapis.com/v1/jobs", json={})
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token", json={"access_token": "fake-token", "expires_in": 3600, "token_type": "Bearer"}
+    )
 
     with open(os.path.join(os.path.dirname(__file__), "../source_youtube_analytics/defaults/channel_reports.json")) as fp:
         channel_reports = json.load(fp)
 
     source = SourceYoutubeAnalytics()
-    source.get_authenticator = MagicMock(return_value=NoAuth())
     config_mock = MagicMock()
     streams = source.streams(config_mock)
     assert len(streams) == len(channel_reports)

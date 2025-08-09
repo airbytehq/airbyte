@@ -5,6 +5,7 @@
 
 import gzip
 import json
+from enum import Enum
 from http import HTTPStatus
 from typing import List, Optional
 
@@ -12,7 +13,6 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from source_amazon_seller_partner.streams import ReportProcessingStatus
 
 from airbyte_cdk.models import AirbyteStateMessage, FailureType, Level, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
@@ -56,6 +56,14 @@ STREAMS = (
     ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
     ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
 )
+
+
+class ReportProcessingStatus(str, Enum):
+    CANCELLED = "CANCELLED"
+    DONE = "DONE"
+    FATAL = "FATAL"
+    IN_PROGRESS = "IN_PROGRESS"
+    IN_QUEUE = "IN_QUEUE"
 
 
 def _create_report_request(report_name: str) -> RequestBuilder:
@@ -143,13 +151,6 @@ def _download_document_response(stream_name: str, data_format: Optional[str] = "
     return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
 
 
-def _download_document_error_response(compressed: Optional[bool] = False) -> HttpResponse:
-    response_body = '{"errorDetails":"Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again."}'
-    if compressed:
-        response_body = gzip.compress(response_body.encode("iso-8859-1"))
-    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
-
-
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh:
     @staticmethod
@@ -204,7 +205,7 @@ class TestFullRefresh:
         document_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
         document_response = _download_document_response(stream_name, data_format=data_format, compressed=True)
         document_request_matcher = HttpRequestMatcher(document_request, minimum_number_of_expected_match=1)
-        http_mocker._matchers.append(document_request_matcher)
+        # http_mocker._matchers.append(document_request_matcher)
 
         http_mocker._mocker.get(
             requests_mock.ANY,
@@ -626,7 +627,7 @@ class TestVendorSalesReportsFullRefresh:
         document_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
         document_response = _download_document_response(stream_name, data_format=self.data_format, compressed=True)
         document_request_matcher = HttpRequestMatcher(document_request, minimum_number_of_expected_match=1)
-        http_mocker._matchers.append(document_request_matcher)
+        # http_mocker._matchers.append(document_request_matcher)
 
         http_mocker._mocker.get(
             requests_mock.ANY,

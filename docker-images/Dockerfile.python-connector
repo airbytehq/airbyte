@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1
+# check=skip=InvalidDefaultArgInFrom
+
+# Python connector Dockerfile for Airbyte
+
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE} AS builder
+ARG BASE_IMAGE
+ARG CONNECTOR_NAME
+ARG EXTRA_PREREQS_SCRIPT=""
+
+# Install git and openssh-client are needed to clone repositories for testing connectors on pre-release versions of the CDK
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /airbyte/integration_code
+
+COPY . ./
+
+# Conditionally copy and execute the extra build script if provided
+RUN if [ -n "${EXTRA_PREREQS_SCRIPT}" ]; then \
+        cp ${EXTRA_PREREQS_SCRIPT} ./extra_prereqs_script && \
+        ./extra_prereqs_script; \
+    fi
+
+# Until PEP 751 is adopted, we have to install with Poetry in order
+# to respect the `poetry.lock` file.
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi --without=dev
+
+# Now build the final stage
+FROM ${BASE_IMAGE}
+ARG CONNECTOR_NAME
+ARG BASE_IMAGE
+
+WORKDIR /airbyte/integration_code
+
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /airbyte/integration_code /airbyte/integration_code
+COPY --chmod=755 <<EOT /entrypoint.sh
+#!/usr/bin/env bash
+set -e
+
+${CONNECTOR_NAME} "\$\@"
+EOT
+
+# Set the non-root user
+USER airbyte
+
+ENV AIRBYTE_ENTRYPOINT="/entrypoint.sh"
+ENTRYPOINT ["/entrypoint.sh"]

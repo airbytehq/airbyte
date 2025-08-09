@@ -38,6 +38,17 @@ This page contains the setup guide and reference information for the Gridly sour
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.40 | 2025-05-24 | [60679](https://github.com/airbytehq/airbyte/pull/60679) | Update dependencies |
+| 0.1.39 | 2025-05-10 | [59904](https://github.com/airbytehq/airbyte/pull/59904) | Update dependencies |
+| 0.1.38 | 2025-05-03 | [59241](https://github.com/airbytehq/airbyte/pull/59241) | Update dependencies |
+| 0.1.37 | 2025-04-26 | [58758](https://github.com/airbytehq/airbyte/pull/58758) | Update dependencies |
+| 0.1.36 | 2025-04-19 | [57667](https://github.com/airbytehq/airbyte/pull/57667) | Update dependencies |
+| 0.1.35 | 2025-04-05 | [57090](https://github.com/airbytehq/airbyte/pull/57090) | Update dependencies |
+| 0.1.34 | 2025-03-29 | [56648](https://github.com/airbytehq/airbyte/pull/56648) | Update dependencies |
+| 0.1.33 | 2025-03-22 | [55501](https://github.com/airbytehq/airbyte/pull/55501) | Update dependencies |
+| 0.1.32 | 2025-03-01 | [54806](https://github.com/airbytehq/airbyte/pull/54806) | Update dependencies |
+| 0.1.31 | 2025-02-22 | [54286](https://github.com/airbytehq/airbyte/pull/54286) | Update dependencies |
+| 0.1.30 | 2025-02-15 | [53845](https://github.com/airbytehq/airbyte/pull/53845) | Update dependencies |
 | 0.1.29 | 2025-02-01 | [52727](https://github.com/airbytehq/airbyte/pull/52727) | Update dependencies |
 | 0.1.28 | 2025-01-25 | [51796](https://github.com/airbytehq/airbyte/pull/51796) | Update dependencies |
 | 0.1.27 | 2025-01-11 | [51195](https://github.com/airbytehq/airbyte/pull/51195) | Update dependencies |

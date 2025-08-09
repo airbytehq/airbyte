@@ -10,9 +10,12 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest
 import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeTypeAndDedupe
 import io.airbyte.integrations.destination.postgres.*
 import java.util.List
+import java.util.Optional
 import org.jooq.DataType
 import org.jooq.Field
 import org.jooq.SQLDialect
@@ -35,7 +38,12 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
         get() = PostgresSqlGenerator.JSONB_TYPE
 
     override val sqlGenerator: JdbcSqlGenerator
-        get() = PostgresSqlGenerator(PostgresSQLNameTransformer(), false)
+        get() =
+            PostgresSqlGenerator(
+                PostgresSQLNameTransformer(),
+                cascadeDrop = false,
+                unconstrainedNumber = false
+            )
 
     override val destinationHandler: DestinationHandler<PostgresState>
         get() = PostgresDestinationHandler(databaseName, Companion.database!!, namespace, mock())
@@ -65,7 +73,12 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
     @Throws(Exception::class)
     fun testCascadeDrop() {
         // Explicitly create a sqlgenerator with cascadeDrop=true
-        val generator = PostgresSqlGenerator(PostgresSQLNameTransformer(), true)
+        val generator =
+            PostgresSqlGenerator(
+                PostgresSQLNameTransformer(),
+                cascadeDrop = true,
+                unconstrainedNumber = false
+            )
         // Create a table, then create a view referencing it
         destinationHandler.execute(generator.createTable(incrementalAppendStream, "", false))
         Companion.database!!.execute(
@@ -106,7 +119,12 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
         // Create a sql generator with cascadeDrop=false (this simulates what the framework passes
         // from the
         // config).
-        val generator = PostgresSqlGenerator(PostgresSQLNameTransformer(), false)
+        val generator =
+            PostgresSqlGenerator(
+                PostgresSQLNameTransformer(),
+                cascadeDrop = false,
+                unconstrainedNumber = false
+            )
 
         // Create a table in the test namespace with a default name.
         destinationHandler.execute(generator.createTable(incrementalAppendStream, "", false))
@@ -146,6 +164,65 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
         Assertions.assertTrue(
             t.message ==
                 "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter"
+        )
+    }
+
+    @Test
+    fun testUnconstrainedNumber() {
+        val generator =
+            PostgresSqlGenerator(
+                PostgresSQLNameTransformer(),
+                cascadeDrop = false,
+                unconstrainedNumber = true,
+            )
+
+        createRawTable(streamId)
+        destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false))
+        insertRawTableRecords(
+            streamId,
+            listOf(
+                Jsons.deserialize(
+                    """
+                        {
+                          "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce",
+                          "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                          "_airbyte_data": {
+                            "id1": 6,
+                            "id2": 100,
+                            "updated_at": "2023-01-01T01:00:00Z",
+                            "number": 10325.876543219876543
+                          }
+                        }
+                    """.trimIndent()
+                )
+            )
+        )
+
+        executeTypeAndDedupe(
+            generator,
+            destinationHandler,
+            incrementalDedupStream,
+            Optional.empty(),
+            ""
+        )
+
+        DIFFER.diffFinalTableRecords(
+            listOf(
+                Jsons.deserialize(
+                    """
+                        {
+                          "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce",
+                          "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z",
+                          "_airbyte_meta": {"changes":[],"sync_id":null},
+                          "id1": 6,
+                          "id2": 100,
+                          "updated_at": "2023-01-01T01:00:00.000000Z",
+                          "number": 10325.876543219876543
+                        }
+                    """.trimIndent()
+                )
+            ),
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 

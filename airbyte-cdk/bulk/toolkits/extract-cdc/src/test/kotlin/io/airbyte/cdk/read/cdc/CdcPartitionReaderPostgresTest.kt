@@ -73,26 +73,15 @@ class CdcPartitionReaderPostgresTest :
             connection.createStatement().use { fn(it) }
         }
 
-    override fun createDebeziumOperations(): DebeziumOperations<LogSequenceNumber> =
-        PostgresTestDebeziumOperations()
+    override fun createCdcPartitionsCreatorDbzOps() = TestCdcPartitionsCreatorDbzOps()
 
-    inner class PostgresTestDebeziumOperations :
-        AbstractDebeziumOperationsForTest<LogSequenceNumber>() {
+    override fun createCdcPartitionReaderDbzOps() = TestCdcPartitionReaderDbzOps()
+
+    inner class TestCdcPartitionsCreatorDbzOps :
+        AbstractCdcPartitionsCreatorDbzOps<LogSequenceNumber>() {
         override fun position(offset: DebeziumOffset): LogSequenceNumber {
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
             return LogSequenceNumber.valueOf(offsetValue["lsn"].asLong())
-        }
-
-        override fun position(recordValue: DebeziumRecordValue): LogSequenceNumber? {
-            val lsn: Long =
-                recordValue.source["lsn"]?.takeIf { it.isIntegralNumber }?.asLong() ?: return null
-            return LogSequenceNumber.valueOf(lsn)
-        }
-
-        override fun position(sourceRecord: SourceRecord): LogSequenceNumber? {
-            val offset: Map<String, *> = sourceRecord.sourceOffset()
-            val lsn: Long = offset["lsn"] as? Long ?: return null
-            return LogSequenceNumber.valueOf(lsn)
         }
 
         override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
@@ -115,7 +104,7 @@ class CdcPartitionReaderPostgresTest :
                 .withStreams(streams)
                 .buildMap()
 
-        override fun generateColdStartProperties(): Map<String, String> =
+        override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
             generateWarmStartProperties(emptyList())
 
         override fun generateColdStartOffset(): DebeziumOffset {
@@ -139,6 +128,21 @@ class CdcPartitionReaderPostgresTest :
                     put("txId", txID)
                 }
             return DebeziumOffset(mapOf(key to value))
+        }
+    }
+
+    inner class TestCdcPartitionReaderDbzOps :
+        AbstractCdcPartitionReaderDbzOps<LogSequenceNumber>() {
+        override fun position(recordValue: DebeziumRecordValue): LogSequenceNumber? {
+            val lsn: Long =
+                recordValue.source["lsn"]?.takeIf { it.isIntegralNumber }?.asLong() ?: return null
+            return LogSequenceNumber.valueOf(lsn)
+        }
+
+        override fun position(sourceRecord: SourceRecord): LogSequenceNumber? {
+            val offset: Map<String, *> = sourceRecord.sourceOffset()
+            val lsn: Long = offset["lsn"] as? Long ?: return null
+            return LogSequenceNumber.valueOf(lsn)
         }
     }
 }

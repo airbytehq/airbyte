@@ -79,7 +79,7 @@ class AirbyteValueIdentityMapperTest {
                             ),
                         ),
                     "array" to f(ArrayType(f(IntegerType))),
-                    "union" to f(UnionType(setOf(IntegerType, BooleanType))),
+                    "union" to f(UnionType(setOf(IntegerType, BooleanType), isLegacyUnion = false)),
                 )
             )
         val value =

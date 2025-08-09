@@ -71,6 +71,26 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.1.52 | 2025-08-09 | [64610](https://github.com/airbytehq/airbyte/pull/64610) | Update dependencies |
+| 0.1.51 | 2025-07-19 | [63485](https://github.com/airbytehq/airbyte/pull/63485) | Update dependencies |
+| 0.1.50 | 2025-07-12 | [63140](https://github.com/airbytehq/airbyte/pull/63140) | Update dependencies |
+| 0.1.49 | 2025-07-05 | [62542](https://github.com/airbytehq/airbyte/pull/62542) | Update dependencies |
+| 0.1.48 | 2025-06-28 | [62187](https://github.com/airbytehq/airbyte/pull/62187) | Update dependencies |
+| 0.1.47 | 2025-06-21 | [61841](https://github.com/airbytehq/airbyte/pull/61841) | Update dependencies |
+| 0.1.46 | 2025-06-14 | [61113](https://github.com/airbytehq/airbyte/pull/61113) | Update dependencies |
+| 0.1.45 | 2025-05-24 | [60657](https://github.com/airbytehq/airbyte/pull/60657) | Update dependencies |
+| 0.1.44 | 2025-05-10 | [59816](https://github.com/airbytehq/airbyte/pull/59816) | Update dependencies |
+| 0.1.43 | 2025-05-03 | [59226](https://github.com/airbytehq/airbyte/pull/59226) | Update dependencies |
+| 0.1.42 | 2025-04-26 | [58751](https://github.com/airbytehq/airbyte/pull/58751) | Update dependencies |
+| 0.1.41 | 2025-04-19 | [58211](https://github.com/airbytehq/airbyte/pull/58211) | Update dependencies |
+| 0.1.40 | 2025-04-12 | [57711](https://github.com/airbytehq/airbyte/pull/57711) | Update dependencies |
+| 0.1.39 | 2025-04-05 | [57025](https://github.com/airbytehq/airbyte/pull/57025) | Update dependencies |
+| 0.1.38 | 2025-03-29 | [56654](https://github.com/airbytehq/airbyte/pull/56654) | Update dependencies |
+| 0.1.37 | 2025-03-22 | [56042](https://github.com/airbytehq/airbyte/pull/56042) | Update dependencies |
+| 0.1.36 | 2025-03-08 | [55425](https://github.com/airbytehq/airbyte/pull/55425) | Update dependencies |
+| 0.1.35 | 2025-03-01 | [54788](https://github.com/airbytehq/airbyte/pull/54788) | Update dependencies |
+| 0.1.34 | 2025-02-22 | [54320](https://github.com/airbytehq/airbyte/pull/54320) | Update dependencies |
+| 0.1.33 | 2025-02-15 | [53817](https://github.com/airbytehq/airbyte/pull/53817) | Update dependencies |
 | 0.1.32 | 2025-02-01 | [52788](https://github.com/airbytehq/airbyte/pull/52788) | Update dependencies |
 | 0.1.31 | 2025-01-25 | [51787](https://github.com/airbytehq/airbyte/pull/51787) | Update dependencies |
 | 0.1.30 | 2025-01-11 | [51171](https://github.com/airbytehq/airbyte/pull/51171) | Update dependencies |

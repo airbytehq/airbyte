@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.file.object_storage
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
-import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.micronaut.context.annotation.Secondary
@@ -18,14 +18,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.UUID
 
 interface PathFactory {
-    fun getLongestStreamConstantPrefix(stream: DestinationStream, isStaging: Boolean): String
-    fun getStagingDirectory(
-        stream: DestinationStream,
-        substituteStreamAndNamespaceOnly: Boolean = false
-    ): String
+    fun getLongestStreamConstantPrefix(stream: DestinationStream): String
     fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean = false
@@ -33,12 +29,10 @@ interface PathFactory {
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        isStaging: Boolean = false,
         extension: String? = null
     ): String
     fun getPathMatcher(stream: DestinationStream, suffixPattern: String? = null): PathMatcher
 
-    val supportsStaging: Boolean
     val finalPrefix: String
 }
 
@@ -84,21 +78,8 @@ class ObjectStoragePathFactory(
 ) : PathFactory {
     // Resolved configuration
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
-    override val supportsStaging: Boolean = pathConfig.usesStagingDirectory
 
-    // Resolved bucket path prefixes
-    private val stagingPrefixResolved =
-        pathConfig.stagingPrefix
-            ?: Paths.get(pathConfig.prefix, DEFAULT_STAGING_PREFIX_SUFFIX).toString()
-    private val stagingPrefix: String
-        get() =
-            if (!pathConfig.usesStagingDirectory) {
-                throw UnsupportedOperationException(
-                    "Staging is not supported by this configuration"
-                )
-            } else {
-                stagingPrefixResolved
-            }
+    // Resolved bucket path prefix
     override val finalPrefix: String =
         if (pathConfig.prefix.endsWith('/')) {
             pathConfig.prefix.take(pathConfig.prefix.length - 1)
@@ -107,7 +88,7 @@ class ObjectStoragePathFactory(
         }
 
     // Resolved path and filename patterns
-    private val pathPatternResolved = pathConfig.pathSuffixPattern ?: DEFAULT_PATH_FORMAT
+    private val pathPatternResolved = pathConfig.pathPattern ?: DEFAULT_PATH_FORMAT
     private val filePatternResolved = pathConfig.fileNamePattern ?: DEFAULT_FILE_FORMAT
 
     // Resolved file extensions
@@ -121,6 +102,11 @@ class ObjectStoragePathFactory(
         } else {
             fileFormatExtension ?: compressionExtension
         }
+
+    private val pathVariablesConstant = getPathVariables(pathConfig)
+
+    private val pathVariablesStreamConstant =
+        pathVariablesConstant.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
 
     /**
      * Variable substitution is complex.
@@ -180,6 +166,53 @@ class ObjectStoragePathFactory(
         override fun toMacro(): String = "{$variable}"
     }
 
+    private fun getPathVariables(pathConfig: ObjectStoragePathConfiguration): List<PathVariable> {
+        return listOf(
+            PathVariable("SYNC_ID") { pathConfig.resolveNamesMethod(it.stream.syncId.toString()) },
+            PathVariable("NAMESPACE") {
+                pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.namespace ?: "")
+            },
+            PathVariable("STREAM_NAME") {
+                pathConfig.resolveNamesMethod(it.stream.mappedDescriptor.name)
+            },
+            PathVariable("YEAR", """\d{4}""") {
+                ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
+            },
+            PathVariable("MONTH", """\d{2}""") {
+                String.format(
+                    "%02d",
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).monthValue
+                )
+            },
+            PathVariable("DAY", """\d{2}""") {
+                String.format(
+                    "%02d",
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).dayOfMonth
+                )
+            },
+            PathVariable("HOUR", """\d{2}""") {
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).hour)
+            },
+            PathVariable("MINUTE", """\d{2}""") {
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).minute)
+            },
+            PathVariable("SECOND", """\d{2}""") {
+                String.format("%02d", ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).second)
+            },
+            PathVariable("MILLISECOND", """\d{4}""") {
+                // Unclear why this is %04d, but that's what it was in the old code
+                String.format(
+                    "%04d",
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC"))
+                        .toLocalTime()
+                        .toNanoOfDay() / 1_000_000 % 1_000
+                )
+            },
+            PathVariable("EPOCH", """\d+""") { it.syncTime.toEpochMilli().toString() },
+            PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
+        )
+    }
+
     companion object {
         private val DATE_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyy_MM_dd").withZone(ZoneId.systemDefault())
@@ -188,61 +221,7 @@ class ObjectStoragePathFactory(
         const val DEFAULT_PATH_FORMAT =
             "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_"
         const val DEFAULT_FILE_FORMAT = "{part_number}{format_extension}"
-        val PATH_VARIABLES =
-            listOf(
-                PathVariable("NAMESPACE") {
-                    Transformations.toS3SafeCharacters(it.stream.descriptor.namespace ?: "")
-                },
-                PathVariable("STREAM_NAME") {
-                    Transformations.toS3SafeCharacters(it.stream.descriptor.name)
-                },
-                PathVariable("YEAR", """\d{4}""") {
-                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
-                },
-                PathVariable("MONTH", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).monthValue
-                    )
-                },
-                PathVariable("DAY", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).dayOfMonth
-                    )
-                },
-                PathVariable("HOUR", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).hour
-                    )
-                },
-                PathVariable("MINUTE", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).minute
-                    )
-                },
-                PathVariable("SECOND", """\d{2}""") {
-                    String.format(
-                        "%02d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).second
-                    )
-                },
-                PathVariable("MILLISECOND", """\d{4}""") {
-                    // Unclear why this is %04d, but that's what it was in the old code
-                    String.format(
-                        "%04d",
-                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC"))
-                            .toLocalTime()
-                            .toNanoOfDay() / 1_000_000 % 1_000
-                    )
-                },
-                PathVariable("EPOCH", """\d+""") { it.syncTime.toEpochMilli().toString() },
-                PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
-            )
-        val PATH_VARIABLES_STREAM_CONSTANT =
-            PATH_VARIABLES.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
+
         val FILENAME_VARIABLES =
             listOf(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") {
@@ -292,20 +271,6 @@ class ObjectStoragePathFactory(
         }
     }
 
-    override fun getStagingDirectory(
-        stream: DestinationStream,
-        substituteStreamAndNamespaceOnly: Boolean
-    ): String {
-        val path =
-            getFormattedPath(
-                stream,
-                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES,
-                isStaging = true
-            )
-        return resolveRetainingTerminalSlash(path)
-    }
-
     override fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
@@ -313,39 +278,27 @@ class ObjectStoragePathFactory(
         val path =
             getFormattedPath(
                 stream,
-                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES,
-                isStaging = false
+                if (substituteStreamAndNamespaceOnly) pathVariablesStreamConstant
+                else pathVariablesConstant,
             )
         return resolveRetainingTerminalSlash(path)
     }
 
     override fun getLongestStreamConstantPrefix(
         stream: DestinationStream,
-        isStaging: Boolean
     ): String {
-        return if (isStaging) {
-                getStagingDirectory(stream, substituteStreamAndNamespaceOnly = true)
-            } else {
-                getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true)
-            }
-            .takeWhile { it != '$' }
+        return getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true).takeWhile {
+            it != '$'
+        }
     }
 
     override fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        isStaging: Boolean,
         extension: String?
     ): String {
         val extensionResolved = extension ?: defaultExtension
-        val path =
-            if (isStaging) {
-                    getStagingDirectory(stream)
-                } else {
-                    getFinalDirectory(stream)
-                }
-                .toString()
+        val path = getFinalDirectory(stream)
         val context =
             VariableContext(stream, extension = extensionResolved, partNumber = partNumber)
         val fileName = getFormattedFileName(context)
@@ -356,11 +309,9 @@ class ObjectStoragePathFactory(
 
     private fun getFormattedPath(
         stream: DestinationStream,
-        variables: List<PathVariable> = PATH_VARIABLES,
-        isStaging: Boolean
+        variables: List<PathVariable> = pathVariablesConstant,
     ): String {
-        val selectedPrefix = if (isStaging) stagingPrefix else finalPrefix
-        val pattern = resolveRetainingTerminalSlash(selectedPrefix, pathPatternResolved)
+        val pattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
         val context = VariableContext(stream)
         return variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
     }
@@ -373,7 +324,7 @@ class ObjectStoragePathFactory(
     }
 
     private fun getPathVariableToPattern(stream: DestinationStream): Map<String, String> {
-        return PATH_VARIABLES.associate {
+        return pathVariablesConstant.associate {
             it.variable to
                 (
                 // Only escape the pattern if

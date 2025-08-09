@@ -4,29 +4,29 @@ data:
       - api.pagerduty.com
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-pagerduty
   registryOverrides:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.3.18
   dockerRepository: airbyte/source-pagerduty
   githubIssueLabel: source-pagerduty
   icon: pagerduty.svg
-  license: MIT
+  license: ELv2
   name: Pagerduty
   releaseDate: 2023-10-10
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pagerduty
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
@@ -43,5 +43,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
 metadataSpecVersion: "1.0"

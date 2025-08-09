@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.s3.amazonaws.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.1@sha256:111cbcb26795adcd42b03c3f29c8b6b7adbbfcb5c5192a520d9b8d399a976b22
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 4.12.1
+  dockerImageTag: 4.14.2
   dockerRepository: airbyte/source-s3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   githubIssueLabel: source-s3
@@ -25,8 +25,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: "4.14.1"
     oss:
       enabled: true
+      dockerImageTag: "4.14.1"
   releaseStage: generally_available
   releases:
     rolloutConfiguration:

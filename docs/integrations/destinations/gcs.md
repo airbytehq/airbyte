@@ -42,7 +42,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | Feature                        | Support | Notes                                                                                                                                                                                                    |
 | :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
-| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/platform/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
 | Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
 | Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
 
@@ -241,11 +241,12 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
-| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.8 | 2025-01-10 | [51479](https://github.com/airbytehq/airbyte/pull/51479) | Use a non root base image |
-| 0.4.7 | 2024-12-18 | [49884](https://github.com/airbytehq/airbyte/pull/49884) | Use a base image: airbyte/java-connector-base:1.0.0 |
-| 0.4.6 | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285) | Adopt CDK 0.20.8 |
-| 0.4.5 | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0 |
+|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
+| 0.4.9   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906)   | Use M4 Compatible base image.                                                                                              |
+| 0.4.8   | 2025-01-10 | [51479](https://github.com/airbytehq/airbyte/pull/51479)   | Use a non root base image                                                                                                  |
+| 0.4.7   | 2024-12-18 | [49884](https://github.com/airbytehq/airbyte/pull/49884)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                        |
+| 0.4.6   | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285)   | Adopt CDK 0.20.8                                                                                                           |
+| 0.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745)   | Adopt CDK 0.19.0                                                                                                           |
 | 0.4.4   | 2023-07-14 | [#28345](https://github.com/airbytehq/airbyte/pull/28345)  | Increment patch to trigger a rebuild                                                                                       |
 | 0.4.3   | 2023-07-05 | [#27936](https://github.com/airbytehq/airbyte/pull/27936)  | Internal code update                                                                                                       |
 | 0.4.2   | 2023-06-30 | [#27891](https://github.com/airbytehq/airbyte/pull/27891)  | Internal code update                                                                                                       |

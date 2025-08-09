@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -50,8 +51,8 @@ class CdcPartitionsCreatorTest {
             configuredPrimaryKey = null,
             configuredCursor = TestMetaFieldDecorator.GlobalCursor,
         )
-
-    val global = Global(listOf(stream))
+    val streams = listOf(stream)
+    val global = Global(streams)
 
     val lowerBoundReference = AtomicReference<CreatorPosition>(null)
     val upperBoundReference = AtomicReference<CreatorPosition>(null)
@@ -61,6 +62,7 @@ class CdcPartitionsCreatorTest {
         get() =
             CdcPartitionsCreator(
                 concurrencyResource,
+                ResourceAcquirer(listOf()),
                 globalFeedBootstrap,
                 creatorOps,
                 readerOps,
@@ -80,8 +82,8 @@ class CdcPartitionsCreatorTest {
         every { creatorOps.position(syntheticOffset) } returns 123L
         every { creatorOps.position(incumbentOffset) } returns 123L
         every { creatorOps.generateColdStartOffset() } returns syntheticOffset
-        every { creatorOps.generateColdStartProperties() } returns emptyMap()
-        every { creatorOps.generateWarmStartProperties(listOf(stream)) } returns emptyMap()
+        every { creatorOps.generateColdStartProperties(streams) } returns emptyMap()
+        every { creatorOps.generateWarmStartProperties(streams) } returns emptyMap()
     }
 
     @Test

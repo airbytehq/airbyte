@@ -4,13 +4,16 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.io
 
-import io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter.RowDataDeltaWriter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.BaseDeltaTaskWriter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.FileAppenderFactory
@@ -42,7 +45,7 @@ internal class BaseDeltaTaskWriterTest {
             )
         val primaryKeyIds = setOf(1)
         val schema = Schema(columns, primaryKeyIds)
-        val deltaWriter: RowDataDeltaWriter = mockk {
+        val deltaWriter: BaseDeltaTaskWriter.RowDataDeltaWriter = mockk {
             every { deleteKey(any()) } returns Unit
             every { write(any()) } returns Unit
         }
@@ -92,7 +95,7 @@ internal class BaseDeltaTaskWriterTest {
                 Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
             )
         val schema = Schema(columns)
-        val deltaWriter: RowDataDeltaWriter = mockk {
+        val deltaWriter: BaseDeltaTaskWriter.RowDataDeltaWriter = mockk {
             every { deleteKey(any()) } returns Unit
             every { write(any()) } returns Unit
         }
@@ -126,6 +129,7 @@ internal class BaseDeltaTaskWriterTest {
         val deltaWriter: RowDataDeltaWriter,
     ) :
         BaseDeltaTaskWriter(
+            mockk<Table>(),
             spec,
             format,
             appenderFactory,

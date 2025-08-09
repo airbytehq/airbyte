@@ -40,6 +40,17 @@ In order to connect, you need:
 
 | Version | Date       | Pull Request                                              | Subject                        |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------- |
+| 0.1.46 | 2025-05-10 | [59351](https://github.com/airbytehq/airbyte/pull/59351) | Update dependencies |
+| 0.1.45 | 2025-04-26 | [58703](https://github.com/airbytehq/airbyte/pull/58703) | Update dependencies |
+| 0.1.44 | 2025-04-19 | [58292](https://github.com/airbytehq/airbyte/pull/58292) | Update dependencies |
+| 0.1.43 | 2025-04-12 | [57616](https://github.com/airbytehq/airbyte/pull/57616) | Update dependencies |
+| 0.1.42 | 2025-04-05 | [57129](https://github.com/airbytehq/airbyte/pull/57129) | Update dependencies |
+| 0.1.41 | 2025-03-29 | [56553](https://github.com/airbytehq/airbyte/pull/56553) | Update dependencies |
+| 0.1.40 | 2025-03-22 | [56148](https://github.com/airbytehq/airbyte/pull/56148) | Update dependencies |
+| 0.1.39 | 2025-03-08 | [55351](https://github.com/airbytehq/airbyte/pull/55351) | Update dependencies |
+| 0.1.38 | 2025-03-01 | [54894](https://github.com/airbytehq/airbyte/pull/54894) | Update dependencies |
+| 0.1.37 | 2025-02-22 | [54226](https://github.com/airbytehq/airbyte/pull/54226) | Update dependencies |
+| 0.1.36 | 2025-02-15 | [53937](https://github.com/airbytehq/airbyte/pull/53937) | Update dependencies |
 | 0.1.35 | 2025-02-01 | [52929](https://github.com/airbytehq/airbyte/pull/52929) | Update dependencies |
 | 0.1.34 | 2025-01-25 | [52204](https://github.com/airbytehq/airbyte/pull/52204) | Update dependencies |
 | 0.1.33 | 2025-01-18 | [51761](https://github.com/airbytehq/airbyte/pull/51761) | Update dependencies |

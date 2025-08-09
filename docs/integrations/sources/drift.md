@@ -56,6 +56,28 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.32 | 2025-08-09 | [64363](https://github.com/airbytehq/airbyte/pull/64363) | Update dependencies |
+| 0.4.31 | 2025-07-26 | [63987](https://github.com/airbytehq/airbyte/pull/63987) | Update dependencies |
+| 0.4.30 | 2025-07-19 | [63545](https://github.com/airbytehq/airbyte/pull/63545) | Update dependencies |
+| 0.4.29 | 2025-07-12 | [62982](https://github.com/airbytehq/airbyte/pull/62982) | Update dependencies |
+| 0.4.28 | 2025-07-05 | [62755](https://github.com/airbytehq/airbyte/pull/62755) | Update dependencies |
+| 0.4.27 | 2025-06-28 | [62430](https://github.com/airbytehq/airbyte/pull/62430) | Update dependencies |
+| 0.4.26 | 2025-06-22 | [61990](https://github.com/airbytehq/airbyte/pull/61990) | Update dependencies |
+| 0.4.25 | 2025-06-14 | [61286](https://github.com/airbytehq/airbyte/pull/61286) | Update dependencies |
+| 0.4.24 | 2025-05-24 | [60398](https://github.com/airbytehq/airbyte/pull/60398) | Update dependencies |
+| 0.4.23 | 2025-05-10 | [60022](https://github.com/airbytehq/airbyte/pull/60022) | Update dependencies |
+| 0.4.22 | 2025-05-03 | [59445](https://github.com/airbytehq/airbyte/pull/59445) | Update dependencies |
+| 0.4.21 | 2025-04-26 | [58866](https://github.com/airbytehq/airbyte/pull/58866) | Update dependencies |
+| 0.4.20 | 2025-04-19 | [58319](https://github.com/airbytehq/airbyte/pull/58319) | Update dependencies |
+| 0.4.19 | 2025-04-12 | [57841](https://github.com/airbytehq/airbyte/pull/57841) | Update dependencies |
+| 0.4.18 | 2025-04-05 | [57235](https://github.com/airbytehq/airbyte/pull/57235) | Update dependencies |
+| 0.4.17 | 2025-03-29 | [56482](https://github.com/airbytehq/airbyte/pull/56482) | Update dependencies |
+| 0.4.16 | 2025-03-22 | [55952](https://github.com/airbytehq/airbyte/pull/55952) | Update dependencies |
+| 0.4.15 | 2025-03-08 | [55300](https://github.com/airbytehq/airbyte/pull/55300) | Update dependencies |
+| 0.4.14 | 2025-03-01 | [54980](https://github.com/airbytehq/airbyte/pull/54980) | Update dependencies |
+| 0.4.13 | 2025-02-22 | [54435](https://github.com/airbytehq/airbyte/pull/54435) | Update dependencies |
+| 0.4.12 | 2025-02-15 | [53727](https://github.com/airbytehq/airbyte/pull/53727) | Update dependencies |
+| 0.4.11 | 2025-02-08 | [53348](https://github.com/airbytehq/airbyte/pull/53348) | Update dependencies |
 | 0.4.10 | 2025-02-01 | [52822](https://github.com/airbytehq/airbyte/pull/52822) | Update dependencies |
 | 0.4.9 | 2025-01-25 | [52344](https://github.com/airbytehq/airbyte/pull/52344) | Update dependencies |
 | 0.4.8 | 2025-01-18 | [51641](https://github.com/airbytehq/airbyte/pull/51641) | Update dependencies |

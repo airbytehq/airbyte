@@ -98,9 +98,9 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("ssl_mode")
     @JsonSchemaTitle("Encryption")
     @JsonPropertyDescription(
-        "The encryption method with is used when communicating with the database.",
+        "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8}""")
+    @JsonSchemaInject(json = """{"order":8,"default":"required"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -151,10 +151,19 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
-    @JsonSchemaInject(json = """{"order":12}""")
+    // Hidden and maintened for backwards compatibility.
+    @JsonSchemaInject(json = """{"order":12,"airbyte_hidden":true}""")
     @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
+
+    @JsonProperty("max_db_connections")
+    @JsonSchemaTitle("Max Concurrent Queries to Database")
+    @JsonSchemaInject(json = """{"order":12}""")
+    @JsonPropertyDescription(
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+    )
+    var max_db_connections: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
@@ -285,7 +294,7 @@ class SslVerifyIdentity : EncryptionSpecification {
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.ssl_mode")
 class MicronautPropertiesFriendlyEncryptionSpecification {
-    var mode: String = "preferred"
+    var mode: String = "required"
     var sslCertificate: String? = null
 
     @JsonValue
@@ -334,9 +343,9 @@ class Cdc : IncrementalConfigurationSpecification {
     var serverTimezone: String? = null
 
     @JsonProperty("invalid_cdc_cursor_position_behavior")
-    @JsonSchemaTitle("Configured server timezone for the MySQL source (Advanced)")
+    @JsonSchemaTitle("Invalid CDC Position Behavior (Advanced)")
     @JsonPropertyDescription(
-        "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
+        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(
