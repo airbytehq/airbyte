@@ -1,5 +1,12 @@
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.xpath.XPath
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
+import org.w3c.dom.Document
+
 allprojects {
-    version = "0.1.9"
+    version = "0.1.10"
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
@@ -76,9 +83,18 @@ tasks.register('checkBuildNumber') {
             if (responseCode != 200) {
                 throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
             }
-            String responseContent = connection.inputStream.text
-            def xml = new XmlParser().parseText(responseContent)
-            String latestVersion = xml."versioning"."latest".text()
+            InputStream responseContent = connection.inputStream
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+            DocumentBuilder builder = factory.newDocumentBuilder()
+            Document doc = builder.parse(responseContent); // Replace with your XML file path
+
+            doc.getDocumentElement().normalize()
+
+            XPath xpath = XPathFactory.newInstance().newXPath()
+
+            String expression = "/metadata/versioning/latest"
+
+            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
             if (version.toString() == latestVersion) {
                 throw new GradleException("Version already exist")
             }
