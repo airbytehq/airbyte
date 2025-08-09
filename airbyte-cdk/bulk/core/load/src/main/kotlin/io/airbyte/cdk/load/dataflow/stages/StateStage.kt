@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.dataflow.stages
 
 import io.airbyte.cdk.load.dataflow.DataFlowStage
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
-import io.airbyte.cdk.load.dataflow.state.StateWatermarkStore
+import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -14,14 +14,14 @@ import jakarta.inject.Singleton
 @Named("state")
 @Singleton
 class StateStage(
-    val stateStore: StateWatermarkStore,
+    val stateStore: StateStore,
 ) : DataFlowStage {
     private val log = KotlinLogging.logger {}
 
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val stateUpdates = input.partitionHistogram!!
 
-        stateStore.acceptAggregateCounts(stateUpdates)
+        stateStore.acceptFlushedCounts(stateUpdates)
 
         return input
     }
