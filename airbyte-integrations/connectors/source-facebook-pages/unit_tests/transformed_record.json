@@ -231,7 +231,7 @@
         "before": "cursor",
         "after": "cursor"
       },
-      "next": "https://graph.facebook.com/v19.0/"
+      "next": "https://graph.facebook.com/v21.0/"
     }
   },
   "indexed_videos": {
