@@ -55,28 +55,27 @@ An example of the chart output:
 
 ```text
 NAME                               	CHART VERSION	APP VERSION	DESCRIPTION                                       
-airbyte/airbyte                    	1.7.1        	1.7.1      	Helm chart to deploy airbyte                      
+airbyte/airbyte                    	1.8.0        	1.8.0      	Helm chart to deploy airbyte                      
 airbyte/airbyte-api-server         	0.293.4      	0.63.8     	Helm chart to deploy airbyte-api-server           
-airbyte/airbyte-bootloader         	1.7.1        	1.7.1      	Helm chart to deploy airbyte-bootloader           
+airbyte/airbyte-bootloader         	1.8.0        	1.8.0      	Helm chart to deploy airbyte-bootloader           
 airbyte/airbyte-cron               	0.40.37      	0.40.17    	Helm chart to deploy airbyte-cron                 
 airbyte/airbyte-data-plane         	1.6.0        	1.6.0      	A Helm chart for installing an Airbyte Data Plane.
 airbyte/airbyte-keycloak           	0.1.2        	0.1.0      	A Helm chart for Kubernetes                       
 airbyte/airbyte-workload-api-server	0.49.18      	0.50.33    	Helm chart to deploy airbyte-api-server           
-airbyte/connector-builder-server   	1.7.1        	1.7.1      	Helm chart to deploy airbyte-connector-builder-...
-airbyte/connector-rollout-worker   	1.7.1        	1.7.1      	Helm chart to deploy airbyte-connector-rollout-...
-airbyte/cron                       	1.7.1        	1.7.1      	Helm chart to deploy airbyte-cron                 
-airbyte/keycloak                   	1.7.1        	1.7.1      	Helm chart to deploy airbyte-keycloak             
-airbyte/keycloak-setup             	1.7.1        	1.7.1      	Helm chart to deploy airbyte-keycloak-setup       
-airbyte/metrics                    	1.7.1        	1.7.1      	Helm chart to deploy airbyte-metrics              
+airbyte/connector-builder-server   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-connector-builder-...
+airbyte/connector-rollout-worker   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-connector-rollout-...
+airbyte/cron                       	1.8.0        	1.8.0      	Helm chart to deploy airbyte-cron                 
+airbyte/keycloak                   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-keycloak             
+airbyte/keycloak-setup             	1.8.0        	1.8.0      	Helm chart to deploy airbyte-keycloak-setup       
+airbyte/metrics                    	1.8.0        	1.8.0      	Helm chart to deploy airbyte-metrics              
 airbyte/pod-sweeper                	1.5.1        	1.5.1      	Helm chart to deploy airbyte-pod-sweeper          
-airbyte/server                     	1.7.1        	1.7.1      	Helm chart to deploy airbyte-server               
-airbyte/temporal                   	1.7.1        	1.7.1      	Helm chart to deploy airbyte-temporal             
-airbyte/temporal-ui                	1.7.1        	1.7.1      	Helm chart to deploy airbyte-temporal-ui          
-airbyte/webapp                     	1.7.1        	1.7.1      	Helm chart to deploy airbyte-webapp               
-airbyte/worker                     	1.7.1        	1.7.1      	Helm chart to deploy airbyte-worker               
+airbyte/server                     	1.8.0        	1.8.0      	Helm chart to deploy airbyte-server               
+airbyte/temporal                   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-temporal             
+airbyte/temporal-ui                	1.8.0        	1.8.0      	Helm chart to deploy airbyte-temporal-ui                      
+airbyte/worker                     	1.8.0        	1.8.0      	Helm chart to deploy airbyte-worker               
 airbyte/workload-api               	0.50.3       	0.50.35    	Helm chart to deploy the workload-api service     
-airbyte/workload-api-server        	1.7.1        	1.7.1      	Helm chart to deploy the workload-api service     
-airbyte/workload-launcher          	1.7.1        	1.7.1      	Helm chart to deploy airbyte-workload-launcher     
+airbyte/workload-api-server        	1.8.0        	1.8.0      	Helm chart to deploy the workload-api service     
+airbyte/workload-launcher          	1.8.0        	1.8.0      	Helm chart to deploy airbyte-workload-launcher     
 ```
 
 </TabItem>
@@ -95,7 +94,7 @@ An example of the chart output:
 
 ```text
 NAME              	CHART VERSION	APP VERSION	DESCRIPTION                 
-airbyte-v2/airbyte	2.0.7        	1.7.1      	Helm chart to deploy airbyte 
+airbyte-v2/airbyte	2.0.7        	1.8.0      	Helm chart to deploy airbyte 
 ```
 
 </TabItem>

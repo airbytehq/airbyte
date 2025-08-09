@@ -6,7 +6,7 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Custom image registry
 
-You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
+You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
 
 Implementing Airbyte this way has several advantages.
 
@@ -35,19 +35,18 @@ abctl images manifest
 You should see something like this:
 
 ```bash
-airbyte/bootloader:1.3.1
-airbyte/connector-builder-server:1.3.1
-airbyte/connector-sidecar:1.3.1
-airbyte/container-orchestrator:1.3.1
-airbyte/cron:1.3.1
-airbyte/db:1.3.1
+airbyte/bootloader:1.8.0
+airbyte/connector-builder-server:1.8.0
+airbyte/connector-sidecar:1.8.0
+airbyte/container-orchestrator:1.8.0
+airbyte/cron:1.8.0
+airbyte/db:1.8.0
 airbyte/mc:latest
-airbyte/server:1.3.1
-airbyte/webapp:1.3.1
-airbyte/worker:1.3.1
-airbyte/workload-api-server:1.3.1
-airbyte/workload-init-container:1.3.1
-airbyte/workload-launcher:1.3.1
+airbyte/server:1.8.0
+airbyte/worker:1.8.0
+airbyte/workload-api-server:1.8.0
+airbyte/workload-init-container:1.8.0
+airbyte/workload-launcher:1.8.0
 bitnami/kubectl:1.28.9
 busybox:1.35
 busybox:latest
