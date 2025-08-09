@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentMap
 /** A state generally refers to a single partition but can refer to many (namely, in CDC) */
 data class StateKey(
     val id: Long,
-    val partitionIds: List<String>,
+    val partitionKeys: List<PartitionKey>,
 ) : Comparable<StateKey> {
     override fun compareTo(other: StateKey): Int {
         return this.id.compareTo(other.id)

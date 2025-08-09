@@ -32,7 +32,8 @@ class SelfDescribingStateKeyClient : StateKeyClient {
 
     override fun getStateKey(msg: CheckpointMessage): StateKey {
         val ordinal = msg.checkpointOrdinalRaw!!.toLong()
-        return StateKey(ordinal, msg.checkpointPartitionIds)
+        val partitions = msg.checkpointPartitionIds.map { PartitionKey(it) }
+        return StateKey(ordinal, partitions)
     }
 }
 
@@ -52,6 +53,7 @@ class InferredStateKeyClient : StateKeyClient {
 
     override fun getStateKey(msg: CheckpointMessage): StateKey {
         val ordinal = internalCounter.getAndIncrement()
-        return StateKey(ordinal, listOf(ordinal.toString()))
+        val partitions = listOf(PartitionKey(ordinal.toString()))
+        return StateKey(ordinal, partitions)
     }
 }
