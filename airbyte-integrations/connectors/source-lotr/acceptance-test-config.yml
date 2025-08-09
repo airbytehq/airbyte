@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-lotr:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "This connector uses a public API and does not require authentication"
+  discovery:
+    bypass_reason: "This connector uses a public API and does not require authentication"
+  basic_read:
+    bypass_reason: "This connector uses a public API and does not require authentication"
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  full_refresh:
+    bypass_reason: "This connector uses a public API and does not require authentication"
