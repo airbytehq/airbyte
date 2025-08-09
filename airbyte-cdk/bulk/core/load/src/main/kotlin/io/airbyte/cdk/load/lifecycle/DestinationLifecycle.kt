@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.lifecycle
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.DataFlowPipeline
 import io.airbyte.cdk.load.write.DestinationWriter
+import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.async
@@ -27,10 +28,12 @@ class DestinationLifecycle(
 
         // Create prepare individual streams for the data ingestion. E.g create tables and propagate
         // the schema updates
-        initializeIndividualStream()
+        val streamLoaders = initializeIndividualStreams()
 
         // Move data
         runBlocking { pipeline.run() }
+
+        finalizeIndividualStreams(streamLoaders)
     }
 
     private fun initializeDestination() {
@@ -42,8 +45,9 @@ class DestinationLifecycle(
         }
     }
 
-    private fun initializeIndividualStream() {
-        runBlocking {
+    private fun initializeIndividualStreams(): List<StreamLoader> {
+        return runBlocking {
+            val result = mutableListOf<StreamLoader>()
             destinationCatalog.streams
                 .map {
                     async {
@@ -52,8 +56,29 @@ class DestinationLifecycle(
                         }
                         val streamLoader = destinationInitializer.createStreamLoader(it)
                         streamLoader.start()
+                        result.add(streamLoader)
                         log.info {
                             "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
+                        }
+                    }
+                }
+                .awaitAll()
+
+            return@runBlocking result
+        }
+    }
+
+    private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
+        runBlocking {
+            streamLoaders
+                .map {
+                    async {
+                        log.info {
+                            "Finalizing stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
+                        }
+                        it.close(true)
+                        log.info {
+                            "Finalized stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
                     }
                 }
