@@ -150,27 +150,14 @@ jobs:
         if: steps.connector-metadata.outputs.connector-language != 'java'
         shell: bash
         run: |
-          echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
-          echo "Github event name: ${{ github.event_name }}"
-
-
-          publish_options="${{ inputs.publish-options }}"
-          connector_version="${{ steps.connector-metadata.outputs.connector-version }}"
-
-          echo "Publish options: ${publish_options}"
-          echo "Connector version: ${connector_version}"
-
           # TODO: refactor this logic to be shared by all connector types
-          is_pre_release=$(echo $publish_options | grep -c -- '--pre-release' || true)
-          is_release_candidate=$(echo $connector_version | grep -c -- '-rc' || true)
-
-          echo "Publish options:"
-          echo "  Pre-release: ${is_pre_release}"
-          echo "  Release candidate: ${is_release_candidate}"
+          is_pre_release=$(echo ${{ inputs.publish-options }} | grep -c -- '--pre-release' || true)
+          is_release_candidate=$(echo ${{ steps.connector-metadata.outputs.connector-version }} | grep -c -- '-rc' || true)
 
           # Don't tag with latest for pre-release or release candidate builds
           if [[ $is_pre_release -gt 0 || $is_release_candidate -gt 0 ]]; then
             echo "push-latest=false" >> $GITHUB_OUTPUT
+            echo "Skipping latest tag for pre-release or release candidate build."
           else
             echo "push-latest=true" >> $GITHUB_OUTPUT
           fi
@@ -179,7 +166,7 @@ jobs:
             hash=$(git rev-parse --short=10 HEAD)
             tag_override="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
             echo "tag-override=${tag_override}" >> $GITHUB_OUTPUT
-            echo "Using tag override for pre-release build: ${tag_override}"
+            echo "Using a dev tag for a pre-release build: ${tag_override}"
           fi
 
       - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
