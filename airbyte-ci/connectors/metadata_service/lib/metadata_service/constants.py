@@ -36,7 +36,3 @@ PUBLISH_GRACE_PERIOD = datetime.timedelta(hours=6)
 SLACK_NOTIFICATIONS_ENABLED = "true"
 
 SPECS_SECRETS_MASK_FILE_NAME = "specs_secrets_mask.yaml"
-
-# DEV
-EXTENSIBILITY_TEAM_SLACK_TEAM_ID = "U063M9WHWTU"  # @patrick-nilan
-PUBLISH_UPDATE_CHANNEL = "C05JR8PPJ2K"  # #test-ci-slack-notifications
