@@ -14,6 +14,7 @@ definitions:
   requester:
     type: CustomRequester
     class_name: "source_declarative_manifest.components.MondayGraphqlRequester"
+    http_method: POST
     schema_loader:
       type: InlineSchemaLoader
       schema:
