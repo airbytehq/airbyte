@@ -5,12 +5,23 @@ on:
     branches:
       - dbgold17/build-and-publish-python-connectors-on-ci
 jobs:
-  trigger-workflow:
-    name: "Call Connector Images Build Push"
-    uses: ./.github/workflows/connector-image-build-push.yml
-    with:
-      connector-name: "source-pokeapi"
-      registry: "ghcr.io/airbytehq"
-      # tag-override: "0.3.34-dev.dc3cebbb36"
-      dry-run: true
-    secrets: inherit
+  generate-dev-tag:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Generate dev tag
+        id: generate-dev-tag
+        run: |
+          tag=$(echo hash -n 10 $(git rev-parse HEAD))
+          echo "tag-override=dev-test-$tag" >> $GITHUB_OUTPUT
+
+      - name: Trigger connector image build and push
+        uses: ./.github/workflows/connector-image-build-push.yml
+        with:
+          connector-name: "source-pokeapi"
+          tag-override: "${{ steps.generate-dev-tag.outputs.tag-override }}"
+          dry-run: true
