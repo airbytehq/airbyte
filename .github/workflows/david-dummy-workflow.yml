@@ -19,9 +19,14 @@ jobs:
           tag=$(echo hash -n 10 $(git rev-parse HEAD))
           echo "tag-override=dev-test-$tag" >> $GITHUB_OUTPUT
 
-      - name: Trigger connector image build and push
-        uses: ./.github/workflows/connector-image-build-push.yml
-        with:
-          connector-name: "source-pokeapi"
-          tag-override: "${{ steps.generate-dev-tag.outputs.tag-override }}"
-          dry-run: true
+    outputs:
+      tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
+
+  build-and-push-connector-image:
+    needs: generate-dev-tag
+    uses: ./.github/workflows/connector-image-build-push.yml
+    with:
+      connector-name: "source-pokeapi"
+      tag-override: "${{ needs.generate-dev-tag.outputs.tag-override }}"
+      dry-run: true
+    secrets: inherit
