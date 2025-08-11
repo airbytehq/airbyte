@@ -143,8 +143,6 @@ jobs:
         if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: |
-          echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
-          echo "Github event name: ${{ github.event_name }}"
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
 
       - name: Determine build and publish options
@@ -152,27 +150,36 @@ jobs:
         if: steps.connector-metadata.outputs.connector-language != 'java'
         shell: bash
         run: |
-          # TODO: refactor this logic to be shared by all connector types
-          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release')
-          is_release_candidate=$(echo "${{ steps.connector-metadata.outputs.connector-version }}" | grep -c -- '-rc')
+          set -euo pipefail
 
-          echo "Publish options:"
-          echo "  Pre-release: ${is_pre_release}"
-          echo "  Release candidate: ${is_release_candidate}"
+          echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
+          echo "Connector version: ${{ steps.connector-metadata.outputs.connector-version }}"
+          echo "Github event name: ${{ github.event_name }}"
 
-          # Don't tag with latest for pre-release or release candidate builds
-          if [[ $is_pre_release -gt 0 || $is_release_candidate -gt 0 ]]; then
-            echo "push-latest=false" >> $GITHUB_OUTPUT
-          else
-            echo "push-latest=true" >> $GITHUB_OUTPUT
-          fi
+          echo "Publish options: ${{ inputs.publish-options }}"
 
-          if [[ $is_pre_release -gt 0 ]]; then
-            hash=$(git rev-parse --short=10 HEAD)
-            tag_override="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
-            echo "tag-override=${tag_override}" >> $GITHUB_OUTPUT
-            echo "Using tag override for pre-release build: ${tag_override}"
-          fi
+
+          # # TODO: refactor this logic to be shared by all connector types
+          # is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release')
+          # is_release_candidate=$(echo "${{ steps.connector-metadata.outputs.connector-version }}" | grep -c -- '-rc')
+
+          # echo "Publish options:"
+          # echo "  Pre-release: ${is_pre_release}"
+          # echo "  Release candidate: ${is_release_candidate}"
+
+          # # Don't tag with latest for pre-release or release candidate builds
+          # if [[ $is_pre_release -gt 0 || $is_release_candidate -gt 0 ]]; then
+          #   echo "push-latest=false" >> $GITHUB_OUTPUT
+          # else
+          #   echo "push-latest=true" >> $GITHUB_OUTPUT
+          # fi
+
+          # if [[ $is_pre_release -gt 0 ]]; then
+          #   hash=$(git rev-parse --short=10 HEAD)
+          #   tag_override="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
+          #   echo "tag-override=${tag_override}" >> $GITHUB_OUTPUT
+          #   echo "Using tag override for pre-release build: ${tag_override}"
+          # fi
 
       - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
         id: build-and-publish-python-manifest-only-connectors-images-master
