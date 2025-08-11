@@ -36,3 +36,4 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           dry-run: "false"
+          force-publish: "true" # Force publish for testing purposes
