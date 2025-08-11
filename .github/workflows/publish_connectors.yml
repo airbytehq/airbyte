@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - dbgold17/build-and-publish-python-connectors-on-ci. # TODO: remove me
+      - dbgold17/build-and-publish-python-connectors-on-ci # TODO: remove me
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
