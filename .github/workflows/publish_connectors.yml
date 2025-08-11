@@ -142,7 +142,10 @@ jobs:
         id: build-and-publish-JVM-connectors-images-master
         if: github.event_name == 'push' && ${{ steps.connector-metadata.outputs.connector-language == 'java' }}
         shell: bash
-        run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
+        run: |
+          echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
+          echo "Github event name: ${{ github.event_name }}"
+          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
 
       - name: Determine build and publish options
         id: get-connector-options
