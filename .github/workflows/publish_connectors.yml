@@ -148,6 +148,8 @@ jobs:
         id: get-connector-options
         if: ${{ steps.connector-metadata.outputs.connector-languagee != 'java' }}
         run: |
+          set -euo pipefail
+
           # TODO: refactor this logic to be shared by all connector types
           is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release')
           is_release_candidate=$(echo "${{ steps.connector-metadata.outputs.connector-version }}" | grep -c -- '-rc')
