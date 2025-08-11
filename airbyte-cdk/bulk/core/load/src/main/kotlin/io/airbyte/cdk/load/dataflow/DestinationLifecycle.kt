@@ -1,11 +1,6 @@
-/*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
- */
-
-package io.airbyte.cdk.load.lifecycle
+package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.dataflow.DataFlowPipeline
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
