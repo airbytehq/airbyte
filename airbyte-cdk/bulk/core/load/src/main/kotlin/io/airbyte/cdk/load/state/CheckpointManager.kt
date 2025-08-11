@@ -448,8 +448,9 @@ class CheckpointManager(
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 @Singleton
-class FreeingAnnotatingCheckpointConsumer(private val consumer: OutputConsumer) :
-    suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit {
+class FreeingAnnotatingCheckpointConsumer(
+    private val consumer: OutputConsumer,
+) : suspend (Reserved<CheckpointMessage>, Long, Long, Long) -> Unit {
     override suspend fun invoke(
         message: Reserved<CheckpointMessage>,
         totalRecords: Long,
