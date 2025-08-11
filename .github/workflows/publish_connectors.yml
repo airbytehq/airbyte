@@ -140,7 +140,7 @@ jobs:
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
-        if: github.event_name == 'push' && ${{ steps.connector-metadata.outputs.connector-language == 'java' }}
+        if: ${{ github.event_name == 'push' &&  steps.connector-metadata.outputs.connector-language == 'java' }}
         shell: bash
         run: |
           echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
