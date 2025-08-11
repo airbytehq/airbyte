@@ -161,8 +161,8 @@ jobs:
           echo "Connector version: ${connector_version}"
 
           # TODO: refactor this logic to be shared by all connector types
-          is_pre_release=$(echo $publish_options | grep -c -- '--pre-release')
-          is_release_candidate=$(echo $connector_version | grep -c -- '-rc')
+          is_pre_release=$(echo $publish_options | grep -c -- '--pre-release' || true)
+          is_release_candidate=$(echo $connector_version | grep -c -- '-rc' || true)
 
           echo "Publish options:"
           echo "  Pre-release: ${is_pre_release}"
