@@ -21,6 +21,7 @@ VALID_REGISTRIES = ["oss", "cloud"]
 REGISTRIES_FOLDER = "registries/v0"
 ANALYTICS_BUCKET = "ab-analytics-connector-metrics"
 ANALYTICS_FOLDER = "data/connector_quality_metrics"
+PUBLIC_GCS_BASE_URL = "https://storage.googleapis.com/"
 
 GITHUB_REPO_NAME = "airbytehq/airbyte"
 EXTENSIBILITY_TEAM_SLACK_TEAM_ID = "S08SQDL2RS9"  # @oc-extensibility-critical-systems

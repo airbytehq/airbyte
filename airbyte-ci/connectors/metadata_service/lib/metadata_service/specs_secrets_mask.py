@@ -12,8 +12,9 @@ import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from metadata_service.constants import REGISTRIES_FOLDER, SPECS_SECRETS_MASK_FILE_NAME, VALID_REGISTRIES
+from metadata_service.constants import PUBLISH_UPDATE_CHANNEL, REGISTRIES_FOLDER, SPECS_SECRETS_MASK_FILE_NAME, VALID_REGISTRIES
 from metadata_service.helpers.gcs import get_gcs_storage_client, safe_read_gcs_file
+from metadata_service.helpers.slack import send_slack_message
 from metadata_service.models.generated import ConnectorRegistryV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.registry import PolymorphicRegistryEntry
@@ -91,6 +92,10 @@ def generate_and_persist_specs_secrets_mask(bucket_name: str) -> tuple[bool, Opt
     Returns:
         tuple[bool, Optional[str]]: A tuple containing a boolean indicating success and an optional error message.
     """
+
+    message = f"*🤖 🟡 _Specs Secrets Mask Generation_ IN PROGRESS*:\nBegan generating and persisting `{SPECS_SECRETS_MASK_FILE_NAME}` to GCS bucket."
+    send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+
     client = get_gcs_storage_client()
     bucket = client.bucket(bucket_name)
 
@@ -100,5 +105,12 @@ def generate_and_persist_specs_secrets_mask(bucket_name: str) -> tuple[bool, Opt
     all_specs_secrets = _get_specs_secrets_from_registry_entries(all_entries)
 
     persisted, error_message = _persist_secrets_to_gcs(all_specs_secrets, bucket)
+
+    if persisted:
+        message = f"*🤖 🟢 _Specs Secrets Mask Generation_ SUCCESS*:\nSuccessfully generated and persisted `{SPECS_SECRETS_MASK_FILE_NAME}` to GCS bucket."
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+    else:
+        message = f"*🤖 🔴 _Specs Secrets Mask Generation_ FAILED*:\nFailed to generate and persist `{SPECS_SECRETS_MASK_FILE_NAME}` to GCS bucket."
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
     return persisted, error_message

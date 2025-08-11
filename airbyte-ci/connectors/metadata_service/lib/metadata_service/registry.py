@@ -3,23 +3,34 @@
 #
 
 import copy
-import os
-from typing import Union, Optional
-from enum import Enum
 import json
 import logging
-import semver
+import os
+import urllib.parse
 from collections import defaultdict
+from enum import Enum
+from typing import Optional, Union
+
+import semver
+import sentry_sdk
 from google.cloud import storage
 from google.oauth2 import service_account
-from metadata_service.constants import ANALYTICS_BUCKET, ANALYTICS_FOLDER, METADATA_FOLDER, REGISTRIES_FOLDER, VALID_REGISTRIES
+from pydash.objects import set_with
+
+from metadata_service.constants import (
+    ANALYTICS_BUCKET,
+    ANALYTICS_FOLDER,
+    METADATA_FOLDER,
+    PUBLIC_GCS_BASE_URL,
+    PUBLISH_UPDATE_CHANNEL,
+    REGISTRIES_FOLDER,
+    VALID_REGISTRIES,
+)
 from metadata_service.helpers.gcs import get_gcs_storage_client, safe_read_gcs_file
 from metadata_service.helpers.object_helpers import CaseInsensitiveKeys, default_none_to_dict
-from metadata_service.models.generated import ConnectorRegistryV0, ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition
+from metadata_service.helpers.slack import send_slack_message
+from metadata_service.models.generated import ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition, ConnectorRegistryV0
 from metadata_service.models.transform import to_json_sanitized_dict
-from pydash.objects import set_with
-import sentry_sdk
-import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +129,9 @@ def _apply_release_candidates(
     return updated_registry_entry
 
 
-def _build_connector_registry(latest_registry_entries: list[PolymorphicRegistryEntry], latest_connector_metrics: dict, docker_repository_to_rc_registry_entry: dict) -> ConnectorRegistryV0:
+def _build_connector_registry(
+    latest_registry_entries: list[PolymorphicRegistryEntry], latest_connector_metrics: dict, docker_repository_to_rc_registry_entry: dict
+) -> ConnectorRegistryV0:
     registry_dict = {"sources": [], "destinations": []}
 
     for latest_registry_entry in latest_registry_entries:
@@ -332,6 +345,9 @@ def generate_and_persist_registry(bucket_name: str, registry_type: str) -> tuple
     if registry_type not in VALID_REGISTRIES:
         raise ValueError(f"Invalid registry type: {registry_type}. Valid types are: {', '.join(VALID_REGISTRIES)}.")
 
+    message = f"*🤖 🟡 _Registry Generation_ IN PROGRESS*:\nBegan generating {registry_type} registry..."
+    send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+
     gcs_client = get_gcs_storage_client()
     registry_bucket = gcs_client.bucket(bucket_name)
     analytics_bucket = gcs_client.bucket(ANALYTICS_BUCKET)
@@ -347,10 +363,20 @@ def generate_and_persist_registry(bucket_name: str, registry_type: str) -> tuple
 
     latest_connector_metrics = _get_latest_connector_metrics(analytics_bucket)
 
-    connector_registry = _build_connector_registry(latest_registry_entries, latest_connector_metrics, docker_repository_to_rc_registry_entry)
+    connector_registry = _build_connector_registry(
+        latest_registry_entries, latest_connector_metrics, docker_repository_to_rc_registry_entry
+    )
 
     persisted, error_message = _persist_registry_to_json(connector_registry, registry_type, registry_bucket)
 
-    # TODO: Create and add logging/slack messaging for the end of the process
+    if persisted:
+        registry_filepath = str(
+            urllib.parse.urljoin(PUBLIC_GCS_BASE_URL, f"{bucket_name}/{REGISTRIES_FOLDER}/{registry_type}_registry.json")
+        )
+        message = f"*🤖 🟢 _Registry Generation_ SUCCESS*:\nSuccessfully generated {registry_type} registry. New {registry_type} registry avilable at: {registry_filepath}"
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+    else:
+        message = f"*🤖 🔴 _Registry Generation_ FAILED*:\nFailed to generate and persist {registry_type} registry."
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
     return persisted, error_message

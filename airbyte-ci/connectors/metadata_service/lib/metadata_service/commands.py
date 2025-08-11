@@ -7,7 +7,6 @@ import pathlib
 
 import click
 import sentry_sdk
-from metadata_service.specs_secrets_mask import generate_and_persist_specs_secrets_mask
 from pydantic import ValidationError
 
 from metadata_service.constants import METADATA_FILE_NAME, VALID_REGISTRIES
@@ -19,8 +18,12 @@ from metadata_service.gcs_upload import (
     upload_metadata_to_gcs,
 )
 from metadata_service.registry import generate_and_persist_registry
+from metadata_service.sentry import setup_sentry
+from metadata_service.specs_secrets_mask import generate_and_persist_specs_secrets_mask
 from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
+
+setup_sentry()
 
 
 def setup_logging(debug: bool = False):
@@ -32,7 +35,7 @@ def setup_logging(debug: bool = False):
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[logging.StreamHandler()],
     )
-    # Suppress logging from urllib3 and slack_sdk
+    # Suppress logging from the following libraries
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("slack_sdk.web.base_client").setLevel(logging.WARNING)
     logging.getLogger("google.resumable_media").setLevel(logging.WARNING)
