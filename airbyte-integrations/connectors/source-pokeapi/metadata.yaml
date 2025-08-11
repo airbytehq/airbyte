@@ -46,4 +46,4 @@ data:
             alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
 # Dummy change (revert-me) (again) blah
-# blah blah
+# blah
