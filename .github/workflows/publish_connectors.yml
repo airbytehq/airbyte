@@ -140,8 +140,7 @@ jobs:
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
-        if: >
-          github.event_name == 'push' && ${{ steps.connector-metadata.outputs.connector-language == 'java' }}
+        if: github.event_name == 'push' && ${{ steps.connector-metadata.outputs.connector-language == 'java' }}
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
 
@@ -151,7 +150,7 @@ jobs:
         run: |
           # TODO: refactor this logic to be shared by all connector types
           is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release')
-          is_release_candidate=$(echo ${{ steps.connector-metadata.outputs.connector-version }} | grep -c -- '-rc')
+          is_release_candidate=$(echo "${{ steps.connector-metadata.outputs.connector-version }}" | grep -c -- '-rc')
 
           echo "Publish options:"
           echo "  Pre-release: ${is_pre_release}"
@@ -166,9 +165,9 @@ jobs:
 
           if [[ $is_pre_release -gt 0 ]]; then
             hash=$(git rev-parse --short=10 HEAD)
-            echo "tag-override=${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}" >> $GITHUB_OUTPUT
-          else
-            echo "tag-override=" >> $GITHUB_OUTPUT
+            tag_override="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
+            echo "tag-override=${tag_override}" >> $GITHUB_OUTPUT
+            echo "Using tag override for pre-release build: ${tag_override}"
           fi
 
       - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
@@ -208,14 +207,13 @@ jobs:
 
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
-        if: >
-          (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && ${{steps.connector-metadata.outputs.connector-language == 'java' }}
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && ${{steps.connector-metadata.outputs.connector-language == 'java' }}
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
 
       - name: Build and publish Python and Manifest-Only connectors images [manual]
         id: build-and-publish-python-manifest-only-connectors-images-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' && ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
