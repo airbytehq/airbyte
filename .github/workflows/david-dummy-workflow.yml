@@ -5,7 +5,7 @@ on:
     branches:
       - dbgold17/build-and-publish-python-connectors-on-ci
 jobs:
-  generate-dev-tag:
+  vars:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
@@ -19,30 +19,45 @@ jobs:
           hash=$(git rev-parse --short=10 HEAD)
           echo "tag-override=dev.$hash" >> $GITHUB_OUTPUT
 
+      - name: Connector Matrix
+        id: generate-matrix
+        run: |
+          # This is a dummy step to simulate connector matrix generation.
+          echo "connector-names=source-pokeapi,source-spotify-ads" >> $GITHUB_OUTPUT
+
     outputs:
       tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connector-names }}
 
   build-and-push-connector-image:
-    needs: generate-dev-tag
+    needs: vars
     uses: ./.github/workflows/connector-image-build-push.yml
     strategy:
       matrix:
-        connector-name:
-          [
-            "source-pokeapi",
-            "source-spotify",
-            "source-twitch",
-            "source-twitter",
-            "source-xero",
-            "source-zenpy",
-            "destination-bigquery",
-            "destination-postgres",
-            "destination-snowflake",
-          ]
+        connector-name: ${{ fromJson(needs.vars.outputs.connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     with:
       connector-name: ${{ matrix.connector-name }}
-      tag-override: ${{ needs.generate-dev-tag.outputs.tag-override }}
+      tag-override: ${{ needs.vars.outputs.tag-override }}
       dry-run: true
     secrets: inherit
+
+  test-connector-image:
+    needs: [vars, build-and-push-connector-image]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        connector-name: ${{ fromJson(needs.vars.outputs.connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run tests on connector image
+        run: |
+          echo "Spec for connector image for ${{ matrix.connector-name }}"
+          docker run airbyte/${{ matrix.connector-name }}:${{ needs.vars.outputs.tag-override }} spec

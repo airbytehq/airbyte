@@ -140,8 +140,10 @@ jobs:
               ;;
           esac
 
+          FULL_IMAGE_NAME="${{ inputs.registry }}/${CONNECTOR_NAME}:${CONNECTOR_VERSION_TAG}"
+
           # Get all tags to use for image pushing
-          DOCKER_TAGS="${{ inputs.registry }}/${CONNECTOR_NAME}:${CONNECTOR_VERSION_TAG}"
+          DOCKER_TAGS="${FULL_IMAGE_NAME}"
           if [[ "${{ inputs.push-latest }}" == "true" ]]; then
             DOCKER_TAGS="${DOCKER_TAGS},${{ inputs.registry }}/${CONNECTOR_NAME}:latest"
           fi
@@ -162,6 +164,7 @@ jobs:
             echo "connector-dir=$CONNECTOR_DIR"
             echo "base-image=$BASE_IMAGE"
             echo "connector-version-tag=$CONNECTOR_VERSION_TAG"
+            echo "connector-image-name=$FULL_IMAGE_NAME"
             echo "docker-tags=$DOCKER_TAGS"
           } >> $GITHUB_OUTPUT
 
@@ -279,7 +282,7 @@ jobs:
       - name: Run `spec` Image Test
         if: ${{ steps.check-exists.outputs.do-build }}
         run: |
-          image_name=${{ inputs.registry }}/${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.connector-version-tag }}
+          image_name="${{ steps.vars.outputs.connector-image-name }}"
           echo "Running spec test for image: $image_name"
           docker run --rm $image_name spec
 
@@ -300,7 +303,7 @@ jobs:
         if: ${{ steps.check-exists.outputs.do-build }}
         uses: anchore/scan-action@v6
         with:
-          image: "${{ steps.vars.outputs.image-build-num-tag }}"
+          image: "${{ steps.vars.outputs.connector-image-name }}"
           output-format: "table"
           severity-cutoff: high
           fail-build: false
