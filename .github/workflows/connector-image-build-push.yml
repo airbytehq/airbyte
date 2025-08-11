@@ -12,14 +12,6 @@ on:
         description: "Connector name (e.g., source-faker, destination-postgres)"
         required: true
         type: string
-      # release-type:
-      #   description: "Release type"
-      #   required: true
-      #   type: choice
-      #   default: "pre-release"
-      #   options:
-      #     - "pre-release"
-      #     - "main-release"
       registry:
         description: "Docker registry"
         required: false
@@ -288,33 +280,6 @@ jobs:
           image_name="${{ steps.vars.outputs.connector-image-name }}"
           echo "Running spec test for image: $image_name"
           docker run --rm $image_name spec
-
-      # - name: Set up Python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: "3.11"
-      #     check-latest: true
-      #     update-environment: true
-
-      # - name: Install and configure Poetry
-      #   uses: snok/install-poetry@v1
-      #   with:
-      #     version: 1.8.5
-
-      # - name: Install connector dependencies
-      #   working-directory: airbyte-integrations/connectors/${{ steps.vars.outputs.connector-name }}
-      #   run: poe install
-
-      # - name: Run tests on connector image
-      #   working-directory: airbyte-integrations/connectors/${{ steps.vars.outputs.connector-name }}
-      #   run: |
-      #     image_name="${{ steps.vars.outputs.connector-image-name }}"
-      #     echo "Running spec test for image: $image_name"
-      #     docker run --rm $image_name spec
-
-      #     echo "Running check for image: $image_name"
-      #     poe fetch-secrets
-      #     docker run --rm -v $(pwd)/secrets/:/secrets/ $image_name check --config /secrets/config.json
 
       - name: Build and push connector image (multi-arch)
         if: ${{ steps.check-exists.outputs.do-build }}
