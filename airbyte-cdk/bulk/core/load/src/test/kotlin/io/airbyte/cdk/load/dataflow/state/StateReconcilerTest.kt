@@ -6,14 +6,11 @@ package io.airbyte.cdk.load.dataflow.state
 
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.mockk.every
-import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
 import java.util.concurrent.ConcurrentSkipListMap
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 class StateReconcilerTest {
     private val stateWatermarkStore: StateWatermarkStore = mockk(relaxed = true)
