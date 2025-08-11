@@ -3,7 +3,8 @@
 # You can't just `source lib/util.sh`, because the current working directory probably isn't `poe-tasks`.
 
 CONNECTORS_DIR="airbyte-integrations/connectors"
-DOCS_BASE_DIR="docs/integrations"
+DOCS_ROOT="docs"
+DOCS_BASE_DIR="$DOCS_ROOT/integrations"
 METADATA_SERVICE_PATH='airbyte-ci/connectors/metadata_service/lib'
 
 # Usage: connector_docs_path "source-foo"
@@ -49,4 +50,16 @@ generate_dev_tag() {
   local hash
   hash=$(git rev-parse --short=10 HEAD)
   echo "${base}-dev.${hash}"
+}
+
+# Authenticate to gcloud using the contents of a variable.
+# That variable should contain a JSON-formatted GCP service account key.
+gcloud_activate_service_account() {
+  touch /tmp/gcloud_creds.json
+  # revoke access to this file from group/other (`go=` means "for Group/Other, set permissions to nothing")
+  # (i.e. only the current user can interact with it)
+  chmod go= /tmp/gcloud_creds.json
+  # echo -E prevents echo from rendering \n into actual newlines.
+  echo -E "$1" > /tmp/gcloud_creds.json
+  gcloud auth activate-service-account --key-file /tmp/gcloud_creds.json
 }
