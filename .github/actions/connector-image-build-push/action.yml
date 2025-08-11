@@ -301,7 +301,7 @@ runs:
       run: |
         image_name="${{ steps.vars.outputs.connector-image-name }}"
         echo "Running spec test for image: $image_name"
-        docker run --rm $image_name spec
+        docker run --rm $image_name spec > /dev/null
 
     - name: Build and push connector image (multi-arch)
       if: ${{ steps.check-exists.outputs.do-build == 'true' }}
