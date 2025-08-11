@@ -93,9 +93,6 @@ def generate_and_persist_specs_secrets_mask(bucket_name: str) -> tuple[bool, Opt
         tuple[bool, Optional[str]]: A tuple containing a boolean indicating success and an optional error message.
     """
 
-    message = f"*🤖 🟡 _Specs Secrets Mask Generation_ IN PROGRESS*:\nBegan generating and persisting `{SPECS_SECRETS_MASK_FILE_NAME}` to registry GCS bucket."
-    send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-
     client = get_gcs_storage_client()
     bucket = client.bucket(bucket_name)
 
@@ -106,10 +103,7 @@ def generate_and_persist_specs_secrets_mask(bucket_name: str) -> tuple[bool, Opt
 
     persisted, error_message = _persist_secrets_to_gcs(all_specs_secrets, bucket)
 
-    if persisted:
-        message = f"*🤖 🟢 _Specs Secrets Mask Generation_ SUCCESS*:\nSuccessfully generated and persisted `{SPECS_SECRETS_MASK_FILE_NAME}` to registry GCS bucket."
-        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-    else:
+    if not persisted:
         message = f"*🤖 🔴 _Specs Secrets Mask Generation_ FAILED*:\nFailed to generate and persist `{SPECS_SECRETS_MASK_FILE_NAME}` to registry GCS bucket."
         send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 

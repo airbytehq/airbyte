@@ -345,9 +345,6 @@ def generate_and_persist_connector_registry(bucket_name: str, registry_type: str
     if registry_type not in VALID_REGISTRIES:
         raise ValueError(f"Invalid registry type: {registry_type}. Valid types are: {', '.join(VALID_REGISTRIES)}.")
 
-    message = f"*🤖 🟡 _Registry Generation_ IN PROGRESS*:\nBegan generating {registry_type} registry..."
-    send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-
     gcs_client = get_gcs_storage_client()
     registry_bucket = gcs_client.bucket(bucket_name)
     analytics_bucket = gcs_client.bucket(ANALYTICS_BUCKET)
@@ -369,14 +366,7 @@ def generate_and_persist_connector_registry(bucket_name: str, registry_type: str
 
     persisted, error_message = _persist_registry_to_json(connector_registry, registry_type, registry_bucket)
 
-    if persisted:
-        # TODO: Update to prod bucket once switched over
-        registry_filepath = str(
-            urllib.parse.urljoin(PUBLIC_GCS_BASE_URL, "dev-airbyte-cloud-connector-metadata-service", REGISTRIES_FOLDER, f"{registry_type}_registry.json")
-        )
-        message = f"*🤖 🟢 _Registry Generation_ SUCCESS*:\nSuccessfully generated {registry_type} registry. New {registry_type} registry avilable at: {registry_filepath}"
-        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-    else:
+    if not persisted:
         message = f"*🤖 🔴 _Registry Generation_ FAILED*:\nFailed to generate and persist {registry_type} registry."
         send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
