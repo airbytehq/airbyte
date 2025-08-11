@@ -19,26 +19,23 @@ jobs:
           hash=$(git rev-parse --short=10 HEAD)
           echo "tag-override=dev.$hash" >> $GITHUB_OUTPUT
 
-      - name: Connector Matrix
-        id: generate-matrix
-        run: |
-          # This is a dummy step to simulate connector matrix generation.
-          echo "connector-names=['source-pokeapi','source-faker','source-facebook-marketing','source-s3']" >> $GITHUB_OUTPUT
-
     outputs:
       tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
-      connectors-matrix: ${{ steps.generate-matrix.outputs.connector-names }}
 
   build-and-push-connector-image:
     needs: vars
     uses: ./.github/workflows/connector-image-build-push.yml
     strategy:
       matrix:
-        connector-name: ${{ fromJson(needs.vars.outputs.connectors-matrix) }}
+        connector-name:
+          - source-pokeapi
+          # - source-faker
+          # - source-facebook-marketing
+          # - source-s3
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     with:
       connector-name: ${{ matrix.connector-name }}
       tag-override: ${{ needs.vars.outputs.tag-override }}
-      dry-run: true
+      dry-run: false
     secrets: inherit
