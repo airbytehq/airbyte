@@ -28,6 +28,11 @@ on:
         required: false
         type: string
         default: ""
+      push-latest:
+        description: "if pushing the image, to a remote registry, also push it with the 'latest' tag"
+        required: false
+        type: boolean
+        default: false
       dry-run:
         description: "Dry run mode (build but don't push)"
         required: false
@@ -100,15 +105,15 @@ jobs:
 
           # Resolve connector version to use for image tagging
           if [[ "${{ inputs.tag-override }}" ]]; then
-            DOCKER_TAG="${{ inputs.tag-override }}"
-            echo "🏷 Using provided tag: $DOCKER_TAG"
+            CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
+            echo "🏷 Using provided tag: $DOCKECONNECTOR_VERSION_TAGR_TAG"
           else
-            DOCKER_TAG=$(poe -qq get-version)
-            if [[ -z "$DOCKER_TAG" ]]; then
+            CONNECTOR_VERSION_TAG=$(poe -qq get-version)
+            if [[ -z "$CONNECTOR_VERSION_TAG" ]]; then
               echo "❌ Docker tag not found in metadata.yaml"
               exit 1
             fi
-            echo "🏷 Using tag from metadata.yaml: $DOCKER_TAG"
+            echo "🏷 Using tag from metadata.yaml: $CONNECTOR_VERSION_TAG"
           fi
 
           # Can't dry-run and force-publish at the same time
@@ -133,15 +138,20 @@ jobs:
               ;;
           esac
 
-          FULL_IMAGE_NAME="${{ inputs.registry }}/${CONNECTOR_NAME}:${DOCKER_TAG}"
+          # Get all tags to use for image pushing
+          DOCKER_TAGS="${CONNECTOR_NAME}:${CONNECTOR_VERSION_TAG}"
+          if [[ "${{ inputs.push-latest }}" == "true" ]]; then
+            DOCKER_TAGS="${DOCKER_TAGS},${CONNECTOR_NAME}:latest"
+          fi
 
           echo "📋 Build Details:"
           echo "  Connector: $CONNECTOR_NAME"
           echo "  Language: $CONNECTOR_LANGUAGE"
           echo "  Base Image: $BASE_IMAGE"
-          echo "  Docker Tag: $DOCKER_TAG"
+          echo "  Version Tag: $CONNECTOR_VERSION_TAG"
           echo "  Registry: ${{ inputs.registry }}"
           echo "  Full Image: $FULL_IMAGE_NAME"
+          echo "  Tag(s) to Push: $DOCKER_TAGS"
           echo "  Dry Run: ${{ inputs.dry-run }}"
           echo "  Force Publish: ${{ inputs.force-publish }}" 
 
@@ -149,9 +159,9 @@ jobs:
             echo "connector-name=$CONNECTOR_NAME"
             echo "connector-type=$CONNECTOR_LANGUAGE"
             echo "connector-dir=$CONNECTOR_DIR"
-            echo "docker-tag=$DOCKER_TAG"
             echo "base-image=$BASE_IMAGE"
-            echo "image-name=$FULL_IMAGE_NAME"
+            echo "connector-version-tag=$CONNECTOR_VERSION_TAG"
+            echo "docker-tags=$DOCKER_TAGS"
           } >> $GITHUB_OUTPUT
 
       - name: Check if image already exists
@@ -165,9 +175,9 @@ jobs:
           IMAGE_EXISTS="unknown"
 
           # Use Docker Hub API with retry and exponential backoff
-          URL="https://registry.hub.docker.com/v2/repositories/airbyte/${{ steps.vars.outputs.connector-name }}/tags/${{ steps.vars.outputs.docker-tag }}/"
+          URL="https://registry.hub.docker.com/v2/repositories/airbyte/${{ steps.vars.outputs.connector-name }}/tags/${{ steps.vars.outputs.connector-version-tag }}/"
           STATUS=""
-          echo "🔍 Checking if image exists on Docker Hub: ${{ steps.vars.outputs.image-name }}"
+          echo "🔍 Checking if image exists on Docker Hub: ${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.connector-version-tag }}"
 
           max_attempts=5
           for attempt in {1..$max_attempts}; do
@@ -240,36 +250,36 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
-        if: ${{ steps.check-exists.outputs.do-publish == 'true' }}
+        if: ${{ steps.check-exists.outputs.do-publish }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Set up Docker Buildx
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
+        if: ${{ steps.check-exists.outputs.do-build }}
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push connector image
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
+        if: ${{ steps.check-exists.outputs.do-build }}
         uses: docker/build-push-action@v5
         with:
           context: ${{ steps.vars.outputs.connector-dir }}
           file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-type }}-connector
           platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.vars.outputs.docker-tag }}
+          tags: ${{ steps.vars.outputs.docker-tags }}
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.base-image }}
             CONNECTOR_NAME=${{ steps.vars.outputs.connector-name }}
-          push: ${{ !inputs.dry-run }}
+          push: ${{ steps.check-exists.outputs.do-publish }}
 
       - name: Run `spec` Image Test
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
+        if: ${{ steps.check-exists.outputs.do-build }}
         run: |
           docker run --rm ${{ steps.vars.outputs.image-tag}} spec
 
       - name: Run Image Vulnerability Scan
-        if: ${{ steps.check-exists.outputs.do-build == 'true' }}
+        if: ${{ steps.check-exists.outputs.do-build }}
         uses: anchore/scan-action@v6
         with:
           image: "${{ steps.vars.outputs.image-build-num-tag }}"
