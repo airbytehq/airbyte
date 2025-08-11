@@ -53,6 +53,9 @@ permissions:
 jobs:
   build-and-push-connector:
     runs-on: ubuntu-24.04
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -285,6 +288,18 @@ jobs:
           image_name="${{ steps.vars.outputs.connector-image-name }}"
           echo "Running spec test for image: $image_name"
           docker run --rm $image_name spec
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
 
       - name: Install connector dependencies
         working-directory: airbyte-integrations/connectors/${{ steps.vars.outputs.connector-name }}
