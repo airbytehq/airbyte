@@ -5,7 +5,7 @@
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Iterable, Union, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -17,8 +17,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -63,6 +63,7 @@ class TwilioBackoffStrategy(BackoffStrategy):
         # For all other cases, return None to let CDK handle with default behavior
         # This includes 400 errors that don't match our specific case
         return None
+
 
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
@@ -595,7 +596,9 @@ class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self._http_client._session.auth, start_date=self._start_date, lookback_window=self._lookback_window)
+        return self.parent_stream(
+            authenticator=self._http_client._session.auth, start_date=self._start_date, lookback_window=self._lookback_window
+        )
 
 
 class UsageNestedStream(TwilioNestedStream):

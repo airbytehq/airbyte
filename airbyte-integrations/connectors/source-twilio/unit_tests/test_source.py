@@ -37,6 +37,7 @@ from source_twilio.streams import (
     Users,
     VerifyServices,
 )
+
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 
@@ -65,7 +66,9 @@ TEST_INSTANCE = SourceTwilio()
             "Unable to connect to Twilio API with the provided credentials - TimeoutError('Socket timed out')",
         ),
         (
-            DefaultBackoffException(None, None, "Unexpected exception in error handler: 401 Client Error: Unauthorized for url: https://api.twilio.com/"),
+            DefaultBackoffException(
+                None, None, "Unexpected exception in error handler: 401 Client Error: Unauthorized for url: https://api.twilio.com/"
+            ),
             "Unable to connect to Twilio API with the provided credentials - "
             "DefaultBackoffException('Unexpected exception in error handler: Unexpected exception in error handler: 401 Client Error: Unauthorized for url: https://api.twilio.com/')",
         ),
