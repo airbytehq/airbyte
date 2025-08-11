@@ -314,7 +314,7 @@ jobs:
 
           echo "Running check for image: $image_name"
           poe fetch-secrets
-          docker run --rm -v $(pwd)/secrets/:/secrets/ $image_name check --config secrets/config.json
+          docker run --rm -v $(pwd)/secrets/:/secrets/ $image_name check --config /secrets/config.json
 
       - name: Build and push connector image (multi-arch)
         if: ${{ steps.check-exists.outputs.do-build }}
