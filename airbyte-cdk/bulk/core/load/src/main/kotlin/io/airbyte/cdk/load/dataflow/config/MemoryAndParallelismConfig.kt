@@ -31,7 +31,5 @@ data class MemoryAndParallelismConfig(
 
 @Factory
 class MemoryAndParallelismConfigFactory {
-    @Singleton
-    @Secondary
-    fun getMemoryAndParallelismConfig() = MemoryAndParallelismConfig()
+    @Singleton @Secondary fun getMemoryAndParallelismConfig() = MemoryAndParallelismConfig()
 }
