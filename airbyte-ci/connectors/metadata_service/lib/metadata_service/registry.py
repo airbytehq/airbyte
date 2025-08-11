@@ -370,8 +370,9 @@ def generate_and_persist_connector_registry(bucket_name: str, registry_type: str
     persisted, error_message = _persist_registry_to_json(connector_registry, registry_type, registry_bucket)
 
     if persisted:
+        # TODO: Update to prod bucket once switched over
         registry_filepath = str(
-            urllib.parse.urljoin(PUBLIC_GCS_BASE_URL, f"{bucket_name}/{REGISTRIES_FOLDER}/{registry_type}_registry.json")
+            urllib.parse.urljoin(PUBLIC_GCS_BASE_URL, "dev-airbyte-cloud-connector-metadata-service", REGISTRIES_FOLDER, f"{registry_type}_registry.json")
         )
         message = f"*🤖 🟢 _Registry Generation_ SUCCESS*:\nSuccessfully generated {registry_type} registry. New {registry_type} registry avilable at: {registry_filepath}"
         send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
