@@ -35,4 +35,4 @@ jobs:
           tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          dry-run: "false"
+          dry-run: "true"
