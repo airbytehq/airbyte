@@ -277,7 +277,9 @@ jobs:
       - name: Run `spec` Image Test
         if: ${{ steps.check-exists.outputs.do-build }}
         run: |
-          docker run --rm ${{ inputs.registry }}/${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.image-tag }} spec
+          image_name=${{ inputs.registry }}/${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.connector-version-tag }}
+          echo "Running spec test for image: $image_name"
+          docker run --rm $image_name spec
 
       - name: Run Image Vulnerability Scan
         if: ${{ steps.check-exists.outputs.do-build }}
