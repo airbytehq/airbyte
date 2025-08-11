@@ -251,13 +251,15 @@ runs:
           DO_PUBLISH="true"
         fi
 
+        push_latest="${{ inputs.push-latest }}"
+
         # Output decision summary
         echo ""
         echo "📊 Build Decision Summary:"
         echo "  Image exists: $IMAGE_EXISTS"
         echo "  Will build: $DO_BUILD"
         echo "  Will publish: $DO_PUBLISH"
-        echo "  Push latest tag: ${{ inputs.push-latest }}"
+        echo "  Will tag with latest: ${push_latest:-false}"
         echo "  Dry run mode: ${{ inputs.dry-run }}"
         echo "  Force publish: ${{ inputs.force-publish }}"
 
