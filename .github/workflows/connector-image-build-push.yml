@@ -141,9 +141,9 @@ jobs:
           esac
 
           # Get all tags to use for image pushing
-          DOCKER_TAGS="${CONNECTOR_NAME}:${CONNECTOR_VERSION_TAG}"
+          DOCKER_TAGS="${{ inputs.registry }}/${CONNECTOR_NAME}:${CONNECTOR_VERSION_TAG}"
           if [[ "${{ inputs.push-latest }}" == "true" ]]; then
-            DOCKER_TAGS="${DOCKER_TAGS},${CONNECTOR_NAME}:latest"
+            DOCKER_TAGS="${DOCKER_TAGS},${{ inputs.registry }}/${CONNECTOR_NAME}:latest"
           fi
 
           echo "📋 Build Details:"
@@ -277,7 +277,7 @@ jobs:
       - name: Run `spec` Image Test
         if: ${{ steps.check-exists.outputs.do-build }}
         run: |
-          docker run --rm ${{ steps.vars.outputs.image-tag}} spec
+          docker run --rm ${{ inputs.registry }}/${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.image-tag }} spec
 
       - name: Run Image Vulnerability Scan
         if: ${{ steps.check-exists.outputs.do-build }}
