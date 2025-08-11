@@ -25,8 +25,24 @@ jobs:
   build-and-push-connector-image:
     needs: generate-dev-tag
     uses: ./.github/workflows/connector-image-build-push.yml
+    strategy:
+      matrix:
+        connector-name:
+          [
+            "source-pokeapi",
+            "source-spotify",
+            "source-twitch",
+            "source-twitter",
+            "source-xero",
+            "source-zenpy",
+            "destination-bigquery",
+            "destination-postgres",
+            "destination-snowflake",
+          ]
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
     with:
-      connector-name: "source-pokeapi"
-      tag-override: "${{ needs.generate-dev-tag.outputs.tag-override }}"
+      connector-name: ${{ matrix.connector-name }}
+      tag-override: ${{ needs.generate-dev-tag.outputs.tag-override }}
       dry-run: true
     secrets: inherit
