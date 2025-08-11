@@ -23,7 +23,7 @@ jobs:
         id: generate-matrix
         run: |
           # This is a dummy step to simulate connector matrix generation.
-          echo "connector-names=source-pokeapi,source-spotify-ads" >> $GITHUB_OUTPUT
+          echo "connector-names=[source-pokeapi,source-faker,source-facebook-marketing,source-dynamodb,source-s3]" >> $GITHUB_OUTPUT
 
     outputs:
       tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
