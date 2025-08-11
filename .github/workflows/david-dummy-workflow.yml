@@ -32,8 +32,7 @@ jobs:
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector-name }}
-          tag-override: dev.879097c67e
+          tag-override: ""
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           dry-run: "false"
-          force-publish: "true" # Force publish for testing purposes
