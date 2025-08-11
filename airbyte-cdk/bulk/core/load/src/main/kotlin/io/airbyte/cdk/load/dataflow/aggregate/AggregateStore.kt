@@ -23,7 +23,8 @@ class AggregateStore(
     private val log = KotlinLogging.logger {}
 
     private val maxConcurrentAggregates = memoryAndParallelismConfig.maxConcurrentAggregates
-    private val stalenessDeadlinePerAggMs = memoryAndParallelismConfig.stalenessDeadlinePerAggMs.inWholeMilliseconds
+    private val stalenessDeadlinePerAggMs =
+        memoryAndParallelismConfig.stalenessDeadlinePerAggMs.inWholeMilliseconds
     private val maxRecordsPerAgg = memoryAndParallelismConfig.maxRecordsPerAgg
     private val maxEstBytesPerAgg = memoryAndParallelismConfig.maxEstBytesPerAgg
 
