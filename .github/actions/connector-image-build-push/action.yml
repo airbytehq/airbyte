@@ -167,7 +167,7 @@ runs:
         echo "  Base Image: $BASE_IMAGE"
         echo "  Version Tag: $CONNECTOR_VERSION_TAG"
         echo "  Registry: ${{ inputs.registry }}"
-        echo "  Tag(s) to Push: $DOCKER_TAGS"
+        echo "  Full Image Name: $FULL_IMAGE_NAME"
         echo "  Dry Run: ${{ inputs.dry-run }}"
         echo "  Force Publish: ${{ inputs.force-publish }}" 
 
@@ -257,6 +257,7 @@ runs:
         echo "  Image exists: $IMAGE_EXISTS"
         echo "  Will build: $DO_BUILD"
         echo "  Will publish: $DO_PUBLISH"
+        echo "  Push latest tag: ${{ inputs.push-latest }}"
         echo "  Dry run mode: ${{ inputs.dry-run }}"
         echo "  Force publish: ${{ inputs.force-publish }}"
 

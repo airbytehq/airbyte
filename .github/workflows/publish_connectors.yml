@@ -114,9 +114,9 @@ jobs:
 
       - name: Get connector metadata
         id: connector-metadata
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
-          set -eu
-          cd "airbyte-integrations/connectors/${{ matrix.connector }}"
+          set -euo pipefail
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
 
@@ -152,6 +152,10 @@ jobs:
           is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release')
           is_release_candidate=$(echo ${{ steps.connector-metadata.outputs.connector-version }} | grep -c -- '-rc')
 
+          echo "Publish options:"
+          echo "  Pre-release: ${is_pre_release}"
+          echo "  Release candidate: ${is_release_candidate}"
+
           # Don't tag with latest for pre-release or release candidate builds
           if [[ $is_pre_release -gt 0 || $is_release_candidate -gt 0 ]]; then
             echo "push-latest=false" >> $GITHUB_OUTPUT
@@ -169,12 +173,13 @@ jobs:
       - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
         id: build-and-publish-python-manifest-only-connectors-images-master
         if: github.event_name == 'push' && ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
-        uses: ./.github/workflows/connector-image-build-push.yml
+        uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
           push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
-          tag-override: ${{ steps.get-connector-options.outputs.tag-override }}
-          dry-run: false
+          dry-run: "true"
+          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Publish connectors [On merge to master]
         # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
@@ -209,13 +214,15 @@ jobs:
 
       - name: Build and publish Python and Manifest-Only connectors images [manual]
         id: build-and-publish-python-manifest-only-connectors-images-manual
-        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
-        uses: ./.github/workflows/connector-image-build-push.yml
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' && ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
+        uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
           push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
           tag-override: ${{ steps.get-connector-options.outputs.tag-override }}
-          dry-run: false
+          dry-run: "false"
+          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Publish connectors [manual]
         id: publish-connectors-manual
