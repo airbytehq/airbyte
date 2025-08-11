@@ -153,13 +153,14 @@ jobs:
           set -euo pipefail
 
           echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
-          echo "Connector version: ${{ steps.connector-metadata.outputs.connector-version }}"
           echo "Github event name: ${{ github.event_name }}"
 
-          echo "Publish options: ${{ inputs.publish-options }}"
 
           publish_options="${{ inputs.publish-options }}"
           connector_version="${{ steps.connector-metadata.outputs.connector-version }}"
+
+          echo "Publish options: ${publish_options}"
+          echo "Connector version: ${connector_version}"
 
           # TODO: refactor this logic to be shared by all connector types
           is_pre_release=$(echo $publish_options | grep -c -- '--pre-release')
