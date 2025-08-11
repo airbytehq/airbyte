@@ -5,34 +5,27 @@ import jakarta.inject.Singleton
 import jakarta.inject.Named
 import kotlin.time.Duration
 
-@Singleton
-class MemoryAndParallelismConfig(
-    @Named("MaxConcurrentAggregates") val maxConcurrentAggregates: Int,
-    @Named("MaxConcurrentFlushes") val maxConcurrentFlushes: Int,
-    @Named("StalenessDeadlinePerAggMs") val stalenessDeadlinePerAggMs: Duration,
-    @Named("MaxRecordsPerAgg") val maxRecordsPerAgg: Long,
-    @Named("MaxEstBytesPerAgg") val maxEstBytesPerAgg: Long,
+/**
+ * This class configures the parallelism and the memory consumption for the dataflow job.
+ * - maxConcurrentAggregates configures the number of ongoing aggregates.
+ * - maxConcurrentFlushes configures the number of concurrent flushes.
+ * - maxEstBytesPerAgg configures the estimated size of each aggregate.
+ * - The max memory consumption is (maxEstBytesPerAgg * maxConcurrentAggregates) + (maxEstBytesPerAgg * maxConcurrentFlushes).
+ *   Example with default values: (70,000,000 * 5) + (70,000,000 * 5) = 350,000,000 + 350,000,000 = 700,000,000 bytes (approx 0.7 GB).
+ * - stalenessDeadlinePerAggMs is how long we will wait to flush an aggregate if it is not fulfilling the requirement of entry count or max memory.
+ * - maxRecordsPerAgg configures the max number of records in an aggregate.
+ */
+
+data class MemoryAndParallelismConfig(
+    val maxConcurrentAggregates: Int = 5,
+    val maxConcurrentFlushes: Int = 5,
+    val stalenessDeadlinePerAggMs: Duration = Duration.parse("5m"),
+    val maxRecordsPerAgg: Long = 100_000L,
+    val maxEstBytesPerAgg: Long = 70_000_000L,
 )
 
 @Factory
 class MemoryAndParallelismConfigFactory {
     @Singleton
-    @Named("MaxConcurrentAggregates")
-    fun maxConcurrentAggregates(): Int = 5
-
-    @Singleton
-    @Named("MaxConcurrentFlushes")
-    fun maxConcurrentFlushes(): Int = 5
-
-    @Singleton
-    @Named("StalenessDeadlinePerAggMs")
-    fun stalenessDeadlinePerAggMs(): Duration = Duration.parse("5m")
-
-    @Singleton
-    @Named("MaxRecordsPerAgg")
-    fun maxRecordsPerAgg(): Long = 100_000L
-
-    @Singleton
-    @Named("MaxEstBytesPerAgg")
-    fun maxEstBytesPerAgg(): Long = 70_000_000L
+    fun getMemoryAndParallelismConfig() = MemoryAndParallelismConfig()
 }
