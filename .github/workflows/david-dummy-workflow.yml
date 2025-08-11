@@ -5,8 +5,17 @@ on:
     branches:
       - dbgold17/build-and-publish-python-connectors-on-ci
 jobs:
-  vars:
+  build-and-push-connector-image:
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        connector-name:
+          - source-pokeapi
+          - source-faker
+          - source-facebook-marketing
+          - source-s3
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,23 +28,11 @@ jobs:
           hash=$(git rev-parse --short=10 HEAD)
           echo "tag-override=dev.$hash" >> $GITHUB_OUTPUT
 
-    outputs:
-      tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
-
-  build-and-push-connector-image:
-    needs: vars
-    uses: ./.github/workflows/connector-image-build-push.yml
-    strategy:
-      matrix:
-        connector-name:
-          - source-pokeapi
-          - source-faker
-          - source-facebook-marketing
-          - source-s3
-      max-parallel: 5 # Limit number of parallel jobs
-      fail-fast: false # Don't stop on first failure
-    with:
-      connector-name: ${{ matrix.connector-name }}
-      tag-override: ${{ needs.vars.outputs.tag-override }}
-      dry-run: false
-    secrets: inherit
+      - name: Build and Push Connector Image
+        uses: ./.github/actions/connector-image-build-push
+        with:
+          connector-name: ${{ matrix.connector-name }}
+          tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
+          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          dry-run: "false"
