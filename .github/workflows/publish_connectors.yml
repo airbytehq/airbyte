@@ -140,7 +140,7 @@ jobs:
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
-        if: ${{ github.event_name == 'push' &&  steps.connector-metadata.outputs.connector-language == 'java' }}
+        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: |
           echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
@@ -149,7 +149,7 @@ jobs:
 
       - name: Determine build and publish options
         id: get-connector-options
-        if: ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
+        if: steps.connector-metadata.outputs.connector-language != 'java'
         run: |
           set -euo pipefail
 
@@ -177,7 +177,7 @@ jobs:
 
       - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
         id: build-and-publish-python-manifest-only-connectors-images-master
-        if: github.event_name == 'push' && ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
+        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language != 'java'
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
@@ -212,13 +212,13 @@ jobs:
 
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
-        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && ${{steps.connector-metadata.outputs.connector-language == 'java' }}
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
 
       - name: Build and publish Python and Manifest-Only connectors images [manual]
         id: build-and-publish-python-manifest-only-connectors-images-manual
-        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language != 'java'
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
