@@ -152,7 +152,6 @@ jobs:
           echo "  Base Image: $BASE_IMAGE"
           echo "  Version Tag: $CONNECTOR_VERSION_TAG"
           echo "  Registry: ${{ inputs.registry }}"
-          echo "  Full Image: $FULL_IMAGE_NAME"
           echo "  Tag(s) to Push: $DOCKER_TAGS"
           echo "  Dry Run: ${{ inputs.dry-run }}"
           echo "  Force Publish: ${{ inputs.force-publish }}" 
