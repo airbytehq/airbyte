@@ -20,6 +20,7 @@ import kotlin.time.Duration
  * - stalenessDeadlinePerAggMs is how long we will wait to flush an aggregate if it is not
  * fulfilling the requirement of entry count or max memory.
  * - maxRecordsPerAgg configures the max number of records in an aggregate.
+ * - initConcurrentOperation configures the concurrency in the init phase
  */
 data class MemoryAndParallelismConfig(
     val maxConcurrentAggregates: Int = 5,
@@ -27,6 +28,7 @@ data class MemoryAndParallelismConfig(
     val stalenessDeadlinePerAggMs: Duration = Duration.parse("5m"),
     val maxRecordsPerAgg: Long = 100_000L,
     val maxEstBytesPerAgg: Long = 70_000_000L,
+    val initConcurrentOperation: Int = 10,
 )
 
 @Factory
