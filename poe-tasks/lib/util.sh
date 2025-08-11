@@ -13,7 +13,7 @@ connector_docs_path() {
   # share documentation with their base connector
   local connector_name="$1"
   connector_name=$(echo "$connector_name" | sed -r 's/-strict-encrypt$//')
-  
+
   # The regex '^(source|destination)-(.*)' matches strings like source-whatever or destination-something-like-this,
   # capturing the connector type (source/destination) and the connector name (whatever / something-like-this).
   # We then output '\1s/\2.md', which inserts the captured values as `\1` and `\2`.
@@ -22,25 +22,24 @@ connector_docs_path() {
   echo $DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
 }
 
-# ---------- helper: collect connector names ----------
-# Read a list of connector names from a variable, or parse stdin.
 # Expects that you have populated a $connectors variable as an array.
 # If you sourced the parse_args.sh script, this is already handled for you.
-get_connectors() {
-  if [ "${#connectors[@]}" -gt 0 ]; then
-      # only look at non-empty strings
-      for c in "${connectors[@]}"; do
-          [[ -n "$c" ]] && printf "%s\n" "$c"
-      done
-  else
-    # read JSON from stdin
-    if [ -t 0 ]; then
-      echo "Error:  No --name given and nothing piped to stdin." >&2
-      exit 1
-    fi
-    # select only non-empty strings out of the JSON array
-    jq -r '.connector[] | select(. != "")'
+# If $connectors has exactly one element, return that element.
+# Otherwise, prints an error and crashes the script.
+get_only_connector() {
+  # "${#connectors[@]}" is the length of the array
+  if test "${#connectors[@]}" -eq 0; then
+    echo 'Missing `--name <connector_name>` argument' >&2
+    exit 1
   fi
+  if test "${#connectors[@]}" -gt 1; then
+    echo 'Expected to get exactly 1 connector. Got:' >&2
+    printf "%s\n" "${connectors[@]}" >&2
+    exit 1
+  fi
+  # we've validated that the array contains exactly one element,
+  # so get the first element.
+  echo "${connectors[@]:0:1}"
 }
 
 # Generate the prerelease image tag (e.g. `1.2.3-dev.abcde12345`).
