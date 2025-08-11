@@ -29,9 +29,9 @@ jobs:
       matrix:
         connector-name:
           - source-pokeapi
-          # - source-faker
-          # - source-facebook-marketing
-          # - source-s3
+          - source-faker
+          - source-facebook-marketing
+          - source-s3
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     with:
