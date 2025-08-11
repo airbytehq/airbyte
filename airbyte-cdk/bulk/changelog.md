@@ -1,3 +1,7 @@
+## Version 0.1.12
+
+Extract CDK logs DB version during Check for all JDBC databases
+
 ## Version 0.1.11
 
 **Load CDK**
