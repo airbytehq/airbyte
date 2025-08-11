@@ -57,7 +57,25 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Install connector dependencies
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector-name }}
+        run: poe install
+
       - name: Run tests on connector image
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector-name }}
         run: |
           echo "Spec for connector image for ${{ matrix.connector-name }}"
           docker run airbyte/${{ matrix.connector-name }}:${{ needs.vars.outputs.tag-override }} spec
+
+          poe fetch-secrets
+
+          echo "Check for connector image for ${{ matrix.connector-name }}"
+          docker run airbyte/${{ matrix.connector-name }}:${{ needs.vars.outputs.tag-override }} check --config secrets/config.json
