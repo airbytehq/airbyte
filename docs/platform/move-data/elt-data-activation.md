@@ -5,7 +5,7 @@ products: all
 # Data activation (reverse ETL)
 
 :::info
-Data activation is in early access. If you'd like to be an early adopter, [fill out this form](https://form.typeform.com/to/tupSnN3D) and we'll contact you soon.
+Data activation is in early access. If you'd like to be an early adopter, [fill out this form](https://form.typeform.com/to/STc7a0jx).
 :::
 
 Data activation enables you to move data out of your data warehouse and into the operational tools where work happens, like CRMs, marketing platforms, and support systems. With this capability, you can deliver modeled data directly to points of action and systems people already use, helping your organization respond faster and more effectively.
