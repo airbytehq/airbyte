@@ -34,6 +34,8 @@ class DestinationLifecycle(
         runBlocking { pipeline.run() }
 
         finalizeIndividualStreams(streamLoaders)
+
+        teardownDestination()
     }
 
     private fun initializeDestination() {
@@ -83,6 +85,14 @@ class DestinationLifecycle(
                     }
                 }
                 .awaitAll()
+        }
+    }
+
+    private fun teardownDestination() {
+        runBlocking {
+            log.info { "Tearing down the destination" }
+            destinationInitializer.teardown()
+            log.info { "Destination torn down" }
         }
     }
 }
