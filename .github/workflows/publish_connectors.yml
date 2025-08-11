@@ -175,8 +175,9 @@ jobs:
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
-          push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
-          dry-run: "true"
+          push-latest: false
+          dry-run: false
+          tag-override: ${{ steps.get-connector-options.outputs.tag-override }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
