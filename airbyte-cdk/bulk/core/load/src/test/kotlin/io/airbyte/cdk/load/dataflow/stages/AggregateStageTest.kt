@@ -31,30 +31,26 @@ class AggregateStageTest {
         val streamDescriptor = DestinationStream.Descriptor("test_namespace", "test_name")
         val emittedAtMs = 1L
         val partitionKey = PartitionKey("partition_id_1")
-        val recordDto = RecordDTO(
-            fields = emptyMap(),
-            partitionKey = partitionKey,
-            sizeBytes = 100L,
-            emittedAtMs = emittedAtMs
-        )
+        val recordDto =
+            RecordDTO(
+                fields = emptyMap(),
+                partitionKey = partitionKey,
+                sizeBytes = 100L,
+                emittedAtMs = emittedAtMs
+            )
 
-        val streamMock = mockk<DestinationStream> {
-            every { mappedDescriptor } returns streamDescriptor
-        }
-        val rawMock = mockk<DestinationRecordRaw> {
-            every { stream } returns streamMock
-        }
-        val input = DataFlowStageIO(
-            raw = rawMock,
-            munged = recordDto
-        )
+        val streamMock =
+            mockk<DestinationStream> { every { mappedDescriptor } returns streamDescriptor }
+        val rawMock = mockk<DestinationRecordRaw> { every { stream } returns streamMock }
+        val input = DataFlowStageIO(raw = rawMock, munged = recordDto)
 
         val mockAggregate = mockk<Aggregate>()
         val mockPartitionHistogram = mockk<PartitionHistogram>()
-        val aggregateEntry = mockk<AggregateEntry> {
-            every { value } returns mockAggregate
-            every { partitionHistogram } returns mockPartitionHistogram
-        }
+        val aggregateEntry =
+            mockk<AggregateEntry> {
+                every { value } returns mockAggregate
+                every { partitionHistogram } returns mockPartitionHistogram
+            }
         coEvery { store.acceptFor(streamDescriptor, recordDto) } returns Unit
         coEvery { store.removeNextComplete(emittedAtMs) } returns aggregateEntry andThen null
 
@@ -64,9 +60,13 @@ class AggregateStageTest {
 
         coVerify { store.acceptFor(streamDescriptor, recordDto) }
         coVerify { store.removeNextComplete(emittedAtMs) }
-        coVerify { outputFlow.emit(DataFlowStageIO(
-            aggregate = mockAggregate,
-            partitionHistogram = mockPartitionHistogram
-        )) }
+        coVerify {
+            outputFlow.emit(
+                DataFlowStageIO(
+                    aggregate = mockAggregate,
+                    partitionHistogram = mockPartitionHistogram
+                )
+            )
+        }
     }
 }

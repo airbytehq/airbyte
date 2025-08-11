@@ -7,14 +7,13 @@ package io.airbyte.cdk.load.dataflow.stages
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.StateWatermarkStore
-import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
+import kotlin.test.assertFailsWith
+import kotlin.test.assertSame
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
-import kotlin.test.assertSame
 
 class StateStageTest {
     private lateinit var stateStore: StateWatermarkStore

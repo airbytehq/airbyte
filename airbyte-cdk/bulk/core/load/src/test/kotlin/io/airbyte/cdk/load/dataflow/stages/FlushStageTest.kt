@@ -8,10 +8,10 @@ import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlin.test.assertSame
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertSame
 
 class FlushStageTest {
     private val flushStage = FlushStage()

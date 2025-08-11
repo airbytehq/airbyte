@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.dataflow.stages
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.DataMunger
@@ -41,30 +40,37 @@ class ParseStageTest {
     @BeforeEach
     fun setup() {
         stage = ParseStage(munger)
-        stream = DestinationStream(
-            unmappedNamespace = "test-namespace",
-            unmappedName = "test-stream",
-            importType = Append,
-            schema = io.airbyte.cdk.load.data.ObjectType(linkedMapOf()),
-            generationId = 1L,
-            minimumGenerationId = 1L,
-            syncId = 1L,
-            namespaceMapper = NamespaceMapper()
-        )
-        rawRecord = DestinationRecordRaw(
-            stream = stream,
-            rawData = DestinationRecordJsonSource(AirbyteMessage().withRecord(AirbyteRecordMessage().withEmittedAt(12345L))),
-            serializedSizeBytes = 100,
-            airbyteRawId = UUID.randomUUID(),
-        )
+        stream =
+            DestinationStream(
+                unmappedNamespace = "test-namespace",
+                unmappedName = "test-stream",
+                importType = Append,
+                schema = io.airbyte.cdk.load.data.ObjectType(linkedMapOf()),
+                generationId = 1L,
+                minimumGenerationId = 1L,
+                syncId = 1L,
+                namespaceMapper = NamespaceMapper()
+            )
+        rawRecord =
+            DestinationRecordRaw(
+                stream = stream,
+                rawData =
+                    DestinationRecordJsonSource(
+                        AirbyteMessage().withRecord(AirbyteRecordMessage().withEmittedAt(12345L))
+                    ),
+                serializedSizeBytes = 100,
+                airbyteRawId = UUID.randomUUID(),
+            )
     }
 
     @Test
     fun `given valid input, when apply is called, then it should munge the raw record and update the IO object`() =
         runBlocking {
             // Given
-            val input = DataFlowStageIO(raw = rawRecord, partitionKey = PartitionKey("test-partition"))
-            val transformedFields = mapOf("field1" to StringValue("value1"), "field2" to StringValue("42"))
+            val input =
+                DataFlowStageIO(raw = rawRecord, partitionKey = PartitionKey("test-partition"))
+            val transformedFields =
+                mapOf("field1" to StringValue("value1"), "field2" to StringValue("42"))
             every { munger.transformForDest(rawRecord) } returns transformedFields
 
             // When
