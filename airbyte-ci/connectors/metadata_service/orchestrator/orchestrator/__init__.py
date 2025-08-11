@@ -132,36 +132,11 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
     ),
 }
 
-CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE = {
-    **GCS_RESOURCE_TREE,
-    "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
-    ),
-}
-
-CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
-    **SLACK_RESOURCE_TREE,
-    **GITHUB_RESOURCE_TREE,
-    **GCS_RESOURCE_TREE,
-    **CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
-    "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
-        {
-            "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
-            "prefix": NIGHTLY_FOLDER,
-            "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$",
-        }
-    ),
-    "all_connector_test_output_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": CI_TEST_REPORT_PREFIX, "match_regex": CI_MASTER_TEST_OUTPUT_REGEX}
-    ),
-}
-
 RESOURCES = {
     **METADATA_RESOURCE_TREE,
     **DATA_WAREHOUSE_RESOURCE_TREE,
     **REGISTRY_RESOURCE_TREE,
     **REGISTRY_ENTRY_RESOURCE_TREE,
-    **CONNECTOR_TEST_REPORT_RESOURCE_TREE,
 }
 
 SENSORS = [
