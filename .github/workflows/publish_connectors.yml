@@ -40,7 +40,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+          fetch-depth: 0 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
       - name: List connectors [manual]
         id: list-connectors-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
