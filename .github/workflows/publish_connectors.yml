@@ -141,9 +141,9 @@ jobs:
         shell: bash
         run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }}
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
