@@ -3,7 +3,7 @@ name: David Dummy Workflow (for testing purposes)
 on:
   push:
     branches:
-      - dbgold17/build-and-publish-python-connectors-on-ci
+      - main
 jobs:
   build-and-push-connector-image:
     runs-on: ubuntu-24.04

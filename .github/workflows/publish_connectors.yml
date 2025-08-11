@@ -3,7 +3,6 @@ name: Connector Ops CI - Publish Connectors
 on:
   push:
     branches:
-      - master
       - dbgold17/build-and-publish-python-connectors-on-ci
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
