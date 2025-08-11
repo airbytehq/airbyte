@@ -1,9 +1,9 @@
 export default {
-  "developer-tools": [
+  "ai-agents": [
     { 
       type: "category",
       collapsible: false,
-      label: "Developer Tools",
+      label: "AI Agents",
       link: {
         type: "doc",
         id: "README",
@@ -33,8 +33,12 @@ export default {
             "embedded/api/configuring-sources",
           ]
         },
-
           ]
+        },
+        {
+          type: "doc",
+          id: "proxy-requests/README",
+          label: "Proxy Requests",
         },
         {
           type: "doc",

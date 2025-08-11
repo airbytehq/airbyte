@@ -144,14 +144,14 @@ const config = {
         ],
       },
     ],
-    // This plugin controls Airbyte Developer Tools docs, which are not versioned
+    // This plugin controls Airbyte AI Agents docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "developer-tools",
-        path: "../docs/developer-tools",
-        routeBasePath: "/developer-tools",
-        sidebarPath: "./sidebar-developer-tools.js",
+        id: "ai-agents",
+        path: "../docs/ai-agents",
+        routeBasePath: "/ai-agents",
+        sidebarPath: "./sidebar-ai-agents.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
@@ -300,9 +300,9 @@ const config = {
           {
             type: "docSidebar",
             position: "left",
-            docsPluginId: "developer-tools",
-            sidebarId: "developer-tools",
-            label: "Developer Tools",
+            docsPluginId: "ai-agents",
+            sidebarId: "ai-agents",
+            label: "AI Agents",
           },
           {
             href: "https://support.airbyte.com/",
