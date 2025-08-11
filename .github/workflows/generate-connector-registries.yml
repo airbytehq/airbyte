@@ -48,13 +48,13 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
-          SENTRY_TRACES_SAMPLE_RATE: 1.0
-          SENTRY_ENVIRONMENT: staging
+        #   SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
+        #   SENTRY_TRACES_SAMPLE_RATE: 1.0
+        #   SENTRY_ENVIRONMENT: production
         working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
-          poetry run metadata_service generate-registry prod-airbyte-cloud-connector-metadata-service cloud
+          poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service cloud
 
   generate-oss-registry:
     name: Generate OSS Registry
@@ -91,11 +91,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         #   SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
         #   SENTRY_TRACES_SAMPLE_RATE: 1.0
-        #   SENTRY_ENVIRONMENT: staging
+        #   SENTRY_ENVIRONMENT: production
         working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
-          poetry run metadata_service generate-registry prod-airbyte-cloud-connector-metadata-service oss
+          poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service oss
 
   generate-specs-secrets-mask:
     name: Generate Specs Secrets Mask
@@ -131,9 +131,9 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
-          SENTRY_TRACES_SAMPLE_RATE: 1.0
-          SENTRY_ENVIRONMENT: staging
+        #   SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
+        #   SENTRY_TRACES_SAMPLE_RATE: 1.0
+        #   SENTRY_ENVIRONMENT: production
         working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
