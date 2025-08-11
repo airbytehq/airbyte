@@ -4,8 +4,8 @@
 
 import logging
 import os
-import sentry_sdk
 
+import sentry_sdk
 
 sentry_logger = logging.getLogger("sentry")
 
