@@ -150,8 +150,6 @@ jobs:
         if: steps.connector-metadata.outputs.connector-language != 'java'
         shell: bash
         run: |
-          set -euo pipefail
-
           echo "Connector language: ${{ steps.connector-metadata.outputs.connector-language }}"
           echo "Github event name: ${{ github.event_name }}"
 
