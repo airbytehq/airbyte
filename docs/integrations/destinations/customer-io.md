@@ -3,7 +3,7 @@
 This page contains the setup guide and reference information for the Customer IO destination connector.
 
 :::info
-Data activation is in early access. If you'd like to be an early adopter for this connector, [fill out this form](https://form.typeform.com/to/tupSnN3D) and we'll contact you soon.
+Data activation is in early access. If you'd like to be an early adopter for this connector, [see the GitHub discussion](https://github.com/airbytehq/airbyte/discussions/63711).
 :::
 
 ## Overview
