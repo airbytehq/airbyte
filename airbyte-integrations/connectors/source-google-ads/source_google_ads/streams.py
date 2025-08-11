@@ -9,8 +9,8 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 import backoff
 import pendulum
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v18.services.services.google_ads_service.pagers import SearchPager
-from google.ads.googleads.v18.services.types.google_ads_service import SearchGoogleAdsResponse
+from google.ads.googleads.v20.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.v20.services.types.google_ads_service import SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -224,7 +224,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
 
 class CustomerClient(GoogleAdsStream):
     """
-    Customer Client stream: https://developers.google.com/google-ads/api/fields/v18/customer_client
+    Customer Client stream: https://developers.google.com/google-ads/api/fields/v20/customer_client
     """
 
     primary_key = ["customer_client.id"]
