@@ -26,6 +26,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -90,6 +95,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -209,6 +219,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /users/availabilities
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -230,6 +245,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
