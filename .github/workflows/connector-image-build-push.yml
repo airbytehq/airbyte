@@ -261,7 +261,8 @@ jobs:
         if: ${{ steps.check-exists.outputs.do-build }}
         uses: docker/setup-buildx-action@v3
 
-      - name: Build connector image for testing (this is a workaround because we can't load multi-arch images in the GitHub Actions runner)
+        # this is a workaround because we can't load multi-arch images in the GitHub Actions runner
+      - name: Build connector image for testing
         if: ${{ steps.check-exists.outputs.do-build }}
         uses: docker/build-push-action@v5
         with:
@@ -280,7 +281,7 @@ jobs:
         run: |
           image_name=${{ inputs.registry }}/${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.connector-version-tag }}
           echo "Running spec test for image: $image_name"
-          docker run --rm $image_name spec
+          docker run --rm $image_name check
 
       - name: Build and push connector image (multi-arch)
         if: ${{ steps.check-exists.outputs.do-build }}
@@ -293,7 +294,6 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.base-image }}
             CONNECTOR_NAME=${{ steps.vars.outputs.connector-name }}
-          load: true
           push: ${{ steps.check-exists.outputs.do-publish }}
 
       - name: Run Image Vulnerability Scan
