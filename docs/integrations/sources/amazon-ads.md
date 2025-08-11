@@ -159,6 +159,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.2 | 2025-08-09 | [64654](https://github.com/airbytehq/airbyte/pull/64654) | Update dependencies |
 | 7.3.1 | 2025-07-19 | [60633](https://github.com/airbytehq/airbyte/pull/60633) | Update dependencies |
 | 7.3.0 | 2025-07-07 | [62839](https://github.com/airbytehq/airbyte/pull/62839) | Promoting release candidate 7.3.0-rc.1 to a main version. |
 | 7.3.0-rc.1 | 2025-06-26 | [61707](https://github.com/airbytehq/airbyte/pull/61707) | Convert to manifest-only format                                                                                                                                        |
