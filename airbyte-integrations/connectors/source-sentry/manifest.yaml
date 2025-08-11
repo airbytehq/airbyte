@@ -1,4 +1,4 @@
-version: 6.36.1
+version: 6.60.12
 
 type: DeclarativeSource
 
@@ -45,9 +45,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['dateCreated'] > stream_interval.get('start_time', '') }}"
       primary_key:
         - id
       cursor_field: dateCreated
@@ -58,10 +55,19 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dateCreated
-        is_data_feed: true
+        start_time_option:
+          field_name: start
+          inject_into: request_parameter
+        end_time_option:
+          field_name: end
+          inject_into: request_parameter
         start_datetime:
           type: MinMaxDatetime
           datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
