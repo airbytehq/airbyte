@@ -1,6 +1,12 @@
-## Version 0.1.9
+## Version 0.1.11
 
-Add db version logging for all jdbc extract databases during Check operation 
+**Load CDK**
+
+* **Changed:** Add finalization to the dataflow pipeline.
+
+## Version 0.1.10
+
+Update the version change check to avoid using deprecated libs.
 
 ## Version 0.1.7
 
