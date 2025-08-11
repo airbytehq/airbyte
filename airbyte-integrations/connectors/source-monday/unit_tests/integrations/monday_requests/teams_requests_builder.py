@@ -10,7 +10,7 @@ class TeamsRequestBuilder(MondayBaseRequestBuilder):
         return cls().with_authenticator(authenticator)
 
     @property
-    def query_params(self):
+    def request_body(self):
         params = super().query_params or {}
-        params["query"] = "query{teams{id,name,picture_url,users{id}}}"
+        params["query"] = "{teams{id,name,picture_url,users{id}}}"
         return params
