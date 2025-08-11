@@ -272,6 +272,7 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ steps.vars.outputs.base-image }}
             CONNECTOR_NAME=${{ steps.vars.outputs.connector-name }}
+          load: true
           push: ${{ steps.check-exists.outputs.do-publish }}
 
       - name: Run `spec` Image Test
