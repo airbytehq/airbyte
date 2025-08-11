@@ -332,7 +332,7 @@ def _persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str,
         return False, str(e)
 
 
-def generate_and_persist_registry(bucket_name: str, registry_type: str) -> tuple[bool, Optional[str]]:
+def generate_and_persist_connector_registry(bucket_name: str, registry_type: str) -> tuple[bool, Optional[str]]:
     """Generate and persist the registry to a json file on GCS bucket.
 
     Args:

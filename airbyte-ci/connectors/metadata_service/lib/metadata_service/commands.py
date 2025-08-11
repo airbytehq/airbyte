@@ -17,7 +17,7 @@ from metadata_service.gcs_upload import (
     promote_release_candidate_in_gcs,
     upload_metadata_to_gcs,
 )
-from metadata_service.registry import generate_and_persist_registry
+from metadata_service.registry import generate_and_persist_connector_registry
 from metadata_service.sentry import setup_sentry
 from metadata_service.specs_secrets_mask import generate_and_persist_specs_secrets_mask
 from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
@@ -165,7 +165,7 @@ def promote_release_candidate(connector_docker_repository: str, connector_versio
 @click.argument("bucket-name", type=click.STRING, required=True)
 @click.argument("registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
 @sentry_sdk.trace
-def generate_registry(bucket_name: str, registry_type: str):
+def generate_connector_registry(bucket_name: str, registry_type: str):
     # Set Sentry context for the generate_registry command
     sentry_sdk.set_tag("command", "generate_registry")
     sentry_sdk.set_tag("bucket_name", bucket_name)
@@ -173,7 +173,7 @@ def generate_registry(bucket_name: str, registry_type: str):
 
     logger.info(f"Starting {registry_type} registry generation and upload process.")
     try:
-        persisted, error_message = generate_and_persist_registry(bucket_name, registry_type)
+        persisted, error_message = generate_and_persist_connector_registry(bucket_name, registry_type)
 
         sentry_sdk.set_tag("operation_success", persisted)
 
