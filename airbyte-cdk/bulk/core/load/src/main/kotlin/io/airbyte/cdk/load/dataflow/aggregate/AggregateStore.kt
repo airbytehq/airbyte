@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.dataflow.aggregate
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -17,14 +18,14 @@ typealias StoreKey = DestinationStream.Descriptor
 @Singleton
 class AggregateStore(
     private val aggFactory: AggregateFactory,
+    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
     private val log = KotlinLogging.logger {}
 
-    // TODO: Inject
-    private val maxConcurrentAggregates = 5L
-    private val stalenessDeadlinePerAggMs = 5L * 60000
-    private val maxRecordsPerAgg = 100_000L
-    private val maxEstBytesPerAgg = 70_000_000L
+    private val maxConcurrentAggregates = memoryAndParallelismConfig.maxConcurrentAggregates
+    private val stalenessDeadlinePerAggMs = memoryAndParallelismConfig.stalenessDeadlinePerAggMs.inWholeMilliseconds
+    private val maxRecordsPerAgg = memoryAndParallelismConfig.maxRecordsPerAgg
+    private val maxEstBytesPerAgg = memoryAndParallelismConfig.maxEstBytesPerAgg
 
     private val aggregates = ConcurrentHashMap<StoreKey, AggregateEntry>()
 

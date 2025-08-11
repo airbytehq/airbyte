@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow
 
+import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -23,13 +24,14 @@ class DataFlowPipeline(
     @Named("state") private val state: DataFlowStage,
     private val startHandler: PipelineStartHandler,
     private val completionHandler: PipelineCompletionHandler,
+    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
     suspend fun run() {
         input
             .onStart { startHandler.run() }
             .map(parse::apply)
             .transform { aggregate.apply(it, this) }
-            .buffer(capacity = 5)
+            .buffer(capacity = memoryAndParallelismConfig.maxConcurrentFlushes)
             .map(flush::apply)
             .map(state::apply)
             .onCompletion { completionHandler.apply(it) }
