@@ -20,7 +20,6 @@ from orchestrator.config import (
     REGISTRIES_FOLDER,
     REPORT_FOLDER,
 )
-from orchestrator.jobs.connector_test_report import generate_connector_test_summary_reports, generate_nightly_reports
 from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
@@ -193,12 +192,6 @@ SENSORS = [
         interval=60,
         allow_duplicate_runs=True,
     ),
-    new_gcs_blobs_sensor(
-        job=generate_nightly_reports,
-        resources_def=CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
-        gcs_blobs_resource_key="latest_nightly_complete_file_blobs",
-        interval=(1 * 60 * 60),
-    ),
 ]
 
 SCHEDULES = [
@@ -208,7 +201,6 @@ SCHEDULES = [
         execution_timezone="US/Pacific",
         job=remove_stale_metadata_partitions,
     ),
-    ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
     ScheduleDefinition(
         cron_schedule="0 * * * *",  # Every hour
         execution_timezone="US/Pacific",
@@ -221,7 +213,6 @@ JOBS = [
     generate_oss_registry,
     generate_cloud_registry,
     generate_registry_entry,
-    generate_nightly_reports,
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
     remove_latest_metadata_partitions,
