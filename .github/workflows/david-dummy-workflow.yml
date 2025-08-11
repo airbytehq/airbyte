@@ -16,8 +16,8 @@ jobs:
       - name: Generate dev tag
         id: generate-dev-tag
         run: |
-          tag=$(echo hash -n 10 $(git rev-parse HEAD))
-          echo "tag-override=dev-test-$tag" >> $GITHUB_OUTPUT
+          hash=$(git rev-parse --short=10 HEAD)
+          echo "tag-override=dev.$hash" >> $GITHUB_OUTPUT
 
     outputs:
       tag-override: ${{ steps.generate-dev-tag.outputs.tag-override }}
