@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.config
 
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import kotlin.time.Duration
 
@@ -30,5 +31,7 @@ data class MemoryAndParallelismConfig(
 
 @Factory
 class MemoryAndParallelismConfigFactory {
-    @Singleton fun getMemoryAndParallelismConfig() = MemoryAndParallelismConfig()
+    @Singleton
+    @Secondary
+    fun getMemoryAndParallelismConfig() = MemoryAndParallelismConfig()
 }
