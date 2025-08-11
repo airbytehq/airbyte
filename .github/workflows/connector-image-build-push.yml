@@ -108,7 +108,7 @@ jobs:
           # Resolve connector version to use for image tagging
           if [[ "${{ inputs.tag-override }}" ]]; then
             CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
-            echo "🏷 Using provided tag: $CONNECTOR_VERSION_TAGR_TAG"
+            echo "🏷 Using provided tag: $CONNECTOR_VERSION_TAG"
           else
             CONNECTOR_VERSION_TAG=$(poe -qq get-version)
             if [[ -z "$CONNECTOR_VERSION_TAG" ]]; then
