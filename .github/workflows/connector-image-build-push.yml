@@ -286,6 +286,21 @@ jobs:
           echo "Running spec test for image: $image_name"
           docker run --rm $image_name spec
 
+      - name: Install connector dependencies
+        working-directory: airbyte-integrations/connectors/${{ steps.vars.outputs.connector-name }}
+        run: poe install
+
+      - name: Run tests on connector image
+        working-directory: airbyte-integrations/connectors/${{ steps.vars.outputs.connector-name }}
+        run: |
+          image_name="${{ steps.vars.outputs.connector-image-name }}"
+          echo "Running spec test for image: $image_name"
+          docker run --rm $image_name spec
+
+          echo "Running check for image: $image_name"
+          poe fetch-secrets
+          docker run --rm $image_name check --config secrets/config.json
+
       - name: Build and push connector image (multi-arch)
         if: ${{ steps.check-exists.outputs.do-build }}
         uses: docker/build-push-action@v5
