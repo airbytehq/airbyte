@@ -281,7 +281,7 @@ jobs:
         run: |
           image_name=${{ inputs.registry }}/${{ steps.vars.outputs.connector-name }}:${{ steps.vars.outputs.connector-version-tag }}
           echo "Running spec test for image: $image_name"
-          docker run --rm $image_name check
+          docker run --rm $image_name spec
 
       - name: Build and push connector image (multi-arch)
         if: ${{ steps.check-exists.outputs.do-build }}
