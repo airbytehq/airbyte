@@ -149,7 +149,7 @@ jobs:
 
       - name: Determine build and publish options
         id: get-connector-options
-        if: ${{ steps.connector-metadata.outputs.connector-languagee != 'java' }}
+        if: ${{ steps.connector-metadata.outputs.connector-language != 'java' }}
         run: |
           set -euo pipefail
 
