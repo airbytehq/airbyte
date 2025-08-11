@@ -5,8 +5,8 @@ on:
     branches:
       - master
       - dbgold17/build-and-publish-python-connectors-on-ci
-    paths:
-      - "airbyte-integrations/connectors/**/metadata.yaml"
+    # paths:
+    #   - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
     inputs:
       connectors-options:
