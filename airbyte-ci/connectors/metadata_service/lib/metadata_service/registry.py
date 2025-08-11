@@ -3,6 +3,7 @@
 #
 
 import copy
+import os
 from typing import Union, Optional
 from enum import Enum
 import json
@@ -10,12 +11,14 @@ import logging
 import semver
 from collections import defaultdict
 from google.cloud import storage
+from google.oauth2 import service_account
 from metadata_service.constants import ANALYTICS_BUCKET, ANALYTICS_FOLDER, METADATA_FOLDER, REGISTRIES_FOLDER, VALID_REGISTRIES
 from metadata_service.helpers.gcs import get_gcs_storage_client, safe_read_gcs_file
 from metadata_service.helpers.object_helpers import CaseInsensitiveKeys, default_none_to_dict
 from metadata_service.models.generated import ConnectorRegistryV0, ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition
 from metadata_service.models.transform import to_json_sanitized_dict
 from pydash.objects import set_with
+import sentry_sdk
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -115,6 +118,26 @@ def _apply_release_candidates(
     return updated_registry_entry
 
 
+def _build_connector_registry(latest_registry_entries: list[PolymorphicRegistryEntry], latest_connector_metrics: dict, docker_repository_to_rc_registry_entry: dict) -> ConnectorRegistryV0:
+    registry_dict = {"sources": [], "destinations": []}
+
+    for latest_registry_entry in latest_registry_entries:
+        connector_type = _get_connector_type_from_registry_entry(latest_registry_entry)
+        plural_connector_type = f"{connector_type.value}s"
+
+        registry_entry_dict = to_json_sanitized_dict(latest_registry_entry)
+
+        enriched_registry_entry_dict = _apply_metrics_to_registry_entry(registry_entry_dict, connector_type, latest_connector_metrics)
+
+        enriched_registry_entry_dict = _apply_release_candidate_entries(
+            enriched_registry_entry_dict, docker_repository_to_rc_registry_entry
+        )
+
+        registry_dict[plural_connector_type].append(enriched_registry_entry_dict)
+
+    return ConnectorRegistryV0.parse_obj(registry_dict)
+
+
 def _convert_json_to_metrics_dict(jsonl_string: str) -> dict:
     """Convert the jsonl string to a metrics dict.
 
@@ -153,6 +176,7 @@ def _get_connector_type_from_registry_entry(registry_entry: PolymorphicRegistryE
         raise ValueError("Registry entry is not a source or destination")
 
 
+@sentry_sdk.trace
 def _get_latest_registry_entries(bucket: storage.Bucket, registry_type: str) -> list[PolymorphicRegistryEntry]:
     """Get the latest registry entries from the GCS bucket.
 
@@ -191,6 +215,7 @@ def _get_latest_registry_entries(bucket: storage.Bucket, registry_type: str) -> 
     return latest_registry_entries
 
 
+@sentry_sdk.trace
 def _get_release_candidate_registry_entries(bucket: storage.Bucket, registry_type: str) -> list[PolymorphicRegistryEntry]:
     """Get the release candidate registry entries from the GCS bucket.
 
@@ -219,6 +244,7 @@ def _get_release_candidate_registry_entries(bucket: storage.Bucket, registry_typ
     return release_candidate_registry_entries
 
 
+@sentry_sdk.trace
 def _get_latest_connector_metrics(bucket: storage.Bucket) -> dict:
     """Get the latest connector metrics from the GCS bucket.
 
@@ -256,6 +282,7 @@ def _get_latest_connector_metrics(bucket: storage.Bucket) -> dict:
     return latest_metrics_dict
 
 
+@sentry_sdk.trace
 def _persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str, bucket: storage.Bucket) -> Union[bool, Optional[str]]:
     """Persist the registry to a json file on GCS bucket
 
@@ -268,6 +295,14 @@ def _persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str,
         bool: True if the registry was persisted successfully, False otherwise.
         Optional[str]: The error message if the registry was not persisted successfully.
     """
+
+    # TODO: Remove the dev bucket set up once registry artificts have been validated and then add the bucket as a parameter. This block exists so we can write the registry artifacts to the dev bucket for validation.
+    gcs_creds = os.environ.get("GCS_DEV_CREDENTIALS")
+    service_account_info = json.loads(gcs_creds)
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+    client = storage.Client(credentials=credentials)
+    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service")
+
     registry_file_name = f"{registry_name}_registry.json"
     registry_file_path = f"{REGISTRIES_FOLDER}/{registry_file_name}"
     registry_json = registry.json(exclude_none=True)
@@ -301,8 +336,6 @@ def generate_and_persist_registry(bucket_name: str, registry_type: str) -> tuple
     registry_bucket = gcs_client.bucket(bucket_name)
     analytics_bucket = gcs_client.bucket(ANALYTICS_BUCKET)
 
-    registry_dict = {"sources": [], "destinations": []}
-
     latest_registry_entries = _get_latest_registry_entries(registry_bucket, registry_type)
 
     release_candidate_registry_entries = _get_release_candidate_registry_entries(registry_bucket, registry_type)
@@ -314,27 +347,10 @@ def generate_and_persist_registry(bucket_name: str, registry_type: str) -> tuple
 
     latest_connector_metrics = _get_latest_connector_metrics(analytics_bucket)
 
-    for latest_registry_entry in latest_registry_entries:
-        connector_type = _get_connector_type_from_registry_entry(latest_registry_entry)
-        plural_connector_type = f"{connector_type.value}s"
+    connector_registry = _build_connector_registry(latest_registry_entries, latest_connector_metrics, docker_repository_to_rc_registry_entry)
 
-        registry_entry_dict = to_json_sanitized_dict(latest_registry_entry)
-
-        enriched_registry_entry_dict = _apply_metrics_to_registry_entry(registry_entry_dict, connector_type, latest_connector_metrics)
-
-        enriched_registry_entry_dict = _apply_release_candidate_entries(
-            enriched_registry_entry_dict, docker_repository_to_rc_registry_entry
-        )
-
-        registry_dict[plural_connector_type].append(enriched_registry_entry_dict)
-
-    registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
-
-    persisted, error_message = _persist_registry_to_json(registry_model, registry_type, registry_bucket)
-
-    if persisted:
-        return True, None
-    else:
-        return False, error_message
+    persisted, error_message = _persist_registry_to_json(connector_registry, registry_type, registry_bucket)
 
     # TODO: Create and add logging/slack messaging for the end of the process
+
+    return persisted, error_message

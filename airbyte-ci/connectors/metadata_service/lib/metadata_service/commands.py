@@ -6,6 +6,8 @@ import logging
 import pathlib
 
 import click
+import sentry_sdk
+from metadata_service.specs_secrets_mask import generate_and_persist_specs_secrets_mask
 from pydantic import ValidationError
 
 from metadata_service.constants import METADATA_FILE_NAME, VALID_REGISTRIES
@@ -159,25 +161,54 @@ def promote_release_candidate(connector_docker_repository: str, connector_versio
 @metadata_service.command(help="Generate the cloud registry and persist it to GCS.")
 @click.argument("bucket-name", type=click.STRING, required=True)
 @click.argument("registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
+@sentry_sdk.trace
 def generate_registry(bucket_name: str, registry_type: str):
-    click.secho("Generating cloud registry and persisting to GCS...", fg="green")
+    # Set Sentry context for the generate_registry command
+    sentry_sdk.set_tag("command", "generate_registry")
+    sentry_sdk.set_tag("bucket_name", bucket_name)
+    sentry_sdk.set_tag("registry_type", registry_type)
+
     logger.info(f"Starting {registry_type} registry generation and upload process.")
     try:
         persisted, error_message = generate_and_persist_registry(bucket_name, registry_type)
+
+        sentry_sdk.set_tag("operation_success", persisted)
+
         if persisted:
-            click.secho(f"Successfully generated and persisted {registry_type} registry to GCS.", fg="green")
             logger.info(f"Successfully generated and persisted {registry_type} registry to GCS.")
         else:
-            click.secho(f"Error generating {registry_type} registry: {error_message}", fg="red")
+            sentry_sdk.set_tag("error_message", error_message)
             logger.error(f"Error generating {registry_type} registry: {error_message}")
             exit(1)
     except Exception as e:
-        click.secho(f"FATAL ERROR: An error occurred when generating and persisting the {registry_type} registry: {str(e)}", fg="red")
+        sentry_sdk.set_tag("operation_success", False)
+        sentry_sdk.capture_exception(e)
         logger.error(f"FATAL ERROR: An error occurred when generating and persisting the {registry_type} registry: {str(e)}")
         exit(1)
 
 
 @metadata_service.command(help="Generate the specs secrets mask and persist it to GCS.")
-@click.argument("bucket-name", type=click.STRING)
+@click.argument("bucket-name", type=click.STRING, required=True)
+@sentry_sdk.trace
 def generate_specs_secrets_mask(bucket_name: str):
-    pass
+    # Set Sentry context for the generate_specs_secrets_mask command
+    sentry_sdk.set_tag("command", "generate_specs_secrets_mask")
+    sentry_sdk.set_tag("bucket_name", bucket_name)
+
+    logger.info("Starting specs secrets mask generation and upload process.")
+    try:
+        persisted, error_message = generate_and_persist_specs_secrets_mask(bucket_name)
+
+        sentry_sdk.set_tag("operation_success", persisted)
+
+        if persisted:
+            logger.info(f"Successfully generated and persisted specs secrets mask to GCS bucket: {bucket_name}")
+        else:
+            sentry_sdk.set_tag("error_message", error_message)
+            logger.error(f"Error generating specs secrets mask: {error_message}")
+            exit(1)
+    except Exception as e:
+        sentry_sdk.set_tag("operation_success", False)
+        sentry_sdk.capture_exception(e)
+        logger.error(f"FATAL ERROR: An error occurred when generating and persisting the specs secrets mask: {str(e)}")
+        exit(1)

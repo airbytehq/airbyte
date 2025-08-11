@@ -33,3 +33,5 @@ PUBLISH_UPDATE_CHANNEL = "C056HGD1QSW"  # #connector-publish-updates
 # A shorter grace period could lead to false positives in stale metadata detection.
 PUBLISH_GRACE_PERIOD = datetime.timedelta(hours=6)
 SLACK_NOTIFICATIONS_ENABLED = "true"
+
+SPECS_SECRETS_MASK_FILE_NAME = "specs_secrets_mask.yaml"
