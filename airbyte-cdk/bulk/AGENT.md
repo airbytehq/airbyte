@@ -6,7 +6,6 @@ When module is mentioned, it refers to this [folder](.)
 * kotlin is the only language that we need to use
 * we are using gradle to build the module
 * we are using git for version control
-* we are using IntelliJ as the IDE
 * The module is using the following frameworks
   * micronaut for dependency ingestion
   * mockk for mocking
