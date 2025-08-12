@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - dbgold17/build-and-publish-python-connectors-on-ci # TODO: remove me
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
@@ -176,7 +175,7 @@ jobs:
         with:
           connector-name: ${{ matrix.connector }}
           push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
-          dry-run: "true"
+          dry-run: "false"
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
