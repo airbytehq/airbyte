@@ -59,7 +59,7 @@ jobs:
     needs:
       - changes-in-bulk
     if: needs.changes-in-bulk.outputs.java == 'true'
-    runs-on: linux-24.04
+    runs-on: ubuntu-24.04
     name: Bulk CDK version check
     timeout-minutes: 2
     steps:
