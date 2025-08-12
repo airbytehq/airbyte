@@ -1,6 +1,14 @@
+## Version 0.1.13
+
+**Extract CDK**
+
+* **Changed:** Extract CDK logs DB version during Check for all JDBC databases.
+
 ## Version 0.1.12
 
-Extract CDK logs DB version during Check for all JDBC databases
+**Load CDK**
+
+* **Changed:** Add teardown to the dataflow pipeline.
 
 ## Version 0.1.11
 
