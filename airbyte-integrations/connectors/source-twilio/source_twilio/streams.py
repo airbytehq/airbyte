@@ -5,7 +5,7 @@
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -18,6 +18,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -30,6 +31,38 @@ TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
 TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
+
+
+class TwilioBackoffStrategy(BackoffStrategy):
+    """
+    This method is called if we run into the rate limit.
+    Twilio puts the retry time in the `Retry-After` response header so
+    we return that value. If the response is anything other than a 429 (e.g: 5XX)
+    fall back on default retry behavior.
+    Rate Limits Docs: https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting
+    """
+
+    def __init__(self, retry_factor: int = 5):
+        self.retry_factor = retry_factor
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if not isinstance(response_or_exception, requests.Response):
+            return None
+
+        response = response_or_exception
+
+        # For 429 rate limit errors, use the retry-after header
+        if response.status_code == 429:
+            retry_after = response.headers.get("retry-after", "5")
+            return float(retry_after)
+
+        # For all other cases, return None to let CDK handle with default behavior
+        # This includes 400 errors that don't match our specific case
+        return None
 
 
 class TwilioStream(HttpStream, ABC):
@@ -77,16 +110,12 @@ class TwilioStream(HttpStream, ABC):
         else:
             yield from records
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """This method is called if we run into the rate limit.
-        Twilio puts the retry time in the `Retry-After` response header so we
-        we return that value. If the response is anything other than a 429 (e.g: 5XX)
-        fall back on default retry behavior.
-        Rate Limits Docs: https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting"""
-
-        backoff_time = response.headers.get("Retry-After")
-        if backoff_time is not None:
-            return float(backoff_time)
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        """
+        Return custom backoff strategy for Notion API.
+        This replaces the deprecated backoff_time method with the modern CDK approach.
+        """
+        return TwilioBackoffStrategy(retry_factor=self.retry_factor)
 
     def request_params(
         self,
@@ -277,7 +306,7 @@ class TwilioNestedStream(TwilioStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self._session.auth)
+        return self.parent_stream(authenticator=self._http_client._session.auth)
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return StreamSlice(partition={"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}, cursor_slice={})
@@ -567,7 +596,9 @@ class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self._session.auth, start_date=self._start_date, lookback_window=self._lookback_window)
+        return self.parent_stream(
+            authenticator=self._http_client._session.auth, start_date=self._start_date, lookback_window=self._lookback_window
+        )
 
 
 class UsageNestedStream(TwilioNestedStream):
