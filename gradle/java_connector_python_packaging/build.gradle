@@ -93,10 +93,6 @@ configure(subprojects.findAll {it.path.startsWith(":airbyte-integrations:connect
         }
     }
 
-    ext.getConnectorPackageName = {
-        return project.name.replace('-', '_')
-    }
-
     ext.buildJavaRuntimePackage = { File javaRuntimePythonProjectDir, File javaRuntimePackageDir,  Map valueMapping, String javaRuntimeDirNameInPackage ->
         def templateEngine = new SimpleTemplateEngine()
         processTemplate(
