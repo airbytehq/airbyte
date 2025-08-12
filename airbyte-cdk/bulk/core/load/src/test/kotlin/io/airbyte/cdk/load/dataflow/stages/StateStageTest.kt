@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.dataflow.stages
 
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
-import io.airbyte.cdk.load.dataflow.state.StateWatermarkStore
+import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.mockk.mockk
 import io.mockk.verify
 import kotlin.test.assertFailsWith
@@ -16,12 +16,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class StateStageTest {
-    private lateinit var stateStore: StateWatermarkStore
+    private lateinit var stateStore: StateStore
     private lateinit var stateStage: StateStage
 
     @BeforeEach
     fun setup() {
-        stateStore = mockk<StateWatermarkStore>(relaxed = true)
+        stateStore = mockk<StateStore>(relaxed = true)
         stateStage = StateStage(stateStore)
     }
 
@@ -35,7 +35,7 @@ class StateStageTest {
         val result = stateStage.apply(input)
 
         // Assert
-        verify(exactly = 1) { stateStore.acceptAggregateCounts(histogram) }
+        verify(exactly = 1) { stateStore.acceptFlushedCounts(histogram) }
         assertSame(input, result, "The output should be the same as the input object")
     }
 
@@ -43,6 +43,6 @@ class StateStageTest {
     fun `test apply with null partition histogram throws exception`() = runTest {
         val input = DataFlowStageIO(partitionHistogram = null)
         assertFailsWith<NullPointerException> { stateStage.apply(input) }
-        verify(exactly = 0) { stateStore.acceptAggregateCounts(any()) }
+        verify(exactly = 0) { stateStore.acceptFlushedCounts(any()) }
     }
 }
