@@ -12,7 +12,7 @@ When module is mentioned, it refers to this [folder](.)
   * we use the coroutine and the coroutine's flow for task execution
 * the way to test if the module compiles is by running the gradle command `assemble`
 * the way to run the test is by running the gradle command `test`
-* the file [README.md](README.md) contains additional information about the projet
+* the file [README.md](README.md) contains additional information
 * When doing a modification to the module we need to:
   * update the file [build.gradle](build.gradle) where we need to bump the version. The version has a SemVer format and we need to increase the patch version
   * update the [changelog.md](changelog.md) where we need to add a description for the new version
