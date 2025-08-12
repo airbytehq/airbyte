@@ -24,7 +24,6 @@ class DataFlowPipeline(
     private val startHandler: PipelineStartHandler,
     private val completionHandler: PipelineCompletionHandler,
 ) {
-    // test
     suspend fun run() {
         input
             .onStart { startHandler.run() }
