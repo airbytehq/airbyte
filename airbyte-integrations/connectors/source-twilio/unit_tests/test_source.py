@@ -7,36 +7,6 @@ from unittest.mock import Mock
 import pytest
 import requests
 from source_twilio.source import SourceTwilio
-from source_twilio.streams import (
-    Accounts,
-    Addresses,
-    Alerts,
-    Applications,
-    AvailablePhoneNumberCountries,
-    AvailablePhoneNumbersLocal,
-    AvailablePhoneNumbersMobile,
-    AvailablePhoneNumbersTollFree,
-    Calls,
-    ConferenceParticipants,
-    Conferences,
-    ConversationParticipants,
-    Conversations,
-    DependentPhoneNumbers,
-    IncomingPhoneNumbers,
-    Keys,
-    MessageMedia,
-    Messages,
-    OutgoingCallerIds,
-    Queues,
-    Recordings,
-    Step,
-    Transcriptions,
-    UsageRecords,
-    UsageTriggers,
-    UserConversations,
-    Users,
-    VerifyServices,
-)
 
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
