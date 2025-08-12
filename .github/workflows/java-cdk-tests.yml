@@ -33,7 +33,6 @@ jobs:
       - id: changes
         uses: dorny/paths-filter@v2
         with:
-          # Note: expressions within a filter are OR'ed
           filters: |
             java:
               - 'airbyte-cdk/java/**/*'
@@ -52,10 +51,10 @@ jobs:
       - id: changes
         uses: dorny/paths-filter@v2
         with:
-          # Note: expressions within a filter are OR'ed
           filters: |
             java:
               - 'airbyte-cdk/bulk/**/*'
+
   run-check:
     needs:
       - changes
