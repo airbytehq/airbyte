@@ -211,4 +211,20 @@ configure(subprojects.findAll {it.path.startsWith(":airbyte-integrations:connect
         def outputFile = file("${outputDir}/${outputFileName}")
         outputFile.text = processedText
     }
+
+    it.tasks.register(PUBLISH_PYTHON_PACKAGE_TASK_NAME, Exec) {
+        dependsOn = ["buildPythonPackage"]
+        group = "custom"
+        description = "Publishes a python package for the connector to pypi"
+        executable = "twine"
+
+        doFirst {
+            def distFiles = file("${CONNECTOR_PYTHON_PROJECT_DIR}/dist").listFiles().findAll { it.name.endsWith(".whl") || it.name.endsWith(".tar.gz") }
+            args = ["upload", "--repository", "testpypi", "--skip-existing", "--verbose"] + distFiles.collect { it.absolutePath }
+        }
+        workingDir = file(CONNECTOR_PYTHON_PROJECT_DIR)
+        standardOutput = System.out
+        errorOutput = System.err
+        ignoreExitValue = false
+    }
 }
