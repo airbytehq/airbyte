@@ -28,6 +28,9 @@ Airbyte connector for [SimpleCirca](https://www.simplecirca.com/) would enable s
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.32 | 2025-08-09 | [64788](https://github.com/airbytehq/airbyte/pull/64788) | Update dependencies |
+| 0.0.31 | 2025-07-26 | [64016](https://github.com/airbytehq/airbyte/pull/64016) | Update dependencies |
+| 0.0.30 | 2025-07-19 | [63559](https://github.com/airbytehq/airbyte/pull/63559) | Update dependencies |
 | 0.0.29 | 2025-07-12 | [63002](https://github.com/airbytehq/airbyte/pull/63002) | Update dependencies |
 | 0.0.28 | 2025-07-05 | [62799](https://github.com/airbytehq/airbyte/pull/62799) | Update dependencies |
 | 0.0.27 | 2025-06-28 | [62422](https://github.com/airbytehq/airbyte/pull/62422) | Update dependencies |

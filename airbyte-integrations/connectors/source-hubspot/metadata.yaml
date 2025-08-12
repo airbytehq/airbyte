@@ -6,11 +6,11 @@ data:
     hosts:
       - api.hubapi.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 5.8.13
+  dockerImageTag: 5.8.18
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   resourceRequirements:
@@ -19,6 +19,10 @@ data:
         resourceRequirements:
           memory_limit: 1600Mi
           memory_request: 1600Mi
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 1024Mi
+          memory_request: 1024Mi
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
   githubIssueLabel: source-hubspot
   icon: hubspot.svg

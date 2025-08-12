@@ -83,6 +83,10 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.45 | 2025-08-09 | [64604](https://github.com/airbytehq/airbyte/pull/64604) | Update dependencies |
+| 0.6.44 | 2025-08-02 | [64284](https://github.com/airbytehq/airbyte/pull/64284) | Update dependencies |
+| 0.6.43 | 2025-07-26 | [63868](https://github.com/airbytehq/airbyte/pull/63868) | Update dependencies |
+| 0.6.42 | 2025-07-19 | [63451](https://github.com/airbytehq/airbyte/pull/63451) | Update dependencies |
 | 0.6.41 | 2025-07-12 | [63141](https://github.com/airbytehq/airbyte/pull/63141) | Update dependencies |
 | 0.6.40 | 2025-07-05 | [62665](https://github.com/airbytehq/airbyte/pull/62665) | Update dependencies |
 | 0.6.39 | 2025-06-28 | [62174](https://github.com/airbytehq/airbyte/pull/62174) | Update dependencies |

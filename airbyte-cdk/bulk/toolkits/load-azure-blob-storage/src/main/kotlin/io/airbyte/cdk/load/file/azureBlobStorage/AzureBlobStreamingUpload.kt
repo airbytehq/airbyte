@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.azureBlobStorage
 
+import com.azure.storage.blob.options.BlockBlobCommitBlockListOptions
 import com.azure.storage.blob.specialized.BlockBlobClient
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -32,10 +33,7 @@ class AzureBlobStreamingUpload(
      */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
         // Generate a unique block id. We’ll just use index or a random
-        val rawBlockId = "block-$index-${System.nanoTime()}"
         val blockId = generateBlockId(index)
-
-        log.info { "Staging block #$index => $rawBlockId (encoded = $blockId)" }
 
         // The stageBlock call can be done asynchronously or blocking.
         // Here we use the blocking call in a coroutine context.
@@ -46,8 +44,6 @@ class AzureBlobStreamingUpload(
                 part.size.toLong(),
             )
         }
-
-        log.info { "Staged block #$index => $rawBlockId (encoded = $blockId)" }
 
         // Keep track of the blocks in the order they arrived (or the index).
         blockIds[index] = blockId
@@ -63,17 +59,13 @@ class AzureBlobStreamingUpload(
                 log.warn {
                     "No blocks uploaded. Committing empty blob: ${blockBlobClient.blobName}"
                 }
-            } else {
-                val blockList = blockIds.values.toList()
-                log.info { "Committing block list for ${blockBlobClient.blobName}: $blockList" }
             }
-
-            blockBlobClient.commitBlockList(blockIds.values.toList(), true) // Overwrite = true
-
-            // Set any metadata
+            val blocks = blockIds.values.toList()
+            val options = BlockBlobCommitBlockListOptions(blocks)
             if (metadata.isNotEmpty()) {
-                blockBlobClient.setMetadata(metadata)
+                options.setMetadata(metadata)
             }
+            blockBlobClient.commitBlockListWithResponse(options, null, null)
         } else {
             log.warn { "Complete called multiple times for ${blockBlobClient.blobName}" }
         }

@@ -22,7 +22,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   githubIssueLabel: source-dynamodb
   icon: dynamodb.svg
-  license: MIT
+  license: ELv2
   name: DynamoDB
   registryOverrides:
     cloud:
