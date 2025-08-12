@@ -27,7 +27,6 @@ def main():
     env_vars = os.environ.copy()
     env_vars['JAVA_HOME'] = files("${JAVA_RUNTIME_PACKAGE_NAME}").joinpath("${JAVA_RUNTIME_DIR_NAME}")
 
-    # Call the bash script (replace 'your_bash_script.sh' with actual script name)
     try:
         script_path = files("${CONNECTOR_PACKAGE_NAME}").joinpath("bin/${CONNECTOR_TYPE}-${CONNECTOR_NAME}")
         result = subprocess.run([script_path] + bash_args, check=True, env=env_vars)
