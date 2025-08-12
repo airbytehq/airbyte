@@ -49,7 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.8.2       | 2025-08-12 | [64897](https://github.com/airbytehq/airbyte/pull/64897) | Testing publishing flow.                                                                     |
+| 0.8.2       | 2025-08-12 | [64897](https://github.com/airbytehq/airbyte/pull/64897) | Testing publishing flow; pin to latest CDK.                                                  |
 | 0.8.1       | 2025-07-30 | [64117](https://github.com/airbytehq/airbyte/pull/64117) | Re-release with latest CDK for socket related fixes.                                         |
 | 0.8.0       | 2025-06-17 | [61585](https://github.com/airbytehq/airbyte/pull/61585) | Upgrade dev null to the new data channel based architecture.                                 |
 | 0.7.27      | 2025-06-13 | [61587](https://github.com/airbytehq/airbyte/pull/61587) | Test publishing logic.                                                                       |
