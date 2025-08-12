@@ -8,7 +8,7 @@ import org.jooq.Configuration
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
-/** Database object for interacting with a Jooq connection . */
+/** Database object for interacting with a Jooq connection. */
 open class Database(protected val dslContext: DSLContext) {
     @Throws(SQLException::class)
     open fun <T> query(transform: ContextQueryFunction<T>): T? {
