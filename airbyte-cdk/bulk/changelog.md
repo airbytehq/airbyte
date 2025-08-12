@@ -2,7 +2,7 @@
 
 **Load CDK**
 
-* **Changed:** Add test to the dataflow stages.
+* **Change:** Add tests in the test suite for the dataflow pipeline.
 
 ## Version 0.1.13
 
