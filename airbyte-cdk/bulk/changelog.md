@@ -1,8 +1,12 @@
-## Version 0.1.14
+## Version 0.1.15
 
 **Extract CDK**
 
 * **Changed:** Extract CDK logs DB version during Check for all JDBC databases.
+
+## Version 0.1.14
+
+* **Changed:** Add agent.
 
 ## Version 0.1.13
 
