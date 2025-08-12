@@ -71,7 +71,7 @@ class DebeziumRecordIterator<T>(
     // The following logic incorporates heartbeat:
     // 1. Wait on queue either the configured time first or 1 min after a record received
     // 2. If nothing came out of queue finish sync
-    // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while
+    // 3. If received heartbeat: check if heartbeat_lsn reached target or hasn't changed in a while
     // finish sync
     // 4. If change event lsn reached target finish sync
     // 5. Otherwise check message queue again
@@ -79,7 +79,6 @@ class DebeziumRecordIterator<T>(
         // keep trying until the publisher is closed or until the queue is empty. the latter case is
         // possible when the publisher has shutdown but the consumer has not yet processed all
         // messages it emitted.
-        val instantBeforeSync = Instant.now()
         while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
             val next: ChangeEvent<String?, String?>?
             val waitTime =
@@ -149,19 +148,16 @@ class DebeziumRecordIterator<T>(
 
                 val heartbeatPos = getHeartbeatPosition(next)
                 val isProgressing = heartbeatPos != lastHeartbeatPosition
-                val instantSyncTime: Duration = Duration.between(instantBeforeSync, Instant.now())
-                val debeziumWaitingTimeRemaining = waitTime.seconds - instantSyncTime.toSeconds()
                 LOGGER.info {
-                    "CDC events queue poll(): " +
+                    "CDC events queue poll(): returned a heartbeat event, " +
                         if (isProgressing) {
-                            "returned a heartbeat event, " + "progressing to $heartbeatPos."
+                            "progressing to $heartbeatPos."
                         } else {
-                            "no progress since last heartbeat. Will continue polling until timeout is reached. Time remaining in seconds: ${debeziumWaitingTimeRemaining}."
+                            "no progress since last heartbeat."
                         }
                 }
-                // wrap up sync if heartbeat position crossed the target OR heartbeat position
-                // hasn't changed for
-                // too long
+                // wrap up sync if heartbeat position crossed the target OR heartbeat's position
+                // hasn't changed for too long
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
                     requestClose(
                         "Closing: Heartbeat indicates sync is done by reaching the target position",
