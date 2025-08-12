@@ -51,7 +51,7 @@ def config():
     }
 
 
-TEST_INSTANCE = SourceTwilio()
+TEST_INSTANCE = SourceTwilio(config, None, None)
 
 
 @pytest.mark.parametrize(
@@ -80,42 +80,3 @@ def test_check_connection_handles_exceptions(mocker, config, exception, expected
     assert not status_ok
     assert error == expected_error_msg
 
-
-@pytest.mark.parametrize(
-    "stream_cls",
-    [
-        (Accounts),
-        (Addresses),
-        (Alerts),
-        (Applications),
-        (AvailablePhoneNumberCountries),
-        (AvailablePhoneNumbersLocal),
-        (AvailablePhoneNumbersMobile),
-        (AvailablePhoneNumbersTollFree),
-        (Calls),
-        (ConferenceParticipants),
-        (Conferences),
-        (DependentPhoneNumbers),
-        (IncomingPhoneNumbers),
-        (Keys),
-        (MessageMedia),
-        (Messages),
-        (OutgoingCallerIds),
-        (Queues),
-        (Recordings),
-        (Step),
-        (Transcriptions),
-        (UsageRecords),
-        (UsageTriggers),
-        (Conversations),
-        (ConversationParticipants),
-        (Users),
-        (UserConversations),
-        (VerifyServices),
-    ],
-)
-def test_streams(stream_cls, config):
-    streams = TEST_INSTANCE.streams(config)
-    for stream in streams:
-        if stream_cls in streams:
-            assert isinstance(stream, stream_cls)
