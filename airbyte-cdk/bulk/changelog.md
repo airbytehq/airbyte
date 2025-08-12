@@ -1,8 +1,14 @@
-## Version 0.1.13
+## Version 0.1.14
 
 **Extract CDK**
 
 * **Changed:** Extract CDK logs DB version during Check for all JDBC databases.
+
+## Version 0.1.13
+
+**Load CDK**
+
+* **Changed:** Make the resources being used by the dataflow CDK configurable.
 
 ## Version 0.1.12
 
