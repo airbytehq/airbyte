@@ -1,60 +1,22 @@
-import org.jsonschema2pojo.SourceType
-
 plugins {
-    id 'airbyte-java-connector'
-    id 'com.github.eirnym.js2p'
+    id 'airbyte-bulk-connector'
     id "io.airbyte.gradle.docker"
     id 'airbyte-connector-docker-convention'
 }
 
-java {
-    compileJava {
-        options.compilerArgs += "-Xlint:-try,-rawtypes,-unchecked"
-    }
-}
-
-airbyteJavaConnector {
-    cdkVersionRequired = '0.48.14'
-    features = ['db-sources', 'datastore-postgres']
-    useLocalCdk = false
-}
-
 application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc', 'extract-cdc', 'source-tests']
+    cdk = '0.601'
 }
 
 dependencies {
-    api "com.google.protobuf:protobuf-java:3.25.5" // for fixing vulnerability of protobuf-java used by Debezium
-    implementation 'commons-codec:commons-codec:1.16.0'
-    implementation 'io.debezium:debezium-embedded:3.0.1.Final'
-    implementation 'io.debezium:debezium-connector-postgres:3.0.1.Final'
+    implementation 'io.debezium:debezium-embedded:3.1.3.Final'
+    implementation 'io.debezium:debezium-connector-postgres:3.1.3.Final'
 
-    testFixturesApi 'org.testcontainers:postgresql:1.19.0'
-
-    testImplementation 'org.hamcrest:hamcrest-all:1.3'
-}
-
-jsonSchema2Pojo {
-    sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/internal_models")
-    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
-    removeOldOutput = true
-
-    targetPackage = 'io.airbyte.integrations.source.postgres.internal.models'
-
-    useLongIntegers = true
-    generateBuilders = true
-    includeConstructors = false
-    includeSetters = true
-}
-
-compileKotlin {
-    dependsOn {
-        generateJsonSchema2Pojo
-    }
-}
-
-tasks.named('sourcesJar').configure {
-    dependsOn tasks.named('generateJsonSchema2Pojo')
+    testFixturesApi 'org.testcontainers:postgresql:1.20.6'
 }
