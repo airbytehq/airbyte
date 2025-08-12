@@ -173,6 +173,7 @@ def generate_connector_registry(bucket_name: str, registry_type: str):
     logger.info(f"Starting {registry_type} registry generation and upload process.")
     try:
         generate_and_persist_connector_registry(bucket_name, registry_type)
+        logger.info(f"SUCCESS: {registry_type} registry generation and upload process completed successfully.")
         sentry_sdk.set_tag("operation_success", True)
     except Exception as e:
         sentry_sdk.set_tag("operation_success", False)
@@ -193,6 +194,7 @@ def generate_specs_secrets_mask(bucket_name: str):
     try:
         generate_and_persist_specs_secrets_mask(bucket_name)
         sentry_sdk.set_tag("operation_success", True)
+        logger.info("Specs secrets mask generation and upload process completed successfully.")
     except Exception as e:
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)
