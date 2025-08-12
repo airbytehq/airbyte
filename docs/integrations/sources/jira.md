@@ -169,6 +169,9 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.3 | 2025-08-09 | [64583](https://github.com/airbytehq/airbyte/pull/64583) | Update dependencies |
+| 4.2.2 | 2025-08-02 | [64216](https://github.com/airbytehq/airbyte/pull/64216) | Update dependencies |
+| 4.2.1 | 2025-07-26 | [63916](https://github.com/airbytehq/airbyte/pull/63916) | Update dependencies |
 | 4.2.0 | 2025-07-24 | [63761](https://github.com/airbytehq/airbyte/pull/63761) | Promoting release candidate 4.2.0-rc.1 to a main version. |
 | 4.2.0-rc.1 | 2025-07-21  | [63366](https://github.com/airbytehq/airbyte/pull/63366)       | Migrate the issues stream from `/search` to `/search/jql` due to API deprecation                                                                                       |
 | 4.1.7      | 2025-07-19 | [63461](https://github.com/airbytehq/airbyte/pull/63461) | Update dependencies |
