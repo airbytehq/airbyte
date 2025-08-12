@@ -4,33 +4,16 @@
 from dagster import Definitions, EnvVar, ScheduleDefinition, load_assets_from_modules
 from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
-from orchestrator.assets import (
-    connector_test_report,
-    connector_metrics,
-    github,
-    metadata,
-    registry,
-    registry_entry,
-    registry_report,
-    specs_secrets_mask,
-    slack,
-)
+from orchestrator.assets import connector_metrics, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask, slack
 from orchestrator.config import (
     ANALYTICS_BUCKET,
     ANALYTICS_FOLDER,
-    CI_MASTER_TEST_OUTPUT_REGEX,
-    CI_TEST_REPORT_PREFIX,
     CONNECTOR_REPO_NAME,
     CONNECTORS_PATH,
     HIGH_QUEUE_PRIORITY,
-    NIGHTLY_COMPLETE_REPORT_FILE_NAME,
-    NIGHTLY_FOLDER,
-    NIGHTLY_GHA_WORKFLOW_ID,
-    NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME,
     REGISTRIES_FOLDER,
     REPORT_FOLDER,
 )
-from orchestrator.jobs.connector_test_report import generate_connector_test_summary_reports, generate_nightly_reports
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
@@ -61,7 +44,6 @@ ASSETS = load_assets_from_modules(
         connector_metrics,
         registry,
         registry_report,
-        connector_test_report,
         registry_entry,
     ]
 )
@@ -75,13 +57,6 @@ GITHUB_RESOURCE_TREE = {
     "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
     "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),
     "github_connectors_metadata_files": github_connectors_metadata_files.configured({"connectors_path": CONNECTORS_PATH}),
-    "github_connector_nightly_workflow_successes": github_workflow_runs.configured(
-        {
-            "workflow_id": NIGHTLY_GHA_WORKFLOW_ID,
-            "branch": "master",
-            "status": "success",
-        }
-    ),
 }
 
 GCS_RESOURCE_TREE = {
@@ -148,36 +123,12 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
     ),
 }
 
-CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE = {
-    **GCS_RESOURCE_TREE,
-    "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
-    ),
-}
-
-CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
-    **SLACK_RESOURCE_TREE,
-    **GITHUB_RESOURCE_TREE,
-    **GCS_RESOURCE_TREE,
-    **CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
-    "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
-        {
-            "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
-            "prefix": NIGHTLY_FOLDER,
-            "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$",
-        }
-    ),
-    "all_connector_test_output_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": CI_TEST_REPORT_PREFIX, "match_regex": CI_MASTER_TEST_OUTPUT_REGEX}
-    ),
-}
-
 RESOURCES = {
     **METADATA_RESOURCE_TREE,
     **DATA_WAREHOUSE_RESOURCE_TREE,
     **REGISTRY_RESOURCE_TREE,
     **REGISTRY_ENTRY_RESOURCE_TREE,
-    **CONNECTOR_TEST_REPORT_RESOURCE_TREE,
+    **GITHUB_RESOURCE_TREE,
 }
 
 SENSORS = [
@@ -208,12 +159,6 @@ SENSORS = [
         interval=60,
         allow_duplicate_runs=True,
     ),
-    new_gcs_blobs_sensor(
-        job=generate_nightly_reports,
-        resources_def=CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
-        gcs_blobs_resource_key="latest_nightly_complete_file_blobs",
-        interval=(1 * 60 * 60),
-    ),
 ]
 
 SCHEDULES = [
@@ -223,7 +168,6 @@ SCHEDULES = [
         execution_timezone="US/Pacific",
         job=remove_stale_metadata_partitions,
     ),
-    ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
 ]
 
 JOBS = [
@@ -231,7 +175,6 @@ JOBS = [
     generate_oss_registry,
     generate_cloud_registry,
     generate_registry_entry,
-    generate_nightly_reports,
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
     remove_latest_metadata_partitions,

@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.output.OutputConsumer
 import jakarta.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -16,9 +18,8 @@ import kotlinx.coroutines.launch
 
 @Singleton
 class StateReconciler(
-    private val stateWatermarkStore: StateWatermarkStore,
     private val stateStore: StateStore,
-    private val statePublisher: StatePublisher,
+    private val consumer: OutputConsumer,
 ) {
     private val iterationDuration: Duration = 30.seconds
     private lateinit var job: Job
@@ -34,15 +35,15 @@ class StateReconciler(
     }
 
     fun flushCompleteStates() {
-        while (stateStore.states.isNotEmpty()) {
-            val key = stateStore.states.firstKey()
-            val complete = stateWatermarkStore.isComplete(key)
-            if (complete) {
-                statePublisher.publish(stateStore.remove(key))
-            } else {
-                break
-            }
+        var complete = stateStore.getNextComplete()
+        while (complete != null) {
+            publish(complete)
+            complete = stateStore.getNextComplete()
         }
+    }
+
+    fun publish(msg: CheckpointMessage) {
+        consumer.accept(msg.asProtocolMessage())
     }
 
     suspend fun disable() = job.cancelAndJoin()
