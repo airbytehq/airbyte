@@ -8,15 +8,9 @@ from orchestrator.assets import connector_metrics, github, metadata, registry, r
 from orchestrator.config import (
     ANALYTICS_BUCKET,
     ANALYTICS_FOLDER,
-    CI_MASTER_TEST_OUTPUT_REGEX,
-    CI_TEST_REPORT_PREFIX,
     CONNECTOR_REPO_NAME,
     CONNECTORS_PATH,
     HIGH_QUEUE_PRIORITY,
-    NIGHTLY_COMPLETE_REPORT_FILE_NAME,
-    NIGHTLY_FOLDER,
-    NIGHTLY_GHA_WORKFLOW_ID,
-    NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME,
     REGISTRIES_FOLDER,
     REPORT_FOLDER,
 )
@@ -64,13 +58,6 @@ GITHUB_RESOURCE_TREE = {
     "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
     "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),
     "github_connectors_metadata_files": github_connectors_metadata_files.configured({"connectors_path": CONNECTORS_PATH}),
-    "github_connector_nightly_workflow_successes": github_workflow_runs.configured(
-        {
-            "workflow_id": NIGHTLY_GHA_WORKFLOW_ID,
-            "branch": "master",
-            "status": "success",
-        }
-    ),
 }
 
 GCS_RESOURCE_TREE = {

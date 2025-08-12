@@ -10,30 +10,8 @@ from orchestrator import GITHUB_RESOURCE_TREE, METADATA_RESOURCE_TREE, REGISTRY_
 from orchestrator.assets.github import github_metadata_file_md5s, stale_gcs_latest_metadata_file
 from orchestrator.assets.registry import persisted_oss_registry
 from orchestrator.assets.registry_entry import metadata_entry, registry_entry
-from orchestrator.config import NIGHTLY_COMPLETE_REPORT_FILE_NAME, NIGHTLY_FOLDER, NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME, REPORT_FOLDER
+from orchestrator.config import REPORT_FOLDER
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_manager
-
-
-def debug_nightly_report():
-    resources = {
-        "gcp_gcs_client": gcp_gcs_client.configured(
-            {
-                "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
-            }
-        ),
-        "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
-            {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
-        ),
-        "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
-            {
-                "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
-                "prefix": NIGHTLY_FOLDER,
-                "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$",
-            }
-        ),
-    }
-
-    context = build_op_context(resources=resources)
 
 
 def debug_registry():
