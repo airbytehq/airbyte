@@ -41,7 +41,7 @@ definitions:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          page_size: 2
+          page_size: 1000
           cursor_value: '{{ response.get("meta", {}).get("next_page_url") or response.get("next_page_uri") }}'
     transformations:
       # Twilio API returns datetime in two formats:

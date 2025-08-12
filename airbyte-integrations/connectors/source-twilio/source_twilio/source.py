@@ -3,8 +3,7 @@
 #
 
 import datetime
-import logging
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Optional
 
 import pendulum
 
@@ -14,7 +13,6 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.streams import (
-    Accounts,
     Addresses,
     Alerts,
     Applications,
@@ -51,20 +49,6 @@ RETENTION_WINDOW_LIMIT = 400
 class SourceTwilio(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
-
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        try:
-            auth = HttpBasicAuthenticator(
-                (
-                    config["account_sid"],
-                    config["auth_token"],
-                ),
-            )
-            accounts_gen = Accounts(authenticator=auth).read_records(sync_mode=SyncMode.full_refresh)
-            next(accounts_gen)
-            return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Twilio API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
