@@ -1,0 +1,2 @@
+recursive-include ${CONNECTOR_PACKAGE_NAME}/bin *
+recursive-include ${CONNECTOR_PACKAGE_NAME}/lib *
