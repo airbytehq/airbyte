@@ -103,6 +103,15 @@ jobs:
         with:
           version: 1.8.5
 
+      # We're intentionally not using the `google-github-actions/auth` action.
+      # The upload-connector-metadata step runs a script which handles auth manually.
+      # This is because we're writing files to multiple buckets, using different credentials
+      # for each bucket.
+      # (it's unclear whether that's actually necessary)
+      - name: Install gcloud
+        # v2.1.5
+        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
+
       - name: Install metadata_service
         run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
 
@@ -143,6 +152,15 @@ jobs:
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
 
+      - name: Upload connector metadata [On merge to master]
+        id: upload-connector-metadata-master
+        shell: bash
+        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --main-release
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
         if: >
@@ -173,6 +191,15 @@ jobs:
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
           max_attempts: 2
+
+      - name: Upload connector metadata [Manual]
+        id: upload-connector-metadata-manual
+        shell: bash
+        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
