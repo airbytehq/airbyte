@@ -55,10 +55,35 @@ jobs:
             java:
               - 'airbyte-cdk/bulk/**/*'
 
+  run-check-bulk-cdk-version:
+    needs:
+      - changes-in-bulk
+    if: needs.changes-in-bulk.outputs.java == 'true'
+    runs-on: linux-24.04
+    name: CDK Check
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Java Setup
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "21"
+      # Help CDK Devs understand CDK version should be incremented on changes.
+      - name: Error if CDK Version Exists
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-publish
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:checkBuildNumber
+
   run-check:
     needs:
       - changes
-      - changes-in-bulk
     if: needs.changes.outputs.java == 'true'
     # As of now, 16 cores seems to be enough.
     # Any revision upwards should be based on a performance analysis of gradle scans.
@@ -75,17 +100,6 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "21"
-      # Help CDK Devs understand CDK version should be incremented on changes.
-      - name: Error if CDK Version Exists
-        if: needs.changes.outputs.java == 'true'
-        uses: burrunan/gradle-cache-action@v1
-        env:
-          CI: true
-        with:
-          job-id: bulk-cdk-publish
-          concurrent: true
-          gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:checkBuildNumber
       - name: Run Java CDK Tests
         uses: burrunan/gradle-cache-action@v3
         env:
