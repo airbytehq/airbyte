@@ -1,0 +1,15 @@
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+
+def detectPlatform() {
+    if(DefaultNativePlatform.currentOperatingSystem.isWindows()) {
+        return "windows"
+    } else if(DefaultNativePlatform.currentOperatingSystem.isLinux()) {
+        return "linux"
+    } else if(DefaultNativePlatform.currentOperatingSystem.isMacOsX()) {
+        return "macos"
+    }
+
+    throw GradleException("Unsupported OS: ${DefaultNativePlatform.currentOperatingSystem}")
+}
+
+
